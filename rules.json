@@ -95,6 +95,11 @@
         "parts": 3
       }
     },
+    "_repeat_target_comment": "Where the next blow of a pummel, or the next link of a chain, lands when nobody said: stay_chance that it goes to the same spot as the one before, otherwise somewhere new (near_share of those times right next to it, the rest anywhere she can be reached). Parts you name (in a /command, or in a direction the director follows) are kept as you said. stay_chance 1 = always the same spot.",
+    "repeat_target": {
+      "stay_chance": 0.5,
+      "near_share": 0.7
+    },
     "_auto_spill_comment": "A targeted strike that names only one body part also jars the parts right next to it (a jaw strike catches the muzzle and neck). parts = how many neighbors; factor = their power as a share of the move's base power. Set parts to 0 to turn it off.",
     "auto_spill": {
       "parts": 2,
@@ -668,6 +673,12 @@
     "attacks_between_pins": 1,
     "director_can_eliminate": false,
     "_secure_comment": "secure: when enabled, a pin can only be WON if the pinned fighter has at least min_parts body parts at part_damage % or more AND her strength is at or below max_strength %. Until then her escape chance is multiplied by unmet_escape_mult every beat, and if the clock runs out she kicks out at the last second final_kickout_chance of the time. Encourages spreading the damage. Toggle with /secure on|off.",
+    "_pressure_cap_comment": "A pin wears her down; it doesn't wreck her. Its steady pressure on each pressed part, and the extra press that punishes a failed struggle, never use more than these multipliers, however worn the part is: mult (damage; 0.45 = as if the part were only 'sturdy') and health_mult (health). Blows are not capped. Set enabled false for the old rule, where pressure on a ruined part hit as hard as a blow.",
+    "pressure_cap": {
+      "enabled": true,
+      "mult": 0.45,
+      "health_mult": 1.0
+    },
     "secure": {
       "enabled": false,
       "min_parts": 6,
@@ -1013,7 +1024,9 @@
     "pummel_hard_cap": 0,
     "pummel_end_start": 0.25,
     "pummel_end_step": 0.1,
-    "pummel_answer_chance": 0.5
+    "pummel_answer_chance": 0.5,
+    "_pummel_in_pin_comment": "pummel_in_pin: whether the director may rain a pummel down on a fighter she has PINNED (false by default: a pin is a pin; pummels are for a grab, a fighter who is down, or one pressed against the scenery). Your own commands can always do it.",
+    "pummel_in_pin": false
   },
   "variety": {
     "_comment": "HOW an outcome plays out once the dice have decided WHAT happens. Each entry is a set of ways with weights (compared with the others in the same set); the engine picks one each time and tells the narrator, so the story varies without ever contradicting the result. Raise a weight to see that way more often; 0 removes it. /variety shows and changes them. charge_stands: a fighter who keeps her feet after being charged into the scenery. charge_falls: one who crumples (lying three ways, or sitting against it). dodge: how an attack is avoided. hold_break: how a hold is broken. hold_strain: how a held fighter fights a grip that stays on. struggle: what a pinned fighter tries. getup_fail / getup_rise: how a try at getting up fails, and how she finally rises.",

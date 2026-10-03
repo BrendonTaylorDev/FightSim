@@ -147,10 +147,10 @@ Beat types:
   a stream or beam held on her at no distance ("sustain" 2-4, no "pinned_against" needed), or a throw or a slam,
   which she can't slip. The held fighter can hit back just as freely, and the engine rolls her wrenching free
   every beat. Use it NOW AND THEN, not often. A standing target may slip the grab.
-- PUMMELS are not only for a grab. The same close move thrown again and again ("count" 2-4) also works from ON TOP
-  in a pin (blows rained down on the one underneath), on a fighter who is DOWN (sitting or lying: standing or
-  kneeling over her), and on one still PRESSED AGAINST the scenery after a charge (she has nowhere to go). The engine
-  decides how long it lasts.
+- PUMMELS are not only for a grab. The same close move thrown again and again ("count" 2-4) also works on a fighter
+  who is DOWN (sitting or lying, not pinned: standing or kneeling over her), and on one still PRESSED AGAINST the
+  scenery after a charge (she has nowhere to go). Not inside a pin: a pin holds her, it doesn't rain blows. The
+  engine decides how long it lasts.
 - CHAINS: now and then one fighter strings attacks together in ONE beat, each leading into the next: a jab that
   opens her guard, a second blow to the same spot or the part beside it, then something bigger (a named move, a
   bite, a knee; a throw or a slam can be the last link). Usually two or three links; a fighter who is well on top
@@ -614,7 +614,8 @@ def resolve(engine, b):
 
     if not manual and act in ("strike", "combo"):
         b = _apply_focus(engine, att, dfn, b)
-        b = _apply_variety(engine, att, dfn, b)
+        if not b.get("_aimed"):
+            b = _apply_variety(engine, att, dfn, b)
     started = ()
     if act == "grapple":
         hits = [h for h in (b.get("hits") or []) if h.get("part")]
@@ -685,11 +686,12 @@ def resolve(engine, b):
             by_def[dfn] = ([first] if first else []) + (extra if move.get("target") == "targeted" else [])
         count = int(b.get("count", 1) or 1)
         pummel = False
-        if count > 1 and not _multi_hit(engine, move) and len(by_def) == 1 and move.get("target") == "targeted" \
-                and not move.get("charge"):
+        place = (engine.pummel_place(att, dfn) if count > 1 and not _multi_hit(engine, move) and len(by_def) == 1
+                 and move.get("target") == "targeted" and not move.get("charge") else None)
+        if place:
             # the same close move, thrown again and again at no distance: inside a grab, from on top in a pin, on
             # a fighter pressed against the scenery, or on one who is down (sitting or lying)
-            pummel = engine.pummel_place(att, dfn) or False
+            pummel = place
         elif not manual and count > 1 and not _multi_hit(engine, move):
             count = 1  # a single charge or slash lands once; only flurry moves (Fury Swipes...) repeat
         results = [engine.move_attack(att, who, move["name"], parts, count, flavor,
@@ -1047,6 +1049,24 @@ def resolve_many(engine, actions):
                         engine._chain_on = None
                         break
                     engine._force_dodge = how == "dodge"
+                if link and link[0] > 1 and not b.get("_manual") and b.get("action") == "strike" and b.get("part") \
+                        and not getattr(engine, "directed", False):
+                    # a chain link after the first: the dice decide whether it goes back to the spot the last link
+                    # landed on or somewhere new (moves.repeat_target). A part you named stays as you said.
+                    prev = next((r for r in reversed(results) if isinstance(r, dict) and r.get("chain")
+                                 and r.get("hits")), None)
+                    try:
+                        who = _fill_defender(engine, b.get("attacker"), b.get("defender"))
+                        last = prev["hits"][0]["part"] if prev and prev.get("defender") == engine.get(who).name else None
+                        if last:
+                            want = _fit_part(engine, who, b["part"])
+                            got = engine.next_target(who, last, f"chain link {link[0]}")
+                            if got == last or want == last:
+                                b = dict(b, part=got, _aimed=True)
+                            else:
+                                b = dict(b, _aimed=True)      # somewhere new: where the director aimed it
+                    except (ValueError, KeyError):
+                        pass
                 pb = None
                 try:
                     g = engine.grab_between(b.get("attacker"), _fill_defender(engine, b.get("attacker"), b.get("defender")))
@@ -1233,6 +1253,7 @@ class Director:
         # is there an opening for a pin on anyone this beat? (rolled once, so retries don't re-roll it; a typed
         # direction always may pin)
         engine.roll_pin_windows(open_all=bool(direction))
+        engine.directed = bool(direction)   # your words decide where blows land; the dice only fill in what you left open
         hint = initiative_hint(engine) if not direction else ""
         steer = plan_hint(engine)
         if not direction and not hint:

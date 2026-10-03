@@ -638,6 +638,33 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 113
+- **Aqua Jet keeps touching her until it's over.** A charge wrapped in its element (Aqua Jet, Wave Crash, Flame Wheel,
+  Flare Blitz, Spark, Wild Charge, Volt Tackle...) never leaves the one it hits between the hit and the slam: she is
+  carried inside the water (fire, current), and it keeps pressing, stinging and scouring at the struck part and the
+  parts round it the whole way. Those contacts are in the stat block as "carried inside the water". The narrator is
+  told there is no gap and no second strike, so she is never hit "again" as if the attacker had outpaced her.
+  `moves.charge.sheath` (`power` 0.25 of the main hit, on `parts` 3 round it; power 0 = off).
+- **Aqua Jet costs 40 energy** (48 with the charge into something; it was 18). Twice in a row leaves Ripples winded
+  even with a beat of rest between. Set `"energy"` on the move in fighters.json to change it.
+- **Pummels anywhere close.** Short blows thrown again and again (a strike with a count) now work from ON TOP in a
+  pin, on a fighter who is DOWN (lying or sitting), and on one still PRESSED AGAINST the scenery after a charge, not
+  only inside a standing grab. The stat block and the narrator say where.
+- **Each blow of a pummel and each link of a chain picks its own spot.** After the first, the dice decide whether it
+  lands on the same part again or somewhere new (usually right next to it). Parts you name (in a /command, or in a
+  direction you type) are kept as you said. `moves.repeat_target` (`stay_chance` 0.5, `near_share` 0.7). The
+  rolls are listed with the others.
+- **No hard caps on pummels and chains by default** (`grapple.pummel_hard_cap` and `director.chain.hard_cap` are 0).
+  They still end on their own: the longer they run, the likelier; set a number to bring a cap back.
+- **Raw reactions.** A real blow on a part that is ALREADY very painful, excruciating or devastated gets a visceral
+  reaction, scaled by three things: how hurt the part was, how big this blow is (a brush on a ruined part is far less
+  than a real blow there), and how much strength she has left AS THE BLOW LANDS. With most of her strength she fights
+  to keep it in (a hiss, a bitten-off cry); worn down, a real scream and shaking; nearly spent, a raw scream that
+  cracks, shaking she cannot stop, streaming eyes. One big reaction per fighter per beat; later blows that beat build
+  on it. Never sobbing or weeping. 14 new story blocks for it. `narration.raw_reactions` false turns it off.
+- **sim/**: run scripted fights on the real engine without Ollama (`python sim/long_fight.py 7`): every roll is the
+  engine's; the narrator's prompts can be saved to read.
+
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
   her legs would only"), the program used to trim it, taking it for an answer cut off by the word limit. Now it

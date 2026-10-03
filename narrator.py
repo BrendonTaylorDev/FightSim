@@ -1691,14 +1691,20 @@ class Narrator:
         level = min(level, 1 + cond_score)
         if size == "glancing":
             level = min(level, 1)
+        self.__dict__.setdefault("_raw_done", {})
+        self.__dict__.setdefault("_raw_parts", {})
         done = self._raw_done.get(who)
         if done is not None:
             # the first raw blow this beat had its moment: later ones on her build on it instead of each getting a
             # fresh scream, so a beat never becomes a string of them
-            return (f"the same hurt struck again before the last has faded; it adds to what is already happening to "
-                    f"her (a fresh jolt through the shaking, the sound she is making catching and going higher) "
-                    f"rather than a whole new reaction")
+            first = self._raw_parts.get(who)
+            what = ("the same hurt struck again" if first == h["part"] else
+                    f"another hurt part ({h['part'].lower()}) struck")
+            return (f"{what} before the last has faded; it adds to what is already happening to her (a fresh jolt "
+                    f"through the shaking, the sound she is making catching and going higher) rather than a whole "
+                    f"new reaction")
         self._raw_done[who] = level
+        self._raw_parts[who] = h["part"]
         name, text = self.RAW_LEVELS[level]
         lead = {"glancing": "only a brush, on a part that is already "
                             f"{before_label}: smaller than a full blow there would be, but ",
@@ -1750,6 +1756,7 @@ class Narrator:
         self._strike_parts = []
         self._linger_pool = []
         self._raw_done = {}         # fighter -> the raw reaction already asked for this beat (one big one per beat)
+        self._raw_parts = {}        # fighter -> the part that had it
         self._getup_tries = None
         self._getup_who = None
         self._getup_event = None
@@ -2054,6 +2061,9 @@ class Narrator:
             lines.append(f"  - A PUMMEL: {n} short blows of the same move, one after another, {place[0]}, with no room "
                          f"to wind up; each is lighter than one full blow would be. Tell it as a flurry of {n} (that "
                          f"count is right), not as one big hit."
+                         + (" They do not all land in one place; in order: " + ", ".join(pm["parts"])
+                            + ". Show each blow finding its spot." if len(set(pm.get("parts") or [])) > 1 else
+                            " Every one lands on the same spot." if len(pm.get("parts") or []) > 1 else "")
                          + {"spoiled": f" It stops when {dfn} twists enough {place[1]} to spoil the next one: she turns "
                                        f"the struck part away or gets a limb in the road. She is NOT free, {place[2]}, "
                                        f"and nothing lands on {att}.",
@@ -2309,6 +2319,10 @@ class Narrator:
             if a.get("point_blank"):
                 lines.append("  (The blow itself is not a hold: nothing NEW latches on with it. The grab that is already "
                              "on stays on.)")
+            elif (a.get("pummel") or {}).get("where") in ("pin", "down", "against"):
+                keep = {"pin": "The pin that is already on stays on", "down": "She stays down where she is",
+                        "against": "She stays pressed where she is"}[a["pummel"]["where"]]
+                lines.append(f"  (The blows themselves are not a hold: nothing NEW latches on with them. {keep}.)")
             else:
                 lines.append("  (An instant hit: any bite, grab, or grip lets go as soon as it lands. It is NOT a hold, so "
                              "nobody is still latched on afterward.)")

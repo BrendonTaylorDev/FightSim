@@ -394,8 +394,10 @@ class Engine:
         return names
 
     # ---------- core math ----------
-    def _apply_damage(self, defender, part_name, power):
-        """One instance of damage, using the bracket rules. Returns every number involved."""
+    def _apply_damage(self, defender, part_name, power, cap=None):
+        """One instance of damage, using the bracket rules. Returns every number involved. cap: {"mult", "health_mult"}
+        upper limits on the bracket's multipliers (a pin's steady pressure doesn't tear into a worn part the way a
+        blow does: pin.pressure_cap)."""
         r = self.rules
         p = defender.part(part_name)
         res_b, dmg_b, hp_b = p.resistance, p.damage, defender.health
@@ -404,7 +406,15 @@ class Engine:
 
         bracket = tier_for(res_b, r["resistance"]["brackets"])
         scale = float(r.get("damage", {}).get("damage_scale", 1.0))
-        taken = power * bracket["mult"] * scale
+        bmult = float(bracket["mult"])
+        hmult = float(bracket.get("health_mult", 1.0))
+        capped = False
+        if cap:
+            if cap.get("mult") is not None and bmult > float(cap["mult"]):
+                bmult, capped = float(cap["mult"]), True
+            if cap.get("health_mult") is not None and hmult > float(cap["health_mult"]):
+                hmult, capped = float(cap["health_mult"]), True
+        taken = power * bmult * scale
         p.damage = dmg_b + taken
         rscale = float(r.get("damage", {}).get("resistance_scale", 1.0))
         # resistance lost: by the blow's power, and (resistance.loss_per_damage, 0 = off) by the damage it really did,
@@ -413,7 +423,6 @@ class Engine:
         p.resistance = max(r["resistance"]["minimum"], res_b - wear * rscale)
         # health lost: damage x loss_per_damage_point x the bracket's health_mult (a soft, worn-down part costs more)
         # x how much the part matters to the whole body (health.part_weights: a throat far more than an ear)
-        hmult = float(bracket.get("health_mult", 1.0))
         vital = self.part_weight(p.name)
         health_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital
         defender.health = self._floor(hp_b - health_loss)
@@ -430,7 +439,8 @@ class Engine:
             "part": p.name,
             "power": power,
             "bracket": bracket["label"],
-            "mult": bracket["mult"],
+            "mult": bmult,
+            "capped": capped,
             "scale": scale,
             "res_scale": rscale,
             "damage_taken": round(taken, 2),
@@ -745,8 +755,18 @@ class Engine:
             while enforce and n > 1 and a.energy < extra * (n - 1):
                 n -= 1
             a.energy = max(0.0, a.energy - extra * (n - 1))
-            plan, powers = [names[0]] * n, [round(math["effective"] * each, 2)] * n
-            pum = {"count": n, "each": each, "power": powers[0], "ended": ended, "answer": [],
+            if len(names) > 1:
+                # the parts were named, in order (by you, or the director following your words): blow by blow
+                plan = [names[k % len(names)] for k in range(n)]
+            elif enforce and not getattr(self, "directed", False):
+                # nobody said where each blow goes: after the first, the dice keep it on the same spot or move it
+                plan = [names[0]]
+                for k in range(1, n):
+                    plan.append(self.next_target(d.name, plan[-1], f"pummel blow {k + 1}"))
+            else:
+                plan = [names[0]] * n
+            powers = [round(math["effective"] * each, 2)] * n
+            pum = {"count": n, "each": each, "power": powers[0], "ended": ended, "answer": [], "parts": list(plan),
                    "where": pummel if isinstance(pummel, str) else "grab",
                    "against": (self.pressed.get(d.name) or {}).get("surface") or "",
                    "lying": self.facing_of(d.name) if d.name in self.downed else None}
@@ -767,7 +787,7 @@ class Engine:
                 math["auto_spill_parts"] = extra
                 math["auto_spill_effective"] = jar
                 math["auto_spill_factor"] = float(spill_cfg.get("factor", 0.5))
-        if target == "targeted" and len(names) > 1:
+        if target == "targeted" and len(names) > 1 and not pum:
             # a strike that drags across neighboring parts: main part x2, the parts it carries over x1
             spill = round(move["power"] * math["type_mult"] * math["stab"] * math["extra_mult"]
                           * self.rules.get("moves", {}).get("targeting", {}).get("spread", 1.0), 2)
@@ -2433,6 +2453,30 @@ class Engine:
         h = self.grab_between(holder, held)
         return bool(h) and h.attacker == self.get(holder).name
 
+    def next_target(self, defender, current, why="the next blow"):
+        """Where the next blow of a pummel or the next link of a chain lands when nobody has said: the dice decide
+        between the same spot again and a new one (moves.repeat_target: stay_chance, near_share). A new spot is
+        usually right next to the last (near_share), otherwise anywhere she can be reached."""
+        cfg = self.rules.get("moves", {}).get("repeat_target", {}) or {}
+        d = self.get(defender)
+        stay = float(cfg.get("stay_chance", 0.5))
+        if stay >= 1 or self._chance(stay, f"{why} landing on {current} again", "same spot", "somewhere new"):
+            return current
+        same, near = neighbor_parts(list(d.parts), current)
+        pool = [p for p in same + near if p != current]
+        if not pool or self.rng.random() >= float(cfg.get("near_share", 0.7)):
+            pool = [p for p in d.parts if p != current]
+        if d.name in self.downed or self.pinned_by(d.name):
+            fitted, _ = self.fit_to_facing(d.name, pool)      # only what is turned toward her attacker
+            pool = [p for p in dict.fromkeys(fitted) if p != current] or pool
+        return self.rng.choice(pool) if pool else current
+
+    def pin_cap(self):
+        """How hard a pin's steady pressure (and the punishment for a failed struggle) can bite into a worn-down part:
+        pin.pressure_cap {"mult", "health_mult"} (null = no limit). A pin wears her down; it doesn't wreck her."""
+        c = self.rules.get("pin", {}).get("pressure_cap")
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
     def pummel_place(self, attacker, defender):
         """Where `attacker` can rain short blows on `defender` at no distance, or None: "grab" (her grab on her, both
         standing), "pin" (from on top, in her pin), "against" (she is pressed against the scenery from a charge),
@@ -2443,7 +2487,8 @@ class Engine:
         if self.grabbed_by(a, d):
             return "grab"
         if d in self.pinning(a):
-            return "pin"
+            # blows rained down inside a pin: not how a pin usually goes (grapple.pummel_in_pin, off by default)
+            return "pin" if self.rules.get("grapple", {}).get("pummel_in_pin", False) else None
         if d in self.pressed and a not in self.downed:
             return "against"
         if d in self.downed and not self.pinned_by(d):
@@ -2940,7 +2985,7 @@ class Engine:
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0))
                      if in_pin else h.power) * first
             self._source = f"{poss_word(h.attacker)} {'pin' if in_pin else 'hold'}"
-            hit = self._apply_damage(d, h.part, round(power, 2))
+            hit = self._apply_damage(d, h.part, round(power, 2), cap=self.pin_cap() if in_pin else None)
             h.turns_active += 1
             events.append({"type": "hold_ongoing", "hold_id": h.id, "attacker": h.attacker, "hold_power": h.power,
                            "pin_mult": (round(time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)), 4)
@@ -3352,7 +3397,7 @@ class Engine:
             step = min(ref, dur - t)
             for h in self._pin_holds(p):
                 ev["pressure_hits"].append(self._apply_damage(
-                    d, h.part, round(h.power * step / ref * float(cfg.get("damage_mult", 1.0)), 2)))
+                    d, h.part, round(h.power * step / ref * float(cfg.get("damage_mult", 1.0)), 2), cap=self.pin_cap()))
             t += step
         p["seconds"] = dur
         ev["out_cause"] = self.out_cause(p)
@@ -3419,17 +3464,20 @@ class Engine:
         return {"cause": "pain", "part": h.part if h else "", "with": h.with_part if h else ""}
 
     @staticmethod
-    def fade_words(fade):
-        """How far gone she is, in words the story can use (never a number, never a time)."""
+    def fade_words(fade, strength=None):
+        """How far gone she is, in words the story can use (never a number, never a time). Her overall strength
+        counts too: a fighter who is nearly spent before the pin has worn her down is never "plenty of fight"."""
+        if strength is not None:
+            fade = max(fade, 55 if strength <= 5 else 30 if strength < 25 else 0)
         return ("still has plenty of fight in her" if fade < 30 else
                 "weakening: her struggles are slower and her breath shorter" if fade < 55 else
                 "fading: her limbs are heavy, her sight is greying at the edges, sounds come from far away" if fade < 80
                 else "nearly out: barely moving, her eyes sliding shut and dragging open again")
 
-    def _fade_clause(self, fade):
+    def _fade_clause(self, fade, strength=None):
         """fade_words as the end of a sentence that starts with her name: "Ripples still has plenty of fight in
         her", "Ripples is weakening: ..." (not "is still has")."""
-        words = self.fade_words(fade)
+        words = self.fade_words(fade, strength)
         return words if words.startswith("still has") else "is " + words
 
     def pin_time_factor(self):
@@ -3624,13 +3672,13 @@ class Engine:
                     h = self.rng.choice(holds)
                     power = round(self.power_for("instant", s.get("punish_severity", "solid"))
                                   * float(cfg.get("damage_mult", 1.0)), 2)
-                    ev["punish_hits"] = [self._apply_damage(dfn, h.part, power)]
+                    ev["punish_hits"] = [self._apply_damage(dfn, h.part, power, cap=self.pin_cap())]
                     ev["punish_with"] = h.with_part
             if fm and key in self.pins:
                 gain, gr, gnotes = self.fade_gain(p, dfn, crew, partial=ev["struggle"] == "partial")
                 p["fade"] = round(min(100.0, f0 + gain), 1)
                 ev.update(fade_mode=True, fade_from=round(f0, 1), fade_to=p["fade"], fade_gain=gain, fade_roll=gr,
-                          fade_notes=gnotes, beats=p["beats"], fade_words=self.fade_words(p["fade"]))
+                          fade_notes=gnotes, beats=p["beats"], fade_words=self.fade_words(p["fade"], self.strength(dfn)))
             elif fm:
                 ev.update(fade_mode=True, fade_from=round(f0, 1), fade_to=round(f0, 1), fade_gain=0.0, beats=p["beats"])
             done = (float(p.get("fade", 0.0)) >= 100.0) if fm else (p["seconds"] >= p["duration"])
@@ -4025,7 +4073,7 @@ class Engine:
         for p in self.pins.values():
             who = self.pin_members(p)
             lines.append(f"PIN: {' and '.join(who)} {'is' if len(who) == 1 else 'are BOTH'} pinning {p['defender']} "
-                         + (f"(no clock: {p['defender']} {self._fade_clause(float(p.get('fade', 0.0)))})"
+                         + (f"(no clock: {p['defender']} {self._fade_clause(float(p.get('fade', 0.0)), self.strength(self.get(p['defender'])))})"
                             if self.fade_mode() else f"({p['seconds']} of {p['duration']} seconds)")
                          + (": a double pin, both pressing at once." if len(who) > 1 else "."))
         if self.holds:

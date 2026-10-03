@@ -147,7 +147,7 @@ class Display:
                 k += 3
                 out.append(f"    {label}")
                 out.append(f"        damage      {pad(dmg)}   +{num(h['damage_taken'])} = power {num(h['power'])} × "
-                           f"{h['mult']:.2f}{sc}")
+                           f"{h['mult']:.2f}{' (pin cap)' if h.get('capped') else ''}{sc}")
                 out.append(f"        resistance  {pad(res)}   -{num(loss)} {how_res}")
                 if "health_loss" in h:
                     out.append(f"        health      {pad(hp)}   -{num(h['health_loss'])} = damage "
