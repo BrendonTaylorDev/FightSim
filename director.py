@@ -1497,6 +1497,20 @@ def pin_shapes(engine, pinner, target, skip=()):
         out["sleeper"] = (f"a sleeper hold from behind: {t['fore']} hooked under her chin and locked round her {neck}, "
                           f"squeezing the sides of it shut, her weight along her {back} so she can't turn",
                           [(neck, t["fore"] + ", locked round it from behind"), (back, t["weight"])])
+    # the dunk: held face-down in the shallows, her head pushed under and let up and pushed under again (a choke by
+    # water; never drowning). Only where the arena has shallow water to do it in
+    pools = [h.get("name") for h in ((getattr(engine, "scene_cfg", None) or {}).get("hazards") or [])
+             if isinstance(h, dict) and re.search(r"pool|shallow|puddle|stream|creek|surf|marsh|spring",
+                                                  " ".join([str(h.get("name", ""))] + list(h.get("words") or [])), re.I)
+             and not re.search(r"\bdeep\b|plunge", str(h.get("name", "")), re.I)]
+    from engine import body_region as _br
+    backs2 = [n for n in target.parts if _br(n) in ("back_up", "back")]
+    if pools and t.get("fore") and neck and backs2 and "dunk" not in skip:
+        pool = rng.choice(pools)
+        out["dunk"] = (f"{target.name} hauled to {pool} and held there FACE-DOWN in the shallow water, {t['fore']} on the "
+                       f"back of her {neck} pushing her head under, letting her up for one gasp and pushing her under "
+                       f"again, her weight across her {backs2[0]} (say so with \"pinned_against\": \"{pool}\")",
+                       [(neck, t["fore"] + ", holding her head under the shallow water"), (backs2[0], t["weight"])])
     props = [p for p in ((getattr(engine, "scene_cfg", None) or {}).get("props") or []) if p]
     if props and t.get("fore") and neck and front and "wall_choke" not in skip:
         prop = rng.choice(props)

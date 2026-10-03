@@ -1809,6 +1809,8 @@ class Narrator:
         self._landed = {a.get("defender") for a in actions if a.get("environment") or a.get("sustain")}
         # a pinner thrown down by an escape goes to the ground this beat too
         self._landed |= {e["pinner_down"]["fighter"] for e in evs if isinstance(e.get("pinner_down"), dict)}
+        # a fighter who slips as she dodges on slick footing really does go down
+        self._landed |= {a.get("defender") for a in actions if a.get("slipped")}
         self._rolled_up = {a.get("defender") for a in actions if a.get("environment") and a.get("kept_feet")}
         # holds worked looser this beat (still on): "the coil slackened" is right for these, "let go" is not
         self._loosened = {(e.get("attacker"), e.get("defender")) for e in evs if e.get("type") == "hold_loosened"}
@@ -2295,10 +2297,16 @@ class Narrator:
                    "turn_aside": "turns it aside at the last instant (a forearm, a shoulder, the flat of a tail knocking "
                                  "it off its line), so it glances away without hurting her",
                    "twist": "twists her body out of its line, so it passes a hair from her fur"}.get(a.get("manner"))
+            sl = a.get("slipped")
             lines.append(f"{a['attacker']} goes for {who} with {what}, but {who} DODGES"
                          + (f" (this time she {way})" if way else "") + ": it misses completely and "
-                         f"does no damage. She stays on her feet. Show the near miss: the move, the dodge, how close it "
-                         f"came.{intent}")
+                         f"does no damage. "
+                         + (f"But the footing is slick, and as she gets out of its way her feet go out from under her: "
+                            f"she GOES DOWN, ending up "
+                            + (Engine.FACING_LOOK.get(sl.get("facing"), "on the ground") if isinstance(sl, dict) else "on the ground")
+                            + ". The fall hurts nothing new. Show the near miss AND the slip." if sl else
+                            "She stays on her feet. Show the near miss: the move, the dodge, how close it came.")
+                         + intent)
             if a.get("counter_hits"):
                 lines.append(f"  - Out of the dodge, {who} COUNTERS and catches {a['attacker']} (a quick strike of its own, "
                              f"separate from any attack {who} makes later in this beat; {a['attacker']} is the only one hurt here):")
@@ -2813,7 +2821,13 @@ class Narrator:
                        + f"! The pin is over; {a} is thrown off or loses the hold. How it starts (" + self._try_how(e)
                        + "); show the rest your way.")
             out += self._escape_lines(e)
-        if e.get("against"):
+        if any("under the" in str(g[3]).lower() and "water" in str(g[3]).lower()
+               for g in (getattr(self, "grips", None) or []) if g[1] == d):
+            out.append(f"  - THE DUNK: {poss(d)} face is held down in the shallow water. She is pushed under and let up "
+                       f"for a gasp, pushed under and let up again: water up her nose and in her mouth, coughing, "
+                       f"spluttering, the cold of it. It is a choke by water; she is NEVER drowning, and every time "
+                       f"her head comes up she gets air.")
+        elif e.get("against"):
             out.append(f"  - The pin is against {e['against']}: {poss(d)} head and shoulders are jammed against it, "
                        f"hard at her back, with nowhere to push back to.")
         if s in ("none", "fail", "partial", "overpowered") and not e.get("complete"):

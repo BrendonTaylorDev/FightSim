@@ -953,7 +953,7 @@
     },
     "throat_bite_chance": 0.12,
     "throat_bite_pin_chance": 0.25,
-    "_pin_shape_comment": "pin_shape_weights: when there is an opening for a pin, the director is handed one way to build it, so pins don't all look alike (never the same shape twice running). The numbers say how often each is suggested compared with the others; 0 = never. throat_bite = jaws on the throat, weight on the chest. trapped_arm = jaws pinning a paw or forearm to the stone while a forepaw or forearm bars the throat. tail_choke = tails or coils looped round the neck, paws on the shoulders (only fighters whose tail can coil). twisted_arm = an arm wrenched out straight and pinned. leg_tangle = both legs trapped. lifted_leg = one leg hooked and hauled up off the ground, folded back (kept rare). coil_crush = constriction as a pin: tails or coils wound round her chest and arms, bearing her down inside them (only fighters whose tail or body can coil; she goes out from the constriction). The throat-bite ideas above now also offer chokes with other limbs and jaws clamped on a limb. Change live with /pinshape.",
+    "_pin_shape_comment": "pin_shape_weights: when there is an opening for a pin, the director is handed one way to build it, so pins don't all look alike (never the same shape twice running). The numbers say how often each is suggested compared with the others; 0 = never. throat_bite = jaws on the throat, weight on the chest. trapped_arm = jaws pinning a paw or forearm to the stone while a forepaw or forearm bars the throat. tail_choke = tails or coils looped round the neck, paws on the shoulders (only fighters whose tail can coil). twisted_arm = an arm wrenched out straight and pinned. leg_tangle = both legs trapped. lifted_leg = one leg hooked and hauled up off the ground, folded back (kept rare). coil_crush = constriction as a pin: tails or coils wound round her chest and arms, bearing her down inside them (only fighters whose tail or body can coil; she goes out from the constriction). dunk = held face-down in the shallows, her head pushed under and let up again (only in an arena with shallow water; a choke by water, never drowning). The throat-bite ideas above now also offer chokes with other limbs and jaws clamped on a limb. Change live with /pinshape.",
     "pin_shape_weights": {
       "throat_bite": 3,
       "trapped_arm": 3,
@@ -963,7 +963,8 @@
       "lifted_leg": 1,
       "sleeper": 1,
       "wall_choke": 0.6,
-      "coil_crush": 2
+      "coil_crush": 2,
+      "dunk": 1
     },
     "_reposition_comment": "The director may roll a downed fighter over (or onto her back, front, side) or haul her up off the ground before an attack or during a pin. reposition_cooldown = beats before the same fighter can be moved again (your /roll ignores it).",
     "reposition_cooldown": 2,
@@ -1188,5 +1189,17 @@
     "pin_escape_cap": 1.45,
     "dodge_per_hit": 0.2,
     "dodge_cap": 1.5
+  },
+  "arena": {
+    "_comment": "How the arena takes part. water_dodge: dodge chance in the water, for a Water type (native_) and anyone else (other_), in shallow water and deep water (where the director last placed her: 'in the shallow pool', 'in the deep channel'). slip_chance: a fighter who dodges on slick footing (algae, wet stone, ice, mud, the shallows) may go down as she does it (a Water type in the water slips x slip_native_mult as often). shake_chance: a charge that slams her into a wall, a stalagmite, a pillar, a tree... may shake loose whatever the arena drops (its 'falls' event: a stalactite, a branch, debris), onto her, at the end of the beat.",
+    "water_dodge": {
+      "native_shallow": 1.25,
+      "native_deep": 1.6,
+      "other_shallow": 0.8,
+      "other_deep": 0.55
+    },
+    "slip_chance": 0.2,
+    "slip_native_mult": 0.4,
+    "shake_chance": 0.2
   }
 }

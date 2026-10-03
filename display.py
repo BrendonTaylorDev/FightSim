@@ -612,6 +612,10 @@ class Display:
             else:
                 out.append(f"💨 **{who} dodges** {owner} {mv} (dodge chance {a.get('dodge_chance', 0) * 100:.0f}%"
                            f"{way('dodge', a.get('manner'))})")
+            if a.get("slipped"):
+                out.append(f"🧊 **{who} slips** on the slick footing as she dodges and goes down"
+                           + (f" ({a['slipped'].get('facing')})" if a["slipped"].get("facing") else "")
+                           + ": the attack still misses her")
             if a.get("move"):
                 out.append(self.move_line(a["move"]) + " (no hit)")
             if a.get("counter_hits"):
@@ -678,6 +682,8 @@ class Display:
                              f"rest are the slam and the crush."
                            + (f" Wrapped in {ch['sheath']}, it never leaves her: {len(ch.get('drive_hits') or [])} more "
                               f"contacts while she is carried." if ch.get("sheath") else ""))
+            if ch and not ch.get("skipped") and ch.get("shook_loose"):
+                out.append("🪨 The slam shakes the arena: something is coming down (end of the beat)")
             if ch and not ch.get("skipped") and ch.get("onward"):
                 for st in ch["onward"]:
                     out.append(f"🐏 **The charge carries on** THROUGH {st['through']} into {st['into']} (slam power "

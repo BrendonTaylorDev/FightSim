@@ -986,6 +986,16 @@ class Engine:
                 self.pressed[d.name] = {"surface": last, "by": a.name}
         else:
             self.pressed[d.name] = {"surface": into, "by": a.name}
+        # a slam that hard shakes the arena: something may come down (arena.shake_chance; the arena's own event
+        # that drops something: a stalactite, a branch, debris), on her, at the end of the beat
+        shake = float((self.rules.get("arena") or {}).get("shake_chance", 0.2))
+        falls = [e for e in (self.scene_cfg.get("events") or []) if isinstance(e, dict)
+                 and re.search(r"fall|drop|collapse|come down|comes over|debris|icicle|branch", f"{e.get('name', '')} {e.get('text', '')}", re.I)]
+        if falls and shake > 0 and not getattr(self, "_forced_event", None) and re.search(
+                r"wall|stalagmite|pillar|column|boulder|tree|trunk|rock|cliff|pylon|beam|mast", out.get("last") or into, re.I) \
+                and self._chance(shake, f"the slam into {out.get('last') or into} shaking something loose", "something comes down", "no"):
+            self._forced_event = (self.rng.choice(falls), d.name)
+            out["shook_loose"] = True
         self.involved.update({a.name, d.name})
         self._count("charged", d.name)
         out["hits"] = (drive_hits + surface_hits + crush_hits + out["break_hits"]
@@ -1688,6 +1698,11 @@ class Engine:
             ch *= 1.3
         if self.has(a, "paralyzed"):
             ch *= 1.3
+        wet = self.in_water(d.name)
+        if wet:   # in the water a Water type is at home and everyone else is wading (arena.water_dodge)
+            wcfg = (self.rules.get("arena") or {}).get("water_dodge") or {}
+            native = "Water" in (d.types or [])
+            ch *= float(wcfg.get(("native_" if native else "other_") + wet, 1.0))
         if target == "spread":
             ch *= 0.5
         if getattr(self, "_chain_on", None) == (a.name, d.name):
@@ -1730,6 +1745,13 @@ class Engine:
         out = {"dodged": True, "dodge_chance": ch, "counter_hits": [], "manner": self.vary("dodge")}
         if forced:
             out["chain_broken"] = True
+        acfg = self.rules.get("arena") or {}
+        if self.on_slick(d.name) and d.name not in self.downed:
+            sp = float(acfg.get("slip_chance", 0.2)) * (float(acfg.get("slip_native_mult", 0.4))
+                                                         if "Water" in (d.types or []) and self.in_water(d.name) else 1.0)
+            if sp > 0 and self._chance(sp, f"{d.name} slipping as she dodges on the slick footing", "she slips", "she keeps her feet"):
+                out["slipped"] = {"facing": self.knock_down(d.name, why=f"{d.name} slipped as she dodged")}
+                return out      # she gets out of its way and goes down: no counter from the ground
         cfg = self._cfg("evasion")
         if not self.has(d, "flinched") and self._chance(float(cfg.get("counter_chance", 0.35)),
                                                          f"{d.name} countering after the dodge", "she counters",
@@ -3287,6 +3309,26 @@ class Engine:
                           r"knee-deep in|chest-deep in)\s+(?:the\s+|a\s+)?(?:[a-z-]+\s+){0,2}(?:pool|water|channel|"
                           r"shallows|stream|creek|rapids|sump|surf|spring|flooded \w+)|submerged|wading|swimming|"
                           r"half-submerged)\b", re.I)
+
+    DEEP = re.compile(r"\b(?:channel|deep|plunge pool|lake|rapids|creek|chest-deep|waist-deep|swimming|submerged)\b", re.I)
+    SLICK = re.compile(r"\b(?:algae|slick|slippery|wet stone|ice|icy|frozen|mud|muddy|moss|mossy|spray|oil)\b", re.I)
+
+    def _where(self, name):
+        """What the director last said about where this fighter is ("Ripples: in the shallow pool")."""
+        m = re.search(re.escape(name) + r"\s*:\s*([^;]*)", self.positions or "", re.I)
+        return m.group(1) if m else ""
+
+    def in_water(self, name):
+        """None, "shallow" or "deep": whether she is IN the water where she stands."""
+        where = self._where(name)
+        if not self.IN_WATER.search(where):
+            return None
+        return "deep" if self.DEEP.search(where) else "shallow"
+
+    def on_slick(self, name):
+        """Is she standing on slick footing (algae, ice, mud, wet stone)?"""
+        where = self._where(name)
+        return bool(self.SLICK.search(where) or (self.in_water(name) == "shallow"))
 
     def set_positions(self, text):
         """Store where the director says everyone is (posture is the engine's call: see positions_now). Anyone
