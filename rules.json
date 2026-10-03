@@ -1069,8 +1069,8 @@
     "initiative_min_strength": 35,
     "_pin_urge_comment": "How often there is an OPENING for a new pin on a fighter, rolled each beat before the director chooses (the director can only start a pin where there is one; your /commands and typed directions always can). standing: on her feet with at least weak_below % of her strength (rare, but a pin can come at any point). downed: knocked down, same strength. weak_standing / weak_downed: under weak_below % of her strength; these then climb toward max as she nears 0. helpless: asleep or frozen. When there is an opening and you just press Enter, the director is told to go for it.",
     "pin_urge": {
-      "standing": 0.06,
-      "downed": 0.3,
+      "standing": 0.1,
+      "downed": 0.4,
       "weak_below": 50,
       "weak_standing": 0.45,
       "weak_downed": 0.85,
