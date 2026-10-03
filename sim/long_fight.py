@@ -87,7 +87,7 @@ def run(seed, verbose=False):
         caps.append((tag, cap))
         tags.append(tag)
 
-    while beats < 40 and not s.over:
+    while beats < 60 and not s.over:
         beats += 1
         n, r = eng.get(N), eng.get(R)
         if eng.pin_on(R):

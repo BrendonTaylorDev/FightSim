@@ -670,10 +670,17 @@ After each beat's prose, the program prints the exact numbers in this format:
   to keep it in (a hiss, a bitten-off cry); worn down, a real scream and shaking; nearly spent, a raw scream that
   cracks, shaking she cannot stop, streaming eyes. One big reaction per fighter per beat; later blows that beat build
   on it. Never sobbing or weeping. 14 new story blocks for it. `narration.raw_reactions` false turns it off.
+- **No wild health swings** (`health.soft_cap`). A blow on a badly hurt part still costs a lot of health (its low
+  resistance sees to that), but health one hit costs past 5% of the fighter's own full health, and health everything
+  that lands on her in one beat costs past 12%, counts only at 30%. In a long test fight a five-blow pummel on a
+  destroyed chest had cost 855 health in one beat (half her health); across 60 fights at your settings the worst beat
+  is now about 155-365, and fights run about 40-50 beats. The stat block shows "softened from" on a hit it applies to.
+  `per_hit`, `per_beat`, `above`; `enabled` false = the old rule.
 - **Fixes found in a long stand-in fight:** a strike with a count on a fighter who could not be pummelled (standing,
   not held) landed every blow at full power; a nearly spent fighter in a pin was described as having "plenty of fight";
   blows on a pinned or downed fighter were told "nobody stays latched on"; the build-on-it reaction named "the same
-  hurt" when it was a different part.
+  hurt" when it was a different part; a charge that carried on through what it broke listed the second slam as part of
+  the first hit in the stat block.
 - **sim/**: run scripted fights on the real engine without Ollama (`python sim/long_fight.py 7`): every roll is the
   engine's; the narrator's prompts can be saved to read.
 

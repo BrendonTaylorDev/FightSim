@@ -424,7 +424,8 @@ class Engine:
         # health lost: damage x loss_per_damage_point x the bracket's health_mult (a soft, worn-down part costs more)
         # x how much the part matters to the whole body (health.part_weights: a throat far more than an ear)
         vital = self.part_weight(p.name)
-        health_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital
+        raw_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital
+        health_loss = self._soften_loss(defender, raw_loss)
         defender.health = self._floor(hp_b - health_loss)
 
         pain_a = tier_for(p.damage, pain_tiers(r))
@@ -447,6 +448,7 @@ class Engine:
             "damage_before": round(dmg_b, 2), "damage_after": round(p.damage, 2),
             "res_before": round(res_b, 2), "res_after": round(p.resistance, 2),
             "health_mult": hmult, "vital": vital, "health_loss": round(health_loss, 2),
+            "health_raw": round(raw_loss, 2), "softened": round(raw_loss - health_loss, 2) > 0.01,
             "health_before": round(hp_b, 2), "health_after": round(defender.health, 2),
             "max_health": defender.max_health,
             "pain_tier": pain_a["label"],
@@ -455,6 +457,23 @@ class Engine:
             "health_tier": htier_a["label"],
             "health_tier_changed": htier_a["label"] != htier_b["label"],
         }
+
+    def _soften_loss(self, defender, raw):
+        """health.soft_cap: a hit on a ruined part costs a lot of health, but no single blow and no single beat swings
+        wildly. Health lost past per_hit (a share of HER OWN full health) by one hit, and past per_beat by everything
+        that lands on her in one beat, counts at `above` (0.3 = 30%). Smooth: nothing changes below the limits."""
+        cfg = self.rules.get("health", {}).get("soft_cap") or {}
+        if not cfg.get("enabled", True) or raw <= 0 or not defender.max_health:
+            return raw
+        k = max(0.0, min(1.0, float(cfg.get("above", 0.3))))
+        squash = lambda x, cap: x if cap <= 0 or x <= cap else cap + (x - cap) * k
+        loss = squash(raw, float(cfg.get("per_hit", 0.05)) * defender.max_health)
+        tally = self.__dict__.setdefault("beat_loss", {})
+        before = tally.get(defender.name, 0.0)
+        cap = float(cfg.get("per_beat", 0.12)) * defender.max_health
+        out = squash(before + loss, cap) - squash(before, cap)
+        tally[defender.name] = before + loss
+        return out
 
     def part_weight(self, part_name):
         """How much a part matters to overall health (health.part_weights): a word in its name decides first (the
@@ -499,6 +518,7 @@ class Engine:
                               self.tally, self.rng.getstate()))
 
     def restore_state(self, snap):
+        self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
         (self.fighters, self.holds, self.next_hold_id, self.turn, self.involved,
          self.pins, self.positions, self.downed, self.since_pin, self.momentum, self.move_log, self.last_pin_end,
          self.injury_log, self.plan, self.facing, self._last_reposition, self._fresh_down, self._fresh_status,
@@ -3028,6 +3048,7 @@ class Engine:
         self.pin_window = {}  # openings are rolled fresh for every beat
         events.append({"type": "time_passes", "beat": self.turn, "fighters": fighters})
         self.involved = set()
+        self.beat_loss = {}   # health.soft_cap counts each beat on its own
         return events
 
     advance_turn = beat

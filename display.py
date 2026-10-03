@@ -152,7 +152,8 @@ class Display:
                 if "health_loss" in h:
                     out.append(f"        health      {pad(hp)}   -{num(h['health_loss'])} = damage "
                                f"{num(h['damage_taken'])} × {num(hpd)} × {num(h['health_mult'])}"
-                               + (f" × vital {num(h['vital'])}" if h.get("vital", 1.0) != 1.0 else ""))
+                               + (f" × vital {num(h['vital'])}" if h.get("vital", 1.0) != 1.0 else "")
+                               + (f" (softened from {num(h['health_raw'])})" if h.get("softened") else ""))
         out += ["", foot]
         return out
 
