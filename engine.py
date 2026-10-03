@@ -773,6 +773,7 @@ class Engine:
             return self._self_move(a, d, move, flavor, energy_before)
         guard = self._guarded(a, d, move)
         if guard:
+            guard["flavor"] = flavor
             return guard
         if target == "status":  # no damage: the move's effects either land or the target dodges
             dodge = self.dodge_roll(a, d, "targeted") if enforce else None
@@ -2481,6 +2482,8 @@ class Engine:
                         tumble=(tumble if tumble is not None else None if enforce else False) if kind == "throw" else False)
         if kind == "drag":
             self._count("dragged", d.name)
+            if d.name in self.downed:
+                self._fresh_down.add(d.name)   # hauled across the ground: she can't be getting up this same beat
         res.update({"manhandle": kind, "launch": {"throw": "thrown", "slam": "slammed", "drag": "dragged"}[kind],
                     "energy": [round(before), round(a.energy)], "told": flavor, "was_down": down,
                     "knock_on": pre + list(res.get("knock_on") or [])})
