@@ -1,5 +1,8 @@
 # Nocturne vs. Sleek Ripples — the sea cave (simulation, seed 11)
 
+> **Superseded:** this run is from early in build 113, before the pin pressure cap, the health soft cap and the
+> change that keeps pummels out of pins. See `seed10_transcript.txt` for the current build.
+
 Build 113 (in progress). I played the director with the moves below. The engine rolled everything else: dodges,
 how long each pummel ran, grip breaks, get-ups, the pin, and why she went out. I wrote the narration from the
 narrator's real notes for each beat.

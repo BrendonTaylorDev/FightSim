@@ -8,7 +8,7 @@ import long_fight
 import play
 
 DROP = re.compile(r"^\s*\[(checking the draft|something is missing|still wrong|the beat came out short|big moment: writing|"
-                  r"writing \d+ paragraphs? again|the passage never showed|narrator is writing more|.* adding the moment)|"
+                  r"writing \d+ paragraphs? again|the passage never showed|narrator is writing more|.* adding the moment|trimmed older story context)|"
                   r"^⏱ This beat took")
 
 
@@ -23,7 +23,11 @@ def splice(out, prose):
     lines = [l for l in out.split("\n") if not DROP.search(l)]
     marks = [i for i, l in enumerate(lines) if "Placeholder prose" in l or l.startswith(("Ripples' struggles faded",))]
     if not marks:
-        return "\n".join(lines)
+        # the placeholder was cut by the checks: the prose goes where the program prints it, just above the stats
+        cut = next((i for i, l in enumerate(lines) if l.strip() == "-" * 40), len(lines))
+        while cut > 0 and not lines[cut - 1].strip():
+            cut -= 1
+        return "\n".join(lines[:cut] + ["", prose or "(no prose)", ""] + lines[cut:])
     a, b = marks[0], marks[-1]
     return "\n".join(lines[:a] + [prose or "(no prose)"] + lines[b + 1:])
 
