@@ -78,6 +78,7 @@ ANSWERS = {
 
 def run(seed, verbose=False):
     answers = {R: 0, N: 0}
+    rests = [0]
     s = session(seed, settings=SETTINGS)
     eng = s.eng
     log, caps, tags = [], [], []
@@ -116,7 +117,8 @@ def run(seed, verbose=False):
             # she has to catch her breath (or get up): the other one gets the beat, if she has anything to do it with
             other = R if who == N else N
             o = eng.get(other)
-            if other not in eng.downed and o.energy >= 20 and not eng.pinned_by(other):
+            rests[0] += 1
+            if rests[0] % 2 == 1 and other not in eng.downed and o.energy >= 20 and not eng.pinned_by(other):
                 for acts in ANSWERS[other][answers[other] % len(ANSWERS[other]):] + ANSWERS[other]:
                     try:
                         play(acts, f"{other.lower()} presses")

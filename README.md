@@ -647,9 +647,17 @@ After each beat's prose, the program prints the exact numbers in this format:
   `moves.charge.sheath` (`power` 0.25 of the main hit, on `parts` 3 round it; power 0 = off).
 - **Aqua Jet costs 40 energy** (48 with the charge into something; it was 18). Twice in a row leaves Ripples winded
   even with a beat of rest between. Set `"energy"` on the move in fighters.json to change it.
-- **Pummels anywhere close.** Short blows thrown again and again (a strike with a count) now work from ON TOP in a
-  pin, on a fighter who is DOWN (lying or sitting), and on one still PRESSED AGAINST the scenery after a charge, not
-  only inside a standing grab. The stat block and the narrator say where.
+- **Pummels anywhere close.** Short blows thrown again and again (a strike with a count) now work on a fighter who is
+  DOWN (lying or sitting, not pinned), and on one still PRESSED AGAINST the scenery after a charge, not only inside a
+  standing grab. The stat block and the narrator say where. Inside a pin they are off by default (a pin holds her;
+  it doesn't rain blows): `grapple.pummel_in_pin` true allows the director to do it; your own commands always can.
+- **Pins wear her down; they don't wreck her** (`pin.pressure_cap`). A pin's steady pressure, and the extra press
+  that punishes a failed struggle, no longer bite into a worn-down part as hard as a blow does: they never use more
+  than ×0.45 damage (`mult`, as if the part were only sturdy) and ×1.0 health (`health_mult`), however ruined the
+  part is. Before, a forepaw on a destroyed stomach did about 99% damage and ~86 health a pin beat at `/scale 5`
+  (a fighter could end a pin at −875%); now it is about a quarter of that, and presses on healthy parts are
+  unchanged. `/pinpower` is still the overall dial on top. Blows thrown during a pin (techniques, the escape hit)
+  are not capped. The stat block marks a capped press "(pin cap)". `enabled` false brings back the old rule.
 - **Each blow of a pummel and each link of a chain picks its own spot.** After the first, the dice decide whether it
   lands on the same part again or somewhere new (usually right next to it). Parts you name (in a /command, or in a
   direction you type) are kept as you said. `moves.repeat_target` (`stay_chance` 0.5, `near_share` 0.7). The
@@ -662,6 +670,10 @@ After each beat's prose, the program prints the exact numbers in this format:
   to keep it in (a hiss, a bitten-off cry); worn down, a real scream and shaking; nearly spent, a raw scream that
   cracks, shaking she cannot stop, streaming eyes. One big reaction per fighter per beat; later blows that beat build
   on it. Never sobbing or weeping. 14 new story blocks for it. `narration.raw_reactions` false turns it off.
+- **Fixes found in a long stand-in fight:** a strike with a count on a fighter who could not be pummelled (standing,
+  not held) landed every blow at full power; a nearly spent fighter in a pin was described as having "plenty of fight";
+  blows on a pinned or downed fighter were told "nobody stays latched on"; the build-on-it reaction named "the same
+  hurt" when it was a different part.
 - **sim/**: run scripted fights on the real engine without Ollama (`python sim/long_fight.py 7`): every roll is the
   engine's; the narrator's prompts can be saved to read.
 
