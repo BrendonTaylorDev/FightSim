@@ -122,7 +122,10 @@ Craft:
   "And the pin held."), and never string one-word sentences together for effect ("Firm. Unbreakable. Complete.").
   One short line lands; three in a row are a tic. Each paragraph tells something the one before did not.
 - PROPORTION: a light hit gets a wince and a line; only the worst gets a cry and a long passage. If every blow is
-  shattering, none is.
+  shattering, none is. A blow on a part that is ALREADY badly hurt hurts far more than the same blow on a fresh part,
+  and its note says how raw the reaction is: a fighter with most of her strength fights to keep it in; one who is
+  spent cannot. A brush on a ruined part is less than a real blow there. Screams, shaking and streaming eyes are
+  allowed when the note asks; sobbing and weeping are not.
 - CLEVERNESS: a fighter with no good options thinks; she uses the arena, her species' body (a flotation sac,
   a tail, a coil), and her opponent's injuries. Show the idea forming, then the attempt.
 - Concrete physical detail: exactly where contact lands, weight, grip, texture, temperature, sound, breath,
@@ -1551,7 +1554,7 @@ class Narrator:
                        "a stunned half-second of silence, then a ragged cry", "a sound that is more shock than pain",
                        "mouth wide open in a silent scream, eyes squeezed shut",
                        "a shriek that breaks off into a wheeze", "the head thrown back, a raw cry at the sky",
-                       "every limb going rigid for a heartbeat, then a sob of breath",
+                       "every limb going rigid for a heartbeat, then a ragged gulp of breath",
                        "a keening whine through clenched teeth, tears starting",
                        "the back arching off the blow, a cry with no air behind it"],
     }
@@ -1616,7 +1619,7 @@ class Narrator:
     def _feel(self, res):
         return tier_for(res, self.rules["resistance"]["brackets"]).get("feel", "")
 
-    def _hit_line(self, h, n=None):
+    def _hit_line(self, h, n=None, how=None):
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
         self._tiers_used.add(after["label"])
         change = (f"lasting pain {before['label']} → {after['label'].upper()}" if before["label"] != after["label"]
@@ -1635,10 +1638,72 @@ class Narrator:
         impact = self._impact(h["damage_taken"], seed)
         if after["label"] == "numb with shock" and before["label"] == "numb with shock":
             impact = "a dull, sickening jolt she barely feels as pain, then a lurch of nausea and shallow breath"
+        raw = self._raw_reaction(h, before["label"])
+        if raw:
+            impact = raw
+        if how:
+            # not a blow: something that stays on her and keeps working (the water of a charge that carries her)
+            return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
+                    f"{how}, {self._strength_key(h['damage_taken'])} in size"
+                    + (f" ({raw})" if raw else "") + f"; {change}{tough}.")
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
                 f"{self._strength(h['damage_taken'])} blow "
                 f"(impact, e.g. {impact}; a hit here shows as "
                 f"{self._region_tell(h['part'])}); {change}{tough}.")
+
+    # a blow on a part that was ALREADY badly hurt. Three things set how raw the reaction is: how hurt the part was
+    # (very painful < excruciating < devastated), how big THIS blow is (a brush on a ruined part still hurts, but far
+    # less than a real blow there), and how much she has left overall. A fighter with most of her strength does her
+    # best to keep it in; only a fighter who is nearly spent has nothing left to hold it in with.
+    RAW_LEVELS = [
+        ("contained", "it hurts far more than a blow like that should, because the part was already hurt: a sharp hiss "
+                      "through her teeth, the part snatched away from it, a flinch she cannot hide, then she sets her "
+                      "jaw and keeps it in"),
+        ("cry", "a cry she cannot keep in, bitten off as soon as it is out; the part jerked away, a hard shudder through "
+                "her, and she makes herself go on, which costs her and shows"),
+        ("scream", "a real scream, her whole body jerking round the hurt part; she shakes afterwards, her breath comes in "
+                   "ragged pulls, and it is a moment before she can do anything at all"),
+        ("raw", "a raw scream that cracks in the middle, all of her clenching round the hurt; shaking she cannot stop, "
+                "eyes streaming, a long moment where there is nothing in her head but that part"),
+    ]
+
+    def _raw_reaction(self, h, before_label):
+        """The impact note for a real blow on a part that was already very painful or worse, or None (the ordinary
+        note stands). narration.raw_reactions false turns it off."""
+        ncfg = self.rules.get("narration", {})
+        if not ncfg.get("raw_reactions", True) or before_label not in ("very painful", "excruciating", "devastated"):
+            return None
+        who = h["defender"]
+        size = self._strength_key(h["damage_taken"])
+        part_score = {"very painful": 0, "excruciating": 1, "devastated": 2}[before_label]
+        size_score = {"glancing": -2, "solid": 0, "heavy": 1, "tremendous": 2}[size]
+        left = float((getattr(self, "strengths", None) or {}).get(who, 100))
+        cond_score = 0 if left >= 60 else 1 if left >= 30 else 2
+        level = max(0, min(3, (part_score + size_score + 2 * cond_score + 1) // 2))
+        # overall strength caps it: a fighter who still has most of her strength holds it in, a middling one can
+        # scream but not come apart, only a spent one has the rawest reactions
+        level = min(level, 1 + cond_score)
+        if size == "glancing":
+            level = min(level, 1)
+        done = self._raw_done.get(who)
+        if done is not None:
+            # the first raw blow this beat had its moment: later ones on her build on it instead of each getting a
+            # fresh scream, so a beat never becomes a string of them
+            return (f"the same hurt struck again before the last has faded; it adds to what is already happening to "
+                    f"her (a fresh jolt through the shaking, the sound she is making catching and going higher) "
+                    f"rather than a whole new reaction")
+        self._raw_done[who] = level
+        name, text = self.RAW_LEVELS[level]
+        lead = {"glancing": "only a brush, on a part that is already "
+                            f"{before_label}: smaller than a full blow there would be, but ",
+                "solid": f"a real blow on a part that was already {before_label}: ",
+                "heavy": f"a heavy blow on a part that was already {before_label}: ",
+                "tremendous": f"a tremendous blow on a part that was already {before_label}: "}[size]
+        held = (" She still has most of her strength, so she fights to keep it in, and mostly does." if cond_score == 0
+                else " She is too worn to hold all of it in." if cond_score == 1
+                else " She has almost nothing left to hold it in with.")
+        return (lead + text + "." + held + " It is pain, nothing more: nothing breaks or tears unless listed, she "
+                "stays conscious, and there is no sobbing or weeping")
 
     def _pressure_line(self, h, with_=""):
         """One compact line per pin/hold contact, so long pins don't drown the beat in repetition."""
@@ -1678,6 +1743,7 @@ class Narrator:
         self._hurt_now = set()
         self._strike_parts = []
         self._linger_pool = []
+        self._raw_done = {}         # fighter -> the raw reaction already asked for this beat (one big one per beat)
         self._getup_tries = None
         self._getup_who = None
         self._getup_event = None
@@ -1965,20 +2031,33 @@ class Narrator:
             lines.insert(0, head)
         if a.get("pummel"):
             self._chain_beat = True
-            n = a["pummel"]["count"]
-            lines.append(f"  - A PUMMEL: {n} short blows of the same move, one after another at no distance, with no room "
+            pm = a["pummel"]
+            n = pm["count"]
+            where = pm.get("where") or "grab"
+            lie = {"face-down": "face-down", "face-up": "on her back", "on her side": "on her side",
+                   "sitting up": "sitting"}.get(pm.get("lying") or "", "on the ground")
+            place = {"grab": ("at no distance, inside the grab", "in the grip", "the grab is still on"),
+                     "pin": (f"rained down from on top, inside the pin: {att} stays on her and {dfn} is pinned under "
+                             f"every one", "under the weight", "the pin is still on"),
+                     "against": (f"with {dfn} still pressed against {pm.get('against') or 'the scenery'}, nowhere to go "
+                                 f"and nothing to give with", f"against {pm.get('against') or 'it'}",
+                                 f"she is still against {pm.get('against') or 'it'}"),
+                     "down": (f"on {dfn} where she is down ({lie}), {att} over her or down beside her", "where she lies",
+                              "she is still down"),
+                     }.get(where)
+            lines.append(f"  - A PUMMEL: {n} short blows of the same move, one after another, {place[0]}, with no room "
                          f"to wind up; each is lighter than one full blow would be. Tell it as a flurry of {n} (that "
                          f"count is right), not as one big hit."
-                         + {"spoiled": f" It stops when {dfn} twists enough in the grip to spoil the next one: she turns "
-                                       f"the struck part away or gets a limb in the road. She is NOT free, the grab is "
-                                       f"still on, and nothing lands on {att}.",
+                         + {"spoiled": f" It stops when {dfn} twists enough {place[1]} to spoil the next one: she turns "
+                                       f"the struck part away or gets a limb in the road. She is NOT free, {place[2]}, "
+                                       f"and nothing lands on {att}.",
                             "out of breath": f" It stops because {att} has to breathe: the last blow comes slower than "
-                                             f"the first, and she holds on, heaving, with the grab still on.",
+                                             f"the first, and she stays where she is, heaving; {place[2]}.",
                             "limit": f" It stops only when {poss(att)} arm will not lift for another.",
                             "answered": f" It is NOT one-sided to the end: {dfn} takes the blows and then ANSWERS, one "
-                                        f"short blow of her own from inside the grip, and that is what stops it (listed "
-                                        f"below). She is NOT free; the grab is still on.",
-                            }.get(a["pummel"].get("ended") or "", ""))
+                                        f"short blow of her own from where she is, and that is what stops it (listed "
+                                        f"below). She is NOT free; {place[2]}.",
+                            }.get(pm.get("ended") or "", ""))
             if a["pummel"].get("answer"):
                 lines.append(f"  - {poss(dfn)} answering blow lands on {att} (a paw, an elbow, her head: whatever she can "
                              f"reach with from where she is held):")
@@ -2275,13 +2354,36 @@ class Narrator:
             elif a.get("charge") and not a["charge"].get("skipped"):
                 ch = a["charge"]
                 first = a["hits"][:len(a["hits"]) - len(ch["hits"])]
+                sh = ch.get("sheath")
                 lines.append(f"  - The charge connects:")
                 lines += [self._hit_line(h, i + 1 if len(first) > 1 else None) for i, h in enumerate(first)]
-                lines.append(f"  - It is a CHARGE THAT DOESN'T STOP at the hit: {a['attacker']} keeps driving {a['defender']} "
-                             f"backward for {ch['distance']}, her feet scrabbling, and SLAMS her into {ch['into']}. Her "
-                             f"back takes {ch['into']}:")
+                if sh:
+                    lines.append(f"  - CONTACT NEVER BREAKS: {a['attacker']} is still wrapped in {sh} and still against "
+                                 f"{a['defender']} from the first hit to the end of the move. She is carried INSIDE it "
+                                 f"backward for {ch['distance']}, and all the way the {sh} keeps working on her: "
+                                 f"pressing, stinging, scouring at the struck part and round it, not letting up while "
+                                 f"the move lasts. There is no gap and no second strike: {a['attacker']} never pulls "
+                                 f"back, never lands again, never overtakes her. While she is carried:")
+                    work = {"water": "the water pressing, stinging and scouring at it the whole way",
+                            "fire": "the fire searing and licking at it the whole way",
+                            "electricity": "the current biting and crawling through it the whole way"
+                            }.get(sh, f"the {sh} working at it the whole way")
+                    lines += [self._hit_line(h, how=work) for h in ch.get("drive_hits") or []]
+                    lines.append(f"  - Still inside the {sh}, still being driven, {a['defender']} is SLAMMED into "
+                                 f"{ch['into']}. Her back takes {ch['into']}:")
+                else:
+                    lines.append(f"  - It is a CHARGE THAT DOESN'T STOP at the hit: {a['attacker']} keeps driving {a['defender']} "
+                                 f"backward for {ch['distance']}, her feet scrabbling, and SLAMS her into {ch['into']}. Her "
+                                 f"back takes {ch['into']}:")
                 lines += [self._hit_line(h) for h in ch["surface_hits"]]
-                if ch["crush_hits"]:
+                if ch["crush_hits"] and sh:
+                    lines.append(f"  - In the same instant the full weight of {poss(a['attacker'])} charge, {sh} and "
+                                 f"body together, crushes into her front where it has been the whole time (the SAME "
+                                 f"contact still pushing, not a new hit): {a['defender']} is pressed hard between it "
+                                 f"and {ch['into']} with nowhere to go, the {sh} still pouring over her, until the move "
+                                 f"is spent:")
+                    lines += [self._hit_line(h) for h in ch["crush_hits"]]
+                elif ch["crush_hits"]:
                     lines.append(f"  - In the same instant {poss(a['attacker'])} own body crushes against her front: "
                                  f"{a['defender']} is pressed hard between {a['attacker']} and {ch['into']}, held there "
                                  f"for a long moment with nowhere to go:")
@@ -3853,7 +3955,14 @@ class Narrator:
             near = next((p for t2, p, _, _, j in mine if j == i and p != part), None)
             if near and not whole:
                 add("how it spreads", B.pick("travel", 1, fmt={"part": part.lower(), "next": near.lower()}))
-            add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who)))
+            raw = (getattr(self, "_raw_done", None) or {}).get(who)
+            if raw is not None:
+                # a blow on a part that was already badly hurt: a reaction as raw as she can no longer keep in
+                add(f"a reaction of that size from {who}", B.pick(
+                    "raw", 1, fmt={"part": part.lower()}, raw=self.RAW_LEVELS[raw][0], has=feats(who))
+                    + B.pick("reaction", 1, size=self._strength_key(taken), has=feats(who)))
+            else:
+                add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who)))
             mind(who, "receiver", by)
             if who not in (getattr(self, "pinned_now", None) or ()):
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))

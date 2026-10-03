@@ -91,14 +91,14 @@ she shakes her head hard, twice, as if to throw the hurt off
 her claws scrape the ground for grip she did not need a moment ago
 her breath comes back in pieces, three short pulls
 tears start and she lets them, too busy to care
-a sound between a sob and a snarl
+a sound between a whine and a snarl
 her hind end drops a hand's width and locks | has: forelegs
 
 == reaction | size: tremendous
 mouth wide open in a silent scream, eyes squeezed shut
 a shriek that breaks off into a wheeze
 the head thrown back, a raw cry at the sky
-every limb going rigid for a heartbeat, then a sob of breath
+every limb going rigid for a heartbeat, then a ragged gulp of breath
 a keening whine through clenched teeth, tears starting
 the back arching off the blow, a cry with no air behind it
 a scream that cracks, drops, and comes back as a whimper
@@ -212,7 +212,7 @@ her {part} barely answers her; when it does, the answer is a broken whimper
 her {part} hangs and trembles, and every touch on it tears a cry out of her
 there is nothing left in her {part} to fight with, only the hurt
 her {part} has given everything it had and now it only shakes
-the lightest brush on her {part} and her whole body flinches away, sobbing
+the lightest brush on her {part} and her whole body flinches away, a thin sound forced out of her
 her {part} feels like one bruise from skin to core, swollen, hot and useless for anything but pain
 she keeps her {part} utterly still and it hurts as if she were shaking it
 her {part} quivers like something that has run too far
@@ -1028,7 +1028,7 @@ a cry so raw it leaves her throat sore
 she writhes, the hurt part held still and everything else twisting round it
 her eyes roll up for an instant and come back, glassy and wet
 both paws fly to the place and hover, afraid to touch it | has: arms
-she sobs once, loud, and bites down on the second
+a cry tears out of her once, loud, and she bites down on the second
 her whole frame locks, shaking, like a bowstring at full draw
 a shriek that echoes back at her and makes her flinch again
 tears pour; she is not crying, her eyes simply will not stop
@@ -1400,3 +1400,30 @@ each one starts where the last one ended, with no drawing back
 she turns her wrist over at the end of each, for want of room to swing
 the rhythm is quick and ugly, like someone beating a rug
 she leans her forehead in close and works by feel
+
+# ---------------------------------------------------------------------------------------------------------------
+# RAW: a blow on a part that was ALREADY badly hurt (build 113). How raw is set by the program from how hurt the
+# part was, how big the blow is, and how much strength she has left: contained (she still has most of her strength
+# and keeps it in), cry, scream, raw (nearly spent). Pain only: nothing breaks, no sobbing.
+# ---------------------------------------------------------------------------------------------------------------
+== raw | raw: contained
+her jaw locks on the sound so hard it comes out through her nose as a thin whine, and stops there
+the {part} jerks back from it on its own and she drags it back into place, breathing through her teeth
+for a heartbeat her whole face goes tight and white round the eyes; then she makes it go smooth again
+a hiss that she cuts off halfway, as if the rest of it were something she refused to give away
+
+== raw | raw: cry
+the cry is out before she can stop it, short and high, and she shuts her mouth on the end of it
+she snatches the {part} in against her body and a shudder runs from it right through her
+a yelp that cracks, and then she is breathing hard and fast through it, refusing to make another
+
+== raw | raw: scream
+a scream, a real one, and her whole body bends round the {part} as if it could shield it from what already happened
+she shakes after it, small fast tremors she cannot stop, all down the side of her that holds the {part}
+for a moment she cannot see her opponent at all: there is only the {part}, and her own voice ringing off the stone
+
+== raw | raw: raw
+the scream cracks in the middle and comes back thinner, and she has no breath left to finish it
+every part of her clenches round the {part} at once, and the shaking that follows will not stop
+her eyes stream and she cannot blink them clear; there is nothing in her head but the {part} and the next breath
+a raw, broken sound goes on longer than she means it to, and stopping it costs her everything she has left

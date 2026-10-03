@@ -603,7 +603,9 @@ class Display:
             out.append(f"⚔️ **{a['attacker']} → {a['defender']}**: {a.get('flavor', '')}")
             if a.get("pummel"):
                 pm = a["pummel"]
-                out.append(f"👊 Pummel in the grab: {pm['count']} short blows, each ×{pm['each']:g} of one full blow "
+                where = {"grab": "in the grab", "pin": "from on top, in the pin", "down": "on her where she is down",
+                         "against": f"against {pm.get('against') or 'the scenery'}"}.get(pm.get("where") or "grab", "in the grab")
+                out.append(f"👊 Pummel {where}: {pm['count']} short blows, each ×{pm['each']:g} of one full blow "
                            f"(power {num(pm['power'])} each)"
                            + {"spoiled": " — it ends when she twists enough to spoil the next one",
                               "out of breath": " — it ends when the attacker has to breathe",
@@ -611,7 +613,7 @@ class Display:
                               "answered": " — it ends when the one being hit ANSWERS with a blow of her own"
                               }.get(pm.get("ended") or "", ""))
                 if pm.get("answer"):
-                    out.append(f"↩️ **{a['defender']} answers from inside the grab:**")
+                    out.append(f"↩️ **{a['defender']} answers{' from inside the grab' if (pm.get('where') or 'grab') == 'grab' else ''}:**")
                     out += self.hits_block(a["attacker"], pm["answer"])
             if a.get("point_blank"):
                 out.append(f"- (point-blank: {a['point_blank']} has hold of her opponent, so no dodge either way)")
@@ -625,7 +627,10 @@ class Display:
             if ch and ch.get("skipped"):
                 out.append(f"- (no charge into {ch['into']}: {ch['skipped']})")
             elif ch and self.layout() != "classic":
-                out.append(f"🐏 **Charge** {ch['distance']} into {ch['into']}: slam power {num(ch['slam_power'])}, then "
+                out.append(f"🐏 **Charge** {ch['distance']} into {ch['into']}: "
+                           + (f"carried inside the {ch['sheath']} the whole way ({len(ch.get('drive_hits') or [])} more "
+                              f"contacts), " if ch.get("sheath") else "")
+                           + f"slam power {num(ch['slam_power'])}, then "
                            f"{a['attacker']}{chr(39) if a['attacker'].endswith('s') else chr(39) + 's'} body crushes her "
                            f"against it"
                            + (f" — **{ch['into']} BREAKS**" + (", and the charge goes on" if ch.get("onward") else
@@ -642,7 +647,9 @@ class Display:
                                                                    + (f" ({ch['facing']})" if ch.get("facing") else ""))
                               if ch.get("went_through", ch["broke"]) else " — she is pressed against it, still up")
                            + f". The first {n_first} line{'s' if n_first != 1 else ''} below are the charge itself; the "
-                             f"rest are the slam and the crush.")
+                             f"rest are the slam and the crush."
+                           + (f" Wrapped in {ch['sheath']}, it never leaves her: {len(ch.get('drive_hits') or [])} more "
+                              f"contacts while she is carried." if ch.get("sheath") else ""))
             if ch and not ch.get("skipped") and ch.get("onward"):
                 for st in ch["onward"]:
                     out.append(f"🐏 **The charge carries on** THROUGH {st['through']} into {st['into']} (slam power "
@@ -664,6 +671,7 @@ class Display:
             if ch and not ch.get("skipped"):
                 tags.update({id(h): f"slam: {ch['into']}" for h in ch.get("surface_hits", [])})
                 tags.update({id(h): "crush" for h in ch.get("crush_hits", [])})
+                tags.update({id(h): f"carried inside the {ch['sheath']}" for h in ch.get("drive_hits", [])})
                 tags.update({id(h): f"{ch['into']} breaks" for h in ch.get("break_hits", [])})
                 tags.update({id(h): "the charge" for h in a["hits"] if id(h) not in tags})
             if a.get("sustain"):

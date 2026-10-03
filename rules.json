@@ -88,7 +88,12 @@
       "carry_on_chance": 0.35,
       "carry_on_power": 0.75,
       "carry_on_energy": 4,
-      "max_obstacles": 3
+      "max_obstacles": 3,
+      "_sheath_comment": "A charge wrapped in its element (Aqua Jet, Wave Crash, Flame Wheel, Flare Blitz, Spark, Wild Charge, Volt Tackle...: \"sheathed\": true in moves.json, or the move's description says so) never leaves her between the hit and the slam: the water, fire or current stays on her the whole way back and keeps working on the struck part and the parts round it. power: each of those extra contacts as a share of the struck part's hit (times the distance); parts: how many parts round the struck one it reaches. power 0 = off.",
+      "sheath": {
+        "power": 0.2,
+        "parts": 2
+      }
     },
     "_auto_spill_comment": "A targeted strike that names only one body part also jars the parts right next to it (a jaw strike catches the muzzle and neck). parts = how many neighbors; factor = their power as a share of the move's base power. Set parts to 0 to turn it off.",
     "auto_spill": {
@@ -452,6 +457,8 @@
     "story_state": true,
     "_turning_comment": "turning_point_length: a turning point (a fighter pinned for the first time, a pin broken after it had begun to tell, the pressing changing hands) and the beat that ends the fight are given this many times the usual words. Ordinary beats are never shortened. 1 turns it off.",
     "turning_point_length": 1.3,
+    "_raw_reactions_comment": "raw_reactions: when a real blow lands on a part that was ALREADY very painful, excruciating or devastated, the narrator is told to make the reaction visceral, scaled by how hurt the part was, how big the blow is (a brush on a ruined part is far less than a real blow there) and how much strength she has left: most of her strength = she fights to keep it in (a hiss, a bitten-off cry); middling = a real scream and shaking; nearly spent = a raw scream that cracks, shaking she can't stop, streaming eyes. One big reaction per fighter per beat; later blows that beat build on it. Never sobbing. false = off.",
+    "raw_reactions": true,
     "_blocks_comment": "Story building blocks (story_blocks.txt): a large file of ideas (reactions, sensations, how a hurt spreads, breath, what an opponent can see of an injury, ways to stage a move, thoughts, feelings, takedowns, pins, getting up, landings, aftermath). Before each part of a beat the program offers the narrator up to per_part of them that FIT the fight as it stands (the size of the blow, how much each part hurts now, who is fresh or spent, what her body has), preferring the least-offered and never one offered in the last cooldown_beats beats. They are suggestions to reword, never new events. remember: what was offered is kept between fights in blocks_memory.json. /blocks shows the counts; /blocks off turns them off.",
     "blocks": {
       "enabled": true,
@@ -893,7 +900,7 @@
     "chain": {
       "break_start": 0.1,
       "break_step": 0.12,
-      "hard_cap": 6
+      "hard_cap": 0
     },
     "_target_variety_comment": "target_variety: with no /focus set, the chance that a blow aimed at a region this attacker has just been hitting is moved to a part she has left alone (the less hurt, the likelier), and the chance per beat that the director is reminded what has not been touched yet. 0 = off.",
     "target_variety": 0.35
@@ -1003,7 +1010,7 @@
     "pummel_max": 0,
     "energy_per_extra_hit": 3,
     "_pummel_comment": "A pummel (the same close move thrown again and again inside a grab) has no fixed length: after the second blow every further one may be the last. The chance that it ends starts at pummel_end_start and grows by pummel_end_step per blow; a tired attacker ends it sooner and a fresh defender spoils it sooner (both fighters' strength count), and it also ends when the attacker runs out of breath. pummel_hard_cap is a distant limit (0 = none). pummel_max: a fixed limit if you want one (0 = none; 4 was the old rule). A pummel is usually one-sided: the held fighter only takes it. pummel_answer_chance: of the pummels she manages to spoil (about half of them), how often she does it by landing a short blow of her own on the one working on her (0.5 = about one pummel in four is answered; 0 = never).",
-    "pummel_hard_cap": 10,
+    "pummel_hard_cap": 0,
     "pummel_end_start": 0.25,
     "pummel_end_step": 0.1,
     "pummel_answer_chance": 0.5

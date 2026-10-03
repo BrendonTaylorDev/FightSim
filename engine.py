@@ -746,7 +746,10 @@ class Engine:
                 n -= 1
             a.energy = max(0.0, a.energy - extra * (n - 1))
             plan, powers = [names[0]] * n, [round(math["effective"] * each, 2)] * n
-            pum = {"count": n, "each": each, "power": powers[0], "ended": ended, "answer": []}
+            pum = {"count": n, "each": each, "power": powers[0], "ended": ended, "answer": [],
+                   "where": pummel if isinstance(pummel, str) else "grab",
+                   "against": (self.pressed.get(d.name) or {}).get("surface") or "",
+                   "lying": self.facing_of(d.name) if d.name in self.downed else None}
         spill_cfg = self.rules.get("moves", {}).get("auto_spill", {})
         auto_n = int(spill_cfg.get("parts", 0) or 0)
         auto_n = {"one": 0, "few": 2, "many": 4, "all": 6}.get(self.plan.get("targeting", ""), auto_n)
@@ -846,6 +849,20 @@ class Engine:
                  + self._lose_grip(a.name, f"{a.name} charged off after {d.name}"))
         a.energy = max(0.0, a.energy - float(cfg.get("energy", 8)))
         slam = round(float(table.get(cfg.get("slam_severity", "heavy"), 25)) * float(distances[dist]), 2)
+        drive_hits, sheath = [], self.sheath_of(move)
+        if sheath:
+            # a charge wrapped in its element (Aqua Jet's water, Flame Wheel's fire, Spark's current) never leaves
+            # her: it is still on her the whole way back, and the element keeps working on what it struck and what
+            # is round it, pressing, stinging, scouring, until the move is done (moves.charge.sheath)
+            scfg = cfg.get("sheath") or {}
+            same, near = neighbor_parts(list(d.parts), struck[0])
+            self.rng.shuffle(same)
+            self.rng.shuffle(near)
+            around = (same[:1] + near + same[1:])[:int(scfg.get("parts", 2) or 0)]
+            base = next((pw for p, pw in zip(plan, powers) if p == struck[0]), powers[0])
+            each = round(base * float(scfg.get("power", 0.2)) * float(distances[dist]), 2)
+            self._source = f"{poss_word(a.name)} {move['name']} still driving into her"[:70]
+            drive_hits = [self._apply_damage(d, p, each) for p in [struck[0]] + around if each > 0]
         self._source = f"being driven into {into}"[:60]
         surface_hits = [self._apply_damage(d, p, slam) for p in back]
         first = {}
@@ -857,6 +874,7 @@ class Engine:
         chances = cfg.get("break_chance") or self.rules.get("moves", {}).get("sustain", {}).get("break_chance", {})
         brk = self.break_chance(into, chances)
         out = {"into": into, "distance": dist, "slam_power": slam, "surface_hits": surface_hits, "crush_hits": crush_hits,
+               "sheath": sheath, "drive_hits": drive_hits,
                "break_hits": [], "broke": False, "knock_on": loose, "facing": None,
                "hazard_status": self.hazard_effects(d, [into])}
         out["onward"], out["last"] = [], into
@@ -904,9 +922,26 @@ class Engine:
             self.pressed[d.name] = {"surface": into, "by": a.name}
         self.involved.update({a.name, d.name})
         self._count("charged", d.name)
-        out["hits"] = (surface_hits + crush_hits + out["break_hits"]
+        out["hits"] = (drive_hits + surface_hits + crush_hits + out["break_hits"]
                        + [h for st in out["onward"] for h in st["surface_hits"] + st["break_hits"]])
         return out
+
+    SHEATH_WORDS = (("water", re.compile(r"water|wave|aqua|jet", re.I)), ("fire", re.compile(r"fire|flame|flare|blaze", re.I)),
+                    ("electricity", re.compile(r"electri|spark|volt|current", re.I)))
+
+    def sheath_of(self, move):
+        """What a charge is wrapped in ("water", "fire", "electricity"), or None for a bare-bodied charge. A move
+        says so with "sheathed": true (moves.json), or its description does ("water-sheathed", "cloaked in flames")."""
+        if not move or not move.get("charge"):
+            return None
+        dex = self.dex_move(move.get("name", "")) or {}
+        about = " ".join(str(x) for x in (move.get("about"), dex.get("about"), move.get("name")))
+        flagged = move.get("sheathed", dex.get("sheathed"))
+        if flagged is False:
+            return None
+        if not flagged and not re.search(r"sheath|wrapped|cloak|shroud|wheel of|electrified|like a waterfall", about, re.I):
+            return None
+        return next((name for name, rx in self.SHEATH_WORDS if rx.search(about)), "its element")
 
     def _next_obstacle(self, seen):
         """Something else in the arena for a charge to carry on into: one of the scene's props not yet used."""
@@ -2397,6 +2432,23 @@ class Engine:
         """True while `holder` has a grab on `held` and both are on their feet."""
         h = self.grab_between(holder, held)
         return bool(h) and h.attacker == self.get(holder).name
+
+    def pummel_place(self, attacker, defender):
+        """Where `attacker` can rain short blows on `defender` at no distance, or None: "grab" (her grab on her, both
+        standing), "pin" (from on top, in her pin), "against" (she is pressed against the scenery from a charge),
+        "down" (she is on the ground, sitting or lying, and the attacker is over her or down beside her)."""
+        a, d = self.get(attacker).name, self.get(defender).name
+        if self.pinned_by(a):
+            return None                      # pinned herself: she can hit her pinner, not pummel her
+        if self.grabbed_by(a, d):
+            return "grab"
+        if d in self.pinning(a):
+            return "pin"
+        if d in self.pressed and a not in self.downed:
+            return "against"
+        if d in self.downed and not self.pinned_by(d):
+            return "down"
+        return None
 
     def grapple(self, attacker, defender, part, power, with_part="", flavor="", enforce=False):
         """One fighter SEIZES another and keeps hold of her, both on their feet: a paw locked on an arm, jaws in the

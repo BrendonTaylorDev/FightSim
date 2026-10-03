@@ -147,6 +147,10 @@ Beat types:
   a stream or beam held on her at no distance ("sustain" 2-4, no "pinned_against" needed), or a throw or a slam,
   which she can't slip. The held fighter can hit back just as freely, and the engine rolls her wrenching free
   every beat. Use it NOW AND THEN, not often. A standing target may slip the grab.
+- PUMMELS are not only for a grab. The same close move thrown again and again ("count" 2-4) also works from ON TOP
+  in a pin (blows rained down on the one underneath), on a fighter who is DOWN (sitting or lying: standing or
+  kneeling over her), and on one still PRESSED AGAINST the scenery after a charge (she has nowhere to go). The engine
+  decides how long it lasts.
 - CHAINS: now and then one fighter strings attacks together in ONE beat, each leading into the next: a jab that
   opens her guard, a second blow to the same spot or the part beside it, then something bigger (a named move, a
   bite, a knee; a throw or a slam can be the last link). Usually two or three links; a fighter who is well on top
@@ -682,8 +686,10 @@ def resolve(engine, b):
         count = int(b.get("count", 1) or 1)
         pummel = False
         if count > 1 and not _multi_hit(engine, move) and len(by_def) == 1 and move.get("target") == "targeted" \
-                and not move.get("charge") and engine.grabbed_by(att, dfn):
-            pummel = True   # she has hold of her: the same close move, thrown again and again at no distance
+                and not move.get("charge"):
+            # the same close move, thrown again and again at no distance: inside a grab, from on top in a pin, on
+            # a fighter pressed against the scenery, or on one who is down (sitting or lying)
+            pummel = engine.pummel_place(att, dfn) or False
         elif not manual and count > 1 and not _multi_hit(engine, move):
             count = 1  # a single charge or slash lands once; only flurry moves (Fury Swipes...) repeat
         results = [engine.move_attack(att, who, move["name"], parts, count, flavor,

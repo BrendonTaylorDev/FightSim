@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 logs/
 *.log
+my_settings.json
+blocks_memory.json
+autosave.json
+sim/out/
