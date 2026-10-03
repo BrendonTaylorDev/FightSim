@@ -80,6 +80,7 @@ def one_fight(names, rules, scene, seed, max_beats=150):
     stats = {"pins": 0, "escapes": 0, "worst_beat": 0.0, "errors": 0, "beats": 0}
     last = None
     while not eng.winner() and eng.turn < max_beats:
+        eng.roll_pin_windows()      # once a beat, as in the game: is there an opening for a pin on anyone?
         active = eng.active()
         # whoever acts: usually not the one who just did, now and then the same one pressing on
         movers = [f for f in active if not any(eng.has(f, st) for st in ("asleep", "frozen", "flinched"))] or active
