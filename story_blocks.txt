@@ -14,9 +14,9 @@
 #   size:  glancing, solid, heavy, tremendous          how hard the blow landed
 #   level: sore, hurting, very painful, excruciating, devastated     how much that part hurts afterwards
 #   zone:  head, neck, chest, belly, back, arm, leg, tail            where on the body
-#   has:   tails, tail, fins, horn, ruff, coils, arms, forelegs, legs, ears, antennae    what her body has
+#   has:   tails, tail, fins, horn, ruff, coils, arms, forelegs, legs, ears, antennae, wings, beak, talons, hood
 #   state: fresh, winded, tired, spent                 her overall condition
-#   kind:  claw, bite, charge, tail, beam, punch, horn, throw, grab          what kind of move it is
+#   kind:  claw, bite, charge, tail, beam, punch, horn, throw, grab, wing, beak, talon      what kind of move it is
 #   role:  attacker, receiver, pinner, pinned, winning, losing
 #   fade:  fighting, weakening, fading, nearly out      how far gone a pinned fighter is
 #   posture: standing, down                          whether she is on her feet
@@ -1427,3 +1427,126 @@ the scream cracks in the middle and comes back thinner, and she has no breath le
 every part of her clenches round the {part} at once, and the shaking that follows will not stop
 her eyes stream and she cannot blink them clear; there is nothing in her head but the {part} and the next breath
 a raw, broken sound goes on longer than she means it to, and stopping it costs her everything she has left
+
+# ---------------------------------------------------------------------------------------------------------------
+# NEWER MOMENTS (build 113+): clashes, flight, guards, water in the mouth, coils, weather, the moment after an
+# escape. Offered only when that thing really happened this beat.
+#   moment: takeoff, dive, carried, grounded (aerial)     block, reflect (guard)
+#   weather: rain, sun, hail
+# ---------------------------------------------------------------------------------------------------------------
+== movement | kind: wing
+a buffet of the wing, the leading edge first, like being hit with a door | has: wings
+she mantles both wings wide and brings one round hard and flat | has: wings
+the wing snaps out from her side with no wind-up at all | has: wings
+feathers and grit in the air, and the edge of the wing somewhere inside it | has: wings
+
+== movement | kind: beak
+the head draws back on the neck like a bow being bent, and then the beak | has: beak
+short hammering strikes of the beak, each one in the same place | has: beak
+she turns her head to bring the hooked tip of the beak to bear | has: beak
+
+== movement | kind: talon
+the talons come forward and open at the last moment | has: talons
+she reaches with her feet as if landing on prey, which is what she is doing | has: talons
+the talons close and do not let go | has: talons
+
+== clash
+the two attacks meet with a sound like a slammed door the size of the room
+for one moment both are leaning into it, and neither can see past the light between them
+the air between them buckles; spray, sparks and grit go out sideways in a ring
+she feels the other's move through her own, like pushing against a door someone is pushing back on
+the shock comes back up her own body, into her chest and teeth
+the floor between them is scoured clean where the two met
+
+== aerial | moment: takeoff
+three hard downbeats, grit blasting out from under her, and she is above reach
+she climbs in a tight spiral, watching over her shoulder the whole time
+the ground lets go of her; the other one is suddenly small and looking up
+she hangs in the air on half-folded wings, choosing
+
+== aerial | moment: dive
+she folds her wings and drops, and the sound of the air over her feathers rises to a shriek
+the shadow arrives a moment before she does
+she pulls out of the dive at the last instant and the whole weight of the fall goes into the blow
+a dive is a bet: if she misses, she is low and slow and in reach
+she comes in out of the light so the other has to squint to find her
+
+== aerial | moment: carried
+the ground drops away under her feet and there is nothing to push against
+she twists in the grip and the talons only tighten
+the arena turns below her, smaller every wingbeat
+the moment of letting go is quiet; the fall is not
+she has time, falling, to know exactly how hard she will land
+
+== aerial | moment: grounded
+the wing gives under her as if a string had been cut, and the air stops holding her
+she beats once, twice, lopsided, and comes down sideways
+she hits the ground still trying to fly, the good wing hammering at nothing
+
+== guard | moment: block
+the barrier takes it with a sound like a struck bell and is gone
+the attack spends itself against nothing and she has not even moved
+behind the shell her eyes never leave her opponent
+the other one's whole effort, wasted against a wall of light
+
+== guard | moment: reflect
+she lets it land, on purpose, and gives it back with interest
+the force goes in and comes straight back out along the same line
+her opponent's own strength, turned round and returned to sender
+she was waiting for exactly this, and it shows
+
+== sputter
+water up the nose and down the throat at once, and her body forgets everything except getting it out
+she coughs so hard her eyes stream, and spits, and coughs again
+every breath she tries to take catches on the water still in her
+the cough doubles her over and leaves her open, and she knows it
+her chest heaves against it; the air comes in ragged and wet
+
+== constriction | fade: fighting
+she can feel her own pulse thudding in her paws, slow and heavy, against the squeeze
+each breath out is taken from her; each breath in is a little smaller than the last
+the coils are warm and patient and do not stop
+
+== constriction | fade: weakening
+her paws are going cold and heavy, the blood held back from them
+her heartbeat slows in her ears, a heavy, dragging drum, slower each time
+the edges of her sight are going grey and soft
+
+== constriction | fade: fading
+her heart is still going, but slow, so slow, and everything beyond the coils has gone quiet
+her limbs are far away and do not answer when she calls them
+she cannot tell any more where her body ends and the coils begin
+
+== constriction | fade: nearly out
+a slow, heavy beat, then a long gap, then another: her heart keeping on, too slow to hold her up
+the world narrows to one thudding beat and the warm weight around it
+
+== constriction
+the scales slide against each other as the coils settle tighter
+there is no single place it hurts: it is everywhere at once, and it is steady
+she pushes against the coils and they take the push and give nothing back
+
+== weather | weather: rain
+rain hammering on stone, on fur, on the water, everywhere at once
+the footing goes slick and treacherous in a moment
+water runs into her eyes and she blinks it away
+everything shines; the light goes grey and soft
+
+== weather | weather: sun
+the light turns hard and white, and heat comes up off the ground in waves
+the glare off every wet surface makes her squint
+her fur is hot to the touch; her breath comes shorter in the heat
+
+== weather | weather: hail
+hailstones bounce off the stone like thrown gravel
+the stinging comes from everywhere, small and endless
+ice gathers in the fur along her back and shoulders
+she ducks her head against it and that, too, costs her
+
+== escape_after
+she is free, but the body that comes up out of the pin is stiff and slow to answer
+her muscles are cramped from being held so long and do not want to do what she asks
+she rolls her shoulders and the ache from the hold runs all the way down her back
+she keeps her distance and watches, having learned exactly how that pin felt
+she knows the shape of that grip now, and will see it coming next time
+the blood comes back into her limbs in pins and needles, hot and prickling

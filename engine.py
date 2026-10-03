@@ -1421,7 +1421,8 @@ class Engine:
             return 1.0
         return float(self.rules.get("pin", {}).get("damage_mult", 1.0))
 
-    LIMB_KINDS = (("charge", None), ("bite", r"bite|fang|crunch|jaw"), ("horn", r"horn|scythe|night slash|psycho cut"),
+    LIMB_KINDS = (("charge", None), ("wing", r"\bwings?\b|aerial ace|air slash|brave bird|\bfly\b|sky attack|gust"),
+                  ("talon", r"talons?|sky drop"), ("beak", r"beak|peck|drill"), ("bite", r"bite|fang|crunch|jaw"), ("horn", r"horn|scythe|night slash|psycho cut"),
                   ("tail", r"\btails?\b|iron tail|aqua tail|tail slap|dragon tail"),
                   ("arm", r"punch|chop|break|slash|claw|scratch|swipe|cut|paw|jab|fist|thrust|fury"),
                   ("leg", r"kick|stomp|stamp"))
@@ -1437,11 +1438,14 @@ class Engine:
         if move.get("target") == "spread" and not move.get("charge"):
             return None
         kind = "charge" if move.get("charge") else next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, text)), None)
+        if kind == "charge" and self.body_plan(a) == "avian":
+            kind = "wing"          # a bird's charge is flown, not run
         if not kind:
             return None
         regions = {"charge": ("hind_up", "hind_low"), "leg": ("hind_up", "hind_low"), "arm": ("fore_up", "fore_low"),
                    "tail": ("tail",)}.get(kind)
-        words = {"bite": r"jaw|muzzle", "horn": r"\bhorn"}.get(kind)
+        words = {"bite": r"jaw|muzzle", "horn": r"\bhorn", "wing": r"\bwing", "talon": r"talon",
+                 "beak": r"\bbeak"}.get(kind)
         parts = [p for p in a.parts.values()
                  if (regions and body_region(p.name) in regions) or (words and re.search(words, p.name.lower()))]
         if kind == "charge" and not parts:      # a serpent charges with her body

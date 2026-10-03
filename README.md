@@ -691,6 +691,50 @@ After each beat's prose, the program prints the exact numbers in this format:
   the first hit in the stat block.
 - **sim/**: run scripted fights on the real engine without Ollama (`python sim/long_fight.py 7`): every roll is the
   engine's; the narrator's prompts can be saved to read.
+- **Limbs that can't do the job.** A move thrown with a badly hurt limb (paw, arm, foreleg, tail, jaw, wing) loses
+  power: ×0.8 once that limb is past 150%, ×0.6 past 300% (`moves.limb_limits`). It's in the move math line.
+- **What a pin leaves behind.** Breaking out of a pin held two beats or more leaves her **stiff** 🪵 (weaker blows,
+  slower dodges) for a beat; four beats or more, **cramped** 🦵 too. The pinner tires: holding a pin costs her energy
+  each beat (`pin.pinner_energy_per_beat`), and a tired pinner is easier to break (😮‍💨). A fighter who has broken a pin
+  of one shape **knows it** 🧠 and escapes that shape more easily the next time (`learning`); she also dodges a move
+  she has felt a few times a little better.
+- **Coils and constriction.** A serpent (or anything wrapping with coils or tails) that holds or pins with them
+  tightens beat by beat; she is **constricted** 🐍: her blood held back, energy draining, arms trapped, and her heart
+  slowing (never stopping). A pin of coils (`coil_crush`, `tail_choke`) can put her out by constriction. `holds.coil`.
+- **Water in the mouth.** A water attack to the face, or on a fighter lying face-up or held at point-blank, can go
+  into her mouth and nose: **sputtering** 💦, coughing it up (no breath back, weaker blows and escapes). Never drowning.
+  `moves.into_mouth`.
+- **Clashes.** A ranged attack can be met head-on with one of the defender's own: the two meet in the air and one
+  pushes through (weakened), they cancel out, or the defender's turns it back onto the attacker. Whole-body and
+  wide moves weigh more. `moves.clash`.
+- **The arena joins in.** Deep water helps a swimmer dodge and hinders a non-swimmer; slick ground can make a dodger
+  slip (the attack still misses, but she's down); a hard slam into the scenery can shake something loose (a
+  stalactite comes down at the end of the beat); a new pin shape holds her head under the shallow water (the dunk).
+  `arena`.
+- **Flight.** A fighter with wings (Talon) can "take off" (a reposition on her own action): in the air only ranged
+  moves reach her, her close moves become **dives** (×1.3), after which she climbs back up or lands, and the one she
+  dove at may catch her and drag her down. Nobody can hold or pin her in the air. A wing hurt to 150% grounds her,
+  and if it happens in the air she falls. **Sky Drop** carries the other up and drops her from a height (the higher,
+  the harder she lands). `flight`.
+- **New moves** (moves.json, lend them with /learn): **Protect / Detect** (the next attack stops against it; less
+  reliable used twice running), **Counter** (the next close blow is sent back harder) and **Mirror Coat** (the same
+  for blasts and beams), **Rain Dance / Sunny Day / Hail** (weather for 5 beats: rain strengthens Water and weakens
+  Fire, sun the reverse, hail stings everyone not Ice-type each beat). Sky Drop. `stances`, `weather`. Roost and other
+  healing moves are left out on purpose, as before. A move can now say `"ranged": false` (Close Combat is a close
+  flurry even though it hits several parts).
+- **New fighters** (on the bench: `"bench": true` keeps them out of the default fight; `/newfight Talon Nocturne`
+  brings them in): **Talon** (Staraptor, flyer), **Vesper** (Arbok, coils and venom), **Blaze** (Arcanine), **Aura**
+  (Lucario), **Undertow** (Floatzel). Ripples, Nocturne and Seraphina are unchanged.
+- **New arenas**: the **mud swamp** (sucking mud, black water, gas bursts), the **tidal beach** (surf, barnacled rock,
+  big waves), the **mountain shelf** (open sky for flyers, gusts, rockfall) and the **ruined temple** (pillars that
+  topple, vines, moss).
+- **/simulate [fights] [names]**: balance checks with no model at all. A dice-driven stand-in picks the actions; the
+  real engine rolls everything else on copies of your rules and arena (your fight is untouched). It reports wins,
+  fight length, pins, escapes and the worst single beat. `/simulate 50 Nocturne Ripples`.
+- **Story blocks and samples for the new moments**: clashes, take-offs, dives, being carried, falling out of the air,
+  guards, water in the mouth, constriction by how far gone she is, weather, and the stiff moment after an escape; wing,
+  beak and talon moves. New sample sections (clash, dive, sputter, coil, escape aftermath) are shown when one of those
+  happens.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

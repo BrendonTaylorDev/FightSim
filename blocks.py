@@ -77,7 +77,15 @@ def features(part_names):
         has.add("forelegs")
     if re.search(r"\barm\b|upper arm|forearm", low):
         has.add("arms")
-    if re.search(r"thigh|hip|knee|hock|foot|hind paw", low):
+    if "wing" in low:
+        has.add("wings")
+    if "beak" in low:
+        has.add("beak")
+    if "talon" in low:
+        has.add("talons")
+    if "hood" in low:
+        has.add("hood")
+    if re.search(r"thigh|hip|knee|hock|foot|hind paw|talon", low):
         has.add("legs")
     else:
         has.add("coils")       # no legs at all: a serpent's body
@@ -103,7 +111,9 @@ def kind_of(move_name="", about="", with_part="", manhandle="", grab=False, clos
     for k, rx in (("claw", r"claw|slash|scratch|rake|swipe"), ("bite", r"bite|fang|crunch|jaws?|teeth"),
                   ("charge", r"aqua jet|tackle|rush|charge|take down|\bram\b|body|headbutt|lunge"),
                   ("tail", r"\btails?\b"), ("beam", r"pulse|beam|gun|pump|bolt|ray|blast|stream|wave|surf|breath|wisp"),
-                  ("punch", r"punch|break|chop|paw|cuff|jab|fist"), ("horn", r"horn|scythe")):
+                  ("punch", r"punch|break|chop|paw|cuff|jab|fist"), ("horn", r"horn|scythe"),
+                  ("wing", r"\bwings?\b|aerial ace|air slash|gust"), ("beak", r"beak|peck|drill"),
+                  ("talon", r"talons?|sky drop")):
         if re.search(rx, t):
             kinds.add(k)
     if ranged and "beam" in kinds:

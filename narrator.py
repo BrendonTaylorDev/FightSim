@@ -4127,6 +4127,47 @@ class Narrator:
             return kinds
 
         types = [a.get("type") for a in acts]
+        # --- the newer kinds of moment (clash, flight, stances, water in the mouth, coils, weather, a pin just
+        # broken): one idea each, on the side of the beat it belongs to
+        for a in acts:
+            att_, dfn_ = a.get("attacker"), a.get("defender")
+            if act and a.get("clash"):
+                side[0] = "act"
+                add("the clash itself", B.pick("clash", 1, has=feats(att_)))
+            if act and a.get("type") == "take_off":
+                side[0] = "act"
+                add(f"{a.get('fighter')} taking off", B.pick("aerial", 1, moment={"takeoff"}))
+            if act and a.get("dive"):
+                side[0] = "act"
+                add(f"{poss(att_)} dive", B.pick("aerial", 1, moment={"dive"}))
+            if a.get("carried"):
+                side[0] = "take" if take else "act"
+                add(f"{dfn_}, carried up and dropped", B.pick("aerial", 1, moment={"carried"}))
+            if take and a.get("grounded"):
+                side[0] = "take"
+                add(f"{dfn_} falling out of the air", B.pick("aerial", 1, moment={"grounded"}))
+            if a.get("protected") or a.get("stance") or a.get("reflected"):
+                side[0] = "act" if act else "take"
+                add("the guard", B.pick("guard", 1, moment={"reflect"} if a.get("reflected") else {"block"}))
+            if take and a.get("into_mouth"):
+                side[0] = "take"
+                add(f"{dfn_}, choking on the water", B.pick("sputter", 1, has=feats(dfn_)))
+            if a.get("weather"):
+                side[0] = "act" if act else "take"
+                add("the weather coming in", B.pick("weather", 1, weather={a["weather"]["kind"]}))
+        for e_ in pin_events or ():
+            if take and ((e_.get("out_cause") or {}).get("cause") == "constriction" or e_.get("coil")):
+                side[0] = "take"
+                add(f"{e_.get('defender')}, in the coils", B.pick("constriction", 1, fade={
+                    "fighting hard": "fighting", "weakening": "weakening", "fading": "fading",
+                    "nearly gone": "nearly out"}.get(e_.get("fight_left"), "fighting")))
+            if take and e_.get("struggle") == "escape" and e_.get("aftereffects"):
+                side[0] = "take"
+                add(f"{e_.get('defender')}, free of it", B.pick("escape_after", 1))
+        for e_ in also or ():
+            if take and e_.get("type") == "hold_ongoing" and e_.get("coil"):
+                side[0] = "take"
+                add(f"{e_.get('defender')}, in the coils", B.pick("constriction", 1))
         # --- after the match
         if acts and all(t == "aftermath" for t in types):
             win = next((a.get("winner") for a in acts if a.get("winner")), None)
@@ -4426,6 +4467,17 @@ class Narrator:
             add("pin hold", "pin struggle")
         elif any(t in ("pin_start", "pin_forced") for t in types):
             add("pin start", "pin start take")
+        if any((e.get("out_cause") or {}).get("cause") == "constriction" for e in pin_events) \
+                or any(e.get("type") == "hold_ongoing" and e.get("coil") for e in also or ()):
+            add("coil", "coil take")
+        if any(e.get("struggle") == "escape" and e.get("aftereffects") for e in pin_events):
+            add(None, "escape aftermath")
+        if any(a.get("clash") for a in acts):
+            add("clash", "clash take")
+        if any(a.get("dive") or a.get("carried") or a.get("grounded") or a.get("type") == "take_off" for a in acts):
+            add("dive", "dive take")
+        if any(a.get("into_mouth") for a in acts):
+            add(None, "sputter take")
         if any(a.get("manhandle") in ("throw", "slam") for a in acts):
             add("throw", "throw take")
         if (take or both) and getattr(self, "_breaking", None):

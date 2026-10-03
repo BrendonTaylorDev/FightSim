@@ -10,7 +10,8 @@
 # the same passage every time. A passage that names a fighter who is not in the current fight is skipped.
 # Tags the program asks for: opening; strike act, strike take, strike take hard (a blow that leaves a part excruciating or worse); chain; breaking point; sustain take; grab, grab take;
 # pummel; throw, throw take; getup; dodge; pin start, pin start take; pin hold, pin struggle; escape; faint;
-# aftermath, aftermath take. A tag nothing answers to falls back to the next one asked for, then to the first section.
+# aftermath, aftermath take; clash, clash take; dive, dive take; sputter take; coil, coil take; escape aftermath.
+# A tag nothing answers to falls back to the next one asked for, then to the first section.
 # These passages come from a test fight played on the real engine (the sleek Ripples: no flotation sac; no pin
 # clock; pain never numb), so nothing in them contradicts the program's rules.
 # Your earlier samples are untouched: /sample lists them and switches back (/sample style_sample.txt).
@@ -540,3 +541,91 @@ Above her the long pale head swung down to look, unhurried, antennae drifting. T
 Her tails were outside. Both of them. She felt them trailing, forgotten, and something small and hard and delighted woke up behind the fear.
 
 She let her arms go slack. She let her head fall back, eyes half shut, and breathed in the little sips that were all she could get. And behind the Milotic's line of sight, slowly, so that no ripple showed, her twin tails began to turn.
+
+== clash
+The Water Gun came off the shallows in a hard white rope, straight at the Absol's face, and Nocturne did not move out of its way.
+
+She opened her jaws instead. The Dark Pulse went out of her in a ring that bent the light, and the two met in the air halfway across the ledge with a sound like a door the size of the cave being slammed. Spray went out sideways in a sheet. Grit lifted off the stone in a circle and hung there.
+
+For a long moment nobody was hit by anything. Nocturne leaned into it with her forepaws braced and her ears flat, feeling the push of the water come back up through her own attack like a weight against a door. Her horn caught the grey light. Her lip peeled off her fangs.
+
+*Harder than she looks. Not hard enough.*
+
+The ring went through. What was left of the jet broke apart round it and fell as rain on the rock, and the dark rolled on, thinner now, toward the Buizel's chest.
+
+== clash take
+The jet left her and hit something.
+
+Ripples felt it before she saw it: the pressure coming back up her own stream into her open mouth and her braced arms, the water stalling against a wall that was not there. Then the dark ring showed through the spray, flattening the stream in front of it, and she had no breath left to push with.
+
+It broke. The water fell apart in front of her face and the rest of the dark came through and took her across the chest and the left shoulder, weaker than it had been, but enough. Her fins snapped flat. The breath went out of her in a grunt.
+
+*Met it head-on. She met it head-on.*
+
+Her chest stung where it had landed. Her jaw ached from holding the stream. She shook the water out of her eyes and kept them on the Absol, who was still standing in the same place, ears flat, as if nothing had happened at all.
+
+== dive
+Talon climbed until the ledge was a grey shelf far below her and the Absol on it was a white mark with a dark horn, looking up.
+
+She hung there a moment on half-spread wings, the wind combing her crest flat, choosing. Then she folded.
+
+The air rose round her to a shriek. The ground came up, the white mark grew legs and a face, and she saw the head turn, too late, to find her in the light. At the last instant she flared, wings cracking open, talons swinging forward, and the whole weight of the drop went into the blow.
+
+Her talons struck the Absol's back and drove her down. The impact shocked up through her own legs into her hips. She was already beating again before her feet had left the fur, three hard downstrokes, grit blasting out from under her, and she was up and out of reach with the Absol's snap closing on nothing.
+
+*Again. And again. Until she stops looking up.*
+
+== dive take
+There was a shadow on the stone, and then there was no time.
+
+The weight came down on Nocturne's back like a falling boulder with claws in it. Her legs folded. Her chest hit the grit and the air went out of her in one flat grunt, and something hooked deep into the meat over her spine and tore free.
+
+By the time she got her head round, snapping, the bird was already rising, the downdraft of the wings flattening the fur on her neck. Her jaws closed on air and a single grey feather.
+
+*Above me. Always above me.*
+
+Her back burned in two long lines where the talons had gone in. She got her legs under her and stood, and the burn spread down into her hips with every breath. She did not take her eyes off the sky again.
+
+== sputter take
+The water came straight into her open mouth.
+
+It went down the wrong way at once, up the back of her nose and into her throat, and every part of Ripples forgot the fight. She coughed so hard her whole body bent with it. Water came out of her nose. She tried to breathe in and the breath caught on what was still in there and turned into another cough, and another, harsh and wet, her eyes streaming.
+
+*Breathe. Breathe, idiot.*
+
+She spat, gagged, spat again. Her chest heaved against it. When the air finally came it came in ragged and thin, and she could hear herself wheezing, and she knew exactly how open she was, doubled over on the wet stone with her eyes full of water and her guard nowhere.
+
+It passed. Not all at once. Her throat stayed raw, and every breath for a while after scraped on the way in.
+
+== coil
+Seraphina did not hurry. She let the loop slide round under the Buizel's arms, unhurried, a cool weight of scales, and only when it was all the way round did she close it.
+
+She felt the body inside the coil go rigid, then push. She took the push and gave nothing back. On the next breath out she tightened again, a little, just enough to take the room that breath had left behind.
+
+Her head rose above it all, swaying slightly, red eyes half-closed. The hair-like fins along her head lay smooth.
+
+*There is no hurry. There is never any hurry.*
+
+Inside the coils, against her own scales, she could feel the other heart. Quick at first, hammering. Then a little slower. Then slower still.
+
+== coil take
+The coil closed and kept closing.
+
+It was not like being hit. Nothing struck her. There was only the weight, warm and patient, round her chest and her arms, and each time she breathed out it took the room the breath had used and did not give it back.
+
+Her paws were going cold first. Then heavy. She could feel her own heartbeat in them, a slow, thick thud, slower than it should have been, as if her blood had to push its way through.
+
+*Push. Push against it.*
+
+She pushed. The scales took it and gave nothing. The grey was coming in at the edges of her sight now, soft, and the beat in her ears was dragging, a long gap between each one. Still going. Slow. Slow.
+
+== escape aftermath
+She was out, and her body did not seem to know it yet.
+
+Ripples got her feet under her on the second try. Her back was stiff from the long press of the stone, and when she turned her head the muscles down the side of her neck pulled tight and held. Her right arm prickled, then burned, as the blood came back into it in a rush of pins and needles. She shook it out, hissing.
+
+*Stiff. Slow. She'll see it.*
+
+She did not go back in. She backed off a step, then another, and watched the Absol rise off the stone. She knew the shape of that hold now: the paw across the throat, the weight on the chest, the way it had shifted just before it tightened. She would see it coming next time.
+
+Her legs were steadier by the time she stopped. Not steady. Steadier.
