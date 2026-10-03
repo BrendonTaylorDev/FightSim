@@ -995,6 +995,7 @@ class Session:
                 self.record_result()
                 self.out(f"*** Winner: {winner} ***\n(The match is over. Keep pressing Enter to watch the aftermath: "
                          f"the loser may stir and even get back up. Type what happens to steer it, or /undo.)\n")
+                self.out("🩹 " + self.eng.injury_report().replace(" | ", "\n   ") + "\n")
             else:
                 self.out(f"Still in the fight: {', '.join(f.name for f in self.eng.active())}\n")
         for e in also:

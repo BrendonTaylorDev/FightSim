@@ -2325,6 +2325,9 @@ class Narrator:
                                         f"recover her footing" if g.get("off_balance") else ""))
             sl = a.get("slipped")
             turned = (a.get("guard") or {}).get("kind") == "deflect"
+            if a.get("wary") and not turned:
+                way = (f"{way}; " if way else "") + ("she was already moving before it came: that move hurt her badly "
+                                                     "before, and she flinches away from it early now")
             lines.append(f"{a['attacker']} goes for {who} with {what}, but {who} "
                          + (f"{way}" if turned else "DODGES" + (f" (this time she {way})" if way else ""))
                          + ": it misses completely and "
@@ -2402,6 +2405,9 @@ class Narrator:
                 lines.append(f"  - A JUGGLE: {a['defender']} is still in the air from the last blow, helpless, nothing "
                              f"under her to push from, and this one catches her there (it lands harder for that) and "
                              f"smashes her back down to the ground (the landing below).")
+            if a.get("overcommit"):
+                lines.append(f"  - {a['attacker']} is so tired she OVERCOMMITS: the blow is sloppy, badly timed, half its "
+                             f"usual force, and she overbalances on it and has to catch herself (OFF BALANCE after it).")
             if a.get("last_stand"):
                 lines.append(f"  - LAST STAND: {a['attacker']} is nearly spent, and she puts EVERYTHING she has left into "
                              f"this one blow: it is harder than anything she has thrown in a while, and afterwards she "
@@ -2409,7 +2415,7 @@ class Narrator:
             if a.get("guarding"):
                 gd = a["guarding"]
                 lines.append(f"  - {a['defender']} is GUARDING her {gd['part'].lower()} without thinking, shoulder or "
-                             f"limb or body curled to cover it" + (f", which leaves her {gd['open_side']} side open"
+                             f"limb or body curled to cover it" + (f", which leaves her {gd['open_side']}{' side' if gd['open_side'] in ('left', 'right') else ''} open"
                                                                     if gd.get("open_side") else "") + ".")
             g = a.get("guard") or {}
             if g.get("kind") == "block":

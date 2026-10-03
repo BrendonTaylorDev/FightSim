@@ -1345,6 +1345,9 @@ class Director:
         move_her = reposition_hint(engine) if not direction else ""
         if move_her:
             rng_hint = (rng_hint + "\n" + move_her).strip()
+        for extra in ((grudge_hint(engine), drag_to_pin_hint(engine)) if not direction else ()):
+            if extra:
+                rng_hint = (rng_hint + "\n" + extra).strip()
         fresh = variety_hint(engine) if not direction else ""
         if fresh:
             rng_hint = (rng_hint + "\n" + fresh).strip()
@@ -1642,6 +1645,53 @@ def pin_shape_hint(engine, pinner, target):
     return (f"PIN SHAPE IDEA (pins shouldn't all look alike; use this one, or another of your own that isn't the "
             f"last pin over again): {pinner.name} pins {target.name} with {look}. In \"hits\": {hits}. Any limb can "
             f"press or grip any part: jaws can pin a paw, a forearm or a tail can choke.")
+
+
+def grudge_hint(engine, roll=None):
+    """PAYBACK, now and then (director.grudge_chance): a fighter with one part badly hurt may go for the same place on
+    the one who did it. An idea, never an order."""
+    from engine import body_region
+    ch = float(engine.rules.get("director", {}).get("grudge_chance", 0.15))
+    act = engine.active()
+    if ch <= 0 or len(act) != 2 or (roll if roll is not None else engine.rng.random()) >= ch:
+        return ""
+    for me in sorted(act, key=lambda f: -max(p.damage for p in f.parts.values())):
+        foe = next(f for f in act if f is not me)
+        worst = max(me.parts.values(), key=lambda p: p.damage)
+        if worst.damage < 150 or engine.pinned_by(me.name) or me.name in engine.downed:
+            continue
+        match = next((p for p in foe.parts if p.lower() == worst.name.lower()), None) or next(
+            (p for p in foe.parts if body_region(p) == body_region(worst.name)), None)
+        if match:
+            return (f"PAYBACK idea (optional): {poss_name(me.name)} {worst.name.lower()} is wrecked, and she knows who did "
+                    f"it. She might go for {poss_name(foe.name)} {match} to give back exactly what she got.")
+    return ""
+
+
+def drag_to_pin_hint(engine, roll=None):
+    """Now and then (director.drag_to_pin_chance), when an opponent is down and not pinned: drag her somewhere worse
+    first (a wall, the water) and pin her there next."""
+    ch = float(engine.rules.get("director", {}).get("drag_to_pin_chance", 0.12))
+    if ch <= 0 or (roll if roll is not None else engine.rng.random()) >= ch:
+        return ""
+    cfg = getattr(engine, "scene_cfg", None) or {}
+    props = [p for p in (cfg.get("props") or []) if p]
+    pools = [h["name"] for h in (cfg.get("hazards") or []) if any(w in ("pool", "shallows", "water") for w in h.get("words", []))]
+    for d in engine.active():
+        if d.name not in engine.downed or engine.pinned_by(d.name):
+            continue
+        a = next((f for f in engine.active() if f is not d and f.name not in engine.downed
+                  and not engine.pinned_by(f.name)), None)
+        if not a or not (props or pools):
+            continue
+        where = engine.rng.choice(pools + props)
+        return (f"GROUND IDEA (optional): {d.name} is down. {a.name} could DRAG her (action \"drag\", into {where}) "
+                f"this beat and pin her against it or in it on the next (\"pinned_against\": \"{where}\").")
+    return ""
+
+
+def poss_name(n):
+    return n + ("'" if n.endswith("s") else "'s")
 
 
 def throat_hint(engine, roll=None):
