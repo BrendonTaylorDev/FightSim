@@ -815,11 +815,12 @@ After each beat's prose, the program prints the exact numbers in this format:
   narrator is reminded every beat.
 - **Injury report.** When the fight is won, the console shows what each fighter will feel when it's over, and the
   narrator gets it for the aftermath.
-- **Balance: Nocturne's body parts are 7 points tougher** (+5, then +2 more after devastating blows tipped it back to
-  50%: about 58% now) (every part, fighters.json; health unchanged; Ripples
-  untouched). With all the new mechanics in, she had drifted to about 50% against Ripples in /simulate at your
-  settings (scale 5, resscale 0.75, healthloss 0.2, numb off); +5 brings her to about 56% there, and the director
-  plays her better than the dice do. At damage scale 5 resistance matters a lot: +6 measured 65%, +8 68%.
+- **Balance and pins (corrected).** /simulate never rolled the per-beat pin openings, so in it every beat was an
+  opening and pins were far too easy; my earlier balance numbers were measured on that. Fixed, and its stand-in now
+  takes an opening the way the director does. Measured properly at your settings, Nocturne's ORIGINAL body (the +5 and
+  +2 resistance I had added are taken back out) wins about 61% against Ripples. Pin openings are a little more frequent
+  (director.pin_urge standing 0.06 -> 0.1, downed 0.3 -> 0.4): about 5 pins a fight, most fights 4 or more, and about 3
+  to 4 escapes. Still all dice; nothing forces a number.
 - **Devastating blows (rare).** Now and then a blow lands far harder than it should (×1.7-2.2) and the health cap is
   much looser for that one hit, so it can swing the fight. About 1.5% of landed attacks, more when there is a reason:
   she is caught open (in the air, off balance, fooled by a feint, down), or it lands on a part that is already
