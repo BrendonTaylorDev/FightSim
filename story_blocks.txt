@@ -1809,3 +1809,156 @@ she hits it hard, harder than she meant anything to hit, and bounces off
 for a moment after the crash she does not know which way she is facing
 the rage of the miss is worse than the bruise, almost
 dust and grit come down round her where she struck
+
+# ---------------------------------------------------------------------------------------------------------------
+# FIGHTER-SPECIFIC: "fighter: name" blocks are offered only for that fighter, and preferred for her when they fit
+# (narration.blocks.fighter_boost). Add your own for anyone in fighters.json.
+# ---------------------------------------------------------------------------------------------------------------
+== watch | fighter: nocturne
+she watches with her head low and her red eyes narrowed to slits, the way she would watch prey decide whether to run
+her sickle tail goes still behind her while she watches; only the tip twitches
+she notes every flinch with a cold, measuring contempt, and files each one away
+her ears turn to catch the sounds the other is trying to swallow
+she lets her lip peel back from one fang as she watches, not quite a snarl
+
+== watch | fighter: seraphina
+she watches with her head raised and swaying slightly, unhurried, red eyes half-closed
+her antennae drift toward the other, as if they could taste the pain in the air
+she watches the way still water watches the sky: patient, unreadable, missing nothing
+her low hum goes on under her breath as she watches, calm as a lullaby
+
+== watch | fighter: ripples
+she watches with her chin tucked and her fins flared, quick black eyes darting from wound to wound
+she watches warily, half crouched, her twin tails turning slow behind her, ready to go if it was a trick
+her cheek marks twitch as she watches; she is counting, working out what she has bought
+
+== watch | fighter: talon
+she watches with her head cocked, one eye and then the other, the way a hawk studies something in the grass
+her crest lifts slowly as she watches, and her talons flex on the ground
+
+== watch | fighter: vesper
+she watches without blinking, tongue flickering, tasting the fear in the air
+her hood spreads a little wider with every twitch she sees
+
+== watch | fighter: blaze
+she watches with her ears pricked and her head tilted, honest concern flickering under the battle heat
+heat shimmers off her fur as she watches, her flanks heaving
+
+== watch | fighter: aura
+the appendages on the back of her head lift as she reads the other's aura: she can see the pain as a flicker of light
+she watches in a still stance, feet set, reading where the strength is draining out
+
+== watch | fighter: undertow
+she watches with her flotation sac puffed and a grin she can't quite keep down
+she bounces on her toes as she watches, cocky, tails whirring
+
+== watch_thought | fighter: nocturne
+*Weak. Get up, then. Show me.*
+*There. That's where she breaks.*
+*Not so quick now.*
+*I warned you about the dry ground.*
+
+== watch_thought | fighter: seraphina
+*Rest a moment. There is no hurry.*
+*Poor thing. You fought well.*
+*Breathe. It will be easier if you stop resisting.*
+
+== watch_thought | fighter: ripples
+*Got her. Finally got her.*
+*Don't get cocky. Don't get cocky.*
+*She felt that one. Good.*
+
+== watch_thought | fighter: talon
+*Again. Until she stops looking up.*
+*Grounded prey. Easy prey.*
+
+== watch_thought | fighter: vesper
+*Struggle. I like it when they struggle.*
+*Slower now. Slower.*
+
+== held_in | fighter: nocturne
+a growl rises in her chest and she turns it into nothing but breath through her teeth
+she hisses, sharp and short, and refuses to give it any more than that
+a low, ragged snarl, the only sound she will allow herself
+
+== held_in | fighter: ripples
+a squeak escapes her before she can clamp her jaw on it, and her cheeks burn with it
+she chitters through gritted teeth, fast and furious, instead of crying out
+a high bark of pain cracks out of her and echoes, and she hates that it echoes
+
+== held_in | fighter: seraphina
+her low humming note cracks in the middle and she holds the silence after it
+a long hiss escapes her coils as they tighten on their own
+
+== held_in | fighter: talon
+a harsh shriek tears out of her open beak before she can close it
+she hisses through her beak, feathers fluffed out, and keeps the rest in
+
+== dwell | fighter: nocturne
+her ruff stands up all the way round her neck and will not lie down
+her ears flatten so hard they ache, and she shakes her head to clear it, and it doesn't clear
+she tells herself it is nothing, and her legs disagree with her
+
+== dwell | fighter: ripples
+her fins clamp flat to her forearms and her twin tails stall and hang
+her throat works as she swallows, over and over, her chin tucked tight to guard it
+she curls her webbed paws into fists until her claws bite her own palms
+
+== dwell | fighter: seraphina
+her coils tighten round nothing on their own, and the hurt rolls down the length of her body
+her scales dull and flare along her side in slow waves, out of her control
+
+== thought | role: receiver | fighter: nocturne
+*Pain is information. Nothing more.*
+*She will pay for that.*
+*Don't show it. Don't show anything.*
+
+== thought | role: receiver | fighter: ripples
+*Stupid. Should've seen it.*
+*Up. Get up. Still got two tails and a temper.*
+*Okay. Okay. That one hurt.*
+
+== thought | role: receiver | fighter: seraphina
+*Breathe through it. There is always another breath.*
+*So. She has teeth after all.*
+
+== thought | role: attacker | fighter: nocturne
+*Faster than her. Always faster.*
+*End this.*
+
+== thought | role: attacker | fighter: ripples
+*In and out. Don't let her grab you.*
+*Now. While she's turned.*
+
+# ---------------------------------------------------------------------------------------------------------------
+# FEINTS, JUGGLES, LAST STANDS
+#   feint moment: bit (the defender fell for it), read (she saw through it)
+#   juggle moment: up (knocked into the air), caught (hit there and smashed down)
+# ---------------------------------------------------------------------------------------------------------------
+== feint | moment: bit
+the shoulder dips one way and every instinct she has goes with it, and the real blow is already coming from the other side
+her eyes follow the fake, and by the time they come back it is far too late
+she commits to blocking a blow that never comes, and is turned wide open for the one that does
+a twitch of the head, a half-step, and she flinches from nothing, and pays for it
+the feint drags her guard high, and the strike goes in underneath
+
+== feint | moment: read
+the fake is good, but she has seen it once already and her weight doesn't move
+she watches the eyes, not the paw, and the eyes give it away
+she doesn't bite; she simply waits for the real thing
+
+== juggle | moment: up
+the ground leaves her all at once and there is nothing under her paws at all
+for a moment she hangs in the air, weightless, and has time to know she cannot do anything about what comes next
+she is lifted clean off her feet, limbs flung out, the world tilting
+
+== juggle | moment: caught
+nothing to push against, nothing to brace with: the second blow takes her in the air and she simply goes where it sends her
+she was still rising when it hit, and the force reverses her in mid-air and drives her down
+the ground comes back up at her twice as fast as she left it
+
+== last_stand
+everything she has left goes into this, and she knows there will be nothing after it
+a sound tears out of her as she throws it, half roar and half gasp of effort
+she has been saving nothing, and now she spends it all at once
+for one moment she is as strong as she was at the start, and then she is emptied out

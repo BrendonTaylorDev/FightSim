@@ -49,7 +49,7 @@ class Display:
         self.rules = rules
         self.heart = rules["health"].get("icon", "❤️")
 
-    STATUS_ICON = {"off_balance": "🌀", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
+    STATUS_ICON = {"breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
 
@@ -587,7 +587,7 @@ class Display:
                 out.append(f"🪨 **{a['defender']} is {a.get('flavor', 'driven into the ground')}** where she lies"
                            + (f" (still {a['facing']})" if a.get("facing") else "") + ": no new fall")
             else:
-                out.append(f"🪨 **{a['defender']} lands hard** ({a.get('flavor', '')}"
+                out.append(f"🪨 **{a['defender']} lands hard**{' — smashed down out of the air' if a.get('spiked_by') else ''} ({a.get('flavor', '')}"
                            + (", from the ground" if a.get("from_ground") else "") + ")"
                            + (", **rolls through it and comes up on her feet**" if a.get("kept_feet") else
                               f", ends up {a['ends']}" if a.get("ends") else
@@ -647,6 +647,21 @@ class Display:
                               "back": f"{ps(a['defender'])} TURNS IT BACK onto {a['attacker']} at ×{num(cl['share'])}"}[cl["outcome"]])
                 if cl.get("hits_on_attacker"):
                     out += self.hits_block(a["attacker"], cl["hits_on_attacker"])
+            if a.get("feint"):
+                fe = a["feint"]
+                out.append(f"🎭 **Feint** ({a['defender']} bites {fe['chance'] * 100:.0f}%): "
+                           + ("she BITES — no dodge, the real blow lands on her caught open" if fe["bit"]
+                              else "she READS it — an ordinary attack"))
+            if a.get("juggled_up"):
+                out.append(f"🎯 **{a['defender']} is knocked up into the air** — the next blow catches her there")
+            if a.get("juggle"):
+                out.append(f"🎯 **JUGGLE**: caught helpless in the air, and smashed back down")
+            if a.get("last_stand"):
+                out.append(f"🔥 **LAST STAND**: {a['attacker']} puts everything she has left into it (×1.5; energy → 0)")
+            if a.get("guarding"):
+                gd = a["guarding"]
+                out.append(f"🩹 {a['defender']} is guarding her {gd['part']} (blows there ×0.85"
+                           + (f"; her {gd['open_side']} side is open, ×1.1" if gd.get("open_side") else "") + ")")
             if (a.get("guard") or {}).get("kind") == "block":
                 g = a["guard"]
                 out.append(f"🛡️ **{a['defender']} blocks** with her {g['part']} (chance {g['chance'] * 100:.1f}%): it lands "

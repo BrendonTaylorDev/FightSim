@@ -57,6 +57,8 @@ def _pick_action(eng, rng, f, d):
         a["hits"] = [{"part": p} for p in rng.sample(parts, min(3, len(parts)))]
     else:
         a["part"] = rng.choice(parts)
+    if m.get("target") in ("targeted",) and not m.get("charge") and rng.random() < 0.1:
+        a["feint"] = True
     if m.get("target") != "self" and m.get("power", 0) >= 30 and rng.random() < 0.3:
         a["launch"] = rng.choice(["knocked down", "knocked down", "thrown"])   # as the director does for heavy hits
     if m.get("charge") and rng.random() < 0.3:

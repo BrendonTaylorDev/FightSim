@@ -758,6 +758,37 @@ After each beat's prose, the program prints the exact numbers in this format:
   `moves.recoil`.
 - **More story blocks** across the thin categories: breathing by where it hurts, back and tail sensations, how pain
   travels, late-fight thoughts, struggling, landings, dodges, getting up, sputtering, clashes, guards, crashes.
+- **Caught open.** A blow on someone who has no chance to roll with it, twist away or soften it lands harder (only the
+  biggest one counts): helpless in the air ×1.3, fooled by a feint ×1.25, doubled over or off balance ×1.2, dazed or
+  flinching ×1.15, lying on the ground ×1.1 (close blows; not pummels or pins). It's in the move math line.
+  `moves.vulnerable`.
+- **Feints.** The director can mark a strike as a feint (`"feint": true`, or just tell it "she feints, then bites"). It
+  costs a little energy. If the defender bites (likelier the more worn down she is, less likely each time she's seen
+  that fighter feint), she can't dodge, clash or guard, and the blow lands on her caught open. `moves.feint`.
+- **Juggles.** A strike that launches her as one link of a chain, followed by a strike on her as the next link: she is
+  caught helpless in the air (×1.3, no dodge) and smashed back down for a hard landing. An uppercut to the jaw, then
+  a tail slash across the stomach before she comes down.
+- **What a hard hit does for a beat.** The wind knocked out of her 😮 (chest or belly: no breath back, weaker blows and
+  escapes), dazed 💫 (head: slow to dodge, weaker), doubled over 🤕 (a blow on a part that was already devastated: guard
+  down). `moves.jolts`.
+- **Guarding a wound.** Below 60% strength, a fighter shields her worst part once it's excruciating: blows there land a
+  little lighter, her other side a little harder. The director is told which side is open. `moves.guarding_wound`.
+- **Last stand.** Once a fight, a fighter below 15% may put everything into one blow (×1.5), then has no energy at
+  all. `moves.last_stand`.
+- **Wet fur.** A soaked fighter slips holds and pins a little more easily, and a soaked fighter's own grips slide.
+- **Callbacks.** The dwell part remembers the FIRST thing that ever hurt that part, if it was 3 or more beats ago: the
+  old hurt and the new one meet, and she remembers it (`narration.dwell.callback_after`).
+- **Fighter-specific story blocks.** A block can say `fighter: nocturne`: it is offered only for her, and preferred
+  when it fits. Nocturne, Ripples, Seraphina and the new fighters each have their own way of watching, their own
+  thoughts, the sounds they hold in, what their bodies do.
+- **Visible wear.** The narrator is told how each fighter looks by now (grit ground into her coat from every landing,
+  soaked or singed fur, the worst parts swollen and matted) so it stays the same from beat to beat.
+- **Fading thoughts.** Below 20% strength, on some beats (40%), a fighter's italic thoughts come in fragments. Only the
+  thoughts: the prose around them keeps its full detail. `narration.fading_thoughts`.
+- **Camera.** Each part of a beat is told close (tight on bodies) or, about a third of the time, wide (both of them and
+  the place). The dwell and watch parts are always close. `narration.camera`.
+- **How each place sounds.** Every arena has `acoustics` in scenes.json (the cave hands a whimper back from the dark;
+  the wind on the mountain shelf tears a cry away), used for the sounds fighters make and try to hold in.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

@@ -1,5 +1,5 @@
 {
- "_comment": "Arenas. At the start of a run you are asked which one; /scene lists them and switches. Each scene has: title; text (what the director and narrator read: name every feature here); place (how notes refer to it); ground / rough / slick (the plain floor, what a drag scrapes over, what a foot slips on); props (solid things to be thrown or driven into, or to lean on getting up); ambience; hazards; events. A HAZARD is a feature that does something when a fighter lands on it, is thrown, dragged, charged or pressed into it: 'words' are how it is recognised in a surface name; 'effects' are statuses with a chance and a length in beats (burned, poisoned, paralyzed, chilled, soaked, confused, flinched); 'break' is the chance it breaks under a charge or a held stream (an extra heavy hit, and she goes down with it); 'upright' means a fighter can end slumped sitting against it; 'cushion' makes any landing on it light. An EVENT is something the place does by itself, now and then (rules.json scene.event_chance per beat; never during a pin or a hold): 'who' is anyone, standing, down, or all; 'severity' and 'regions' are the hit it lands, if any; 'effects' as for hazards; 'weight' is how often compared with the scene's other events. Add your own scene by copying one. details: small things about the place (a sound, a smell, the light) that the narrator is offered one at a time, as background, the least recently used first; add your own to any scene.",
+ "_comment": "Arenas. At the start of a run you are asked which one; /scene lists them and switches. Each scene has: title; text (what the director and narrator read: name every feature here); place (how notes refer to it); ground / rough / slick (the plain floor, what a drag scrapes over, what a foot slips on); props (solid things to be thrown or driven into, or to lean on getting up); ambience; hazards; events. A HAZARD is a feature that does something when a fighter lands on it, is thrown, dragged, charged or pressed into it: 'words' are how it is recognised in a surface name; 'effects' are statuses with a chance and a length in beats (burned, poisoned, paralyzed, chilled, soaked, confused, flinched); 'break' is the chance it breaks under a charge or a held stream (an extra heavy hit, and she goes down with it); 'upright' means a fighter can end slumped sitting against it; 'cushion' makes any landing on it light. An EVENT is something the place does by itself, now and then (rules.json scene.event_chance per beat; never during a pin or a hold): 'who' is anyone, standing, down, or all; 'severity' and 'regions' are the hit it lands, if any; 'effects' as for hazards; 'weight' is how often compared with the scene's other events. Add your own scene by copying one. details: small things about the place (a sound, a smell, the light) that the narrator is offered one at a time, as background, the least recently used first; add your own to any scene. acoustics: how the place carries sound (the narrator uses it for the sounds fighters make and try to hold in).",
  "scenes": {
   "sea cave": {
    "title": "The flooded sea cave",
@@ -153,7 +153,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "stone walls and a low ceiling: every sound comes back a moment late, doubled; a cry rings round the cave, a whimper is handed back from the dark, even a held breath is loud"
   },
   "waterfall gorge": {
    "title": "The waterfall gorge",
@@ -325,7 +326,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "the roar of the falls swallows most sounds: a cry has to be a scream to carry, and small sounds are lost entirely except up close"
   },
   "power plant": {
    "title": "The abandoned power plant",
@@ -512,7 +514,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "concrete and metal: sounds clang and ring off the machinery, and a gasp echoes down the empty halls"
   },
   "caldera": {
    "title": "The caldera vents",
@@ -713,7 +716,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "the hiss and rumble of the vents underlies everything; sounds go flat and dull in the hot air"
   },
   "frozen lake": {
    "title": "The frozen lake",
@@ -900,7 +904,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "the open ice carries sound far and thin; the cold makes every breath a visible cloud and every gasp sharp"
   },
   "storm forest": {
    "title": "The forest clearing in a storm",
@@ -1092,7 +1097,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "rain hammering on leaves and thunder: sounds are drowned or torn away, a cry only heard close by"
   },
   "wreck": {
    "title": "The wreck on the reef",
@@ -1271,7 +1277,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "hollow timber and the slap of water: a thud booms through the hull, a whimper is swallowed by the waves"
   },
   "desert ruins": {
    "title": "The ruins in the sandstorm",
@@ -1415,7 +1422,8 @@
      ],
      "parts": 2
     }
-   ]
+   ],
+   "acoustics": "the wind and the hiss of blown sand blur every sound; voices go dry and hoarse"
   },
   "crystal mine": {
    "title": "The crystal mine",
@@ -1579,7 +1587,8 @@
      ],
      "parts": 2
     }
-   ]
+   ],
+   "acoustics": "the crystals ring faintly with every loud sound; a scream sets them chiming, and the tunnels throw echoes back"
   },
   "clock tower": {
    "title": "The clock tower works",
@@ -1764,7 +1773,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "the ticking and grinding of the gears under everything; a cry echoes up the shaft and a held breath is lost in the ticking"
   },
   "mud swamp": {
    "title": "The mud swamp",
@@ -1894,7 +1904,8 @@
      ],
      "parts": 2
     }
-   ]
+   ],
+   "acoustics": "thick wet air deadens sound; a cry falls flat over the water, and the insects go quiet after it"
   },
   "tidal beach": {
    "title": "The tidal beach",
@@ -2019,7 +2030,8 @@
       }
      ]
     }
-   ]
+   ],
+   "acoustics": "surf and wind carry sounds away; a cry is snatched off by the wind, and only close breathing is heard"
   },
   "mountain shelf": {
    "title": "The mountain shelf",
@@ -2122,7 +2134,8 @@
      ],
      "parts": 2
     }
-   ]
+   ],
+   "acoustics": "open air and wind: sounds are torn away over the drop, nothing echoes, and the silence after a cry is huge"
   },
   "ruined temple": {
    "title": "The ruined temple",
@@ -2240,7 +2253,8 @@
      ],
      "parts": 2
     }
-   ]
+   ],
+   "acoustics": "stone walls but no roof: a cry rings off the pillars and goes up into the sky; birds outside fall silent at loud sounds"
   }
  }
 }

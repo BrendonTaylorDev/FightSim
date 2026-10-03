@@ -345,6 +345,47 @@
         "Wave Crash": 0.2,
         "Submission": 0.15
       }
+    },
+    "vulnerable": {
+      "_comment": "Caught open: a blow on someone who has no chance to roll with it, twist away or soften it lands harder. Only the biggest one applies. juggled: knocked up into the air by the last link of a chain; feinted: bit on a feint; down: lying on the ground (not pinned; close blows only).",
+      "enabled": true,
+      "juggled": 1.3,
+      "feinted": 1.25,
+      "doubled_over": 1.2,
+      "off_balance": 1.2,
+      "dazed": 1.15,
+      "flinched": 1.15,
+      "down": 1.1
+    },
+    "feint": {
+      "_comment": "A fake before the real blow (the director's \"feint\": true). Costs energy. chance the defender bites (higher when she is worn down; seen_mult per feint she has already seen from this attacker). If she bites, no dodge, clash or guard, and the blow lands at vulnerable.feinted.",
+      "enabled": true,
+      "chance": 0.55,
+      "seen_mult": 0.8,
+      "energy": 4
+    },
+    "last_stand": {
+      "_comment": "Once a fight, a fighter below below_strength % may put everything into one blow (chance each attack): mult on its power, and her energy drops to 0 after it.",
+      "enabled": true,
+      "below_strength": 15,
+      "chance": 0.5,
+      "mult": 1.5
+    },
+    "guarding_wound": {
+      "_comment": "A fighter below below_strength % shields her worst part once it reaches at_damage %: blows there x covered_mult, blows on her other side x open_mult.",
+      "enabled": true,
+      "below_strength": 60,
+      "at_damage": 150,
+      "covered_mult": 0.85,
+      "open_mult": 1.1
+    },
+    "jolts": {
+      "_comment": "What a hard hit (min_damage part damage or more) can do for a beat: breathless (chest or belly left very painful or worse), dazed (head left excruciating or worse), doubled_over (a part that was already devastated). Chances per hit.",
+      "enabled": true,
+      "min_damage": 40,
+      "breathless": 0.3,
+      "dazed": 0.25,
+      "doubled_over": 0.15
     }
   },
   "severity": {
@@ -635,7 +676,8 @@
         "excruciating",
         "devastated",
         "numb with shock"
-      ]
+      ],
+      "callback_after": 3
     },
     "watch": {
       "enabled": true,
@@ -643,7 +685,18 @@
       "words": 220,
       "hold_max_strength": 80
     },
-    "moment_cooldown_beats": 1
+    "moment_cooldown_beats": 1,
+    "fading_thoughts": {
+      "_comment": "A fighter under below_strength %: on chance of beats her italic thoughts come in fragments. The prose keeps its full detail.",
+      "enabled": true,
+      "below_strength": 20,
+      "chance": 0.4
+    },
+    "camera": {
+      "_comment": "Each part of a beat is told CLOSE (tight on bodies) or, on wide_chance of parts, WIDE (both bodies and the place). The dwell and watch parts are always close.",
+      "enabled": true,
+      "wide_chance": 0.35
+    }
   },
   "pain_tiers": [
     {
@@ -921,7 +974,15 @@
     "burn_power": 5,
     "poison_health_pct": 1.0,
     "off_balance_dodge_mult": 0.6,
-    "off_balance_power_mult": 0.85
+    "off_balance_power_mult": 0.85,
+    "breathless_power_mult": 0.85,
+    "breathless_escape_mult": 0.8,
+    "dazed_power_mult": 0.9,
+    "dazed_dodge_mult": 0.4,
+    "doubled_over_dodge_mult": 0.5,
+    "soaked_escape_mult": 1.1,
+    "soaked_slip_mult": 1.2,
+    "soaked_grip_mult": 1.1
   },
   "energy": {
     "_comment": "Stamina (0-100). Each move costs energy: by target type here, or a move's own \"energy\" in fighters.json. Everyone regains regen_per_beat each beat, plus rest_bonus if they sat the beat out. Below tired_below a fighter dodges worse. The director can't use a move she can't afford; your /commands always work.",

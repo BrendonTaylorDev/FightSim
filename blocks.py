@@ -203,6 +203,8 @@ class Blocks:
             key = cat + "|" + text
             used = self.uses.get(key, 0)
             w = (1.0 + 0.6 * len(conds)) / (1.0 + used) ** 2      # the more exactly it fits, and the less used, the better
+            if "fighter" in conds:
+                w *= float(self.cfg.get("fighter_boost", 2.5))       # written for HER: her own way of doing it
             if key in self.last and self.turn - self.last[key] < cool:
                 continue       # offered too lately: better to offer nothing than the same idea again so soon
             pool.append((key, text, w))

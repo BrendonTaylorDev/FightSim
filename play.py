@@ -689,6 +689,8 @@ class Session:
                         where.setdefault((mv, who), []).append(part.lower())
         self.narrator.move_victims, self.narrator.move_parts = hit, where
         self.narrator.injury_log = {k: list(v) for k, v in self.eng.injury_log.items()}   # for one memory a beat
+        self.narrator.first_hurt = {f.name: dict(f.learned.get("first_hurt") or {}) for f in self.eng.fighters.values()}
+        self.narrator.beat_now = self.eng.turn + 1
         self.narrator.tally = dict(getattr(self.eng, "tally", {}) or {})   # for counts in the story ("thrown twice")
         # every grip that is still on now: the story may not let one go on its own
         self.narrator.grips = [(h.attacker, h.defender, h.part, h.with_part) for h in self.eng.holds.values()]

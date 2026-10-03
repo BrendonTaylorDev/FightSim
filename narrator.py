@@ -2163,6 +2163,9 @@ class Narrator:
             how = a.get("launch") or "knocked down"
             verb = {"launched": "is LAUNCHED through the air", "thrown": "is THROWN",
                     "knocked down": "is KNOCKED DOWN"}.get(how, "goes down")
+            if a.get("spiked_by"):
+                verb = (f"is SMASHED BACK DOWN out of the air by {poss(a['spiked_by'])} blow (she never landed from the "
+                        f"launch: this is her landing, and a hard one)")
             if a.get("from_ground"):
                 verb = ("was LYING ON THE GROUND when it hit (she was never standing this beat): the blow smashes into "
                         "her where she lies and sends her skidding, rolling, and tumbling across the ground")
@@ -2379,6 +2382,29 @@ class Narrator:
                 lines.append(f"  - {rf['kind'].upper()} (after the hits below land on her): {rf['by']} TAKES the hit and "
                              f"SENDS IT BACK harder; the force returns onto {a['attacker']}:")
                 lines += [self._hit_line(h) for h in rf["hits"]]
+            if a.get("feint"):
+                fe = a["feint"]
+                lines.append(f"  - A FEINT first: {a['attacker']} fakes one way before the real blow. " + (
+                    f"{a['defender']} BITES on it: she commits to answering the fake, and the real blow comes in while "
+                    f"she is turned the wrong way, wide open, with no time to twist, roll with it or soften it (it "
+                    f"lands harder for that)." if fe["bit"] else
+                    f"{a['defender']} READS it and doesn't commit; the real blow comes as an ordinary attack."))
+            if a.get("juggled_up"):
+                lines.append(f"  - The blow knocks {a['defender']} UP OFF HER FEET into the air: she is still in the air, "
+                             f"helpless, when the next blow comes (listed next). She does not land before it.")
+            if a.get("juggle"):
+                lines.append(f"  - A JUGGLE: {a['defender']} is still in the air from the last blow, helpless, nothing "
+                             f"under her to push from, and this one catches her there (it lands harder for that) and "
+                             f"smashes her back down to the ground (the landing below).")
+            if a.get("last_stand"):
+                lines.append(f"  - LAST STAND: {a['attacker']} is nearly spent, and she puts EVERYTHING she has left into "
+                             f"this one blow: it is harder than anything she has thrown in a while, and afterwards she "
+                             f"has nothing left at all, emptied out, barely able to stay up.")
+            if a.get("guarding"):
+                gd = a["guarding"]
+                lines.append(f"  - {a['defender']} is GUARDING her {gd['part'].lower()} without thinking, shoulder or "
+                             f"limb or body curled to cover it" + (f", which leaves her {gd['open_side']} side open"
+                                                                    if gd.get("open_side") else "") + ".")
             g = a.get("guard") or {}
             if g.get("kind") == "block":
                 lines.append(f"  - A BLOCK: {a['defender']} sees it coming and gets her {g['part'].lower()} in its way "
@@ -4074,8 +4100,9 @@ class Narrator:
 
         def mind(who, role, other, **more):      # one thought and one feeling that fit where the fight stands
             st = standing(who, other) if other else {"level"}
-            add(f"{poss(who)} thought", B.pick("thought", 1, role={role} | (st - {"level"}), stage=stage, standing=st, **more))
-            add(f"what {who} feels", B.pick("emotion", 1, role={role}, stage=stage, standing=st, **more))
+            add(f"{poss(who)} thought", B.pick("thought", 1, role={role} | (st - {"level"}), stage=stage, standing=st,
+                                                 fighter=who.lower(), **more))
+            add(f"what {who} feels", B.pick("emotion", 1, role={role}, stage=stage, standing=st, fighter=who.lower(), **more))
 
         def hits_on(who):        # [(damage taken, part, damage BEFORE its first hit this beat, damage after, action index)]
             out, first_b4 = [], {}
@@ -4123,7 +4150,8 @@ class Narrator:
                     "raw", 1, fmt={"part": part.lower()}, raw=self.RAW_LEVELS[raw][0], has=feats(who))
                     + B.pick("reaction", 1, size=self._strength_key(taken), has=feats(who)))
             else:
-                add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who)))
+                add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who),
+                                                                   fighter=who.lower()))
             mind(who, "receiver", by)
             if who not in (getattr(self, "pinned_now", None) or ()):
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
@@ -4164,9 +4192,11 @@ class Narrator:
                         "sensation", 1, fmt={"part": p}, level=lv, zone=z, has=feats(who),
                         part=set(re.findall(r"[a-z]+", p))))
                     add(f"what it does to {poss(who)} body now", B.pick("dwell", 1, fmt={"part": p}, zone=z,
-                                                                        has=feats(who), state=state(who)))
+                                                                        has=feats(who), state=state(who),
+                                                                        fighter=who.lower()))
                 raw = (getattr(self, "_raw_done", None) or {}).get(who)
                 add(f"a reaction of that size from {who}", B.pick("held_in", 2, state=state(who), has=feats(who),
+                                                                   fighter=who.lower(),
                                                                    raw={self.RAW_LEVELS[raw][0]} if raw is not None else None))
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who))
                     + B.pick("dwell_breath", 1, state=state(who)))
@@ -4178,10 +4208,12 @@ class Narrator:
                           None)
             if victim:
                 add(f"what {who} can see of {victim}", B.pick("watch", 2, fmt={"part": m.get("part", "wound")},
+                                                               fighter=who.lower(),
                                                                has=feats(victim), state=state(victim),
                                                                posture=posture(victim, end=True)))
                 add(f"what {who} can see of {victim}", B.pick("tell", 1, has=feats(victim), state=state(victim)))
-            add(f"{poss(who)} thought", B.pick("watch_thought", 1, state=state(victim) if victim else None))
+            add(f"{poss(who)} thought", B.pick("watch_thought", 1, state=state(victim) if victim else None,
+                                                 fighter=who.lower()))
             add(f"what {who} feels", B.pick("emotion", 1, role={"attacker"}, stage=stage))
             add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
             return self._blocks_plan(lines, "act", False, last, who, victim)
@@ -4216,6 +4248,16 @@ class Narrator:
             if a.get("missed_charge"):
                 side[0] = "act" if act else "take"
                 add(f"{poss(att_)} charge, missing", B.pick("crash", 1, has=feats(att_)))
+            if a.get("feint") and (a["feint"].get("bit") or act):
+                side[0] = "act" if act else "take"
+                add("the feint", B.pick("feint", 1, moment={"bit" if a["feint"].get("bit") else "read"},
+                                        fighter=(att_ if act else dfn_ or "").lower()))
+            if a.get("juggle") or a.get("juggled_up"):
+                side[0] = "take" if take else "act"
+                add(f"{dfn_} in the air", B.pick("juggle", 1, moment={"caught" if a.get("juggle") else "up"}))
+            if take and a.get("last_stand"):
+                side[0] = "take"
+                add(f"{poss(att_)} last stand", B.pick("last_stand", 1))
             if take and a.get("into_mouth"):
                 side[0] = "take"
                 add(f"{dfn_}, choking on the water", B.pick("sputter", 1, has=feats(dfn_)))
@@ -4276,7 +4318,8 @@ class Narrator:
                         and not any((x.get("takedown") or {}).get("told") for x in pin_now):
                     add(f"a way {a_} might take her down", B.pick("takedown", 1, has=feats(a_)))
                 if not escaped:
-                    add(f"{a_}, holding the pin", B.pick("pin_hold", 1, has=feats(a_), state=state(a_), facing=face))
+                    add(f"{a_}, holding the pin", B.pick("pin_hold", 1, has=feats(a_), state=state(a_), facing=face,
+                                                         fighter=a_.lower()))
                     add(f"what holding it costs {a_}", B.pick("pin_strain", 1, held=held_w, has=feats(a_)))
                 # (on the beat she breaks out, too: what the pinner sees and thinks just before it goes)
                 add(f"what {a_} can see of {d_}", B.pick("tell", 1, has=feats(d_), posture={"pinned"},
@@ -4289,7 +4332,8 @@ class Narrator:
 
             def pinned_side():
                 if not escaped:
-                    add(f"{d_}, under the pin", B.pick("pin_under", 2, fade=fade, has=feats(d_), facing=face))
+                    add(f"{d_}, under the pin", B.pick("pin_under", 2, fade=fade, has=feats(d_), facing=face,
+                                                       fighter=d_.lower()))
                 pressed = sorted(list((e or {}).get("pressure_hits") or []) + [
                     x["hits"][0] for x in also or () if x.get("type") == "hold_ongoing" and x.get("defender") == d_
                     and x.get("hits")], key=lambda h: -h.get("damage_after", 0))
@@ -6481,6 +6525,53 @@ class Narrator:
 
     BAD_LEVELS = ("very painful", "excruciating", "devastated", "numb with shock")
 
+    def _sound_note(self):
+        """How this place carries sound (scenes.json acoustics): for the sounds fighters make and try to hold in."""
+        ac = str((getattr(self, "scene_cfg", None) or {}).get("acoustics") or "").strip()
+        return f"SOUND IN THIS PLACE (for the sounds they make, and the ones they try to keep in): {ac}\n\n" if ac else ""
+
+    def _fading_thoughts_note(self):
+        """A fighter who is fading (narration.fading_thoughts): on some beats her THOUGHTS come in fragments. Only her
+        thoughts: the prose around them keeps its full detail."""
+        cfg = (self.rules.get("narration") or {}).get("fading_thoughts") or {}
+        if not cfg.get("enabled", True):
+            return ""
+        low = [w for w, st in (getattr(self, "strengths", None) or {}).items()
+               if st is not None and st < float(cfg.get("below_strength", 20))
+               and random.random() < float(cfg.get("chance", 0.4))]
+        if not low:
+            return ""
+        return (f"FADING THOUGHTS: this beat, {' and '.join(low)} {'is' if len(low) == 1 else 'are'} fading, and "
+                f"{'her' if len(low) == 1 else 'their'} italic thoughts come in fragments (a word or two, broken off). "
+                f"ONLY the thoughts: the prose around them keeps its full detail, body, breath and sound.\n\n")
+
+    def _camera_note(self, key):
+        """How close this part is told (narration.camera): close in on one body, or wide on both and the place."""
+        cfg = (self.rules.get("narration") or {}).get("camera") or {}
+        if not cfg.get("enabled", True):
+            return ""
+        if key in ("dwell", "watch"):
+            close = True
+        else:
+            close = random.random() >= float(cfg.get("wide_chance", 0.35))
+        return ("\nCAMERA for this part: CLOSE. Stay tight on bodies: one paw, one breath, an eye, the fur over a "
+                "wound, the smallest movements." if close else
+                "\nCAMERA for this part: WIDE. Pull back: both bodies at once, the distance and angle between them, "
+                "the place around them, then come in for the detail that matters.")
+
+    def _callback_clause(self, who, part):
+        """For the dwell part: the FIRST time this part was hurt, if that was a good while ago (narration.dwell
+        callback_after beats): the old hurt and the new one meet, and she remembers it."""
+        first = ((getattr(self, "first_hurt", None) or {}).get(who) or {}).get(part)
+        now = int(getattr(self, "beat_now", 0) or 0)
+        gap = int(((self.rules.get("narration") or {}).get("dwell") or {}).get("callback_after", 3))
+        if not first or now - int(first[1]) < gap:
+            return ""
+        cause, when = first
+        return (f"; a CALLBACK, in a line or two (a memory, not a retelling): this {part.lower()} was first hurt "
+                f"{now - int(when)} beats ago, by {cause}, and she feels the old hurt and this new one meet in the same "
+                f"place, and remembers that first moment")
+
     def _extra_moments(self, bundle, acts, pin_events):
         """After a blow (or a squeeze) on someone already badly hurt: extra parts of the beat that stay with what it
         DID, with nothing new happening. 'dwell': her side, slowed right down (the hurt settling in, breath, the sounds
@@ -6546,6 +6637,7 @@ class Narrator:
                 f"sweat under the fur); her breathing, heavy and ragged, catching where it hurts; the sounds she tries "
                 f"to keep in (a whine through her teeth, a hiss, a cry she bites off) and whether she manages to"
                 + (" (by now she mostly can't)" if raw is not None and raw >= 2 else "")
+                + self._callback_clause(v, part)
                 + f"; her thoughts, short and in her own voice; how she looks at {by or 'her opponent'} now. TRUE TO "
                 f"SIZE: her {part.lower()} is now {label} and she has about {strength:.0f}% of her strength left; the "
                 f"length comes from attention and detail, not from making it worse. No sobbing or weeping. " + stays)})
@@ -6645,6 +6737,7 @@ class Narrator:
             words = int(words * float(n.get("turning_point_length", 1.3)))
         self._facts = ("WHAT HAPPENS IN THIS BEAT (nothing else happens):\n" + self.describe(bundle)
                        + "\n\nCURRENT CONDITION (after this beat):\n" + condition_summary)
+        context += self._sound_note() + self._fading_thoughts_note()
         self._moments = self._extra_moments(bundle, acts, pin_events)
         linger, extra = self._linger() if not self._moments else ("", 0)
         if linger:
@@ -6807,6 +6900,7 @@ class Narrator:
             check = key == "take" or (i == len(plan) and "take" not in [k for k, _, _ in plan])
             self._sample_want = self._sample_tags(key, acts, pin_events, also_now)
             ask += self._blocks_for(key, acts, pin_events, also_now, actor, receivers, i == 1, i == len(plan))
+            ask += self._camera_note(key)
             part = self._call(context + ask, seg_words, coverage=check, prior=so_far)
             written.append(self._drop_repeats(part, so_far) if so_far else part)  # no re-telling earlier parts
             if written[-1]:

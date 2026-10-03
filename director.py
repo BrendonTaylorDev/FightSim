@@ -55,7 +55,12 @@ BIG HITS MOVE BODIES. Pokemon moves are powerful: a solid hit rarely touches jus
   sitting: she is still on the ground, but her chest, belly and throat in front and her back and neck behind are
   all in reach, for a strike or for a choke from behind); "pick up" (lift her bodily off the ground: to slam her
   back down or throw her); or "stand her up" (drag her onto her feet and hold her there to be hit standing).
-  The last three can't be done to a fighter who is pinned. A WINGED fighter may instead "take off" (she rises
+  The last three can't be done to a fighter who is pinned.
+- "feint" (usually false): true when the attacker FAKES first and then throws the real blow. If the defender bites,
+  she can't dodge, clash or guard it and it lands on her caught open; if she reads it, it's an ordinary attack.
+  Use it now and then, never every beat. A JUGGLE: a strike that "launch"es her as the first link of a CHAIN and a
+  second strike on her as the next link catches her in the air, helpless, and smashes her back down (both land
+  harder). A WINGED fighter may instead "take off" (she rises
   into the air before her action: only beams, blasts and streams reach her there, and her close moves become
   dives from above) or "land" (she comes down by choice). A fighter in the air can't be grabbed or pinned; a
   wing hurt badly enough brings her down. Carry moves (Sky Drop) need her in the air first. Use one NOW AND THEN, rarely, when it serves the moment
@@ -324,12 +329,13 @@ def action_schema(engine):
             "hold_id": {"type": "integer"},
             "ramp": {"type": "string", "enum": list(sev["hold_ramp"])},
             "flavor": {"type": "string"},
+            "feint": {"type": "boolean"},
         },
         # Every field is required: local models tend to skip optional ones.
         # Fields that don't apply to the chosen action are simply ignored by the engine.
         "required": ["intent", "action", "move", "improvised_name", "improvised_type", "attacker", "defender", "part", "severity",
                      "count", "hits", "launch", "reposition", "landing", "sustain", "pinned_against", "charge_into", "hold_id",
-                     "ramp", "flavor"],
+                     "ramp", "flavor", "feint"],
     }
 
 
@@ -703,7 +709,7 @@ def resolve(engine, b):
                                       sustain=int(b.get("sustain") or 0), against=b.get("pinned_against") or "",
                                       charge_into=str(b.get("charge_into") or "").strip()
                                       if str(b.get("charge_into") or "").strip().lower() not in ("none", "no", "n/a") else "",
-                                      pummel=pummel)
+                                      pummel=pummel, feint=bool(b.get("feint")) and len(by_def) == 1)
                    for who, parts in by_def.items()]
         res = results[0]
         if len(results) > 1:  # one spread move catching several fighters
@@ -882,6 +888,24 @@ GROUND_LIKE = re.compile(r"floor|ground|stone|rock|pool|water|ledge|channel|shal
                          r"plating|planks?|planking|boards|ice|snow|grass|gravel|flagstones?|basalt|shelf|earth|dirt", re.I)
 
 
+def _juggle_next(engine, b, res, actions, i, limit):
+    """Is this strike a launch that the NEXT action follows up on her in the air (a juggle)? moves.vulnerable.juggled"""
+    if not isinstance(res, dict) or res.get("type") != "instant" or not res.get("hits") or res.get("dodged") \
+            or res.get("environment") or len(res.get("defenders") or [1]) > 1 or i >= min(limit, len(actions)):
+        return False
+    launch = str(b.get("launch") or "none").lower()
+    if launch in ("none", "staggered", ""):
+        launch = str(res.get("auto_launch") or "")
+    if launch != "launched" or (b.get("landing") or []):
+        return False
+    who = res.get("defender")
+    if not who or engine.get(who).eliminated or engine.pinned_by(engine.get(who).name):
+        return False
+    nxt = actions[i]
+    return (nxt.get("action") in ("strike", "combo") and str(nxt.get("defender") or "").lower() == str(who).lower()
+            and str(nxt.get("move") or "none").lower() != "none")
+
+
 def _landing(engine, b, res):
     """A strike that knocks down, throws, or launches: the defender crashes into the arena (environmental hits)."""
     if (res.get("type") != "instant" or res.get("environment") or not res.get("hits") or res.get("confused_self_hit")
@@ -921,6 +945,10 @@ def _landing(engine, b, res):
         if not explicit:
             return None  # already on the ground: there's nowhere further to fall
         in_place = True  # already down: smashed against what's beside her, not knocked down again
+    if not impacts and res.get("spiked_by"):
+        # knocked up into the air and smashed back down out of it by the next blow: the landing is a hard one
+        impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": "heavy"}]
+        launch = "thrown"
     if not impacts and res.get("drop_severity"):
         # dropped out of the air (carried up and let go, or a wing gave out): the height decides how hard
         impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": res["drop_severity"]}]
@@ -931,10 +959,12 @@ def _landing(engine, b, res):
             impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": "solid"}]
     word = "driven into" if in_place else (launch if launch != "none" else "knocked down")
     out = engine.land(who, [(x.get("surface"), x.get("parts") or [], x.get("severity")) for x in impacts],
-                      credited=res["attacker"], thrown=thrown, in_place=in_place, can_recover=thrown and not manual,
+                      credited=res.get("spiked_by") or res["attacker"], thrown=thrown, in_place=in_place, can_recover=thrown and not manual,
                       tumble=True if b.get("tumble") else (None if not manual else False),
                       how=f"{word}: " + " → ".join(short_phrase(x.get("surface"), default="the ground") for x in impacts))
     out["launch"] = "driven down" if out.get("in_place") else launch
+    if res.get("spiked_by"):
+        out["spiked_by"] = res["spiked_by"]
     return out
 
 
@@ -1009,6 +1039,7 @@ def resolve_many(engine, actions):
             limit = whole[0][1]          # one run from the first action on: all of it is played
     links = _chain_links(actions[:limit])
     engine._chain_on = None
+    engine._juggle, engine._feint_open = None, None
     dropped = []      # links of a chain that could not be thrown: (move, why)
     try:
         for i, b in enumerate(actions[:limit], start=1):
@@ -1135,7 +1166,27 @@ def resolve_many(engine, actions):
             if link and isinstance(res, dict) and res.get("dodged") and link[0] < link[1]:
                 res["chain"]["ended"] = "dodged"      # she slipped this one: what was meant to follow never comes
                 break
-            land = _landing(engine, b, res)
+            jg = engine._juggle
+            if jg and isinstance(res, dict) and res.get("type") == "instant" and res.get("defender") == jg["who"]:
+                # the follow-up caught her in the air: it smashes her back down (her landing from the launch, harder)
+                engine._juggle = None
+                res["juggle"] = {"launched_by": jg["res"].get("attacker")}
+                jg["res"]["spiked_by"] = res.get("attacker")
+                land = _landing(engine, jg["b"], jg["res"]) if res.get("hits") else _landing(engine, jg["b"], dict(jg["res"], spiked_by=None))
+            elif jg:
+                engine._juggle = None       # nothing followed her up: she lands from the launch as usual
+                jg["res"].pop("juggled_up", None)
+                land0 = _landing(engine, jg["b"], jg["res"])
+                if land0:
+                    results.append(land0)
+                land = _landing(engine, b, res)
+            elif _juggle_next(engine, b, res, actions, i, limit):
+                engine._juggle = {"who": engine.get((res.get("defenders") or [res.get("defender")])[0]).name,
+                                  "b": b, "res": res}
+                res["juggled_up"] = True
+                land = None
+            else:
+                land = _landing(engine, b, res)
             if land:
                 results.append(land)
             # a hard enough hit shakes loose whatever the fighter it lands on was holding with
@@ -1164,11 +1215,20 @@ def resolve_many(engine, actions):
                     if loose:
                         r["knock_on"] = list(r.get("knock_on") or []) + loose
                         started = tuple(i for i in started if i in engine.holds)
+        if engine._juggle:
+            # launched for a follow-up that never came (cut short, dodged, refused): she comes down from the launch
+            jg, engine._juggle = engine._juggle, None
+            land = _landing(engine, jg["b"], jg["res"])
+            jg["res"].pop("juggled_up", None)
+            if land:
+                results.append(land)
     except Exception:
         engine._chain_on = None
+        engine._juggle = None
         engine.restore_state(snap)
         raise
     engine._chain_on = None
+    engine._juggle, engine._feint_open = None, None
     if dropped:
         # the chain as it really went: number the links that happened, and say what was left out and why. A "chain"
         # with one link left is simply an attack
