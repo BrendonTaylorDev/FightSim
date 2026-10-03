@@ -448,6 +448,9 @@ class Display:
                        + ({"choking": " It was the choke that took her under"
                                       + (f" ({(e.get('out_cause') or {}).get('with')} on her {(e.get('out_cause') or {}).get('part')})"
                                          if (e.get('out_cause') or {}).get('part') else "") + ".",
+                           "constriction": " It was the constriction that took her under"
+                                           + (f" ({(e.get('out_cause') or {}).get('with')} round her {(e.get('out_cause') or {}).get('part')})"
+                                              if (e.get('out_cause') or {}).get('part') else "") + ": her circulation cut off, her heart slowing.",
                            "pain": " It was the pain that took her under"
                                    + (f" (her {(e.get('out_cause') or {}).get('part')})" if (e.get('out_cause') or {}).get('part') else "")
                                    + "."}.get((e.get("out_cause") or {}).get("cause"), "") if e.get("elimination") else ""))

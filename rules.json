@@ -100,6 +100,15 @@
       "stay_chance": 0.5,
       "near_share": 0.7
     },
+    "_into_mouth_comment": "A Water stream (not a charge) that lands on her face, or on her while she lies face-up or pinned face-up, may go into her open mouth and up her nose: chance (x held_mult when the stream is held on her, x face_up_mult, x point_blank_mult; at most 0.9). She comes up SPUTTERING for `beats`: coughing it up, short of breath, no energy back, weaker escapes and dodges. Never drowning. enabled false = off.",
+    "into_mouth": {
+      "enabled": true,
+      "chance": 0.3,
+      "held_mult": 1.8,
+      "face_up_mult": 1.5,
+      "point_blank_mult": 1.4,
+      "beats": 2
+    },
     "_limb_limits_comment": "A move thrown WITH a badly hurt limb lands weaker: a chop or a slash with a ruined paw or arm, a charge or a kick on a ruined leg, a bite with a ruined jaw, a horn strike with a ruined horn, a tail strike with a ruined tail. 'at': the damage % on the worst such part, and the power multiplier from there (150 = excruciating, 300 = devastated). Streams, beams and whole-body moves are not thrown with a limb. enabled false = off.",
     "limb_limits": {
       "enabled": true,
@@ -656,6 +665,14 @@
   "holds": {
     "_comment": "first_beat_damage: a hold (jaws on the throat, tails round a leg, coils) hurts from the beat it starts: the clamp itself lands as that much of one beat's pressure (1 = a full beat's worth, 0.5 = half, 0 = nothing until the next beat, as before build 93). Change live with /holdstart. A pin's presses have their own setting, pin.first_beat_damage.",
     "first_beat_damage": 1.0,
+    "_coil_comment": "A COIL (Wrap, Bind, Constrict, Tail Bind, or tails, coils or a body wound round her): a hold that tightens by `tighten` every beat (up to max_power) and leaves her CONSTRICTED while it holds (breath squeezed: no energy back, weak blows from trapped limbs, hardly any dodge). It is harder to wrench out of (break chance x break_mult). A coil can become a PIN, and a coiled fighter is easy to pin (an opening at least pin_opening of the time): the coiler bears her down in the coils and they become the pin's presses. A pin with coils in it takes her under by CONSTRICTION (her circulation cut off, her heart slowing, never stopping; she wakes as usual), and faster (x pin_fade_mult).",
+    "coil": {
+      "tighten": 2,
+      "max_power": 30,
+      "break_mult": 0.75,
+      "pin_fade_mult": 1.2,
+      "pin_opening": 0.5
+    },
     "_break_comment": "A plain hold (not a pin) has no time limit. Each beat after the one it starts in, once its pressure has landed, the held fighter gets one roll to wrench free. Chance = base x her condition against the holder's ((0.25 + her share of health) / (0.25 + the holder's), between 0.3 and 2.5) x how light the grip is (reference_power / the grip's power, between 0.4 and 1.5) x how hurt the gripping limb is (up to x2 at 150% damage) + per_beat for every beat the grip has already been on; x below_zero_mult once her health is below zero; half when paralyzed, x1.5 on an adrenaline surge; never above max; none while she is asleep or frozen. base 0 = no roll: only the director, a knockdown or a throw ends a hold. Change live with /holdbreak.",
     "break": {
       "base": 0.12,
@@ -827,6 +844,13 @@
     "paralyzed_power_mult": 0.75,
     "_stiff_comment": "stiff (after breaking out of a pin) and cramped (after holding a long one): power and dodge multipliers.",
     "stiff_power_mult": 0.85,
+    "_constricted_comment": "constricted (held in coils): power of what she throws with her trapped limbs, dodge, and energy lost each beat. sputtering (water in her mouth): power, dodge, pin escape.",
+    "constricted_power_mult": 0.75,
+    "constricted_dodge_mult": 0.3,
+    "constricted_energy_loss": 4,
+    "sputtering_power_mult": 0.9,
+    "sputtering_dodge_mult": 0.8,
+    "sputtering_escape_mult": 0.75,
     "stiff_dodge_mult": 0.6,
     "cramped_dodge_mult": 0.7,
     "paralyzed_escape_mult": 0.5,
@@ -920,7 +944,7 @@
     },
     "throat_bite_chance": 0.12,
     "throat_bite_pin_chance": 0.25,
-    "_pin_shape_comment": "pin_shape_weights: when there is an opening for a pin, the director is handed one way to build it, so pins don't all look alike (never the same shape twice running). The numbers say how often each is suggested compared with the others; 0 = never. throat_bite = jaws on the throat, weight on the chest. trapped_arm = jaws pinning a paw or forearm to the stone while a forepaw or forearm bars the throat. tail_choke = tails or coils looped round the neck, paws on the shoulders (only fighters whose tail can coil). twisted_arm = an arm wrenched out straight and pinned. leg_tangle = both legs trapped. lifted_leg = one leg hooked and hauled up off the ground, folded back (kept rare). The throat-bite ideas above now also offer chokes with other limbs and jaws clamped on a limb. Change live with /pinshape.",
+    "_pin_shape_comment": "pin_shape_weights: when there is an opening for a pin, the director is handed one way to build it, so pins don't all look alike (never the same shape twice running). The numbers say how often each is suggested compared with the others; 0 = never. throat_bite = jaws on the throat, weight on the chest. trapped_arm = jaws pinning a paw or forearm to the stone while a forepaw or forearm bars the throat. tail_choke = tails or coils looped round the neck, paws on the shoulders (only fighters whose tail can coil). twisted_arm = an arm wrenched out straight and pinned. leg_tangle = both legs trapped. lifted_leg = one leg hooked and hauled up off the ground, folded back (kept rare). coil_crush = constriction as a pin: tails or coils wound round her chest and arms, bearing her down inside them (only fighters whose tail or body can coil; she goes out from the constriction). The throat-bite ideas above now also offer chokes with other limbs and jaws clamped on a limb. Change live with /pinshape.",
     "pin_shape_weights": {
       "throat_bite": 3,
       "trapped_arm": 3,
@@ -929,7 +953,8 @@
       "leg_tangle": 2,
       "lifted_leg": 1,
       "sleeper": 1,
-      "wall_choke": 0.6
+      "wall_choke": 0.6,
+      "coil_crush": 2
     },
     "_reposition_comment": "The director may roll a downed fighter over (or onto her back, front, side) or haul her up off the ground before an attack or during a pin. reposition_cooldown = beats before the same fighter can be moved again (your /roll ignores it).",
     "reposition_cooldown": 2,

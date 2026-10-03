@@ -1463,8 +1463,14 @@ def pin_shapes(engine, pinner, target, skip=()):
         out["tail_choke"] = (f"{t['coil']} looped round her {neck} as the choke"
                              + (f", {t['fores']} pinning her {' and '.join(arms)}" if arms and t.get("fores") else "")
                              + (f", her weight on her {front}" if front else ""),
-                             [(neck, t["coil"])] + [(a, t["fores"]) for a in arms if t.get("fores")]
+                             [(neck, t["coil"] + ", looped round it")] + [(a, t["fores"]) for a in arms if t.get("fores")]
                              + ([(front, t["weight"])] if front else []))
+    if t.get("coil") and front:
+        # constriction as a pin: wound round her chest and arms, squeezing, bearing her down in the coils
+        arms = sp["upper_arm"][:2] or sp["shoulder"][:2]
+        out["coil_crush"] = (f"{t['coil']} wound round her {front}" + (f" and both her {' and '.join(arms)}" if arms else "")
+                             + ", tightening, bearing her down inside the coils so every breath is squeezed shorter",
+                             [(front, t["coil"] + ", wound round her")] + [(a, t["coil"] + ", wound round her") for a in arms])
     upper = one("upper_arm") or one("shoulder")
     if upper and t.get("fore") and front:
         out["twisted_arm"] = (f"her {upper} wrenched out straight and pinned under {t['fore']}, her weight across her {front}"

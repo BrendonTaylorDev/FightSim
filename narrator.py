@@ -1857,6 +1857,15 @@ class Narrator:
                 lines.append(f"{poss(att)} {kind} keeps pressing {dfn} (held {(min if pinned else max)(e['beats_held'] for e in old)} "
                              f"beat(s)); pressure lands ONLY on these spots, no new strikes:")
                 lines += [self._pressure_line(e["hits"][0], e.get("with", "")) for e in old]
+            if any(e.get("coil") for e in evs):
+                beats = max(e["beats_held"] for e in evs)
+                lines.append(f"  - COILS: {poss(att)} coils are wound round {dfn}"
+                             + (" and TIGHTEN again this beat" if beats > 1 else ", and they will tighten every beat")
+                             + f". They work on her BLOOD more than her breath: her circulation cut off where they "
+                             f"hold, the trapped limbs going cold, heavy and tingling, her pulse pounding in her ears "
+                             f"and then slowing, her sight greying at the edges, each breath shorter"
+                             + (", worse than the beat before" if beats > 1 else "")
+                             + f". Her heart slows; it never stops. Squeezing, not striking: no new wounds.")
             if new:
                 lines.append(f"{poss(att)} {'press' if pinned else 'grip'} CLOSES on {dfn} this beat and hurts at once: the "
                              f"clamp itself lands on these spots (it is the grip biting in, not a separate strike), and it "
@@ -2326,6 +2335,11 @@ class Narrator:
             else:
                 lines.append("  (An instant hit: any bite, grab, or grip lets go as soon as it lands. It is NOT a hold, so "
                              "nobody is still latched on afterward.)")
+            if a.get("into_mouth"):
+                lines.append(f"  - INTO HER MOUTH: the water finds {poss(a['defender'])} open mouth and goes up her nose "
+                             f"and down her throat. She chokes on it: coughing, sputtering, spitting it out, eyes and "
+                             f"nose burning, a gasp that pulls in more water before air. She coughs it up; nothing about "
+                             f"it is drowning. It leaves her SPUTTERING (short of breath for a little while).")
             sus = a.get("sustain")
             if sus:
                 later = sum(len(p["hits"]) for p in sus["pulses"])
@@ -2801,6 +2815,13 @@ class Narrator:
                                + f" that takes her under: her air, not the pain. Show it that "
                                f"way: the breath that will not come, her sight narrowing, sounds going far away, her "
                                f"limbs getting heavy. The pain is still there, but it is not what ends it.")
+                elif oc.get("cause") == "constriction":
+                    out.append(f"  - WHY SHE GOES OUT: the CONSTRICTION. The coils"
+                               + (f" round her {oc['part']}" if oc.get("part") else "")
+                               + f" have cut off her circulation: the blood held back, her limbs gone cold and heavy, her "
+                               f"pulse pounding in her ears and then slowing, slower, her sight greying in from the "
+                               f"edges, until she slips under. Her heart SLOWS; it never stops, and nothing about it is "
+                               f"fatal: she is out cold, breathing, her pulse slow and steady, and she will wake.")
                 elif oc.get("cause") == "pain":
                     out.append(f"  - WHY SHE GOES OUT: the PAIN. Nothing is stopping her breath enough to matter; it "
                                f"is the hurt"
@@ -4081,6 +4102,9 @@ class Narrator:
                     and x.get("hits")], key=lambda h: -h.get("damage_after", 0))
                 if cause == "choking":        # it is her air that goes: the press that counts is the one on her neck
                     pressed = [h for h in pressed if body_region(h["part"]) == "neck"]
+                elif cause == "constriction":  # the coils: what counts is where they are wound tightest
+                    oc_part = (((e or {}).get("out_cause") or {}).get("part") or "")
+                    pressed = [h for h in pressed if h["part"] == oc_part][:1] or pressed[:1]
                 elif cause == "pain":
                     pressed = [h for h in pressed if body_region(h["part"]) != "neck"][:1]
                 seen_parts = []

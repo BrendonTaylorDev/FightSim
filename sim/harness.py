@@ -25,9 +25,9 @@ _n.llm.chat = fake_chat
 _d.llm.chat = fake_chat
 
 
-def session(seed, scene="1", settings=()):
+def session(seed, scene="1", settings=(), fighters="Nocturne,Ripples"):
     args = argparse.Namespace(model="stand-in", director_model=None, narrator_model=None, host="", no_llm=False,
-                              hide_math=False, json=False, seed=seed, no_autosave=True, fighters="Nocturne,Ripples",
+                              hide_math=False, json=False, seed=seed, no_autosave=True, fighters=fighters,
                               scene=scene)
     s = play.Session(args)
     s.story = ["(opening)"]           # skip the arena intro

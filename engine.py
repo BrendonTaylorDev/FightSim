@@ -221,6 +221,7 @@ class Hold:
     turns_active: int = 0
     with_part: str = ""      # what the attacker presses with (her knees, teeth, coils...)
     grab: bool = False       # a grapple: she is held at point-blank, on her feet (neither can dodge the other)
+    coil: bool = False       # coils, tails or a body wrapped round her: it tightens every beat and squeezes her breath
 
 
 USER_SETTINGS = "my_settings.json"
@@ -871,7 +872,10 @@ class Engine:
                 res["knock_on"] = (res.get("knock_on") or []) + (charged.get("knock_on") or [])
             if still_against:
                 res["target_against"] = still_against
-            res["status_applied"] = (self._status_from_move(d, move) + self._restrain(a, d)
+            mouth = self._into_mouth(a, d, move, hits, bool(sustained))
+            if mouth:
+                res["into_mouth"] = mouth
+            res["status_applied"] = (self._status_from_move(d, move) + self._restrain(a, d) + (mouth or [])
                                      + list((res.get("charge") or {}).get("hazard_status") or [])
                                      + list((res.get("sustain") or {}).get("hazard_status") or []))
             launch = self._launch_from_move(move)
@@ -1398,6 +1402,10 @@ class Engine:
         out = []
         if self.has(a, "stiff"):
             out.append(("stiff from the pin", float(cfg.get("stiff_power_mult", 0.85))))
+        if self.has(a, "constricted") and any(h.coil and h.defender == a.name for h in self.holds.values()):
+            out.append(("arms trapped in the coils", float(cfg.get("constricted_power_mult", 0.75))))
+        if self.has(a, "sputtering"):
+            out.append(("choking on water", float(cfg.get("sputtering_power_mult", 0.9))))
         if self._pin_mult(a, d) != 1.0:
             out.append(("pin damage", self._pin_mult(a, d)))
         if self.has(a, "paralyzed"):
@@ -1658,8 +1666,11 @@ class Engine:
             return 0.0
         if self.grab_between(a.name, d.name):
             return 0.0   # held at point-blank: there is nowhere to go (it cuts both ways)
-        slow = (float(self._cfg("status_effects").get("stiff_dodge_mult", 0.6)) if self.has(d, "stiff") else 1.0) * \
-               (float(self._cfg("status_effects").get("cramped_dodge_mult", 0.7)) if self.has(d, "cramped") else 1.0)
+        sc = self._cfg("status_effects")
+        slow = (float(sc.get("stiff_dodge_mult", 0.6)) if self.has(d, "stiff") else 1.0) * \
+               (float(sc.get("cramped_dodge_mult", 0.7)) if self.has(d, "cramped") else 1.0) * \
+               (float(sc.get("constricted_dodge_mult", 0.3)) if self.has(d, "constricted") else 1.0) * \
+               (float(sc.get("sputtering_dodge_mult", 0.8)) if self.has(d, "sputtering") else 1.0)
         s = max(0.0, min(1.0, self.strength(d) / 100))
         legs = [p.damage for p in d.parts.values() if body_region(p.name) in ("hind_up", "hind_low", "fore_low", "tail")]
         leg = 1.0 / (1.0 + (sum(legs) / len(legs) if legs else 0) / 150.0)
@@ -2553,6 +2564,38 @@ class Engine:
             pool = [p for p in dict.fromkeys(fitted) if p != current] or pool
         return self.rng.choice(pool) if pool else current
 
+    def _into_mouth(self, a, d, move, hits, held):
+        """A stream of water that finds her face (or her, lying face-up) may go into her open mouth and up her nose:
+        she chokes on it and comes up SPUTTERING (moves.into_mouth). Likelier when it is held on her, when she is on
+        her back or pinned face-up, or held at point-blank. Never drowning: she coughs it up. Returns the status record, or None."""
+        cfg = self.rules.get("moves", {}).get("into_mouth") or {}
+        if not cfg.get("enabled", True) or move.get("type") != "Water" or move.get("charge") or not hits or d.eliminated:
+            return None
+        face = any(re.search(r"muzzle|jaw|throat|nose|head|cheek|neck", str(h.get("part", "")).lower()) for h in hits)
+        up = self.facing.get(d.name) == "face-up" and (d.name in self.downed or self.pinned_by(d.name))
+        close = bool(self.grab_between(a.name, d.name))
+        if not (face or up):
+            return None        # a stream into her belly doesn't find her mouth, however close
+        p = float(cfg.get("chance", 0.3)) * (float(cfg.get("held_mult", 1.8)) if held else 1.0) \
+            * (float(cfg.get("face_up_mult", 1.5)) if up else 1.0) * (float(cfg.get("point_blank_mult", 1.4)) if close else 1.0)
+        if not self._chance(min(0.9, p), f"{poss_word(a.name)} {move['name']} going into {poss_word(d.name)} mouth",
+                            "into her mouth", "no"):
+            return None
+        beats = int(cfg.get("beats", 2))
+        self.set_status(d, "sputtering", beats)
+        return [{"fighter": d.name, "status": "sputtering", "beats": beats, "knock_on": []}]
+
+    COIL_MOVES = ("wrap", "bind", "constrict", "tail bind", "squeeze", "coil")
+
+    def is_coil(self, move, with_part="", flavor=""):
+        """A hold made by wrapping round her (Wrap, Bind, Constrict, Tail Bind, or tails, coils or a body wound round
+        her) rather than by pressing on her."""
+        name = str((move or {}).get("name", "") if isinstance(move, dict) else move or "").lower()
+        if any(w in name for w in self.COIL_MOVES):
+            return True
+        return bool(re.search(r"\bcoil|\bwrap|wound round|wrapped round|looped round|tails? (?:round|around|wrapped)",
+                              f"{with_part} {flavor}".lower()))
+
     def pin_cap(self):
         """How hard a pin's steady pressure (and the punishment for a failed struggle) can bite into a worn-down part:
         pin.pressure_cap {"mult", "health_mult"} (null = no limit). A pin wears her down; it doesn't wreck her."""
@@ -2800,6 +2843,10 @@ class Engine:
         for pname, c in zip(names, contacts):
             started.append(self.start_hold(a.name, d.name, pname, c[1], c[2], flavor, c[3] if len(c) > 3 else "",
                                            keep_with=enforce))
+            h = self.holds.get(started[-1]["hold_id"])
+            if h is not None and self.is_coil(move, h.with_part, flavor):
+                h.coil = True
+                started[-1]["coil"] = True
         if joining:
             host.setdefault("helpers", []).append(a.name)
             self.momentum = (self.momentum + [f"{a.name}>{d.name}"])[-20:]
@@ -2960,6 +3007,8 @@ class Engine:
             ch *= 1.5
         if all(h.grab for h in hs):
             ch *= float(cfg.get("grab_mult", 1.6))   # a grab holds her close; it doesn't lock her
+        if any(h.coil for h in hs):
+            ch *= float((self.rules.get("holds", {}).get("coil") or {}).get("break_mult", 0.75))   # coils give nothing to push against
         return round(max(0.0, min(float(cfg.get("max", 0.6)), ch)), 3)
 
     def shake_grips(self, name, health_lost, why="the hit"):
@@ -3066,14 +3115,20 @@ class Engine:
             # during a pin, pressure is per reference_seconds and scales with the length of the beat
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0))
                      if in_pin else h.power) * first
-            self._source = f"{poss_word(h.attacker)} {'pin' if in_pin else 'hold'}"
+            self._source = f"{poss_word(h.attacker)} {'pin' if in_pin else 'coils' if h.coil else 'hold'}"
             hit = self._apply_damage(d, h.part, round(power, 2), cap=self.pin_cap() if in_pin else None)
             h.turns_active += 1
+            if h.coil and not d.eliminated:
+                # coils tighten every beat (holds.coil: tighten, max_power) and squeeze her breath (CONSTRICTED)
+                ccfg = self.rules.get("holds", {}).get("coil") or {}
+                h.power = round(min(float(ccfg.get("max_power", 30)), h.power + float(ccfg.get("tighten", 2))), 2)
+                self.set_status(d, "constricted", 2)
             events.append({"type": "hold_ongoing", "hold_id": h.id, "attacker": h.attacker, "hold_power": h.power,
                            "pin_mult": (round(time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)), 4)
                                         if in_pin else None),
                            "first": fresh, "first_mult": first if fresh else None,
                            "defender": h.defender, "flavor": h.flavor, "with": h.with_part, "grab": bool(h.grab),
+                           "coil": bool(h.coil),
                            "beats_held": h.turns_active, "hits": [hit], "tags": self._tags([hit])})
             if not fresh:
                 h.power = max(0, h.power + h.change_per_turn)
@@ -3144,7 +3199,11 @@ class Engine:
                 events.append({"type": "status_tick", "fighter": f.name, "status": "poisoned",
                                "health_loss": round(loss, 2), "health_after": round(f.health, 2)})
             regen = float(en.get("regen_per_beat", 5)) + (0 if f.name in self.involved else float(en.get("rest_bonus", 10)))
-            f.energy = min(100.0, f.energy + regen)
+            if self.has(f, "constricted"):      # the coils squeeze her breath: she gets none back, and loses some
+                regen = -float(cfg_s.get("constricted_energy_loss", 4))
+            elif self.has(f, "sputtering"):     # coughing water up: no breath to get back
+                regen = 0.0
+            f.energy = max(0.0, min(100.0, f.energy + regen))
             if (ad.get("enabled", True) and not f.adrenaline_used
                     and self.strength(f) < float(ad.get("below_strength", 25))):
                 f.adrenaline_used = True
@@ -3549,18 +3608,27 @@ class Engine:
             k = 1.0 + (pm - 1.0) * min(1.0, (worst - 150.0) / 150.0 + 0.4)
             gain *= k; notes.append(f"the pressed parts are in agony ×{k:.2f}")
         gain = min(gain, 100.0 / max(1.0, float(cfg.get("min_beats", 3))))
+        if on_her and any(h.coil for h in on_her):
+            cm = float((self.rules.get("holds", {}).get("coil") or {}).get("pin_fade_mult", 1.2))
+            gain *= cm; notes.append(f"coiled, her blood held back ×{cm:g}")
         return round(gain, 1), round(r, 3), notes
 
     def out_cause(self, p):
-        """Why a fighter held to the end of a pin goes out: {"cause": "choking" | "pain", "part", "with"}. It is one
+        """Why a fighter held to the end of a pin goes out: {"cause": "choking" | "pain" | "constriction", "part", "with"}. It is one
         or the other. With no grip on her neck or throat it is the pain. With one, it is usually the choke, but
         pin.fade.pain_out_share of the time (less when nothing under the press is badly hurt) the pain gets there
         first. It is colour, decided without touching the fight's dice."""
         import zlib
         dfn = self.get(p["defender"])
         holds = self._pin_holds(p)
+        # coils: the constriction cuts off her circulation and slows her heart until she goes under. When coils are
+        # part of the pin, that is what takes her (a constrictor's pin is about the squeeze, not the pain)
+        coils = [h for h in holds if h.coil]
+        if coils:
+            h = max(coils, key=lambda x: (body_region(x.part) in ("chest", "belly", "neck"), x.power))
+            return {"cause": "constriction", "part": h.part, "with": h.with_part}
         choke = [h for h in holds if body_region(h.part) == "neck"]
-        hurt = sorted((h for h in holds if h.part in dfn.parts and body_region(h.part) != "neck"),
+        hurt = sorted((h for h in holds if h.part in dfn.parts and h not in choke),
                       key=lambda h: -dfn.parts[h.part].damage)
         worst = dfn.parts[hurt[0].part].damage if hurt else 0.0
         share = float(self.rules.get("pin", {}).get("fade", {}).get("pain_out_share", 0.22)) * max(0.0, min(1.0, worst / 90.0))
@@ -3640,6 +3708,9 @@ class Engine:
             base = float(cfg.get("downed", 0.30) if down else cfg.get("standing", 0.06))
         if self.has(target, "asleep") or self.has(target, "frozen"):
             base = max(base, float(cfg.get("helpless", 0.9)))  # she can't defend herself at all
+        if any(h.coil and h.defender == target.name for h in self.holds.values()):
+            # wrapped in coils already: the coiler only has to bear her down inside them (holds.coil.pin_opening)
+            base = max(base, float((self.rules.get("holds", {}).get("coil") or {}).get("pin_opening", 0.5)))
         return max(0.0, min(1.0, base))
 
     def roll_pin_windows(self, open_all=False):
@@ -3736,6 +3807,8 @@ class Engine:
                 esc_try *= 1 - (1 - float(rcfg.get("escape_mult", 0.6))) * worn
             if self.has(dfn, "asleep") or self.has(dfn, "frozen"):
                 esc_try *= 0.1  # can barely fight back
+            if self.has(dfn, "sputtering"):
+                esc_try *= float(self._cfg("status_effects").get("sputtering_escape_mult", 0.75))
             if self.has(dfn, "adrenaline"):
                 esc_try *= float(self._cfg("adrenaline").get("escape_mult", 1.5))
             if p.get("against"):   # jammed against something solid: nowhere to bridge or roll to on that side
@@ -3823,7 +3896,7 @@ class Engine:
                 if cfg.get("faint_at_end", True):
                     ev["elimination"] = self.eliminate(
                         dfn.name, (f"held down until she passes out from "
-                                   f"{'the choke' if ev['out_cause']['cause'] == 'choking' else 'the pain'}" if fm else
+                                   f"{ {'choking': 'the choke', 'constriction': 'the constriction'}.get(ev['out_cause']['cause'], 'the pain')}" if fm else
                                    f"held down for the full {p['duration']} seconds and faints"))
                 self.pins.pop(key, None)
             events.append(ev)
@@ -4097,6 +4170,12 @@ class Engine:
     STATUS_LOOK = {
         "paralyzed": "PARALYZED: muscles locking up, sparks crawling over her, stiff and jerky, slow to react",
         "chilled": "CHILLED: frost in her fur or on her scales, shivering, limbs stiff and slow",
+        "constricted": "CONSTRICTED: coils wound round her, tightening, cutting off her circulation: her trapped limbs go "
+                       "cold, heavy and tingling, her pulse pounds in her ears and then slows, her sight greys at the "
+                       "edges, every breath is short; she gets no strength back while they hold (her heart slows, it "
+                       "never stops)",
+        "sputtering": "SPUTTERING: water forced into her mouth and up her nose: coughing, choking it up, eyes and nose "
+                      "burning, short of breath (never drowning)",
         "stiff": "STIFF from the pin she just broke: the limbs that were trapped are numb and slow to answer, pins and "
                  "needles coming back into them; her blows are weaker and she can barely dodge",
         "cramped": "CRAMPED from holding a long pin: her legs and shoulders locked up from bearing down so long, slow "
