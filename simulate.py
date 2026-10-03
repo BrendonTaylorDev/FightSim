@@ -38,7 +38,8 @@ def _pick_action(eng, rng, f, d):
     if eng.pinned_by(f.name) or eng.pinning(f.name) or f.energy < 12:
         return dict(a, action="breather")
     ok, _ = eng.pin_allowed(d.name)
-    if ok and d.name in eng.downed and f.name not in eng.downed and rng.random() < 0.45:
+    # like the director: when there is an opening it is told to go for it, and usually does
+    if ok and f.name not in eng.downed and rng.random() < 0.85:
         shapes = pin_shapes(eng, f, d)
         if shapes:
             look, contacts = rng.choice(list(shapes.values()))
