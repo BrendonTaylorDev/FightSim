@@ -404,14 +404,14 @@
       "weak_point_mult": 2.0,
       "hurt_part_mult": 1.4,
       "open_mult": 2.0,
-      "max_chance": 0.1,
+      "max_chance": 0.08,
       "mult": [
         1.7,
         2.2
       ],
       "cap_mult": 3.0,
       "cap_above": 0.7,
-      "ground_chance": 0.05,
+      "ground_chance": 0.03,
       "ground_mult": [
         1.5,
         1.9

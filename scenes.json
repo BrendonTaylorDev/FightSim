@@ -2255,6 +2255,181 @@
     }
    ],
    "acoustics": "stone walls but no roof: a cry rings off the pillars and goes up into the sky; birds outside fall silent at loud sounds"
+  },
+  "lakeside forest": {
+   "title": "The lakeside clearing",
+   "place": "the clearing",
+   "text": "A wide, grassy clearing in an old forest, open on one side to a clear lake. Tall pines and broad oaks ring it, their roots humped through the soft ground at the edges; a fallen trunk lies along the treeline, furred with moss. On the lake side the grass gives way to a soft beach of pale sand that slopes gently into warm shallows, then deeper, darker water a few lengths out. It is a warm, sunny afternoon with fat white clouds drifting over; their shadows slide across the clearing now and then. A gentle breeze comes off the water, stirring the grass and the leaves. Birds sing in the trees; the lake laps at the sand.",
+   "ground": "the grass",
+   "rough": "the root-knotted ground",
+   "slick": "the wet sand at the waterline",
+   "props": [
+    "an old oak",
+    "a tall pine",
+    "the fallen trunk",
+    "a boulder at the edge of the beach"
+   ],
+   "ambience": "birdsong, warm sun, the lap of the lake, the breeze in the leaves, the smell of pine and water",
+   "acoustics": "open air under the trees: sounds carry across the water and come back softened; a cry sends birds up out of the branches, and in the quiet after it the lake laps on as if nothing happened",
+   "details": [
+    "a cloud shadow sliding across the grass",
+    "the breeze turning the leaves silver side up",
+    "a fish rising out on the lake",
+    "the warm smell of pine resin in the sun",
+    "birdsong stopping and starting again",
+    "sunlight glittering on the shallows",
+    "pine needles soft underfoot at the edge of the trees",
+    "a dragonfly hanging over the water",
+    "the lap of small waves on the sand",
+    "dust and pollen turning gold in a shaft of light"
+   ],
+   "hazards": [
+    {
+     "name": "the shallows",
+     "words": [
+      "shallows",
+      "shallow water",
+      "lake edge",
+      "water's edge",
+      "waterline"
+     ],
+     "about": "warm, knee-deep water over sand: a fall into it is soft, but it soaks",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the deep water",
+     "words": [
+      "deep water",
+      "the lake",
+      "open water"
+     ],
+     "about": "the lake past the shallows: deep, darker, cooler",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "chilled",
+       "chance": 0.15,
+       "beats": 2
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the soft beach",
+     "words": [
+      "beach",
+      "sand"
+     ],
+     "about": "pale, soft sand: it gives under a fall and gets into everything",
+     "cushion": true
+    },
+    {
+     "name": "an old oak",
+     "words": [
+      "oak"
+     ],
+     "about": "a broad old trunk, rough bark",
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "a tall pine",
+     "words": [
+      "pine"
+     ],
+     "about": "a straight pine trunk, sticky with resin",
+     "break": 0.1,
+     "upright": true
+    },
+    {
+     "name": "the fallen trunk",
+     "words": [
+      "fallen trunk",
+      "log",
+      "trunk"
+     ],
+     "about": "a mossy fallen tree along the treeline, waist-high",
+     "break": 0.2,
+     "upright": true
+    },
+    {
+     "name": "a boulder",
+     "words": [
+      "boulder",
+      "rock"
+     ],
+     "about": "a smooth grey boulder at the edge of the beach",
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "the roots",
+     "words": [
+      "root"
+     ],
+     "about": "roots humped up through the ground at the edge of the trees: they catch a foot and scrape"
+    }
+   ],
+   "events": [
+    {
+     "name": "a gust off the lake",
+     "text": "A stronger gust comes off the lake and sweeps across the clearing",
+     "who": "standing",
+     "weight": 2,
+     "words": [
+      "gust",
+      "wind",
+      "breeze"
+     ]
+    },
+    {
+     "name": "a branch drops",
+     "text": "A dead branch cracks loose from high in an oak and drops",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "branch",
+      "oak",
+      "tree"
+     ],
+     "severity": "light",
+     "regions": [
+      "head",
+      "shoulder",
+      "back_up"
+     ],
+     "parts": 2
+    },
+    {
+     "name": "a wave washes up",
+     "text": "A boat-wake of a wave washes up the beach and over the sand",
+     "who": "down",
+     "weight": 1,
+     "words": [
+      "wave",
+      "water",
+      "shallows"
+     ],
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ]
+    }
+   ]
   }
  }
 }
