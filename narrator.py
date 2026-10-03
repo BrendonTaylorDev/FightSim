@@ -2090,6 +2090,12 @@ class Narrator:
                                         f"short blow of her own from where she is, and that is what stops it (listed "
                                         f"below). She is NOT free; {place[2]}.",
                             }.get(pm.get("ended") or "", ""))
+            if pm.get("frenzy"):
+                lines.append(f"  - A FRENZY: {att} does not stop. Past the point where she would normally stop, she "
+                             f"keeps going, blow after blow, mostly on the same place, something gone cold or wild in "
+                             f"her. Let the count be felt: the rhythm, the same spot taking it again and again, how "
+                             f"{poss(dfn)} reactions change from the first blows to the last (sharp at first, then "
+                             f"rawer, then she can't keep anything in), and what it costs {att} to keep it up.")
             if a["pummel"].get("answer"):
                 lines.append(f"  - {poss(dfn)} answering blow lands on {att} (a paw, an elbow, her head: whatever she can "
                              f"reach with from where she is held):")
@@ -4245,6 +4251,9 @@ class Narrator:
                 side[0] = "take" if take else "act"
                 add("the guard", B.pick("guard", 1, moment={"catch" if g_["kind"] == "block" else "turn"},
                                         has=feats(dfn_)))
+            if act and (a.get("pummel") or {}).get("frenzy"):
+                side[0] = "act"
+                add(f"{poss(att_)} frenzy", B.pick("frenzy", 1))
             if a.get("missed_charge"):
                 side[0] = "act" if act else "take"
                 add(f"{poss(att_)} charge, missing", B.pick("crash", 1, has=feats(att_)))

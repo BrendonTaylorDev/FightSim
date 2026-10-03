@@ -657,7 +657,7 @@ class Display:
             if a.get("juggle"):
                 out.append(f"🎯 **JUGGLE**: caught helpless in the air, and smashed back down")
             if a.get("last_stand"):
-                out.append(f"🔥 **LAST STAND**: {a['attacker']} puts everything she has left into it (×1.5; energy → 0)")
+                out.append(f"🔥 **LAST STAND**: {a['attacker']} puts everything she has left into it (×{num(float((self.rules.get('moves') or {}).get('last_stand', {}).get('mult', 1.3)))}; energy → 0)")
             if a.get("guarding"):
                 gd = a["guarding"]
                 out.append(f"🩹 {a['defender']} is guarding her {gd['part']} (blows there ×0.85"
@@ -689,6 +689,8 @@ class Display:
                 pm = a["pummel"]
                 where = {"grab": "in the grab", "pin": "from on top, in the pin", "down": "on her where she is down",
                          "against": f"against {pm.get('against') or 'the scenery'}"}.get(pm.get("where") or "grab", "in the grab")
+                if pm.get("frenzy"):
+                    out.append(f"🌪️ **FRENZY**: {a['attacker']} doesn't stop (blows keep landing on the same spot or two)")
                 out.append(f"👊 Pummel {where}: {pm['count']} short blows, each ×{pm['each']:g} of one full blow "
                            f"(power {num(pm['power'])} each)"
                            + {"spoiled": " — it ends when she twists enough to spoil the next one",

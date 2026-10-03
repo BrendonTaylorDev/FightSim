@@ -347,7 +347,7 @@
       }
     },
     "vulnerable": {
-      "_comment": "Caught open: a blow on someone who has no chance to roll with it, twist away or soften it lands harder. Only the biggest one applies. juggled: knocked up into the air by the last link of a chain; feinted: bit on a feint; down: lying on the ground (not pinned; close blows only).",
+      "_comment": "Caught open: a blow on someone who has no chance to roll with it, twist away or soften it lands harder. Only the biggest one applies. juggled: knocked up into the air by the last link of a chain; feinted: bit on a feint; down: lying on the ground (not pinned; close blows only); down_pummel: each blow of a pummel on someone lying on the ground (smaller, since every blow gets it).",
       "enabled": true,
       "juggled": 1.3,
       "feinted": 1.25,
@@ -355,7 +355,8 @@
       "off_balance": 1.2,
       "dazed": 1.15,
       "flinched": 1.15,
-      "down": 1.1
+      "down": 1.1,
+      "down_pummel": 1.04
     },
     "feint": {
       "_comment": "A fake before the real blow (the director's \"feint\": true). Costs energy. chance the defender bites (higher when she is worn down; seen_mult per feint she has already seen from this attacker). If she bites, no dodge, clash or guard, and the blow lands at vulnerable.feinted.",
@@ -369,7 +370,7 @@
       "enabled": true,
       "below_strength": 15,
       "chance": 0.5,
-      "mult": 1.5
+      "mult": 1.3
     },
     "guarding_wound": {
       "_comment": "A fighter below below_strength % shields her worst part once it reaches at_damage %: blows there x covered_mult, blows on her other side x open_mult.",
@@ -1208,7 +1209,16 @@
     "pummel_end_step": 0.1,
     "pummel_answer_chance": 0.5,
     "_pummel_in_pin_comment": "pummel_in_pin: whether the director may rain a pummel down on a fighter she has PINNED (false by default: a pin is a pin; pummels are for a grab, a fighter who is down, or one pressed against the scenery). Your own commands can always do it.",
-    "pummel_in_pin": false
+    "pummel_in_pin": false,
+    "ground_end_mult": 1.35,
+    "frenzy": {
+      "_comment": "Now and then (chance per pummel) a pummel turns into a frenzy: the chance to end after each blow is x end_mult, each extra blow costs energy x energy_mult, and the blows keep going back to the same spot (stay_chance) or the one right beside it. health.soft_cap still keeps the health loss of one beat in bounds; the parts take it all. ground_end_mult: a pummel on someone lying on the ground otherwise ends a little sooner.",
+      "enabled": true,
+      "chance": 0.08,
+      "end_mult": 0.3,
+      "energy_mult": 0.5,
+      "stay_chance": 0.7
+    }
   },
   "variety": {
     "_comment": "HOW an outcome plays out once the dice have decided WHAT happens. Each entry is a set of ways with weights (compared with the others in the same set); the engine picks one each time and tells the narrator, so the story varies without ever contradicting the result. Raise a weight to see that way more often; 0 removes it. /variety shows and changes them. charge_stands: a fighter who keeps her feet after being charged into the scenery. charge_falls: one who crumples (lying three ways, or sitting against it). dodge: how an attack is avoided. hold_break: how a hold is broken. hold_strain: how a held fighter fights a grip that stays on. struggle: what a pinned fighter tries. getup_fail / getup_rise: how a try at getting up fails, and how she finally rises.",

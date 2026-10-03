@@ -796,6 +796,16 @@ class Engine:
             extra = float(gcfg.get("energy_per_extra_hit", 3))
             asked, ended = len(plan), None
             start_p, step_p = float(gcfg.get("pummel_end_start", 0.25)), float(gcfg.get("pummel_end_step", 0.10))
+            where = pummel if isinstance(pummel, str) else "grab"
+            fz = gcfg.get("frenzy") or {}
+            # now and then a pummel doesn't stop: blow after blow, mostly on the same spot or two (grapple.frenzy);
+            # otherwise one on someone lying on the ground runs a little shorter (ground_end_mult)
+            frenzy = bool(enforce and fz.get("enabled", True) and self._chance(
+                float(fz.get("chance", 0.08)), f"{poss_word(a.name)} pummel turning into a frenzy", "FRENZY", "no"))
+            end_mult = float(fz.get("end_mult", 0.3)) if frenzy else (
+                float(gcfg.get("ground_end_mult", 1.35)) if where == "down" else 1.0)
+            if frenzy:
+                extra *= float(fz.get("energy_mult", 0.5))     # past tiredness: it costs her less breath than it should
             if enforce and start_p <= 0 and step_p <= 0:
                 n = min(asked, cap or hard or asked)      # no chance to end: the count asked for stands (the old rule)
             elif enforce:
@@ -809,7 +819,7 @@ class Engine:
                     if a.energy < extra * n:
                         ended = "out of breath"
                         break
-                    p = self.run_break_chance(a, d, n - 2, start_p, step_p)
+                    p = min(0.95, self.run_break_chance(a, d, n - 2, start_p, step_p) * end_mult)
                     if p > 0 and self.rng.random() < p:
                         ended = "spoiled" if self.rng.random() < 0.5 + 0.4 * (self.strength(d) - self.strength(a)) / 100.0 \
                             else "out of breath"
@@ -833,12 +843,16 @@ class Engine:
                 # nobody said where each blow goes: after the first, the dice keep it on the same spot or move it
                 plan = [names[0]]
                 for k in range(1, n):
-                    plan.append(self.next_target(d.name, plan[-1], f"pummel blow {k + 1}"))
+                    if frenzy:     # she keeps going back to the same place, or the one right beside it
+                        plan.append(self.next_target(d.name, plan[-1], f"pummel blow {k + 1}",
+                                                     stay=float(fz.get("stay_chance", 0.7)), near_only=True))
+                    else:
+                        plan.append(self.next_target(d.name, plan[-1], f"pummel blow {k + 1}"))
             else:
                 plan = [names[0]] * n
             powers = [round(math["effective"] * each, 2)] * n
             pum = {"count": n, "each": each, "power": powers[0], "ended": ended, "answer": [], "parts": list(plan),
-                   "where": pummel if isinstance(pummel, str) else "grab",
+                   "where": where, "frenzy": frenzy,
                    "against": (self.pressed.get(d.name) or {}).get("surface") or "",
                    "lying": self.facing_of(d.name) if d.name in self.downed else None}
         spill_cfg = self.rules.get("moves", {}).get("auto_spill", {})
@@ -2691,19 +2705,19 @@ class Engine:
         h = self.grab_between(holder, held)
         return bool(h) and h.attacker == self.get(holder).name
 
-    def next_target(self, defender, current, why="the next blow"):
+    def next_target(self, defender, current, why="the next blow", stay=None, near_only=False):
         """Where the next blow of a pummel or the next link of a chain lands when nobody has said: the dice decide
         between the same spot again and a new one (moves.repeat_target: stay_chance, near_share). A new spot is
         usually right next to the last (near_share), otherwise anywhere she can be reached."""
         cfg = self.rules.get("moves", {}).get("repeat_target", {}) or {}
         d = self.get(defender)
-        stay = float(cfg.get("stay_chance", 0.5))
+        stay = float(cfg.get("stay_chance", 0.5)) if stay is None else float(stay)
         if stay >= 1 or self._chance(stay, f"{why} landing on {current} again", "same spot", "somewhere new"):
             return current
         same, near = neighbor_parts(list(d.parts), current)
         pool = [p for p in same + near if p != current]
-        if not pool or self.rng.random() >= float(cfg.get("near_share", 0.7)):
-            pool = [p for p in d.parts if p != current]
+        if not pool or (not near_only and self.rng.random() >= float(cfg.get("near_share", 0.7))):
+            pool = [p for p in d.parts if p != current]     # (near_only: always the spot beside it, when there is one)
         if d.name in self.downed or self.pinned_by(d.name):
             fitted, _ = self.fit_to_facing(d.name, pool)      # only what is turned toward her attacker
             pool = [p for p in dict.fromkeys(fitted) if p != current] or pool
@@ -2937,9 +2951,10 @@ class Engine:
                                      ("flinched", "caught flinching", "flinched", 1.15)):
             if self.has(d, st):
                 opts.append((label, float(cfg.get(key, dflt))))
-        if d.name in self.downed and not self.pinned_by(d.name) and not self.is_ranged(move) \
-                and not getattr(self, "_pummel_now", False):      # (a pummel on the ground has its own rules)
-            opts.append(("down, nowhere to roll with it", float(cfg.get("down", 1.1))))
+        if d.name in self.downed and not self.pinned_by(d.name) and not self.is_ranged(move):
+            # a pummel on the ground lands blow after blow: each one gets its own, smaller bonus (down_pummel)
+            opts.append(("down, nowhere to roll with it",
+                         float(cfg.get("down_pummel", 1.04) if getattr(self, "_pummel_now", False) else cfg.get("down", 1.1))))
         opts = [o for o in opts if o[1] != 1.0]
         return max(opts, key=lambda o: o[1]) if opts else None
 

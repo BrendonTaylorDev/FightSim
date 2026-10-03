@@ -760,7 +760,7 @@ After each beat's prose, the program prints the exact numbers in this format:
   travels, late-fight thoughts, struggling, landings, dodges, getting up, sputtering, clashes, guards, crashes.
 - **Caught open.** A blow on someone who has no chance to roll with it, twist away or soften it lands harder (only the
   biggest one counts): helpless in the air ×1.3, fooled by a feint ×1.25, doubled over or off balance ×1.2, dazed or
-  flinching ×1.15, lying on the ground ×1.1 (close blows; not pummels or pins). It's in the move math line.
+  flinching ×1.15, lying on the ground ×1.1 for a single close blow and ×1.04 for each blow of a pummel (`down_pummel`; not in pins). It's in the move math line.
   `moves.vulnerable`.
 - **Feints.** The director can mark a strike as a feint (`"feint": true`, or just tell it "she feints, then bites"). It
   costs a little energy. If the defender bites (likelier the more worn down she is, less likely each time she's seen
@@ -773,7 +773,7 @@ After each beat's prose, the program prints the exact numbers in this format:
   down). `moves.jolts`.
 - **Guarding a wound.** Below 60% strength, a fighter shields her worst part once it's excruciating: blows there land a
   little lighter, her other side a little harder. The director is told which side is open. `moves.guarding_wound`.
-- **Last stand.** Once a fight, a fighter below 15% may put everything into one blow (×1.5), then has no energy at
+- **Last stand.** Once a fight, a fighter below 15% may put everything into one blow (×1.3), then has no energy at
   all. `moves.last_stand`.
 - **Wet fur.** A soaked fighter slips holds and pins a little more easily, and a soaked fighter's own grips slide.
 - **Callbacks.** The dwell part remembers the FIRST thing that ever hurt that part, if it was 3 or more beats ago: the
