@@ -49,7 +49,7 @@ class Display:
         self.rules = rules
         self.heart = rules["health"].get("icon", "❤️")
 
-    STATUS_ICON = {"fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
+    STATUS_ICON = {"bound": "🪢", "fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
 

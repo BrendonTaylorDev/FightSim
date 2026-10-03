@@ -1877,15 +1877,33 @@ class Narrator:
                 lines.append(f"{poss(att)} {kind} keeps pressing {dfn} (held {(min if pinned else max)(e['beats_held'] for e in old)} "
                              f"beat(s)); pressure lands ONLY on these spots, no new strikes:")
                 lines += [self._pressure_line(e["hits"][0], e.get("with", "")) for e in old]
-            if any(e.get("coil") for e in evs):
+            coiled = [e for e in evs if e.get("coil")]
+            scopes = {Engine.coil_scope(e["hits"][0]["part"]) for e in coiled if e.get("hits")}
+            if coiled and scopes == {"limb"}:
+                e0 = coiled[0]
+                what = re.sub(r"\s*,.*$", "", e0.get("with") or "her coils").replace("her ", f"{poss(att)} ", 1)
+                part = e0["hits"][0]["part"].lower()
+                lines.append(f"  - BOUND: {what} wound tight round {poss(dfn)} {part}"
+                             + (" and TIGHTEN again this beat" if max(e["beats_held"] for e in coiled) > 1 else "")
+                             + f". Only that limb is caught: it goes numb and tingling, weak and slow to answer, "
+                             f"and she can't move freely with it held. Her breath, her blood and the rest of her are "
+                             f"her own. Squeezing, not striking: no new wounds.")
+            elif coiled:
                 beats = max(e["beats_held"] for e in evs)
-                lines.append(f"  - COILS: {poss(att)} coils are wound round {dfn}"
+                throat = scopes == {"throat"}
+                more = ", worse than the beat before" if beats > 1 else ""
+                if throat:
+                    feel = (f". They squeeze her THROAT: her air comes thin and whistling, the blood pounding in her "
+                            f"head, her sight greying at the edges{more}. Squeezing, not striking: no new wounds.")
+                else:
+                    feel = (f". They work on her BLOOD more than her breath: her circulation cut off where they hold, "
+                            f"the trapped limbs going cold, heavy and tingling, her pulse pounding in her ears and then "
+                            f"slowing, her sight greying at the edges, each breath shorter{more}. Her heart slows; it "
+                            f"never stops. Squeezing, not striking: no new wounds.")
+                lines.append(f"  - COILS: {poss(att)} "
+                             + ("tails are wound round her throat" if throat else f"coils are wound round {dfn}")
                              + (" and TIGHTEN again this beat" if beats > 1 else ", and they will tighten every beat")
-                             + f". They work on her BLOOD more than her breath: her circulation cut off where they "
-                             f"hold, the trapped limbs going cold, heavy and tingling, her pulse pounding in her ears "
-                             f"and then slowing, her sight greying at the edges, each breath shorter"
-                             + (", worse than the beat before" if beats > 1 else "")
-                             + f". Her heart slows; it never stops. Squeezing, not striking: no new wounds.")
+                             + feel)
             if new:
                 lines.append(f"{poss(att)} {'press' if pinned else 'grip'} CLOSES on {dfn} this beat and hurts at once: the "
                              f"clamp itself lands on these spots (it is the grip biting in, not a separate strike), and it "

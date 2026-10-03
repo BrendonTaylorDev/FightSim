@@ -815,7 +815,8 @@ After each beat's prose, the program prints the exact numbers in this format:
   narrator is reminded every beat.
 - **Injury report.** When the fight is won, the console shows what each fighter will feel when it's over, and the
   narrator gets it for the aftermath.
-- **Balance: Nocturne's body parts are 5 points tougher** (every part, fighters.json; health unchanged; Ripples
+- **Balance: Nocturne's body parts are 7 points tougher** (+5, then +2 more after devastating blows tipped it back to
+  50%: about 58% now) (every part, fighters.json; health unchanged; Ripples
   untouched). With all the new mechanics in, she had drifted to about 50% against Ripples in /simulate at your
   settings (scale 5, resscale 0.75, healthloss 0.2, numb off); +5 brings her to about 56% there, and the director
   plays her better than the dice do. At damage scale 5 resistance matters a lot: +6 measured 65%, +8 68%.
@@ -830,6 +831,11 @@ After each beat's prose, the program prints the exact numbers in this format:
   not ruined, it's a real, visible reaction (shock, a cry she can't stop, a stagger, a change in her), never a scream
   or a breakdown; worn, her hold on the pain slips; spent, the rawest. The aftermath part (dwell) always follows one.
   New story blocks for every combination, and two sample sections. `moves.devastating`.
+- **Wraps: what's wrapped decides it.** Coils round her body (chest, belly, back) constrict, as before: blood held
+  back, heart slowing (never stopping), energy draining, and they can put her out in a pin. Round her throat they
+  squeeze her air and blood. Round ONE limb or a tail (Ripples' twin tails round a foreleg) they only BIND it 🪢: that
+  limb numb and weak (×0.9 on her blows, dodges ×0.75), no energy drain, no heart slowing. Before, any wrap counted as
+  a full-body coil.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

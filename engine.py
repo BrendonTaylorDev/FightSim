@@ -1570,6 +1570,9 @@ class Engine:
             out.append(("stiff from the pin", float(cfg.get("stiff_power_mult", 0.85))))
         if self.has(a, "constricted") and any(h.coil and h.defender == a.name for h in self.holds.values()):
             out.append(("arms trapped in the coils", float(cfg.get("constricted_power_mult", 0.75))))
+        if self.has(a, "bound"):
+            out.append((f"her {str(a.learned.get('bound_part') or 'limb').lower()} bound",
+                        float(cfg.get("bound_power_mult", 0.9))))
         if self.has(a, "sputtering"):
             out.append(("choking on water", float(cfg.get("sputtering_power_mult", 0.9))))
         if self.has(a, "off_balance"):
@@ -1846,6 +1849,7 @@ class Engine:
         slow = (float(sc.get("stiff_dodge_mult", 0.6)) if self.has(d, "stiff") else 1.0) * \
                (float(sc.get("cramped_dodge_mult", 0.7)) if self.has(d, "cramped") else 1.0) * \
                (float(sc.get("constricted_dodge_mult", 0.3)) if self.has(d, "constricted") else 1.0) * \
+               (float(sc.get("bound_dodge_mult", 0.75)) if self.has(d, "bound") else 1.0) * \
                (float(sc.get("sputtering_dodge_mult", 0.8)) if self.has(d, "sputtering") else 1.0) * \
                (float(sc.get("off_balance_dodge_mult", 0.6)) if self.has(d, "off_balance") else 1.0) * \
                (float(sc.get("dazed_dodge_mult", 0.4)) if self.has(d, "dazed") else 1.0) * \
@@ -2873,6 +2877,13 @@ class Engine:
         return bool(re.search(r"\bcoil|\bwrap|wound round|wrapped round|looped round|tails? (?:round|around|wrapped)",
                               f"{with_part} {flavor}".lower()))
 
+    @staticmethod
+    def coil_scope(part):
+        """What a wrap is round: "body" (chest, belly, back: full constriction, the blood held back, her heart slowing),
+        "throat" (neck: her air and blood squeezed), or "limb" (a leg, an arm, a tail, a wing: that limb BOUND)."""
+        r = body_region(part)
+        return "throat" if r == "neck" else "body" if r in ("chest", "belly", "back_up", "back_low") else "limb"
+
     def pin_cap(self):
         """How hard a pin's steady pressure (and the punishment for a failed struggle) can bite into a worn-down part:
         pin.pressure_cap {"mult", "health_mult"} (null = no limit). A pin wears her down; it doesn't wreck her."""
@@ -3877,10 +3888,15 @@ class Engine:
             hit = self._apply_damage(d, h.part, round(power, 2), cap=self.pin_cap() if in_pin else None)
             h.turns_active += 1
             if h.coil and not d.eliminated:
-                # coils tighten every beat (holds.coil: tighten, max_power) and squeeze her breath (CONSTRICTED)
+                # coils tighten every beat (holds.coil: tighten, max_power). Round her body or throat they squeeze her
+                # breath and blood (CONSTRICTED); round one limb they bind it (BOUND: that limb numb and weak)
                 ccfg = self.rules.get("holds", {}).get("coil") or {}
                 h.power = round(min(float(ccfg.get("max_power", 30)), h.power + float(ccfg.get("tighten", 2))), 2)
-                self.set_status(d, "constricted", 2)
+                if self.coil_scope(h.part) == "limb":
+                    self.set_status(d, "bound", 2)
+                    d.learned["bound_part"] = h.part
+                else:
+                    self.set_status(d, "constricted", 2)
             events.append({"type": "hold_ongoing", "hold_id": h.id, "attacker": h.attacker, "hold_power": h.power,
                            "pin_mult": (round(time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)), 4)
                                         if in_pin else None),
@@ -4420,7 +4436,7 @@ class Engine:
             k = 1.0 + (pm - 1.0) * min(1.0, (worst - 150.0) / 150.0 + 0.4)
             gain *= k; notes.append(f"the pressed parts are in agony ×{k:.2f}")
         gain = min(gain, 100.0 / max(1.0, float(cfg.get("min_beats", 3))))
-        if on_her and any(h.coil for h in on_her):
+        if on_her and any(h.coil and self.coil_scope(h.part) != "limb" for h in on_her):
             cm = float((self.rules.get("holds", {}).get("coil") or {}).get("pin_fade_mult", 1.2))
             gain *= cm; notes.append(f"coiled, her blood held back ×{cm:g}")
         return round(gain, 1), round(r, 3), notes
@@ -4435,7 +4451,7 @@ class Engine:
         holds = self._pin_holds(p)
         # coils: the constriction cuts off her circulation and slows her heart until she goes under. When coils are
         # part of the pin, that is what takes her (a constrictor's pin is about the squeeze, not the pain)
-        coils = [h for h in holds if h.coil]
+        coils = [h for h in holds if h.coil and self.coil_scope(h.part) != "limb"]
         if coils:
             h = max(coils, key=lambda x: (body_region(x.part) in ("chest", "belly", "neck"), x.power))
             return {"cause": "constriction", "part": h.part, "with": h.with_part}
@@ -4520,7 +4536,7 @@ class Engine:
             base = float(cfg.get("downed", 0.30) if down else cfg.get("standing", 0.06))
         if self.has(target, "asleep") or self.has(target, "frozen"):
             base = max(base, float(cfg.get("helpless", 0.9)))  # she can't defend herself at all
-        if any(h.coil and h.defender == target.name for h in self.holds.values()):
+        if any(h.coil and h.defender == target.name and self.coil_scope(h.part) != "limb" for h in self.holds.values()):
             # wrapped in coils already: the coiler only has to bear her down inside them (holds.coil.pin_opening)
             base = max(base, float((self.rules.get("holds", {}).get("coil") or {}).get("pin_opening", 0.5)))
         return max(0.0, min(1.0, base))
@@ -4986,6 +5002,8 @@ class Engine:
     STATUS_LOOK = {
         "paralyzed": "PARALYZED: muscles locking up, sparks crawling over her, stiff and jerky, slow to react",
         "chilled": "CHILLED: frost in her fur or on her scales, shivering, limbs stiff and slow",
+        "bound": "BOUND: a limb wrapped tight and held: it goes numb and tingling, weak and slow to answer, and she can't "
+                 "move freely; the rest of her is untouched",
         "constricted": "CONSTRICTED: coils wound round her, tightening, cutting off her circulation: her trapped limbs go "
                        "cold, heavy and tingling, her pulse pounds in her ears and then slows, her sight greys at the "
                        "edges, every breath is short; she gets no strength back while they hold (her heart slows, it "

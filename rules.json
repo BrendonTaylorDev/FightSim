@@ -813,7 +813,8 @@
       "max_power": 30,
       "break_mult": 0.75,
       "pin_fade_mult": 1.2,
-      "pin_opening": 0.5
+      "pin_opening": 0.5,
+      "_scope_comment": "Round her body (chest, belly, back) or her throat a wrap CONSTRICTS (her blood held back, her heart slowing, energy draining, it can put her out in a pin). Round one limb or a tail it only BINDS that limb (status_effects.bound_power_mult, bound_dodge_mult): no energy drain, no heart slowing."
     },
     "_break_comment": "A plain hold (not a pin) has no time limit. Each beat after the one it starts in, once its pressure has landed, the held fighter gets one roll to wrench free. Chance = base x her condition against the holder's ((0.25 + her share of health) / (0.25 + the holder's), between 0.3 and 2.5) x how light the grip is (reference_power / the grip's power, between 0.4 and 1.5) x how hurt the gripping limb is (up to x2 at 150% damage) + per_beat for every beat the grip has already been on; x below_zero_mult once her health is below zero; half when paralyzed, x1.5 on an adrenaline surge; never above max; none while she is asleep or frozen. base 0 = no roll: only the director, a knockdown or a throw ends a hold. Change live with /holdbreak.",
     "break": {
@@ -1020,7 +1021,9 @@
     "soaked_escape_mult": 1.1,
     "soaked_slip_mult": 1.2,
     "soaked_grip_mult": 1.1,
-    "fury_power_mult": 1.15
+    "fury_power_mult": 1.15,
+    "bound_power_mult": 0.9,
+    "bound_dodge_mult": 0.75
   },
   "energy": {
     "_comment": "Stamina (0-100). Each move costs energy: by target type here, or a move's own \"energy\" in fighters.json. Everyone regains regen_per_beat each beat, plus rest_bonus if they sat the beat out. Below tired_below a fighter dodges worse. The director can't use a move she can't afford; your /commands always work.",
