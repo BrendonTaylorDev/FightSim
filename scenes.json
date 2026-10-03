@@ -1,0 +1,1770 @@
+{
+ "_comment": "Arenas. At the start of a run you are asked which one; /scene lists them and switches. Each scene has: title; text (what the director and narrator read: name every feature here); place (how notes refer to it); ground / rough / slick (the plain floor, what a drag scrapes over, what a foot slips on); props (solid things to be thrown or driven into, or to lean on getting up); ambience; hazards; events. A HAZARD is a feature that does something when a fighter lands on it, is thrown, dragged, charged or pressed into it: 'words' are how it is recognised in a surface name; 'effects' are statuses with a chance and a length in beats (burned, poisoned, paralyzed, chilled, soaked, confused, flinched); 'break' is the chance it breaks under a charge or a held stream (an extra heavy hit, and she goes down with it); 'upright' means a fighter can end slumped sitting against it; 'cushion' makes any landing on it light. An EVENT is something the place does by itself, now and then (rules.json scene.event_chance per beat; never during a pin or a hold): 'who' is anyone, standing, down, or all; 'severity' and 'regions' are the hit it lands, if any; 'effects' as for hazards; 'weight' is how often compared with the scene's other events. Add your own scene by copying one. details: small things about the place (a sound, a smell, the light) that the narrator is offered one at a time, as background, the least recently used first; add your own to any scene.",
+ "scenes": {
+  "sea cave": {
+   "title": "The flooded sea cave",
+   "place": "the cave",
+   "text": "A flooded sea cave of rough grey stone. The floor is a wide central ledge of dry, gritty rock, ringed by ankle-deep pools and cut by one deep channel of cold water along the west wall. Near the water the stone is slick with algae; away from it, it is dry and harsh. A low ceiling hangs with short stalactites that drip steadily. Thick stalagmites rise around the edges of the ledge, and fallen boulders lie scattered along the east wall. Grey daylight filters in through a crack high in the east wall. The cave smells of salt and wet stone, and every sound echoes.",
+   "ground": "the stone floor",
+   "rough": "the rough stone floor",
+   "slick": "the wet stone",
+   "props": [
+    "a fallen boulder",
+    "a stalagmite",
+    "the cave wall",
+    "the edge of the ledge"
+   ],
+   "ambience": "dripping water, echoes, cold stone, the grey light, the smell of salt",
+   "details": [
+    "a drip from the ceiling, counting",
+    "the echo coming back a moment late",
+    "the grey light from the crack in the east wall",
+    "the smell of salt and wet stone",
+    "the cold coming up out of the rock",
+    "the pools ringing the ledge, rippling from nothing",
+    "the channel along the west wall, black and still",
+    "grit shifting under a foot",
+    "a bead of water running down a stalagmite",
+    "the way sound has nowhere to go in here"
+   ],
+   "hazards": [
+    {
+     "name": "the stalactites",
+     "words": [
+      "stalactite"
+     ],
+     "about": "short stone spikes hanging from the low ceiling; brittle",
+     "break": 0.4
+    },
+    {
+     "name": "a stalagmite",
+     "words": [
+      "stalagmite"
+     ],
+     "about": "a thick stone spike rising from the floor",
+     "break": 0.35,
+     "upright": true
+    },
+    {
+     "name": "the deep channel",
+     "words": [
+      "channel",
+      "deep water"
+     ],
+     "about": "cold, deep water along the west wall: it breaks a fall but drenches and chills",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "chilled",
+       "chance": 0.3,
+       "beats": 2
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the shallow pools",
+     "words": [
+      "pool",
+      "shallows",
+      "puddle",
+      "water"
+     ],
+     "about": "ankle-deep water round the ledge: she comes up drenched",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "a fallen boulder",
+     "words": [
+      "boulder"
+     ],
+     "about": "rough grey rock, waist-high",
+     "break": 0.2,
+     "upright": true
+    },
+    {
+     "name": "the cave wall",
+     "words": [
+      "wall"
+     ],
+     "about": "solid rock",
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "the algae-slick stone",
+     "words": [
+      "algae",
+      "slick stone",
+      "wet stone"
+     ],
+     "about": "treacherous footing near the water; scrapes when someone is dragged over it"
+    }
+   ],
+   "events": [
+    {
+     "name": "a stalactite falls",
+     "text": "With a crack, a stalactite lets go of the ceiling and comes down point-first",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "stalactite"
+     ],
+     "severity": "solid",
+     "regions": [
+      "head",
+      "shoulder",
+      "back_up"
+     ],
+     "parts": 2
+    },
+    {
+     "name": "a swell floods the ledge",
+     "text": "A swell surges up the deep channel and sweeps a sheet of cold seawater across the ledge",
+     "who": "down",
+     "weight": 1,
+     "words": [
+      "swell",
+      "wave",
+      "surge",
+      "water",
+      "flood"
+     ],
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "chilled",
+       "chance": 0.25,
+       "beats": 2
+      }
+     ]
+    }
+   ]
+  },
+  "waterfall gorge": {
+   "title": "The waterfall gorge",
+   "place": "the gorge",
+   "text": "A narrow river gorge under a waterfall. The fighting ground is a shelf of dark, water-worn rock beside the plunge pool, green with moss and slick wherever the spray reaches. The fall itself comes down in a white column at the north end, loud enough to drown a shout, pounding the pool to foam. A jam of grey driftwood logs is wedged against the east bank, and a bar of loose river gravel runs along the south edge. Downstream the pool empties into rapids studded with half-sunk rocks. The gorge walls rise sheer and wet on both sides, and the light is green and shifting with mist.",
+   "ground": "the rock shelf",
+   "rough": "the gravel bar",
+   "slick": "the mossy rock",
+   "props": [
+    "the gorge wall",
+    "the driftwood logjam",
+    "a half-sunk rock",
+    "the lip of the shelf"
+   ],
+   "ambience": "the roar of the fall, drifting mist, moss underfoot, cold spray, green light",
+   "details": [
+    "the roar of the fall, which never changes",
+    "mist drifting across in slow sheets",
+    "moss dark and soft on the rocks",
+    "cold spray settling on fur",
+    "the green light under the trees",
+    "the river pulling past, loud and brown",
+    "a wet leaf turning on an eddy",
+    "the smell of water on stone",
+    "the gorge walls sweating",
+    "a rainbow that comes and goes in the spray"
+   ],
+   "hazards": [
+    {
+     "name": "the waterfall",
+     "words": [
+      "waterfall",
+      "the fall",
+      "falls",
+      "column of water"
+     ],
+     "about": "tons of falling water: anyone driven under it is hammered, drenched and left dazed",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "flinched",
+       "chance": 0.4,
+       "beats": 1
+      }
+     ]
+    },
+    {
+     "name": "the plunge pool",
+     "words": [
+      "plunge pool",
+      "pool",
+      "foam"
+     ],
+     "about": "deep, churning water: it breaks a fall and drenches",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the rapids",
+     "words": [
+      "rapids",
+      "current"
+     ],
+     "about": "fast water over half-sunk rocks: she is rolled across them and comes out drenched",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "the driftwood logjam",
+     "words": [
+      "logjam",
+      "driftwood",
+      "log"
+     ],
+     "about": "a tangle of grey logs: it splinters and collapses under a hard impact",
+     "break": 0.5,
+     "upright": true
+    },
+    {
+     "name": "a half-sunk rock",
+     "words": [
+      "half-sunk rock",
+      "sunk rock",
+      "river rock",
+      "boulder"
+     ],
+     "about": "water-smoothed and hard",
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "the gorge wall",
+     "words": [
+      "wall",
+      "cliff"
+     ],
+     "about": "sheer wet rock",
+     "break": 0.03,
+     "upright": true
+    },
+    {
+     "name": "the gravel bar",
+     "words": [
+      "gravel"
+     ],
+     "about": "loose river stones: rough to be dragged across, and it shifts underfoot"
+    },
+    {
+     "name": "the mossy rock",
+     "words": [
+      "moss",
+      "mossy"
+     ],
+     "about": "green and slick with spray: bad footing"
+    }
+   ],
+   "events": [
+    {
+     "name": "a log comes over the fall",
+     "text": "A drifting log tips over the lip of the fall, crashes into the pool and is flung end over end across the shelf",
+     "who": "standing",
+     "weight": 1,
+     "words": [
+      "log",
+      "trunk",
+      "driftwood"
+     ],
+     "severity": "solid",
+     "regions": [
+      "hind_up",
+      "hind_low",
+      "belly",
+      "chest"
+     ],
+     "parts": 2
+    },
+    {
+     "name": "the wind throws the fall across the shelf",
+     "text": "A gust bends the waterfall and a heavy curtain of water sweeps the whole shelf",
+     "who": "all",
+     "weight": 1,
+     "words": [
+      "gust",
+      "spray",
+      "curtain",
+      "water",
+      "wind"
+     ],
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 2
+      }
+     ]
+    }
+   ]
+  },
+  "power plant": {
+   "title": "The abandoned power plant",
+   "place": "the turbine hall",
+   "text": "The turbine hall of an abandoned power plant. The floor is rusted steel grating over a flooded sump of black water, with solid concrete along the walls. A dead turbine in its steel housing fills the middle of the hall. Along the west wall runs a bank of steam pipes that still tick and hiss at their joints, and from the gantry overhead hang snapped power cables whose ends spit blue sparks. A catwalk with a corroded railing crosses the north end, a slick of spilled coolant shines on the concrete below it, and the control room's shattered window has left the east side littered with broken glass. Emergency lamps give a dim red light, and the air smells of ozone and rust.",
+   "ground": "the steel grating",
+   "rough": "the rusted grating",
+   "slick": "the coolant slick",
+   "props": [
+    "the turbine housing",
+    "the steam pipes",
+    "the catwalk railing",
+    "the concrete wall"
+   ],
+   "ambience": "the hiss of steam, sparks spitting, red emergency light, the smell of ozone and rust, the black water under the grating",
+   "details": [
+    "steam hissing from a split pipe",
+    "a spark spitting somewhere overhead",
+    "the red emergency light, steady",
+    "the smell of ozone and rust",
+    "the black water under the grating",
+    "a loose panel ticking as it cools",
+    "the hum in the floor",
+    "a gauge with its needle fallen flat",
+    "condensation running down a duct",
+    "shadows with hard edges"
+   ],
+   "hazards": [
+    {
+     "name": "the sparking cables",
+     "words": [
+      "cable",
+      "wire",
+      "sparks"
+     ],
+     "about": "live: touching them locks the muscles",
+     "effects": [
+      {
+       "status": "paralyzed",
+       "chance": 0.5,
+       "beats": 2
+      }
+     ]
+    },
+    {
+     "name": "the steam pipes",
+     "words": [
+      "pipe",
+      "steam"
+     ],
+     "about": "scalding metal with leaking joints: a hard impact can burst one",
+     "effects": [
+      {
+       "status": "burned",
+       "chance": 0.5,
+       "beats": 3
+      }
+     ],
+     "break": 0.3,
+     "upright": true
+    },
+    {
+     "name": "the turbine housing",
+     "words": [
+      "turbine",
+      "housing"
+     ],
+     "about": "a wall of cold steel, studded with bolts",
+     "break": 0.02,
+     "upright": true
+    },
+    {
+     "name": "the catwalk railing",
+     "words": [
+      "railing",
+      "catwalk",
+      "rail"
+     ],
+     "about": "corroded steel that buckles and tears loose under a hard impact",
+     "break": 0.45,
+     "upright": true
+    },
+    {
+     "name": "the flooded sump",
+     "words": [
+      "sump",
+      "black water",
+      "water"
+     ],
+     "about": "black water under the grating and through the open hatches: a softer landing, and she comes up drenched (and exposed to anything Electric)",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the broken glass",
+     "words": [
+      "glass"
+     ],
+     "about": "a scatter of shards from the control room window: scratches and small cuts for anyone who lands or is dragged across it"
+    },
+    {
+     "name": "the coolant slick",
+     "words": [
+      "coolant",
+      "slick"
+     ],
+     "about": "oily and treacherous underfoot; anyone who lands in it is coated",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 0.6,
+       "beats": 2
+      }
+     ]
+    },
+    {
+     "name": "the concrete wall",
+     "words": [
+      "wall",
+      "concrete"
+     ],
+     "about": "bare concrete",
+     "break": 0.02,
+     "upright": true
+    }
+   ],
+   "events": [
+    {
+     "name": "a cable whips loose",
+     "text": "One of the snapped cables jerks on its gantry and whips across the hall, trailing blue sparks",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "cable",
+      "spark",
+      "arc"
+     ],
+     "severity": "light",
+     "regions": [
+      "shoulder",
+      "back_up",
+      "chest",
+      "fore_up"
+     ],
+     "parts": 1,
+     "effects": [
+      {
+       "status": "paralyzed",
+       "chance": 0.4,
+       "beats": 2
+      }
+     ]
+    },
+    {
+     "name": "a steam joint bursts",
+     "text": "A joint in the steam pipes lets go with a shriek and a jet of scalding steam rakes across the floor",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "steam",
+      "pipe",
+      "joint",
+      "jet"
+     ],
+     "severity": "light",
+     "regions": [
+      "hind_up",
+      "belly",
+      "back_low",
+      "shoulder"
+     ],
+     "parts": 2,
+     "effects": [
+      {
+       "status": "burned",
+       "chance": 0.5,
+       "beats": 3
+      }
+     ]
+    }
+   ]
+  },
+  "caldera": {
+   "title": "The caldera vents",
+   "place": "the caldera",
+   "text": "A shelf of black basalt inside a volcano's caldera. The rock is warm underfoot and cracked into rough plates. Steam vents breathe along the cracks, some in steady plumes and some in sudden bursts. Along the north edge a tongue of cooling lava has crusted over, dull black with red light showing through its seams, hot enough to scorch fur at a touch. Blades of black obsidian jut from the ground near the west side, tall basalt columns stand in a broken row to the east, and a hot spring steams in a hollow to the south beside beds of yellow sulfur crystal that give off an acrid, choking reek. The crater wall rises sheer and black behind it all. Fine ash drifts down, and the light is dim and orange.",
+   "ground": "the basalt shelf",
+   "rough": "the cracked basalt",
+   "slick": "the ash-dusted rock",
+   "props": [
+    "a basalt column",
+    "an obsidian outcrop",
+    "the caldera wall",
+    "the rim of the hot spring"
+   ],
+   "ambience": "heat rising from the rock, the hiss of vents, drifting ash, the reek of sulfur, the dull red glow",
+   "details": [
+    "heat rising off the rock in a shimmer",
+    "a vent hissing, then stopping",
+    "ash drifting down, slow as snow",
+    "the reek of sulfur",
+    "the dull red glow at the edges of things",
+    "the rock ticking as it cools",
+    "air that is hard to breathe deep",
+    "a crust of yellow round a crack",
+    "the sky a dirty orange above the rim",
+    "warmth coming up through the soles of the feet"
+   ],
+   "hazards": [
+    {
+     "name": "the lava crust",
+     "words": [
+      "lava",
+      "crust",
+      "slag"
+     ],
+     "about": "the crusted edge of the cooling flow: searing to touch",
+     "effects": [
+      {
+       "status": "burned",
+       "chance": 0.85,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "a steam vent",
+     "words": [
+      "vent",
+      "fumarole",
+      "steam"
+     ],
+     "about": "scalding steam breathing from a crack",
+     "effects": [
+      {
+       "status": "burned",
+       "chance": 0.5,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "the obsidian blades",
+     "words": [
+      "obsidian",
+      "glass",
+      "blade",
+      "shard"
+     ],
+     "about": "volcanic glass with edges like knives: scratches and small cuts; it shatters under a hard impact",
+     "break": 0.4,
+     "upright": true
+    },
+    {
+     "name": "a basalt column",
+     "words": [
+      "column",
+      "pillar",
+      "basalt column"
+     ],
+     "about": "a six-sided pillar of black rock",
+     "break": 0.15,
+     "upright": true
+    },
+    {
+     "name": "the hot spring",
+     "words": [
+      "hot spring",
+      "spring",
+      "pool",
+      "water"
+     ],
+     "about": "near-scalding water in a hollow: it breaks a fall, drenches, and can scald",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "burned",
+       "chance": 0.2,
+       "beats": 2
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the sulfur beds",
+     "words": [
+      "sulfur",
+      "sulphur",
+      "crystal"
+     ],
+     "about": "brittle yellow crystal breathing acrid fumes: anyone thrown down in them chokes on it",
+     "effects": [
+      {
+       "status": "poisoned",
+       "chance": 0.4,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "the caldera wall",
+     "words": [
+      "wall",
+      "cliff"
+     ],
+     "about": "sheer black rock, warm to the touch",
+     "break": 0.03,
+     "upright": true
+    }
+   ],
+   "events": [
+    {
+     "name": "a vent erupts",
+     "text": "The crack nearest her coughs, and a column of scalding steam bursts up out of it",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "vent",
+      "steam",
+      "erupt",
+      "burst"
+     ],
+     "severity": "light",
+     "regions": [
+      "hind_up",
+      "belly",
+      "chest",
+      "back_low"
+     ],
+     "parts": 2,
+     "effects": [
+      {
+       "status": "burned",
+       "chance": 0.45,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "cinders rain down",
+     "text": "Somewhere above, the crater wall sheds a slide of hot cinders, and they come pattering and bouncing down across the shelf",
+     "who": "all",
+     "weight": 1,
+     "words": [
+      "cinder",
+      "ash",
+      "ember"
+     ],
+     "severity": "light",
+     "regions": [
+      "back_up",
+      "shoulder",
+      "head"
+     ],
+     "parts": 1
+    },
+    {
+     "name": "the ground shudders",
+     "text": "The whole shelf lurches with a deep groan from below, and the plates of basalt grind against each other",
+     "who": "standing",
+     "weight": 1,
+     "words": [
+      "shudder",
+      "tremor",
+      "lurch",
+      "groan",
+      "quake",
+      "shook"
+     ],
+     "effects": [
+      {
+       "status": "flinched",
+       "chance": 0.5,
+       "beats": 1
+      }
+     ]
+    }
+   ]
+  },
+  "frozen lake": {
+   "title": "The frozen lake",
+   "place": "the lake",
+   "text": "A mountain lake frozen from shore to shore inside a ring of ice cliffs. At the center the ice is thick and blue, scored white by old cracks; toward the inlet at the north end it thins to a grey skin over black, moving water. Wind-carved pillars of ice stand here and there on the surface, a fringe of long icicles hangs under the overhang of the west cliff, deep snowdrifts are banked along the south shore, and a few frost-rimed boulders sit frozen into the lake's edge. The air is brutally cold and still, every breath smokes, and the ice creaks and booms under any weight.",
+   "ground": "the lake ice",
+   "rough": "the scored ice",
+   "slick": "the bare ice",
+   "props": [
+    "an ice pillar",
+    "a frozen boulder",
+    "the ice cliff",
+    "the edge of a snowdrift"
+   ],
+   "ambience": "the ice creaking and booming, smoking breath, the stillness, the blue light in the ice, the bite of the cold",
+   "details": [
+    "the ice creaking, a long way off",
+    "a boom running under the surface",
+    "breath smoking in the air",
+    "the stillness between sounds",
+    "the blue light inside the ice",
+    "the cold biting at wet fur",
+    "snow squeaking under a foot",
+    "a white crack that was not there before",
+    "the shore a dark line far off",
+    "frost forming where breath lands"
+   ],
+   "hazards": [
+    {
+     "name": "the thin ice",
+     "words": [
+      "thin ice",
+      "grey ice",
+      "inlet",
+      "black water",
+      "water"
+     ],
+     "about": "a grey skin over freezing water near the inlet: it gives way under an impact and she goes in to the chest",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "chilled",
+       "chance": 0.75,
+       "beats": 3
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the icicles",
+     "words": [
+      "icicle"
+     ],
+     "about": "a fringe of long ice spears under the west overhang; brittle",
+     "break": 0.55
+    },
+    {
+     "name": "an ice pillar",
+     "words": [
+      "pillar",
+      "column",
+      "ice spire"
+     ],
+     "about": "wind-carved ice, as hard as stone until it shatters",
+     "effects": [
+      {
+       "status": "chilled",
+       "chance": 0.25,
+       "beats": 2
+      }
+     ],
+     "break": 0.35,
+     "upright": true
+    },
+    {
+     "name": "the ice cliff",
+     "words": [
+      "cliff",
+      "wall"
+     ],
+     "about": "a sheer face of old blue ice",
+     "effects": [
+      {
+       "status": "chilled",
+       "chance": 0.2,
+       "beats": 2
+      }
+     ],
+     "break": 0.03,
+     "upright": true
+    },
+    {
+     "name": "a snowdrift",
+     "words": [
+      "snow",
+      "drift"
+     ],
+     "about": "deep, soft snow along the south shore: it swallows a fall and leaves her caked and cold",
+     "effects": [
+      {
+       "status": "chilled",
+       "chance": 0.35,
+       "beats": 2
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "a frozen boulder",
+     "words": [
+      "boulder",
+      "rock"
+     ],
+     "about": "frost-rimed stone locked into the ice",
+     "break": 0.1,
+     "upright": true
+    },
+    {
+     "name": "the bare ice",
+     "words": [
+      "bare ice",
+      "blue ice",
+      "lake ice",
+      "ice"
+     ],
+     "about": "hard as rock and nearly frictionless: bodies slide a long way on it"
+    }
+   ],
+   "events": [
+    {
+     "name": "an icicle drops",
+     "text": "Something cracks under the overhang, and an icicle as long as a foreleg comes down like a spear",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "icicle",
+      "ice"
+     ],
+     "severity": "solid",
+     "regions": [
+      "head",
+      "shoulder",
+      "back_up"
+     ],
+     "parts": 1
+    },
+    {
+     "name": "the ice cracks underfoot",
+     "text": "With a boom, a crack runs across the ice under her and freezing water wells up through it around her feet",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "crack",
+      "ice",
+      "water"
+     ],
+     "effects": [
+      {
+       "status": "chilled",
+       "chance": 0.6,
+       "beats": 2
+      }
+     ]
+    },
+    {
+     "name": "a wind comes off the glacier",
+     "text": "A wall of wind rolls down off the ice cliffs, so cold it burns, and scours the whole lake",
+     "who": "all",
+     "weight": 1,
+     "words": [
+      "wind",
+      "gust",
+      "cold"
+     ],
+     "effects": [
+      {
+       "status": "chilled",
+       "chance": 0.3,
+       "beats": 2
+      }
+     ]
+    }
+   ]
+  },
+  "storm forest": {
+   "title": "The forest clearing in a storm",
+   "place": "the clearing",
+   "text": "A clearing among ancient trees, in the middle of a thunderstorm. Rain comes down in sheets and the ground is churned mud and leaf litter, laced with thick roots. On the north side stands an old oak split down the middle by lightning, its heartwood still smouldering and smoking in the rain. A bramble thicket closes the east side in a wall of thorns. In the grass to the south grows a wide ring of pale toadstools that puff clouds of spores when disturbed. A hollow, rotten log lies across the west side, and beyond it a creek runs brown and fast with the rain. Thunder rolls, the trees thrash overhead, and lightning makes everything white for an instant at a time.",
+   "ground": "the muddy ground",
+   "rough": "the root-laced mud",
+   "slick": "the mud",
+   "props": [
+    "a tree trunk",
+    "the split oak",
+    "the rotten log",
+    "a knot of roots"
+   ],
+   "ambience": "rain drumming, thunder, thrashing branches, the smell of wet earth and smoke, white flashes of lightning",
+   "details": [
+    "rain drumming on the leaves",
+    "thunder walking round the edge of the sky",
+    "branches thrashing overhead",
+    "the smell of wet earth and smoke",
+    "a white flash that leaves the trees printed on the eye",
+    "water running in the ruts",
+    "mud sucking at a foot",
+    "a branch coming down somewhere out of sight",
+    "the wind changing its mind",
+    "drops shaken loose from a bough"
+   ],
+   "hazards": [
+    {
+     "name": "the split oak",
+     "words": [
+      "oak",
+      "smoulder",
+      "smolder",
+      "heartwood"
+     ],
+     "about": "lightning-struck and still smouldering inside: the charred wood sears anyone slammed into it",
+     "effects": [
+      {
+       "status": "burned",
+       "chance": 0.4,
+       "beats": 3
+      }
+     ],
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "the bramble thicket",
+     "words": [
+      "bramble",
+      "thorn",
+      "thicket"
+     ],
+     "about": "a wall of thorns: scratches all over, and she has to tear herself out of it",
+     "effects": [
+      {
+       "status": "flinched",
+       "chance": 0.35,
+       "beats": 1
+      }
+     ]
+    },
+    {
+     "name": "the toadstool ring",
+     "words": [
+      "toadstool",
+      "mushroom",
+      "spore"
+     ],
+     "about": "pale toadstools that burst in a cloud of spores: breathing it in poisons",
+     "effects": [
+      {
+       "status": "poisoned",
+       "chance": 0.5,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "the rotten log",
+     "words": [
+      "log"
+     ],
+     "about": "hollow and soft with rot: it caves in under a hard impact",
+     "break": 0.5,
+     "upright": true
+    },
+    {
+     "name": "the creek",
+     "words": [
+      "creek",
+      "stream",
+      "water"
+     ],
+     "about": "fast brown water, knee-deep over stones: she comes up drenched",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "a tree trunk",
+     "words": [
+      "trunk",
+      "tree"
+     ],
+     "about": "an ancient trunk as wide as a doorway",
+     "break": 0.02,
+     "upright": true
+    },
+    {
+     "name": "the roots",
+     "words": [
+      "root"
+     ],
+     "about": "thick, knotted roots standing proud of the mud: hard edges to land on or be dragged over"
+    },
+    {
+     "name": "the mud",
+     "words": [
+      "mud",
+      "leaf litter"
+     ],
+     "about": "deep and sucking: it softens a fall a little and coats her"
+    }
+   ],
+   "events": [
+    {
+     "name": "a branch comes down",
+     "text": "The wind tears a dead branch out of the canopy and it comes down through the rain, turning",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "branch",
+      "bough",
+      "limb of the"
+     ],
+     "severity": "solid",
+     "regions": [
+      "head",
+      "shoulder",
+      "back_up"
+     ],
+     "parts": 2
+    },
+    {
+     "name": "lightning strikes close",
+     "text": "Lightning hits the split oak again: a white flash, a crack like the sky breaking, and the shock of it through the wet ground",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "lightning",
+      "flash",
+      "thunder",
+      "bolt"
+     ],
+     "effects": [
+      {
+       "status": "flinched",
+       "chance": 0.7,
+       "beats": 1
+      },
+      {
+       "status": "paralyzed",
+       "chance": 0.2,
+       "beats": 1
+      }
+     ]
+    },
+    {
+     "name": "the wind carries spores across",
+     "text": "A gust flattens the grass and rolls a pale cloud of spores from the toadstool ring low across the clearing",
+     "who": "down",
+     "weight": 1,
+     "words": [
+      "spore",
+      "cloud",
+      "toadstool"
+     ],
+     "effects": [
+      {
+       "status": "poisoned",
+       "chance": 0.45,
+       "beats": 3
+      }
+     ]
+    }
+   ]
+  },
+  "wreck": {
+   "title": "The wreck on the reef",
+   "place": "the wreck",
+   "text": "The deck of a rusting freighter run aground on a reef, in a heavy swell. The steel deck is canted toward the port side, where waves break over the low rail and sheet across the plating. A cargo hatch gapes open amidships over a hold half full of dark seawater. The snapped derrick lies across the foredeck with its hook still swinging on a length of chain, the anchor chain runs in great rusted links along the starboard side, splintering wooden crates have slid into a heap against the deckhouse, and the rails and hull plates are crusted with barnacles as sharp as broken pottery. Everything is wet, salt-streaked and groaning as the swell works the hull.",
+   "ground": "the deck plating",
+   "rough": "the rusted deck",
+   "slick": "the wet plating",
+   "props": [
+    "the deckhouse wall",
+    "the fallen derrick",
+    "the heap of crates",
+    "the starboard rail"
+   ],
+   "ambience": "the boom of waves on the hull, groaning steel, salt spray, the hook swinging on its chain, the grey sky",
+   "details": [
+    "a wave booming against the hull",
+    "steel groaning somewhere below",
+    "salt spray coming over the rail",
+    "the hook swinging on its chain",
+    "the grey sky, low and moving",
+    "rust flaking under a foot",
+    "the deck tilted just enough to notice",
+    "a gull, once, far off",
+    "water sloshing in the hold",
+    "a loose cable tapping the mast"
+   ],
+   "hazards": [
+    {
+     "name": "the barnacled rail",
+     "words": [
+      "barnacle",
+      "rail",
+      "hull"
+     ],
+     "about": "steel crusted with barnacles like broken pottery: scrapes and small cuts; the corroded rail can give way",
+     "break": 0.3,
+     "upright": true
+    },
+    {
+     "name": "the flooded hold",
+     "words": [
+      "hold",
+      "hatch"
+     ],
+     "about": "a drop through the open hatch into dark seawater: it breaks the fall and drenches",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "chilled",
+       "chance": 0.25,
+       "beats": 2
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the anchor chain",
+     "words": [
+      "anchor",
+      "chain",
+      "links"
+     ],
+     "about": "rusted iron links as thick as a forelimb: brutal to land on"
+    },
+    {
+     "name": "the heap of crates",
+     "words": [
+      "crate",
+      "cargo"
+     ],
+     "about": "old wooden crates: they burst into splinters under a hard impact",
+     "break": 0.6,
+     "upright": true
+    },
+    {
+     "name": "the fallen derrick",
+     "words": [
+      "derrick",
+      "boom",
+      "mast"
+     ],
+     "about": "a steel lattice lying across the foredeck",
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "the breaking waves",
+     "words": [
+      "wave",
+      "surf",
+      "low side",
+      "port side",
+      "water"
+     ],
+     "about": "the low port side, where each wave breaks across the deck: anyone there is drenched and battered",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "the deckhouse wall",
+     "words": [
+      "deckhouse",
+      "wall",
+      "bulkhead"
+     ],
+     "about": "riveted steel",
+     "break": 0.02,
+     "upright": true
+    }
+   ],
+   "events": [
+    {
+     "name": "a wave sweeps the deck",
+     "text": "A bigger wave than the rest breaks clean over the port rail and comes hissing across the whole deck, knee-deep",
+     "who": "all",
+     "weight": 1,
+     "words": [
+      "wave",
+      "water",
+      "swell",
+      "sea"
+     ],
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ]
+    },
+    {
+     "name": "the cargo hook swings across",
+     "text": "The hull rolls, and the derrick's iron hook swings across the deck on its chain at head height",
+     "who": "standing",
+     "weight": 1,
+     "words": [
+      "hook",
+      "chain"
+     ],
+     "severity": "solid",
+     "regions": [
+      "head",
+      "shoulder",
+      "chest"
+     ],
+     "parts": 1
+    },
+    {
+     "name": "the deck lurches",
+     "text": "The swell lifts the hull off the reef and drops it again with a bang that jars through the plating",
+     "who": "standing",
+     "weight": 1,
+     "words": [
+      "lurch",
+      "swell",
+      "hull",
+      "deck",
+      "jar",
+      "bang"
+     ],
+     "effects": [
+      {
+       "status": "flinched",
+       "chance": 0.5,
+       "beats": 1
+      }
+     ]
+    }
+   ]
+  },
+  "desert ruins": {
+   "title": "The ruins in the sandstorm",
+   "place": "the courtyard",
+   "text": "The courtyard of a ruined temple, half buried in the desert, with a sandstorm blowing over it. The ground is cracked flagstones drifted with sand. Sandstone pillars stand around the edge, some whole, some leaning, their blocks loose in their sockets. A toppled statue lies in three pieces across the middle. In the north corner the paving has fallen in and left a pit of soft, deep sand; in the south corner is a dry well with a low stone rim and a black shaft; and along the west wall a stand of tall spiny cactus has taken root in the rubble. The wind howls through the gaps, the air is brown with flying grit, and the sun is a dim coin.",
+   "ground": "the flagstones",
+   "rough": "the cracked, gritty flagstones",
+   "slick": "the sand-drifted stone",
+   "props": [
+    "a sandstone pillar",
+    "the toppled statue",
+    "the temple wall",
+    "the rim of the well"
+   ],
+   "ambience": "the howl of the wind, grit hissing on stone, the dim brown light, heat coming off the flagstones, sand in every breath",
+   "details": [
+    "the wind howling in the broken arches",
+    "grit hissing across the stone",
+    "the dim brown light",
+    "heat coming up off the flagstones",
+    "sand in every breath",
+    "a column's shadow, sharp-edged",
+    "dust devils walking the far wall",
+    "the dry smell of old stone",
+    "a loose pebble rattling down",
+    "the sun a white coin behind the dust"
+   ],
+   "hazards": [
+    {
+     "name": "a sandstone pillar",
+     "words": [
+      "pillar",
+      "column"
+     ],
+     "about": "weathered blocks loose in their sockets: a hard impact brings part of it down",
+     "break": 0.45,
+     "upright": true
+    },
+    {
+     "name": "the cactus stand",
+     "words": [
+      "cactus",
+      "cacti",
+      "spine",
+      "needle"
+     ],
+     "about": "tall cactus bristling with finger-long spines: a body thrown into it comes out stuck all over and stunned by it",
+     "effects": [
+      {
+       "status": "flinched",
+       "chance": 0.5,
+       "beats": 1
+      }
+     ],
+     "break": 0.3,
+     "upright": true
+    },
+    {
+     "name": "the sand pit",
+     "words": [
+      "sand pit",
+      "pit",
+      "soft sand",
+      "deep sand"
+     ],
+     "about": "soft, deep sand where the paving fell in: it swallows a fall, and climbing out of it is slow",
+     "cushion": true
+    },
+    {
+     "name": "the well",
+     "words": [
+      "well",
+      "shaft",
+      "rim"
+     ],
+     "about": "a low stone rim round a black shaft: a brutal edge to be slammed across"
+    },
+    {
+     "name": "the toppled statue",
+     "words": [
+      "statue"
+     ],
+     "about": "three great pieces of carved stone",
+     "break": 0.08,
+     "upright": true
+    },
+    {
+     "name": "the temple wall",
+     "words": [
+      "wall"
+     ],
+     "about": "sandstone blocks, pitted by the wind",
+     "break": 0.1,
+     "upright": true
+    },
+    {
+     "name": "the flagstones",
+     "words": [
+      "flagstone",
+      "paving"
+     ],
+     "about": "cracked stone drifted with grit: like sandpaper to be dragged across"
+    }
+   ],
+   "events": [
+    {
+     "name": "the storm scours the courtyard",
+     "text": "The wind rises to a scream and a wall of flying sand scours across the courtyard, blinding and stinging",
+     "who": "all",
+     "weight": 1,
+     "words": [
+      "sand",
+      "wind",
+      "grit",
+      "storm"
+     ],
+     "effects": [
+      {
+       "status": "flinched",
+       "chance": 0.35,
+       "beats": 1
+      }
+     ]
+    },
+    {
+     "name": "a pillar sheds a block",
+     "text": "A leaning pillar shifts in the wind, and its top block slides off and comes down",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "block",
+      "pillar",
+      "stone"
+     ],
+     "severity": "solid",
+     "regions": [
+      "shoulder",
+      "back_up",
+      "hind_up",
+      "head"
+     ],
+     "parts": 2
+    }
+   ]
+  },
+  "crystal mine": {
+   "title": "The crystal mine",
+   "place": "the gallery",
+   "text": "A gallery deep in an abandoned mine. Rusted cart rails run down the middle of a rock floor littered with rubble, and a derailed iron ore cart lies on its side across them. Rotting timber props hold up the roof, some already bowed. Clusters of quartz crystal as long as a forelimb bristle from the walls and catch what light there is. At the east end a slope of loose scree leads up to a collapsed tunnel, and at the west end a shaft has flooded to the brim with still, icy, black water. Dust hangs in the air, the roof ticks and settles, and a pale glow comes from the crystals themselves.",
+   "ground": "the rock floor",
+   "rough": "the rubble-strewn floor",
+   "slick": "the loose rubble",
+   "props": [
+    "the ore cart",
+    "a timber prop",
+    "the gallery wall",
+    "a crystal cluster"
+   ],
+   "ambience": "the roof ticking and settling, dust hanging in the air, the pale glow of the crystals, dripping from the flooded shaft, dead silence between sounds",
+   "details": [
+    "the roof ticking and settling",
+    "dust hanging in the air",
+    "the pale glow of the crystals",
+    "a drip from the flooded shaft",
+    "the dead silence between sounds",
+    "a crystal face catching the light and losing it",
+    "the smell of cold rock and old timber",
+    "a prop creaking under its load",
+    "grit sifting down from above",
+    "the dark at the end of the gallery"
+   ],
+   "hazards": [
+    {
+     "name": "a crystal cluster",
+     "words": [
+      "crystal",
+      "quartz"
+     ],
+     "about": "points as long as a forelimb: scratches and small cuts; the points snap off under a hard impact",
+     "break": 0.35,
+     "upright": true
+    },
+    {
+     "name": "a timber prop",
+     "words": [
+      "timber",
+      "prop",
+      "beam",
+      "support"
+     ],
+     "about": "rotten wood holding up the roof: break one and a spill of rock comes down with it",
+     "break": 0.5,
+     "upright": true
+    },
+    {
+     "name": "the ore cart",
+     "words": [
+      "cart"
+     ],
+     "about": "a derailed iron cart on its side: corners and rivets",
+     "break": 0.03,
+     "upright": true
+    },
+    {
+     "name": "the cart rails",
+     "words": [
+      "rail",
+      "track",
+      "sleeper"
+     ],
+     "about": "two rusted iron rails standing proud of the floor: hard edges to land across"
+    },
+    {
+     "name": "the flooded shaft",
+     "words": [
+      "shaft",
+      "black water",
+      "water"
+     ],
+     "about": "icy black water to the brim: it breaks a fall, drenches and chills",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "chilled",
+       "chance": 0.5,
+       "beats": 2
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the scree slope",
+     "words": [
+      "scree",
+      "slope"
+     ],
+     "about": "loose broken rock that slides under any weight: she is carried down it in a small avalanche"
+    },
+    {
+     "name": "the gallery wall",
+     "words": [
+      "wall"
+     ],
+     "about": "rough-cut rock",
+     "break": 0.05,
+     "upright": true
+    }
+   ],
+   "events": [
+    {
+     "name": "the roof sheds stones",
+     "text": "The roof ticks, cracks, and lets go of a shower of stones and dust",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "roof",
+      "stone",
+      "rock",
+      "dust"
+     ],
+     "severity": "solid",
+     "regions": [
+      "head",
+      "shoulder",
+      "back_up"
+     ],
+     "parts": 2
+    },
+    {
+     "name": "the ore cart rolls",
+     "text": "The derailed cart, jarred loose, grinds off its side onto one wheel and rolls a few lengths down the rails",
+     "who": "standing",
+     "weight": 1,
+     "words": [
+      "cart"
+     ],
+     "severity": "solid",
+     "regions": [
+      "hind_up",
+      "hind_low",
+      "belly"
+     ],
+     "parts": 2
+    },
+    {
+     "name": "a prop gives way",
+     "text": "One of the bowed timber props folds with a groan, and a slab of the roof behind it comes down in pieces",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "prop",
+      "timber",
+      "slab",
+      "roof"
+     ],
+     "severity": "solid",
+     "regions": [
+      "back_up",
+      "back_low",
+      "shoulder"
+     ],
+     "parts": 2
+    }
+   ]
+  },
+  "clock tower": {
+   "title": "The clock tower works",
+   "place": "the clock room",
+   "text": "The machine room of a great clock tower, behind the clock face. The floor is worn oak planking around a well where the pendulum swings: a brass weight the size of a boulder on a long iron rod, sweeping from one side of the room to the other and back, slow and unstoppable. Trains of brass gears taller than a fighter turn along the north wall, their teeth meshing with a steady clack. The great bell hangs in an open frame at the east end. Loops of drive chain hang from the beams, a steam whistle for the hour stands by the west wall with its valve hissing, and the clock face itself is a wall of pale glass with the light of the city behind it.",
+   "ground": "the oak planking",
+   "rough": "the splintery planking",
+   "slick": "the oiled boards",
+   "props": [
+    "the gear housing",
+    "the bell frame",
+    "the tower wall",
+    "a roof beam's post"
+   ],
+   "ambience": "the clack of gears, the slow sweep of the pendulum, the tick that fills the room, oil and brass, light through the clock face",
+   "details": [
+    "the clack of the gears",
+    "the slow sweep of the pendulum",
+    "the tick that fills the room",
+    "the smell of oil and brass",
+    "light through the clock face, in pale bars",
+    "dust turning in the light",
+    "the floor trembling with each beat of the works",
+    "a weight on its chain, sinking by inches",
+    "pigeons shifting in the rafters",
+    "the hour hand's shadow on the boards"
+   ],
+   "hazards": [
+    {
+     "name": "the turning gears",
+     "words": [
+      "gear",
+      "cog",
+      "teeth of the"
+     ],
+     "about": "meshing brass teeth: they catch fur and skin and pinch hard before they let go",
+     "effects": [
+      {
+       "status": "flinched",
+       "chance": 0.5,
+       "beats": 1
+      }
+     ],
+     "break": 0.0,
+     "upright": true
+    },
+    {
+     "name": "the pendulum",
+     "words": [
+      "pendulum",
+      "weight"
+     ],
+     "about": "a brass weight the size of a boulder on its sweep: to be driven into its path is to be hit by it"
+    },
+    {
+     "name": "the great bell",
+     "words": [
+      "bell"
+     ],
+     "about": "bronze: a body slammed into it makes it ring, and the sound at that range scrambles the senses",
+     "effects": [
+      {
+       "status": "confused",
+       "chance": 0.5,
+       "beats": 2
+      }
+     ],
+     "break": 0.0,
+     "upright": true
+    },
+    {
+     "name": "the steam whistle",
+     "words": [
+      "whistle",
+      "valve",
+      "steam"
+     ],
+     "about": "a hissing steam valve: scalding",
+     "effects": [
+      {
+       "status": "burned",
+       "chance": 0.5,
+       "beats": 3
+      }
+     ],
+     "break": 0.25,
+     "upright": true
+    },
+    {
+     "name": "the clock face",
+     "words": [
+      "clock face",
+      "glass",
+      "dial"
+     ],
+     "about": "a wall of pale glass: it cracks and breaks under a hard impact, in a rain of fragments (scratches and small cuts)",
+     "break": 0.5,
+     "upright": true
+    },
+    {
+     "name": "the drive chains",
+     "words": [
+      "chain"
+     ],
+     "about": "hanging loops of heavy chain: a body thrown into them is tangled and battered"
+    },
+    {
+     "name": "the tower wall",
+     "words": [
+      "wall",
+      "brick"
+     ],
+     "about": "old brick",
+     "break": 0.03,
+     "upright": true
+    }
+   ],
+   "events": [
+    {
+     "name": "the pendulum sweeps through",
+     "text": "The pendulum comes back across the room on its slow sweep, and this time she is in its path",
+     "who": "standing",
+     "weight": 1,
+     "words": [
+      "pendulum",
+      "weight"
+     ],
+     "severity": "solid",
+     "regions": [
+      "shoulder",
+      "chest",
+      "hind_up",
+      "back_up"
+     ],
+     "parts": 2
+    },
+    {
+     "name": "the bell tolls",
+     "text": "The hour strikes: the great bell swings and tolls, and at this range the sound is a physical blow",
+     "who": "all",
+     "weight": 1,
+     "words": [
+      "bell",
+      "toll",
+      "rang",
+      "ring"
+     ],
+     "effects": [
+      {
+       "status": "confused",
+       "chance": 0.25,
+       "beats": 2
+      },
+      {
+       "status": "flinched",
+       "chance": 0.3,
+       "beats": 1
+      }
+     ]
+    },
+    {
+     "name": "the steam whistle blows",
+     "text": "The whistle opens for the hour with a shriek, and a plume of scalding steam jets out across the west side of the room",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "whistle",
+      "steam"
+     ],
+     "severity": "light",
+     "regions": [
+      "shoulder",
+      "back_up",
+      "chest"
+     ],
+     "parts": 1,
+     "effects": [
+      {
+       "status": "burned",
+       "chance": 0.4,
+       "beats": 3
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

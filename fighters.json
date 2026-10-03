@@ -1,0 +1,459 @@
+{
+  "_comment": "Each fighter has their own body: part name -> starting resistance (%). Higher resistance = less damage per hit (see rules.json -> resistance -> brackets). health = starting health %. team (optional): fighters sharing a team are allies; leave it out for a free-for-all. types: the fighter's Pokemon types. moves: name, type, power, target (targeted / spread / whole_body / hold) and a short 'about' the storyteller reads. appearance: exact looks (colors, anatomy) - the narrator is told to use only these, so species features don't get mixed up. A move with \"uses\": N can only be used N times per fight. scene: describe the arena's fixed features (floor, water, walls, light, sounds) so the narrator keeps them consistent.",
+  "scene": "A flooded sea cave of rough grey stone. The floor is a wide central ledge of dry, gritty rock, ringed by ankle-deep pools and cut by one deep channel of cold water along the west wall. Near the water the stone is slick with algae; away from it, it is dry and harsh. A low ceiling hangs with short stalactites that drip steadily. Thick stalagmites rise around the edges of the ledge, and fallen boulders lie scattered along the east wall. Grey daylight filters in through a crack high in the east wall. The cave smells of salt and wet stone, and every sound echoes.",
+  "fighters": [
+    {
+      "name": "Nocturne",
+      "description": "A female Absol. Proud, furious, and fast; quadruped with a scythe-shaped horn on her head and a sickle-bladed tail. Fights with Slash-style raking claws, horn and tail-blade strikes, bites, and can channel stored electricity in limited bursts. Hates water and fights worse in it. Never gives up while she can still move.",
+      "appearance": "Absol. Quadruped that walks with a bear-like pacing gait. Mostly WHITE fur; dark blue-gray face, scythe-shaped horn (on one side of her head) and scythe-like tail. A thick WHITE ruff around her neck and chest (white, never cream) and a tuft on top of her head. Red, almond-shaped eyes. Broad furred PAWS (not hooves, not webbed) with three claws each; dewclaw-like spikes on the heels of her hind legs and the elbows of her front legs.",
+      "voice": "Terse, proud, and cutting. Thinks in short, hard sentences: cold assessments, contempt for weakness, flashes of grudging respect; rarely admits pain even to herself. Growls and hisses rather than cries out, until it truly breaks through.",
+      "tells": "Ears flatten back; hackles rise along the ruff; the sickle tail lashes or goes rigid; lips peel back from her fangs; a low growl or a sharp hiss; red eyes narrow to slits or squeeze shut; she shakes her head hard to clear it.",
+      "types": [
+        "Dark"
+      ],
+      "health": 1800,
+      "body": {
+        "Head": 90,
+        "Horn": 220,
+        "Left Ear": 50,
+        "Right Ear": 50,
+        "Muzzle": 70,
+        "Nose": 45,
+        "Jaw": 85,
+        "Neck": 75,
+        "Throat": 55,
+        "Chest Ruff": 130,
+        "Chest": 110,
+        "Belly": 70,
+        "Back": 120,
+        "Left Shoulder": 105,
+        "Right Shoulder": 105,
+        "Left Ribs": 95,
+        "Right Ribs": 95,
+        "Left Flank": 85,
+        "Right Flank": 85,
+        "Left Upper Foreleg": 95,
+        "Right Upper Foreleg": 95,
+        "Left Lower Foreleg": 85,
+        "Right Lower Foreleg": 85,
+        "Left Forepaw": 75,
+        "Right Forepaw": 75,
+        "Left Hip": 110,
+        "Right Hip": 110,
+        "Left Thigh": 115,
+        "Right Thigh": 115,
+        "Left Hock": 80,
+        "Right Hock": 80,
+        "Left Hind Paw": 75,
+        "Right Hind Paw": 75,
+        "Tail Base": 100,
+        "Sickle Tail": 180
+      },
+      "moves": [
+        {
+          "name": "Night Slash",
+          "type": "Dark",
+          "power": 35,
+          "target": "targeted",
+          "about": "dark-edged raking claw or horn slash"
+        },
+        {
+          "name": "Slash",
+          "type": "Normal",
+          "power": 30,
+          "target": "targeted",
+          "about": "raking claw strike"
+        },
+        {
+          "name": "Bite",
+          "type": "Dark",
+          "power": 30,
+          "target": "targeted",
+          "about": "hard bite"
+        },
+        {
+          "name": "Sucker Punch",
+          "type": "Dark",
+          "power": 25,
+          "target": "targeted",
+          "about": "sudden lunge that beats the opponent to the punch"
+        },
+        {
+          "name": "Iron Tail",
+          "type": "Steel",
+          "power": 40,
+          "target": "targeted",
+          "about": "sickle tail hardened like steel"
+        },
+        {
+          "name": "Take Down",
+          "type": "Normal",
+          "power": 35,
+          "target": "targeted",
+          "about": "a reckless full-body ram, shoulder first",
+          "charge": true
+        },
+        {
+          "name": "Thunderbolt",
+          "type": "Electric",
+          "power": 8,
+          "target": "whole_body",
+          "about": "stored lightning from her horn; hits the whole body, far worse in water",
+          "uses": 3,
+          "sustainable": true
+        },
+        {
+          "name": "Pin Down",
+          "type": "Normal",
+          "power": 12,
+          "target": "hold",
+          "about": "pins with weight, paws and teeth"
+        },
+        {
+          "name": "Dark Pulse",
+          "type": "Dark",
+          "power": 27,
+          "target": "spread",
+          "about": "a horrible aura of malice",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Psycho Cut",
+          "type": "Psychic",
+          "power": 23,
+          "target": "spread",
+          "about": "a blade of psychic energy"
+        },
+        {
+          "name": "Will-O-Wisp",
+          "type": "Fire",
+          "power": 0,
+          "target": "status",
+          "about": "sinister ghostly flames that burn",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.85,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Hydro Pump",
+          "type": "Water",
+          "power": 40,
+          "target": "spread",
+          "about": "massive high-pressure water blast to the front of the body",
+          "uses": 4,
+          "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Ripples",
+      "_balance_note": "Builds 79-82 evened Ripples out against Nocturne (who was winning about 85% of simulated fights; now 61-65%). Changed for Ripples: health 1400 -> 1600; every body part +8 resistance; Hydro Pump added (4 uses, sustainable). Her other move powers are the original ones. Changed for Nocturne: Thunderbolt power 10 -> 8, Take Down added. To go back: Ripples health 1400, take 8 off every body part, remove Hydro Pump; Nocturne Thunderbolt 10.",
+      "description": "A female Buizel. Small, wiry, stubborn, and patient; walks upright with webbed paws, fins on her forearms, an inflatable flotation sac around her neck, and powerful twin tails she spins like a propeller. Fights with Aqua Jet charges, bites, claws, and by binding limbs with her twin tails. Thrives in water, learns from every hold used on her, and never lets go once she has a grip.",
+      "appearance": "Buizel. Upright, otter-like weasel with ORANGE fur and a cream underside (face and stomach). A yellow inflatable flotation sac (collar) around her neck. A blue fin on each forearm. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET.",
+      "voice": "Stubborn, scrappy, and quick. Thinks in quick bursts: practical little plans, sharp observations about her opponent, cheeky jabs, and flashes of stubborn pride. Chitters, squeaks, and barks; when hurt she gets snappish and inventive rather than weepy.",
+      "tells": "Her flotation sac deflates in a rush when the air is knocked out, or puffs up as she gasps; her twin tails stutter or whirl; ears pin back; she squeaks, chitters, or barks; the black cheek marks twitch as she grits her teeth; her webbed paws curl tight; she shakes water out of her fur.",
+      "variants": {
+        "_comment": "Other versions of this fighter. rules.json -> variants -> Ripples says which one a new fight uses (\"original\" = the entry as written above). Whatever a variant lists (description, appearance, tells, voice, body, health, types, moves) replaces the original's; what it leaves out stays. Switch with /variant Ripples sleek | original.",
+        "sleek": {
+          "label": "no flotation sac: a bare throat, breath shown in her fins, ribs and throat",
+          "_balance_note": "Build 103. The flotation sac (148 resistance, the toughest thing near her head) is gone and a bare Throat (63) takes its place, so blows that jar into her neck area and chokes on it hurt her more: untuned, Nocturne won 67% of simulated fights against her instead of 60%. Her health is 1700 instead of 1600 to make up for it (60% again over 400 fights). To make the throat less of a weak point instead, raise Throat to about 118 and put health back to 1600.",
+          "description": "A female Buizel. Small, wiry, stubborn, and patient; a sleek river-bred line with no flotation sac: her neck and throat are bare, short fur. Walks upright with webbed paws, fins on her forearms, and powerful twin tails she spins like a propeller. With nothing to hold her up she rides low in the water and swims like a thrown knife, steering with her forearm fins. Fights with Aqua Jet charges, bites, claws, and by binding limbs with her twin tails. Thrives in water, learns from every hold used on her, and never lets go once she has a grip. She guards her bare throat by habit: chin tucked, shoulders up.",
+          "appearance": "Buizel. Upright, otter-like weasel with ORANGE fur and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET.",
+          "tells": "Her forearm fins flare wide when she braces or is startled and clamp flat to her arms when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, a ragged gulp as it comes back, her throat working as she swallows; she tucks her chin and hunches her shoulders to cover her throat; the fur on the back of her neck stands up; her twin tails stutter or whirl; ears pin back; she squeaks, chitters, or barks; the black cheek marks twitch as she grits her teeth; her webbed paws curl tight; she shakes water out of her fur.",
+          "body": {
+            "Head": 93,
+            "Left Ear": 63,
+            "Right Ear": 63,
+            "Muzzle": 78,
+            "Nose": 53,
+            "Left Cheek": 78,
+            "Right Cheek": 78,
+            "Jaw": 88,
+            "Neck": 78,
+            "Throat": 63,
+            "Chest": 103,
+            "Stomach": 78,
+            "Upper Back": 113,
+            "Lower Back": 103,
+            "Left Shoulder": 103,
+            "Right Shoulder": 103,
+            "Left Upper Arm": 93,
+            "Right Upper Arm": 93,
+            "Left Forearm Fin": 68,
+            "Right Forearm Fin": 68,
+            "Left Paw": 78,
+            "Right Paw": 78,
+            "Left Hip": 108,
+            "Right Hip": 108,
+            "Left Thigh": 113,
+            "Right Thigh": 113,
+            "Left Knee": 88,
+            "Right Knee": 88,
+            "Left Foot": 83,
+            "Right Foot": 83,
+            "Tail Base": 128,
+            "Twin Tails": 168
+          },
+          "health": 1700
+        }
+      },
+      "types": [
+        "Water"
+      ],
+      "health": 1600,
+      "body": {
+        "Head": 93,
+        "Left Ear": 63,
+        "Right Ear": 63,
+        "Muzzle": 78,
+        "Nose": 53,
+        "Left Cheek": 78,
+        "Right Cheek": 78,
+        "Jaw": 88,
+        "Neck": 78,
+        "Flotation Sac": 148,
+        "Chest": 103,
+        "Stomach": 78,
+        "Upper Back": 113,
+        "Lower Back": 103,
+        "Left Shoulder": 103,
+        "Right Shoulder": 103,
+        "Left Upper Arm": 93,
+        "Right Upper Arm": 93,
+        "Left Forearm Fin": 68,
+        "Right Forearm Fin": 68,
+        "Left Paw": 78,
+        "Right Paw": 78,
+        "Left Hip": 108,
+        "Right Hip": 108,
+        "Left Thigh": 113,
+        "Right Thigh": 113,
+        "Left Knee": 88,
+        "Right Knee": 88,
+        "Left Foot": 83,
+        "Right Foot": 83,
+        "Tail Base": 128,
+        "Twin Tails": 168
+      },
+      "moves": [
+        {
+          "name": "Aqua Jet",
+          "type": "Water",
+          "power": 30,
+          "target": "targeted",
+          "about": "water-sheathed body charge",
+          "charge": true
+        },
+        {
+          "name": "Brick Break",
+          "type": "Fighting",
+          "power": 35,
+          "target": "targeted",
+          "about": "chopping paw strike"
+        },
+        {
+          "name": "Crunch",
+          "type": "Dark",
+          "power": 40,
+          "target": "targeted",
+          "about": "crushing bite"
+        },
+        {
+          "name": "Ice Fang",
+          "type": "Ice",
+          "power": 30,
+          "target": "targeted",
+          "about": "freezing bite"
+        },
+        {
+          "name": "Hydro Pump",
+          "type": "Water",
+          "power": 40,
+          "target": "spread",
+          "about": "massive high-pressure water blast to the front of the body",
+          "uses": 4,
+          "sustainable": true
+        },
+        {
+          "name": "Water Gun",
+          "type": "Water",
+          "power": 20,
+          "target": "spread",
+          "about": "jet of water across the front of the body",
+          "sustainable": true
+        },
+        {
+          "name": "Tail Bind",
+          "type": "Normal",
+          "power": 10,
+          "target": "hold",
+          "about": "twin tails wrapped and squeezing a limb or the body"
+        },
+        {
+          "name": "Pin Down",
+          "type": "Normal",
+          "power": 12,
+          "target": "hold",
+          "about": "pins with weight, knees, paws and teeth"
+        },
+        {
+          "name": "Water Pulse",
+          "type": "Water",
+          "power": 20,
+          "target": "spread",
+          "about": "a pulsing blast of water",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 0.2,
+              "beats": 2
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Swift",
+          "type": "Normal",
+          "power": 20,
+          "target": "spread",
+          "about": "star-shaped rays that never miss"
+        },
+        {
+          "name": "Ice Beam",
+          "type": "Ice",
+          "power": 30,
+          "target": "spread",
+          "about": "a freezing beam",
+          "effects": [
+            {
+              "status": "frozen",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Seraphina",
+      "description": "A female Milotic. Graceful, calm, and enormously strong; a long serpentine body with iridescent scales, a cream-scaled belly, long red antennae and fin-like 'hair' on her head, and a broad iridescent tail fan. Fights by coiling and constricting (she squeezes on her opponent's exhale), crushing with her body's weight, tail-fan lashes, bites, and water attacks. Deadly in water, slower on dry stone.",
+      "appearance": "Milotic. Long serpentine body, primarily CREAM-colored and iridescent (scales shift color with the angle); blue and pink diamond-shaped scales outlined in black on her lower body. Long PINKISH antennae above red eyes, and long hair-like fins above her eyes that start thin and thicken toward the tips. A small straight spike on top of her head. Three black gill-like dots down each side of her neck. Tail fan of four overlapping blue fins with pink ovals in the centers. No limbs.",
+      "voice": "Calm, measured, and almost serene, with steel underneath. Thinks in long, composed sentences; her voice is a low, resonant hum that only cracks when something truly hurts.",
+      "tells": "Her long antennae droop or snap rigid; the hair-like head fins flatten against her neck; her coils tighten reflexively; the tail fan snaps shut; her low, resonant humming note cracks into a hiss; her scales flare and dull; her red eyes close slowly against the pain.",
+      "types": [
+        "Water"
+      ],
+      "health": 2800,
+      "body": {
+        "Head": 100,
+        "Head Spike": 130,
+        "Left Antenna": 50,
+        "Right Antenna": 50,
+        "Left Head Fin": 70,
+        "Right Head Fin": 70,
+        "Jaw": 95,
+        "Throat": 80,
+        "Upper Neck": 105,
+        "Lower Neck": 110,
+        "Chest": 130,
+        "Belly Scales": 110,
+        "Upper Back": 150,
+        "Midsection": 125,
+        "Lower Back": 140,
+        "Upper Tail": 140,
+        "Lower Tail": 125,
+        "Tail Fan": 75
+      },
+      "moves": [
+        {
+          "name": "Hydro Pump",
+          "type": "Water",
+          "power": 40,
+          "target": "spread",
+          "about": "massive high-pressure water blast to the front of the body",
+          "uses": 4,
+          "sustainable": true
+        },
+        {
+          "name": "Dragon Tail",
+          "type": "Dragon",
+          "power": 35,
+          "target": "targeted",
+          "about": "sweeping tail strike charged with draconic force that can throw the target"
+        },
+        {
+          "name": "Dragon Rush",
+          "type": "Dragon",
+          "power": 40,
+          "target": "targeted",
+          "about": "a menacing full-body charge, the whole length of her behind it",
+          "charge": true
+        },
+        {
+          "name": "Aqua Tail",
+          "type": "Water",
+          "power": 40,
+          "target": "targeted",
+          "about": "water-wrapped tail slam"
+        },
+        {
+          "name": "Iron Tail",
+          "type": "Steel",
+          "power": 40,
+          "target": "targeted",
+          "about": "steel-hard tail strike"
+        },
+        {
+          "name": "Ice Beam",
+          "type": "Ice",
+          "power": 30,
+          "target": "spread",
+          "about": "freezing beam across the body",
+          "sustainable": true
+        },
+        {
+          "name": "Wrap",
+          "type": "Normal",
+          "power": 12,
+          "target": "hold",
+          "about": "coils around the body and constricts, squeezing on the exhale"
+        },
+        {
+          "name": "Twister",
+          "type": "Dragon",
+          "power": 4,
+          "target": "whole_body",
+          "about": "a vicious twister",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Dragon Pulse",
+          "type": "Dragon",
+          "power": 28,
+          "target": "spread",
+          "about": "a shockwave from the mouth",
+          "sustainable": true
+        }
+      ]
+    }
+  ]
+}

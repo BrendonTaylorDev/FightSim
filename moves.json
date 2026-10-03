@@ -1,0 +1,2884 @@
+{
+ "_comment": "Pokemon moves you can lend a fighter for one fight with /learn. power is on this engine's scale (targeted moves get x2 for aiming at one spot). effects: a status (paralyzed, asleep, confused, burned, poisoned, frozen, flinched, chilled, soaked) with its chance and how many beats it lasts, or a launch (knocked down, thrown, launched) and its chance. Edit freely; healing moves are deliberately left out. sustainable: true means the move can be held for several pulses (pressing the target back, maybe into the scenery).",
+ "moves": [
+  {
+   "name": "Pound",
+   "type": "Normal",
+   "power": 20,
+   "target": "targeted",
+   "about": "a flat slap with a paw or tail"
+  },
+  {
+   "name": "Scratch",
+   "type": "Normal",
+   "power": 20,
+   "target": "targeted",
+   "about": "raking claws"
+  },
+  {
+   "name": "Tackle",
+   "type": "Normal",
+   "power": 20,
+   "target": "targeted",
+   "about": "a full-body charge",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.1
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Quick Attack",
+   "type": "Normal",
+   "power": 20,
+   "target": "targeted",
+   "about": "a blur of speed straight into the target",
+   "charge": true
+  },
+  {
+   "name": "Body Slam",
+   "type": "Normal",
+   "power": 42,
+   "target": "targeted",
+   "about": "slams the whole body down on the target",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.3,
+     "beats": 2
+    },
+    {
+     "launch": "knocked down",
+     "chance": 0.4
+    }
+   ]
+  },
+  {
+   "name": "Take Down",
+   "type": "Normal",
+   "power": 45,
+   "target": "targeted",
+   "about": "a reckless full-body ram",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Double-Edge",
+   "type": "Normal",
+   "power": 60,
+   "target": "targeted",
+   "about": "an all-out ram that jars the attacker too",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.4
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Headbutt",
+   "type": "Normal",
+   "power": 35,
+   "target": "targeted",
+   "about": "a hard head-first strike",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Mega Punch",
+   "type": "Normal",
+   "power": 40,
+   "target": "targeted",
+   "about": "a heavy punch"
+  },
+  {
+   "name": "Mega Kick",
+   "type": "Normal",
+   "power": 60,
+   "target": "targeted",
+   "about": "a huge kick",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Slam",
+   "type": "Normal",
+   "power": 40,
+   "target": "targeted",
+   "about": "a slamming blow with tail or body",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Stomp",
+   "type": "Normal",
+   "power": 32,
+   "target": "targeted",
+   "about": "a crushing stomp",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Hyper Fang",
+   "type": "Normal",
+   "power": 40,
+   "target": "targeted",
+   "about": "a bite with sharp front fangs",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Crush Claw",
+   "type": "Normal",
+   "power": 38,
+   "target": "targeted",
+   "about": "crushing, raking claws"
+  },
+  {
+   "name": "Fury Swipes",
+   "type": "Normal",
+   "power": 9,
+   "target": "targeted",
+   "about": "a rapid flurry of scratches"
+  },
+  {
+   "name": "Fury Attack",
+   "type": "Normal",
+   "power": 8,
+   "target": "targeted",
+   "about": "a rapid flurry of jabs"
+  },
+  {
+   "name": "Rapid Spin",
+   "type": "Normal",
+   "power": 25,
+   "target": "targeted",
+   "about": "a spinning body attack"
+  },
+  {
+   "name": "Retaliate",
+   "type": "Normal",
+   "power": 35,
+   "target": "targeted",
+   "about": "a vengeful strike"
+  },
+  {
+   "name": "Facade",
+   "type": "Normal",
+   "power": 35,
+   "target": "targeted",
+   "about": "a reckless strike, harder when hurt"
+  },
+  {
+   "name": "Extreme Speed",
+   "type": "Normal",
+   "power": 40,
+   "target": "targeted",
+   "about": "an attack too fast to follow",
+   "charge": true
+  },
+  {
+   "name": "Giga Impact",
+   "type": "Normal",
+   "power": 75,
+   "target": "targeted",
+   "about": "an overwhelming full-power charge",
+   "effects": [
+    {
+     "launch": "launched",
+     "chance": 0.6
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Hyper Beam",
+   "type": "Normal",
+   "power": 50,
+   "target": "spread",
+   "about": "a devastating beam of raw energy",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.4
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Hyper Voice",
+   "type": "Normal",
+   "power": 10,
+   "target": "whole_body",
+   "about": "a shattering wall of sound"
+  },
+  {
+   "name": "Boomburst",
+   "type": "Normal",
+   "power": 16,
+   "target": "whole_body",
+   "about": "an explosive blast of sound"
+  },
+  {
+   "name": "Swift",
+   "type": "Normal",
+   "power": 20,
+   "target": "spread",
+   "about": "star-shaped rays that never miss"
+  },
+  {
+   "name": "Tri Attack",
+   "type": "Normal",
+   "power": 27,
+   "target": "spread",
+   "about": "a triangle of fire, ice, and lightning",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.07,
+     "beats": 2
+    },
+    {
+     "status": "burned",
+     "chance": 0.07,
+     "beats": 3
+    },
+    {
+     "status": "frozen",
+     "chance": 0.07,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Crush Grip",
+   "type": "Normal",
+   "power": 20,
+   "target": "hold",
+   "about": "a crushing grip"
+  },
+  {
+   "name": "Wrap",
+   "type": "Normal",
+   "power": 10,
+   "target": "hold",
+   "about": "coils wrapped around the body, squeezing"
+  },
+  {
+   "name": "Bind",
+   "type": "Normal",
+   "power": 10,
+   "target": "hold",
+   "about": "binds and squeezes the target"
+  },
+  {
+   "name": "Constrict",
+   "type": "Normal",
+   "power": 10,
+   "target": "hold",
+   "about": "constricting coils"
+  },
+  {
+   "name": "Hold Down",
+   "type": "Normal",
+   "power": 14,
+   "target": "hold",
+   "about": "pins the target with weight"
+  },
+  {
+   "name": "Super Fang",
+   "type": "Normal",
+   "power": 30,
+   "target": "targeted",
+   "about": "a savage bite to a vulnerable spot"
+  },
+  {
+   "name": "Feint",
+   "type": "Normal",
+   "power": 15,
+   "target": "targeted",
+   "about": "a quick feint that slips past guard"
+  },
+  {
+   "name": "Covet",
+   "type": "Normal",
+   "power": 30,
+   "target": "targeted",
+   "about": "a sudden lunge"
+  },
+  {
+   "name": "Thrash",
+   "type": "Normal",
+   "power": 40,
+   "target": "spread",
+   "about": "a wild, rampaging flurry that leaves the attacker dizzy",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 1.0,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Spin Attack",
+   "type": "Normal",
+   "power": 17,
+   "target": "spread",
+   "about": "a spinning sweep",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.2
+    }
+   ]
+  },
+  {
+   "name": "Skull Bash",
+   "type": "Normal",
+   "power": 65,
+   "target": "targeted",
+   "about": "a lowered-head charge",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.5
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Supersonic",
+   "type": "Normal",
+   "power": 0,
+   "target": "status",
+   "about": "a strange, disorienting sound wave",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 0.55,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Sing",
+   "type": "Normal",
+   "power": 0,
+   "target": "status",
+   "about": "a soothing song that drags the target toward sleep",
+   "effects": [
+    {
+     "status": "asleep",
+     "chance": 0.55,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Yawn",
+   "type": "Normal",
+   "power": 0,
+   "target": "status",
+   "about": "a contagious, drowsy yawn",
+   "effects": [
+    {
+     "status": "asleep",
+     "chance": 1.0,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Glare",
+   "type": "Normal",
+   "power": 0,
+   "target": "status",
+   "about": "a paralyzing glare",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 1.0,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Flash",
+   "type": "Normal",
+   "power": 0,
+   "target": "status",
+   "about": "a blinding flash of light",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 1.0,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Roar",
+   "type": "Normal",
+   "power": 0,
+   "target": "status",
+   "about": "a terrifying roar",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.6,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Scary Face",
+   "type": "Normal",
+   "power": 0,
+   "target": "status",
+   "about": "a frightening grimace",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.4,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Ember",
+   "type": "Fire",
+   "power": 13,
+   "target": "spread",
+   "about": "small flames",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    }
+   ]
+  },
+  {
+   "name": "Flame Wheel",
+   "type": "Fire",
+   "power": 30,
+   "target": "targeted",
+   "about": "rolls in a wheel of fire",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Fire Fang",
+   "type": "Fire",
+   "power": 32,
+   "target": "targeted",
+   "about": "a bite wreathed in flame",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    },
+    {
+     "status": "flinched",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Fire Punch",
+   "type": "Fire",
+   "power": 38,
+   "target": "targeted",
+   "about": "a burning punch",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    }
+   ]
+  },
+  {
+   "name": "Flame Charge",
+   "type": "Fire",
+   "power": 25,
+   "target": "targeted",
+   "about": "a charge cloaked in flames",
+   "charge": true
+  },
+  {
+   "name": "Flamethrower",
+   "type": "Fire",
+   "power": 30,
+   "target": "spread",
+   "about": "a stream of fire",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Fire Blast",
+   "type": "Fire",
+   "power": 37,
+   "target": "spread",
+   "about": "a huge star-shaped blast of fire",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Heat Wave",
+   "type": "Fire",
+   "power": 11,
+   "target": "whole_body",
+   "about": "a scorching wave of heat",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Flare Blitz",
+   "type": "Fire",
+   "power": 60,
+   "target": "targeted",
+   "about": "a reckless charge wrapped in fire",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    },
+    {
+     "launch": "thrown",
+     "chance": 0.4
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Blaze Kick",
+   "type": "Fire",
+   "power": 42,
+   "target": "targeted",
+   "about": "a flaming kick",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    }
+   ]
+  },
+  {
+   "name": "Lava Plume",
+   "type": "Fire",
+   "power": 9,
+   "target": "whole_body",
+   "about": "an eruption of scarlet flames",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.3,
+     "beats": 3
+    }
+   ]
+  },
+  {
+   "name": "Inferno",
+   "type": "Fire",
+   "power": 33,
+   "target": "spread",
+   "about": "an intense fire that always burns",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 1.0,
+     "beats": 3
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Overheat",
+   "type": "Fire",
+   "power": 43,
+   "target": "spread",
+   "about": "an all-out blast of fire",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.1,
+     "beats": 3
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Fire Spin",
+   "type": "Fire",
+   "power": 20,
+   "target": "hold",
+   "about": "a vortex of fire that traps the target",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.3,
+     "beats": 3
+    }
+   ]
+  },
+  {
+   "name": "Mystical Fire",
+   "type": "Fire",
+   "power": 25,
+   "target": "spread",
+   "about": "mystical flame"
+  },
+  {
+   "name": "Will-O-Wisp",
+   "type": "Fire",
+   "power": 0,
+   "target": "status",
+   "about": "sinister ghostly flames that burn",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.85,
+     "beats": 3
+    }
+   ]
+  },
+  {
+   "name": "Water Gun",
+   "type": "Water",
+   "power": 13,
+   "target": "spread",
+   "about": "a jet of water",
+   "sustainable": true
+  },
+  {
+   "name": "Bubble",
+   "type": "Water",
+   "power": 13,
+   "target": "spread",
+   "about": "a spray of bubbles"
+  },
+  {
+   "name": "Bubble Beam",
+   "type": "Water",
+   "power": 22,
+   "target": "spread",
+   "about": "a forceful spray of bubbles",
+   "sustainable": true
+  },
+  {
+   "name": "Water Pulse",
+   "type": "Water",
+   "power": 20,
+   "target": "spread",
+   "about": "a pulsing blast of water",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 0.2,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Aqua Jet",
+   "type": "Water",
+   "power": 20,
+   "target": "targeted",
+   "about": "a water-sheathed body charge",
+   "charge": true
+  },
+  {
+   "name": "Aqua Tail",
+   "type": "Water",
+   "power": 45,
+   "target": "targeted",
+   "about": "a water-wrapped tail slam",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.2
+    }
+   ]
+  },
+  {
+   "name": "Waterfall",
+   "type": "Water",
+   "power": 40,
+   "target": "targeted",
+   "about": "charges up like a waterfall, driving the target upward",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.2,
+     "beats": 1
+    },
+    {
+     "launch": "launched",
+     "chance": 0.2
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Liquidation",
+   "type": "Water",
+   "power": 42,
+   "target": "targeted",
+   "about": "a crushing water-wrapped strike"
+  },
+  {
+   "name": "Crabhammer",
+   "type": "Water",
+   "power": 50,
+   "target": "targeted",
+   "about": "a hammering pincer strike"
+  },
+  {
+   "name": "Razor Shell",
+   "type": "Water",
+   "power": 38,
+   "target": "targeted",
+   "about": "slashing sharp shells"
+  },
+  {
+   "name": "Surf",
+   "type": "Water",
+   "power": 10,
+   "target": "whole_body",
+   "about": "a crashing wave",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.4
+    }
+   ]
+  },
+  {
+   "name": "Hydro Pump",
+   "type": "Water",
+   "power": 37,
+   "target": "spread",
+   "about": "a massive high-pressure water blast",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.3
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Scald",
+   "type": "Water",
+   "power": 27,
+   "target": "spread",
+   "about": "boiling water",
+   "effects": [
+    {
+     "status": "burned",
+     "chance": 0.3,
+     "beats": 3
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Muddy Water",
+   "type": "Water",
+   "power": 10,
+   "target": "whole_body",
+   "about": "a wave of muddy water"
+  },
+  {
+   "name": "Whirlpool",
+   "type": "Water",
+   "power": 20,
+   "target": "hold",
+   "about": "a trapping whirlpool"
+  },
+  {
+   "name": "Dive",
+   "type": "Water",
+   "power": 40,
+   "target": "targeted",
+   "about": "dives under, then bursts up into the target",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Wave Crash",
+   "type": "Water",
+   "power": 60,
+   "target": "targeted",
+   "about": "a full-body charge wrapped in a crashing wave",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.4
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Brine",
+   "type": "Water",
+   "power": 22,
+   "target": "spread",
+   "about": "a spray of salt water, harsh on wounds"
+  },
+  {
+   "name": "Thunder Shock",
+   "type": "Electric",
+   "power": 4,
+   "target": "whole_body",
+   "about": "a jolt of electricity",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.1,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Thunderbolt",
+   "type": "Electric",
+   "power": 10,
+   "target": "whole_body",
+   "about": "a strong electric blast",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.1,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Thunder",
+   "type": "Electric",
+   "power": 12,
+   "target": "whole_body",
+   "about": "a wicked thunderbolt from above",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.3,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Discharge",
+   "type": "Electric",
+   "power": 9,
+   "target": "whole_body",
+   "about": "a loose flare of electricity",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.3,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Spark",
+   "type": "Electric",
+   "power": 32,
+   "target": "targeted",
+   "about": "an electrified tackle",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.3,
+     "beats": 2
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Thunder Punch",
+   "type": "Electric",
+   "power": 38,
+   "target": "targeted",
+   "about": "an electrified punch",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.1,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Thunder Fang",
+   "type": "Electric",
+   "power": 32,
+   "target": "targeted",
+   "about": "a bite crackling with electricity",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.1,
+     "beats": 2
+    },
+    {
+     "status": "flinched",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Volt Tackle",
+   "type": "Electric",
+   "power": 60,
+   "target": "targeted",
+   "about": "an electrified, reckless charge",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.1,
+     "beats": 2
+    },
+    {
+     "launch": "thrown",
+     "chance": 0.4
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Wild Charge",
+   "type": "Electric",
+   "power": 45,
+   "target": "targeted",
+   "about": "a charge shrouded in electricity",
+   "charge": true
+  },
+  {
+   "name": "Shock Wave",
+   "type": "Electric",
+   "power": 7,
+   "target": "whole_body",
+   "about": "an electric shock that never misses"
+  },
+  {
+   "name": "Zap Cannon",
+   "type": "Electric",
+   "power": 40,
+   "target": "spread",
+   "about": "a cannonball of electricity",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 1.0,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Nuzzle",
+   "type": "Electric",
+   "power": 10,
+   "target": "targeted",
+   "about": "rubs electrified cheeks against the target",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 1.0,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Thunder Wave",
+   "type": "Electric",
+   "power": 0,
+   "target": "status",
+   "about": "a weak jolt that paralyzes",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.9,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Vine Whip",
+   "type": "Grass",
+   "power": 22,
+   "target": "targeted",
+   "about": "lashing vines"
+  },
+  {
+   "name": "Razor Leaf",
+   "type": "Grass",
+   "power": 18,
+   "target": "spread",
+   "about": "sharp-edged leaves"
+  },
+  {
+   "name": "Leaf Blade",
+   "type": "Grass",
+   "power": 45,
+   "target": "targeted",
+   "about": "a sword-like leaf slash"
+  },
+  {
+   "name": "Energy Ball",
+   "type": "Grass",
+   "power": 30,
+   "target": "spread",
+   "about": "a ball of nature's energy",
+   "sustainable": true
+  },
+  {
+   "name": "Solar Beam",
+   "type": "Grass",
+   "power": 40,
+   "target": "spread",
+   "about": "a beam of gathered sunlight",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Seed Bomb",
+   "type": "Grass",
+   "power": 27,
+   "target": "spread",
+   "about": "a barrage of hard seeds"
+  },
+  {
+   "name": "Power Whip",
+   "type": "Grass",
+   "power": 60,
+   "target": "targeted",
+   "about": "a violent vine lash",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Wood Hammer",
+   "type": "Grass",
+   "power": 60,
+   "target": "targeted",
+   "about": "a heavy body slam like a log",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Petal Dance",
+   "type": "Grass",
+   "power": 40,
+   "target": "spread",
+   "about": "a rampaging dance of petals that leaves the attacker dizzy",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 1.0,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Bullet Seed",
+   "type": "Grass",
+   "power": 8,
+   "target": "spread",
+   "about": "a rapid volley of seeds"
+  },
+  {
+   "name": "Grass Knot",
+   "type": "Grass",
+   "power": 35,
+   "target": "targeted",
+   "about": "trips the target with grass",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.6
+    }
+   ]
+  },
+  {
+   "name": "Sleep Powder",
+   "type": "Grass",
+   "power": 0,
+   "target": "status",
+   "about": "a cloud of sleep-inducing powder",
+   "effects": [
+    {
+     "status": "asleep",
+     "chance": 0.75,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Stun Spore",
+   "type": "Grass",
+   "power": 0,
+   "target": "status",
+   "about": "paralyzing spores",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.75,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Poison Powder",
+   "type": "Grass",
+   "power": 0,
+   "target": "status",
+   "about": "toxic powder",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.75,
+     "beats": 4
+    }
+   ]
+  },
+  {
+   "name": "Ice Shard",
+   "type": "Ice",
+   "power": 20,
+   "target": "targeted",
+   "about": "a fast-flung chunk of ice"
+  },
+  {
+   "name": "Ice Fang",
+   "type": "Ice",
+   "power": 32,
+   "target": "targeted",
+   "about": "a freezing bite",
+   "effects": [
+    {
+     "status": "frozen",
+     "chance": 0.1,
+     "beats": 1
+    },
+    {
+     "status": "flinched",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Ice Punch",
+   "type": "Ice",
+   "power": 38,
+   "target": "targeted",
+   "about": "a freezing punch",
+   "effects": [
+    {
+     "status": "frozen",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Icicle Crash",
+   "type": "Ice",
+   "power": 28,
+   "target": "spread",
+   "about": "large icicles dropped on the target",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Icicle Spear",
+   "type": "Ice",
+   "power": 8,
+   "target": "spread",
+   "about": "a volley of icicles"
+  },
+  {
+   "name": "Ice Beam",
+   "type": "Ice",
+   "power": 30,
+   "target": "spread",
+   "about": "a freezing beam",
+   "effects": [
+    {
+     "status": "frozen",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Blizzard",
+   "type": "Ice",
+   "power": 12,
+   "target": "whole_body",
+   "about": "a howling blizzard",
+   "effects": [
+    {
+     "status": "frozen",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Aurora Beam",
+   "type": "Ice",
+   "power": 22,
+   "target": "spread",
+   "about": "a rainbow-colored freezing beam",
+   "effects": [
+    {
+     "status": "chilled",
+     "chance": 0.3,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Avalanche",
+   "type": "Ice",
+   "power": 20,
+   "target": "spread",
+   "about": "a crushing fall of ice",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.2
+    }
+   ]
+  },
+  {
+   "name": "Powder Snow",
+   "type": "Ice",
+   "power": 4,
+   "target": "whole_body",
+   "about": "a blast of powdery snow",
+   "effects": [
+    {
+     "status": "frozen",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Freeze-Dry",
+   "type": "Ice",
+   "power": 23,
+   "target": "spread",
+   "about": "flash-freezes the target, even through water",
+   "effects": [
+    {
+     "status": "frozen",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Icy Wind",
+   "type": "Ice",
+   "power": 6,
+   "target": "whole_body",
+   "about": "a chilling wind that slows",
+   "effects": [
+    {
+     "status": "chilled",
+     "chance": 1.0,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Karate Chop",
+   "type": "Fighting",
+   "power": 25,
+   "target": "targeted",
+   "about": "a chopping hand strike"
+  },
+  {
+   "name": "Brick Break",
+   "type": "Fighting",
+   "power": 38,
+   "target": "targeted",
+   "about": "a hard chopping strike"
+  },
+  {
+   "name": "Low Kick",
+   "type": "Fighting",
+   "power": 32,
+   "target": "targeted",
+   "about": "a low kick to the legs",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.5
+    }
+   ]
+  },
+  {
+   "name": "Low Sweep",
+   "type": "Fighting",
+   "power": 32,
+   "target": "targeted",
+   "about": "a sweeping kick to the legs",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.6
+    }
+   ]
+  },
+  {
+   "name": "Double Kick",
+   "type": "Fighting",
+   "power": 15,
+   "target": "targeted",
+   "about": "two quick kicks"
+  },
+  {
+   "name": "Mach Punch",
+   "type": "Fighting",
+   "power": 20,
+   "target": "targeted",
+   "about": "a lightning-fast punch"
+  },
+  {
+   "name": "Drain Punch",
+   "type": "Fighting",
+   "power": 38,
+   "target": "targeted",
+   "about": "a punch that saps strength"
+  },
+  {
+   "name": "Sky Uppercut",
+   "type": "Fighting",
+   "power": 42,
+   "target": "targeted",
+   "about": "a rising uppercut that sends the target flying",
+   "effects": [
+    {
+     "launch": "launched",
+     "chance": 0.6
+    }
+   ]
+  },
+  {
+   "name": "Cross Chop",
+   "type": "Fighting",
+   "power": 50,
+   "target": "targeted",
+   "about": "a double chop"
+  },
+  {
+   "name": "Close Combat",
+   "type": "Fighting",
+   "power": 40,
+   "target": "spread",
+   "about": "an all-out, close-range flurry"
+  },
+  {
+   "name": "Dynamic Punch",
+   "type": "Fighting",
+   "power": 50,
+   "target": "targeted",
+   "about": "a punch that leaves the target reeling",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 1.0,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Focus Punch",
+   "type": "Fighting",
+   "power": 75,
+   "target": "targeted",
+   "about": "a punch with everything behind it",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.4
+    }
+   ]
+  },
+  {
+   "name": "Hammer Arm",
+   "type": "Fighting",
+   "power": 50,
+   "target": "targeted",
+   "about": "a swung heavy fist",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.4
+    }
+   ]
+  },
+  {
+   "name": "Jump Kick",
+   "type": "Fighting",
+   "power": 50,
+   "target": "targeted",
+   "about": "a soaring jump kick"
+  },
+  {
+   "name": "High Jump Kick",
+   "type": "Fighting",
+   "power": 65,
+   "target": "targeted",
+   "about": "a towering knee kick",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.4
+    }
+   ]
+  },
+  {
+   "name": "Seismic Toss",
+   "type": "Fighting",
+   "power": 30,
+   "target": "targeted",
+   "about": "grabs and hurls the target",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 1.0
+    }
+   ]
+  },
+  {
+   "name": "Submission",
+   "type": "Fighting",
+   "power": 40,
+   "target": "targeted",
+   "about": "a grappling slam",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.5
+    }
+   ]
+  },
+  {
+   "name": "Circle Throw",
+   "type": "Fighting",
+   "power": 30,
+   "target": "targeted",
+   "about": "throws the target aside",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 1.0
+    }
+   ]
+  },
+  {
+   "name": "Storm Throw",
+   "type": "Fighting",
+   "power": 30,
+   "target": "targeted",
+   "about": "a fierce throw",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 1.0
+    }
+   ]
+  },
+  {
+   "name": "Rock Smash",
+   "type": "Fighting",
+   "power": 20,
+   "target": "targeted",
+   "about": "a shattering punch"
+  },
+  {
+   "name": "Force Palm",
+   "type": "Fighting",
+   "power": 30,
+   "target": "targeted",
+   "about": "a shockwave from the palm",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.3,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Aura Sphere",
+   "type": "Fighting",
+   "power": 27,
+   "target": "spread",
+   "about": "a sphere of aura energy",
+   "sustainable": true
+  },
+  {
+   "name": "Focus Blast",
+   "type": "Fighting",
+   "power": 40,
+   "target": "spread",
+   "about": "a blast of focused energy",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Vacuum Wave",
+   "type": "Fighting",
+   "power": 13,
+   "target": "spread",
+   "about": "a whirling fist of vacuum"
+  },
+  {
+   "name": "Poison Sting",
+   "type": "Poison",
+   "power": 8,
+   "target": "targeted",
+   "about": "a toxic barb",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.3,
+     "beats": 4
+    }
+   ]
+  },
+  {
+   "name": "Poison Jab",
+   "type": "Poison",
+   "power": 40,
+   "target": "targeted",
+   "about": "a jab with a poison-soaked limb",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.3,
+     "beats": 4
+    }
+   ]
+  },
+  {
+   "name": "Poison Fang",
+   "type": "Poison",
+   "power": 25,
+   "target": "targeted",
+   "about": "a bite with toxic fangs",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.5,
+     "beats": 5
+    }
+   ]
+  },
+  {
+   "name": "Poison Tail",
+   "type": "Poison",
+   "power": 25,
+   "target": "targeted",
+   "about": "a poisonous tail strike",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.1,
+     "beats": 4
+    }
+   ]
+  },
+  {
+   "name": "Cross Poison",
+   "type": "Poison",
+   "power": 35,
+   "target": "targeted",
+   "about": "a slashing cross of poison",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.1,
+     "beats": 4
+    }
+   ]
+  },
+  {
+   "name": "Sludge",
+   "type": "Poison",
+   "power": 22,
+   "target": "spread",
+   "about": "a toss of unsanitary sludge",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.3,
+     "beats": 4
+    }
+   ]
+  },
+  {
+   "name": "Sludge Bomb",
+   "type": "Poison",
+   "power": 30,
+   "target": "spread",
+   "about": "a hurled lump of sludge",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.3,
+     "beats": 4
+    }
+   ]
+  },
+  {
+   "name": "Sludge Wave",
+   "type": "Poison",
+   "power": 11,
+   "target": "whole_body",
+   "about": "a giant wave of sludge",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.1,
+     "beats": 4
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Gunk Shot",
+   "type": "Poison",
+   "power": 40,
+   "target": "spread",
+   "about": "a huge mass of filth",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.3,
+     "beats": 4
+    }
+   ]
+  },
+  {
+   "name": "Acid",
+   "type": "Poison",
+   "power": 13,
+   "target": "spread",
+   "about": "a spray of acid"
+  },
+  {
+   "name": "Toxic",
+   "type": "Poison",
+   "power": 0,
+   "target": "status",
+   "about": "badly poisons the target",
+   "effects": [
+    {
+     "status": "poisoned",
+     "chance": 0.9,
+     "beats": 6
+    }
+   ]
+  },
+  {
+   "name": "Mud-Slap",
+   "type": "Ground",
+   "power": 7,
+   "target": "spread",
+   "about": "mud flung in the face",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Mud Shot",
+   "type": "Ground",
+   "power": 18,
+   "target": "spread",
+   "about": "a blast of mud that slows",
+   "effects": [
+    {
+     "status": "chilled",
+     "chance": 1.0,
+     "beats": 1
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Bulldoze",
+   "type": "Ground",
+   "power": 7,
+   "target": "whole_body",
+   "about": "stomps the ground",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Earthquake",
+   "type": "Ground",
+   "power": 11,
+   "target": "whole_body",
+   "about": "a powerful quake",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.5
+    }
+   ]
+  },
+  {
+   "name": "Dig",
+   "type": "Ground",
+   "power": 40,
+   "target": "targeted",
+   "about": "burrows, then erupts beneath the target",
+   "effects": [
+    {
+     "launch": "launched",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Drill Run",
+   "type": "Ground",
+   "power": 40,
+   "target": "targeted",
+   "about": "a rotating drill strike"
+  },
+  {
+   "name": "Earth Power",
+   "type": "Ground",
+   "power": 30,
+   "target": "spread",
+   "about": "the ground erupts beneath the target",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.2
+    }
+   ]
+  },
+  {
+   "name": "Bone Club",
+   "type": "Ground",
+   "power": 32,
+   "target": "targeted",
+   "about": "a club strike",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Bonemerang",
+   "type": "Ground",
+   "power": 25,
+   "target": "targeted",
+   "about": "a thrown boomerang club"
+  },
+  {
+   "name": "High Horsepower",
+   "type": "Ground",
+   "power": 48,
+   "target": "targeted",
+   "about": "a fierce full-body stampede",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Stomping Tantrum",
+   "type": "Ground",
+   "power": 38,
+   "target": "targeted",
+   "about": "furious stomping",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Sand Attack",
+   "type": "Ground",
+   "power": 0,
+   "target": "status",
+   "about": "sand thrown in the eyes",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.6,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Gust",
+   "type": "Flying",
+   "power": 13,
+   "target": "spread",
+   "about": "a gust of wind"
+  },
+  {
+   "name": "Wing Attack",
+   "type": "Flying",
+   "power": 30,
+   "target": "targeted",
+   "about": "strikes with spread wings"
+  },
+  {
+   "name": "Aerial Ace",
+   "type": "Flying",
+   "power": 30,
+   "target": "targeted",
+   "about": "an unavoidable slash"
+  },
+  {
+   "name": "Air Slash",
+   "type": "Flying",
+   "power": 25,
+   "target": "spread",
+   "about": "a blade of air",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Air Cutter",
+   "type": "Flying",
+   "power": 20,
+   "target": "spread",
+   "about": "razor-like wind"
+  },
+  {
+   "name": "Peck",
+   "type": "Flying",
+   "power": 18,
+   "target": "targeted",
+   "about": "a sharp jab"
+  },
+  {
+   "name": "Drill Peck",
+   "type": "Flying",
+   "power": 40,
+   "target": "targeted",
+   "about": "a corkscrewing jab"
+  },
+  {
+   "name": "Fly",
+   "type": "Flying",
+   "power": 45,
+   "target": "targeted",
+   "about": "swoops down from above",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Bounce",
+   "type": "Flying",
+   "power": 42,
+   "target": "targeted",
+   "about": "a bouncing body slam from above",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.3,
+     "beats": 2
+    },
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Brave Bird",
+   "type": "Flying",
+   "power": 60,
+   "target": "targeted",
+   "about": "a reckless dive",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.4
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Hurricane",
+   "type": "Flying",
+   "power": 12,
+   "target": "whole_body",
+   "about": "a wrapping, battering wind",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 0.3,
+     "beats": 2
+    },
+    {
+     "launch": "thrown",
+     "chance": 0.2
+    }
+   ]
+  },
+  {
+   "name": "Acrobatics",
+   "type": "Flying",
+   "power": 28,
+   "target": "targeted",
+   "about": "a nimble flurry"
+  },
+  {
+   "name": "Sky Attack",
+   "type": "Flying",
+   "power": 70,
+   "target": "targeted",
+   "about": "a glowing, crushing dive",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    },
+    {
+     "launch": "launched",
+     "chance": 0.4
+    }
+   ]
+  },
+  {
+   "name": "Psybeam",
+   "type": "Psychic",
+   "power": 22,
+   "target": "spread",
+   "about": "a peculiar ray",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 0.1,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Confusion",
+   "type": "Psychic",
+   "power": 17,
+   "target": "spread",
+   "about": "a telekinetic jolt",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 0.1,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Psychic",
+   "type": "Psychic",
+   "power": 10,
+   "target": "whole_body",
+   "about": "a powerful telekinetic force"
+  },
+  {
+   "name": "Psyshock",
+   "type": "Psychic",
+   "power": 27,
+   "target": "spread",
+   "about": "an odd psychic wave"
+  },
+  {
+   "name": "Zen Headbutt",
+   "type": "Psychic",
+   "power": 40,
+   "target": "targeted",
+   "about": "a headbutt focused with willpower",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.2,
+     "beats": 1
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Psycho Cut",
+   "type": "Psychic",
+   "power": 23,
+   "target": "spread",
+   "about": "a blade of psychic energy"
+  },
+  {
+   "name": "Extrasensory",
+   "type": "Psychic",
+   "power": 27,
+   "target": "spread",
+   "about": "an odd unseen power",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.1,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Future Sight",
+   "type": "Psychic",
+   "power": 13,
+   "target": "whole_body",
+   "about": "a delayed psychic blast"
+  },
+  {
+   "name": "Hypnosis",
+   "type": "Psychic",
+   "power": 0,
+   "target": "status",
+   "about": "hypnotic suggestion that brings sleep",
+   "effects": [
+    {
+     "status": "asleep",
+     "chance": 0.6,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Confuse Ray",
+   "type": "Ghost",
+   "power": 0,
+   "target": "status",
+   "about": "a sinister ray that confuses",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 1.0,
+     "beats": 3
+    }
+   ]
+  },
+  {
+   "name": "Leech Life",
+   "type": "Bug",
+   "power": 40,
+   "target": "targeted",
+   "about": "a draining bite"
+  },
+  {
+   "name": "Bug Bite",
+   "type": "Bug",
+   "power": 30,
+   "target": "targeted",
+   "about": "a biting attack"
+  },
+  {
+   "name": "X-Scissor",
+   "type": "Bug",
+   "power": 40,
+   "target": "targeted",
+   "about": "a crossing slash"
+  },
+  {
+   "name": "Megahorn",
+   "type": "Bug",
+   "power": 60,
+   "target": "targeted",
+   "about": "a ramming horn charge",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.4
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "U-turn",
+   "type": "Bug",
+   "power": 35,
+   "target": "targeted",
+   "about": "a hit-and-run strike"
+  },
+  {
+   "name": "Bug Buzz",
+   "type": "Bug",
+   "power": 10,
+   "target": "whole_body",
+   "about": "a damaging vibration of the wings"
+  },
+  {
+   "name": "Signal Beam",
+   "type": "Bug",
+   "power": 25,
+   "target": "spread",
+   "about": "a sinister flash",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 0.1,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Pin Missile",
+   "type": "Bug",
+   "power": 8,
+   "target": "spread",
+   "about": "a volley of sharp spikes"
+  },
+  {
+   "name": "Fury Cutter",
+   "type": "Bug",
+   "power": 20,
+   "target": "targeted",
+   "about": "a slash that grows stronger"
+  },
+  {
+   "name": "Lunge",
+   "type": "Bug",
+   "power": 40,
+   "target": "targeted",
+   "about": "a lunge that saps the target's strength",
+   "effects": [
+    {
+     "status": "chilled",
+     "chance": 1.0,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "String Shot",
+   "type": "Bug",
+   "power": 0,
+   "target": "status",
+   "about": "sticky silk that slows",
+   "effects": [
+    {
+     "status": "chilled",
+     "chance": 0.95,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Rock Throw",
+   "type": "Rock",
+   "power": 17,
+   "target": "spread",
+   "about": "hurled rocks"
+  },
+  {
+   "name": "Rock Slide",
+   "type": "Rock",
+   "power": 8,
+   "target": "whole_body",
+   "about": "a slide of boulders",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Stone Edge",
+   "type": "Rock",
+   "power": 50,
+   "target": "targeted",
+   "about": "a stabbing stone spike"
+  },
+  {
+   "name": "Rock Tomb",
+   "type": "Rock",
+   "power": 20,
+   "target": "spread",
+   "about": "boulders that pin and slow",
+   "effects": [
+    {
+     "status": "chilled",
+     "chance": 1.0,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Rock Blast",
+   "type": "Rock",
+   "power": 8,
+   "target": "spread",
+   "about": "hurled boulders in a volley"
+  },
+  {
+   "name": "Head Smash",
+   "type": "Rock",
+   "power": 75,
+   "target": "targeted",
+   "about": "a full-power headbutt",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.5
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Power Gem",
+   "type": "Rock",
+   "power": 27,
+   "target": "spread",
+   "about": "a ray of gemstone light"
+  },
+  {
+   "name": "Ancient Power",
+   "type": "Rock",
+   "power": 20,
+   "target": "spread",
+   "about": "a primal force"
+  },
+  {
+   "name": "Rollout",
+   "type": "Rock",
+   "power": 15,
+   "target": "targeted",
+   "about": "a rolling charge that builds",
+   "charge": true
+  },
+  {
+   "name": "Smack Down",
+   "type": "Rock",
+   "power": 25,
+   "target": "targeted",
+   "about": "a stone that knocks the target down",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 1.0
+    }
+   ]
+  },
+  {
+   "name": "Lick",
+   "type": "Ghost",
+   "power": 15,
+   "target": "targeted",
+   "about": "a ghostly lick that paralyzes",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.3,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Shadow Claw",
+   "type": "Ghost",
+   "power": 35,
+   "target": "targeted",
+   "about": "a claw of shadow"
+  },
+  {
+   "name": "Shadow Punch",
+   "type": "Ghost",
+   "power": 30,
+   "target": "targeted",
+   "about": "an unavoidable shadowy punch"
+  },
+  {
+   "name": "Shadow Sneak",
+   "type": "Ghost",
+   "power": 20,
+   "target": "targeted",
+   "about": "a shadow that strikes from beneath"
+  },
+  {
+   "name": "Shadow Ball",
+   "type": "Ghost",
+   "power": 27,
+   "target": "spread",
+   "about": "a shadowy blob"
+  },
+  {
+   "name": "Phantom Force",
+   "type": "Ghost",
+   "power": 45,
+   "target": "targeted",
+   "about": "vanishes, then strikes from nowhere"
+  },
+  {
+   "name": "Hex",
+   "type": "Ghost",
+   "power": 22,
+   "target": "spread",
+   "about": "a cruel curse that hurts the afflicted most"
+  },
+  {
+   "name": "Astonish",
+   "type": "Ghost",
+   "power": 15,
+   "target": "targeted",
+   "about": "a startling attack",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Ominous Wind",
+   "type": "Ghost",
+   "power": 7,
+   "target": "whole_body",
+   "about": "a repulsive wind"
+  },
+  {
+   "name": "Dragon Claw",
+   "type": "Dragon",
+   "power": 40,
+   "target": "targeted",
+   "about": "slashing dragon claws"
+  },
+  {
+   "name": "Dragon Tail",
+   "type": "Dragon",
+   "power": 30,
+   "target": "targeted",
+   "about": "a tail strike that hurls the target",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 1.0
+    }
+   ]
+  },
+  {
+   "name": "Dragon Rush",
+   "type": "Dragon",
+   "power": 50,
+   "target": "targeted",
+   "about": "a menacing full-body charge",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.2,
+     "beats": 1
+    },
+    {
+     "launch": "thrown",
+     "chance": 0.4
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Dragon Pulse",
+   "type": "Dragon",
+   "power": 28,
+   "target": "spread",
+   "about": "a shockwave from the mouth",
+   "sustainable": true
+  },
+  {
+   "name": "Dragon Breath",
+   "type": "Dragon",
+   "power": 20,
+   "target": "spread",
+   "about": "a scorching breath",
+   "effects": [
+    {
+     "status": "paralyzed",
+     "chance": 0.3,
+     "beats": 2
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Outrage",
+   "type": "Dragon",
+   "power": 40,
+   "target": "spread",
+   "about": "a rampage that leaves the attacker confused",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 1.0,
+     "beats": 2
+    }
+   ]
+  },
+  {
+   "name": "Twister",
+   "type": "Dragon",
+   "power": 4,
+   "target": "whole_body",
+   "about": "a vicious twister",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.2,
+     "beats": 1
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Draco Meteor",
+   "type": "Dragon",
+   "power": 14,
+   "target": "whole_body",
+   "about": "meteors called down from the sky",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.4
+    }
+   ]
+  },
+  {
+   "name": "Dual Chop",
+   "type": "Dragon",
+   "power": 20,
+   "target": "targeted",
+   "about": "two quick chops"
+  },
+  {
+   "name": "Bite",
+   "type": "Dark",
+   "power": 30,
+   "target": "targeted",
+   "about": "a hard bite",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Crunch",
+   "type": "Dark",
+   "power": 40,
+   "target": "targeted",
+   "about": "a crushing bite",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.2,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Night Slash",
+   "type": "Dark",
+   "power": 35,
+   "target": "targeted",
+   "about": "a dark-edged slash"
+  },
+  {
+   "name": "Sucker Punch",
+   "type": "Dark",
+   "power": 35,
+   "target": "targeted",
+   "about": "strikes first, before the target can act"
+  },
+  {
+   "name": "Feint Attack",
+   "type": "Dark",
+   "power": 30,
+   "target": "targeted",
+   "about": "an unavoidable sneaking strike"
+  },
+  {
+   "name": "Foul Play",
+   "type": "Dark",
+   "power": 48,
+   "target": "targeted",
+   "about": "turns the target's own strength against them",
+   "effects": [
+    {
+     "launch": "thrown",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Dark Pulse",
+   "type": "Dark",
+   "power": 27,
+   "target": "spread",
+   "about": "a horrible aura of malice",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.2,
+     "beats": 1
+    }
+   ],
+   "sustainable": true
+  },
+  {
+   "name": "Throat Chop",
+   "type": "Dark",
+   "power": 40,
+   "target": "targeted",
+   "about": "a chop to the throat that stifles sound",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Knock Off",
+   "type": "Dark",
+   "power": 32,
+   "target": "targeted",
+   "about": "swats the target off balance",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.2
+    }
+   ]
+  },
+  {
+   "name": "Assurance",
+   "type": "Dark",
+   "power": 30,
+   "target": "targeted",
+   "about": "hits harder against the hurt"
+  },
+  {
+   "name": "Payback",
+   "type": "Dark",
+   "power": 25,
+   "target": "targeted",
+   "about": "a vengeful strike"
+  },
+  {
+   "name": "Thief",
+   "type": "Dark",
+   "power": 30,
+   "target": "targeted",
+   "about": "a sudden lunge"
+  },
+  {
+   "name": "Brutal Swing",
+   "type": "Dark",
+   "power": 7,
+   "target": "whole_body",
+   "about": "a wild, swinging attack"
+  },
+  {
+   "name": "Snarl",
+   "type": "Dark",
+   "power": 18,
+   "target": "spread",
+   "about": "a menacing snarl",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ]
+  },
+  {
+   "name": "Iron Tail",
+   "type": "Steel",
+   "power": 50,
+   "target": "targeted",
+   "about": "a steel-hard tail strike",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.3
+    }
+   ]
+  },
+  {
+   "name": "Iron Head",
+   "type": "Steel",
+   "power": 40,
+   "target": "targeted",
+   "about": "a steel-hard headbutt",
+   "effects": [
+    {
+     "status": "flinched",
+     "chance": 0.3,
+     "beats": 1
+    }
+   ],
+   "charge": true
+  },
+  {
+   "name": "Metal Claw",
+   "type": "Steel",
+   "power": 25,
+   "target": "targeted",
+   "about": "steel-hard claws"
+  },
+  {
+   "name": "Bullet Punch",
+   "type": "Steel",
+   "power": 20,
+   "target": "targeted",
+   "about": "a lightning-fast steel punch"
+  },
+  {
+   "name": "Meteor Mash",
+   "type": "Steel",
+   "power": 45,
+   "target": "targeted",
+   "about": "a meteor-like punch"
+  },
+  {
+   "name": "Flash Cannon",
+   "type": "Steel",
+   "power": 27,
+   "target": "spread",
+   "about": "a blast of light energy",
+   "sustainable": true
+  },
+  {
+   "name": "Steel Wing",
+   "type": "Steel",
+   "power": 35,
+   "target": "targeted",
+   "about": "steel-hard wings"
+  },
+  {
+   "name": "Heavy Slam",
+   "type": "Steel",
+   "power": 45,
+   "target": "targeted",
+   "about": "slams down with crushing weight",
+   "effects": [
+    {
+     "launch": "knocked down",
+     "chance": 0.5
+    }
+   ]
+  },
+  {
+   "name": "Smart Strike",
+   "type": "Steel",
+   "power": 35,
+   "target": "targeted",
+   "about": "a stabbing horn that never misses"
+  },
+  {
+   "name": "Anchor Shot",
+   "type": "Steel",
+   "power": 40,
+   "target": "targeted",
+   "about": "an anchor-like strike that tangles"
+  },
+  {
+   "name": "Play Rough",
+   "type": "Fairy",
+   "power": 30,
+   "target": "spread",
+   "about": "a rough flurry"
+  },
+  {
+   "name": "Moonblast",
+   "type": "Fairy",
+   "power": 32,
+   "target": "spread",
+   "about": "the power of the moon"
+  },
+  {
+   "name": "Dazzling Gleam",
+   "type": "Fairy",
+   "power": 9,
+   "target": "whole_body",
+   "about": "a damaging flash of light"
+  },
+  {
+   "name": "Fairy Wind",
+   "type": "Fairy",
+   "power": 13,
+   "target": "spread",
+   "about": "a stirring breeze"
+  },
+  {
+   "name": "Draining Kiss",
+   "type": "Fairy",
+   "power": 25,
+   "target": "targeted",
+   "about": "a draining kiss"
+  },
+  {
+   "name": "Spirit Break",
+   "type": "Fairy",
+   "power": 38,
+   "target": "targeted",
+   "about": "a crushing spiritual blow"
+  },
+  {
+   "name": "Sweet Kiss",
+   "type": "Fairy",
+   "power": 0,
+   "target": "status",
+   "about": "a dizzying kiss",
+   "effects": [
+    {
+     "status": "confused",
+     "chance": 0.75,
+     "beats": 2
+    }
+   ]
+  }
+ ]
+}

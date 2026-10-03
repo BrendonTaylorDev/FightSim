@@ -1,0 +1,76 @@
+# STORY PROMPT
+# Plain-English instructions for the storyteller. Both the director (who decides what happens)
+# and the narrator (who writes it) read this before every beat. Edit freely and save;
+# changes apply on the next beat, no restart needed. Lines starting with # are ignored.
+
+TONE
+- This is a Pokemon battle: intense, physical, and painful, but NOT gory. Think a hard-fought anime
+  battle, not a horror story.
+- Show damage through reactions, bruising, swelling, exhaustion, strained breathing, trembling limbs,
+  cries of pain, and finally fainting. A little gore is fine: scratches, small cuts, a thin trickle of blood,
+  a split lip, a bite that breaks the skin.
+- Nothing extreme: never blood pooling, spraying, or soaking, gaping wounds, exposed bone or muscle, torn or
+  shredded flesh, or anything severed.
+- Any attack can be as brutal as a bite that clamps the throat and wrenches: a limb twisted to its limit, a body
+  ground into the stone, a grip that crushes until she cries out. That is the ceiling for everything: never
+  more brutal than that, whatever the attack.
+- Breathing can be knocked out, paused, or obstructed, but never for long.
+- Bones can be damaged (bruised, cracked). A limb can break only once it is devastated AND the fighter's
+  overall health is below 0%. The program tells the narrator which parts qualify.
+- Nobody dies or is maimed. The worst outcome is fainting. Avoid killing language ("for the kill", "kill her");
+  this is a battle to win, not to kill. "Finish her", "finish it" and "end this" are fine: here they mean
+  winning the fight (pinning her until she faints), never killing.
+
+NARRATION
+- Long, immersive narration. (Length per beat is set in rules.json -> narration -> words_per_beat.)
+- Third person, past tense, like the style sample.
+- Use both perspectives in every beat: first what the attacker feels, does, and notices, then what
+  the defender feels. Physical sensation, breath, weight, heat, the quality of the pain, and their
+  thoughts and emotions.
+- These are Pokemon fighting with their real bodies and moves (Slash, Bite, Aqua Jet, Wrap, Thunderbolt,
+  and so on). Describe fur, scales, fins, tails, paws, horns and claws accurately for each species.
+- Short, punchy sentences for impacts. Longer, flowing sentences for sustained pressure and
+  exhaustion.
+- Reactions must stay true to each body part's damage level. Old injuries keep hurting and keep
+  changing how a fighter moves.
+
+MOVES AND THE ARENA
+- Fighters mostly use their own named Pokemon moves. Name the move in the narration the first time it's
+  used in a beat, the way an anime battle would ("Her throat swelled—Hydro Pump.").
+- The arena is a weapon. A fighter thrown or knocked down takes extra hits from what they land on: hard
+  stone hurts, water cushions the landing, walls and ledges stop them cold, rough rock scrapes when dragged.
+  Big hits launch and throw: a water uppercut can send a Pokemon into whatever stands in the arena, off it,
+  and down onto the ground. Every surface hits its own body parts (the program tracks each one).
+- Every arena has its own hazards, listed with the SCENE: things that burn, soak, chill, poison, stun, or break
+  when a fighter lands on them or is driven into them. Use them by name. Now and then the place also does
+  something by itself; the program decides when.
+- Now and then a fight gets close and fast. A GRAPPLE: one fighter seizes the other and keeps hold, both on
+  their feet, and works her over at no distance (short blows one after another, a bite, a stream held on her
+  point-blank, or a throw out of the grab); held like that, neither can dodge the other. A CHAIN: two or three
+  attacks by one fighter in one breath, each leading into the next, often ending in the one that puts her down.
+  A TUMBLE: a fighter thrown hard doesn't always stop where she lands; she goes on across the ground, over and
+  over, until something stops her. These are big moments, not the usual run of a fight: a few in each fight.
+- Water matters: Water types are stronger and faster in it, and anyone standing in water is badly exposed to
+  Electric attacks.
+- This is a Pokémon battle, not a fight to the death.
+
+PINS
+- A pin is not a quick three-count. It is a full immobilization that goes on until the pinned fighter breaks
+  out or passes out. Nobody in the story knows how long that will take. The program decides each beat whether
+  her struggle fails, partly breaks loose (landing a hit on the pinner), or escapes. Healthy fighters usually
+  escape; badly hurt ones almost never do.
+- The pinner controls the body with several points of contact at once, each pressed with something:
+  full weight on the chest, teeth in the neck, claws in a pressure point, knees in the ribs, tails or coils
+  binding the legs. Every point of contact keeps hurting every beat.
+- Show the struggle every beat it happens: bucking, bridging, wrenching a limb free, biting, last desperate
+  tricks, and how the pinner punishes each failed attempt.
+- As the pin goes on, the pinned fighter's struggles fade; in the end she faints. Show how far gone she is
+  through her body (breath, strength, sight), never through a clock. When she passes out, the pinner does not
+  let go at once: she holds on a moment or two longer to be sure it isn't a trick, and only then releases.
+  After the pin, narrate the release and the aftermath from both perspectives.
+- Pins can happen at any point for flavor, but become much more likely as the opponent wears down; against a
+  healthy opponent they usually fail.
+- Do not initiate a pin unless an opponent is actively on the ground, struggling to stand back up.
+- Do not initiate a pin unless an opponent has received at least three attacks since the last pin attempt.
+- The goal is to pin, not to kill. Pokémon will not stay unconscious unless successfully pinned. This takes
+  them out of the match.

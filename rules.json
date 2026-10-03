@@ -1,0 +1,1096 @@
+{
+  "_comment": "All tuning lives here. Values marked GUESS are placeholders until you confirm your real rules.",
+  "body_templates": {
+    "_comment": "Starting resistance (%) per body part. Fighters pick a template in fighters.json and can override any part. Resistance can go above 100%.",
+    "human": {
+      "Head": 80,
+      "Neck": 70,
+      "Chest": 120,
+      "Stomach": 90,
+      "Upper Back": 110,
+      "Lower Back": 100,
+      "Left Shoulder": 110,
+      "Right Shoulder": 110,
+      "Left Arm": 100,
+      "Right Arm": 100,
+      "Left Leg": 120,
+      "Right Leg": 120
+    },
+    "tailed": {
+      "Head": 80,
+      "Neck": 70,
+      "Chest": 120,
+      "Stomach": 90,
+      "Upper Back": 110,
+      "Lower Back": 100,
+      "Left Shoulder": 110,
+      "Right Shoulder": 110,
+      "Left Arm": 100,
+      "Right Arm": 100,
+      "Left Leg": 120,
+      "Right Leg": 120,
+      "Tail Base": 150,
+      "Middle Tail": 190,
+      "Tail Tip": 120
+    }
+  },
+  "moves": {
+    "_comment": "Named moves live in fighters.json. Effective power = move power x type effectiveness x targeting. targeted = one body part (x2); spread = several parts (x1.25 each); whole_body = every body part (x1); hold = pressure on parts every beat until released.",
+    "targeting": {
+      "targeted": 2.0,
+      "spread": 1.25,
+      "whole_body": 1.0,
+      "hold": 1.0
+    },
+    "_improvised_comment": "Moves the director invents on the spot (a headbutt, a pounce, a throw). Their base power comes from how hard they land; type and targeting then apply like any move.",
+    "improvised_power": {
+      "light": 15,
+      "solid": 25,
+      "heavy": 35,
+      "brutal": 45
+    },
+    "same_type_bonus": 1.0,
+    "_same_move_comment": "max_same_move_in_a_row: the director can't make a fighter use the same named move more than this many times in a row (0 = no limit). Your /commands aren't limited.",
+    "max_same_move_in_a_row": 2,
+    "_sustain_comment": "Sustained moves: a move marked \"sustainable\" (streams and beams like Hydro Pump, Flamethrower, Ice Beam) can be held for up to max_pulses pulses. Each extra pulse hits the same parts at pulse_mult power and costs energy_per_pulse. If the target is pressed against something, each pulse also slams her into it, and it may break (break_chance by surface): a heavy extra hit, the move ends early, and she goes down.",
+    "sustain": {
+      "max_pulses": 4,
+      "pulse_mult": 0.6,
+      "energy_per_pulse": 6,
+      "break_chance": {
+        "boulder": 0.2,
+        "stalagmite": 0.35,
+        "stalactite": 0.4,
+        "wall": 0.05,
+        "ledge": 0.1,
+        "default": 0.15
+      }
+    },
+    "_charge_comment": "Charges: a move marked \"charge\" (Take Down, Aqua Jet, Dragon Rush...) or any improvised move can carry the target into something in the scene. The charge's own hit lands first; then her back hits the surface at slam_severity (from severity.environment) times the distance factor, on three parts; then the attacker's body crushes the parts the charge struck at crush_factor of the charge's power; it costs the attacker energy extra. The surface may break (break_chance by surface; empty = the same odds as sustained moves): a heavy extra hit and she goes down with it. Otherwise she is left pressed against it for the rest of the beat (follow-ups can't be dodged), and at the end of the beat she crumples to the ground with chance crumple.base + crumple.per_strength_lost x the share of strength she has lost (60% fresh, about 78% at half, 95% at nothing).",
+    "charge": {
+      "slam_severity": "brutal",
+      "crush_factor": 0.5,
+      "energy": 8,
+      "distances": {
+        "a few strides": 0.8,
+        "a dozen strides": 1.0,
+        "the whole way across": 1.25
+      },
+      "break_chance": {},
+      "_reeling_comment": "reeling_beats: after being driven into the scenery by a charge, a fighter can strike but cannot start or join a pin for this many beats (1 = only the very next beat; 0 = off). It comes only from a charge, never from damage or tiredness.",
+      "reeling_beats": 1,
+      "crumple": {
+        "base": 0.6,
+        "per_strength_lost": 0.35,
+        "_ways_comment": "A fighter who crumples after a charge ends lying on her side, face-down, face-up, or SITTING with her back against what she was driven into; one who keeps her feet staggers clear, sags against it, drops to a knee and rises, or rebounds off it. The mix is under 'variety' (charge_falls, charge_stands)."
+      },
+      "_carry_on_comment": "A charge that breaks what it drives her into may not stop there: carry_on_chance (scaled by the charger's strength and the distance, less for each obstacle already broken) that it goes on THROUGH into the next thing in the arena, at carry_on_power of the previous slam, costing carry_on_energy more. max_obstacles: how many things one charge can go into at most (0 = no limit but what the arena has).",
+      "carry_on_chance": 0.35,
+      "carry_on_power": 0.75,
+      "carry_on_energy": 4,
+      "max_obstacles": 3
+    },
+    "_auto_spill_comment": "A targeted strike that names only one body part also jars the parts right next to it (a jaw strike catches the muzzle and neck). parts = how many neighbors; factor = their power as a share of the move's base power. Set parts to 0 to turn it off.",
+    "auto_spill": {
+      "parts": 2,
+      "factor": 0.5
+    },
+    "type_chart": {
+      "Normal": {
+        "Rock": 0.5,
+        "Ghost": 0,
+        "Steel": 0.5
+      },
+      "Fire": {
+        "Fire": 0.5,
+        "Water": 0.5,
+        "Grass": 2,
+        "Ice": 2,
+        "Bug": 2,
+        "Rock": 0.5,
+        "Dragon": 0.5,
+        "Steel": 2
+      },
+      "Water": {
+        "Fire": 2,
+        "Water": 0.5,
+        "Grass": 0.5,
+        "Ground": 2,
+        "Rock": 2,
+        "Dragon": 0.5
+      },
+      "Electric": {
+        "Water": 2,
+        "Electric": 0.5,
+        "Grass": 0.5,
+        "Ground": 0,
+        "Flying": 2,
+        "Dragon": 0.5
+      },
+      "Grass": {
+        "Fire": 0.5,
+        "Water": 2,
+        "Grass": 0.5,
+        "Poison": 0.5,
+        "Ground": 2,
+        "Flying": 0.5,
+        "Bug": 0.5,
+        "Rock": 2,
+        "Dragon": 0.5,
+        "Steel": 0.5
+      },
+      "Ice": {
+        "Fire": 0.5,
+        "Water": 0.5,
+        "Grass": 2,
+        "Ice": 0.5,
+        "Ground": 2,
+        "Flying": 2,
+        "Dragon": 2,
+        "Steel": 0.5
+      },
+      "Fighting": {
+        "Normal": 2,
+        "Ice": 2,
+        "Poison": 0.5,
+        "Flying": 0.5,
+        "Psychic": 0.5,
+        "Bug": 0.5,
+        "Rock": 2,
+        "Ghost": 0,
+        "Dark": 2,
+        "Steel": 2,
+        "Fairy": 0.5
+      },
+      "Poison": {
+        "Grass": 2,
+        "Poison": 0.5,
+        "Ground": 0.5,
+        "Rock": 0.5,
+        "Ghost": 0.5,
+        "Steel": 0,
+        "Fairy": 2
+      },
+      "Ground": {
+        "Fire": 2,
+        "Electric": 2,
+        "Grass": 0.5,
+        "Poison": 2,
+        "Flying": 0,
+        "Bug": 0.5,
+        "Rock": 2,
+        "Steel": 2
+      },
+      "Flying": {
+        "Electric": 0.5,
+        "Grass": 2,
+        "Fighting": 2,
+        "Bug": 2,
+        "Rock": 0.5,
+        "Steel": 0.5
+      },
+      "Psychic": {
+        "Fighting": 2,
+        "Poison": 2,
+        "Psychic": 0.5,
+        "Dark": 0,
+        "Steel": 0.5
+      },
+      "Bug": {
+        "Fire": 0.5,
+        "Grass": 2,
+        "Fighting": 0.5,
+        "Poison": 0.5,
+        "Flying": 0.5,
+        "Psychic": 2,
+        "Ghost": 0.5,
+        "Dark": 2,
+        "Steel": 0.5,
+        "Fairy": 0.5
+      },
+      "Rock": {
+        "Fire": 2,
+        "Ice": 2,
+        "Fighting": 0.5,
+        "Ground": 0.5,
+        "Flying": 2,
+        "Bug": 2,
+        "Steel": 0.5
+      },
+      "Ghost": {
+        "Normal": 0,
+        "Psychic": 2,
+        "Ghost": 2,
+        "Dark": 0.5
+      },
+      "Dragon": {
+        "Dragon": 2,
+        "Steel": 0.5,
+        "Fairy": 0
+      },
+      "Dark": {
+        "Fighting": 0.5,
+        "Psychic": 2,
+        "Ghost": 2,
+        "Dark": 0.5,
+        "Fairy": 0.5
+      },
+      "Steel": {
+        "Fire": 0.5,
+        "Water": 0.5,
+        "Electric": 0.5,
+        "Ice": 2,
+        "Rock": 2,
+        "Steel": 0.5,
+        "Fairy": 2
+      },
+      "Fairy": {
+        "Fire": 0.5,
+        "Fighting": 2,
+        "Poison": 0.5,
+        "Dragon": 2,
+        "Dark": 2,
+        "Steel": 0.5
+      }
+    },
+    "_multi_hit_comment": "Moves that hit several times in one go. The director may only repeat these (count > 1); other moves land once. Your own /move commands can still use a count.",
+    "multi_hit": [
+      "Fury Swipes",
+      "Fury Attack",
+      "Double Kick",
+      "Double Slap",
+      "Double Hit",
+      "Dual Chop",
+      "Triple Kick",
+      "Triple Axel",
+      "Bullet Seed",
+      "Icicle Spear",
+      "Rock Blast",
+      "Pin Missile",
+      "Arm Thrust",
+      "Comet Punch",
+      "Bone Rush",
+      "Bonemerang",
+      "Tail Slap",
+      "Scale Shot",
+      "Water Shuriken",
+      "Surging Strikes",
+      "Population Bomb",
+      "Thrash",
+      "Close Combat"
+    ]
+  },
+  "severity": {
+    "_severity_comment": "Used for hits that aren't named moves: improvised blows, environmental damage (landing on stone, slamming into a wall, being dragged).",
+    "_comment": "The director picks a severity WORD; the engine turns it into attack power (rounded to a whole number).",
+    "instant": {
+      "light": 15,
+      "solid": 30,
+      "heavy": 45,
+      "brutal": 65
+    },
+    "hold": {
+      "light": 8,
+      "firm": 15,
+      "crushing": 25
+    },
+    "hold_ramp": {
+      "easing": -3,
+      "steady": 0,
+      "tightening": 3
+    },
+    "_environment_comment": "Power for each body part that hits the arena when a fighter is knocked down, thrown, or launched (a stalactite, a boulder, the stone floor). Every part on every surface takes one hit.",
+    "environment": {
+      "light": 8,
+      "solid": 15,
+      "heavy": 25,
+      "brutal": 35
+    },
+    "variance": 0.15
+  },
+  "damage": {
+    "_comment": "damage_scale multiplies every hit's damage (and so the health it costs). It does NOT change how fast resistance wears down (that's resistance_scale, below). 1 = the base numbers; the default is 1.25. Change it here or in the program with /scale.",
+    "damage_scale": 1.25,
+    "_resistance_scale_comment": "resistance_scale multiplies how fast resistance wears down (resistance lost = power x loss_per_power x resistance_scale). It does NOT change damage. 1 = normal; 2 = parts soften twice as fast; 0.5 = half as fast. Change it in the program with /resscale.",
+    "resistance_scale": 1.0
+  },
+  "resistance": {
+    "_comment": "Damage % = power x the part's CURRENT resistance bracket mult x damage_scale. Then resistance drops by power x loss_per_power x resistance_scale. Health lost = damage x health.loss_per_damage_point x the bracket's health_mult, so hits on a worn-down part cost far more health. Brackets are checked top to bottom.",
+    "brackets": [
+      {
+        "min": 100,
+        "exclusive": true,
+        "label": ">100%",
+        "mult": 0.2,
+        "icon": "🟦",
+        "feel": "armored",
+        "health_mult": 0.7
+      },
+      {
+        "min": 70,
+        "label": "70-100%",
+        "mult": 0.45,
+        "icon": "🟩",
+        "feel": "sturdy",
+        "health_mult": 1.0
+      },
+      {
+        "min": 50,
+        "label": "50-70%",
+        "mult": 0.8,
+        "icon": "🟨",
+        "feel": "weakened",
+        "health_mult": 1.3
+      },
+      {
+        "min": 30,
+        "label": "30-50%",
+        "mult": 1.3,
+        "icon": "🟧",
+        "feel": "thin and vulnerable",
+        "health_mult": 1.7
+      },
+      {
+        "min": 0,
+        "label": "0-30%",
+        "mult": 1.8,
+        "icon": "🟥",
+        "feel": "fragile and exposed",
+        "health_mult": 2.2
+      }
+    ],
+    "loss_per_power": 0.25,
+    "_loss_per_damage_comment": "loss_per_damage: resistance ALSO lost per 1% of damage the hit really did (times resistance_scale), on top of loss_per_power. 0 = off (the old rule: wear depends on the blow's power only). With it on, a part that takes a great deal of damage softens faster, so heavy hits change how the next ones land. /wear shows and changes it.",
+    "loss_per_damage": 0,
+    "loss_per_beat": 0,
+    "minimum": 0,
+    "_previous": {
+      "build 69-73": {
+        "loss_per_power": 0.5,
+        "damage_scale": 2.5,
+        "health_loss_per_damage_point": 0.18
+      },
+      "before build 69": {
+        "loss_per_power": 0.8,
+        "mults": [
+          0.15,
+          0.4,
+          0.75,
+          1.2,
+          1.5
+        ],
+        "health_loss_per_damage_point": 0.2,
+        "spread": 1.0,
+        "damage_scale": 2.5
+      }
+    }
+  },
+  "health": {
+    "icon": "❤️",
+    "start": 100,
+    "minimum": null,
+    "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
+    "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
+    "loss_per_damage_point": 0.5,
+    "_part_weights_comment": "How much each body part matters to OVERALL health. Health lost from a hit (and the per-beat drain from a badly hurt part) is multiplied by the part's weight: 1 = as before; the throat, neck, chest and stomach count for more, limbs for less, ears, fins, horn and tail for much less. The part still hurts just as much and takes the same damage %; only what it costs her overall changes. A word in the part's name decides first (the longest that fits), then its region. /vital shows every part's weight; /vital ear 0.3 changes one; /vital off = every part counts the same (the old rule).",
+    "part_weights": {
+      "enabled": true,
+      "regions": {
+        "neck": 1.6,
+        "chest": 1.4,
+        "belly": 1.3,
+        "head": 1.2,
+        "back_up": 1.0,
+        "back_low": 1.0,
+        "shoulder": 0.9,
+        "hind_up": 0.8,
+        "fore_up": 0.7,
+        "hind_low": 0.5,
+        "fore_low": 0.5,
+        "tail": 0.4
+      },
+      "words": {
+        "throat": 1.7,
+        "ear": 0.2,
+        "nose": 0.5,
+        "muzzle": 0.6,
+        "cheek": 0.5,
+        "jaw": 0.7,
+        "horn": 0.2,
+        "fin": 0.3,
+        "fan": 0.3,
+        "antenna": 0.2,
+        "paw": 0.4,
+        "foot": 0.4,
+        "ruff": 0.6,
+        "sac": 0.6,
+        "tail base": 0.6,
+        "rib": 1.2,
+        "knee": 0.5,
+        "hock": 0.5
+      }
+    },
+    "exhaustion_per_beat": 0.5,
+    "pain_drain": [
+      {
+        "min_damage": 90,
+        "per_beat": 0.5
+      },
+      {
+        "min_damage": 150,
+        "per_beat": 1.5
+      }
+    ]
+  },
+  "narration": {
+    "_comment": "story_prompt.txt holds your plain-English storytelling instructions. style_sample_file is writing for the narrator to imitate: a plain file is shown from its start, up to style_sample_chars characters; a file written in sections (lines starting with ==, like style_sample_scenes.txt) gives the narrator the passage that fits the part it is about to write. /sample lists the samples in the folder and switches between them; your earlier ones are style_sample.txt, style_sample_previous.txt and style_sample_intense.txt. sample_copy_check: a sentence copied word for word from the sample is cut. max_words caps each response. context_window is the model's working memory in tokens: raise it for longer stories if your GPU has room, lower it if responses get slow.",
+    "story_prompt_file": "story_prompt.txt",
+    "style_sample_file": "style_sample_scenes.txt",
+    "style_sample_chars": 4000,
+    "sample_copy_check": true,
+    "_story_state_comment": "story_state: before each beat the narrator is told where the fight stands as a story (early, middle, late, near the end), how each fighter is doing and who has been pressing whom, how it sits with her (confident, worried, desperate...), whether the fight has just turned, and whether this beat is a turning point or an ordinary exchange. All of it is worked out by the program from the dice; it decides nothing. false turns it off.",
+    "story_state": true,
+    "_turning_comment": "turning_point_length: a turning point (a fighter pinned for the first time, a pin broken after it had begun to tell, the pressing changing hands) and the beat that ends the fight are given this many times the usual words. Ordinary beats are never shortened. 1 turns it off.",
+    "turning_point_length": 1.3,
+    "_blocks_comment": "Story building blocks (story_blocks.txt): a large file of ideas (reactions, sensations, how a hurt spreads, breath, what an opponent can see of an injury, ways to stage a move, thoughts, feelings, takedowns, pins, getting up, landings, aftermath). Before each part of a beat the program offers the narrator up to per_part of them that FIT the fight as it stands (the size of the blow, how much each part hurts now, who is fresh or spent, what her body has), preferring the least-offered and never one offered in the last cooldown_beats beats. They are suggestions to reword, never new events. remember: what was offered is kept between fights in blocks_memory.json. /blocks shows the counts; /blocks off turns them off.",
+    "blocks": {
+      "enabled": true,
+      "file": "story_blocks.txt",
+      "per_part": 10,
+      "cooldown_beats": 8,
+      "remember": true,
+      "plan": true,
+      "open_and_end": true
+    },
+    "_plan_comment": "blocks.plan: the blocks are laid out as numbered steps whose order changes from beat to beat (false: a plain list). blocks.open_and_end: the plan gives an image to open a beat on and one to end it on. arena_detail: one detail of the place the story has not used lately, as background (from the scene's details list in scenes.json). callback_memory: when a part that an earlier blow hurt is hurt again, the narrator is pointed at that earlier blow, once per part in a long while. leaned_words: describing words the last few beats used min_count times or more are named, so the narrator reaches for others.",
+    "arena_detail": true,
+    "callback_memory": true,
+    "leaned_words": {
+      "enabled": true,
+      "min_count": 5,
+      "max": 6,
+      "look_back_chars": 7000
+    },
+    "recent_beats_remembered": 2,
+    "_words_comment": "words_per_beat: target length. With two_pass_pov on, the attacker's side and the receiver's side are written as two separate halves, which keeps long narration coherent.",
+    "words_per_beat": 500,
+    "words_per_pass": 300,
+    "_linger_comment": "Chance per beat (0-1) that one blow gets a long, slow reaction, and how many extra words it gets. 0 turns it off.",
+    "linger_chance": 0.3,
+    "linger_words": 200,
+    "_gore_comment": "gore_check: if a draft goes past gore_level (below), the narrator rewrites it once with those phrases flagged, then cuts any sentence that's still too graphic. Set to false to turn off.",
+    "gore_check": true,
+    "_gore_level_comment": "gore_level: \"mild\" (default) allows a little blood, small cuts, and bites that break the skin, and only rewrites EXTREME gore (torn or shredded flesh, exposed or breaking bone, pooling blood, severed parts, death). \"none\" rewrites any blood or wounds. \"off\" turns the check off.",
+    "gore_level": "mild",
+    "_swearing_comment": "\"rare\" (default): an occasional single curse, at most one every swearing_gap beats. \"never\": none. \"free\": no limit. /set narration.swearing never",
+    "swearing": "rare",
+    "swearing_gap": 5,
+    "_numb_tier_comment": "true: parts at 1000%+ damage go 'numb with shock' (⚪). false: they stay 'devastated' (⚫). Toggle with /numb on|off or /set narration.numb_tier false",
+    "numb_tier": true,
+    "_bone_break_comment": "Bones may always crack or bruise. Broken, fractured, or shattered bones are allowed only on a part with at least min_part_damage damage, on a fighter whose health is below max_health.",
+    "bone_break": {
+      "min_part_damage": 300,
+      "max_health": 0
+    },
+    "_accuracy_comment": "accuracy_check: if a draft skips a listed hit (never mentions that body part) or skips a pin struggle it was told to show, the narrator rewrites it once with the gaps flagged.",
+    "accuracy_check": true,
+    "_best_of_two_comment": "best_of_two: \"important\" (default) writes two drafts for big moments (a pin starting or ending, a launch, a breaking point, an adrenaline surge, a knockout) and keeps the one with fewer problems; \"always\" does it every beat (twice as slow); \"off\" never.",
+    "best_of_two": "important",
+    "_variety_comment": "variety_check: a draft is rewritten if it uses any overused_phrases more than once, or one that a recent beat already used, or repeats a recent thought or spoken line word for word. Add or remove phrases freely.",
+    "_repair_comment": "paragraph_repair: when a draft has a mistake the program can point at, only that paragraph is written again (up to repair_tries times, at most repair_paragraphs_max paragraphs a part) and the rest stays word for word; a whole rewrite happens only when something is MISSING (a hit, the escape, the get-up). false = the old way: the whole part is rewritten for any problem. reader_check: after that, the model reads the passage back against the facts and lists contradictions in its own words (one short extra call per part); what it finds is rewritten the same way, never cut on its word alone. reader_model: a different model to do that reading (empty = the narrator's). reader_on_cpu: when reader_model names a different model, run it on the CPU in system memory (Ollama option num_gpu 0), so the narrator is not unloaded from the graphics card for every reading; slower per reading, no swapping. reader_max_fixes: paragraphs it may send back per part.",
+    "paragraph_repair": true,
+    "repair_tries": 2,
+    "repair_paragraphs_max": 6,
+    "reader_check": true,
+    "reader_model": "",
+    "reader_on_cpu": false,
+    "reader_max_fixes": 3,
+    "_reader_gate_comment": "reader_gate: a second reading's finding only counts when the program's own look at the quoted sentence agrees it could be that kind of mistake (a posture finding needs a sentence that states a posture the fighter has at NO point of the beat, and so on); the rest is set aside and shown in the log. reader_confirm (off by default since build 95): what passes is asked about a second time ('is this fine?') before any paragraph is rewritten for it (one more short call per finding). In a real run the second ask talked the reader out of a finding that was right, and a finding only ever causes a rewrite, so the program's own gate is trusted instead. /reader confirm on brings it back.",
+    "reader_gate": true,
+    "reader_confirm": false,
+    "variety_check": true,
+    "_repeat_memory_comment": "repeat_memory: a short sentence (4-10 words) the fight has already used word for word, however many beats ago, is cut the next time it turns up ('The cave held its breath.'). false = only the last few beats are checked.",
+    "repeat_memory": true,
+    "overused_phrases": [
+      "not yet",
+      "almost",
+      "not finished",
+      "not done",
+      "can't",
+      "one chance",
+      "not like this",
+      "too slow"
+    ],
+    "_passes_comment": "Long beats are written in focused parts of about words_per_pass words (max 4): 2 parts = attacker's side + receiver's side; 3 adds the aftermath; 4 adds the lead-up. Short parts keep the detail dense. Change length live with /words.",
+    "_more_comment": "/more (or +) stays in the moment: the narrator adds about more_words words on the stillness and what the last blows left behind, without the fight moving on. more_after_attacks: add that many such passages on their own after every beat with an attack (0 = only when you ask; /more auto <n>).",
+    "more_words": 300,
+    "more_after_attacks": 0,
+    "two_pass_pov": true,
+    "context_window": 12288,
+    "_sampler_comment": "repeat_penalty above 1 discourages looping/repeated phrases (1.05-1.2 is typical). min_p and top_p trim unlikely words. Lower temperature = steadier, higher = wilder.",
+    "temperature": 0.8,
+    "repeat_penalty": 1.03,
+    "repeat_last_n": 256,
+    "top_p": 0.92,
+    "min_p": 0.05,
+    "_top_up_comment": "If a beat ends up shorter than top_up_below x its target length (usually because repeated or copied lines were removed), one more pass continues it with new detail. 0 turns it off.",
+    "top_up_below": 0.55,
+    "_max_rewrites_comment": "1 = one rewrite per draft; 2 = one more try when the text still gets the events wrong (an invented fall, a missing hit).",
+    "max_rewrites": 2,
+    "_talk_comment": "How much fighters talk. spoken_per_beat: spoken lines allowed in a beat; spoken_gap: beats of silence after someone speaks; thoughts_per_part: italic thoughts allowed in each part of a beat. /talk quiet|less|normal|free sets presets.",
+    "talk": {
+      "enabled": true,
+      "spoken_per_beat": 1,
+      "spoken_gap": 2,
+      "thoughts_per_part": 2
+    },
+    "words_per_extra_link": 70
+  },
+  "pain_tiers": [
+    {
+      "min": 0,
+      "icon": "🟢",
+      "label": "minor",
+      "reaction": "Once the impact passes, little lasting effect; uses the part normally."
+    },
+    {
+      "min": 30,
+      "icon": "🟡",
+      "label": "sore",
+      "reaction": "Brief wince or grunt, shakes it off quickly. Still uses the part fully."
+    },
+    {
+      "min": 60,
+      "icon": "🟠",
+      "label": "hurting",
+      "reaction": "Clear pain: grimaces, rubs or checks the part, slightly slower to use it."
+    },
+    {
+      "min": 90,
+      "icon": "🔴",
+      "label": "very painful",
+      "reaction": "Strong pain: cries out, clutches the part, favors it, hesitates before using it. Opponent may notice and target it."
+    },
+    {
+      "min": 150,
+      "icon": "🟣",
+      "label": "excruciating",
+      "reaction": "Overwhelming pain: screams, may collapse or writhe, can barely or cannot use the part, struggles to think about anything else."
+    },
+    {
+      "min": 300,
+      "icon": "⚫",
+      "label": "devastated",
+      "reaction": "Past pain: the part barely works, trembles or goes limp, and every touch on it brings cries or broken whimpers."
+    },
+    {
+      "min": 1000,
+      "icon": "⚪",
+      "label": "numb with shock",
+      "reaction": "Beyond pain: the part has gone numb, heavy, and strange, with shock spreading around it. New hits there land as a dull, sickening jolt and a lurch of nausea rather than sharp pain; she may not even feel them at first. Her breathing goes shallow and her face pale. It never makes her collapse on its own: overall strength still decides that."
+    }
+  ],
+  "health_tiers": [
+    {
+      "min": 80,
+      "label": "fresh",
+      "reaction": "Fully in the fight: quick, strong, upright, attacking freely. A badly hurt part is favored and guarded, but she does NOT collapse, go limp, or stop fighting; knocked down, she is straight back up."
+    },
+    {
+      "min": 60,
+      "label": "winded",
+      "reaction": "Breathing harder, but still fast and dangerous. Shakes off big hits within a moment and gets straight back up."
+    },
+    {
+      "min": 40,
+      "label": "tired",
+      "reaction": "Heavy breathing, a beat slower to rise and recover, but still attacking with real force."
+    },
+    {
+      "min": 20,
+      "label": "exhausted",
+      "reaction": "Gasping, slower and sloppier, takes a moment to get up, attacks lose some sharpness. Still conscious and still fighting."
+    },
+    {
+      "min": 0,
+      "label": "spent",
+      "reaction": "Barely able to stand, swaying, slow to rise, near collapse, but still conscious and still trying."
+    },
+    {
+      "min": -1000000000,
+      "label": "past the limit",
+      "reaction": "Running on nothing but will: wobbling, dropping to the ground between efforts, but still conscious. Only a completed pin puts her out."
+    }
+  ],
+  "holds": {
+    "_comment": "first_beat_damage: a hold (jaws on the throat, tails round a leg, coils) hurts from the beat it starts: the clamp itself lands as that much of one beat's pressure (1 = a full beat's worth, 0.5 = half, 0 = nothing until the next beat, as before build 93). Change live with /holdstart. A pin's presses have their own setting, pin.first_beat_damage.",
+    "first_beat_damage": 1.0,
+    "_break_comment": "A plain hold (not a pin) has no time limit. Each beat after the one it starts in, once its pressure has landed, the held fighter gets one roll to wrench free. Chance = base x her condition against the holder's ((0.25 + her share of health) / (0.25 + the holder's), between 0.3 and 2.5) x how light the grip is (reference_power / the grip's power, between 0.4 and 1.5) x how hurt the gripping limb is (up to x2 at 150% damage) + per_beat for every beat the grip has already been on; x below_zero_mult once her health is below zero; half when paralyzed, x1.5 on an adrenaline surge; never above max; none while she is asleep or frozen. base 0 = no roll: only the director, a knockdown or a throw ends a hold. Change live with /holdbreak.",
+    "break": {
+      "base": 0.12,
+      "per_beat": 0.015,
+      "max": 0.6,
+      "reference_power": 15,
+      "below_zero_mult": 0.25,
+      "loosen_band": 0.6,
+      "loosen_mult": 0.75,
+      "strain_band": 1.4,
+      "grab_mult": 1.6
+    },
+    "_shaken_comment": "A fighter who is holding someone (a plain hold, not a pin) and is hit hard may lose her grip. One roll per attack that lands on her: chance = the share of her full health that attack cost x per_health_share, never above max. Attacks costing less than min_share of her health don't roll. So at the default damage scale grips are rarely shaken, and at /scale 5 a big hit usually tears one loose. per_health_share 0 = never. Change live with /holdshake.",
+    "shaken": {
+      "per_health_share": 2.5,
+      "min_share": 0.03,
+      "max": 0.95
+    },
+    "_loosen_comment": "break.loosen_band / loosen_mult / strain_band: the break-free roll has near misses. A roll that misses the chance by up to loosen_band of it (chance 20% -> rolls from 20 to 32) LOOSENS the grip: it stays on, pressing at loosen_mult of its strength from the next beat. The next strain_band of it (32 to 60) is a visible struggle that changes nothing. Anything higher, she simply endures. loosen_band 0 = no loosening."
+  },
+  "pin": {
+    "_comment": "Story pins. Each beat of a pin covers seconds_per_beat seconds of the clock. Every beat the engine rolls the pinned fighter's struggle: an escape, a partial break (they land a hit on the pinner), or a failed attempt the pinner punishes. Odds depend on both fighters' remaining health and fade as the clock runs down. Holding for duration_seconds makes the pinned fighter faint (if faint_at_end).",
+    "seconds_per_beat": 10,
+    "duration_seconds": 60,
+    "_make_sure_comment": "make_sure: true (default) = when the pinned fighter passes out, the pinner keeps her grip and her weight on for a moment or two longer to be sure it isn't a trick, and only then lets go. Story only: it adds no damage. false = she eases off as soon as she feels her go limp. Change live with /makesure on|off.",
+    "make_sure": true,
+    "_timing_comment": "seconds_per_beat can be anything (1, 5, 10...). Pin pressure damage and struggle odds below are written for a 10-second beat (reference_seconds) and scale automatically, so shorter beats show more, smaller moments with about the same overall outcome. pin_words_per_second sets narration length per pin beat (capped at words_per_beat). Change live with /pinbeat and /pinlength.",
+    "reference_seconds": 10,
+    "_rules_comment": "The director (not your /commands or typed directions) must follow these. require_downed: true = the opponent has to be on the ground before a pin; false (default) = a pin can come at any point, and a standing opponent is taken down into it. attacks_between_pins: attacks she must take after one pin attempt before the next (a fighter who hasn't been pinned yet has no wait). How OFTEN there is an opening for a pin is director.pin_urge. director_can_eliminate: false means only a completed pin puts a fighter out.",
+    "require_downed": false,
+    "_double_pin_comment": "A second fighter can join a pin that is already running (max_pinners in all): both press at once on the same clock. Each extra pinner multiplies the pinned fighter's escape and break-loose chances by double_pin_escape_mult. If one pinner is knocked away the pin carries on with the other.",
+    "max_pinners": 2,
+    "double_pin_escape_mult": 0.5,
+    "attacks_between_pins": 1,
+    "director_can_eliminate": false,
+    "_secure_comment": "secure: when enabled, a pin can only be WON if the pinned fighter has at least min_parts body parts at part_damage % or more AND her strength is at or below max_strength %. Until then her escape chance is multiplied by unmet_escape_mult every beat, and if the clock runs out she kicks out at the last second final_kickout_chance of the time. Encourages spreading the damage. Toggle with /secure on|off.",
+    "secure": {
+      "enabled": false,
+      "min_parts": 6,
+      "part_damage": 150,
+      "max_strength": 50,
+      "unmet_escape_mult": 2.0,
+      "final_kickout_chance": 0.85
+    },
+    "_damage_mult_comment": "damage_mult scales ALL damage done to a pinned fighter by her pinner: the pressure on every point of contact each beat, the extra hit when the pinner punishes a failed struggle, any strike or technique the pinner lands on her while the pin runs, and /pinsuccess. 1 = full, 0.5 = half (the default since build 87), 2 = double. Change it live with /pinpower <number>; your choice is kept in my_settings.json, so it survives a new build.",
+    "_fade_comment": "fade (on by default since build 98): a pin has NO fixed length. Each beat of a pin brings the pinned fighter closer to passing out by a varying amount (100 / typical_beats on average, between (1 - spread) and (1 + spread) times that), and she goes out when it reaches 100. So it usually takes about typical_beats beats, sometimes fewer, sometimes more, and nobody in the story can count toward the end: the narration has no clock, no seconds and no time left. A beat where she breaks loose for a moment counts for less (break_loose_mult); a double pin, and a fighter whose health is below zero, go faster; a fighter still above half her strength goes slower. It never takes fewer than min_beats. enabled false = the old rule: a clock that ends at duration_seconds, with the seconds marked in the story. Change live with /pinfade.",
+    "fade": {
+      "enabled": true,
+      "typical_beats": 6,
+      "spread": 0.55,
+      "min_beats": 3,
+      "break_loose_mult": 0.4,
+      "double_pin_mult": 1.25,
+      "below_zero_mult": 1.15,
+      "strong_mult": 0.8,
+      "_cause_comment": "A fighter held to the end of a pin goes out from one of two things, and the story is told which: the CHOKE (a grip on her neck or throat) or the PAIN (the worst-hurt part under the press). With no grip on her neck it is always the pain. With one, pain_out_share is how often the pain gets there first anyway (less when nothing under the press is at least very painful). At 0.22 about 3 pass-outs in 10 are by pain overall at a high damage scale; raise it for more, lower it for fewer (0 = always the choke when there is one; 1 = always the pain). pain_mult: when the worst-hurt part under the press is in agony (150% damage or more), each beat takes her under up to this much faster.",
+      "pain_mult": 1.15,
+      "pain_out_share": 0.22
+    },
+    "damage_mult": 0.5,
+    "_first_beat_comment": "first_beat_damage: how much of one beat's pressure a pin's presses deal on the beat the pin starts (0 = none: the pin starts hurting on its next beat; 1 = a full beat, still times damage_mult). Change live with /pinstart.",
+    "first_beat_damage": 0.0,
+    "_restrain_comment": "restrain: when the pinner lands an attack on the fighter she's pinning (a claw in a nerve cluster, a trapped paw, a ground-down joint), there's a chance it also leaves her RESTRAINED for beats beats: her escape chance is multiplied by escape_mult, but only fully once her strength is at or below full_effect_below %; a healthy fighter barely notices it (it scales in between).",
+    "restrain": {
+      "enabled": true,
+      "chance": 0.5,
+      "beats": 2,
+      "escape_mult": 0.6,
+      "full_effect_below": 30
+    },
+    "pin_words_per_second": 50,
+    "faint_at_end": true,
+    "struggle": {
+      "attempt_chance": 0.85,
+      "_odds_comment": "attempt_chance: how likely the pinned fighter is to try at all each beat. Escapes stay LIKELY while she has more than escape_easy_above % of her health: each try works escape_chance of the time at full health, sliding to escape_chance_at_edge at that mark (65% -> 40% by default). Below it the chance halves for every escape_halves_every points of health she loses: about 28% at 40% health, 17% at 25%, 10% at 10%, 7% at 0, and on into negative health. Over a whole 60-second pin that works out to roughly 95% escapes from full health, 70% from 65%, 55% from half, 35% from a quarter, 10% from almost nothing. That is the 'escape %' on the pin clock line (before the clock's fade and the pinner's own condition). partial_chance: if the escape roll fails, her chance to break loose for a moment and hit the pinner; it falls on the same curve. escape_steps true = drops in whole steps instead of smoothly. escape_easy_above 0 = the old curve (halving from full health; use escape_halves_every 25 with it). A hurt pinner raises the odds a little; late in the pin (after fade_from) they fade.",
+      "escape_chance": 0.65,
+      "_escape_hit_comment": "escape_hit: when she breaks free, the blow that frees her also lands on the pinner (somewhere a pinned fighter can reach: face, neck, chest, belly, forelimbs) at escape_severity (light, solid, heavy, brutal; heavy is about a named move). false = she just slips out and the pinner is unhurt.",
+      "escape_hit": true,
+      "escape_severity": "heavy",
+      "escape_easy_above": 50,
+      "escape_chance_at_edge": 0.4,
+      "escape_halves_every": 20,
+      "_below_zero_comment": "escape_halves_every_below_zero: once the pinned fighter's health is BELOW ZERO, her escape and break-loose chances halve again for every this-many points (percent of her own full health) she is under zero. 5 = at 10% under zero an escape is about four times less likely than at zero, at 20% under about sixteen times. A large number (1000) switches it off.",
+      "escape_halves_every_below_zero": 5,
+      "escape_steps": false,
+      "_buff_comment": "After she breaks loose, her escape chance is multiplied by break_loose_buff for the next break_loose_buff_beats beat(s). It doesn't stack; another break-loose just restarts it.",
+      "break_loose_buff": 1.5,
+      "break_loose_buff_beats": 1,
+      "partial_chance": 0.5,
+      "fade_from": 0.5,
+      "punish_severity": "solid",
+      "counter_severity": "solid",
+      "pinner_down_chance": 0.25,
+      "_pinner_down_comment": "pinner_down_chance: when the pinned fighter breaks out, the chance the pinner is thrown down beside her instead of being shoved off on her feet. She then rolls to get up from the next beat like anyone else. 0 = the pinner always keeps her feet."
+    },
+    "_takedown_comment": "takedown: a standing fighter is taken down into a pin in one of several ways (the mix is under variety -> takedown). hard_landing_chance: how often the landing itself hurts: landing_parts parts on the side she lands on take a landing_severity blow from the ground before the pin closes. 0 = takedowns never hurt (the old rule).",
+    "takedown": {
+      "hard_landing_chance": 0.4,
+      "landing_severity": "solid",
+      "landing_parts": 2
+    },
+    "_against_comment": "against_escape_mult: a pin jammed against something in the arena (a wall, a boulder) is this much harder to break out of. The director is offered that shape rarely (director.pin_shape_weights.wall_choke).",
+    "against_escape_mult": 0.85
+  },
+  "getting_up": {
+    "_comment": "A fighter on the ground tries to get up at the end of each beat after the one she went down in. Score = her strength share / (1 + damage of her worst 3 limb parts / limb_damage_halves_at), plus per_beat_down for each extra beat down, plus a little luck (adrenaline +0.2, paralyzed -0.3). Score >= thresholds[0]: up on the first try; [1]: second try; [2]: third try; lower: fails all three and stays down. After max_beats_down she always makes it on the third try.",
+    "thresholds": [
+      0.7,
+      0.45,
+      0.2
+    ],
+    "limb_damage_halves_at": 200,
+    "per_beat_down": 0.15,
+    "max_beats_down": 4,
+    "sit_up_chance": 0.4,
+    "_sit_up_comment": "sit_up_chance: when a fighter on the ground fails to get up, the chance she at least makes it to SITTING (still down; front and back both in reach). 0 = a failed get-up always leaves her lying."
+  },
+  "evasion": {
+    "_comment": "Dodges: the engine rolls whether a single-target or spread attack misses. Chance = base x (0.4 + 0.6 x the defender's strength share) x a penalty for hurt legs, feet, and tails, capped at max. Chilled halves it, low energy x0.7, adrenaline x1.3, a paralyzed attacker x1.3, spread moves x0.5. Nobody dodges while down, pinned, or paralyzed, or a whole-body move. counter_chance: after a dodge, the chance to land a counter-hit. Your own /commands always land.",
+    "enabled": true,
+    "base": 0.18,
+    "max": 0.35,
+    "counter_chance": 0.35,
+    "_chain_comment": "chain_mult: in a chain (two or three attacks by one fighter in one beat, each leading into the next) a link that lands leaves her rocked: her chance to dodge the next link is multiplied by this. A link she dodges ends the chain.",
+    "chain_mult": 0.5,
+    "counter_severity": "solid"
+  },
+  "status_effects": {
+    "_comment": "from_move_type: a move of that type that lands may give the target this status for this many beats. paralyzed: weaker attacks (paralyzed_power_mult), no dodging, worse pin escapes. chilled: half the dodge chance. soaked: Electric hits do soaked_electric_mult more (anyone the director places in water, or who lands in water, is soaked too). flinched: can't attack next beat.",
+    "from_move_type": {
+      "Electric": {
+        "status": "paralyzed",
+        "chance": 0.3,
+        "beats": 2
+      },
+      "Ice": {
+        "status": "chilled",
+        "chance": 0.5,
+        "beats": 2
+      },
+      "Water": {
+        "status": "soaked",
+        "chance": 1.0,
+        "beats": 3
+      },
+      "Dark": {
+        "status": "flinched",
+        "chance": 0.25,
+        "beats": 1
+      }
+    },
+    "paralyzed_power_mult": 0.75,
+    "paralyzed_escape_mult": 0.5,
+    "soaked_electric_mult": 1.5,
+    "soaked_beats": 3,
+    "_more_comment": "Statuses from moves.json moves: asleep and frozen can't act or dodge (and barely fight a pin), confused may hurt herself instead of attacking (confused_self_hit_chance), burned hits a little weaker (burned_power_mult) and takes burn_power on a hurt spot each beat, poisoned loses poison_health_pct % of her max health each beat.",
+    "confused_self_hit_chance": 0.33,
+    "burned_power_mult": 0.85,
+    "burn_power": 5,
+    "poison_health_pct": 1.0
+  },
+  "energy": {
+    "_comment": "Stamina (0-100). Each move costs energy: by target type here, or a move's own \"energy\" in fighters.json. Everyone regains regen_per_beat each beat, plus rest_bonus if they sat the beat out. Below tired_below a fighter dodges worse. The director can't use a move she can't afford; your /commands always work.",
+    "enabled": true,
+    "costs": {
+      "targeted": 10,
+      "spread": 18,
+      "whole_body": 30,
+      "hold": 8,
+      "pin": 12,
+      "improvised": 7,
+      "strike": 6,
+      "status": 8,
+      "throw": 12,
+      "slam": 12,
+      "drag": 8,
+      "grapple": 6
+    },
+    "regen_per_beat": 5,
+    "rest_bonus": 10,
+    "tired_below": 25
+  },
+  "adrenaline": {
+    "_comment": "The first time a fighter's strength drops below below_strength %, she gets one surge for this many beats: power_mult on her attacks, escape_mult on pin escapes, better dodging, and an energy refill.",
+    "enabled": true,
+    "below_strength": 25,
+    "beats": 3,
+    "power_mult": 1.25,
+    "escape_mult": 1.5,
+    "energy": 30
+  },
+  "recovery": {
+    "_comment": "After a fighter is put out (a completed pin, or /eliminate), they slowly come around through these stages, one at a time. Each beat after min_beats_per_stage, the chance to move up a stage is chance at full health, halved for every halves_every points of health lost (never below min_chance). Getting up doesn't change who won.",
+    "chance": 0.5,
+    "halves_every": 50,
+    "min_chance": 0.03,
+    "min_beats_per_stage": 2
+  },
+  "director": {
+    "_comment": "initiative: once one fighter has made initiative_after attacks in a row (and an opponent still has at least initiative_min_strength % of full strength), each beat there's a chance the director is told to shift the momentum: initiative_chance at first, +initiative_step for every extra attack in the streak, up to initiative_max. Streaks can run long, just not usually. With /plan dominate, the winner's streaks shift only initiative_dominate_factor as often. initiative_after 0 turns it off.",
+    "initiative_after": 3,
+    "initiative_min_strength": 35,
+    "_pin_urge_comment": "How often there is an OPENING for a new pin on a fighter, rolled each beat before the director chooses (the director can only start a pin where there is one; your /commands and typed directions always can). standing: on her feet with at least weak_below % of her strength (rare, but a pin can come at any point). downed: knocked down, same strength. weak_standing / weak_downed: under weak_below % of her strength; these then climb toward max as she nears 0. helpless: asleep or frozen. When there is an opening and you just press Enter, the director is told to go for it.",
+    "pin_urge": {
+      "standing": 0.06,
+      "downed": 0.3,
+      "weak_below": 50,
+      "weak_standing": 0.45,
+      "weak_downed": 0.85,
+      "max": 0.95,
+      "helpless": 0.9
+    },
+    "_focus_comment": "Where attacks aim (set with /focus). '*' = everyone; a fighter's name = that attacker only. focus_strength (0-1) = how often an off-target pick gets moved onto the focus zone; 0 = a prompt nudge only.",
+    "focus": {},
+    "focus_strength": 0.6,
+    "initiative_chance": 0.4,
+    "initiative_step": 0.2,
+    "initiative_max": 0.95,
+    "initiative_dominate_factor": 0.3,
+    "_throat_bite_comment": "Now and then the director gets an optional idea to bite the neck or throat: throat_bite_chance per beat in open fighting (when someone has Bite, Crunch, Ice Fang...), throat_bite_pin_chance per pin beat. 0 turns it off.",
+    "_sustain_comment": "sustain_chance: each beat with no direction from you (and no pin running or about to start), the chance the director is pointed at a HELD ranged attack: a stream or beam (any move marked sustainable) kept on the target for 2-4 pulses and pressing her against something in the scene, which adds environmental damage each pulse and may break. 0 = never suggested (the director can still choose it).",
+    "_double_pin_chance_comment": "double_pin_chance: while a pin is running and another fighter is free (on her feet, not the pinned fighter's ally), the chance each beat that the director is told to have her pile on for a double pin.",
+    "double_pin_chance": 0.35,
+    "sustain_chance": 0.1,
+    "_charge_chance_comment": "charge_chance: each beat with no direction from you (and no pin running or about to start), the chance the director is pointed at a charge that carries the target into the scenery. At most one of the two big-moment ideas (held stream, charge) is given in a beat. 0 = never suggested.",
+    "charge_chance": 0.09,
+    "_grapple_comment": "grapple_chance: each beat with no direction from you (and no pin running or about to start), the chance the director is pointed at one fighter seizing another who is on her feet and throwing her into the scenery or slamming her down. It shares the one big-moment roll with the held stream and the charge, so at most one of the three is suggested in a beat. 0 = never suggested (the director may still choose a throw by itself).",
+    "grapple_chance": 0.06,
+    "_clinch_comment": "clinch_chance: each beat with no direction from you (and no pin running or about to start), the chance the director is pointed at a GRAPPLE: one fighter seizing another who is on her feet, keeping hold, and working her over at point-blank (short blows, a bite, a held stream) in the same beat and the next. chain_chance: the same for a CHAIN, two or three attacks by one fighter in one beat, each leading into the next. Both share the one big-moment roll with the held stream, the charge and the throw, so at most one of the five is suggested in a beat, and the director may still decline. 0 = never suggested (your own /grapple and joined commands still work).",
+    "clinch_chance": 0.05,
+    "chain_chance": 0.05,
+    "_big_moment_overdue_comment": "big_moment_overdue: when this many beats have gone by with no big moment at all (no held stream, charge into the scenery, throw or slam, grapple, or chain), one is suggested for certain on the next open beat, and more firmly, so a fight of ordinary length has at least two or three. 0 = never forced. Change the five chances and this number together with /bigmoments.",
+    "big_moment_overdue": 10,
+    "_injured_focus_comment": "For /focus injured: a part counts as hurt from min_damage % up. Hurt parts are chosen most (more, the worse they are), the parts right around them at around_weight. If one side of the body (left or right) has at least side_damage % in total and side_ratio times the other side, that whole side is in play at side_weight.",
+    "injured_focus": {
+      "min_damage": 30,
+      "around_weight": 20,
+      "side_damage": 200,
+      "side_ratio": 1.5,
+      "side_weight": 35
+    },
+    "throat_bite_chance": 0.12,
+    "throat_bite_pin_chance": 0.25,
+    "_pin_shape_comment": "pin_shape_weights: when there is an opening for a pin, the director is handed one way to build it, so pins don't all look alike (never the same shape twice running). The numbers say how often each is suggested compared with the others; 0 = never. throat_bite = jaws on the throat, weight on the chest. trapped_arm = jaws pinning a paw or forearm to the stone while a forepaw or forearm bars the throat. tail_choke = tails or coils looped round the neck, paws on the shoulders (only fighters whose tail can coil). twisted_arm = an arm wrenched out straight and pinned. leg_tangle = both legs trapped. lifted_leg = one leg hooked and hauled up off the ground, folded back (kept rare). The throat-bite ideas above now also offer chokes with other limbs and jaws clamped on a limb. Change live with /pinshape.",
+    "pin_shape_weights": {
+      "throat_bite": 3,
+      "trapped_arm": 3,
+      "tail_choke": 3,
+      "twisted_arm": 2,
+      "leg_tangle": 2,
+      "lifted_leg": 1,
+      "sleeper": 1,
+      "wall_choke": 0.6
+    },
+    "_reposition_comment": "The director may roll a downed fighter over (or onto her back, front, side) or haul her up off the ground before an attack or during a pin. reposition_cooldown = beats before the same fighter can be moved again (your /roll ignores it).",
+    "reposition_cooldown": 2,
+    "_manhandle_comment": "manhandle_cooldown: beats a fighter must wait after throwing, slamming or dragging someone before she may do another (the director's 'throw', 'slam' and 'drag' actions). 0 = no wait (the default since build 100); 3 was build 99's. Your own /throw, /slam and /drag commands ignore it. Their energy costs are under energy.costs.",
+    "manhandle_cooldown": 0,
+    "_reposition_chance_comment": "reposition_chance: each beat that an opponent is lying on the ground, the chance the director is pointed at moving her first: rolling her over to reach the other side of her, sitting her up, lifting her off the ground for a slam or a throw, or dragging her onto her feet. It is only a suggestion. 0 = never suggested (the director can still choose it).",
+    "reposition_chance": 0.12,
+    "_autofight_comment": "/autofight stops a fight that still has no winner after this many beats and moves on to the next one.",
+    "autofight_max_beats": 150,
+    "_story_state_comment": "story_state: the director is also told where the fight stands as a story (who is ahead, who is pressing, how it sits with each of them), so its choices fit: it changes no rule and no number.",
+    "story_state": true,
+    "_chain_comment": "chain: a chain of attacks in one beat has no fixed length either. Before the third link and every later one the engine rolls whether the chain ends there: break_start for link 3, plus break_step for each link after it, raised when the attacker is tired or the defender still fresh and lowered the other way. It ends with her dodging that link (and maybe countering) or, when she cannot dodge where she is, with the attacker having nothing left to follow with. hard_cap: a distant limit on links in one beat (0 = none).",
+    "chain": {
+      "break_start": 0.1,
+      "break_step": 0.12,
+      "hard_cap": 6
+    },
+    "_target_variety_comment": "target_variety: with no /focus set, the chance that a blow aimed at a region this attacker has just been hitting is moved to a part she has left alone (the less hurt, the likelier), and the chance per beat that the director is reminded what has not been touched yet. 0 = off.",
+    "target_variety": 0.35
+  },
+  "_teams_comment": "Teams set with /team: fighter -> team name. Fighters who share a team never attack each other and win together, in every fight. Empty = everyone fights alone. (Temporary alliances are made during a fight with /ally and are not kept here.)",
+  "teams": {},
+  "console": {
+    "_comment": "How the text looks on screen. styled_text: the stat blocks mark headings with **two asterisks** and the story marks thoughts with *one*; Spyder's console (and most terminals) don't understand those marks, so with styled_text on the program turns them into real bold and italic. auto = on in Spyder, Jupyter, and terminals; on / off force it. bold_color: an optional colour for the bold parts (yellow, cyan, green, magenta, red, blue, white, or empty for none), for consoles that don't draw bold text heavier. /export always keeps the plain asterisks. Change live with /style.",
+    "_layout_comment": "layout: how the stat math is laid out. clear (default) = every hit as three labelled rows (damage, resistance, health: each with before -> after and the math that gives it), grouped under what caused it, blocks spaced out, one chance roll per line, no line wider than about 100 characters, every beat in full. tight = one unlabelled row per hit, everything packed (needs a wide window). classic = the long Before / Calculations / After blocks. Change live with /layout.",
+    "layout": "clear",
+    "_timing_comment": "timing: after each beat, one line says how long it took, how fast the model wrote and read, and what had to be written again. /timing shows the averages by narrator model; /timing off hides the line.",
+    "timing": true,
+    "styled_text": "auto",
+    "bold_color": ""
+  },
+  "pinfall": {
+    "_comment": "Only used by the quick /pin three-count command. Story pins (story_prompt.txt) are holds plus the director eliminating the loser.",
+    "count_factors": [
+      1.0,
+      0.75,
+      0.5
+    ]
+  },
+  "body_zones": {
+    "_comment": "Groups of body parts for /focus. Each zone lists body regions (head, neck, shoulder, chest, belly, back_up, back_low, fore_up, fore_low, hind_up, hind_low, tail) and/or words found in part names. A fighter without a zone (a serpent has no legs) is simply open everywhere.",
+    "head": {
+      "regions": [
+        "head",
+        "neck"
+      ]
+    },
+    "core": {
+      "regions": [
+        "chest",
+        "belly",
+        "back_up",
+        "back_low",
+        "shoulder"
+      ]
+    },
+    "arms": {
+      "regions": [
+        "fore_up",
+        "fore_low"
+      ],
+      "words": [
+        "arm",
+        "foreleg",
+        "forepaw"
+      ]
+    },
+    "legs": {
+      "regions": [
+        "hind_up",
+        "hind_low"
+      ],
+      "words": [
+        "leg",
+        "thigh",
+        "knee",
+        "hock"
+      ]
+    },
+    "paws": {
+      "words": [
+        "paw",
+        "forepaw",
+        "hind paw",
+        "foot",
+        "feet",
+        "hand",
+        "hoof"
+      ]
+    },
+    "tail": {
+      "regions": [
+        "tail"
+      ]
+    },
+    "limbs": {
+      "zones": [
+        "arms",
+        "legs",
+        "paws"
+      ]
+    },
+    "upper": {
+      "zones": [
+        "head",
+        "core"
+      ]
+    }
+  },
+  "down": {
+    "_variety_comment": "How a fall ends. slump_sitting: thrown or knocked into something upright (a wall, boulder, stalagmite, pillar), the chance she ends SITTING slumped against it instead of lying at its foot. sit_down: a plain knockdown, the chance she is sat down hard on her haunches instead of laid flat. roll_through: a THROWN or LAUNCHED fighter, the chance at full strength that she rolls through the landing and comes up on her feet (she still takes every impact; the chance shrinks as she weakens; never from your own commands). resist_handling: a fighter lying on the ground, the chance at full strength that she fights off being rolled, hauled up, thrown or dragged when the DIRECTOR chooses it (shrinks as she weakens; your commands always work). Set any of them to 0 to turn that outcome off.",
+    "slump_sitting": 0.35,
+    "sit_down": 0.15,
+    "roll_through": 0.2,
+    "resist_handling": 0.25,
+    "_tumble_comment": "tumble_chance: a fighter who is thrown or launched (not slammed, not dragged) doesn't always stop where she lands: this often she TUMBLES ON across the ground (a light scrape on 2-3 more parts) and, tumble_into of those times, fetches up against something in the arena (a solid knock on 1-2 parts; water, snow or sand is a light one; a hazard does what it does). A fighter who tumbles doesn't roll through to her feet. 0 = never. Rolled for the director's throws and launches; in your own commands add 'tumble' as the last surface (/throw Ripples \"the cave wall; tumble\"). Change live with /tumble.",
+    "tumble_chance": 0.3,
+    "tumble_into": 0.5
+  },
+  "grapple": {
+    "_comment": "A GRAPPLE (director action \"grapple\", your /grapple): one fighter seizes another and keeps hold of her, both on their feet. While the grab lasts neither can dodge the other; the one holding can throw the same close move again and again (a pummel: up to pummel_max blows in a beat, each at pummel_power of one full blow, each after the first costing energy_per_extra_hit), hold a stream on her at no distance, or throw or slam her with no chance of the grab being slipped. The held fighter can hit back and rolls to wrench free every beat (the usual hold-break roll times holds.break.grab_mult). The grab itself costs energy.costs.grapple and squeezes only lightly. How often the director is pointed at one: director.clinch_chance.",
+    "pummel_power": 0.6,
+    "pummel_max": 0,
+    "energy_per_extra_hit": 3,
+    "_pummel_comment": "A pummel (the same close move thrown again and again inside a grab) has no fixed length: after the second blow every further one may be the last. The chance that it ends starts at pummel_end_start and grows by pummel_end_step per blow; a tired attacker ends it sooner and a fresh defender spoils it sooner (both fighters' strength count), and it also ends when the attacker runs out of breath. pummel_hard_cap is a distant limit (0 = none). pummel_max: a fixed limit if you want one (0 = none; 4 was the old rule). A pummel is usually one-sided: the held fighter only takes it. pummel_answer_chance: of the pummels she manages to spoil (about half of them), how often she does it by landing a short blow of her own on the one working on her (0.5 = about one pummel in four is answered; 0 = never).",
+    "pummel_hard_cap": 10,
+    "pummel_end_start": 0.25,
+    "pummel_end_step": 0.1,
+    "pummel_answer_chance": 0.5
+  },
+  "variety": {
+    "_comment": "HOW an outcome plays out once the dice have decided WHAT happens. Each entry is a set of ways with weights (compared with the others in the same set); the engine picks one each time and tells the narrator, so the story varies without ever contradicting the result. Raise a weight to see that way more often; 0 removes it. /variety shows and changes them. charge_stands: a fighter who keeps her feet after being charged into the scenery. charge_falls: one who crumples (lying three ways, or sitting against it). dodge: how an attack is avoided. hold_break: how a hold is broken. hold_strain: how a held fighter fights a grip that stays on. struggle: what a pinned fighter tries. getup_fail / getup_rise: how a try at getting up fails, and how she finally rises.",
+    "charge_stands": {
+      "staggers": 4,
+      "leans": 3,
+      "knee": 2,
+      "rebounds": 2
+    },
+    "charge_falls": {
+      "on her side": 30,
+      "face-down": 25,
+      "face-up": 15,
+      "sitting up": 30
+    },
+    "dodge": {
+      "sidestep": 4,
+      "duck": 3,
+      "spring_back": 3,
+      "turn_aside": 2,
+      "twist": 2
+    },
+    "hold_break": {
+      "wrench": 3,
+      "pry": 2,
+      "slip": 2,
+      "shove": 2
+    },
+    "tumble": {
+      "rolling": 4,
+      "skidding": 3,
+      "bouncing": 2,
+      "cartwheeling": 2
+    },
+    "hold_strain": {
+      "pry": 3,
+      "twist": 3,
+      "claw": 2,
+      "brace": 2
+    },
+    "struggle": {
+      "buck": 3,
+      "bridge": 3,
+      "twist": 3,
+      "limb": 3,
+      "kick": 2,
+      "squirm": 2
+    },
+    "getup_fail": {
+      "gives_out": 4,
+      "slips": 2,
+      "dizzy": 2,
+      "breath": 2
+    },
+    "getup_rise": {
+      "push": 4,
+      "roll": 2,
+      "lean": 3,
+      "lurch": 2
+    },
+    "takedown": {
+      "tackle": 3,
+      "leg_hook": 3,
+      "sweep": 3,
+      "hip_throw": 3,
+      "shoulder_drive": 2,
+      "drag_down": 2,
+      "spin_down": 2,
+      "trip_back": 2,
+      "pull_forward": 2,
+      "ride_down": 2
+    }
+  },
+  "scene": {
+    "_comment": "The arena. current: which scene from scenes.json a run starts in (the start-of-run question and /scene set it). ask_at_start: ask which scene every time the program starts. events: whether the place does things by itself (a stalactite falls, a wave sweeps the deck). event_chance: the chance per beat that it does (0 = never; /hazards chance <n> changes it). event_gap: beats that must pass between two events. event_from_beat: no events before this beat. Events never happen while a pin or a hold is on. /hazard <name> [fighter] makes one happen.",
+    "current": "sea cave",
+    "ask_at_start": true,
+    "events": true,
+    "event_chance": 0.05,
+    "event_gap": 4,
+    "event_from_beat": 3
+  },
+  "variants": {
+    "_comment": "Which version of a fighter a new fight uses, for fighters that have a \"variants\" section in fighters.json. \"original\" = the entry as it is written. Ripples: \"sleek\" has no flotation sac (a bare throat instead; her tells and body parts are written around that). Change with /variant Ripples original | sleek; it takes effect in the next fight.",
+    "Ripples": "sleek"
+  }
+}
