@@ -46,8 +46,21 @@ def main(seed, narration, dest):
     for n, (out, tag) in enumerate(zip(log, tags), start=2):
         body.append(f"{'=' * 30} beat {n} {'=' * 30}\n  [director is choosing the next beat]\n"
                     + splice(out, prose.get(f"beat {n - 1}", "")))
-    open(dest, "w", encoding="utf-8").write("\n".join(body) + "\n")
+    text = "\n".join(body) + "\n"
+    open(dest, "w", encoding="utf-8").write(text)
     print(f"wrote {dest}: {len(tags)} beats after the opening; winner {s.eng.winner()}")
+    # the same in parts of about a dozen beats, short enough for a phone's file viewer to show whole
+    head, *rest = re.split(r"(?=^=+ beat \d+ =+$)", text, flags=re.M)
+    per = 11
+    parts = [rest[i:i + per] for i in range(0, len(rest), per)]
+    stem = dest[:-4] if dest.endswith(".txt") else dest
+    for k, chunk in enumerate(parts, 1):
+        first = re.match(r"=+ beat (\d+)", chunk[0]).group(1)
+        last = re.match(r"=+ beat (\d+)", chunk[-1]).group(1)
+        top = head if k == 1 else (f"(Part {k} of {len(parts)}: beats {first}-{last}. Part 1 has the settings and the "
+                                   f"starting status board.)\n\n")
+        open(f"{stem}_part{k}.txt", "w", encoding="utf-8").write(top + "".join(chunk))
+    print(f"and in {len(parts)} parts: {stem}_part1.txt ...")
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ import sys
 from director import Director, resolve_many
 from display import Display
 from engine import Engine, body_region as body_region_of
-from narrator import Narrator
+from narrator import Narrator, strip_pov
 import llm
 
 VERSION = "2026-10-03 build 113 (Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
@@ -741,7 +741,7 @@ class Session:
     def recent_story(self, n=None):
         n = n or self.eng.rules.get("narration", {}).get("recent_beats_remembered", 2)
         n = max(n, 3)  # the repeat filter checks at least the last 3 beats
-        return "\n\n".join(self.story[-n:])
+        return strip_pov("\n\n".join(self.story[-n:]))   # the models read the prose without the "— Name —" labels
 
     def _sync_absent(self):
         """Tell the narrator who is in fighters.json but NOT in this fight, so she never turns up in the story."""

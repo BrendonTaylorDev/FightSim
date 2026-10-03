@@ -3749,7 +3749,7 @@ class Narrator:
     def remember(self, texts):
         """Note the short sentences of beats already told (after a /load), so they aren't used word for word again."""
         for t in ([texts] if isinstance(texts, str) else texts or []):
-            self._drop_seen(t)
+            self._drop_seen(strip_pov(t))
 
     def _beat_weight(self, bundle):
         """How much this beat matters in the fight: ("ends" | "turning" | "tense" | "big" | "hard" | "ordinary", why)."""
@@ -6157,7 +6157,38 @@ class Narrator:
         self.recent_reactions = (self.recent_reactions + [reactions_used(text)])[-3:]
         self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
         self._beat_no += 1
-        return text
+        return self.pov_labels(text)
+
+    def pov_labels(self, text):
+        """Each part of the beat headed with whose side it is told from ("— Nocturne —", "— Both —"), so the reader
+        always knows whose eyes these are. Put in after every check (they read the plain prose) and only where a part
+        visibly starts; narration.pov_labels false turns them off."""
+        marks = getattr(self, "_pov_marks", None) or []
+        if not text or len(marks) < 2 or not self.rules.get("narration", {}).get("pov_labels", True):
+            return text
+        paras = text.split("\n\n")
+        at, start = {}, 0
+        for sents, who in marks:
+            heads = [x[:60] for x in (sents if isinstance(sents, list) else [sents]) if x]
+            # where this part starts: the paragraph with its first sentence (or its second or third, if the cleanup
+            # took the first)
+            j = next((k for h in heads for k in range(start, len(paras)) if h in paras[k]), None)
+            if j is None:
+                continue
+            if j in at and at[j] != who:
+                continue
+            at[j], start = who, j + 1
+        if not at:
+            return text
+        if 0 not in at:          # the first part's opening was cut: its label goes at the top all the same
+            at[0] = marks[0][1]
+        out, last = [], None
+        for k, para in enumerate(paras):
+            if k in at and at[k] != last:
+                out.append(f"— {at[k]} —")
+                last = at[k]
+            out.append(para)
+        return "\n\n".join(out)
 
     def _top_up(self, text, story_so_far):
         """A beat that came out much shorter than asked (usually because copied or repeated lines were removed)
@@ -6236,6 +6267,7 @@ class Narrator:
                                                          (e.get("complete") or e["struggle"] == "escape")) for e in evs))
 
     def _narrate(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
+        self._pov_marks = []      # a beat told in one part has no labels; nothing carries over from the last beat
         text = self._narrate_beat(bundle, condition_summary, fighter_notes, scene, story_so_far)
         if text and SWEAR.search(text):
             self._last_swear = self._beat_no  # keeps swearing rare across beats
@@ -6366,6 +6398,21 @@ class Narrator:
                             "stillness."}
             plan = [(k, jobs.get(k, f), w) for k, f, w in plan]
             pin_plan = True     # (these parts stand as written: no 'the attack has already been shown' after part one)
+        others = [x for x in (getattr(self, "strengths", None) or {}) if x != actor]
+        if (actor and not receivers and not pin_plan and len(plan) >= 2 and len(others) == 1 and acts
+                and all(a.get("type") in ("breather", "none") for a in acts)
+                and not [e for e in pin_events if e.get("complete") and e.get("elimination")]):
+            # nobody is hit (she catches her breath, or circles): still both sides, one part each, same length
+            o_ = others[0]
+            receivers = [o_]
+            jobs = {"act": f"{poss(actor)} side: what she does with this moment, her breath, how each of her injuries "
+                           f"feels and shows as she moves or holds still, what she sees of {o_}, what she thinks and "
+                           f"plans. Nothing is thrown.",
+                    "take": f"{poss(o_)} side of the same moment: what she does, her breath, how each of her injuries "
+                            f"feels and shows, what she sees of {actor}, what she thinks and plans. Nothing is thrown, "
+                            f"and nothing that has not been listed happens."}
+            plan = [(k, jobs.get(k, f), w) for k, f, w in plan]
+            pin_plan = True     # (these parts stand as written)
         gone = [e for e in pin_events if e.get("complete") and e.get("elimination")]
         if gone and not pin_plan and len(plan) >= 2 and all(
                 a.get("type") in ("breather", "struggle_request", "none", "time_passes") for a in acts):
@@ -6400,6 +6447,7 @@ class Narrator:
 
         written = []
         self._part_leads = {}
+        self._pov_marks = []      # (first sentence of a part, whose side it is told from), for the labels
         for i, (key, focus, seg_words) in enumerate(plan, start=1):
             if self.progress:
                 self.progress(f"narrator is writing part {i}/{len(plan)}")
@@ -6421,10 +6469,13 @@ class Narrator:
             ask += self._blocks_for(key, acts, pin_events, also_now, actor, receivers, i == 1, i == len(plan))
             part = self._call(context + ask, seg_words, coverage=check, prior=so_far)
             written.append(self._drop_repeats(part, so_far) if so_far else part)  # no re-telling earlier parts
-            if self._lead_now and written[-1]:
+            if written[-1]:
                 first = next((x.strip() for x in re.split(r"(?<=[.!?…])\s+|\n+", written[-1]) if x.strip()), None)
-                if first:
+                if first and self._lead_now:
                     self._part_leads[first] = self._lead_now
+                sents = [x.strip() for x in re.split(r"(?<=[.!?…])\s+|\n+", written[-1]) if x.strip()][:3]
+                if sents:
+                    self._pov_marks.append((sents, self._lead_now or "Both"))
             self._lead_now, self._prior_now = None, ""
             if key == "act" and i < len(plan) and plan[i][0] == "take" and not pin_plan:
                 # only the strikes count here: pin pressure can still be shown in the next part
@@ -6544,6 +6595,15 @@ def _landed_on(text, part):
                         r"found|met|opened|closed on|clamped)\b", clause, re.I):
                     return True
     return False
+
+
+POV_LINE = re.compile(r"^— [^\n]{1,40} —[ \t]*$\n?", re.M)
+
+
+def strip_pov(text):
+    """The story without its perspective labels ("— Nocturne —"): what the models are shown of earlier beats, so they
+    never copy the labels into the prose."""
+    return re.sub(r"\n{3,}", "\n\n", POV_LINE.sub("", text or "")).strip()
 
 
 def _tail(text, limit):
