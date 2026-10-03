@@ -760,7 +760,7 @@ After each beat's prose, the program prints the exact numbers in this format:
   travels, late-fight thoughts, struggling, landings, dodges, getting up, sputtering, clashes, guards, crashes.
 - **Caught open.** A blow on someone who has no chance to roll with it, twist away or soften it lands harder (only the
   biggest one counts): helpless in the air ×1.3, fooled by a feint ×1.25, doubled over or off balance ×1.2, dazed or
-  flinching ×1.15, lying on the ground ×1.1 for a single close blow and ×1.04 for each blow of a pummel (`down_pummel`; not in pins). It's in the move math line.
+  flinching ×1.15, lying on the ground ×1.1 for a single close blow and ×1.08 for each blow of a pummel (`down_pummel`; not in pins). It's in the move math line.
   `moves.vulnerable`.
 - **Feints.** The director can mark a strike as a feint (`"feint": true`, or just tell it "she feints, then bites"). It
   costs a little energy. If the defender bites (likelier the more worn down she is, less likely each time she's seen
@@ -789,6 +789,12 @@ After each beat's prose, the program prints the exact numbers in this format:
   the place). The dwell and watch parts are always close. `narration.camera`.
 - **How each place sounds.** Every arena has `acoustics` in scenes.json (the cave hands a whimper back from the dark;
   the wind on the mountain shelf tears a cry away), used for the sounds fighters make and try to hold in.
+- **Pummel frenzies (rare).** Now and then a pummel doesn't stop: blow after blow, mostly on the same spot or the one
+  beside it, usually 6-10 blows, once in a while 15-20. About 1 pummel in 10 on someone lying on the ground, 1 in 12
+  elsewhere. The per-beat health cap still keeps one beat's health loss in bounds; the parts take it all, which is
+  what the reactions feed on. Ground pummels run as long as any other and land harder (×1.08 a blow, plus the softer
+  parts she has turned up): about a third more damage than the same pummel in a grab. `grapple.frenzy`,
+  `grapple.ground_end_mult`.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

@@ -801,9 +801,10 @@ class Engine:
             # now and then a pummel doesn't stop: blow after blow, mostly on the same spot or two (grapple.frenzy);
             # otherwise one on someone lying on the ground runs a little shorter (ground_end_mult)
             frenzy = bool(enforce and fz.get("enabled", True) and self._chance(
-                float(fz.get("chance", 0.08)), f"{poss_word(a.name)} pummel turning into a frenzy", "FRENZY", "no"))
+                float(fz.get("ground_chance", 0.1) if where == "down" else fz.get("chance", 0.08)),
+                f"{poss_word(a.name)} pummel turning into a frenzy", "FRENZY", "no"))
             end_mult = float(fz.get("end_mult", 0.3)) if frenzy else (
-                float(gcfg.get("ground_end_mult", 1.35)) if where == "down" else 1.0)
+                float(gcfg.get("ground_end_mult", 1.0)) if where == "down" else 1.0)
             if frenzy:
                 extra *= float(fz.get("energy_mult", 0.5))     # past tiredness: it costs her less breath than it should
             if enforce and start_p <= 0 and step_p <= 0:

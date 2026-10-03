@@ -356,7 +356,7 @@
       "dazed": 1.15,
       "flinched": 1.15,
       "down": 1.1,
-      "down_pummel": 1.04
+      "down_pummel": 1.08
     },
     "feint": {
       "_comment": "A fake before the real blow (the director's \"feint\": true). Costs energy. chance the defender bites (higher when she is worn down; seen_mult per feint she has already seen from this attacker). If she bites, no dodge, clash or guard, and the blow lands at vulnerable.feinted.",
@@ -1210,14 +1210,15 @@
     "pummel_answer_chance": 0.5,
     "_pummel_in_pin_comment": "pummel_in_pin: whether the director may rain a pummel down on a fighter she has PINNED (false by default: a pin is a pin; pummels are for a grab, a fighter who is down, or one pressed against the scenery). Your own commands can always do it.",
     "pummel_in_pin": false,
-    "ground_end_mult": 1.35,
+    "ground_end_mult": 1.0,
     "frenzy": {
-      "_comment": "Now and then (chance per pummel) a pummel turns into a frenzy: the chance to end after each blow is x end_mult, each extra blow costs energy x energy_mult, and the blows keep going back to the same spot (stay_chance) or the one right beside it. health.soft_cap still keeps the health loss of one beat in bounds; the parts take it all. ground_end_mult: a pummel on someone lying on the ground otherwise ends a little sooner.",
+      "_comment": "Now and then (chance per pummel; ground_chance on someone lying on the ground) a pummel turns into a frenzy: the chance to end after each blow is x end_mult, each extra blow costs energy x energy_mult, and the blows keep going back to the same spot (stay_chance) or the one right beside it. health.soft_cap still keeps the health loss of one beat in bounds; the parts take it all. ground_end_mult: above 1, a pummel on someone lying on the ground ends sooner (1 = as long as any other).",
       "enabled": true,
       "chance": 0.08,
       "end_mult": 0.3,
       "energy_mult": 0.5,
-      "stay_chance": 0.7
+      "stay_chance": 0.7,
+      "ground_chance": 0.1
     }
   },
   "variety": {
