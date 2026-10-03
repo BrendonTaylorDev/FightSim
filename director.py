@@ -14,7 +14,7 @@ ACTIONS = ["strike", "combo", "hold_start", "hold_adjust", "hold_release", "pin"
            "grapple", "eliminate", "breather"]
 LAUNCHES = ["none", "staggered", "knocked down", "thrown", "launched"]
 REPOSITIONS = ["none", "roll over", "onto her back", "onto her front", "onto her side", "sit her up", "pick up",
-               "stand her up"]
+               "stand her up", "take off", "land"]
 
 
 def director_actions(engine):
@@ -55,7 +55,10 @@ BIG HITS MOVE BODIES. Pokemon moves are powerful: a solid hit rarely touches jus
   sitting: she is still on the ground, but her chest, belly and throat in front and her back and neck behind are
   all in reach, for a strike or for a choke from behind); "pick up" (lift her bodily off the ground: to slam her
   back down or throw her); or "stand her up" (drag her onto her feet and hold her there to be hit standing).
-  The last three can't be done to a fighter who is pinned. Use one NOW AND THEN, rarely, when it serves the moment
+  The last three can't be done to a fighter who is pinned. A WINGED fighter may instead "take off" (she rises
+  into the air before her action: only beams, blasts and streams reach her there, and her close moves become
+  dives from above) or "land" (she comes down by choice). A fighter in the air can't be grabbed or pinned; a
+  wing hurt badly enough brings her down. Carry moves (Sky Drop) need her in the air first. Use one NOW AND THEN, rarely, when it serves the moment
   (rolling her to reach her throat or chest for a pin, flipping her face-down to press her back, sitting her up
   for a blow to the chest, lifting her for a slam): most beats leave her where she lies. A running pin's presses
   follow a roll. A fighter who is sitting up is knocked flat again by the next blow that lands on her.
@@ -918,6 +921,9 @@ def _landing(engine, b, res):
         if not explicit:
             return None  # already on the ground: there's nowhere further to fall
         in_place = True  # already down: smashed against what's beside her, not knocked down again
+    if not impacts and res.get("drop_severity"):
+        # dropped out of the air (carried up and let go, or a wing gave out): the height decides how hard
+        impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": res["drop_severity"]}]
     if not impacts:
         if launch == "knocked down":  # dropped where they stand: just marked as down, a light landing
             impacts = [{"surface": "the ground", "parts": [], "severity": "light"}]
@@ -1020,7 +1026,21 @@ def resolve_many(engine, actions):
                 how = str(b.get("reposition") or "none").lower()
                 how = {"sit up": "sit her up", "sit": "sit her up", "stand up": "stand her up",
                        "stand": "stand her up"}.get(how, how)
-                if how != "none" and b.get("action") in ("strike", "combo", "hold_start", "pin", "breather",
+                if how in ("take off", "land"):
+                    # the ATTACKER herself goes up into the air, or comes down out of it (winged fighters only)
+                    me = engine.get(b.get("attacker"))
+                    if how == "take off" and not engine.has(me, "airborne"):
+                        try:
+                            results.append(engine.take_off(me.name, enforce=True))
+                        except ValueError:
+                            if b.get("_manual"):
+                                raise
+                    elif how == "land" and engine.has(me, "airborne"):
+                        me.status.pop("airborne", None)
+                        results.append({"type": "land_flight", "fighter": me.name})
+                    if b.get("action") == "breather" and any(x.get("action") != "breather" for x in actions):
+                        continue
+                elif how != "none" and b.get("action") in ("strike", "combo", "hold_start", "pin", "breather",
                                                           "hold_adjust", "throw", "slam", "drag"):
                     who = _fill_defender(engine, b.get("attacker"), b.get("defender"))
                     if who:
@@ -1406,7 +1426,11 @@ def _grip_tools(engine, f):
         ps = [p for p in f.parts.values() if any(k in p.name.lower() for k in keys)]
         return not ps or any(p.damage < 150 for p in ps)
     tools = {"jaws": "her jaws" if works("jaw") else "", "weight": "her full weight"}
-    if plan == "serpent":
+    if plan == "avian":
+        tools.update(fore="a wing" if works("wing") else "", fores="her talons" if works("talon") else "",
+                     hind="her talons" if works("talon") else "", hook="a talon hooked round the leg" if works("talon") else "",
+                     jaws="her beak" if works("beak") else "")
+    elif plan == "serpent":
         tools.update(coil="her coils", fore="a loop of her body", fores="her coils", hind="her tail", hook="her tail hauling the leg up",
                      weight="the weight of her body")
     elif plan == "biped":
@@ -2124,7 +2148,9 @@ def move_range(move):
     """close: claws, bites, tackles, holds; ranged: beams, blasts, waves, whole-body and status moves."""
     if move is None:
         return "close"
-    return "close" if move.get("target", "targeted") in ("targeted", "hold") and not move.get("ranged") else "ranged"
+    if "ranged" in move:
+        return "ranged" if move["ranged"] else "close"
+    return "close" if move.get("target", "targeted") in ("targeted", "hold", "self") else "ranged"
 
 
 def range_hint(engine, run=3):

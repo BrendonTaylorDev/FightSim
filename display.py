@@ -45,7 +45,7 @@ class Display:
         self.rules = rules
         self.heart = rules["health"].get("icon", "❤️")
 
-    STATUS_ICON = {"stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
+    STATUS_ICON = {"protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
 
@@ -633,6 +633,25 @@ class Display:
                               "back": f"{ps(a['defender'])} TURNS IT BACK onto {a['attacker']} at ×{num(cl['share'])}"}[cl["outcome"]])
                 if cl.get("hits_on_attacker"):
                     out += self.hits_block(a["attacker"], cl["hits_on_attacker"])
+            if a.get("protected"):
+                out.append(f"🛡️ **{a['defender']} is behind {a['protected'] if isinstance(a['protected'], str) else 'Protect'}**: "
+                           f"the attack stops against it, nothing lands")
+            st = a.get("stance")
+            if st:
+                out.append({"protecting": "🛡️", "countering": "↩️", "mirroring": "🪞"}[st["kind"]]
+                           + f" **{(a.get('move') or {}).get('name') or 'Stance'}**"
+                           + (f" ({a['attacker']}, chance {st['chance'] * 100:.0f}%): " if st["chance"] < 1 else f" ({a['attacker']}): ")
+                           + ("set — it lasts until the next attack on her or the end of next beat" if st["ok"] else "it FAILS"))
+            if a.get("weather"):
+                out.append(f"🌦️ **{a['weather']['kind'].upper()}** over the arena for {a['weather']['beats']} beats")
+            if a.get("dive"):
+                out.append(f"🪽 **Dive from above** (×{num(float(a.get('dive_mult') or 1.3))} power)" + (
+                    f" — **{a['dragged_down']['by']} catches her and drags her out of the air**" if a.get("dragged_down")
+                    else " — she climbs back up" if a.get("climbs") else " — she comes down to land"))
+            if a.get("carried"):
+                out.append(f"🦅 **{a['attacker']} carries {a['defender']} up** ({a['carried']['height']}) and drops her")
+            if a.get("grounded"):
+                out.append(f"🪶 **{a['defender']}'s wing gives out**: she falls out of the air")
             if a.get("pummel"):
                 pm = a["pummel"]
                 where = {"grab": "in the grab", "pin": "from on top, in the pin", "down": "on her where she is down",
@@ -721,6 +740,12 @@ class Display:
                 if i and not self.tight():
                     out.append("")
                 out += self.hits_block(who, hs, by_def.get(who, a.get("move")), tags or None)
+            if a.get("reflected"):
+                rf = a["reflected"]
+                ps = rf["by"] + ("'" if rf["by"].endswith("s") else "'s")
+                out.append(f"↩️ **{ps} {rf['kind']}**: she takes it and sends it back onto {a['attacker']} "
+                           f"(power {num(rf['power'])} each)")
+                out += self.hits_block(a["attacker"], rf["hits"])
         elif t in ("hold_start", "pin_start"):
             icon, word = ("📌", "PIN") if t == "pin_start" else ("🔒", "Hold")
             mv = f" ({a['move']['name'].upper()})" if a.get("move") else ""
@@ -869,6 +894,12 @@ class Display:
             out.append((f"⬇️ **{a['fighter']} was already down**" if a.get("already_down") else
                         f"⬇️ **{a['fighter']} is down**") + f": {a.get('flavor', '')}"
                        + (f" ({a['facing']})" if a.get("facing") else ""))
+        elif t == "weather_end":
+            out.append(f"🌤️ The {a['kind']} clears")
+        elif t == "take_off":
+            out.append(f"🪽 **{a['fighter']} takes to the air** (up for {a['beats']} beats; only ranged attacks reach her)")
+        elif t == "land_flight":
+            out.append(f"🪶 **{a['fighter']} comes down** out of the air and lands")
         elif t == "reposition" and a.get("resisted"):
             out.append(f"💪 **{a['defender']} fights off being moved** ({a['attacker']} tried: {a['how']}): she stays "
                        f"{a.get('before') or 'as she lay'} (chance {a.get('chance', 0) * 100:.0f}%{way('hold_strain', a.get('manner'))})")
@@ -1001,6 +1032,12 @@ class Display:
             elif e["type"] == "status_tick" and e["status"] == "burned":
                 h = e["hits"][0]
                 out.append(f"🔥 {e['fighter']}'s burn: {h['part']} {num(h['damage_before'])}% → {num(h['damage_after'])}%")
+            elif e["type"] == "weather_end":
+                out.append(f"🌤️ The {e['kind']} clears")
+            elif e["type"] == "status_tick" and e.get("hits"):
+                h = e["hits"][0]
+                out.append(f"🧊 The {e['status']} stings {e['fighter']}: {h['part']} {num(h['damage_before'])}% → "
+                           f"{num(h['damage_after'])}%")
             elif e["type"] == "status_tick":
                 out.append(f"☠️ {e['fighter']} is poisoned: {self.heart} -{num(e['health_loss'])}% → {pct(e['health_after'])}")
             elif e["type"] == "status_end":

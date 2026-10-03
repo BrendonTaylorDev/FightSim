@@ -1,5 +1,5 @@
 {
-  "_comment": "Each fighter has their own body: part name -> starting resistance (%). Higher resistance = less damage per hit (see rules.json -> resistance -> brackets). health = starting health %. team (optional): fighters sharing a team are allies; leave it out for a free-for-all. types: the fighter's Pokemon types. moves: name, type, power, target (targeted / spread / whole_body / hold) and a short 'about' the storyteller reads. appearance: exact looks (colors, anatomy) - the narrator is told to use only these, so species features don't get mixed up. A move with \"uses\": N can only be used N times per fight. scene: describe the arena's fixed features (floor, water, walls, light, sounds) so the narrator keeps them consistent.",
+  "_comment": "Each fighter has their own body: part name -> starting resistance (%). Higher resistance = less damage per hit (see rules.json -> resistance -> brackets). health = starting health %. team (optional): fighters sharing a team are allies; leave it out for a free-for-all. types: the fighter's Pokemon types. moves: name, type, power, target (targeted / spread / whole_body / hold) and a short 'about' the storyteller reads. appearance: exact looks (colors, anatomy) - the narrator is told to use only these, so species features don't get mixed up. A move with \"uses\": N can only be used N times per fight. scene: describe the arena's fixed features (floor, water, walls, light, sounds) so the narrator keeps them consistent. bench: true keeps a fighter on the roster (/fighters) but out of the default fight; /newfight <names> brings her in.",
   "scene": "A flooded sea cave of rough grey stone. The floor is a wide central ledge of dry, gritty rock, ringed by ankle-deep pools and cut by one deep channel of cold water along the west wall. Near the water the stone is slick with algae; away from it, it is dry and harsh. A low ceiling hangs with short stalactites that drip steadily. Thick stalagmites rise around the edges of the ledge, and fallen boulders lie scattered along the east wall. Grey daylight filters in through a crack high in the east wall. The cave smells of salt and wet stone, and every sound echoes.",
   "fighters": [
     {
@@ -453,6 +453,663 @@
           "target": "spread",
           "about": "a shockwave from the mouth",
           "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Talon",
+      "bench": true,
+      "description": "A female Staraptor. Fierce, proud and fearless; a big grey raptor with a red-and-white crest, a hooked orange beak and powerful taloned feet. Fights from the air: takes off, dives in with her whole weight behind beak and talons, and climbs back out of reach; on the ground she is a buffeting storm of wings and a slashing beak. Can seize an opponent in her talons and carry her up to drop her.",
+      "appearance": "Staraptor. A large bird of prey with GREY feathers, darker on the wings and back, a white face patch and a black-and-white mottled breast. A tall, forward-curling crest of black feathers with a RED tip above her eyes. A short, hooked ORANGE beak. Red eyes with a black mask. Broad grey WINGS (she has no arms or paws). Orange legs ending in curved black TALONS. A fanned grey tail with a white band. She stands upright on her talons.",
+      "voice": "Sharp, fierce and impatient. Thinks in quick, clipped bursts: the next dive, the next opening. Screams a harsh, ringing cry when she attacks; in pain it cracks into a rasping shriek.",
+      "tells": "Her crest snaps up rigid or flattens to her head; her wings half-open and mantle when she braces; feathers fluff out when she is hurt and slick down when she is angry; her beak gapes as she pants; her talons clench and flex; a harsh, ringing scream, or a rasping hiss through the open beak; she shakes her whole body like a dog to settle her feathers.",
+      "types": [
+        "Normal",
+        "Flying"
+      ],
+      "health": 1900,
+      "body": {
+        "Head": 100,
+        "Crest": 75,
+        "Beak": 145,
+        "Left Eye": 55,
+        "Right Eye": 55,
+        "Neck": 85,
+        "Throat": 70,
+        "Chest": 115,
+        "Belly": 90,
+        "Upper Back": 120,
+        "Lower Back": 110,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Wing": 105,
+        "Right Wing": 105,
+        "Left Wingtip": 85,
+        "Right Wingtip": 85,
+        "Left Thigh": 110,
+        "Right Thigh": 110,
+        "Left Talon": 125,
+        "Right Talon": 125,
+        "Tail Feathers": 95
+      },
+      "moves": [
+        {
+          "name": "Brave Bird",
+          "type": "Flying",
+          "power": 60,
+          "target": "targeted",
+          "about": "a reckless dive",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Aerial Ace",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "an unavoidable slash"
+        },
+        {
+          "name": "Wing Attack",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "strikes with spread wings"
+        },
+        {
+          "name": "Close Combat",
+          "type": "Fighting",
+          "power": 40,
+          "target": "spread",
+          "about": "an all-out, close-range flurry",
+          "ranged": false
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Sky Drop",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "seizes the opponent in her talons, carries her up into the air and drops her (she has to be in the air first)",
+          "carry": true,
+          "energy": 20
+        },
+        {
+          "name": "Gust",
+          "type": "Flying",
+          "power": 13,
+          "target": "spread",
+          "about": "a gust of wind"
+        },
+        {
+          "name": "Detect",
+          "type": "Fighting",
+          "power": 0,
+          "target": "self",
+          "about": "reads the next attack and slips it completely (works like Protect)",
+          "stance": "protect",
+          "energy": 10
+        }
+      ]
+    },
+    {
+      "name": "Vesper",
+      "bench": true,
+      "description": "A female Arbok. Cold, patient and cruel; a huge purple cobra with a flared hood marked with a menacing face pattern. Fights by striking with venomous fangs, freezing her opponent with her glare, and wrapping her in her coils to crush the breath and blood out of her. Slow to commit, terrible once she has a hold.",
+      "appearance": "Arbok. A massive purple COBRA, no limbs. A broad flared HOOD behind her head, patterned with a black, red and yellow 'face' marking. Pale yellow underbelly scales in bands. Narrow yellow eyes with slit pupils. Long curved fangs. A rattle-less tapering tail. Her body is thick and muscular, the coils heavy.",
+      "voice": "Low, slow and silken; thinks in long, unhurried sentences, savouring the moment, contemptuous. Hisses rather than speaks when angry; in pain the hiss splits into a ragged rasp.",
+      "tells": "Her hood flares wide or collapses flat; her tongue flicks fast; her coils tighten or ripple; she sways her raised head; a long, rising hiss; her slit pupils narrow to threads; her jaws gape as she pants.",
+      "types": [
+        "Poison"
+      ],
+      "health": 2300,
+      "body": {
+        "Head": 95,
+        "Jaw": 90,
+        "Left Eye": 40,
+        "Right Eye": 40,
+        "Hood": 85,
+        "Throat": 75,
+        "Upper Neck": 100,
+        "Lower Neck": 105,
+        "Chest": 115,
+        "Belly Scales": 95,
+        "Upper Back": 135,
+        "Midsection": 115,
+        "Lower Back": 125,
+        "Upper Tail": 120,
+        "Lower Tail": 105,
+        "Tail Tip": 70
+      },
+      "moves": [
+        {
+          "name": "Poison Fang",
+          "type": "Poison",
+          "power": 25,
+          "target": "targeted",
+          "about": "a bite with toxic fangs",
+          "effects": [
+            {
+              "status": "poisoned",
+              "chance": 0.5,
+              "beats": 5
+            }
+          ]
+        },
+        {
+          "name": "Crunch",
+          "type": "Dark",
+          "power": 40,
+          "target": "targeted",
+          "about": "a crushing bite",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Wrap",
+          "type": "Normal",
+          "power": 10,
+          "target": "hold",
+          "about": "coils wrapped around the body, squeezing"
+        },
+        {
+          "name": "Gunk Shot",
+          "type": "Poison",
+          "power": 40,
+          "target": "spread",
+          "about": "a huge mass of filth",
+          "effects": [
+            {
+              "status": "poisoned",
+              "chance": 0.3,
+              "beats": 4
+            }
+          ]
+        },
+        {
+          "name": "Glare",
+          "type": "Normal",
+          "power": 0,
+          "target": "status",
+          "about": "a paralyzing glare",
+          "effects": [
+            {
+              "status": "paralyzed",
+              "chance": 1.0,
+              "beats": 2
+            }
+          ]
+        },
+        {
+          "name": "Iron Tail",
+          "type": "Steel",
+          "power": 50,
+          "target": "targeted",
+          "about": "a steel-hard tail strike",
+          "effects": [
+            {
+              "launch": "knocked down",
+              "chance": 0.3
+            }
+          ]
+        },
+        {
+          "name": "Sludge Bomb",
+          "type": "Poison",
+          "power": 30,
+          "target": "spread",
+          "about": "a hurled lump of sludge",
+          "effects": [
+            {
+              "status": "poisoned",
+              "chance": 0.3,
+              "beats": 4
+            }
+          ]
+        },
+        {
+          "name": "Dragon Tail",
+          "type": "Dragon",
+          "power": 30,
+          "target": "targeted",
+          "about": "a tail strike that hurls the target",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 1.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blaze",
+      "bench": true,
+      "description": "A female Arcanine. Noble, loyal and blindingly fast; a huge orange dog with black stripes and a thick cream mane. Fights with fiery charges, flame breath and crushing bites, using her speed and weight to bowl opponents over and pin them under her. Hates rain and water.",
+      "appearance": "Arcanine. A huge canine QUADRUPED with ORANGE fur and bold BLACK stripes. A thick, flowing CREAM-coloured mane round her neck and chest, cream fur on her head tuft, tail and legs. Dark eyes, black nose. Big paws with blunt claws. A long, bushy cream tail.",
+      "voice": "Warm, proud and steady; thinks in plain, honest sentences. Barks and growls in battle; a deep, rolling bay when she charges; whimpers only when it is truly bad.",
+      "tells": "Her ears flatten or prick; hackles rise along the stripes; her mane bristles; her tail lashes or tucks; she pants with her tongue out; a rumbling growl; a yelp when something lands hard; heat shimmers off her fur when she's angry.",
+      "types": [
+        "Fire"
+      ],
+      "health": 2100,
+      "body": {
+        "Head": 95,
+        "Left Ear": 55,
+        "Right Ear": 55,
+        "Muzzle": 80,
+        "Nose": 50,
+        "Jaw": 90,
+        "Neck": 85,
+        "Throat": 60,
+        "Mane": 140,
+        "Chest": 115,
+        "Belly": 75,
+        "Back": 120,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Ribs": 95,
+        "Right Ribs": 95,
+        "Left Upper Foreleg": 100,
+        "Right Upper Foreleg": 100,
+        "Left Lower Foreleg": 90,
+        "Right Lower Foreleg": 90,
+        "Left Forepaw": 80,
+        "Right Forepaw": 80,
+        "Left Hip": 110,
+        "Right Hip": 110,
+        "Left Thigh": 115,
+        "Right Thigh": 115,
+        "Left Hock": 85,
+        "Right Hock": 85,
+        "Left Hind Paw": 80,
+        "Right Hind Paw": 80,
+        "Tail": 90
+      },
+      "moves": [
+        {
+          "name": "Flare Blitz",
+          "type": "Fire",
+          "power": 60,
+          "target": "targeted",
+          "about": "a reckless charge wrapped in fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Extreme Speed",
+          "type": "Normal",
+          "power": 40,
+          "target": "targeted",
+          "about": "an attack too fast to follow",
+          "charge": true
+        },
+        {
+          "name": "Fire Fang",
+          "type": "Fire",
+          "power": 32,
+          "target": "targeted",
+          "about": "a bite wreathed in flame",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            },
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Crunch",
+          "type": "Dark",
+          "power": 40,
+          "target": "targeted",
+          "about": "a crushing bite",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Flamethrower",
+          "type": "Fire",
+          "power": 30,
+          "target": "spread",
+          "about": "a stream of fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Thunder Fang",
+          "type": "Electric",
+          "power": 32,
+          "target": "targeted",
+          "about": "a bite crackling with electricity",
+          "effects": [
+            {
+              "status": "paralyzed",
+              "chance": 0.1,
+              "beats": 2
+            },
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Sunny Day",
+          "type": "Fire",
+          "power": 0,
+          "target": "self",
+          "about": "calls harsh sunlight for a few beats: Fire moves hit harder, Water moves weaker",
+          "weather": "sun",
+          "energy": 10
+        },
+        {
+          "name": "Protect",
+          "type": "Normal",
+          "power": 0,
+          "target": "self",
+          "about": "throws up a shimmering barrier: the next attack on her stops against it (less reliable used twice in a row)",
+          "stance": "protect",
+          "energy": 10
+        }
+      ]
+    },
+    {
+      "name": "Aura",
+      "bench": true,
+      "description": "A female Lucario. Disciplined, perceptive and relentless; an upright jackal-like fighter who reads her opponent's aura and moves before they do. Fights with precise paw strikes, aura blasts, steel-hard blows from her paw spikes and a counter for anything that comes too close.",
+      "appearance": "Lucario. An upright, bipedal JACKAL-like Pokemon. BLUE fur on her head, ears, arms and legs; BLACK fur on her face mask, forearms and thighs; a CREAM-yellow furred chest with a white steel SPIKE in the middle of it. A white steel spike on the back of each paw. Four black aura-sensing appendages hanging from the back of her head. Red eyes. A blue tail. She has arms with paws, and walks on her feet.",
+      "voice": "Calm, precise and spare; thinks in short, observant sentences about what she senses. Rarely cries out: a sharp exhale, a grunt; in real pain a choked snarl.",
+      "tells": "The four appendages on the back of her head lift and quiver when she reads aura and drop limp when she's hurt; her ears flatten; her red eyes narrow or squeeze shut; her paws clench round the spikes; she sets her feet in a stance; a sharp exhale through the nose; a growl low in the chest.",
+      "types": [
+        "Fighting",
+        "Steel"
+      ],
+      "health": 1700,
+      "body": {
+        "Head": 90,
+        "Left Ear": 55,
+        "Right Ear": 55,
+        "Muzzle": 75,
+        "Jaw": 85,
+        "Neck": 80,
+        "Throat": 60,
+        "Chest Spur": 160,
+        "Chest": 105,
+        "Stomach": 80,
+        "Upper Back": 110,
+        "Lower Back": 100,
+        "Left Shoulder": 100,
+        "Right Shoulder": 100,
+        "Left Upper Arm": 95,
+        "Right Upper Arm": 95,
+        "Left Forearm": 95,
+        "Right Forearm": 95,
+        "Left Paw": 85,
+        "Right Paw": 85,
+        "Left Hip": 105,
+        "Right Hip": 105,
+        "Left Thigh": 110,
+        "Right Thigh": 110,
+        "Left Knee": 85,
+        "Right Knee": 85,
+        "Left Foot": 80,
+        "Right Foot": 80,
+        "Tail": 75
+      },
+      "moves": [
+        {
+          "name": "Aura Sphere",
+          "type": "Fighting",
+          "power": 27,
+          "target": "spread",
+          "about": "a sphere of aura energy",
+          "sustainable": true
+        },
+        {
+          "name": "Close Combat",
+          "type": "Fighting",
+          "power": 40,
+          "target": "spread",
+          "about": "an all-out, close-range flurry",
+          "ranged": false
+        },
+        {
+          "name": "Meteor Mash",
+          "type": "Steel",
+          "power": 45,
+          "target": "targeted",
+          "about": "a meteor-like punch"
+        },
+        {
+          "name": "Extreme Speed",
+          "type": "Normal",
+          "power": 40,
+          "target": "targeted",
+          "about": "an attack too fast to follow",
+          "charge": true
+        },
+        {
+          "name": "Brick Break",
+          "type": "Fighting",
+          "power": 38,
+          "target": "targeted",
+          "about": "a hard chopping strike"
+        },
+        {
+          "name": "Counter",
+          "type": "Fighting",
+          "power": 0,
+          "target": "self",
+          "about": "braces to take the next close blow and send it back harder",
+          "stance": "counter",
+          "energy": 12
+        },
+        {
+          "name": "Detect",
+          "type": "Fighting",
+          "power": 0,
+          "target": "self",
+          "about": "reads the next attack and slips it completely (works like Protect)",
+          "stance": "protect",
+          "energy": 10
+        },
+        {
+          "name": "Swift",
+          "type": "Normal",
+          "power": 20,
+          "target": "spread",
+          "about": "star-shaped rays that never miss"
+        }
+      ]
+    },
+    {
+      "name": "Undertow",
+      "bench": true,
+      "description": "A female Floatzel. Brash, quick and tireless; a big orange sea weasel with a yellow flotation sac round her neck and twin tails she spins like a propeller. Fights with Aqua Jet charges, crunching bites, waterfall rams and ice fangs; keeps her head up in water and loves to drag a fight into it.",
+      "appearance": "Floatzel. Upright, otter-like weasel, larger than a Buizel, with ORANGE fur and a cream underside. A YELLOW inflatable FLOTATION SAC round her neck like a collar. A blue fin on each forearm. Two cream spots on her back. Two tails with cream tips that spin like a propeller. Black eyes. Webbed paws on her arms; she walks upright on her feet.",
+      "voice": "Loud, cocky and quick; thinks in fast, joking bursts, even mid-fight. Barks, chitters and squeals; in pain the squeal goes high and ragged.",
+      "tells": "Her flotation sac puffs up when she's startled or angry and sags when she's winded; her forearm fins flare or clamp flat; her twin tails whirl or stall; her ears pin back; she chitters through her teeth; she shakes water out of her fur.",
+      "types": [
+        "Water"
+      ],
+      "health": 1800,
+      "body": {
+        "Head": 95,
+        "Left Ear": 63,
+        "Right Ear": 63,
+        "Muzzle": 80,
+        "Nose": 55,
+        "Jaw": 90,
+        "Neck": 80,
+        "Flotation Sac": 150,
+        "Chest": 105,
+        "Stomach": 80,
+        "Upper Back": 115,
+        "Lower Back": 105,
+        "Left Shoulder": 105,
+        "Right Shoulder": 105,
+        "Left Upper Arm": 95,
+        "Right Upper Arm": 95,
+        "Left Forearm Fin": 70,
+        "Right Forearm Fin": 70,
+        "Left Paw": 80,
+        "Right Paw": 80,
+        "Left Hip": 110,
+        "Right Hip": 110,
+        "Left Thigh": 115,
+        "Right Thigh": 115,
+        "Left Knee": 90,
+        "Right Knee": 90,
+        "Left Foot": 85,
+        "Right Foot": 85,
+        "Tail Base": 130,
+        "Twin Tails": 170
+      },
+      "moves": [
+        {
+          "name": "Aqua Jet",
+          "type": "Water",
+          "power": 20,
+          "target": "targeted",
+          "about": "a water-sheathed body charge",
+          "charge": true,
+          "energy": 40
+        },
+        {
+          "name": "Waterfall",
+          "type": "Water",
+          "power": 40,
+          "target": "targeted",
+          "about": "charges up like a waterfall, driving the target upward",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            },
+            {
+              "launch": "launched",
+              "chance": 0.2
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Crunch",
+          "type": "Dark",
+          "power": 40,
+          "target": "targeted",
+          "about": "a crushing bite",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Ice Fang",
+          "type": "Ice",
+          "power": 32,
+          "target": "targeted",
+          "about": "a freezing bite",
+          "effects": [
+            {
+              "status": "frozen",
+              "chance": 0.1,
+              "beats": 1
+            },
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Hydro Pump",
+          "type": "Water",
+          "power": 37,
+          "target": "spread",
+          "about": "a massive high-pressure water blast",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Brick Break",
+          "type": "Fighting",
+          "power": 38,
+          "target": "targeted",
+          "about": "a hard chopping strike"
+        },
+        {
+          "name": "Rain Dance",
+          "type": "Water",
+          "power": 0,
+          "target": "self",
+          "about": "calls rain over the arena for a few beats: Water moves hit harder, Fire moves weaker",
+          "weather": "rain",
+          "energy": 10
+        },
+        {
+          "name": "Protect",
+          "type": "Normal",
+          "power": 0,
+          "target": "self",
+          "about": "throws up a shimmering barrier: the next attack on her stops against it (less reliable used twice in a row)",
+          "stance": "protect",
+          "energy": 10
         }
       ]
     }

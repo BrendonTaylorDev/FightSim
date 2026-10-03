@@ -1765,6 +1765,482 @@
      ]
     }
    ]
+  },
+  "mud swamp": {
+   "title": "The mud swamp",
+   "place": "the swamp",
+   "text": "A drowned swamp under a low grey sky. The fighting ground is a broad hummock of packed peat and roots, ringed by knee-deep sucking mud and stretches of black, still water. Dead trees stand grey and leaning, their roots knotted out of the bank; a rotten log lies half-sunk at the edge of the hummock. Reeds crowd the shallows. Everything near the mud is slick and soft; the air is warm, wet and thick with the smell of rot.",
+   "ground": "the packed peat",
+   "rough": "the root-knotted peat",
+   "slick": "the slick mud",
+   "props": [
+    "a dead tree",
+    "the half-sunk log",
+    "a knot of roots",
+    "the edge of the hummock"
+   ],
+   "ambience": "buzzing insects, the slow belch of gas from the mud, damp warm air, the smell of rot",
+   "details": [
+    "a bubble of gas rising and popping in the mud",
+    "insects whining close to an ear",
+    "the reeds hissing together",
+    "the black water holding the sky like a mirror",
+    "a frog going quiet all at once",
+    "mud drying grey on fur",
+    "the suck and give of the ground underfoot",
+    "a dead branch creaking overhead"
+   ],
+   "hazards": [
+    {
+     "name": "the sucking mud",
+     "words": [
+      "mud",
+      "bog",
+      "mire",
+      "muck"
+     ],
+     "about": "knee-deep sucking mud: it breaks a fall but clings, drags, and gets into everything",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "the black water",
+     "words": [
+      "water",
+      "deep water",
+      "pool",
+      "shallows"
+     ],
+     "about": "still, dark water: deeper than it looks",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "chilled",
+       "chance": 0.15,
+       "beats": 2
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "a dead tree",
+     "words": [
+      "tree",
+      "trunk"
+     ],
+     "about": "a grey, leaning dead trunk: rotten, it can snap",
+     "break": 0.3,
+     "upright": true
+    },
+    {
+     "name": "the half-sunk log",
+     "words": [
+      "log"
+     ],
+     "about": "a rotten log lying in the mud at the edge of the hummock",
+     "break": 0.4
+    },
+    {
+     "name": "the roots",
+     "words": [
+      "root"
+     ],
+     "about": "roots knotted out of the bank: they catch a foot and scrape when someone is dragged over them"
+    }
+   ],
+   "events": [
+    {
+     "name": "a gas pocket bursts",
+     "text": "A pocket of swamp gas bursts out of the mud in a stinking belch, spattering filth",
+     "who": "down",
+     "weight": 1,
+     "words": [
+      "gas",
+      "mud",
+      "stink"
+     ],
+     "effects": [
+      {
+       "status": "poisoned",
+       "chance": 0.25,
+       "beats": 2
+      }
+     ]
+    },
+    {
+     "name": "a dead branch drops",
+     "text": "A dead branch cracks off one of the grey trees and drops",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "branch",
+      "tree"
+     ],
+     "severity": "light",
+     "regions": [
+      "head",
+      "shoulder",
+      "back_up"
+     ],
+     "parts": 2
+    }
+   ]
+  },
+  "tidal beach": {
+   "title": "The tidal beach",
+   "place": "the beach",
+   "text": "A grey shingle beach at the turn of the tide. The fighting ground is hard wet sand between the shingle bank and the sea; waves run up it in long sheets and drain away hissing. Black rocks crusted with barnacles stick out of the sand, and a rock pool lies between two of them. A line of rotted wooden groynes runs down into the water. Wind off the sea, salt in everything.",
+   "ground": "the wet sand",
+   "rough": "the barnacle-crusted rock",
+   "slick": "the wet sand",
+   "props": [
+    "a barnacled rock",
+    "a wooden groyne",
+    "the shingle bank",
+    "the rock pool's edge"
+   ],
+   "ambience": "surf, wind, gulls, the hiss of draining water, salt",
+   "details": [
+    "a wave running up the sand and sliding back",
+    "gulls wheeling and crying overhead",
+    "the wind flattening fur",
+    "shingle rattling as the surf draws back",
+    "foam left in a line on the sand",
+    "a crab scuttling into a crack in the rock",
+    "the smell of salt and weed",
+    "the sun breaking through for a moment and going"
+   ],
+   "hazards": [
+    {
+     "name": "the surf",
+     "words": [
+      "surf",
+      "wave",
+      "sea",
+      "water",
+      "shallows"
+     ],
+     "about": "the waves running up the sand: a fall into it is softened but drenching",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ],
+     "cushion": true
+    },
+    {
+     "name": "a barnacled rock",
+     "words": [
+      "rock",
+      "barnacle"
+     ],
+     "about": "black rock crusted with barnacles: it cuts as well as bruises",
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "a wooden groyne",
+     "words": [
+      "groyne",
+      "post",
+      "timber"
+     ],
+     "about": "a rotted line of wooden posts and planks running into the sea",
+     "break": 0.4,
+     "upright": true
+    },
+    {
+     "name": "the rock pool",
+     "words": [
+      "rock pool",
+      "pool"
+     ],
+     "about": "a knee-deep pool between two rocks",
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ]
+    }
+   ],
+   "events": [
+    {
+     "name": "a big wave",
+     "text": "A bigger wave than the rest runs right up the beach and over both of them",
+     "who": "all",
+     "weight": 2,
+     "words": [
+      "wave",
+      "surf",
+      "water"
+     ],
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      },
+      {
+       "status": "chilled",
+       "chance": 0.15,
+       "beats": 2
+      }
+     ]
+    },
+    {
+     "name": "the backwash drags",
+     "text": "The backwash drags at the sand under her and pulls her a little way toward the sea",
+     "who": "down",
+     "weight": 1,
+     "words": [
+      "backwash",
+      "sand",
+      "sea"
+     ],
+     "effects": [
+      {
+       "status": "soaked",
+       "chance": 1.0,
+       "beats": 3
+      }
+     ]
+    }
+   ]
+  },
+  "mountain shelf": {
+   "title": "The mountain shelf",
+   "place": "the shelf",
+   "text": "A wide shelf of bare rock high on a mountainside, open to the sky. On one side the cliff face rises sheer; on the other the shelf ends at a drop into cloud. Loose scree lies along the foot of the cliff, and a few stunted pines cling to cracks. The air is thin and cold, the wind gusts hard, and there is nothing overhead but sky: room for anything with wings.",
+   "ground": "the bare rock",
+   "rough": "the loose scree",
+   "slick": "the frost-slick rock",
+   "props": [
+    "the cliff face",
+    "a stunted pine",
+    "a boulder at the edge",
+    "the scree slope"
+   ],
+   "ambience": "wind, thin cold air, distant cloud below, the cry of a hawk",
+   "details": [
+    "the wind gusting and dropping",
+    "cloud tearing past below the edge",
+    "a pebble skittering off the edge and not landing",
+    "thin cold air in the lungs",
+    "a hawk circling far out",
+    "frost in the shadow of the cliff",
+    "the pine creaking in the wind"
+   ],
+   "hazards": [
+    {
+     "name": "the cliff face",
+     "words": [
+      "cliff",
+      "rock face",
+      "wall"
+     ],
+     "about": "sheer rock",
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "the loose scree",
+     "words": [
+      "scree",
+      "loose rock",
+      "rubble"
+     ],
+     "about": "loose broken rock at the foot of the cliff: it slides and scrapes"
+    },
+    {
+     "name": "a stunted pine",
+     "words": [
+      "pine",
+      "tree"
+     ],
+     "about": "a twisted little pine growing out of a crack",
+     "break": 0.4,
+     "upright": true
+    },
+    {
+     "name": "the edge",
+     "words": [
+      "edge",
+      "drop",
+      "ledge"
+     ],
+     "about": "the lip of the shelf above the clouds: a fall against it is a scare, not a fall over it",
+     "break": 0.0
+    }
+   ],
+   "events": [
+    {
+     "name": "a gust",
+     "text": "A hard gust of wind tears across the shelf",
+     "who": "standing",
+     "weight": 2,
+     "words": [
+      "gust",
+      "wind"
+     ],
+     "effects": [
+      {
+       "status": "flinched",
+       "chance": 0.3,
+       "beats": 1
+      }
+     ]
+    },
+    {
+     "name": "a rockfall",
+     "text": "Stones come rattling down the cliff face",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "rockfall",
+      "stone",
+      "scree"
+     ],
+     "severity": "light",
+     "regions": [
+      "head",
+      "shoulder",
+      "back_up"
+     ],
+     "parts": 2
+    }
+   ]
+  },
+  "ruined temple": {
+   "title": "The ruined temple",
+   "place": "the temple",
+   "text": "The roofless hall of a ruined stone temple deep in a jungle. A cracked flagstone floor runs between two rows of tall carved pillars; some still stand, some lean, and two lie toppled in broken sections. Vines hang from the tops of the walls, and an altar stone stands at the far end under a cracked statue. Moss grows in the cracks; puddles of rainwater stand in the hollows of the floor. Warm, green light, birdsong outside.",
+   "ground": "the flagstones",
+   "rough": "the cracked flagstones",
+   "slick": "the mossy stone",
+   "props": [
+    "a carved pillar",
+    "a toppled pillar section",
+    "the altar stone",
+    "the temple wall"
+   ],
+   "ambience": "birdsong, dripping leaves, warm green light, old stone",
+   "details": [
+    "dust sifting down from the top of a pillar",
+    "a lizard flicking across a flagstone",
+    "the carved faces on the pillars watching",
+    "a vine swaying where nothing touched it",
+    "birdsong stopping and starting again outside",
+    "green light through the leaves",
+    "rainwater standing in a hollow of the floor",
+    "the smell of moss and warm stone"
+   ],
+   "hazards": [
+    {
+     "name": "a carved pillar",
+     "words": [
+      "pillar",
+      "column"
+     ],
+     "about": "a tall carved stone pillar, cracked at the base: a hard enough impact can topple it",
+     "break": 0.3,
+     "upright": true
+    },
+    {
+     "name": "a toppled pillar section",
+     "words": [
+      "toppled",
+      "section",
+      "drum"
+     ],
+     "about": "a fallen drum of pillar, waist-high",
+     "break": 0.1,
+     "upright": true
+    },
+    {
+     "name": "the altar stone",
+     "words": [
+      "altar"
+     ],
+     "about": "a heavy block of carved stone",
+     "break": 0.05,
+     "upright": true
+    },
+    {
+     "name": "the mossy stone",
+     "words": [
+      "moss",
+      "mossy"
+     ],
+     "about": "slick moss in the cracks of the floor: treacherous footing"
+    },
+    {
+     "name": "the vines",
+     "words": [
+      "vine"
+     ],
+     "about": "thick vines hanging from the walls",
+     "effects": [
+      {
+       "status": "restrained",
+       "chance": 0.3,
+       "beats": 1
+      }
+     ]
+    }
+   ],
+   "events": [
+    {
+     "name": "a pillar topples",
+     "text": "A cracked pillar groans, leans, and comes down in a roar of breaking stone",
+     "who": "anyone",
+     "weight": 2,
+     "words": [
+      "pillar",
+      "column",
+      "stone"
+     ],
+     "severity": "heavy",
+     "regions": [
+      "back_up",
+      "shoulder",
+      "hind_up",
+      "back_low"
+     ],
+     "parts": 3
+    },
+    {
+     "name": "masonry falls",
+     "text": "A chunk of carved masonry breaks off the top of the wall and drops",
+     "who": "anyone",
+     "weight": 1,
+     "words": [
+      "masonry",
+      "stone",
+      "wall"
+     ],
+     "severity": "solid",
+     "regions": [
+      "head",
+      "shoulder",
+      "back_up"
+     ],
+     "parts": 2
+    }
+   ]
   }
  }
 }

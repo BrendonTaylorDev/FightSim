@@ -116,13 +116,14 @@ def match_part(names, part, avoid=()):
 # the parts right next to where it lands (a jaw strike jars the muzzle and neck; a hip check catches the thigh).
 _BODY_REGION_KEYS = [
     ("tail", ("tail", "fan")),
-    ("hind_low", ("hind paw", "knee", "hock", "foot")),
+    ("hind_low", ("hind paw", "knee", "hock", "foot", "talon")),
     ("hind_up", ("hip", "thigh")),
-    ("head", ("head fin", "horn", "ear", "muzzle", "nose", "jaw", "cheek", "antenna", "spike", "head", "eye", "face")),
-    ("neck", ("throat", "neck", "sac")),
+    ("head", ("head fin", "horn", "ear", "muzzle", "nose", "jaw", "cheek", "antenna", "spike", "head", "eye", "face",
+              "beak", "crest")),
+    ("neck", ("throat", "neck", "sac", "hood", "mane")),
     ("shoulder", ("shoulder",)),
-    ("fore_up", ("upper arm", "upper foreleg")),
-    ("fore_low", ("forearm", "lower foreleg", "forepaw", "paw", "fin", "arm", "foreleg")),
+    ("fore_up", ("upper arm", "upper foreleg", "wing")),
+    ("fore_low", ("forearm", "lower foreleg", "forepaw", "paw", "fin", "arm", "foreleg", "wingtip")),
     ("chest", ("ruff", "chest", "rib")),
     ("belly", ("belly", "stomach", "midsection", "flank", "scales")),
     ("back_low", ("lower back",)),
@@ -282,6 +283,9 @@ class Engine:
             if len(picked) < 2:
                 raise ValueError(f"a fight needs at least two different fighters. Available: {', '.join(self.roster)}")
             fdata = dict(fdata, fighters=[fd for n in picked for fd in fdata["fighters"] if fd["name"] == n])
+        elif sum(1 for fd in fdata["fighters"] if not fd.get("bench")) >= 2:
+            # "bench": true keeps a fighter on the roster but out of the default fight (/newfight <names> brings her in)
+            fdata = dict(fdata, fighters=[fd for fd in fdata["fighters"] if not fd.get("bench")])
         self.rng = random.Random(seed)
         self._seed0 = seed if seed is not None else random.randrange(10 ** 9)   # for choices of colour only
         self.fighters = {}
@@ -309,6 +313,7 @@ class Engine:
         self.pin_window = {}   # fighter -> is there an opening to start a pin on her THIS beat (rolled for the director)
         self.pressed = {}      # fighter -> {"surface", "by"}: driven into the scenery by a charge THIS beat, not fallen yet
         self.alliances = []    # temporary alliances: {"members", "name", "beats", "until", "home"}
+        self.weather = {}      # {"kind": "rain"/"sun"/"hail", "beats": N, "by": name}: Rain Dance, Sunny Day, Hail
         self._pending_events = []  # things settled between beats (an alliance ending) that the next beat reports
         self._last_reposition = {}  # fighter -> the beat she was last rolled over or hauled up
         self.scenes = self._load_scenes(here)
@@ -527,14 +532,14 @@ class Engine:
                                **{"by:" + k: v for k, v in getattr(self, "_last_manhandle", {}).items()}},
                               self._fresh_down, self._fresh_status,
                               self.pressed, self.alliances, self._pending_events, list(getattr(self, "rolls", [])),
-                              self.tally, self.rng.getstate()))
+                              self.tally, getattr(self, "weather", {}), self.rng.getstate()))
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
         (self.fighters, self.holds, self.next_hold_id, self.turn, self.involved,
          self.pins, self.positions, self.downed, self.since_pin, self.momentum, self.move_log, self.last_pin_end,
          self.injury_log, self.plan, self.facing, self._last_reposition, self._fresh_down, self._fresh_status,
-         self.pressed, self.alliances, self._pending_events, self.rolls, self.tally, rng) = copy.deepcopy(snap)
+         self.pressed, self.alliances, self._pending_events, self.rolls, self.tally, self.weather, rng) = copy.deepcopy(snap)
         self._last_manhandle = {k[3:]: v for k, v in self._last_reposition.items() if k.startswith("by:")}
         self._last_reposition = {k: v for k, v in self._last_reposition.items() if not k.startswith("by:")}
         self._knock_on = []
@@ -652,6 +657,12 @@ class Engine:
         limb = self.limb_mult(a, move)
         if limb:
             extras = extras + [limb]
+        wx = self.weather_mult(move["type"])
+        if wx:
+            extras = extras + [wx]
+        if self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
+                and move.get("target") not in ("status", "hold", "self") and not move.get("carry"):
+            extras = extras + [("diving from above", float((self.rules.get("flight") or {}).get("dive_mult", 1.3)))]
         xm = 1.0
         for _, m in extras:
             xm *= m
@@ -709,6 +720,15 @@ class Engine:
                              f"blast), or let her get up first")
         self._no_friendly_fire(a, [d], enforce)
         self._pinned_reach(a, [d.name], enforce)
+        if enforce and self.has(d, "airborne") and not self.has(a, "airborne") and not self.is_ranged(move) \
+                and move.get("target") not in ("status", "self"):
+            raise ValueError(f"{d.name} is IN THE AIR: {move['name']} can't reach her up there. Use a ranged move (a "
+                             f"beam, a blast, a stream), or wait for her to dive")
+        if enforce and move.get("carry") and not self.has(a, "airborne"):
+            raise ValueError(f"{move['name']} carries her up into the air: {a.name} has to be in the air to do it "
+                             f"(\"reposition\": \"take off\" first)")
+        if enforce and move.get("carry") and self.pinned_by(d.name):
+            raise ValueError(f"{d.name} is pinned: nobody can carry her off")
         still_against = (self.pressed.get(d.name) or {}).get("surface")  # a follow-up before she falls from a charge
         mine = [m for who, m in self.move_log if who == a.name][-2:]
         limit = int(self.rules.get("moves", {}).get("max_same_move_in_a_row", 2) or 0)
@@ -725,6 +745,11 @@ class Engine:
         confused = self._confusion(a, move, enforce, energy_before)
         if confused:
             return confused
+        if target == "self":   # a stance or a weather move: on herself or the whole arena, not on the opponent
+            return self._self_move(a, d, move, flavor, energy_before)
+        guard = self._guarded(a, d, move)
+        if guard:
+            return guard
         if target == "status":  # no damage: the move's effects either land or the target dodges
             dodge = self.dodge_roll(a, d, "targeted") if enforce else None
             self._attacked(a.name, [d.name], landed=False)
@@ -886,6 +911,26 @@ class Engine:
             launch = self._launch_from_move(move)
             if launch:
                 res["auto_launch"] = launch
+            fcfg = self.rules.get("flight") or {}
+            if move.get("carry") and not d.eliminated:
+                # snatched up in her talons, carried up, and dropped: the higher, the harder she lands
+                h = self.rng.choice(list((fcfg.get("drop_heights") or {"a body's length up": "solid",
+                                                                       "twice her height": "heavy",
+                                                                       "high over the arena": "brutal"}).items()))
+                res["carried"] = {"height": h[0]}
+                res["auto_launch"], res["drop_severity"] = "launched", h[1]
+            if self.has(d, "airborne") and self.wing_damage(d) >= float(fcfg.get("ground_at", 150)) and not d.eliminated:
+                # a wing that can no longer hold her: she falls out of the air
+                d.status.pop("airborne", None)
+                res["grounded"] = True
+                res["auto_launch"], res["drop_severity"] = res.get("auto_launch") or "thrown", res.get("drop_severity") or "solid"
+        if hits and not d.eliminated:
+            back = self._reflect(a, d, move, math)
+            if back:
+                res["reflected"] = back
+        if self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
+                and move.get("target") not in ("status", "hold") and not move.get("carry"):
+            self._after_dive(a, d, res, bool(hits))
         return res
 
     def _charge(self, a, d, move, plan, powers, into):
@@ -1698,6 +1743,8 @@ class Engine:
             ch *= 1.3
         if self.has(a, "paralyzed"):
             ch *= 1.3
+        if self.has(d, "airborne") and not self.has(a, "airborne"):
+            ch *= float((self.rules.get("flight") or {}).get("airborne_dodge_mult", 1.3))
         wet = self.in_water(d.name)
         if wet:   # in the water a Water type is at home and everyone else is wading (arena.water_dodge)
             wcfg = (self.rules.get("arena") or {}).get("water_dodge") or {}
@@ -1956,15 +2003,15 @@ class Engine:
     }
 
     REPOSITIONS = ["none", "roll over", "onto her back", "onto her front", "onto her side", "sit her up", "pick up",
-                   "stand her up"]
+                   "stand her up", "take off", "land"]
 
     def reposition(self, attacker, defender, how, force=False):
         """The attacker moves a fighter who's down: rolls her over (or onto her back, front, or side), or hauls her up
         off the ground (to slam, throw, or hold her up for a strike). A running pin's presses follow the roll.
         Returns an event, or None if it doesn't apply. Limited by director.reposition_cooldown beats per fighter."""
         how = str(how or "none").lower()
-        if how in ("", "none"):
-            return None
+        if how in ("", "none", "take off", "land"):
+            return None   # her own flight, not moving anyone (director.resolve_many handles it)
         a, d = self.get_active(attacker), self.get_active(defender)
         if a is d:
             return None
@@ -2119,6 +2166,8 @@ class Engine:
 
     def body_plan(self, f):
         names = " ".join(f.parts).lower()
+        if "wing" in names:
+            return "avian"
         if "arm" in names:
             return "biped"
         if any(k in names for k in ("leg", "paw", "hock", "foot", "knee")):
@@ -2147,7 +2196,8 @@ class Engine:
             plan = self.body_plan(f)
             regions = {"biped": ("hind_up", "hind_low", "fore_up", "fore_low", "shoulder"),
                        "quadruped": ("hind_up", "hind_low", "fore_up", "fore_low", "shoulder"),
-                       "serpent": ("tail", "belly", "back_low", "back_up")}[plan]
+                       "serpent": ("tail", "belly", "back_low", "back_up"),
+                       "avian": ("hind_up", "hind_low", "fore_up", "fore_low")}[plan]
             limbs = sorted((p for p in f.parts.values() if body_region(p.name) in regions), key=lambda p: -p.damage)
             worst = limbs[:3]
             avg = sum(p.damage for p in worst) / len(worst) if worst else 0.0
@@ -2595,9 +2645,11 @@ class Engine:
     def is_ranged(move):
         """A move that crosses the distance: a beam, a blast, a pulse, a stream (spread or whole-body, or marked
         ranged). Not a charge, a hold or a status move."""
-        if not move or move.get("charge") or move.get("target") in ("hold", "status"):
+        if not move or move.get("charge") or move.get("target") in ("hold", "status", "self"):
             return False
-        return move.get("target") in ("spread", "whole_body") or bool(move.get("ranged"))
+        if "ranged" in move:   # moves.json can say so outright ("ranged": false for a close flurry like Close Combat)
+            return bool(move["ranged"])
+        return move.get("target") in ("spread", "whole_body")
 
     def _clash(self, a, d, move, math):
         """A ranged attack met head-on by one of the defender's own (moves.clash): the two meet in the air between
@@ -2694,6 +2746,127 @@ class Engine:
         c = self.rules.get("pin", {}).get("pressure_cap")
         return c if isinstance(c, dict) and c.get("enabled", True) else None
 
+    STANCES = {"protect": "protecting", "counter": "countering", "mirror": "mirroring"}
+
+    def weather_mult(self, mtype):
+        """Rain strengthens Water and dampens Fire; sun the other way round (rules.json weather)."""
+        w = getattr(self, "weather", {}) or {}
+        cfg = (self.rules.get("weather") or {}).get(w.get("kind") or "", {})
+        m = float((cfg.get("type_mult") or {}).get(mtype, 1.0))
+        return (f"in the {cfg.get('word', w.get('kind'))}", m) if w and m != 1.0 else None
+
+    def _self_move(self, a, d, move, flavor, energy_before):
+        """Protect/Detect, Counter/Mirror Coat (a stance held until the next attack on her, or for a beat or two),
+        or a weather move (Rain Dance, Sunny Day, Hail: the whole arena, for rules.json weather.beats)."""
+        res = {"type": "instant", "attacker": a.name, "defender": d.name, "defenders": [d.name], "self_move": True,
+               "uses_left": a.move_uses.get(move["name"]), "energy": [round(energy_before), round(a.energy)],
+               "flavor": flavor, "move": self.move_math(a.name, d.name, move), "hit_count": 0, "hits": [], "tags": []}
+        self.involved.add(a.name)
+        if move.get("weather"):
+            kind = move["weather"]
+            beats = int((self.rules.get("weather") or {}).get("beats", 5))
+            self.weather = {"kind": kind, "beats": beats, "by": a.name}
+            res["weather"] = {"kind": kind, "beats": beats}
+            return res
+        stance = self.STANCES.get(move.get("stance") or "protect", "protecting")
+        cfg = self.rules.get("stances") or {}
+        streak = (a.learned.get("stance_streak") or 0) if stance == "protecting" else 0
+        ch = float(cfg.get("protect_chance", 1.0)) * float(cfg.get("repeat_mult", 0.5)) ** streak
+        ok = self._chance(ch, f"{poss_word(a.name)} {move['name']} holding", "it holds", "it fails") if ch < 1 else True
+        if stance == "protecting":
+            a.learned["stance_streak"] = streak + 1 if ok else 0
+        if ok:
+            a.learned["stance_move"] = move["name"]
+            self.set_status(a, stance, 1)   # through the next beat (a status set this beat doesn't tick yet)
+        res["stance"] = {"kind": stance, "ok": ok, "chance": round(ch, 2)}
+        return res
+
+    def _guarded(self, a, d, move):
+        """She is behind Protect/Detect: this attack (whatever it is) stops against it and nothing lands."""
+        if not self.has(d, "protecting") or move.get("target") == "self":
+            return None
+        d.status.pop("protecting", None)
+        self._attacked(a.name, [d.name], landed=False)
+        return {"type": "instant", "attacker": a.name, "defender": d.name, "defenders": [d.name], "flavor": "",
+                "move": self.move_math(a.name, d.name, move), "hit_count": 0, "hits": [], "tags": [],
+                "energy": [round(a.energy), round(a.energy)], "protected": d.learned.get("stance_move") or "Protect",
+                "missed": True}
+
+    def _reflect(self, a, d, move, math):
+        """Counter (close blows) or Mirror Coat (blasts and beams): she takes the hit and sends it back harder onto
+        the attacker's front (rules.json stances.reflect_mult). Used up by the first attack of the right kind."""
+        ranged = self.is_ranged(move)
+        stance = "mirroring" if ranged else "countering"
+        if not self.has(d, stance) or move.get("target") in ("status", "self"):
+            return None
+        d.status.pop(stance, None)
+        cfg = self.rules.get("stances") or {}
+        power = round(math["effective"] * float(cfg.get("reflect_mult", 1.5)) / 2, 2)
+        reach = [x for x in a.parts if body_region(x) in ("head", "neck", "chest", "shoulder", "belly")] or list(a.parts)
+        self.rng.shuffle(reach)
+        mine, self._source = self._source, f"{poss_word(d.name)} {'Mirror Coat' if ranged else 'Counter'}"
+        hits = [self._apply_damage(a, x, power) for x in reach[:2]]
+        self._source = mine
+        self.involved.add(d.name)
+        return {"by": d.name, "kind": "Mirror Coat" if ranged else "Counter", "power": power, "hits": hits}
+
+    def wing_damage(self, f):
+        """The worse of her wings (0 for a fighter without wings)."""
+        wings = [p.damage for p in f.parts.values() if "wing" in p.name.lower()]
+        return max(wings) if wings else 0.0
+
+    def can_fly(self, f, why=False):
+        """A fighter with wings that still work, free to take off (flight.ground_at: a wing hurt that badly grounds her)."""
+        cfg = self.rules.get("flight") or {}
+        reason = None
+        if self.body_plan(f) != "avian":
+            reason = f"{f.name} has no wings"
+        elif self.wing_damage(f) >= float(cfg.get("ground_at", 150)):
+            reason = f"{poss_word(f.name)} wings are too badly hurt to lift her"
+        elif f.name in self.downed or self.pinned_by(f.name) or self.pinning(f.name):
+            reason = f"{f.name} has to be up and free to take off"
+        elif any(h.defender == f.name for h in self.holds.values()):
+            reason = f"{f.name} is being held"
+        elif any(self.has(f, st) for st in ("asleep", "frozen", "paralyzed", "constricted")):
+            reason = f"{f.name} can't take off like this"
+        elif f.energy < float(cfg.get("takeoff_energy", 8)):
+            reason = f"{f.name} is too winded to take off"
+        return reason if why else reason is None
+
+    def take_off(self, name, enforce=True):
+        """She takes to the air (flight.airborne_beats beats, then she has to come down to rest her wings). Every grip
+        she had on anyone lets go."""
+        f = self.get_active(name)
+        why = self.can_fly(f, why=True)
+        if why and enforce:
+            raise ValueError(why + " (only a winged fighter who is up and free can 'take off')")
+        cfg = self.rules.get("flight") or {}
+        f.energy = max(0.0, f.energy - float(cfg.get("takeoff_energy", 8)))
+        for h in [h for h in self.holds.values() if h.attacker == f.name]:
+            self.holds.pop(h.id, None)
+        self.set_status(f, "airborne", int(cfg.get("airborne_beats", 3)))
+        self.involved.add(f.name)
+        return {"type": "take_off", "fighter": f.name, "beats": int(cfg.get("airborne_beats", 3))}
+
+    def _after_dive(self, a, d, res, landed):
+        """A dive is done: the defender may catch her as she comes in and drag her out of the air
+        (flight.counter_grab); otherwise she climbs back up (flight.climb_chance) or comes down to land."""
+        cfg = self.rules.get("flight") or {}
+        res["dive"], res["dive_mult"] = True, float(cfg.get("dive_mult", 1.3))
+        if (landed and d.name not in self.downed and not self.pinned_by(d.name)
+                and not any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched", "constricted"))
+                and self._chance(float(cfg.get("counter_grab", 0.15)), f"{d.name} catching {a.name} as she dives",
+                                 "she catches her", "no")):
+            a.status.pop("airborne", None)
+            res["dragged_down"] = {"by": d.name, "facing": self.knock_down(a.name, why=f"{a.name} was dragged out of the air")}
+            return
+        if self._chance(float(cfg.get("climb_chance", 0.55)), f"{a.name} climbing back up after the dive", "back up", "she lands"):
+            self.set_status(a, "airborne", max(a.status.get("airborne", 0), 2))
+            res["climbs"] = True
+        else:
+            a.status.pop("airborne", None)
+            res["lands_after_dive"] = True
+
     def pummel_place(self, attacker, defender):
         """Where `attacker` can rain short blows on `defender` at no distance, or None: "grab" (her grab on her, both
         standing), "pin" (from on top, in her pin), "against" (she is pressed against the scenery from a charge),
@@ -2729,6 +2902,8 @@ class Engine:
                                  f"{who.name} is on the ground: she has to be on her feet to {why}")
         if any(p["defender"] in (a.name, d.name) for p in self.pins.values()):
             raise ValueError("there is a pin going on: no grapple until it ends")
+        if enforce and (self.has(d, "airborne") or self.has(a, "airborne")):
+            raise ValueError(f"{(d if self.has(d, 'airborne') else a).name} is in the air: no grabbing until she comes down")
         if enforce and a.name in self.pressed:
             raise ValueError(f"{a.name} is still pressed against the scenery: she can't grab anyone this beat")
         if self.grabbed_by(a.name, d.name):
@@ -2850,6 +3025,8 @@ class Engine:
         need = int(cfg.get("attacks_between_pins", 0) or 0)
         got = self.since_pin.get(d.name, need)  # the rule is about the gap BETWEEN pins: no pin yet, no wait
         why = []
+        if self.has(d, "airborne"):
+            why.append(f"{d.name} is in the air: she has to be brought down first")
         if self.pin_window.get(d.name, True) is False:
             why.append(f"there is no opening for a pin on {d.name} this beat (openings come more often when she's "
                        f"knocked down, and far more often once she's under half strength)")
@@ -2878,6 +3055,9 @@ class Engine:
         elsewhere = [x for x in self.pinning(a.name) if x != d.name] if (new_pin or joining) else []
         self._no_friendly_fire(a, [d], enforce)
         if enforce:
+            if self.has(d, "airborne") or (self.has(a, "airborne") and not (move or {}).get("carry")):
+                raise ValueError(f"{(d if self.has(d, 'airborne') else a).name} is in the air: no holds or pins until "
+                                 f"she comes down ('reposition': 'land', or a ranged hit that grounds her)")
             if on_top and (pin or d.name not in on_top):
                 raise ValueError(f"{a.name} is PINNED under {on_top[0]}: she can't {'pin' if pin else 'grab'} "
                                  f"{d.name} from there. Use 'struggle' for an escape attempt, or a strike at {on_top[0]}")
@@ -3253,6 +3433,7 @@ class Engine:
                                 "reaction_guide": ht["reaction"]}
         events += self.recover_tick()
         events += self._tick_status_energy()
+        events += self._weather_tick()
         events += self._alliance_tick()
         self.pin_window = {}  # openings are rolled fresh for every beat
         events.append({"type": "time_passes", "beat": self.turn, "fighters": fighters})
@@ -3261,6 +3442,29 @@ class Engine:
         return events
 
     advance_turn = beat
+
+    def _weather_tick(self):
+        """End of a beat: hail stings everyone who isn't Ice-type (weather.hail.chip, on an exposed part); the weather
+        counts down and clears."""
+        w = getattr(self, "weather", {}) or {}
+        if not w:
+            return []
+        events = []
+        cfg = (self.rules.get("weather") or {}).get(w["kind"], {})
+        chip = float(cfg.get("chip", 0) or 0)
+        if chip:
+            for f in self.fighters.values():
+                if f.eliminated or any(t in (cfg.get("immune_types") or []) for t in f.types):
+                    continue
+                up = [p for p in f.parts if body_region(p) in ("head", "back_up", "back_low", "shoulder", "fore_up", "tail")]
+                self._source = f"the {cfg.get('word', w['kind'])}"
+                hit = self._apply_damage(f, self.rng.choice(up or list(f.parts)), chip)
+                events.append({"type": "status_tick", "fighter": f.name, "status": w["kind"], "hits": [hit]})
+        w["beats"] -= 1
+        if w["beats"] <= 0:
+            events.append({"type": "weather_end", "kind": w["kind"]})
+            self.weather = {}
+        return events
 
     def _tick_status_energy(self):
         """End of a beat: statuses count down, everyone gets some breath back, and a fighter whose strength just
@@ -3342,7 +3546,8 @@ class Engine:
 
     # ---------- posture: the one true account of who is up, down, pinned, or holding whom ----------
     UPRIGHT = {"biped": "ON HER FEET (standing upright)", "quadruped": "ON HER FEET (standing on all fours)",
-               "serpent": "UP (coils under her, head and neck raised)"}
+               "serpent": "UP (coils under her, head and neck raised)",
+               "avian": "ON HER FEET (standing on her talons, wings folded)"}
     POS_UP = re.compile(r"\b(stand\w*|stood|on (?:her|his|their|all) (?:feet|fours|paws)|upright|circl\w*|stalk\w*|"
                         r"pac(?:ing|es|ed)|rear\w*|crouch\w*|loom\w*|pounc\w*|perch\w*|poised|advanc\w*|"
                         r"back(?:s|ing|ed) (?:away|off)|leap\w*|charg\w*|straddl\w*|atop|on top of|coiled)\b", re.I)
@@ -3379,6 +3584,8 @@ class Engine:
             text = f"ON THE GROUND, {lie}, not pinned"
         elif p["pinning"]:
             text = f"ON TOP of {' and '.join(p['pinning'])}, pinning her down"
+        elif self.has(f, "airborne"):
+            text = "IN THE AIR (wings beating, above the ground)" if not short else "IN THE AIR"
         else:
             text = self.UPRIGHT[self.body_plan(f)] if not short else self.UPRIGHT[self.body_plan(f)].split(" (")[0]
         if not short:
@@ -4288,6 +4495,12 @@ class Engine:
                        "never stops)",
         "sputtering": "SPUTTERING: water forced into her mouth and up her nose: coughing, choking it up, eyes and nose "
                       "burning, short of breath (never drowning)",
+        "protecting": "behind a PROTECT barrier (Protect/Detect): braced and shielded; the next attack on her stops "
+                      "against it",
+        "countering": "set to COUNTER: braced, weight back, waiting for a close blow to return it twice as hard",
+        "mirroring": "set to MIRROR COAT: a sheen over her body, waiting for a blast or beam to send back",
+        "airborne": "IN THE AIR: wings beating, above the ground; only blasts, beams and streams can reach her up there, "
+                    "and she comes down on her opponent in dives",
         "stiff": "STIFF from the pin she just broke: the limbs that were trapped are numb and slow to answer, pins and "
                  "needles coming back into them; her blows are weaker and she can barely dodge",
         "cramped": "CRAMPED from holding a long pin: her legs and shoulders locked up from bearing down so long, slow "
@@ -4404,8 +4617,16 @@ class Engine:
             lines.append("SIDES: " + self.sides_text())
         return "\n".join(lines)
 
+    def weather_text(self):
+        w = getattr(self, "weather", {}) or {}
+        if not w:
+            return ""
+        word = (self.rules.get("weather") or {}).get(w["kind"], {}).get("word", w["kind"])
+        return (f"WEATHER: {word.upper()} over the arena ({w['beats']} more beat{'s' if w['beats'] != 1 else ''}; "
+                f"called by {w['by']}): it is part of every moment until it clears.")
+
     def narrator_condition(self):
-        text = self.condition_summary()
+        text = self.condition_summary() + ("\n" + self.weather_text() if getattr(self, "weather", None) else "")
         return text + (f"\nPOSITIONS (where everyone is after this beat; the CAPITALS are certain): "
                        f"{self.positions_now(include_out=bool(self.winner()))}")
 
@@ -4417,7 +4638,7 @@ class Engine:
 
     def director_view(self):
         """Full numbers for the director, so it can pick smart targets. It still never calculates."""
-        lines = []
+        lines = [self.weather_text()] if getattr(self, "weather", None) else []
         multi_team = any(f.team != f.name for f in self.fighters.values())
         for f in self.fighters.values():
             if f.eliminated:
@@ -4436,7 +4657,11 @@ class Engine:
                     for x in m.get("effects", []):
                         fx.append(f"{x['status'] if x.get('status') else x.get('launch')} {x.get('chance', 1) * 100:.0f}%")
                     learned = ", lent for this fight" if m.get("learned") else ""
-                    rng_word = "close" if m.get("target", "targeted") in ("targeted", "hold") else "ranged"
+                    rng_word = ("on herself or the arena" if m.get("target") == "self" else
+                                "close" if (m.get("target", "targeted") in ("targeted", "hold") and not m.get("ranged"))
+                                or m.get("ranged") is False else "ranged")
+                    if m.get("carry"):
+                        rng_word += ", needs her in the air"
                     if m.get("sustainable"):
                         rng_word += ", sustainable"
                     return (f"{m['name']} ({m['type']}, {m.get('target', 'targeted')}, {rng_word}{tag}"
@@ -4462,6 +4687,11 @@ class Engine:
                            f"thrown, launched, picked up, or knocked down while pinned)")
             lines.append(f"   {ground}; can be pinned now: " + ("YES" if ok else f"NO ({why})")
                          + f"; if pinned, she'd break out on about {self.escape_base(f) * 100:.0f}% of her tries")
+            if self.body_plan(f) == "avian":
+                lines.append("   IN THE AIR (only ranged moves reach her; her close moves are dives; she can't be held "
+                             "or pinned)" if self.has(f, "airborne") else
+                             "   can take off ('reposition': 'take off' on her own action)" if self.can_fly(f) else
+                             f"   grounded: {self.can_fly(f, why=True)}")
             sec, why_not = self.pin_securable(f)
             if not sec:
                 lines.append(f"   a pin on {f.name} probably can't be WON yet ({why_not}): she escapes far more easily "
@@ -4524,6 +4754,7 @@ class Engine:
                 "last_pin_end": self.last_pin_end, "injury_log": self.injury_log, "plan": self.plan,
                 "tally": self.tally, "momentum": self.momentum, "facing": self.facing, "move_log": self.move_log,
                 "last_reposition": getattr(self, "_last_reposition", {}), "alliances": self.alliances,
+                "weather": getattr(self, "weather", {}),
                 "extra": extra or {},
                 "fighters": {k: {**asdict(f), "parts": {n: asdict(p) for n, p in f.parts.items()}}
                              for k, f in self.fighters.items()},
@@ -4563,5 +4794,6 @@ class Engine:
         self.tally = {k: int(v) for k, v in (data.get("tally") or {}).items()}
         self.plan = data.get("plan", {})
         self.alliances = data.get("alliances", [])
+        self.weather = data.get("weather", {})
         self.pressed, self._pending_events, self.pin_window = {}, [], {}
         return data.get("extra", {})

@@ -1,5 +1,5 @@
 {
- "_comment": "Pokemon moves you can lend a fighter for one fight with /learn. power is on this engine's scale (targeted moves get x2 for aiming at one spot). effects: a status (paralyzed, asleep, confused, burned, poisoned, frozen, flinched, chilled, soaked) with its chance and how many beats it lasts, or a launch (knocked down, thrown, launched) and its chance. Edit freely; healing moves are deliberately left out. sustainable: true means the move can be held for several pulses (pressing the target back, maybe into the scenery).",
+ "_comment": "Pokemon moves you can lend a fighter for one fight with /learn. power is on this engine's scale (targeted moves get x2 for aiming at one spot). effects: a status (paralyzed, asleep, confused, burned, poisoned, frozen, flinched, chilled, soaked) with its chance and how many beats it lasts, or a launch (knocked down, thrown, launched) and its chance. Edit freely; healing moves are deliberately left out. sustainable: true means the move can be held for several pulses (pressing the target back, maybe into the scenery). target \"self\": a move used on herself or the arena, no damage: \"stance\": protect (blocks the next attack), counter (sends back the next close blow) or mirror (sends back the next blast or beam); \"weather\": rain, sun or hail (rules.json weather). \"carry\": true needs the attacker in the air (a winged fighter after \"take off\"): she carries the target up and drops her.",
  "moves": [
   {
    "name": "Pound",
@@ -1478,7 +1478,8 @@
    "type": "Fighting",
    "power": 40,
    "target": "spread",
-   "about": "an all-out, close-range flurry"
+   "about": "an all-out, close-range flurry",
+   "ranged": false
   },
   {
    "name": "Dynamic Punch",
@@ -2880,6 +2881,78 @@
      "beats": 2
     }
    ]
+  },
+  {
+   "name": "Sky Drop",
+   "type": "Flying",
+   "power": 30,
+   "target": "targeted",
+   "about": "seizes the opponent in her talons, carries her up into the air and drops her (she has to be in the air first)",
+   "carry": true,
+   "energy": 20
+  },
+  {
+   "name": "Protect",
+   "type": "Normal",
+   "power": 0,
+   "target": "self",
+   "about": "throws up a shimmering barrier: the next attack on her stops against it (less reliable used twice in a row)",
+   "stance": "protect",
+   "energy": 10
+  },
+  {
+   "name": "Detect",
+   "type": "Fighting",
+   "power": 0,
+   "target": "self",
+   "about": "reads the next attack and slips it completely (works like Protect)",
+   "stance": "protect",
+   "energy": 10
+  },
+  {
+   "name": "Counter",
+   "type": "Fighting",
+   "power": 0,
+   "target": "self",
+   "about": "braces to take the next close blow and send it back harder",
+   "stance": "counter",
+   "energy": 12
+  },
+  {
+   "name": "Mirror Coat",
+   "type": "Psychic",
+   "power": 0,
+   "target": "self",
+   "about": "a reflective sheen: the next blast or beam that hits her is sent back harder",
+   "stance": "mirror",
+   "energy": 12
+  },
+  {
+   "name": "Rain Dance",
+   "type": "Water",
+   "power": 0,
+   "target": "self",
+   "about": "calls rain over the arena for a few beats: Water moves hit harder, Fire moves weaker",
+   "weather": "rain",
+   "energy": 10
+  },
+  {
+   "name": "Sunny Day",
+   "type": "Fire",
+   "power": 0,
+   "target": "self",
+   "about": "calls harsh sunlight for a few beats: Fire moves hit harder, Water moves weaker",
+   "weather": "sun",
+   "energy": 10
+  },
+  {
+   "name": "Hail",
+   "type": "Ice",
+   "power": 0,
+   "target": "self",
+   "about": "calls a hailstorm for a few beats: it stings everyone who isn't Ice-type, and Ice moves hit a little harder",
+   "weather": "hail",
+   "energy": 10
   }
  ]
 }

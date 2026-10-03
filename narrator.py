@@ -1878,12 +1878,17 @@ class Narrator:
                 pass  # listed above, grouped per attacker
             elif e["type"] == "pin_progress":
                 pass  # already listed first
+            elif e["type"] == "weather_end":
+                lines.append(f"The {e['kind']} eases off and clears over the arena.")
             elif e["type"] == "status_tick":
                 if e["status"] == "burned":
                     lines.append(f"{poss(e['fighter'])} burn flares on her {e['hits'][0]['part'].lower()}: a hot, "
                                  f"stinging throb she can't shake.")
-                else:
+                elif e["status"] == "poisoned":
                     lines.append(f"The poison works through {e['fighter']}: a wave of nausea and shakiness.")
+                else:
+                    lines.append(f"The {e['status']} keeps coming down: hailstones sting {e['fighter']} on her "
+                                 f"{e['hits'][0]['part'].lower()}.")
             elif e["type"] == "alliance_end":
                 lines += self._alliance_end_lines(e)
             elif e["type"] == "get_up":
@@ -2198,6 +2203,13 @@ class Narrator:
             return out
         if t == "get_up":
             return self._get_up_lines(a)
+        if t == "weather_end":
+            return [f"The {a['kind']} eases off and clears over the arena."]
+        if t == "take_off":
+            return [f"{a['fighter']} TAKES TO THE AIR: wings snap open and beat hard, dust and spray kicked up, and she "
+                    f"climbs out of reach above the arena. Show her rising and her opponent left on the ground looking up."]
+        if t == "land_flight":
+            return [f"{a['fighter']} comes DOWN out of the air by choice: wings flared, she drops and lands on her talons."]
         if t == "reposition":
             if a.get("resisted"):
                 verb = {"pick up": "haul her up off the ground", "stand her up": "drag her up onto her feet",
@@ -2343,6 +2355,46 @@ class Narrator:
             else:
                 lines.append("  (An instant hit: any bite, grab, or grip lets go as soon as it lands. It is NOT a hold, so "
                              "nobody is still latched on afterward.)")
+            if a.get("reflected"):
+                rf = a["reflected"]
+                lines.append(f"  - {rf['kind'].upper()} (after the hits below land on her): {rf['by']} TAKES the hit and "
+                             f"SENDS IT BACK harder; the force returns onto {a['attacker']}:")
+                lines += [self._hit_line(h) for h in rf["hits"]]
+            if a.get("protected"):
+                lines.append(f"  - {str(a['protected']).upper() if isinstance(a['protected'], str) else 'PROTECT'}: the attack STOPS against the barrier {a['defender']} threw up (a shimmering "
+                             f"shell, braced paws): NOTHING reaches her. Show it breaking against it and the barrier "
+                             f"guttering out with it.")
+            st = a.get("stance")
+            if st:
+                lines.append({"protecting": f"  - {a['attacker']} does not attack: she braces and throws up a PROTECT "
+                                            f"barrier around herself (a hard, shimmering shell)",
+                              "countering": f"  - {a['attacker']} does not attack: she sets herself to COUNTER, weight "
+                                            f"back, eyes on her opponent, waiting for the next close blow to send it back",
+                              "mirroring": f"  - {a['attacker']} does not attack: she sets a MIRROR COAT, a sheen spreading "
+                                           f"over her body, waiting for a blast or beam"}[st["kind"]]
+                             + ("." if st["ok"] else ", but it FAILS: it flickers and is gone before it forms (she used it "
+                                                     "too many times in a row)."))
+            if a.get("weather"):
+                lines.append({"rain": f"  - {a['attacker']} calls RAIN: clouds pull in and it starts to pour over the "
+                                      f"whole arena, everything streaming wet.",
+                              "sun": f"  - {a['attacker']} calls HARSH SUNLIGHT: the clouds burn off and heat beats down "
+                                     f"on the arena.",
+                              "hail": f"  - {a['attacker']} calls HAIL: the air turns bitter and hailstones begin to "
+                                      f"rattle down over the arena."}.get(a["weather"]["kind"], ""))
+            if a.get("dive"):
+                lines.append(f"  - A DIVE: {a['attacker']} comes down OUT OF THE AIR at her, wings folded, the whole drop "
+                             f"behind the blow. "
+                             + (f"But {a['dragged_down']['by']} CATCHES her as she comes in and drags her down out of the "
+                                f"air: {a['attacker']} hits the ground with her." if a.get("dragged_down") else
+                                f"Then she beats her wings and climbs straight back up out of reach." if a.get("climbs") else
+                                f"She does not climb again: she comes down to land, wings spread to stop."))
+            if a.get("carried"):
+                lines.append(f"  - CARRIED UP: {a['attacker']} seizes her in her talons and hauls her up off the ground, "
+                             f"{a['carried']['height']}, wings labouring, then LETS GO. {a['defender']} falls and hits "
+                             f"the ground (the landing below).")
+            if a.get("grounded"):
+                lines.append(f"  - {poss(a['defender'])} wing gives out under the blow: she can't hold herself up any "
+                             f"more and FALLS out of the air (the landing below).")
             cl = a.get("clash")
             if cl:
                 atk_mv = (m or {}).get("name", "the attack")
@@ -2681,7 +2733,8 @@ class Narrator:
         who, grab = e["fighter"], e["grab"]
         how = {"biped": f"grabs onto {grab} and hauls herself up with her arms",
                "quadruped": f"gets her legs under her, leaning her weight against {grab}",
-               "serpent": f"braces her coils against {grab} and lifts her body"}[e["plan"]]
+               "serpent": f"braces her coils against {grab} and lifts her body",
+               "avian": f"beats her wings against the ground and pushes up off {grab} onto her talons"}[e["plan"]]
         hurt = " and ".join(p.lower() for p in e.get("hurting", [])) or "battered body"
         self._getup_tries = e["tries"] if e["stands"] else None
         self._getup_who = who if e["stands"] else None
@@ -3772,7 +3825,8 @@ class Narrator:
             return text.rstrip() + "\n\n" + more
         plain = {"biped": f"{who} got her feet under her at last and stood, swaying, one paw braced against {grab}.",
                  "quadruped": f"{who} got her legs under her at last and stood, swaying, her shoulder against {grab}.",
-                 "serpent": f"{who} braced her coils against {grab} at last and rose, swaying."}[e.get("plan", "biped")]
+                 "serpent": f"{who} braced her coils against {grab} at last and rose, swaying.",
+                 "avian": f"{who} beat her wings hard at last and pushed up onto her talons, swaying."}[e.get("plan", "biped")]
         return text.rstrip() + "\n\n" + plain
 
     def _healthy_lines(self, text):

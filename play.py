@@ -56,6 +56,10 @@ HELP = """
   /newfight [names | all]     start a fresh fight without restarting: everyone back to full health, the story
                               starts over. With names, only those fighters take part (two or more):
                                 /newfight Nocturne Ripples      /newfight all      /newfight (same line-up again)
+  /simulate [fights] [names]  balance check with NO model: whole fights played by dice-driven stand-in choices on
+                              the real engine (copies of your rules and arena; the fight in progress is untouched),
+                              then win rates, lengths, pins, escapes and the worst health swing:
+                                /simulate 50 Nocturne Ripples      /simulate 20 Talon Blaze
   /autofight <fights> [aftermath beats] [names]
                               the director runs whole fights start to finish, one after another, each followed
                               by that many aftermath beats (default 2), then shows the results:
@@ -2732,6 +2736,17 @@ def handle_command(s, line):
             names = list(s.eng.roster)
         s.new_fight(names or None)
         print("Press Enter to begin."); return
+    if cmd in ("simulate", "sim"):
+        from simulate import simulate
+        count = int(a[0]) if a and a[0].isdigit() else 20
+        names = [_clean_name(x).strip(",") for x in (a[1:] if a and a[0].isdigit() else a)
+                 if x.strip(",").lower() not in ("", "and", "vs", "vs.", "v", "&", "against", "versus")]
+        names = [s.eng.match_roster(n) for n in names] if names else s.lineup()
+        if len(set(names)) < 2:
+            raise ValueError("a fight needs at least two different fighters")
+        print(simulate(names, s.eng.rules, s.eng.scene_name if s.eng.scene_name in s.eng.scenes else None,
+                       count=max(1, min(count, 1000))))
+        return
     if cmd == "results":
         print(s.results_text()); return
     if cmd in ("autofight", "autofights"):
