@@ -2335,6 +2335,23 @@ class Narrator:
             else:
                 lines.append("  (An instant hit: any bite, grab, or grip lets go as soon as it lands. It is NOT a hold, so "
                              "nobody is still latched on afterward.)")
+            cl = a.get("clash")
+            if cl:
+                atk_mv = (m or {}).get("name", "the attack")
+                lines.append(f"  - A CLASH: {a['defender']} does not dodge it. She meets it head-on with her own "
+                             f"{cl['move'].upper()} ({cl['move_type']}-type: {cl['about']}), and the two attacks SLAM "
+                             f"TOGETHER in the air between them: light, spray, force, the shock of it felt by both. "
+                             + {"through": f"{poss(a['attacker'])} {atk_mv} is the stronger: it tears through what is "
+                                           f"left of {poss(a['defender'])} and still reaches her, but WEAKENED (the hits "
+                                           f"below are what gets through).",
+                                "cancel": f"Neither gives way: the two attacks break against each other and burst apart "
+                                          f"in the middle. NOTHING reaches either of them; no damage to anyone. Show "
+                                          f"the meeting and the burst, and both of them braced against the blast of it.",
+                                "back": f"{poss(a['defender'])} {cl['move']} is the stronger: it drives {atk_mv} back and "
+                                        f"what is left of it hits {a['attacker']} instead. NOTHING reaches "
+                                        f"{a['defender']}. It lands on {a['attacker']}:"}[cl["outcome"]])
+                if cl.get("hits_on_attacker"):
+                    lines += [self._hit_line(h) for h in cl["hits_on_attacker"]]
             if a.get("into_mouth"):
                 lines.append(f"  - INTO HER MOUTH: the water finds {poss(a['defender'])} open mouth and goes up her nose "
                              f"and down her throat. She chokes on it: coughing, sputtering, spitting it out, eyes and "

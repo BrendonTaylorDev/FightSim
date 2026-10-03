@@ -252,7 +252,8 @@ class Display:
         pointed at."""
         out = []
         if rolls:
-            items = [f"{r['what']} {r['chance'] * 100:.0f}%, rolled {r['roll'] * 100:.0f} → {r['result']}" for r in rolls]
+            items = [f"{r['what']} → {r['result']}" if r.get("plain") else
+                     f"{r['what']} {r['chance'] * 100:.0f}%, rolled {r['roll'] * 100:.0f} → {r['result']}" for r in rolls]
             if self.tight():
                 lines = self._wrap(items, width=118, indent="   ", sep=" · ")
                 out += ["🎲 Rolls: " + lines[0].strip()] + lines[1:]
@@ -618,6 +619,16 @@ class Display:
                 out += self.hits_block(a["attacker"], a["counter_hits"])
         elif t == "instant":
             out.append(f"⚔️ **{a['attacker']} → {a['defender']}**: {a.get('flavor', '')}")
+            cl = a.get("clash")
+            if cl:
+                ps = lambda n: n + ("'" if n.endswith("s") else "'s")
+                out.append(f"💥 **CLASH**: {a['defender']} meets it with {cl['move'].upper()} (force with luck: "
+                           f"{num(cl['rolled'][1])} against {num(cl['rolled'][0])}) — "
+                           + {"through": f"{ps(a['attacker'])} pushes THROUGH, landing at ×{num(cl['share'])}",
+                              "cancel": "they CANCEL OUT: nothing lands",
+                              "back": f"{ps(a['defender'])} TURNS IT BACK onto {a['attacker']} at ×{num(cl['share'])}"}[cl["outcome"]])
+                if cl.get("hits_on_attacker"):
+                    out += self.hits_block(a["attacker"], cl["hits_on_attacker"])
             if a.get("pummel"):
                 pm = a["pummel"]
                 where = {"grab": "in the grab", "pin": "from on top, in the pin", "down": "on her where she is down",

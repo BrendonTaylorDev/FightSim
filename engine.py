@@ -830,8 +830,11 @@ class Engine:
             powers += [spill] * (len(names) - 1)
             math["spillover_parts"] = names[1:]
             math["spillover_effective"] = spill
-        dodge = self.dodge_roll(a, d, target, move["name"]) if enforce else None
-        if dodge:
+        clash = self._clash(a, d, move, math) if enforce and not pum else None
+        if clash and clash["outcome"] == "through":
+            powers = [round(pw * clash["share"], 2) for pw in powers]
+        dodge = None if clash else (self.dodge_roll(a, d, target, move["name"]) if enforce else None)
+        if dodge or (clash and clash["outcome"] != "through"):
             hits = []
         else:
             hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
@@ -851,6 +854,8 @@ class Engine:
                "uses_left": a.move_uses.get(move["name"]), "energy": [round(energy_before), round(a.energy)],
                "flavor": flavor, "move": math, "hit_count": len(hits), "hits": hits,
                "tags": self._tags(hits) if hits else ["no_effect"]}
+        if clash:
+            res["clash"] = clash
         if pum:
             res["pummel"] = pum
             if pum.get("ended") == "answered" and hits and not dodge:
@@ -2563,6 +2568,71 @@ class Engine:
             fitted, _ = self.fit_to_facing(d.name, pool)      # only what is turned toward her attacker
             pool = [p for p in dict.fromkeys(fitted) if p != current] or pool
         return self.rng.choice(pool) if pool else current
+
+    @staticmethod
+    def is_ranged(move):
+        """A move that crosses the distance: a beam, a blast, a pulse, a stream (spread or whole-body, or marked
+        ranged). Not a charge, a hold or a status move."""
+        if not move or move.get("charge") or move.get("target") in ("hold", "status"):
+            return False
+        return move.get("target") in ("spread", "whole_body") or bool(move.get("ranged"))
+
+    def _clash(self, a, d, move, math):
+        """A ranged attack met head-on by one of the defender's own (moves.clash): the two meet in the air between
+        them. Who wins is their power with some luck in it: the attack pushes THROUGH (landing weaker), the two
+        CANCEL out (nothing lands), or the defender's TURNS IT BACK onto the attacker (weaker than it was).
+        Returns the record, or None if she doesn't answer it."""
+        cfg = self.rules.get("moves", {}).get("clash") or {}
+        if not cfg.get("enabled", True) or not self.is_ranged(move) or math.get("type_mult", 1) == 0:
+            return None
+        if (d.name in self.downed or self.pinned_by(d.name) or self.pinning(d.name) or self.grab_between(a.name, d.name)
+                or any(self.has(d, st) for st in ("paralyzed", "asleep", "frozen", "flinched", "constricted"))
+                or d.name in self.pressed):
+            return None
+        options = []
+        for m in d.moves:
+            if not self.is_ranged(m) or (d.move_uses.get(m["name"], 1) <= 0):
+                continue
+            if d.energy < self.energy_cost(m):
+                continue
+            options.append((self.move_math(d.name, a.name, m)["effective"], m))
+        if not options:
+            return None
+        if not self._chance(float(cfg.get("chance", 0.15)), f"{d.name} meeting {poss_word(a.name)} {move['name']} "
+                            f"with one of her own", "CLASH", "no"):
+            return None
+        # how much force a move puts out, all told: a whole-body discharge spreads its power over every part, so
+        # it is weighed by how much of her it covers, not by one part's share
+        weigh = lambda eff, m, who: eff * ({"whole_body": len(who.parts), "spread": 3}.get(m.get("target"), 1)) ** 0.5
+        options = [(weigh(e, m, a), e, m) for e, m in options]
+        _, eff_d, dm = max(options, key=lambda x: x[0])
+        d.energy = max(0.0, d.energy - self.energy_cost(dm))
+        self._use_move(d, dm)
+        luck = float(cfg.get("luck", 0.25))
+        pa = weigh(math["effective"], move, d) * (1 + self.rng.uniform(-luck, luck))
+        pd = weigh(eff_d, dm, a) * (1 + self.rng.uniform(-luck, luck))
+        win = float(cfg.get("win_ratio", 1.3))
+        lo, hi = float(cfg.get("min_share", 0.25)), float(cfg.get("max_share", 0.8))
+        out = {"move": dm["name"], "move_type": dm["type"], "about": dm.get("about", ""), "power": round(eff_d, 2),
+               "attack_power": round(math["effective"], 2), "rolled": [round(pa, 1), round(pd, 1)], "hits_on_attacker": []}
+        if pa >= pd * win:
+            out.update(outcome="through", share=round(max(lo, min(hi, 1 - pd / pa)), 2))
+        elif pd >= pa * win:
+            share = round(max(lo, min(hi, 1 - pa / pd)), 2)
+            out.update(outcome="back", share=share)
+            reach = [x for x in a.parts if body_region(x) in ("head", "neck", "chest", "shoulder")] or list(a.parts)
+            self.rng.shuffle(reach)
+            mine, self._source = self._source, f"{poss_word(d.name)} {dm['name']} (turned back)"
+            out["hits_on_attacker"] = [self._apply_damage(a, x, round(eff_d * share, 2)) for x in reach[:3]]
+            self._source = mine
+            self.involved.add(d.name)
+        else:
+            out.update(outcome="cancel", share=0.0)
+        self.rolls.append({"what": f"the clash: {poss_word(a.name)} {move['name']} {round(pa)} against {poss_word(d.name)} "
+                                   f"{dm['name']} {round(pd)}", "chance": 0, "roll": 0, "ok": True, "plain": True,
+                           "result": {"through": "it pushes through", "cancel": "they cancel out",
+                                      "back": "it is turned back"}[out["outcome"]]})
+        return out
 
     def _into_mouth(self, a, d, move, hits, held):
         """A stream of water that finds her face (or her, lying face-up) may go into her open mouth and up her nose:
