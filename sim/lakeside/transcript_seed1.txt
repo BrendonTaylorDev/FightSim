@@ -1,0 +1,3447 @@
+STAND-IN FIGHT, seed 1: Nocturne vs the sleek Ripples in the lakeside clearing (warm, sunny with clouds, a gentle breeze off the lake).
+Settings: /scale 5, /resscale 0.75, /healthloss 0.2, /numb off. Lent for this fight: Nocturne Sunny Day and Counter; Ripples Rain Dance, Protect and Mirror Coat.
+Director and narrator: Claude standing in for the local models. Every roll is the engine's; the prose is written from the narrator's real notes for each beat.
+
+[2026-10-03 build 113]
+**Nocturne** ❤️ Health 1800% (fresh) · energy 100
+  Head 🟩97% 🟢0%  ·  Horn 🟦227% 🟢0%  ·  Left Ear 🟨57% 🟢0%  ·  Right Ear 🟨57% 🟢0%
+  Muzzle 🟩77% 🟢0%  ·  Nose 🟨52% 🟢0%  ·  Jaw 🟩92% 🟢0%  ·  Neck 🟩82% 🟢0%  ·  Throat 🟨62% 🟢0%
+  Chest Ruff 🟦137% 🟢0%  ·  Chest 🟦117% 🟢0%  ·  Belly 🟩77% 🟢0%  ·  Back 🟦127% 🟢0%
+  Left Shoulder 🟦112% 🟢0%  ·  Right Shoulder 🟦112% 🟢0%  ·  Left Ribs 🟦102% 🟢0%
+  Right Ribs 🟦102% 🟢0%  ·  Left Flank 🟩92% 🟢0%  ·  Right Flank 🟩92% 🟢0%
+  Left Upper Foreleg 🟦102% 🟢0%  ·  Right Upper Foreleg 🟦102% 🟢0%  ·  Left Lower Foreleg 🟩92% 🟢0%
+  Right Lower Foreleg 🟩92% 🟢0%  ·  Left Forepaw 🟩82% 🟢0%  ·  Right Forepaw 🟩82% 🟢0%
+  Left Hip 🟦117% 🟢0%  ·  Right Hip 🟦117% 🟢0%  ·  Left Thigh 🟦122% 🟢0%  ·  Right Thigh 🟦122% 🟢0%
+  Left Hock 🟩87% 🟢0%  ·  Right Hock 🟩87% 🟢0%  ·  Left Hind Paw 🟩82% 🟢0%
+  Right Hind Paw 🟩82% 🟢0%  ·  Tail Base 🟦107% 🟢0%  ·  Sickle Tail 🟦187% 🟢0%
+
+**Ripples** ❤️ Health 1700% (fresh) · energy 100
+  Head 🟩93% 🟢0%  ·  Left Ear 🟨63% 🟢0%  ·  Right Ear 🟨63% 🟢0%  ·  Muzzle 🟩78% 🟢0%  ·  Nose 🟨53% 🟢0%
+  Left Cheek 🟩78% 🟢0%  ·  Right Cheek 🟩78% 🟢0%  ·  Jaw 🟩88% 🟢0%  ·  Neck 🟩78% 🟢0%
+  Throat 🟨63% 🟢0%  ·  Chest 🟦103% 🟢0%  ·  Stomach 🟩78% 🟢0%  ·  Upper Back 🟦113% 🟢0%
+  Lower Back 🟦103% 🟢0%  ·  Left Shoulder 🟦103% 🟢0%  ·  Right Shoulder 🟦103% 🟢0%
+  Left Upper Arm 🟩93% 🟢0%  ·  Right Upper Arm 🟩93% 🟢0%  ·  Left Forearm Fin 🟨68% 🟢0%
+  Right Forearm Fin 🟨68% 🟢0%  ·  Left Paw 🟩78% 🟢0%  ·  Right Paw 🟩78% 🟢0%  ·  Left Hip 🟦108% 🟢0%
+  Right Hip 🟦108% 🟢0%  ·  Left Thigh 🟦113% 🟢0%  ·  Right Thigh 🟦113% 🟢0%  ·  Left Knee 🟩88% 🟢0%
+  Right Knee 🟩88% 🟢0%  ·  Left Foot 🟩83% 🟢0%  ·  Right Foot 🟩83% 🟢0%  ·  Tail Base 🟦128% 🟢0%
+  Twin Tails 🟦168% 🟢0%
+
+
+Legend: resistance 🟦>100% 🟩70-100% 🟨50-70% 🟧30-50% 🟥0-30% | damage 🟢0+ 🟡30+ 🟠60+ 🔴90+ 🟣150+ ⚫300+ | ❤️ = health
+How to read a hit: three rows under the part's name, each as before → after, then the change and where it comes from.
+  damage: power × the part's resistance multiplier (🟦 0.20 … weaker parts take more) × your damage scale.
+  resistance: power × the resistance loss rate (× your resistance scale).
+  health: the damage added × health per damage point × the part's health multiplier.
+
+============================== beat 1 ==============================
+  [narrator is setting the scene]
+
+— Both —
+
+The clearing lay open to the lake like a held breath. Tall pines and broad oaks stood round it, their roots humped up through the grass at the edges, and along the treeline a fallen trunk lay furred with moss. On the lake side the grass thinned to a beach of pale, soft sand that slid into warm shallows, and a few lengths out the water went dark and deep. It was a warm afternoon. Fat white clouds drifted over, and their shadows slid across the grass and off again. A breeze came in off the water, turning the leaves silver side up, and somewhere in the oaks a bird was singing as if nothing in the world was about to happen.
+
+— Nocturne —
+
+Nocturne came out of the pines with the heavy, rolling pace of her kind and stopped where the shade ended. White fur, the dark blue-grey of her face, the scythe of her horn catching the sun as she turned her head. She looked at the lake for a long moment, the way she might look at something that had insulted her, and set her broad paws on the dry grass, well back from the sand.
+
+*Dry ground. Stay on it.*
+
+— Ripples —
+
+Ripples came up out of the shallows without a splash, sleek and low, orange fur flattened to her body and running with water. She walked up the sand on two webbed feet, shook herself from ears to tail-tips, and stood there dripping in the sun, her bare cream throat pale, her twin tails beginning to turn lazily behind her. The blue fins on her forearms opened and closed once.
+
+Her black eyes went over the Absol from horn to sickle tail, then to the careful paws on the grass, and the marks on her cheeks twitched.
+
+*Doesn't like the water. Good.*
+
+============================== beat 2 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 1 — Nocturne → Ripples: NIGHT SLASH (targeted — Left Shoulder, Chest, Throat, energy 100→90)
+  [lingering on one blow this beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne did not waste the sun on staring. She came across the grass in four long strides, low, and her right forepaw came round flat and fast, claws spread and edged with darkness, raking for the Buizel's left shoulder.
+
+— Ripples —
+
+The claws took her across the point of the shoulder and dragged down, and the dark in them bit deep. It jarred into her chest and snapped up into her throat, where the cream fur was thinnest, and for one moment her body simply would not move: her head jerked back from it on its own and stayed there, eyes squeezed shut, the blow ringing through her.
+
+*Move. Move!*
+
+She couldn't. Not yet. The flinch held her a heartbeat too long, and she knew the Absol had seen it.
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: a long probing cut at the shoulder
+  Power **70** = base 35 × 1 (Dark vs Water) × 2 (targeted)
+  Jarred next to it (Chest, Throat): power 17.5 (×0.5)
+
+    Left Shoulder
+        damage      🟢 0% → 🟠 70%              +70 = power 70 × 0.20 × scale 5
+        resistance  🟦 103% → 🟩 89.88%         -13.12 = power 70 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1700% → ❤️ 1691.18%      -8.82 = damage 70 × 0.2 × 0.7 × vital 0.9
+    Chest
+        damage      🟢 0% → 🟢 17.5%            +17.5 = power 17.5 × 0.20 × scale 5
+        resistance  🟦 103% → 🟩 99.72%         -3.28 = power 17.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1691.18% → ❤️ 1687.75%   -3.43 = damage 17.5 × 0.2 × 0.7 × vital 1.4
+    Throat
+        damage      🟢 0% → 🟠 70%              +70 = power 17.5 × 0.80 × scale 5
+        resistance  🟨 63% → 🟨 59.72%          -3.28 = power 17.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1687.75% → ❤️ 1656.81%   -30.94 = damage 70 × 0.2 × 1.3 × vital 1.7
+
+  Total: +157.5% damage  ·  ❤️ Ripples 1700% → **1656.81%** (-43.19)
+😵 **Ripples is flinched** (1 beat)
+
+⏳ Beat 1 health: ❤️ Nocturne 1799.5% (-0.5% exertion) | ❤️ Ripples 1656.31% (-0.5% exertion)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nocturne's attack 18%, rolled 76 → it lands
+    Nocturne's Night Slash landing devastatingly 2%, rolled 38 → no
+    Ripples flinched by Night Slash 25%, rolled 21 → flinched
+----------------------------------------
+
+
+============================== beat 3 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 2 — Nocturne → Ripples: PSYCHO CUT (spread — Chest, Left Shoulder, Neck, energy 95→77)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She had. While the Buizel stood locked in her flinch, Nocturne's horn swung, and a pale blade of force sheared off its edge across the gap between them.
+
+— Ripples —
+
+It caught her in the chest and ran up over the shoulder that was already burning and on into her neck. The left shoulder went from a sharp sting to something hot and wide that spread down her arm, and she staggered a step back on the sand before she caught herself, gasping, her left forearm fin clamped flat.
+
+*Twice. She's hit me twice and I haven't touched her.*
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: Psycho Cut
+  Power **33.06** = base 23 × 1 (Psychic vs Water) × 1.25 (spread) × 1.15 (caught flinching)
+
+    Chest
+        damage      🟢 17.5% → 🔴 91.89%        +74.39 = power 33.06 × 0.45 × scale 5
+        resistance  🟩 99.72% → 🟩 93.52%       -6.2 = power 33.06 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1656.31% → ❤️ 1635.48%   -20.83 = damage 74.39 × 0.2 × 1 × vital 1.4
+    Left Shoulder
+        damage      🟠 70% → 🔴 144.38%         +74.39 = power 33.06 × 0.45 × scale 5
+        resistance  🟩 89.88% → 🟩 83.68%       -6.2 = power 33.06 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1635.48% → ❤️ 1622.09%   -13.39 = damage 74.39 × 0.2 × 1 × vital 0.9
+    Neck
+        damage      🟢 0% → 🟠 74.39%           +74.39 = power 33.06 × 0.45 × scale 5
+        resistance  🟩 78% → 🟩 71.8%           -6.2 = power 33.06 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1622.09% → ❤️ 1598.29%   -23.8 = damage 74.39 × 0.2 × 1 × vital 1.6
+
+  Total: +223.17% damage  ·  ❤️ Ripples 1656.31% → **1598.29%** (-58.02)
+
+- Ripples is no longer flinched
+
+⏳ Beat 2 health: ❤️ Nocturne 1799% (-0.5% exertion) | ❤️ Ripples 1596.64% (-0.5% exertion, -1.15%
+      injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nocturne's attack 9%, rolled 39 → it lands
+    Nocturne's Psycho Cut landing devastatingly 3%, rolled 61 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 77 → no
+----------------------------------------
+
+
+============================== beat 4 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 3 — Ripples → Nocturne: AQUA JET (targeted — Chest, Left Ribs, Left Shoulder, Throat, Back,
+      Right Shoulder, Left Thigh, energy 100→52)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+That was enough. Ripples dropped low, and water burst out of her: it wrapped her whole body in one roaring sheath, and her tails spun, and she went across the clearing like a thrown spear, straight at the white chest.
+
+— Nocturne —
+
+It hit her square in the chest and did not stop. The water closed round her too, and she was carried with it, a dozen strides across the grass, the jet scouring at her ribs, her shoulder, her throat the whole way, cold and hammering and impossible to get out of. Then the old oak came up behind her.
+
+She hit it back first. The bark slammed into her back and her right shoulder and her left thigh all at once, and then the Buizel's weight came after it, driving into her chest and crushing her against the trunk. The breath went out of her. One knee touched down in the roots.
+
+*Not down. Not for this.*
+
+She got the knee back under her. She stayed on her feet, but her whole body rang, and for a moment she could only stand against the oak, soaked to the skin, the world tilting.
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: Aqua Jet, straight into the Absol's chest
+🐏 **Charge** a dozen strides into an old oak: carried inside the water the whole way (4 more
+      contacts), slam power 35, then Ripples' body crushes her against it — pressed against it,
+      still up
+  Power **60** = base 30 × 1 (Water vs Dark) × 2 (targeted)
+  Jarred next to it (Left Ribs, Left Shoulder): power 15 (×0.5)
+
+  ▸ the charge
+    Chest (hit 1)
+        damage      🟢 0% → 🟠 60%              +60 = power 60 × 0.20 × scale 5
+        resistance  🟦 117% → 🟦 105.75%        -11.25 = power 60 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1799% → ❤️ 1787.24%      -11.76 = damage 60 × 0.2 × 0.7 × vital 1.4
+    Left Ribs (hit 1)
+        damage      🟢 0% → 🟢 15%              +15 = power 15 × 0.20 × scale 5
+        resistance  🟦 102% → 🟩 99.19%         -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1787.24% → ❤️ 1784.72%   -2.52 = damage 15 × 0.2 × 0.7 × vital 1.2
+    Left Shoulder (hit 1)
+        damage      🟢 0% → 🟢 15%              +15 = power 15 × 0.20 × scale 5
+        resistance  🟦 112% → 🟦 109.19%        -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1784.72% → ❤️ 1782.83%   -1.89 = damage 15 × 0.2 × 0.7 × vital 0.9
+
+  ▸ carried inside the water
+    Chest (hit 2)
+        damage      🟠 60% → 🟠 75%             +15 = power 15 × 0.20 × scale 5
+        resistance  🟦 105.75% → 🟦 102.94%     -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1782.83% → ❤️ 1779.89%   -2.94 = damage 15 × 0.2 × 0.7 × vital 1.4
+    Left Ribs (hit 2)
+        damage      🟢 15% → 🟡 48.75%          +33.75 = power 15 × 0.45 × scale 5
+        resistance  🟩 99.19% → 🟩 96.38%       -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1779.89% → ❤️ 1771.79%   -8.1 = damage 33.75 × 0.2 × 1 × vital 1.2
+    Left Shoulder (hit 2)
+        damage      🟢 15% → 🟡 30%             +15 = power 15 × 0.20 × scale 5
+        resistance  🟦 109.19% → 🟦 106.38%     -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1771.79% → ❤️ 1769.9%    -1.89 = damage 15 × 0.2 × 0.7 × vital 0.9
+    Throat
+        damage      🟢 0% → 🟠 60%              +60 = power 15 × 0.80 × scale 5
+        resistance  🟨 62% → 🟨 59.19%          -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1769.9% → ❤️ 1743.38%    -26.52 = damage 60 × 0.2 × 1.3 × vital 1.7
+
+  ▸ slam: an old oak
+    Back
+        damage      🟢 0% → 🟡 35%              +35 = power 35 × 0.20 × scale 5
+        resistance  🟦 127% → 🟦 120.44%        -6.56 = power 35 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1743.38% → ❤️ 1738.48%   -4.9 = damage 35 × 0.2 × 0.7
+    Right Shoulder
+        damage      🟢 0% → 🟡 35%              +35 = power 35 × 0.20 × scale 5
+        resistance  🟦 112% → 🟦 105.44%        -6.56 = power 35 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1738.48% → ❤️ 1734.07%   -4.41 = damage 35 × 0.2 × 0.7 × vital 0.9
+    Left Thigh
+        damage      🟢 0% → 🟡 35%              +35 = power 35 × 0.20 × scale 5
+        resistance  🟦 122% → 🟦 115.44%        -6.56 = power 35 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1734.07% → ❤️ 1730.15%   -3.92 = damage 35 × 0.2 × 0.7 × vital 0.8
+
+  ▸ crush
+    Chest (hit 3)
+        damage      🟠 75% → 🔴 105%            +30 = power 30 × 0.20 × scale 5
+        resistance  🟦 102.94% → 🟩 97.31%      -5.63 = power 30 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1730.15% → ❤️ 1724.27%   -5.88 = damage 30 × 0.2 × 0.7 × vital 1.4
+    Left Ribs (hit 3)
+        damage      🟡 48.75% → 🟠 65.62%       +16.88 = power 7.5 × 0.45 × scale 5
+        resistance  🟩 96.38% → 🟩 94.97%       -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1724.27% → ❤️ 1720.22%   -4.05 = damage 16.88 × 0.2 × 1 × vital 1.2
+    Left Shoulder (hit 3)
+        damage      🟡 30% → 🟡 37.5%           +7.5 = power 7.5 × 0.20 × scale 5
+        resistance  🟦 106.38% → 🟦 104.97%     -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1720.22% → ❤️ 1719.27%   -0.94 = damage 7.5 × 0.2 × 0.7 × vital 0.9
+
+  Total: +373.13% damage  ·  ❤️ Nocturne 1799% → **1719.27%** (-79.73)
+💧 **Nocturne is soaked** (3 beats)
+
+🧱 **Nocturne keeps her feet** at an old oak — crumple chance 62% · how: a knee touches down; she
+      shoves back up
+🌀 Nocturne is reeling (1 beat): she can strike, but can't start a pin
+
+⏳ Beat 3 health: ❤️ Nocturne 1718.07% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1594.99% (-0.5%
+      exertion, -1.15% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 18%, rolled 97 → it lands
+    Ripples' Aqua Jet landing devastatingly 2%, rolled 53 → no
+    an old oak breaking under Nocturne 5%, rolled 12 → it holds
+    Nocturne crumpling at an old oak 62%, rolled 72 → she keeps her feet
+    the clearing doing something by itself 5%, rolled 23 → nothing
+----------------------------------------
+
+
+============================== beat 5 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 4 — Nocturne → Ripples: SUNNY DAY (self, energy 87→77)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne straightened off the trunk, water running out of her white fur, and looked up past the leaves. The sun was already warm. She made it more than warm. Something in her called to it, and the light came down hard and white over the clearing, the heat of it pressing on her back, steam beginning to rise off her soaked coat.
+
+*Fight in that, river rat.*
+
+— Ripples —
+
+The glare hit Ripples' eyes like a slap. The shallows flashed white; the sand turned hot under her feet. She felt the water on her own fur start to go, and something in her chest tightened. Her water would be weaker in this. She could feel it.
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: the sun hardens to a white glare
+🌦️ **SUN** over the arena for 5 beats
+
+- Nocturne is no longer reeling
+
+⏳ Beat 4 health: ❤️ Nocturne 1716.87% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1593.34% (-0.5%
+      exertion, -1.15% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 47 → nothing
+----------------------------------------
+
+
+============================== beat 6 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 5 — Ripples → Nocturne: RAIN DANCE (self, energy 62→52)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+So she took the sun away. She tipped her head back, cheek marks flaring, and called to the lake behind her, to the clouds, and they came: pulled in off the water, piling up grey over the treetops, swallowing the glare. The first fat drops hit the sand. Then it was raining properly, warm rain hissing on the lake and pattering through the leaves.
+
+*Better. Much better.*
+
+— Nocturne —
+
+Nocturne felt the rain land on her back and flatten the steam out of her fur, and her lip peeled back from one fang. The Buizel was standing in it with her face turned up like it was a gift.
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: clouds pulled in off the lake, and rain
+🌦️ **RAIN** over the arena for 5 beats
+
+⏳ Beat 5 health: ❤️ Nocturne 1715.67% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1591.69% (-0.5%
+      exertion, -1.15% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 58 → nothing
+----------------------------------------
+
+
+============================== beat 7 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 6 — Nocturne → Ripples: BITE (targeted — Right Upper Arm, Right Forearm Fin, Right Shoulder,
+      energy 87→73)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She went in again through the rain. Her head jinked high, as if for the face, a quick, sharp feint, and then she dropped and went low, jaws open, for the arm.
+
+— Ripples —
+
+Ripples didn't flinch at the feint. She had watched those red eyes and they had never left her arm. But reading it and getting out of it were different things. The jaws closed on her right upper arm, hard, teeth through wet fur, and the bite wrenched her forearm fin sideways and jarred up into her shoulder.
+
+She yelped, short and furious, and tore the arm free. It throbbed all the way down to her webbed paw, and when she flexed the fingers the fin quivered.
+
+*Saw it coming. Still let her bite me. Stupid.*
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: a feint at the face, then the bite low
+🎭 **Feint** (Ripples bites 43%): she READS it — an ordinary attack
+  Power **60** = base 30 × 1 (Dark vs Water) × 2 (targeted)
+  Jarred next to it (Right Forearm Fin, Right Shoulder): power 15 (×0.5)
+
+    Right Upper Arm
+        damage      🟢 0% → 🔴 135%             +135 = power 60 × 0.45 × scale 5
+        resistance  🟩 93% → 🟩 81.75%          -11.25 = power 60 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1591.69% → ❤️ 1572.79%   -18.9 = damage 135 × 0.2 × 1 × vital 0.7
+    Right Forearm Fin
+        damage      🟢 0% → 🟠 60%              +60 = power 15 × 0.80 × scale 5
+        resistance  🟨 68% → 🟨 65.19%          -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1572.79% → ❤️ 1568.11%   -4.68 = damage 60 × 0.2 × 1.3 × vital 0.3
+    Right Shoulder
+        damage      🟢 0% → 🟢 15%              +15 = power 15 × 0.20 × scale 5
+        resistance  🟦 103% → 🟦 100.19%        -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1568.11% → ❤️ 1566.22%   -1.89 = damage 15 × 0.2 × 0.7 × vital 0.9
+
+  Total: +210% damage  ·  ❤️ Ripples 1591.69% → **1566.22%** (-25.47)
+
+- Nocturne is no longer soaked
+
+⏳ Beat 6 health: ❤️ Nocturne 1714.47% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1564.22% (-0.5%
+      exertion, -1.5% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples biting on Nocturne's feint 43%, rolled 88 → she reads it
+    Ripples dodging Nocturne's attack 17%, rolled 48 → it lands
+    Nocturne's Bite landing devastatingly 2%, rolled 40 → no
+    Ripples flinched by Bite 25%, rolled 66 → no
+    the clearing doing something by itself 5%, rolled 93 → nothing
+----------------------------------------
+
+
+============================== beat 8 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 7 — Ripples → Nocturne: WATER GUN (spread — Muzzle, Head, Neck, energy 62→44)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+She answered with a jet: Water Gun, point-blank, straight into the Absol's face, the rain making it heavier.
+
+— Nocturne —
+
+It hit her in the muzzle and smashed her head back, and it was in her mouth before she could close it, up her nose, down her throat. Nocturne coughed, choked, coughed again, spitting water, her eyes streaming. Every breath she tried to drag in caught on the water still in her and turned into another cough. Her neck ached where the jet had driven her head back, and her face stung.
+
+*Hate. Water.*
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a jet of water straight into the Absol's face
+  Power **32.5** = base 20 × 1 (Water vs Dark) × 1.25 (spread) × 1.3 (in the rain)
+
+    Muzzle
+        damage      🟢 0% → 🟠 73.12%           +73.12 = power 32.5 × 0.45 × scale 5
+        resistance  🟩 77% → 🟩 70.91%          -6.09 = power 32.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1714.47% → ❤️ 1705.7%    -8.78 = damage 73.12 × 0.2 × 1 × vital 0.6
+    Head
+        damage      🟢 0% → 🟠 73.12%           +73.12 = power 32.5 × 0.45 × scale 5
+        resistance  🟩 97% → 🟩 90.91%          -6.09 = power 32.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1705.7% → ❤️ 1688.15%    -17.55 = damage 73.12 × 0.2 × 1 × vital 1.2
+    Neck
+        damage      🟢 0% → 🟠 73.12%           +73.12 = power 32.5 × 0.45 × scale 5
+        resistance  🟩 82% → 🟩 75.91%          -6.09 = power 32.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1688.15% → ❤️ 1664.75%   -23.4 = damage 73.12 × 0.2 × 1 × vital 1.6
+
+  Total: +219.36% damage  ·  ❤️ Nocturne 1714.47% → **1664.75%** (-49.72)
+💧 **Nocturne is soaked** (3 beats)
+💦 **Nocturne is sputtering** (2 beats)
+
+⏳ Beat 7 health: ❤️ Nocturne 1663.55% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1562.22% (-0.5%
+      exertion, -1.5% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne meeting Ripples' Water Gun with one of her own 15%, rolled 78 → no
+    Nocturne dodging Ripples' attack 9%, rolled 74 → it lands
+    Ripples' Water Gun landing devastatingly 2%, rolled 66 → no
+    Ripples' Water Gun going into Nocturne's mouth 30%, rolled 11 → into her mouth
+    the clearing doing something by itself 5%, rolled 96 → nothing
+----------------------------------------
+
+
+============================== beat 9 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 8 — Nocturne → Ripples: IRON TAIL (targeted — Jaw, Left Ear, Throat, energy 78→68)
+Attack 9 — Nocturne → Ripples: NIGHT SLASH (targeted — Stomach, Chest, Left Hip, energy 68→58)
+Impact — Ripples thrown: the grass
+  [staying with the damage: Nocturne watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+Still coughing, she spun. The sickle tail came round low and then up, hardened like steel, and caught the Buizel under the jaw and kept going.
+
+— Ripples —
+
+The jaw took it, her head snapped back, and the ground let go of her. She was in the air, her feet kicking at nothing, the rain and the sky and the treetops wheeling, and she had time to know she could do absolutely nothing about whatever came next.
+
+— Nocturne —
+
+What came next was Nocturne's claws. She was already moving under the falling Buizel, and her forepaw raked up across the cream stomach while it hung there: no ground under it, nothing to push from, nothing to twist with. She felt it go in, all of it.
+
+— Ripples —
+
+The claws went through her stomach and up into her chest, and the force of it turned her over in the air and smashed her down. She landed on her back in the wet grass, hard, her upper back and her shoulder taking it, and the air went out of her in one flat, cracked gasp and would not come back.
+
+She lay there with her mouth open, trying to breathe and not breathing, the rain falling on her face.
+
+*Can't— can't get—*
+
+Her stomach was a single burning line. Her arms had come in over it on their own.
+
+
+
+
+----------------------------------------
+🔗 **Chain, link 1 of 2**
+⚔️ **Nocturne → Ripples**: the sickle tail swung up under her jaw
+🎯 **Ripples is knocked up into the air** — the next blow catches her there
+  Power **36** = base 40 × 0.5 (Steel vs Water, not very effective) × 2 (targeted) × 0.9 (choking on
+        water)
+  Jarred next to it (Left Ear, Throat): power 9 (×0.5)
+
+    Jaw
+        damage      🟢 0% → 🟠 81%              +81 = power 36 × 0.45 × scale 5
+        resistance  🟩 88% → 🟩 81.25%          -6.75 = power 36 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1562.22% → ❤️ 1550.88%   -11.34 = damage 81 × 0.2 × 1 × vital 0.7
+    Left Ear
+        damage      🟢 0% → 🟡 36%              +36 = power 9 × 0.80 × scale 5
+        resistance  🟨 63% → 🟨 61.31%          -1.69 = power 9 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1550.88% → ❤️ 1549.01%   -1.87 = damage 36 × 0.2 × 1.3 × vital 0.2
+    Throat
+        damage      🟠 70% → 🔴 106%            +36 = power 9 × 0.80 × scale 5
+        resistance  🟨 59.72% → 🟨 58.03%       -1.69 = power 9 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1549.01% → ❤️ 1533.1%    -15.91 = damage 36 × 0.2 × 1.3 × vital 1.7
+
+  Total: +153% damage  ·  ❤️ Ripples 1562.22% → **1533.1%** (-29.12)
+
+🔗 **Chain, link 2 of 2** — the link before it landed: her chance to dodge this one is halved
+⚔️ **Nocturne → Ripples**: the claws across her stomach as she hangs in the air
+🎯 **JUGGLE**: caught helpless in the air, and smashed back down
+  Power **81.9** = base 35 × 1 (Dark vs Water) × 2 (targeted) × 0.9 (choking on water) × 1.3 (caught
+        helpless in the air)
+  Jarred next to it (Chest, Left Hip): power 20.48 (×0.5)
+
+    Stomach
+        damage      🟢 0% → 🟣 184.28%          +184.28 = power 81.9 × 0.45 × scale 5
+        resistance  🟩 78% → 🟨 62.64%          -15.36 = power 81.9 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1533.1% → ❤️ 1485.18%    -47.91 = damage 184.28 × 0.2 × 1 × vital 1.3
+    Chest
+        damage      🔴 91.89% → 🔴 137.97%      +46.08 = power 20.48 × 0.45 × scale 5
+        resistance  🟩 93.52% → 🟩 89.68%       -3.84 = power 20.48 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1485.18% → ❤️ 1472.28%   -12.9 = damage 46.08 × 0.2 × 1 × vital 1.4
+    Left Hip
+        damage      🟢 0% → 🟢 20.48%           +20.48 = power 20.48 × 0.20 × scale 5
+        resistance  🟦 108% → 🟦 104.16%        -3.84 = power 20.48 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1472.28% → ❤️ 1469.99%   -2.29 = damage 20.48 × 0.2 × 0.7 × vital 0.8
+
+  Total: +250.84% damage  ·  ❤️ Ripples 1533.1% → **1469.99%** (-63.11)
+😮 **Ripples is breathless** (1 beat)
+
+🪨 **Ripples lands hard** — smashed down out of the air (thrown: the grass), ends up face-up
+- the grass (heavy, power 25 each): Upper Back, Left Shoulder, Right Thigh
+    Upper Back
+        damage      🟢 0% → 🟢 25%              +25 = power 25 × 0.20 × scale 5
+        resistance  🟦 113% → 🟦 108.31%        -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1469.99% → ❤️ 1466.49%   -3.5 = damage 25 × 0.2 × 0.7
+    Left Shoulder
+        damage      🔴 144.38% → 🟣 200.63%     +56.25 = power 25 × 0.45 × scale 5
+        resistance  🟩 83.68% → 🟩 78.99%       -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1466.49% → ❤️ 1456.36%   -10.12 = damage 56.25 × 0.2 × 1 × vital 0.9
+    Right Thigh
+        damage      🟢 0% → 🟢 25%              +25 = power 25 × 0.20 × scale 5
+        resistance  🟦 113% → 🟦 108.31%        -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1456.36% → ❤️ 1453.56%   -2.8 = damage 25 × 0.2 × 0.7 × vital 0.8
+
+  Total: +106.25% damage  ·  ❤️ Ripples 1469.99% → **1453.56%** (-16.43)
+
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+
+⏳ Beat 8 health: ❤️ Nocturne 1662.35% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1446.76% (-0.5%
+      exertion, -6.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nocturne's attack 17%, rolled 50 → it lands
+    Nocturne's Iron Tail landing devastatingly 2%, rolled 77 → no
+    chain link 2 landing on Jaw again 50%, rolled 54 → somewhere new
+    Nocturne's Night Slash landing devastatingly 3%, rolled 27 → no
+    Ripples flinched by Night Slash 25%, rolled 55 → no
+    Ripples breathless by the blow to her Stomach 30%, rolled 96 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 1 → breathless
+    Ripples tumbling on after the landing 30%, rolled 95 → she stops where she lands
+    Ripples rolling through the landing 17%, rolled 36 → she stays down
+    the clearing doing something by itself 5%, rolled 92 → nothing
+----------------------------------------
+
+
+============================== beat 10 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 10 — Ripples → Nocturne: PROTECT (self, energy 52→42)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+  [the passage never ended with Ripples on her feet: adding the get-up]
+
+— Ripples —
+
+She did the only thing she could from flat on her back. She threw up a shell of light round herself, shimmering and hard, and under it she rolled onto her front and got her paws on the fallen trunk and hauled. The first try folded. The second held, and she was up, swaying, one paw braced on the moss, her stomach pulled in tight.
+
+— Both —
+
+The rain eased off over the clearing as she stood, the clouds thinning, and the sun came back through them, warm and ordinary again.
+
+Ripples got her feet under her at last and stood, swaying, one paw braced against the fallen trunk.
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a shimmering shell thrown up
+🛡️ **Protect** (Ripples): set — it lasts until the next attack on her or the end of next beat
+
+🧗 **Ripples gets up** on the second try (using the fallen trunk; rolls onto her front first)
+      get-up roll 0.5 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+- Nocturne is no longer sputtering
+- Ripples is no longer breathless
+🌤️ The rain clears
+
+⏳ Beat 9 health: ❤️ Nocturne 1661.15% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1439.96% (-0.5%
+      exertion, -6.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 45 → nothing
+----------------------------------------
+
+
+============================== beat 11 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 11 — Nocturne → Ripples: BITE (targeted, energy 53→53)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne saw the Buizel up and lunged for the throat anyway, jaws wide.
+
+— Ripples —
+
+Her teeth hit the barrier a hand's width from Ripples' neck and stopped dead. The shell rang like a struck bell and broke into nothing, and the Absol was left with her jaws closing on air.
+
+*Ha.*
+
+— Nocturne —
+
+Nocturne pulled back, ears flat, the sting of it all the way up her muzzle.
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: a lunge for the throat
+🛡️ **Ripples is behind Protect**: the attack stops against it, nothing lands
+
+- Nocturne is no longer soaked
+
+⏳ Beat 10 health: ❤️ Nocturne 1659.95% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1433.16% (-0.5%
+      exertion, -6.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 77 → nothing
+----------------------------------------
+
+
+============================== beat 12 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 12 — Ripples → Nocturne: ICE FANG (targeted, DODGED, energy 52→42)
+  [lingering on one blow this beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+Ripples went for the foreleg, Ice Fang, frost spreading over her teeth as she lunged.
+
+— Nocturne —
+
+Nocturne twisted out of its line and let the freezing bite pass her shoulder, close enough to feel the cold of it, and as the Buizel came past she struck back: a short, hard swipe across the orange left arm. It was nothing like the bite; it was quick and mean and done.
+
+— Both —
+
+A gust came off the lake as they broke apart, a stronger one, flattening the grass and shoving at the Buizel's back, and she staggered half a step with it and caught herself.
+
+
+
+
+----------------------------------------
+💨 **Nocturne dodges** Ripples' ICE FANG (dodge chance 17% · how: twists out of its line)
+Calculations: Base 30, Ice vs Dark ×1, targeted ×2 → Effective 60. Res loss 11.25 (power × 0.19; the
+      damage scale doesn't change it). Jarred next to it: Left Forepaw, Chest Ruff: ×0.5 → Effective
+      15, res loss 2.81. (no hit)
+↩️ **Nocturne counters!**
+    Left Upper Arm
+        damage      🟢 0% → 🟠 74.25%           +74.25 = power 33 × 0.45 × scale 5
+        resistance  🟩 93% → 🟩 86.81%          -6.19 = power 33 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1433.16% → ❤️ 1422.77%   -10.39 = damage 74.25 × 0.2 × 1 × vital 0.7
+
+  Total: +74.25% damage  ·  ❤️ Ripples 1433.16% → **1422.77%** (-10.39)
+
+🌋 **The clearing acts: a gust off the lake** — on Ripples (chance 5% a beat)
+- nobody is hurt by it
+
+⏳ Beat 11 health: ❤️ Nocturne 1658.75% (-0.5% exertion, -0.7% injuries) | ❤️ Ripples 1415.97% (-0.5%
+      exertion, -6.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 17%, rolled 3 → DODGED
+    Nocturne countering after the dodge 35%, rolled 7 → she counters
+    the clearing doing something by itself 5%, rolled 4 → something happens
+----------------------------------------
+
+
+============================== beat 13 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 13 — Nocturne → Ripples: jaws clamp on her right arm and drag (DODGED)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne went to take hold of her, jaws for the right arm again, meaning to drag her in close and work on her there.
+
+— Ripples —
+
+Ripples sprang back, and the jaws closed on nothing. Out of the same movement she came back in and drove the heel of her paw into the Absol's nose.
+
+— Nocturne —
+
+It was a small blow, and it hurt far out of proportion: the nose was soft and the paw was hard, and Nocturne's eyes watered at once. She shook her head, snarling.
+
+
+
+
+----------------------------------------
+🔗 **Chain, link 1 of 2** — she slips it: the chain ends here
+💨 **Ripples slips** Nocturne's grab (dodge chance 15% · how: springs back): no grip closes
+↩️ **Ripples counters!**
+    Nose
+        damage      🟢 0% → 🔴 104%             +104 = power 26 × 0.80 × scale 5
+        resistance  🟨 52% → 🟧 47.12%          -4.88 = power 26 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1658.75% → ❤️ 1645.23%   -13.52 = damage 104 × 0.2 × 1.3 × vital 0.5
+
+  Total: +104% damage  ·  ❤️ Nocturne 1658.75% → **1645.23%** (-13.52)
+
+⏳ Beat 12 health: ❤️ Nocturne 1643.78% (-0.5% exertion, -0.95% injuries) | ❤️ Ripples 1409.17%
+      (-0.5% exertion, -6.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nocturne's attack 15%, rolled 11 → DODGED
+    Ripples countering after the dodge 35%, rolled 34 → she counters
+----------------------------------------
+
+
+============================== beat 14 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 14 — Ripples → Nocturne: MIRROR COAT (self, energy 52→40)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+Ripples backed off across the grass, breathing hard, and let a sheen spread over her fur, a cool, mirror-bright film that caught the sun.
+
+*Go on. Hit me with something.*
+
+— Nocturne —
+
+Nocturne saw the shine and did not understand it. She only saw a wounded river weasel standing still.
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a sheen spreading over her fur
+🪞 **Mirror Coat** (Ripples): set — it lasts until the next attack on her or the end of next beat
+Calculations: Base 0, Psychic vs Dark ×0 (no effect!), self ×1 → Effective 0. Res loss 0 each (power
+      × 0.19; the damage scale doesn't change it).
+- It has no effect on Nocturne.
+
+⏳ Beat 13 health: ❤️ Nocturne 1642.33% (-0.5% exertion, -0.95% injuries) | ❤️ Ripples 1402.37%
+      (-0.5% exertion, -6.3% injuries)
+----------------------------------------
+
+
+============================== beat 15 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 15 — Nocturne → Ripples: DARK PULSE (spread — Head, Chest, Stomach, energy 67→49)
+  [staying with the damage: Ripples' side, Nocturne watching]
+  [narrator is writing part 1/4]
+  [narrator is writing part 2/4]
+  [narrator is writing part 3/4]
+  [narrator is writing part 4/4]
+
+— Nocturne —
+
+She opened her jaws and let the dark out: a ring of it, rolling across the grass, catching the Buizel in the head and the chest and the stomach that was already torn.
+
+— Ripples —
+
+It hurt. It hit her in the head and in the chest, and on the stomach it found the line the claws had left and pressed straight into it, and she folded round it with the air knocked clean out of her. But the sheen took the force as it came, and threw it back.
+
+— Nocturne —
+
+The dark came back at her, bent and brighter, and slammed into her ribs and her neck. Nocturne grunted and stepped sideways into it, the left ribs flaring hot where the oak had already bruised them.
+
+*She sent it back. She sent my own—*
+
+— Ripples —
+
+Ripples was bent over, wheezing, unable to get a full breath, but her eyes were on the Absol, and they were bright.
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: a ring of dark force
+  Power **33.75** = base 27 × 1 (Dark vs Water) × 1.25 (spread)
+
+    Head
+        damage      🟢 0% → 🟠 75.94%           +75.94 = power 33.75 × 0.45 × scale 5
+        resistance  🟩 93% → 🟩 86.67%          -6.33 = power 33.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1402.37% → ❤️ 1384.14%   -18.22 = damage 75.94 × 0.2 × 1 × vital 1.2
+    Chest
+        damage      🔴 137.97% → 🟣 213.9%      +75.94 = power 33.75 × 0.45 × scale 5
+        resistance  🟩 89.68% → 🟩 83.35%       -6.33 = power 33.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1384.14% → ❤️ 1362.88%   -21.26 = damage 75.94 × 0.2 × 1 × vital 1.4
+    Stomach
+        damage      🟣 184.28% → ⚫ 319.28%     +135 = power 33.75 × 0.80 × scale 5
+        resistance  🟨 62.64% → 🟨 56.32%       -6.32 = power 33.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1362.88% → ❤️ 1317.25%   -45.63 = damage 135 × 0.2 × 1.3 × vital 1.3
+
+  Total: +286.88% damage  ·  ❤️ Ripples 1402.37% → **1317.25%** (-85.12)
+↩️ **Ripples' Mirror Coat**: she takes it and sends it back onto Nocturne (power 25.31 each)
+    Left Ribs
+        damage      🟠 65.62% → 🔴 122.57%      +56.95 = power 25.31 × 0.45 × scale 5
+        resistance  🟩 94.97% → 🟩 90.22%       -4.75 = power 25.31 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1642.33% → ❤️ 1628.66%   -13.67 = damage 56.95 × 0.2 × 1 × vital 1.2
+    Neck
+        damage      🟠 73.12% → 🔴 130.07%      +56.95 = power 25.31 × 0.45 × scale 5
+        resistance  🟩 75.91% → 🟩 71.16%       -4.75 = power 25.31 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1628.66% → ❤️ 1610.44%   -18.22 = damage 56.95 × 0.2 × 1 × vital 1.6
+
+  Total: +113.9% damage  ·  ❤️ Nocturne 1642.33% → **1610.44%** (-31.89)
+😮 **Ripples is breathless** (1 beat)
+
+⏳ Beat 14 health: ❤️ Nocturne 1607.59% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 1308.35%
+      (-0.5% exertion, -8.4% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples meeting Nocturne's Dark Pulse with one of her own 15%, rolled 70 → no
+    Ripples dodging Nocturne's attack 8%, rolled 50 → it lands
+    Nocturne's Dark Pulse landing devastatingly 2%, rolled 31 → no
+    Ripples flinched by Dark Pulse 20%, rolled 34 → no
+    Ripples breathless by the blow to her Stomach 30%, rolled 80 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 26 → breathless
+----------------------------------------
+
+
+============================== beat 16 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 16 — Nocturne → Ripples: IRON TAIL (targeted — Left Knee, Left Foot, Left Hip, energy 54→44)
+Impact — Ripples knocked down: the ground
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne did not like being made a fool of, and she answered it with the tail. It came round low through the wet grass and took the Buizel's left knee clean out from under her.
+
+— Ripples —
+
+The knee buckled sideways and the ground came up, and she landed on her back again, hard, the impact jarring into her shoulders and her hip. The knee throbbed. Her stomach, still caught in its spasm from the dark, pulled her knees up toward it.
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: Iron Tail
+  Power **40** = base 40 × 0.5 (Steel vs Water, not very effective) × 2 (targeted)
+  Jarred next to it (Left Foot, Left Hip): power 10 (×0.5)
+
+    Left Knee
+        damage      🟢 0% → 🔴 90%              +90 = power 40 × 0.45 × scale 5
+        resistance  🟩 88% → 🟩 80.5%           -7.5 = power 40 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1308.35% → ❤️ 1299.35%   -9 = damage 90 × 0.2 × 1 × vital 0.5
+    Left Foot
+        damage      🟢 0% → 🟢 22.5%            +22.5 = power 10 × 0.45 × scale 5
+        resistance  🟩 83% → 🟩 81.12%          -1.88 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1299.35% → ❤️ 1297.55%   -1.8 = damage 22.5 × 0.2 × 1 × vital 0.4
+    Left Hip
+        damage      🟢 20.48% → 🟡 30.48%       +10 = power 10 × 0.20 × scale 5
+        resistance  🟦 104.16% → 🟦 102.28%     -1.88 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1297.55% → ❤️ 1296.43%   -1.12 = damage 10 × 0.2 × 0.7 × vital 0.8
+
+  Total: +122.5% damage  ·  ❤️ Ripples 1308.35% → **1296.43%** (-11.92)
+
+🪨 **Ripples lands hard** (knocked down: the ground), ends up face-up
+- the ground (light, power 7 each): Upper Back, Right Shoulder, Left Hip
+    Upper Back
+        damage      🟢 25% → 🟡 32%             +7 = power 7 × 0.20 × scale 5
+        resistance  🟦 108.31% → 🟦 107%        -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1296.43% → ❤️ 1295.45%   -0.98 = damage 7 × 0.2 × 0.7
+    Right Shoulder
+        damage      🟢 15% → 🟢 22%             +7 = power 7 × 0.20 × scale 5
+        resistance  🟦 100.19% → 🟩 98.88%      -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1295.45% → ❤️ 1294.57%   -0.88 = damage 7 × 0.2 × 0.7 × vital 0.9
+    Left Hip
+        damage      🟡 30.48% → 🟡 37.48%       +7 = power 7 × 0.20 × scale 5
+        resistance  🟦 102.28% → 🟦 100.97%     -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1294.57% → ❤️ 1293.78%   -0.78 = damage 7 × 0.2 × 0.7 × vital 0.8
+
+  Total: +21% damage  ·  ❤️ Ripples 1296.43% → **1293.78%** (-2.65)
+
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+- Ripples is no longer breathless
+
+⏳ Beat 15 health: ❤️ Nocturne 1604.74% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 1284.63%
+      (-0.5% exertion, -8.65% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nocturne's attack 15%, rolled 22 → it lands
+    Nocturne's Iron Tail landing devastatingly 2%, rolled 39 → no
+    the landing finding every sore spot on Ripples 3%, rolled 74 → no
+    Ripples sitting down hard 15%, rolled 21 → flat on the ground
+    the clearing doing something by itself 5%, rolled 90 → nothing
+----------------------------------------
+
+
+============================== beat 17 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 17 — Nocturne → Ripples: SLASH (targeted — Stomach, Right Thigh, Right Knee, energy 49→32)
+  [staying with the damage: Nocturne watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+She was down, and Nocturne was on her before she could even roll: standing over her, forepaw raking down, once across the stomach, then the thigh, then the knee, then the knee again.
+
+She did not stop.
+
+Somewhere past the fourth blow it stopped being a choice. It was a rhythm, her own breath coming hard in time with it, the claws going back to the right knee and the right thigh because that was where they had already been, the same places, again, again.
+
+— Ripples —
+
+The first rake across her stomach tore a cry out of her. The next ones on her right leg came too fast to be separate. Thigh, knee, knee, thigh, thigh, each one landing on the last, until the leg was one hot, hammered ache from hip to foot and she was curled away from it with her arms over her head, gasping, her breath knocked out of her again.
+
+*Stop. Stop stop stop—*
+
+— Nocturne —
+
+When the frenzy broke, Nocturne stepped back, panting, and watched the Buizel crawl. She watched which leg she wouldn't put weight on. The right one. She marked it.
+
+— Ripples —
+
+Ripples got to the boulder at the edge of the beach and climbed it with her hands, one ugly pull at a time, and on the third try she was standing, leaning on the warm grey stone, her right leg trembling under her.
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: raking blows on her where she lies
+🌪️ **FRENZY**: Nocturne doesn't stop (blows keep landing on the same spot or two)
+👊 Pummel on her where she is down: 6 short blows, each ×0.6 of one full blow (power 38.88 each) — it
+      ends when the attacker has to breathe
+  Power **64.8** = base 30 × 1 (Normal vs Water) × 2 (targeted) × 1.08 (down, nowhere to roll with
+        it)
+
+    Stomach
+        damage      ⚫ 319.28% → ⚫ 474.8%      +155.52 = power 38.88 × 0.80 × scale 5
+        resistance  🟨 56.32% → 🟧 49.03%       -7.29 = power 38.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1284.63% → ❤️ 1232.07%   -52.57 = damage 155.52 × 0.2 × 1.3 × vital 1.3
+    Right Thigh (hit 1)
+        damage      🟢 25% → 🟠 63.88%          +38.88 = power 38.88 × 0.20 × scale 5
+        resistance  🟦 108.31% → 🟦 101.02%     -7.29 = power 38.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1232.07% → ❤️ 1227.71%   -4.35 = damage 38.88 × 0.2 × 0.7 × vital 0.8
+    Right Knee (hit 1)
+        damage      🟢 0% → 🟠 87.48%           +87.48 = power 38.88 × 0.45 × scale 5
+        resistance  🟩 88% → 🟩 80.71%          -7.29 = power 38.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1227.71% → ❤️ 1218.97%   -8.75 = damage 87.48 × 0.2 × 1 × vital 0.5
+    Right Knee (hit 2)
+        damage      🟠 87.48% → 🟣 174.96%      +87.48 = power 38.88 × 0.45 × scale 5
+        resistance  🟩 80.71% → 🟩 73.42%       -7.29 = power 38.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1218.97% → ❤️ 1210.22%   -8.75 = damage 87.48 × 0.2 × 1 × vital 0.5
+    Right Thigh (hit 2)
+        damage      🟠 63.88% → 🔴 102.76%      +38.88 = power 38.88 × 0.20 × scale 5
+        resistance  🟦 101.02% → 🟩 93.73%      -7.29 = power 38.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1210.22% → ❤️ 1205.86%   -4.35 = damage 38.88 × 0.2 × 0.7 × vital 0.8
+    Right Thigh (hit 3)
+        damage      🔴 102.76% → 🟣 190.24%     +87.48 = power 38.88 × 0.45 × scale 5
+        resistance  🟩 93.73% → 🟩 86.44%       -7.29 = power 38.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1205.86% → ❤️ 1191.87%   -14 = damage 87.48 × 0.2 × 1 × vital 0.8
+
+  Total: +495.72% damage  ·  ❤️ Ripples 1284.63% → **1191.87%** (-92.76)
+😮 **Ripples is breathless** (1 beat)
+
+🧗 **Ripples gets up** on the third try (using a boulder at the edge of the beach; climbs what she
+      leans on)
+      get-up roll 0.28 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+
+⏳ Beat 16 health: ❤️ Nocturne 1601.89% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 1180.12%
+      (-0.5% exertion, -11.25% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne's pummel turning into a frenzy 10%, rolled 8 → FRENZY
+    pummel blow 2 landing on Stomach again 70%, rolled 85 → somewhere new
+    pummel blow 3 landing on Right Thigh again 70%, rolled 82 → somewhere new
+    pummel blow 4 landing on Right Knee again 70%, rolled 46 → same spot
+    pummel blow 5 landing on Right Knee again 70%, rolled 83 → somewhere new
+    pummel blow 6 landing on Right Thigh again 70%, rolled 62 → same spot
+    Ripples breathless by the blow to her Stomach 30%, rolled 4 → breathless
+    Ripples doubled over by the blow to her Stomach 15%, rolled 20 → no
+    the clearing doing something by itself 5%, rolled 62 → nothing
+----------------------------------------
+
+
+============================== beat 18 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 18 — Nocturne → Ripples: IRON TAIL (targeted — Right Forearm Fin, Right Paw, Right Upper Arm,
+      energy 36→26)
+Impact — Ripples knocked down: the ground
+  [staying with the damage: Ripples' side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+Nocturne gave her no time to steady. The tail came again, this time high, and hammered across the Buizel's right forearm.
+
+— Ripples —
+
+The blow caught the fin edge-on and bent it back, and her whole right arm went numb to the shoulder. She sat down hard on the sand, legs gone from under her, the forearm fin throbbing so hard she could feel her pulse in it.
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: Iron Tail
+  Power **40** = base 40 × 0.5 (Steel vs Water, not very effective) × 2 (targeted)
+  Jarred next to it (Right Paw, Right Upper Arm): power 10 (×0.5)
+
+    Right Forearm Fin
+        damage      🟠 60% → 🟣 220%            +160 = power 40 × 0.80 × scale 5
+        resistance  🟨 65.19% → 🟨 57.69%       -7.5 = power 40 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1180.12% → ❤️ 1167.64%   -12.48 = damage 160 × 0.2 × 1.3 × vital 0.3
+    Right Paw
+        damage      🟢 0% → 🟢 22.5%            +22.5 = power 10 × 0.45 × scale 5
+        resistance  🟩 78% → 🟩 76.12%          -1.88 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1167.64% → ❤️ 1165.84%   -1.8 = damage 22.5 × 0.2 × 1 × vital 0.4
+    Right Upper Arm
+        damage      🔴 135% → 🟣 157.5%         +22.5 = power 10 × 0.45 × scale 5
+        resistance  🟩 81.75% → 🟩 79.88%       -1.87 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1165.84% → ❤️ 1162.69%   -3.15 = damage 22.5 × 0.2 × 1 × vital 0.7
+
+  Total: +205% damage  ·  ❤️ Ripples 1180.12% → **1162.69%** (-17.43)
+
+🪨 **Ripples lands hard** (knocked down: the ground), ends up sat down hard
+- the ground (light, power 7 each): Upper Back, Left Shoulder, Left Thigh
+    Upper Back
+        damage      🟡 32% → 🟡 39%             +7 = power 7 × 0.20 × scale 5
+        resistance  🟦 107% → 🟦 105.69%        -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1162.69% → ❤️ 1161.71%   -0.98 = damage 7 × 0.2 × 0.7
+    Left Shoulder
+        damage      🟣 200.63% → 🟣 216.38%     +15.75 = power 7 × 0.45 × scale 5
+        resistance  🟩 78.99% → 🟩 77.68%       -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1161.71% → ❤️ 1158.87%   -2.84 = damage 15.75 × 0.2 × 1 × vital 0.9
+    Left Thigh
+        damage      🟢 0% → 🟢 7%               +7 = power 7 × 0.20 × scale 5
+        resistance  🟦 113% → 🟦 111.69%        -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1158.87% → ❤️ 1158.09%   -0.78 = damage 7 × 0.2 × 0.7 × vital 0.8
+
+  Total: +29.75% damage  ·  ❤️ Ripples 1162.69% → **1158.09%** (-4.6)
+
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+- Ripples is no longer breathless
+
+⏳ Beat 17 health: ❤️ Nocturne 1599.04% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 1144.69%
+      (-0.5% exertion, -12.9% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nocturne's attack 14%, rolled 40 → it lands
+    Nocturne's Iron Tail landing devastatingly 2%, rolled 16 → no
+    the landing finding every sore spot on Ripples 4%, rolled 43 → no
+    Ripples sitting down hard 15%, rolled 10 → dropped onto her haunches
+    the clearing doing something by itself 5%, rolled 77 → nothing
+----------------------------------------
+
+
+============================== beat 19 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Impact — Ripples dragged by Nocturne: the shallows
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Sitting was not down enough. Nocturne seized the Buizel by the arm and hauled, dragging her bodily down the soft sand and into the warm shallows, until the water was round them both.
+
+— Ripples —
+
+The sand scraped her back and her hip as she went, and then the water closed over her, and she was pitched flat on her face in it, the lake in her eyes and her nose. She came up with her chin on the sand, coughing, soaked to the skin, her arms shaking under her.
+
+— Nocturne —
+
+Nocturne stood in the shallows to her hocks, hating every cold inch of it, and looked down at what she had dragged there.
+
+
+
+
+----------------------------------------
+⛓️ **Nocturne drags Ripples across the ground** (she stays down, sitting up; energy 32→24)
+- the shallows (light, power 7 each): Upper Back, Left Hip
+    Upper Back
+        damage      🟡 39% → 🟡 46%             +7 = power 7 × 0.20 × scale 5
+        resistance  🟦 105.69% → 🟦 104.38%     -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1144.69% → ❤️ 1143.71%   -0.98 = damage 7 × 0.2 × 0.7
+    Left Hip
+        damage      🟡 37.48% → 🟡 44.48%       +7 = power 7 × 0.20 × scale 5
+        resistance  🟦 100.97% → 🟩 99.66%      -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1143.71% → ❤️ 1142.92%   -0.78 = damage 7 × 0.2 × 0.7 × vital 0.8
+
+  Total: +14% damage  ·  ❤️ Ripples 1144.69% → **1142.92%** (-1.77)
+💧 **Ripples is soaked** (3 beats; from the shallows)
+⬇️ **Ripples is knocked flat** from sitting: now face-down
+
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+
+⏳ Beat 18 health: ❤️ Nocturne 1596.19% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 1129.52%
+      (-0.5% exertion, -12.9% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples fighting off Nocturne's grab (drag) 17%, rolled 73 → she is taken
+    the clearing doing something by itself 5%, rolled 62 → nothing
+----------------------------------------
+
+
+============================== beat 20 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 19 — Nocturne → Ripples: SLASH (targeted — Chest, Neck, Right Shoulder, energy 28→18)
+  [staying with the damage: Nocturne watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+She raked the Buizel's chest as she pushed herself up, a long cut through the cream fur that ran up into the neck and back over the right shoulder.
+
+— Ripples —
+
+It hurt in a new place and an old one at once. She did not go down. She crawled out of the water to the boulder again and pushed herself straight up against it on the third try, and as she stood, a dead branch cracked loose from high in an oak and dropped, glancing off her muzzle and her bad shoulder on its way to the grass.
+
+She stared at it. Then she laughed, a cracked, breathless sound, because the alternative was something else.
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: a rake across the chest
+  Power **66** = base 30 × 1 (Normal vs Water) × 2 (targeted) × 1.1 (down, nowhere to roll with it)
+  Jarred next to it (Neck, Right Shoulder): power 16.5 (×0.5)
+
+    Chest
+        damage      🟣 213.9% → ⚫ 362.4%       +148.5 = power 66 × 0.45 × scale 5
+        resistance  🟩 83.35% → 🟩 70.98%       -12.37 = power 66 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1129.52% → ❤️ 1087.94%   -41.58 = damage 148.5 × 0.2 × 1 × vital 1.4
+    Neck
+        damage      🟠 74.39% → 🔴 111.51%      +37.12 = power 16.5 × 0.45 × scale 5
+        resistance  🟩 71.8% → 🟨 68.71%        -3.09 = power 16.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1087.94% → ❤️ 1076.06%   -11.88 = damage 37.12 × 0.2 × 1 × vital 1.6
+    Right Shoulder
+        damage      🟢 22% → 🟡 59.12%          +37.12 = power 16.5 × 0.45 × scale 5
+        resistance  🟩 98.88% → 🟩 95.78%       -3.1 = power 16.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1076.06% → ❤️ 1069.38%   -6.68 = damage 37.12 × 0.2 × 1 × vital 0.9
+
+  Total: +222.74% damage  ·  ❤️ Ripples 1129.52% → **1069.38%** (-60.14)
+
+🧗 **Ripples gets up** on the third try (using a boulder at the edge of the beach; pushes straight
+      up)
+      get-up roll 0.33 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+
+🌋 **The clearing acts: a branch drops** — on Ripples (chance 5% a beat)
+    Muzzle
+        damage      🟢 0% → 🟢 15.75%           +15.75 = power 7 × 0.45 × scale 5
+        resistance  🟩 78% → 🟩 76.69%          -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1069.38% → ❤️ 1067.49%   -1.89 = damage 15.75 × 0.2 × 1 × vital 0.6
+    Left Shoulder
+        damage      🟣 216.38% → 🟣 232.13%     +15.75 = power 7 × 0.45 × scale 5
+        resistance  🟩 77.68% → 🟩 76.36%       -1.32 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1067.49% → ❤️ 1064.66%   -2.83 = damage 15.75 × 0.2 × 1 × vital 0.9
+
+  Total: +31.5% damage  ·  ❤️ Ripples 1069.38% → **1064.66%** (-4.72)
+
+⏳ Beat 19 health: ❤️ Nocturne 1593.34% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 1050.46%
+      (-0.5% exertion, -13.7% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 21 → no
+    Nocturne's Slash landing devastatingly 4%, rolled 29 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 87 → no
+    the clearing doing something by itself 5%, rolled 2 → something happens
+----------------------------------------
+
+
+============================== beat 21 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 20 — Ripples → Nocturne: CRUNCH (targeted, DODGED, energy 70→60)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+She went for the Absol's neck with Crunch, jaws wide, hurling herself off the rock.
+
+— Nocturne —
+
+Nocturne sprang back, and the teeth snapped shut a whisker from her ruff.
+
+
+
+
+----------------------------------------
+💨 **Nocturne dodges** Ripples' CRUNCH (dodge chance 12% · how: springs back)
+Calculations: Base 40, Dark vs Dark ×0.5 (not very effective), targeted ×2 → Effective 40. Res loss
+      7.5 (power × 0.19; the damage scale doesn't change it). Jarred next to it: Chest Ruff, Chest:
+      ×0.5 → Effective 10, res loss 1.88. (no hit)
+
+⏳ Beat 20 health: ❤️ Nocturne 1590.49% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 1036.26%
+      (-0.5% exertion, -13.7% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 12%, rolled 8 → DODGED
+    Nocturne countering after the dodge 35%, rolled 57 → no counter
+----------------------------------------
+
+
+============================== beat 22 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 21 — Nocturne → Ripples: NIGHT SLASH (targeted — Right Thigh, Right Hip, Tail Base, energy
+      28→18)
+  [a devastating blow: giving it room]
+  [staying with the damage: Ripples' side, Nocturne watching]
+  [narrator is writing part 1/4]
+  [narrator is writing part 2/4]
+  [narrator is writing part 3/4]
+  [narrator is writing part 4/4]
+
+— Nocturne —
+
+As the Buizel landed off-balance on the sand, Nocturne saw it: the right thigh, the one she had already hammered six times, turned square toward her, the weight on it, nothing guarding it. She did not think. Her claws went into the exact place they had been before.
+
+It did not feel like the other blows. The others had met muscle. This one met nothing at all, went in, and kept going.
+
+*That one went all the way.*
+
+— Ripples —
+
+She knew it was wrong before it finished landing. It went past the bruising and the torn-up fur and found the deepest, rawest place underneath, the place every one of those six blows had been building, and arrived there with everything behind it.
+
+The cry was out before she could stop it, sharp and high. Her leg went. She didn't fall, quite: she caught herself on her hands and her good knee, and stayed there with the right leg stuck out behind her, shaking, a hard, fast tremor running from the thigh right up into her hip and the base of her tails.
+
+*Something's wrong. Something's really wrong with my leg.*
+
+Her body flinched away from it so hard that for a moment she could not move anything else at all.
+
+— Ripples —
+
+She stayed there, crouched on the sand, and it did not stop when the claws left. It kept arriving: a first hot wave, then a second, deeper, then a third that seemed to come from inside the bone. The thigh felt too big for her body, hot and wrong under her paw. She breathed through her teeth, small breaths, because the big ones made her whole leg jump. A thin whine leaked out between them, and she clamped her jaw on it and it leaked out anyway.
+
+— Nocturne —
+
+Nocturne watched her. She watched the leg stuck out behind, the tremor that would not stop, the paw pressed flat on the sand so hard the webbing spread. She watched the Buizel try to swallow the sound and fail. She stood very still in the sun and let her own breath come back.
+
+*That's where you break. Right there.*
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: a cut at the thigh
+💥💥 **DEVASTATING** (×2.04; the health cap is looser for it) — a weak point in a weak point (Right
+      Thigh)
+  Power **70** = base 35 × 1 (Dark vs Water) × 2 (targeted)
+  Jarred next to it (Right Hip, Tail Base): power 17.5 (×0.5)
+
+    Right Thigh
+        damage      🟣 190.24% → ⚫ 511.54%    +321.3 = power 142.8 × 0.45 × scale 5
+        resistance  🟩 86.44% → 🟨 59.67%      -26.77 = power 142.8 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1036.26% → ❤️ 984.85%   -51.41 = damage 321.3 × 0.2 × 1 × vital 0.8
+    Right Hip
+        damage      🟢 0% → 🟡 35.7%           +35.7 = power 35.7 × 0.20 × scale 5
+        resistance  🟦 108% → 🟦 101.31%       -6.69 = power 35.7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 984.85% → ❤️ 980.85%    -4 = damage 35.7 × 0.2 × 0.7 × vital 0.8
+    Tail Base
+        damage      🟢 0% → 🟡 35.7%           +35.7 = power 35.7 × 0.20 × scale 5
+        resistance  🟦 128% → 🟦 121.31%       -6.69 = power 35.7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 980.85% → ❤️ 977.85%    -3 = damage 35.7 × 0.2 × 0.7 × vital 0.6
+
+  Total: +392.7% damage  ·  ❤️ Ripples 1036.26% → **977.85%** (-58.41)
+😵 **Ripples is flinched** (1 beat)
+
+- Ripples is no longer soaked
+
+⏳ Beat 21 health: ❤️ Nocturne 1587.64% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 963.65% (-0.5%
+      exertion, -13.7% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 30 → no
+    Ripples dodging Nocturne's attack 15%, rolled 79 → it lands
+    Nocturne's Night Slash landing devastatingly 2%, rolled 1 → DEVASTATING
+    Ripples flinched by Night Slash 25%, rolled 9 → flinched
+----------------------------------------
+
+
+============================== beat 23 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She let her breathe, because she needed to breathe herself. Her ribs were sore from the oak and her nose still ached, and her energy was down to almost nothing. She stood on the dry grass with her flanks heaving and kept her eyes on the Buizel the whole time.
+
+— Ripples —
+
+Ripples got her leg under her, slowly, testing it with a little weight and then a little more. It held. Barely.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+- Ripples is no longer flinched
+
+⏳ Beat 22 health: ❤️ Nocturne 1584.79% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 949.95%
+      (-13.7% injuries)
+----------------------------------------
+
+
+============================== beat 24 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 22 — Nocturne → Ripples: PSYCHO CUT (spread — Chest, Left Shoulder, Neck, energy 28→10)
+  [staying with the damage: Ripples' side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+Nocturne sent the blade from her horn across the gap again: Psycho Cut, slicing into the chest and the shoulder and the neck.
+
+— Ripples —
+
+It caught her across the chest and the left shoulder, which was already ruined, and up into her neck, and this time she couldn't keep upright. She doubled over round it, arms crossed over her chest, head down, the air hissing out through her teeth. For a long moment she could not straighten.
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: Psycho Cut
+🩹 Ripples is guarding her Right Thigh (blows there ×0.85; her left side is open, ×1.1)
+  Power **28.75** = base 23 × 1 (Psychic vs Water) × 1.25 (spread)
+
+    Chest
+        damage      ⚫ 362.4% → ⚫ 427.09%    +64.69 = power 28.75 × 0.45 × scale 5
+        resistance  🟩 70.98% → 🟨 65.59%     -5.39 = power 28.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 949.95% → ❤️ 931.84%   -18.11 = damage 64.69 × 0.2 × 1 × vital 1.4
+    Left Shoulder
+        damage      🟣 232.13% → ⚫ 303.3%    +71.17 = power 31.63 × 0.45 × scale 5
+        resistance  🟩 76.36% → 🟩 70.43%     -5.93 = power 31.63 × 0.25 × 0.75 resistance scale
+        health      ❤️ 931.84% → ❤️ 919.03%   -12.81 = damage 71.17 × 0.2 × 1 × vital 0.9
+    Neck
+        damage      🔴 111.51% → 🟣 226.51%   +115 = power 28.75 × 0.80 × scale 5
+        resistance  🟨 68.71% → 🟨 63.32%     -5.39 = power 28.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 919.03% → ❤️ 871.19%   -47.84 = damage 115 × 0.2 × 1.3 × vital 1.6
+
+  Total: +250.86% damage  ·  ❤️ Ripples 949.95% → **871.19%** (-78.76)
+🤕 **Ripples is doubled_over** (1 beat)
+
+⏳ Beat 23 health: ❤️ Nocturne 1581.94% (-0.5% exertion, -2.35% injuries) | ❤️ Ripples 854.59% (-0.5%
+      exertion, -16.1% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 99 → no
+    Ripples meeting Nocturne's Psycho Cut with one of her own 15%, rolled 42 → no
+    Ripples dodging Nocturne's attack 4%, rolled 12 → it lands
+    Nocturne's Psycho Cut landing devastatingly 3%, rolled 24 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 74 → no
+    Ripples doubled over by the blow to her Chest 15%, rolled 10 → doubled over
+    the clearing doing something by itself 5%, rolled 35 → nothing
+----------------------------------------
+
+
+============================== beat 25 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 23 — Ripples → Nocturne: WATER PULSE (spread — Head, Neck, Chest Ruff, energy 90→72)
+  [staying with the damage: Ripples watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+She came up out of the fold with water: Water Pulse, a ring of it straight into the white face.
+
+— Nocturne —
+
+It burst over her head and neck and into her mouth again, and she was coughing again, spitting lake, her eyes streaming. Her head rang. Her ruff was plastered flat.
+
+— Ripples —
+
+Ripples kept her right leg turned away and her weight on the left, guarding it without thinking about it, and her left side was open for it.
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a ring of water into the face
+  Power **25** = base 20 × 1 (Water vs Dark) × 1.25 (spread)
+
+    Head
+        damage      🟠 73.12% → 🔴 129.38%      +56.25 = power 25 × 0.45 × scale 5
+        resistance  🟩 90.91% → 🟩 86.22%       -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1581.94% → ❤️ 1568.44%   -13.5 = damage 56.25 × 0.2 × 1 × vital 1.2
+    Neck
+        damage      🔴 130.07% → 🟣 186.32%     +56.25 = power 25 × 0.45 × scale 5
+        resistance  🟩 71.16% → 🟨 66.47%       -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1568.44% → ❤️ 1550.44%   -18 = damage 56.25 × 0.2 × 1 × vital 1.6
+    Chest Ruff
+        damage      🟢 0% → 🟢 25%              +25 = power 25 × 0.20 × scale 5
+        resistance  🟦 137% → 🟦 132.31%        -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1550.44% → ❤️ 1548.34%   -2.1 = damage 25 × 0.2 × 0.7 × vital 0.6
+
+  Total: +137.5% damage  ·  ❤️ Nocturne 1581.94% → **1548.34%** (-33.6)
+💦 **Nocturne is sputtering** (2 beats)
+
+- Ripples is no longer doubled_over
+
+⏳ Beat 24 health: ❤️ Nocturne 1542.49% (-0.5% exertion, -5.35% injuries) | ❤️ Ripples 837.99% (-0.5%
+      exertion, -16.1% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 6%, rolled 97 → it lands
+    Ripples' Water Pulse landing devastatingly 2%, rolled 29 → no
+    Ripples' Water Pulse going into Nocturne's mouth 30%, rolled 25 → into her mouth
+    Nocturne confused by Water Pulse 20%, rolled 48 → no
+    the clearing doing something by itself 5%, rolled 83 → nothing
+----------------------------------------
+
+
+============================== beat 26 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne stood and coughed until the water was out. She took the beat to breathe, head low, watching the Buizel favour the leg.
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+⏳ Beat 25 health: ❤️ Nocturne 1536.64% (-0.5% exertion, -5.35% injuries) | ❤️ Ripples 821.89%
+      (-16.1% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 40 → nothing
+----------------------------------------
+
+
+============================== beat 27 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 24 — Ripples → Nocturne: SWIFT (spread — Head, Chest, Right Shoulder, energy 92→74)
+  [staying with the damage: Nocturne's side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+Ripples flung a spray of stars: Swift, glittering across the clearing, catching the Absol in the head, the chest and the right shoulder.
+
+— Nocturne —
+
+They stung more than they had any right to. Her head was beginning to throb in a slow, heavy rhythm now, the water and the stars and the nose all adding up.
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a spray of stars
+  Power **25** = base 20 × 1 (Normal vs Dark) × 1.25 (spread)
+
+    Head
+        damage      🔴 129.38% → 🟣 185.62%     +56.25 = power 25 × 0.45 × scale 5
+        resistance  🟩 86.22% → 🟩 81.53%       -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1536.64% → ❤️ 1523.14%   -13.5 = damage 56.25 × 0.2 × 1 × vital 1.2
+    Chest
+        damage      🔴 105% → 🟣 161.25%        +56.25 = power 25 × 0.45 × scale 5
+        resistance  🟩 97.31% → 🟩 92.62%       -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1523.14% → ❤️ 1507.39%   -15.75 = damage 56.25 × 0.2 × 1 × vital 1.4
+    Right Shoulder
+        damage      🟡 35% → 🟠 60%             +25 = power 25 × 0.20 × scale 5
+        resistance  🟦 105.44% → 🟦 100.75%     -4.69 = power 25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1507.39% → ❤️ 1504.24%   -3.15 = damage 25 × 0.2 × 0.7 × vital 0.9
+
+  Total: +137.5% damage  ·  ❤️ Nocturne 1536.64% → **1504.24%** (-32.4)
+
+- Nocturne is no longer sputtering
+
+⏳ Beat 26 health: ❤️ Nocturne 1494.49% (-0.5% exertion, -9.25% injuries) | ❤️ Ripples 805.29% (-0.5%
+      exertion, -16.1% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 4%, rolled 98 → it lands
+    Ripples' Swift landing devastatingly 2%, rolled 60 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 45 → no
+    Nocturne breathless by the blow to her Chest 30%, rolled 31 → no
+    the clearing doing something by itself 5%, rolled 53 → nothing
+----------------------------------------
+
+
+============================== beat 28 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She breathed again. She hated it. Every beat she spent catching her breath was one the Buizel spent catching hers.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+⏳ Beat 27 health: ❤️ Nocturne 1484.74% (-0.5% exertion, -9.25% injuries) | ❤️ Ripples 789.19%
+      (-16.1% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 54 → nothing
+----------------------------------------
+
+
+============================== beat 29 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 25 — Nocturne → Ripples: SLASH (targeted — Nose, Jaw, Throat, energy 26→16)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne went in low and raked upward, and her claws caught the Buizel across the face: the nose, the jaw, the throat.
+
+— Ripples —
+
+The nose took the worst of it, and her eyes went white with tears at once. She reeled back, her paw going up to her face, her jaw aching, her throat raw.
+
+*The face. She's going for the face now.*
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: a rake
+🩹 Ripples is guarding her Right Thigh (blows there ×0.85; her left side is open, ×1.1)
+  Power **60** = base 30 × 1 (Normal vs Water) × 2 (targeted)
+  Jarred next to it (Jaw, Throat): power 15 (×0.5)
+
+    Nose
+        damage      🟢 0% → 🟣 240%           +240 = power 60 × 0.80 × scale 5
+        resistance  🟨 53% → 🟧 41.75%        -11.25 = power 60 × 0.25 × 0.75 resistance scale
+        health      ❤️ 789.19% → ❤️ 757.99%   -31.2 = damage 240 × 0.2 × 1.3 × vital 0.5
+    Jaw
+        damage      🟠 81% → 🔴 114.75%       +33.75 = power 15 × 0.45 × scale 5
+        resistance  🟩 81.25% → 🟩 78.44%     -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 757.99% → ❤️ 753.26%   -4.73 = damage 33.75 × 0.2 × 1 × vital 0.7
+    Throat
+        damage      🔴 106% → 🟣 166%         +60 = power 15 × 0.80 × scale 5
+        resistance  🟨 58.03% → 🟨 55.22%     -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ 753.26% → ❤️ 726.74%   -26.52 = damage 60 × 0.2 × 1.3 × vital 1.7
+
+  Total: +333.75% damage  ·  ❤️ Ripples 789.19% → **726.74%** (-62.45)
+
+⏳ Beat 28 health: ❤️ Nocturne 1474.99% (-0.5% exertion, -9.25% injuries) | ❤️ Ripples 706.24% (-0.5%
+      exertion, -20% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 62 → no
+    Ripples dodging Nocturne's attack 12%, rolled 31 → it lands
+    Nocturne's Slash landing devastatingly 2%, rolled 8 → no
+    Ripples dazed by the blow to her Nose 25%, rolled 28 → no
+    the clearing doing something by itself 5%, rolled 27 → nothing
+----------------------------------------
+
+
+============================== beat 30 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 26 — Ripples → Nocturne: BRICK BREAK (targeted — Head, Horn, Throat, energy 98→88)
+  [staying with the damage: Nocturne's side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+She answered with the one thing the Absol's kind feared: a fighting chop, Brick Break, the edge of her paw driven straight down onto the top of the white head.
+
+— Nocturne —
+
+It landed like a dropped stone. The force of it went straight through her skull and down into her horn and her throat, and the world went white and ringing for a heartbeat. It was the kind of blow her kind had always had to fear, and her body knew it before she did. She staggered, her head low, and for a moment she could not tell where the ground was.
+
+*Brick Break. Of course. Of course she has that.*
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a chop at the head
+  Power **112** = base 35 × 2 (Fighting vs Dark, super effective!) × 2 (targeted) × 0.8 (her hurt
+        right forearm fin)
+  Jarred next to it (Horn, Throat): power 28 (×0.5)
+
+    Head
+        damage      🟣 185.62% → ⚫ 437.62%     +252 = power 112 × 0.45 × scale 5
+        resistance  🟩 81.53% → 🟨 60.53%       -21 = power 112 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1474.99% → ❤️ 1414.51%   -60.48 = damage 252 × 0.2 × 1 × vital 1.2
+    Horn
+        damage      🟢 0% → 🟢 28%              +28 = power 28 × 0.20 × scale 5
+        resistance  🟦 227% → 🟦 221.75%        -5.25 = power 28 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1414.51% → ❤️ 1413.73%   -0.78 = damage 28 × 0.2 × 0.7 × vital 0.2
+    Throat
+        damage      🟠 60% → 🟣 172%            +112 = power 28 × 0.80 × scale 5
+        resistance  🟨 59.19% → 🟨 53.94%       -5.25 = power 28 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1413.73% → ❤️ 1364.22%   -49.5 = damage 112 × 0.2 × 1.3 × vital 1.7
+
+  Total: +392% damage  ·  ❤️ Nocturne 1474.99% → **1364.22%** (-110.77)
+
+⏳ Beat 29 health: ❤️ Nocturne 1351.07% (-0.5% exertion, -12.65% injuries) | ❤️ Ripples 685.74%
+      (-0.5% exertion, -20% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 11%, rolled 33 → it lands
+    Ripples' Brick Break landing devastatingly 2%, rolled 85 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 89 → no
+    the clearing doing something by itself 5%, rolled 34 → nothing
+----------------------------------------
+
+
+============================== beat 31 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Through the ringing, Nocturne found her. She hooked a hind leg behind the Buizel's good knee and swept it, and as Ripples went down she went with her, driving her forward and down into the shallows face-first. A forepaw found the back of the slim neck and pressed it under. Her full weight came down across the Buizel's upper back.
+
+*Breathe that.*
+
+— Ripples —
+
+The water closed over her face. Sand in her mouth, lake up her nose, the weight on her back crushing her flat into the soft bottom, the paw on her neck holding her head under.
+
+
+
+
+----------------------------------------
+📌 **PIN: Nocturne on Ripples** — held face-down in the shallows, her head pushed
+  Pressing on:
+    Neck ← with her forepaw, holding her head under the shallow water  ·  power 15 each beat, steady
+    Upper Back ← with her full weight  ·  power 26 each beat, steady
+- The pin is on. No fixed length: each beat brings her closer to passing out (about 6 beats,
+      sometimes more, sometimes fewer). Pressure starts next beat.
+- Ripples was on her feet: taken down into the pin (leg hook)
+- Ripples is face-down
+
+⏳ Beat 30 health: ❤️ Nocturne 1337.92% (-0.5% exertion, -12.65% injuries) | ❤️ Ripples 665.24%
+      (-0.5% exertion, -20% injuries, now exhausted)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples landing hard from the takedown 40%, rolled 60 → put down clean
+----------------------------------------
+
+
+============================== beat 32 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne bore down. She felt the neck under her paw, the back under her weight, the small body rigid beneath her, and she held it there, letting her up a finger's width for one gasp and pressing her under again.
+
+— Ripples —
+
+She got one breath, half water. Then she bucked: everything she had, her back arching up under the weight, her legs driving at the sand, her good hind foot lashing back and catching the Absol hard on the hind paw.
+
+— Nocturne —
+
+The paw jolted out from under her. Her weight slid, and the Buizel came up out of the shallows in an explosion of water, out from under her and away.
+
+*No. No, I had her.*
+
+She kept her feet. She stood in the shallows, dripping, her hind paw throbbing, and watched the Buizel crawl up the sand.
+
+— Ripples —
+
+Ripples lay on the sand at the waterline, retching up lake, every breath a scrape. She tried to get up and her arms wouldn't take it. Not yet.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: bears down and holds the pin
+
+🔒 **Nocturne on Ripples** (holds #1, #2), beat 1 of the hold · pin damage ×0.5
+  ▸ press 15 × 0.5 pin damage
+    Neck
+        damage      🟣 226.51% → 🟣 243.38%   +16.88 = power 7.5 × 0.45 (pin cap) × scale 5
+        resistance  🟨 63.32% → 🟨 61.91%     -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 665.24% → ❤️ 659.84%   -5.4 = damage 16.88 × 0.2 × 1 × vital 1.6
+
+  ▸ press 26 × 0.5 pin damage
+    Upper Back
+        damage      🟡 46% → 🟡 59%           +13 = power 13 × 0.20 × scale 5
+        resistance  🟦 104.38% → 🟦 101.94%   -2.44 = power 13 × 0.25 × 0.75 resistance scale
+        health      ❤️ 659.84% → ❤️ 658.02%   -1.82 = damage 13 × 0.2 × 0.7
+
+  Total: +29.88% damage  ·  ❤️ Ripples 665.24% → **658.02%** (-7.22)
+
+📌 **Pin: Nocturne on Ripples** — beat 1 of it (10 s held) · going under 0% → **0%** (+0 this beat;
+      she passes out at 100%) (weakening)
+- Ripples struggles (escape 38%, else break loose 24%, roll 24; she bucks) → **ESCAPES!** The pin is
+      broken; the blow that frees her lands on Nocturne:
+    Left Hind Paw
+        damage      🟢 0% → 🟠 87.75%          +87.75 = power 39 × 0.45 × scale 5
+        resistance  🟩 82% → 🟩 74.69%         -7.31 = power 39 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1337.92% → ❤️ 1330.9%   -7.02 = damage 87.75 × 0.2 × 1 × vital 0.4
+
+  Total: +87.75% damage  ·  ❤️ Nocturne 1337.92% → **1330.9%** (-7.02)
+- 😮‍💨 Nocturne is running out of breath holding the pin: it holds less surely
+🧗 **Ripples can't get up** this beat (3 tries; down 1 beats)
+      get-up roll 0.1 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+
+⏳ Beat 31 health: ❤️ Nocturne 1317.75% (-0.5% exertion, -12.65% injuries) | ❤️ Ripples 637.52%
+      (-0.5% exertion, -20% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples making an escape attempt 85%, rolled 2 → she tries
+    Nocturne thrown down by the escape 25%, rolled 64 → she keeps her feet
+    Ripples getting as far as sitting up 40%, rolled 50 → she stays lying
+----------------------------------------
+
+*** Ripples breaks free of Nocturne's pin at second 10! ***
+
+============================== beat 33 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne stood back and breathed, because she had nothing left to throw for a moment.
+
+— Ripples —
+
+Ripples got to the nearest pine and pushed herself straight up it, her back to the bark, her right leg held clear of the ground. On the third try she was standing.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+🧗 **Ripples gets up** on the third try (using a tall pine; pushes straight up)
+      get-up roll 0.38 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+
+⏳ Beat 32 health: ❤️ Nocturne 1304.6% (-0.5% exertion, -12.65% injuries) | ❤️ Ripples 617.52% (-20%
+      injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 51 → nothing
+----------------------------------------
+
+
+============================== beat 34 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 27 — Nocturne → Ripples: COUNTER (self, energy 26→14)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne did something she rarely did. She stopped attacking. She set her paws wide, lowered her head, and waited, her weight back, every muscle wound and quiet.
+
+*Come on. Come and hit me.*
+
+— Ripples —
+
+Ripples saw the stillness and didn't trust it. But the Absol was hurt, and so was she, and waiting was something she couldn't afford.
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: she sets herself and waits for it
+↩️ **Counter** (Nocturne): set — it lasts until the next attack on her or the end of next beat
+
+⏳ Beat 33 health: ❤️ Nocturne 1291.45% (-0.5% exertion, -12.65% injuries) | ❤️ Ripples 597.02%
+      (-0.5% exertion, -20% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 32 → nothing
+----------------------------------------
+
+
+============================== beat 35 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 28 — Ripples → Nocturne: BRICK BREAK (targeted — Left Ribs, Chest, Left Upper Foreleg, energy
+      100→90)
+  [staying with the damage: Ripples' side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+She came off the pine with Brick Break, the edge of her paw driving down into the Absol's ribs, and felt it land deep.
+
+— Nocturne —
+
+She took it. She let it hit her: the ribs on her left side, already bruised from the oak and the mirror, took a chop that bent her sideways and drove the wind out of her, and then she sent it back. Everything that had gone into her came out again, doubled, in one savage swipe that caught the Buizel across the face.
+
+— Ripples —
+
+The cheek split hot, and the ear above it took the rest, and her head snapped sideways so hard the world tilted. She hadn't even seen the counter coming. She stood there with her ear ringing and her cheek burning, both, and stared.
+
+— Nocturne —
+
+Nocturne was bent round her ribs, unable to get a full breath, but there was a grim satisfaction in it.
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a chop
+  Power **112** = base 35 × 2 (Fighting vs Dark, super effective!) × 2 (targeted) × 0.8 (her hurt
+        right forearm fin)
+  Jarred next to it (Chest, Left Upper Foreleg): power 28 (×0.5)
+
+    Left Ribs
+        damage      🔴 122.57% → ⚫ 374.57%     +252 = power 112 × 0.45 × scale 5
+        resistance  🟩 90.22% → 🟨 69.22%       -21 = power 112 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1291.45% → ❤️ 1230.97%   -60.48 = damage 252 × 0.2 × 1 × vital 1.2
+    Chest
+        damage      🟣 161.25% → 🟣 224.25%     +63 = power 28 × 0.45 × scale 5
+        resistance  🟩 92.62% → 🟩 87.38%       -5.24 = power 28 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1230.97% → ❤️ 1213.33%   -17.64 = damage 63 × 0.2 × 1 × vital 1.4
+    Left Upper Foreleg
+        damage      🟢 0% → 🟢 28%              +28 = power 28 × 0.20 × scale 5
+        resistance  🟦 102% → 🟩 96.75%         -5.25 = power 28 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1213.33% → ❤️ 1210.59%   -2.74 = damage 28 × 0.2 × 0.7 × vital 0.7
+
+  Total: +343% damage  ·  ❤️ Nocturne 1291.45% → **1210.59%** (-80.86)
+↩️ **Nocturne's Counter**: she takes it and sends it back onto Ripples (power 84 each)
+    Left Cheek
+        damage      🟢 0% → 🟣 189%           +189 = power 84 × 0.45 × scale 5
+        resistance  🟩 78% → 🟨 62.25%        -15.75 = power 84 × 0.25 × 0.75 resistance scale
+        health      ❤️ 597.02% → ❤️ 578.12%   -18.9 = damage 189 × 0.2 × 1 × vital 0.5
+    Right Ear
+        damage      🟢 0% → ⚫ 336%           +336 = power 84 × 0.80 × scale 5
+        resistance  🟨 63% → 🟧 47.25%        -15.75 = power 84 × 0.25 × 0.75 resistance scale
+        health      ❤️ 578.12% → ❤️ 560.65%   -17.47 = damage 336 × 0.2 × 1.3 × vital 0.2
+
+  Total: +525% damage  ·  ❤️ Ripples 597.02% → **560.65%** (-36.37)
+😮 **Nocturne is breathless** (1 beat)
+
+⏳ Beat 34 health: ❤️ Nocturne 1195.64% (-0.5% exertion, -14.45% injuries) | ❤️ Ripples 538.75%
+      (-0.5% exertion, -21.4% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 12%, rolled 43 → it lands
+    Ripples' Brick Break landing devastatingly 2%, rolled 71 → no
+    Nocturne breathless by the blow to her Left Ribs 30%, rolled 67 → no
+    Nocturne breathless by the blow to her Chest 30%, rolled 25 → breathless
+    the clearing doing something by itself 5%, rolled 54 → nothing
+----------------------------------------
+
+
+============================== beat 36 ==============================
+  [director is choosing the next beat]
+  [staying with the damage: Ripples watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+Ripples ducked in, low and quick, and wrapped her twin tails round the Absol's left foreleg, and cinched them like a rope round a post.
+
+— Nocturne —
+
+The tails closed tight round her upper foreleg. Not a blow; a grip, steady, squeezing, the leg going numb and tingling under it. She tried to pull it free and the tails only tightened.
+
+
+
+
+----------------------------------------
+🔒 **Hold (TAIL BIND): Ripples on Nocturne** — her twin tails coil round the Absol's foreleg
+  Power **10** every beat = base 10 × 1 (Normal vs Dark) × 1 (hold)
+  Pressing on:
+    Left Upper Foreleg ← with her twin tails, wound round it  ·  power 10 each beat, steady
+- The grip bites as it closes: its first pressure lands this beat (listed below), then every beat
+      until released.
+
+🔒 **Ripples on Nocturne** (holds #3), the grip closing: beat 1 of the hold
+    Left Upper Foreleg
+        damage      🟢 28% → 🟡 50.5%           +22.5 = power 10 × 0.45 × scale 5
+        resistance  🟩 96.75% → 🟩 94.88%       -1.87 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1195.64% → ❤️ 1192.49%   -3.15 = damage 22.5 × 0.2 × 1 × vital 0.7
+
+  Total: +22.5% damage  ·  ❤️ Nocturne 1195.64% → **1192.49%** (-3.15)
+- Nocturne is no longer breathless
+
+⏳ Beat 35 health: ❤️ Nocturne 1177.54% (-0.5% exertion, -14.45% injuries) | ❤️ Ripples 516.85%
+      (-0.5% exertion, -21.4% injuries)
+----------------------------------------
+
+
+============================== beat 37 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 29 — Ripples → Nocturne: CRUNCH (targeted — Neck, Throat, Left Shoulder, energy 92→82)
+  [staying with the damage: Nocturne's side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+With the foreleg held, Ripples went for the neck. Crunch, all of it, her teeth sinking into the white ruff and the throat beneath it.
+
+— Nocturne —
+
+The bite went deep, and the shock of it made her flinch so hard her head jerked away on its own, and she couldn't make it come back. Her neck was on fire. The foreleg throbbed in the tails' grip. She braced against the bind, all four legs, and it held.
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a crushing bite
+  Power **44** = base 40 × 0.5 (Dark vs Dark, not very effective) × 2 (targeted) × 1.1 (held, can't
+        cover up)
+  Jarred next to it (Throat, Left Shoulder): power 11 (×0.5)
+
+    Neck
+        damage      🟣 186.32% → ⚫ 362.32%     +176 = power 44 × 0.80 × scale 5
+        resistance  🟨 66.47% → 🟨 58.22%       -8.25 = power 44 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1177.54% → ❤️ 1104.32%   -73.22 = damage 176 × 0.2 × 1.3 × vital 1.6
+    Throat
+        damage      🟣 172% → 🟣 216%           +44 = power 11 × 0.80 × scale 5
+        resistance  🟨 53.94% → 🟨 51.88%       -2.06 = power 11 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1104.32% → ❤️ 1084.87%   -19.45 = damage 44 × 0.2 × 1.3 × vital 1.7
+    Left Shoulder
+        damage      🟡 37.5% → 🟡 48.5%         +11 = power 11 × 0.20 × scale 5
+        resistance  🟦 104.97% → 🟦 102.91%     -2.06 = power 11 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1084.87% → ❤️ 1083.49%   -1.39 = damage 11 × 0.2 × 0.7 × vital 0.9
+
+  Total: +231% damage  ·  ❤️ Nocturne 1177.54% → **1083.49%** (-94.05)
+😵 **Nocturne is flinched** (1 beat)
+
+🔒 **Ripples on Nocturne** (holds #3), beat 2 of the hold
+    Left Upper Foreleg
+        damage      🟡 50.5% → 🟠 77.5%         +27 = power 12 × 0.45 × scale 5
+        resistance  🟩 94.88% → 🟩 92.62%       -2.26 = power 12 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1083.49% → ❤️ 1079.71%   -3.78 = damage 27 × 0.2 × 1 × vital 0.7
+
+  Total: +27% damage  ·  ❤️ Nocturne 1083.49% → **1079.71%** (-3.78)
+💢 Nocturne fights Ripples's hold on her Left Upper Foreleg; it holds as it was · how: braces and
+      strains
+
+⏳ Beat 36 health: ❤️ Nocturne 1064.76% (-0.5% exertion, -14.45% injuries) | ❤️ Ripples 494.95%
+      (-0.5% exertion, -21.4% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 10%, rolled 17 → it lands
+    Ripples' Crunch landing devastatingly 4%, rolled 49 → no
+    Nocturne flinched by Crunch 25%, rolled 18 → flinched
+    Nocturne breaking Ripples' hold on her 16%, rolled 32 → it holds
+----------------------------------------
+
+
+============================== beat 38 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 30 — Ripples → Nocturne: CRUNCH (targeted — Right Upper Foreleg, Right Shoulder, Right
+      Forepaw, energy 87→77)
+  [staying with the damage: Ripples watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+Ripples bit again, lower this time, into the right foreleg, the shoulder, the paw, and her tails stayed wound round the left.
+
+— Nocturne —
+
+Nocturne clawed at the tails with her free forepaw, and they held. She could feel the bound leg going cold and heavy, slow to answer her. Her shoulder ached where the bite had been.
+
+*Get off. Get off me.*
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a hard bite at the foreleg
+  Power **46** = base 40 × 0.5 (Dark vs Dark, not very effective) × 2 (targeted) × 1.15 (caught
+        flinching)
+  Jarred next to it (Right Shoulder, Right Forepaw): power 11.5 (×0.5)
+
+    Right Upper Foreleg
+        damage      🟢 0% → 🟡 46%              +46 = power 46 × 0.20 × scale 5
+        resistance  🟦 102% → 🟩 93.38%         -8.62 = power 46 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1064.76% → ❤️ 1060.25%   -4.51 = damage 46 × 0.2 × 0.7 × vital 0.7
+    Right Shoulder
+        damage      🟠 60% → 🟠 71.5%           +11.5 = power 11.5 × 0.20 × scale 5
+        resistance  🟦 100.75% → 🟩 98.59%      -2.16 = power 11.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1060.25% → ❤️ 1058.8%    -1.45 = damage 11.5 × 0.2 × 0.7 × vital 0.9
+    Right Forepaw
+        damage      🟢 0% → 🟢 25.88%           +25.88 = power 11.5 × 0.45 × scale 5
+        resistance  🟩 82% → 🟩 79.84%          -2.16 = power 11.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1058.8% → ❤️ 1056.21%    -2.59 = damage 25.88 × 0.2 × 1 × vital 0.5
+
+  Total: +83.38% damage  ·  ❤️ Nocturne 1064.76% → **1056.21%** (-8.55)
+
+🔒 **Ripples on Nocturne** (holds #3), beat 3 of the hold
+    Left Upper Foreleg
+        damage      🟠 77.5% → 🔴 109%         +31.5 = power 14 × 0.45 × scale 5
+        resistance  🟩 92.62% → 🟩 90%         -2.62 = power 14 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1056.21% → ❤️ 1051.8%   -4.41 = damage 31.5 × 0.2 × 1 × vital 0.7
+
+  Total: +31.5% damage  ·  ❤️ Nocturne 1056.21% → **1051.8%** (-4.41)
+💢 Nocturne fights Ripples's hold on her Left Upper Foreleg; it holds as it was · how: claws at it
+      and the ground
+- Nocturne is no longer flinched
+
+⏳ Beat 37 health: ❤️ Nocturne 1036.5% (-0.5% exertion, -14.8% injuries) | ❤️ Ripples 473.05% (-0.5%
+      exertion, -21.4% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne dodging Ripples' attack 12%, rolled 69 → it lands
+    Ripples' Crunch landing devastatingly 3%, rolled 96 → no
+    Nocturne flinched by Crunch 25%, rolled 71 → no
+    Nocturne breaking Ripples' hold on her 15%, rolled 34 → it holds
+----------------------------------------
+
+
+============================== beat 39 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 31 — Nocturne → Ripples: TAKE DOWN (targeted — Chest, Right Upper Arm, Right Shoulder, Upper
+      Back, Left Shoulder, Left Hip, energy 36→18)
+  [staying with the damage: Ripples' side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+She charged. Bound leg and all, Nocturne put her shoulder down and drove forward, a reckless full-body ram, and took the Buizel off her feet and carried her across the clearing and into a tall pine.
+
+— Ripples —
+
+The ram took her square in the chest. Then the pine came up behind her, and her back and her ruined left shoulder and her hip slammed into the trunk all at once, and the Absol's whole weight crushed her chest against it. Something in her chest seemed to fold in.
+
+— Nocturne —
+
+The force of it jarred back into her own throat and ribs as she hit; the charge cost her too. But the Buizel was crumpling, sliding down the trunk, and Nocturne stepped back and watched her go.
+
+— Ripples —
+
+She slid down the pine to the roots and lay on her back, and her tails tore loose from the Absol's foreleg as she went. Then something lit inside her: a hot, bright surge that came up from somewhere she hadn't known was there, her heart pounding, her breath coming back, her eyes clearing.
+
+*Not yet. NOT YET.*
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: a shoulder-first ram across the clearing
+🩹 Ripples is guarding her Right Thigh (blows there ×0.85; her left side is open, ×1.1)
+🐏 **Charge** a dozen strides into a tall pine: slam power 35, then Nocturne's body crushes her
+      against it — pressed against it, still up
+  Power **63** = base 35 × 1 (Normal vs Water) × 2 (targeted) × 0.9 (her left upper foreleg bound)
+  Jarred next to it (Right Upper Arm, Right Shoulder): power 15.75 (×0.5)
+
+  ▸ the charge
+    Chest (hit 1)
+        damage      ⚫ 427.09% → ⚫ 679.09%   +252 = power 63 × 0.80 × scale 5
+        resistance  🟨 65.59% → 🟨 53.3%      -12.29 = power 63 × 0.25 × 0.75 resistance scale + 0.47
+              from the softened health
+        health      ❤️ 473.05% → ❤️ 386.03%   -87.02 = damage 252 × 0.2 × 1.3 × vital 1.4 (softened
+              from 91.73)
+    Right Upper Arm (hit 1)
+        damage      🟣 157.5% → 🟣 192.94%    +35.44 = power 15.75 × 0.45 × scale 5
+        resistance  🟩 79.88% → 🟩 76.92%     -2.96 = power 15.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 386.03% → ❤️ 381.07%   -4.96 = damage 35.44 × 0.2 × 1 × vital 0.7
+    Right Shoulder (hit 1)
+        damage      🟡 59.12% → 🔴 94.56%     +35.44 = power 15.75 × 0.45 × scale 5
+        resistance  🟩 95.78% → 🟩 92.83%     -2.95 = power 15.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 381.07% → ❤️ 374.69%   -6.38 = damage 35.44 × 0.2 × 1 × vital 0.9
+
+  ▸ slam: a tall pine
+    Upper Back
+        damage      🟡 59% → 🔴 94%           +35 = power 35 × 0.20 × scale 5
+        resistance  🟦 101.94% → 🟩 95.38%    -6.56 = power 35 × 0.25 × 0.75 resistance scale
+        health      ❤️ 374.69% → ❤️ 369.79%   -4.9 = damage 35 × 0.2 × 0.7
+    Left Shoulder
+        damage      ⚫ 303.3% → ⚫ 382.05%    +78.75 = power 35 × 0.45 × scale 5
+        resistance  🟩 70.43% → 🟨 63.87%     -6.56 = power 35 × 0.25 × 0.75 resistance scale
+        health      ❤️ 369.79% → ❤️ 355.62%   -14.17 = damage 78.75 × 0.2 × 1 × vital 0.9
+    Left Hip
+        damage      🟡 44.48% → 🔴 123.23%    +78.75 = power 35 × 0.45 × scale 5
+        resistance  🟩 99.66% → 🟩 93.1%      -6.56 = power 35 × 0.25 × 0.75 resistance scale
+        health      ❤️ 355.62% → ❤️ 343.02%   -12.6 = damage 78.75 × 0.2 × 1 × vital 0.8
+
+  ▸ crush
+    Chest (hit 2)
+        damage      ⚫ 679.09% → ⚫ 805.09%   +126 = power 31.5 × 0.80 × scale 5
+        resistance  🟨 53.3% → 🟧 47.4%       -5.9 = power 31.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 343.02% → ❤️ 297.15%   -45.86 = damage 126 × 0.2 × 1.3 × vital 1.4
+    Right Upper Arm (hit 2)
+        damage      🟣 192.94% → 🟣 210.67%   +17.73 = power 7.88 × 0.45 × scale 5
+        resistance  🟩 76.92% → 🟩 75.44%     -1.48 = power 7.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 297.15% → ❤️ 294.67%   -2.48 = damage 17.73 × 0.2 × 1 × vital 0.7
+    Right Shoulder (hit 2)
+        damage      🔴 94.56% → 🔴 112.29%    +17.73 = power 7.88 × 0.45 × scale 5
+        resistance  🟩 92.83% → 🟩 91.35%     -1.48 = power 7.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 294.67% → ❤️ 291.48%   -3.19 = damage 17.73 × 0.2 × 1 × vital 0.9
+
+  Total: +676.84% damage  ·  ❤️ Ripples 473.05% → **291.48%** (-181.57)
+💢 **Recoil**: Nocturne's own Take Down jars back into her (power 9.45)
+    Throat
+        damage      🟣 216% → 🟣 253.8%       +37.8 = power 9.45 × 0.80 × scale 5
+        resistance  🟨 51.88% → 🟨 50.1%      -1.78 = power 9.45 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1036.5% → ❤️ 1019.8%   -16.71 = damage 37.8 × 0.2 × 1.3 × vital 1.7
+    Right Ribs
+        damage      🟢 0% → 🟢 4.72%          +4.72 = power 4.72 × 0.20 × scale 5
+        resistance  🟦 102% → 🟦 101.11%      -0.89 = power 4.72 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1019.8% → ❤️ 1019%     -0.79 = damage 4.72 × 0.2 × 0.7 × vital 1.2
+
+  Total: +42.52% damage  ·  ❤️ Nocturne 1036.5% → **1019%** (-17.5)
+🔓 **Ripples loses her grip** on Nocturne's Left Upper Foreleg (#3): Ripples was driven across the
+      arena
+
+🧱 **Ripples crumples** at the foot of a tall pine (face-up) — crumple chance 89%
+🌀 Ripples is reeling (1 beat): she can strike, but can't start a pin
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+🔥 **Ripples: ADRENALINE SURGE!** (3 beats: harder hits, better escapes and dodges, energy refill)
+
+⏳ Beat 38 health: ❤️ Nocturne 1003.7% (-0.5% exertion, -14.8% injuries) | ❤️ Ripples 268.23% (-0.5%
+      exertion, -22.75% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nocturne's attack 7%, rolled 31 → it lands
+    Nocturne's Take Down landing devastatingly 3%, rolled 85 → no
+    a tall pine breaking under Ripples 10%, rolled 86 → it holds
+    Ripples breathless by the blow to her Chest 30%, rolled 90 → no
+    Ripples doubled over by the blow to her Chest 15%, rolled 96 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 57 → no
+    Ripples doubled over by the blow to her Chest 15%, rolled 18 → no
+    Ripples doubled over by the blow to her Left Shoulder 15%, rolled 25 → no
+    Ripples crumpling at a tall pine 89%, rolled 81 → she crumples
+    the clearing doing something by itself 5%, rolled 5 → nothing
+----------------------------------------
+
+
+============================== beat 40 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 32 — Ripples → Nocturne: HYDRO PUMP (spread — Head, Chest, Belly, energy 100→70, 3 left)
+  [staying with the damage: Ripples watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+Still on her back, she opened her mouth and let the lake come out of her: Hydro Pump, a pillar of water.
+
+— Nocturne —
+
+Nocturne met it with the dark, a ring of it slammed straight into the oncoming water. The two met in the air between them, spray and shadow exploding outward, and for one moment they were both leaning into it.
+
+Then the water won. It tore through the dark and hit her in the head, the chest, the belly, and held there: three long, brutal pulses, battering her head back, filling her mouth, driving her chest in. She doubled over round it, drenched, retching.
+
+— Ripples —
+
+Ripples got up after it. One ugly heave against the pine, and she was standing.
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: Hydro Pump held
+💥 **CLASH**: Nocturne meets it with DARK PULSE (force with luck: 61.6 against 123.2) — Ripples'
+      pushes THROUGH, landing at ×0.5
+🩹 Nocturne is guarding her Head (blows there ×0.85)
+🌊 Held for 3 pulses (each extra pulse ×0.6)
+  Power **62.5** = base 40 × 1 (Water vs Dark) × 1.25 (spread) × 1.25 (adrenaline)
+
+  ▸ pulse 1
+    Head (hit 1)
+        damage      ⚫ 437.62% → ⚫ 543.87%   +106.24 = power 26.56 × 0.80 × scale 5
+        resistance  🟨 60.53% → 🟨 55.55%     -4.98 = power 26.56 × 0.25 × 0.75 resistance scale
+        health      ❤️ 1003.7% → ❤️ 970.56%   -33.15 = damage 106.24 × 0.2 × 1.3 × vital 1.2
+    Chest (hit 1)
+        damage      🟣 224.25% → 🟣 294.56%   +70.31 = power 31.25 × 0.45 × scale 5
+        resistance  🟩 87.38% → 🟩 81.52%     -5.86 = power 31.25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 970.56% → ❤️ 950.87%   -19.69 = damage 70.31 × 0.2 × 1 × vital 1.4
+    Belly (hit 1)
+        damage      🟢 0% → 🟠 70.31%         +70.31 = power 31.25 × 0.45 × scale 5
+        resistance  🟩 77% → 🟩 71.14%        -5.86 = power 31.25 × 0.25 × 0.75 resistance scale
+        health      ❤️ 950.87% → ❤️ 932.59%   -18.28 = damage 70.31 × 0.2 × 1 × vital 1.3
+
+  ▸ pulse 2
+    Head (hit 2)
+        damage      ⚫ 543.87% → ⚫ 607.62%   +63.76 = power 15.94 × 0.80 × scale 5
+        resistance  🟨 55.55% → 🟨 52.56%     -2.99 = power 15.94 × 0.25 × 0.75 resistance scale
+        health      ❤️ 932.59% → ❤️ 912.69%   -19.89 = damage 63.76 × 0.2 × 1.3 × vital 1.2
+    Chest (hit 2)
+        damage      🟣 294.56% → ⚫ 336.75%   +42.19 = power 18.75 × 0.45 × scale 5
+        resistance  🟩 81.52% → 🟩 78%        -3.52 = power 18.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 912.69% → ❤️ 900.88%   -11.81 = damage 42.19 × 0.2 × 1 × vital 1.4
+    Belly (hit 2)
+        damage      🟠 70.31% → 🔴 112.5%     +42.19 = power 18.75 × 0.45 × scale 5
+        resistance  🟩 71.14% → 🟨 67.62%     -3.52 = power 18.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 900.88% → ❤️ 889.91%   -10.97 = damage 42.19 × 0.2 × 1 × vital 1.3
+
+  ▸ pulse 3
+    Head (hit 3)
+        damage      ⚫ 607.62% → ⚫ 671.38%   +63.76 = power 15.94 × 0.80 × scale 5
+        resistance  🟨 52.56% → 🟧 49.57%     -2.99 = power 15.94 × 0.25 × 0.75 resistance scale
+        health      ❤️ 889.91% → ❤️ 870.02%   -19.89 = damage 63.76 × 0.2 × 1.3 × vital 1.2
+    Chest (hit 3)
+        damage      ⚫ 336.75% → ⚫ 378.94%   +42.19 = power 18.75 × 0.45 × scale 5
+        resistance  🟩 78% → 🟩 74.48%        -3.52 = power 18.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 870.02% → ❤️ 858.21%   -11.81 = damage 42.19 × 0.2 × 1 × vital 1.4
+    Belly (hit 3)
+        damage      🔴 112.5% → 🟣 187.5%     +75 = power 18.75 × 0.80 × scale 5
+        resistance  🟨 67.62% → 🟨 64.11%     -3.51 = power 18.75 × 0.25 × 0.75 resistance scale
+        health      ❤️ 858.21% → ❤️ 832.86%   -25.35 = damage 75 × 0.2 × 1.3 × vital 1.3
+
+  Total: +575.95% damage  ·  ❤️ Nocturne 1003.7% → **832.86%** (-170.84)
+💧 **Nocturne is soaked** (3 beats)
+🤕 **Nocturne is doubled_over** (1 beat)
+😮 **Nocturne is breathless** (1 beat)
+
+🧗 **Ripples gets up** on the third try (using a tall pine; one ugly heave)
+      get-up roll 0.28 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+- Nocturne is no longer bound
+- Ripples is no longer reeling
+
+⏳ Beat 39 health: ❤️ Nocturne 814.96% (-0.5% exertion, -17.4% injuries) | ❤️ Ripples 244.98% (-0.5%
+      exertion, -22.75% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples overcommitting, sloppy with tiredness 12%, rolled 96 → no
+    Nocturne meeting Ripples' Hydro Pump with one of her own 15%, rolled 14 → CLASH
+    the clash: Ripples' Hydro Pump 123 against Nocturne's Dark Pulse 62 → it pushes through
+    Ripples' Hydro Pump landing devastatingly 3%, rolled 66 → no
+    Ripples' Hydro Pump going into Nocturne's mouth 54%, rolled 70 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 92 → no
+    Nocturne doubled over by the blow to her Head 15%, rolled 97 → no
+    Nocturne breathless by the blow to her Belly 30%, rolled 38 → no
+    Nocturne breathless by the blow to her Chest 30%, rolled 80 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 43 → no
+    Nocturne doubled over by the blow to her Head 15%, rolled 16 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 33 → no
+    Nocturne doubled over by the blow to her Head 15%, rolled 13 → doubled over
+    Nocturne breathless by the blow to her Chest 30%, rolled 91 → no
+    Nocturne breathless by the blow to her Belly 30%, rolled 96 → no
+    Nocturne breathless by the blow to her Chest 30%, rolled 12 → breathless
+    the clearing doing something by itself 5%, rolled 0 → something happens
+----------------------------------------
+
+
+============================== beat 41 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 33 — Ripples → Nocturne: WATER PULSE (spread — Head, Neck, Chest Ruff, energy 75→57)
+  [staying with the damage: Nocturne's side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+She hit the Absol with another Water Pulse while she was still bent over: a ring of water into the face, the head, the neck.
+
+— Nocturne —
+
+Her head was already ringing. This made it worse. The world swam and doubled; she couldn't tell which of the two Buizels was the real one. She was coughing water up again. Her thoughts kept slipping off each other.
+
+*Where. Where is she.*
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a ring of water into the face
+🩹 Nocturne is guarding her Head (blows there ×0.85)
+  Power **37.5** = base 20 × 1 (Water vs Dark) × 1.25 (spread) × 1.25 (adrenaline) × 1.2 (doubled
+        over in pain)
+
+    Head
+        damage      ⚫ 671.38% → ⚫ 878.61%   +207.22 = power 31.88 × 1.30 × scale 5
+        resistance  🟧 49.57% → 🟧 43.6%      -5.97 = power 31.88 × 0.25 × 0.75 resistance scale
+        health      ❤️ 814.96% → ❤️ 730.41%   -84.55 = damage 207.22 × 0.2 × 1.7 × vital 1.2
+    Neck
+        damage      ⚫ 362.32% → ⚫ 512.32%   +150 = power 37.5 × 0.80 × scale 5
+        resistance  🟨 58.22% → 🟨 51.19%     -7.03 = power 37.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 730.41% → ❤️ 668.01%   -62.4 = damage 150 × 0.2 × 1.3 × vital 1.6
+    Chest Ruff
+        damage      🟢 25% → 🟠 62.5%         +37.5 = power 37.5 × 0.20 × scale 5
+        resistance  🟦 132.31% → 🟦 125.28%   -7.03 = power 37.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 668.01% → ❤️ 664.86%   -3.15 = damage 37.5 × 0.2 × 0.7 × vital 0.6
+
+  Total: +394.72% damage  ·  ❤️ Nocturne 814.96% → **664.86%** (-150.1)
+💫 **Nocturne is confused** (2 beats)
+💦 **Nocturne is sputtering** (2 beats)
+💫 **Nocturne is dazed** (1 beat)
+
+- Nocturne is no longer doubled_over
+- Nocturne is no longer breathless
+
+⏳ Beat 40 health: ❤️ Nocturne 646.96% (-0.5% exertion, -17.4% injuries) | ❤️ Ripples 221.73% (-0.5%
+      exertion, -22.75% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples throwing everything into one last blow 50%, rolled 96 → no
+    Ripples overcommitting, sloppy with tiredness 12%, rolled 53 → no
+    Nocturne dodging Ripples' attack 2%, rolled 58 → it lands
+    Ripples' Water Pulse landing devastatingly 6%, rolled 24 → no
+    Ripples' Water Pulse going into Nocturne's mouth 30%, rolled 26 → into her mouth
+    Nocturne confused by Water Pulse 20%, rolled 17 → confused
+    Nocturne dazed by the blow to her Head 25%, rolled 15 → dazed
+    the clearing doing something by itself 5%, rolled 88 → nothing
+----------------------------------------
+
+
+============================== beat 42 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She stood still and breathed, because there was nothing else she could do. Her head was a slow, heavy drum. Her neck burned. She kept her head low and turned slightly away, shielding it without deciding to.
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+- Nocturne is no longer dazed
+- Ripples's adrenaline surge is over
+
+⏳ Beat 41 health: ❤️ Nocturne 629.06% (-0.5% exertion, -17.4% injuries) | ❤️ Ripples 198.98%
+      (-22.75% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 35 → nothing
+----------------------------------------
+
+
+============================== beat 43 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 34 — Ripples → Nocturne: SWIFT (spread — Head, Chest, Right Shoulder, energy 77→59)
+  [staying with the damage: Nocturne's side, Ripples watching]
+  [narrator is writing part 1/4]
+  [narrator is writing part 2/4]
+  [narrator is writing part 3/4]
+  [narrator is writing part 4/4]
+
+— Ripples —
+
+The surge was fading. Ripples could feel it going, and she knew there would not be another. So she spent all of it.
+
+She flung Swift with everything she had left, a storm of stars, and they hit the Absol in the head and the chest and the right shoulder, harder than anything she had thrown all fight.
+
+— Nocturne —
+
+Every star felt like a stone. Her head had been hurt and hurt again and this hit it on top of everything, and the force of it rocked her back on her haunches. The air went out of her. She had nothing in her chest to get it back with.
+
+— Ripples —
+
+Then Ripples was empty. Her arms dropped. She swayed on the sand, breathing in harsh, dragging gulps, and there was nothing behind them at all.
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a spray of stars
+🔥 **LAST STAND**: Ripples puts everything she has left into it (×1.3; energy → 0)
+🩹 Nocturne is guarding her Head (blows there ×0.85)
+  Power **32.5** = base 20 × 1 (Normal vs Dark) × 1.25 (spread) × 1.3 (last stand)
+
+    Head
+        damage      ⚫ 878.61% → ⚫ 1058.13%   +179.53 = power 27.62 × 1.30 × scale 5
+        resistance  🟧 43.6% → 🟧 38.42%       -5.18 = power 27.62 × 0.25 × 0.75 resistance scale
+        health      ❤️ 629.06% → ❤️ 555.81%    -73.25 = damage 179.53 × 0.2 × 1.7 × vital 1.2
+    Chest
+        damage      ⚫ 378.94% → ⚫ 452.06%    +73.12 = power 32.5 × 0.45 × scale 5
+        resistance  🟩 74.48% → 🟨 68.39%      -6.09 = power 32.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 555.81% → ❤️ 535.34%    -20.47 = damage 73.12 × 0.2 × 1 × vital 1.4
+    Right Shoulder
+        damage      🟠 71.5% → 🔴 144.62%      +73.12 = power 32.5 × 0.45 × scale 5
+        resistance  🟩 98.59% → 🟩 92.5%       -6.09 = power 32.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 535.34% → ❤️ 522.18%    -13.16 = damage 73.12 × 0.2 × 1 × vital 0.9
+
+  Total: +325.77% damage  ·  ❤️ Nocturne 629.06% → **522.18%** (-106.88)
+😮 **Nocturne is breathless** (1 beat)
+
+- Nocturne is no longer soaked
+- Nocturne is no longer sputtering
+- Nocturne is no longer confused
+
+⏳ Beat 42 health: ❤️ Nocturne 503.83% (-0.5% exertion, -17.85% injuries) | ❤️ Ripples 175.73% (-0.5%
+      exertion, -22.75% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples throwing everything into one last blow 50%, rolled 45 → LAST STAND
+    Nocturne dodging Ripples' attack 4%, rolled 86 → it lands
+    Ripples' Swift landing devastatingly 3%, rolled 17 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 36 → no
+    Nocturne doubled over by the blow to her Head 15%, rolled 42 → no
+    Nocturne breathless by the blow to her Chest 30%, rolled 12 → breathless
+    Nocturne doubled over by the blow to her Chest 15%, rolled 21 → no
+    the clearing doing something by itself 5%, rolled 51 → nothing
+----------------------------------------
+
+
+============================== beat 44 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne breathed. Short breaths, all she could get. Her head pounded so hard her vision pulsed with it.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+- Nocturne is no longer breathless
+
+⏳ Beat 43 health: ❤️ Nocturne 485.48% (-0.5% exertion, -17.85% injuries) | ❤️ Ripples 152.98%
+      (-22.75% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 21 → nothing
+----------------------------------------
+
+
+============================== beat 45 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 35 — Ripples → Nocturne: BRICK BREAK (targeted — Head, Left Ear, Throat, energy 20→10)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+Ripples dragged herself forward and brought her paw down on the white head again, Brick Break, the same spot, the edge of her hand onto the place she'd hit before.
+
+— Nocturne —
+
+It landed exactly where the last one had, and the pain was so enormous it went quiet for a moment, and then roared. Her ear rang. Her throat burned. She should have gone down.
+
+Something answered instead. Deep in her, under all of it, something lit, and the surge came up through her, hot and hard, clearing her eyes.
+
+— Ripples —
+
+Ripples had put too much into it. She overbalanced on the follow-through and stumbled, nearly falling, her bad leg buckling under her, and had to catch herself on her hands.
+
+*Get up. Get up, get up—*
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a chop at the head
+😩 **Ripples overcommits**, sloppy with tiredness (×0.6) — off balance after it
+🩹 Nocturne is guarding her Head (blows there ×0.85)
+  Power **67.2** = base 35 × 2 (Fighting vs Dark, super effective!) × 2 (targeted) × 0.8 (her hurt
+        right forearm fin) × 0.6 (overcommitted, sloppy with tiredness)
+  Jarred next to it (Left Ear, Throat): power 16.8 (×0.5)
+
+    Head
+        damage      ⚫ 1058.13% → ⚫ 1429.41%   +371.28 = power 57.12 × 1.30 × scale 5
+        resistance  🟧 38.42% → 🟥 23.4%        -15.02 = power 57.12 × 0.25 × 0.75 resistance scale +
+              4.3 from the softened health
+        health      ❤️ 485.48% → ❤️ 377.03%     -108.44 = damage 371.28 × 0.2 × 1.7 × vital 1.2
+              (softened from 151.48)
+    Left Ear
+        damage      🟢 0% → 🟠 67.2%            +67.2 = power 16.8 × 0.80 × scale 5
+        resistance  🟨 57% → 🟨 53.85%          -3.15 = power 16.8 × 0.25 × 0.75 resistance scale
+        health      ❤️ 377.03% → ❤️ 373.54%     -3.49 = damage 67.2 × 0.2 × 1.3 × vital 0.2
+    Throat
+        damage      🟣 253.8% → ⚫ 321%         +67.2 = power 16.8 × 0.80 × scale 5
+        resistance  🟨 50.1% → 🟧 46.95%        -3.15 = power 16.8 × 0.25 × 0.75 resistance scale
+        health      ❤️ 373.54% → ❤️ 343.83%     -29.7 = damage 67.2 × 0.2 × 1.3 × vital 1.7
+
+  Total: +505.68% damage  ·  ❤️ Nocturne 485.48% → **343.83%** (-141.65)
+
+🔥 **Nocturne: ADRENALINE SURGE!** (3 beats: harder hits, better escapes and dodges, energy refill)
+
+⏳ Beat 44 health: ❤️ Nocturne 325.48% (-0.5% exertion, -17.85% injuries) | ❤️ Ripples 129.73% (-0.5%
+      exertion, -22.75% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples overcommitting, sloppy with tiredness 12%, rolled 2 → SLOPPY
+    Nocturne dodging Ripples' attack 10%, rolled 50 → it lands
+    Ripples' Brick Break landing devastatingly 3%, rolled 31 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 50 → no
+    Nocturne doubled over by the blow to her Head 15%, rolled 36 → no
+    the clearing doing something by itself 5%, rolled 65 → nothing
+----------------------------------------
+
+
+============================== beat 46 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 36 — Nocturne → Ripples: THUNDERBOLT (whole body, energy 50→20, 2 left)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She was stumbling. Off balance, soaked to the bone, wide open. Nocturne let the lightning go: everything stored in her, released all at once, a white-blue bolt that hit the soaked Buizel and ran through every wet inch of her.
+
+— Ripples —
+
+The bolt went through her like she was made of water, which she nearly was. Every muscle seized at once. Her jaw locked. Her fins stood straight out. When it let go she was still standing, somehow, but the clearing had gone far away and blurry, and the sounds came late, as if from underwater.
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: the stored lightning let go through the soaked Buizel
+🩹 Ripples is guarding her Chest (blows there ×0.85; her back is open, ×1.1)
+  Power **24** = base 8 × 2 (Electric vs Water, super effective!) × 1 (whole-body) × 1.25
+        (adrenaline) × 1.2 (caught off balance)
+
+  32 parts of Ripples hit:
+  - Res 168% 🟦 → 163.41% 🟦 (1), 0.20× ×5 scale, +24% each: Twin Tails 0→24%🟢
+  - Res 121.31% 🟦 → 116.67% 🟦 (1), 0.20× ×5 scale, +24% each: Tail Base 35.7→59.7%🟡
+  - Res 111.69% 🟦 → 107% 🟦 (1), 0.20× ×5 scale, +24% each: Left Thigh 7→31%🟡
+  - Res 103% 🟦 → 97.79% 🟩 (1), 0.20× ×5 scale, +26.4% each: Lower Back 0→26.4%🟢
+  - Res 101.31% 🟦 → 96.62% 🟩 (1), 0.20× ×5 scale, +24% each: Right Hip 35.7→59.7%🟡
+  - Res 95.38% 🟩 → 89.59% 🟩 (1), 0.45× ×5 scale, +59.4% each: Upper Back 94→153.4%🟣
+  - Res 93.1% 🟩 → 87.99% 🟩 (1), 0.45× ×5 scale, +54% each: Left Hip 123.23→177.23%🟣
+  - Res 91.35% 🟩 → 86.17% 🟩 (1), 0.45× ×5 scale, +54% each: Right Shoulder 112.29→166.29%🟣
+  - Res 86.81% 🟩 → 81.78% 🟩 (1), 0.45× ×5 scale, +54% each: Left Upper Arm 74.25→128.25%🔴
+  - Res 86.67% 🟩 → 82.17% 🟩 (1), 0.45× ×5 scale, +54% each: Head 75.94→129.94%🔴
+  - Res 83% 🟩 → 78.2% 🟩 (1), 0.45× ×5 scale, +54% each: Right Foot 0→54%🟡
+  - Res 81.12% 🟩 → 76.32% 🟩 (1), 0.45× ×5 scale, +54% each: Left Foot 22.5→76.5%🟠
+  - Res 80.5% 🟩 → 75.62% 🟩 (1), 0.45× ×5 scale, +54% each: Left Knee 90→144%🔴
+  - Res 78.44% 🟩 → 73.94% 🟩 (1), 0.45× ×5 scale, +54% each: Jaw 114.75→168.75%🟣
+  - Res 78% 🟩 → 73.5% 🟩 (1), 0.45× ×5 scale, +54% each: Right Cheek 0→54%🟡
+  - Res 78% 🟩 → 73.2% 🟩 (1), 0.45× ×5 scale, +54% each: Left Paw 0→54%🟡
+  - Res 76.69% 🟩 → 72.19% 🟩 (1), 0.45× ×5 scale, +54% each: Muzzle 15.75→69.75%🟠
+  - Res 76.12% 🟩 → 71.32% 🟩 (1), 0.45× ×5 scale, +54% each: Right Paw 22.5→76.5%🟠
+  - Res 75.44% 🟩 → 70.42% 🟩 (1), 0.45× ×5 scale, +54% each: Right Upper Arm 210.67→264.67%🟣
+  - Res 73.42% 🟩 → 68.54% 🟨 (1), 0.45× ×5 scale, +54% each: Right Knee 174.96→228.96%🟣
+  - Res 68% 🟨 → 62.98% 🟨 (1), 0.80× ×5 scale, +96% each: Left Forearm Fin 0→96%🔴
+  - Res 63.87% 🟨 → 57.8% 🟨 (1), 0.80× ×5 scale, +96% each: Left Shoulder 382.05→478.05%⚫
+  - Res 62.25% 🟨 → 57.75% 🟨 (1), 0.80× ×5 scale, +96% each: Left Cheek 189→285%🟣
+  - Res 61.91% 🟨 → 57.41% 🟨 (1), 0.80× ×5 scale, +96% each: Neck 243.38→339.38%⚫
+  - Res 61.31% 🟨 → 56.81% 🟨 (1), 0.80× ×5 scale, +96% each: Left Ear 36→132%🔴
+  - Res 59.67% 🟨 → 53.77% 🟨 (1), 0.80× ×5 scale, +96% each: Right Thigh 511.54→607.54%⚫
+  - Res 57.69% 🟨 → 52.66% 🟨 (1), 0.80× ×5 scale, +96% each: Right Forearm Fin 220→316%⚫
+  - Res 55.22% 🟨 → 50.72% 🟨 (1), 0.80× ×5 scale, +96% each: Throat 166→262%🟣
+  - Res 49.03% 🟧 → 39.7% 🟧 (1), 1.30× ×5 scale, +156% each: Stomach 474.8→630.8%⚫
+  - Res 47.4% 🟧 → 41.58% 🟧 (1), 1.30× ×5 scale, +132.6% each: Chest 805.09→937.69%⚫
+  - Res 47.25% 🟧 → 42.75% 🟧 (1), 1.30× ×5 scale, +156% each: Right Ear 336→492%⚫
+  - Res 41.75% 🟧 → 37.25% 🟧 (1), 1.30× ×5 scale, +156% each: Nose 240→396%⚫
+
+  Total: +2306.4% damage  ·  ❤️ Ripples 129.73% → **-146.48%** (-276.21)
+💫 **Ripples is dazed** (1 beat)
+
+- Ripples is no longer off_balance
+
+⏳ Beat 45 health: ❤️ Nocturne 307.13% (-0.5% exertion, -17.85% injuries) | ❤️ Ripples -176.03%
+      (-0.5% exertion, -29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 44 → no
+    Nocturne's Thunderbolt landing devastatingly 3%, rolled 45 → no
+    Ripples paralyzed by Thunderbolt 30%, rolled 30 → no
+    Ripples dazed by the blow to her Right Ear 25%, rolled 40 → no
+    Ripples doubled over by the blow to her Right Ear 15%, rolled 78 → no
+    Ripples dazed by the blow to her Nose 25%, rolled 68 → no
+    Ripples breathless by the blow to her Stomach 30%, rolled 49 → no
+    Ripples doubled over by the blow to her Stomach 15%, rolled 65 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 38 → no
+    Ripples doubled over by the blow to her Chest 15%, rolled 20 → no
+    Ripples dazed by the blow to her Left Cheek 25%, rolled 0 → dazed
+    Ripples doubled over by the blow to her Left Shoulder 15%, rolled 28 → no
+    Ripples doubled over by the blow to her Right Thigh 15%, rolled 60 → no
+    the clearing doing something by itself 5%, rolled 89 → nothing
+----------------------------------------
+
+
+============================== beat 47 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 37 — Nocturne → Ripples: SUCKER PUNCH (targeted — Stomach, Chest, Left Hip, energy 25→11)
+  [staying with the damage: Nocturne watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+The surge was still in her. She feinted high, a jerk of the head as if for the face.
+
+— Ripples —
+
+Ripples flinched from it with her whole dazed body, arms up, and the real blow came in low.
+
+— Nocturne —
+
+The forepaw drove into the Buizel's stomach, the ruined centre of it, from below, while she was turned the wrong way with her arms up and nothing guarding it.
+
+— Ripples —
+
+There was no rolling with it. It went in and stayed in, and the air went out of her and did not come back, and she folded round it with a sound she hadn't made before, high and thin and broken off.
+
+*Fell for it. Fell for it.*
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: Sucker Punch
+🎭 **Feint** (Ripples bites 55%): she BITES — no dodge, the real blow lands on her caught open
+  Power **78.12** = base 25 × 1 (Dark vs Water) × 2 (targeted) × 1.25 (adrenaline) × 1.25 (caught
+        open by the feint)
+  Jarred next to it (Chest, Left Hip): power 19.53 (×0.5)
+
+    Stomach
+        damage      ⚫ 630.8% → ⚫ 1138.58%     +507.78 = power 78.12 × 1.30 × scale 5
+        resistance  🟧 39.7% → 🟥 15.29%        -24.41 = power 78.12 × 0.25 × 0.75 resistance scale +
+              9.76 from the softened health
+        health      ❤️ -176.03% → ❤️ -302.87%   -126.83 = damage 507.78 × 0.2 × 1.7 × vital 1.3
+              (softened from 224.44)
+    Chest
+        damage      ⚫ 937.69% → ⚫ 1064.63%    +126.95 = power 19.53 × 1.30 × scale 5
+        resistance  🟧 41.58% → 🟧 37.92%       -3.66 = power 19.53 × 0.25 × 0.75 resistance scale
+        health      ❤️ -302.87% → ❤️ -363.29%   -60.43 = damage 126.95 × 0.2 × 1.7 × vital 1.4
+    Left Hip
+        damage      🟣 177.23% → 🟣 221.17%     +43.94 = power 19.53 × 0.45 × scale 5
+        resistance  🟩 87.99% → 🟩 84.33%       -3.66 = power 19.53 × 0.25 × 0.75 resistance scale
+        health      ❤️ -363.29% → ❤️ -370.32%   -7.03 = damage 43.94 × 0.2 × 1 × vital 0.8
+
+  Total: +678.67% damage  ·  ❤️ Ripples -176.03% → **-370.32%** (-194.29)
+😮 **Ripples is breathless** (1 beat)
+
+- Ripples is no longer dazed
+
+⏳ Beat 46 health: ❤️ Nocturne 288.78% (-0.5% exertion, -17.85% injuries) | ❤️ Ripples -399.87%
+      (-0.5% exertion, -29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples biting on Nocturne's feint 55%, rolled 51 → she bites
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 99 → no
+    Nocturne's Sucker Punch landing devastatingly 6%, rolled 45 → no
+    Ripples flinched by Sucker Punch 25%, rolled 67 → no
+    Ripples breathless by the blow to her Stomach 30%, rolled 20 → breathless
+    Ripples doubled over by the blow to her Stomach 15%, rolled 53 → no
+    Ripples doubled over by the blow to her Chest 15%, rolled 68 → no
+    the clearing doing something by itself 5%, rolled 24 → nothing
+----------------------------------------
+
+
+============================== beat 48 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+She stood bent over, her arms locked round her middle, and breathed in small, desperate sips, because a real breath was impossible. She was so far past spent there was no word for it. She stayed on her feet only because falling seemed to need more than she had.
+
+— Nocturne —
+
+Nocturne watched her try to breathe. The surge in her was fading too. She could feel it going.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Ripples catches her breath
+
+- Nocturne's adrenaline surge is over
+- Ripples is no longer breathless
+
+⏳ Beat 47 health: ❤️ Nocturne 270.93% (-17.85% injuries) | ❤️ Ripples -429.42% (-0.5% exertion,
+      -29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 96 → nothing
+----------------------------------------
+
+
+============================== beat 49 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 38 — Ripples → Nocturne: ICE BEAM (spread — Head, Chest, Left Shoulder, energy 28→4)
+  [lingering on one blow this beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+From the fold, Ripples opened her mouth and breathed out cold: Ice Beam, held, a freezing white line into the Absol's head and chest and shoulder.
+
+— Nocturne —
+
+It found her head, the one place that had nothing left, and held there: two pulses of cold that drove into the bruised skull and froze the fur on her chest and stiffened her shoulder. Her vision swam and slid again. Her breath came short and shallow, and the frost in her ruff crackled every time she drew one.
+
+*Too much. Too much. She was finished, she was supposed to be—*
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: Ice Beam held
+🩹 Nocturne is guarding her Head (blows there ×0.85)
+🌊 Held for 2 pulses (each extra pulse ×0.6)
+  Power **37.5** = base 30 × 1 (Ice vs Dark) × 1.25 (spread)
+
+  ▸ pulse 1
+    Head (hit 1)
+        damage      ⚫ 1429.41% → ⚫ 1716.34%   +286.92 = power 31.88 × 1.80 × scale 5
+        resistance  🟥 23.4% → 🟥 13.12%        -10.28 = power 31.88 × 0.25 × 0.75 resistance scale +
+              4.3 from the softened health
+        health      ❤️ 270.93% → ❤️ 162.49%     -108.45 = damage 286.92 × 0.2 × 2.2 × vital 1.2
+              (softened from 151.49)
+    Chest (hit 1)
+        damage      ⚫ 452.06% → ⚫ 602.06%     +150 = power 37.5 × 0.80 × scale 5
+        resistance  🟨 68.39% → 🟨 61.36%       -7.03 = power 37.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 162.49% → ❤️ 107.89%     -54.6 = damage 150 × 0.2 × 1.3 × vital 1.4
+    Left Shoulder (hit 1)
+        damage      🟡 48.5% → 🟠 86%           +37.5 = power 37.5 × 0.20 × scale 5
+        resistance  🟦 102.91% → 🟩 95.88%      -7.03 = power 37.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 107.89% → ❤️ 103.16%     -4.72 = damage 37.5 × 0.2 × 0.7 × vital 0.9
+
+  ▸ pulse 2
+    Head (hit 2)
+        damage      ⚫ 1716.34% → ⚫ 1888.51%   +172.17 = power 19.13 × 1.80 × scale 5
+        resistance  🟥 13.12% → 🟥 6.53%        -6.59 = power 19.13 × 0.25 × 0.75 resistance scale +
+              3.01 from the softened health
+        health      ❤️ 103.16% → ❤️ 42.32%      -60.84 = damage 172.17 × 0.2 × 2.2 × vital 1.2
+              (softened from 90.91)
+    Chest (hit 2)
+        damage      ⚫ 602.06% → ⚫ 692.06%     +90 = power 22.5 × 0.80 × scale 5
+        resistance  🟨 61.36% → 🟨 54.85%       -6.51 = power 22.5 × 0.25 × 0.75 resistance scale +
+              2.29 from the softened health
+        health      ❤️ 42.32% → ❤️ 32.49%       -9.83 = damage 90 × 0.2 × 1.3 × vital 1.4 (softened
+              from 32.76)
+    Left Shoulder (hit 2)
+        damage      🟠 86% → 🔴 136.62%         +50.62 = power 22.5 × 0.45 × scale 5
+        resistance  🟩 95.88% → 🟩 91.02%       -4.86 = power 22.5 × 0.25 × 0.75 resistance scale +
+              0.64 from the softened health
+        health      ❤️ 32.49% → ❤️ 29.76%       -2.73 = damage 50.62 × 0.2 × 1 × vital 0.9 (softened
+              from 9.11)
+
+  Total: +787.21% damage  ·  ❤️ Nocturne 270.93% → **29.76%** (-241.17)
+💫 **Nocturne is dazed** (1 beat)
+😮 **Nocturne is breathless** (1 beat)
+
+⏳ Beat 48 health: ❤️ Nocturne 10.96% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -458.97% (-0.5%
+      exertion, -29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples overcommitting, sloppy with tiredness 12%, rolled 97 → no
+    Nocturne meeting Ripples' Ice Beam with one of her own 15%, rolled 70 → no
+    Nocturne dodging Ripples' attack 4%, rolled 97 → it lands
+    Ripples' Ice Beam landing devastatingly 3%, rolled 99 → no
+    Nocturne frozen by Ice Beam 10%, rolled 25 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 97 → no
+    Nocturne doubled over by the blow to her Head 15%, rolled 29 → no
+    Nocturne dazed by the blow to her Head 25%, rolled 2 → dazed
+    Nocturne doubled over by the blow to her Head 15%, rolled 72 → no
+    Nocturne breathless by the blow to her Chest 30%, rolled 16 → breathless
+    Nocturne doubled over by the blow to her Chest 15%, rolled 78 → no
+    Nocturne doubled over by the blow to her Chest 15%, rolled 40 → no
+    the clearing doing something by itself 5%, rolled 7 → nothing
+----------------------------------------
+
+
+============================== beat 50 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 39 — Nocturne → Ripples: IRON TAIL (targeted — Right Knee, Right Foot, Right Thigh, energy
+      34→24)
+Impact — Ripples knocked down: the ground
+  [staying with the damage: Ripples' side, Nocturne watching]
+  [narrator is writing part 1/4]
+  [narrator is writing part 2/4]
+  [narrator is writing part 3/4]
+  [narrator is writing part 4/4]
+
+— Nocturne —
+
+Nocturne had almost nothing left. She knew it. So she put all of it into one thing.
+
+The sickle tail came round low and hard, harder than anything she had swung all fight, and took the Buizel's right knee, the one she had hammered, the one that was already ruined.
+
+— Ripples —
+
+The knee went. She was down, on her back in the grass, her shoulder and her back slamming into the ground, her leg a white sheet of pain from hip to foot.
+
+— Nocturne —
+
+And then Nocturne was empty too. She stood over her, swaying, and every scrap of strength she'd had a moment ago was gone, poured out into the swing. Her legs trembled. She did not trust them.
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: Iron Tail
+🔥 **LAST STAND**: Nocturne puts everything she has left into it (×1.3; energy → 0)
+🩹 Ripples is guarding her Stomach (blows there ×0.85; her back is open, ×1.1)
+  Power **39.78** = base 40 × 0.5 (Steel vs Water, not very effective) × 2 (targeted) × 0.85 (the
+        wind knocked out of her) × 0.9 (dazed) × 1.3 (last stand)
+  Jarred next to it (Right Foot, Right Thigh): power 9.95 (×0.5)
+
+    Right Knee
+        damage      🟣 228.96% → ⚫ 388.08%     +159.12 = power 39.78 × 0.80 × scale 5
+        resistance  🟨 68.54% → 🟨 61.08%       -7.46 = power 39.78 × 0.25 × 0.75 resistance scale
+        health      ❤️ -458.97% → ❤️ -479.66%   -20.69 = damage 159.12 × 0.2 × 1.3 × vital 0.5
+    Right Foot
+        damage      🟡 54% → 🟠 76.39%          +22.39 = power 9.95 × 0.45 × scale 5
+        resistance  🟩 78.2% → 🟩 76.33%        -1.87 = power 9.95 × 0.25 × 0.75 resistance scale
+        health      ❤️ -479.66% → ❤️ -481.45%   -1.79 = damage 22.39 × 0.2 × 1 × vital 0.4
+    Right Thigh
+        damage      ⚫ 607.54% → ⚫ 647.34%     +39.8 = power 9.95 × 0.80 × scale 5
+        resistance  🟨 53.77% → 🟨 51.9%        -1.87 = power 9.95 × 0.25 × 0.75 resistance scale
+        health      ❤️ -481.45% → ❤️ -489.73%   -8.28 = damage 39.8 × 0.2 × 1.3 × vital 0.8
+
+  Total: +221.31% damage  ·  ❤️ Ripples -458.97% → **-489.73%** (-30.76)
+
+🪨 **Ripples lands hard** (knocked down: the ground), ends up face-up
+- the ground (light, power 8 each): Upper Back, Left Shoulder, Right Thigh
+    Upper Back
+        damage      🟣 153.4% → 🟣 171.4%       +18 = power 8 × 0.45 × scale 5
+        resistance  🟩 89.59% → 🟩 88.09%       -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -489.73% → ❤️ -493.33%   -3.6 = damage 18 × 0.2 × 1
+    Left Shoulder
+        damage      ⚫ 478.05% → ⚫ 510.05%     +32 = power 8 × 0.80 × scale 5
+        resistance  🟨 57.8% → 🟨 56.3%         -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -493.33% → ❤️ -500.82%   -7.49 = damage 32 × 0.2 × 1.3 × vital 0.9
+    Right Thigh
+        damage      ⚫ 647.34% → ⚫ 679.34%     +32 = power 8 × 0.80 × scale 5
+        resistance  🟨 51.9% → 🟨 50.4%         -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -500.82% → ❤️ -507.47%   -6.66 = damage 32 × 0.2 × 1.3 × vital 0.8
+
+  Total: +82% damage  ·  ❤️ Ripples -489.73% → **-507.47%** (-17.74)
+
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+- Nocturne is no longer dazed
+- Nocturne is no longer breathless
+
+⏳ Beat 49 health: ❤️ Nocturne -7.84% (-0.5% exertion, -18.3% injuries, now past the limit) | ❤️
+      Ripples -537.02% (-0.5% exertion, -29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne throwing everything into one last blow 50%, rolled 7 → LAST STAND
+    Ripples dodging Nocturne's attack 5%, rolled 35 → it lands
+    Nocturne's Iron Tail landing devastatingly 2%, rolled 71 → no
+    the landing finding every sore spot on Ripples 4%, rolled 83 → no
+    Ripples sitting down hard 15%, rolled 47 → flat on the ground
+    the clearing doing something by itself 5%, rolled 10 → nothing
+----------------------------------------
+
+
+============================== beat 51 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She stood and breathed. That was all.
+
+— Ripples —
+
+Ripples got as far as sitting up, her hands braced in the grass behind her, her leg stuck out in front of her. Further than that it would not go.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+🧗 **Ripples can't get up** this beat, but **gets as far as sitting up** (3 tries; down 1 beats)
+      get-up roll 0.05 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+
+⏳ Beat 50 health: ❤️ Nocturne -26.64% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -566.07%
+      (-29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples getting as far as sitting up 40%, rolled 16 → she sits up
+    the clearing doing something by itself 5%, rolled 12 → nothing
+----------------------------------------
+
+
+============================== beat 52 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Both —
+
+Neither of them moved for a while. The sun came through a gap in the clouds and lay warm across the clearing, and the lake lapped at the sand as if nothing had happened, and somewhere in the oaks a bird started singing again.
+
+— Ripples —
+
+Ripples sat in the grass and tried three times to get her leg under her, and three times it would not hold.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+🧗 **Ripples can't get up** this beat (3 tries; down 2 beats)
+      get-up roll 0.07 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+
+⏳ Beat 51 health: ❤️ Nocturne -45.44% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -595.12%
+      (-29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 10 → nothing
+----------------------------------------
+
+
+============================== beat 53 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+This time she used the pine. She rolled onto her front and climbed the trunk with her hands, her face pressed against the rough bark, and on the third try she was up, barely, on one leg.
+
+— Nocturne —
+
+Nocturne watched her climb and did not stop her. She was still getting her breath back, and she wanted the Buizel up for what came next.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+🧗 **Ripples gets up** on the third try (using a tall pine; rolls onto her front first)
+      get-up roll 0.21 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+
+⏳ Beat 52 health: ❤️ Nocturne -64.24% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -624.17%
+      (-29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 90 → nothing
+----------------------------------------
+
+
+============================== beat 54 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She breathed, and breathed, and felt a little of it come back into her legs.
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+⏳ Beat 53 health: ❤️ Nocturne -83.04% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -653.22%
+      (-29.05% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 50 → nothing
+----------------------------------------
+
+
+============================== beat 55 ==============================
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 40 — Nocturne → Ripples: BITE (targeted — Stomach, Right Hip, Left Hip, energy 25→15)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Then she went in, and bit. Her jaws closed on the Buizel's stomach, on the place that had taken everything, and she bit down and twisted and let go.
+
+— Ripples —
+
+She was guarding it with both arms and it didn't matter. The teeth went past her arms into the ruined centre of her, and her whole body flinched round it so hard she couldn't move at all.
+
+
+
+
+----------------------------------------
+⚔️ **Nocturne → Ripples**: bites on her where she lies
+🩹 Ripples is guarding her Stomach (blows there ×0.85; her back is open, ×1.1)
+  Power **60** = base 30 × 1 (Dark vs Water) × 2 (targeted)
+  Jarred next to it (Right Hip, Left Hip): power 15 (×0.5)
+
+    Stomach
+        damage      ⚫ 1138.58% → ⚫ 1597.58%   +459 = power 51 × 1.80 × scale 5
+        resistance  🟥 15.29% → 🟥 0%           -15.29 = power 51 × 0.25 × 0.75 resistance scale +
+              5.73 from the softened health
+        health      ❤️ -653.22% → ❤️ -791.49%   -138.26 = damage 459 × 0.2 × 2.2 × vital 1.3
+              (softened from 262.55)
+    Right Hip
+        damage      🟡 59.7% → 🔴 93.45%        +33.75 = power 15 × 0.45 × scale 5
+        resistance  🟩 96.62% → 🟩 93.81%       -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ -791.49% → ❤️ -796.89%   -5.4 = damage 33.75 × 0.2 × 1 × vital 0.8
+    Left Hip
+        damage      🟣 221.17% → 🟣 254.92%     +33.75 = power 15 × 0.45 × scale 5
+        resistance  🟩 84.33% → 🟩 81.52%       -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ -796.89% → ❤️ -802.29%   -5.4 = damage 33.75 × 0.2 × 1 × vital 0.8
+
+  Total: +526.5% damage  ·  ❤️ Ripples -653.22% → **-802.29%** (-149.07)
+😵 **Ripples is flinched** (1 beat)
+
+⏳ Beat 54 health: ❤️ Nocturne -101.84% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -832.24%
+      (-0.5% exertion, -29.45% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 74 → no
+    Ripples dodging Nocturne's attack 3%, rolled 79 → it lands
+    Nocturne's Bite landing devastatingly 3%, rolled 33 → no
+    Ripples flinched by Bite 25%, rolled 22 → flinched
+    Ripples breathless by the blow to her Stomach 30%, rolled 96 → no
+    Ripples doubled over by the blow to her Stomach 15%, rolled 71 → no
+    the clearing doing something by itself 5%, rolled 81 → nothing
+----------------------------------------
+
+
+============================== beat 56 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She waited out the flinch and breathed, her jaws aching, the taste of the lake and of wet fur in her mouth.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: Nocturne catches her breath
+
+- Ripples is no longer flinched
+
+⏳ Beat 55 health: ❤️ Nocturne -120.64% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -861.69%
+      (-29.45% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 36 → nothing
+----------------------------------------
+
+
+============================== beat 57 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+When the Buizel moved again, Nocturne was on her. She caught her across the hips with her shoulder and threw her, a heave that lifted her off her one good leg and dropped her flat on her back in the grass. Before she could move, Nocturne was over her: a forepaw ground into the ruined stomach, a hind paw pinning her thigh, her chest and ruff pressing down on the cream chest.
+
+*Stay down. Stay down now.*
+
+— Ripples —
+
+The forepaw on her stomach was the worst thing that had ever happened to her. It didn't strike; it just pressed, and pressed, and every breath she took pushed her stomach up into it.
+
+
+
+
+----------------------------------------
+📌 **PIN: Nocturne on Ripples** — pinned flat, a forepaw ground into the ruined belly
+  Pressing on:
+    Stomach ← with her left forepaw  ·  power 24 each beat, steady
+    Left Thigh ← with her right hind paw  ·  power 15 each beat, steady
+    Chest ← with her chest and ruff  ·  power 16 each beat, steady
+- The pin is on. No fixed length: each beat brings her closer to passing out (about 6 beats,
+      sometimes more, sometimes fewer). Pressure starts next beat.
+- Ripples was on her feet: taken down into the pin (hip throw)
+- Ripples is face-up
+
+⏳ Beat 56 health: ❤️ Nocturne -139.44% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -891.64%
+      (-0.5% exertion, -29.45% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples landing hard from the takedown 40%, rolled 79 → put down clean
+----------------------------------------
+
+
+============================== beat 58 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+Nocturne bore down and held it. She could feel every breath under her paw. She could feel the small body trying to gather itself.
+
+— Ripples —
+
+Ripples tried to slide out sideways, out from under the weight, and got nowhere; the paw on her chest came down harder for it, and her chest flared.
+
+----------------------------------------
+⏸️ **Breather**: bears down and holds the pin
+
+🔒 **Nocturne on Ripples** (holds #4, #5, #6), beat 1 of the hold · pin damage ×0.5
+  ▸ press 24 × 0.5 pin damage
+    Stomach
+        damage      ⚫ 1597.58% → ⚫ 1624.58%   +27 = power 12 × 0.45 (pin cap) × scale 5
+        resistance  🟥 0% → 🟥 0%               -0 (it can't go lower)
+        health      ❤️ -891.64% → ❤️ -898.66%   -7.02 = damage 27 × 0.2 × 1 × vital 1.3
+
+  ▸ press 15 × 0.5 pin damage
+    Left Thigh
+        damage      🟡 31% → 🟡 38.5%           +7.5 = power 7.5 × 0.20 × scale 5
+        resistance  🟦 107% → 🟦 105.59%        -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -898.66% → ❤️ -899.5%    -0.84 = damage 7.5 × 0.2 × 0.7 × vital 0.8
+
+  ▸ press 16 × 0.5 pin damage
+    Chest
+        damage      ⚫ 1064.63% → ⚫ 1082.63%   +18 = power 8 × 0.45 (pin cap) × scale 5
+        resistance  🟧 37.92% → 🟧 36.42%       -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -899.5% → ❤️ -904.54%    -5.04 = damage 18 × 0.2 × 1 × vital 1.4
+
+  Total: +52.5% damage  ·  ❤️ Ripples -891.64% → **-904.54%** (-12.9)
+
+📌 **Pin: Nocturne on Ripples** — beat 1 of it (10 s held) · going under 0% → **32.8%** (+32.8 this
+      beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at 100%)
+      (fading)
+- Ripples struggles (escape 0%, else break loose 0%, roll 17 / 44; she tries to slide out) →
+      **fails**; Nocturne punishes it:
+    Chest
+        damage      ⚫ 1082.63% → ⚫ 1113.01%   +30.38 = power 13.5 × 0.45 (pin cap) × scale 5
+        resistance  🟧 36.42% → 🟧 33.88%       -2.54 = power 13.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -904.54% → ❤️ -913.04%   -8.51 = damage 30.38 × 0.2 × 1 × vital 1.4
+
+  Total: +30.38% damage  ·  ❤️ Ripples -904.54% → **-913.04%** (-8.5)
+- 😮‍💨 Nocturne is running out of breath holding the pin: it holds less surely
+
+⏳ Beat 57 health: ❤️ Nocturne -158.24% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -942.99%
+      (-0.5% exertion, -29.45% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples making an escape attempt 85%, rolled 63 → she tries
+----------------------------------------
+
+
+============================== beat 59 ==============================
+  [director is choosing the next beat]
+  [staying with the damage: Nocturne watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+She tried again. She tried to slide, to twist, anything. The hind paw on her thigh ground down and pinned her leg harder, and her thigh lit up under it.
+
+— Nocturne —
+
+Nocturne watched the struggle, every twitch of it, and felt it weaken. Her own legs were shaking with the effort of holding her, but she held.
+
+*Less each time. Less each time.*
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: bears down and holds the pin
+
+🔒 **Nocturne on Ripples** (holds #4, #5, #6), beat 2 of the hold · pin damage ×0.5
+  ▸ press 24 × 0.5 pin damage
+    Stomach
+        damage      ⚫ 1624.58% → ⚫ 1651.58%   +27 = power 12 × 0.45 (pin cap) × scale 5
+        resistance  🟥 0% → 🟥 0%               -0 (it can't go lower)
+        health      ❤️ -942.99% → ❤️ -950.01%   -7.02 = damage 27 × 0.2 × 1 × vital 1.3
+
+  ▸ press 15 × 0.5 pin damage
+    Left Thigh
+        damage      🟡 38.5% → 🟡 46%           +7.5 = power 7.5 × 0.20 × scale 5
+        resistance  🟦 105.59% → 🟦 104.19%     -1.4 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -950.01% → ❤️ -950.85%   -0.84 = damage 7.5 × 0.2 × 0.7 × vital 0.8
+
+  ▸ press 16 × 0.5 pin damage
+    Chest
+        damage      ⚫ 1113.01% → ⚫ 1131.01%   +18 = power 8 × 0.45 (pin cap) × scale 5
+        resistance  🟧 33.88% → 🟧 32.38%       -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -950.85% → ❤️ -955.89%   -5.04 = damage 18 × 0.2 × 1 × vital 1.4
+
+  Total: +52.5% damage  ·  ❤️ Ripples -942.99% → **-955.89%** (-12.9)
+
+📌 **Pin: Nocturne on Ripples** — beat 2 of it (20 s held) · going under 32.8% → **48.5%** (+15.7
+      this beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at
+      100%) (fading)
+- Ripples struggles (escape 0%, else break loose 0%, roll 78 / 44; she tries to slide out) →
+      **fails**; Nocturne punishes it:
+    Left Thigh
+        damage      🟡 46% → 🟠 62%             +16 = power 16 × 0.20 × scale 5
+        resistance  🟦 104.19% → 🟦 101.19%     -3 = power 16 × 0.25 × 0.75 resistance scale
+        health      ❤️ -955.89% → ❤️ -957.68%   -1.79 = damage 16 × 0.2 × 0.7 × vital 0.8
+
+  Total: +16% damage  ·  ❤️ Ripples -955.89% → **-957.68%** (-1.79)
+- 😮‍💨 Nocturne is running out of breath holding the pin: it holds less surely
+
+⏳ Beat 58 health: ❤️ Nocturne -177.04% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -987.63%
+      (-0.5% exertion, -29.45% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples making an escape attempt 85%, rolled 16 → she tries
+----------------------------------------
+
+
+============================== beat 60 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+She bucked once, with everything that was left. It was not much. The weight barely moved, and the thigh under the hind paw paid for it.
+
+— Nocturne —
+
+Nocturne felt the buck and rode it, and felt how weak it was, and knew.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: bears down and holds the pin
+
+🔒 **Nocturne on Ripples** (holds #4, #5, #6), beat 3 of the hold · pin damage ×0.5
+  ▸ press 24 × 0.5 pin damage
+    Stomach
+        damage      ⚫ 1651.58% → ⚫ 1678.58%    +27 = power 12 × 0.45 (pin cap) × scale 5
+        resistance  🟥 0% → 🟥 0%                -0 (it can't go lower)
+        health      ❤️ -987.63% → ❤️ -994.65%    -7.02 = damage 27 × 0.2 × 1 × vital 1.3
+
+  ▸ press 15 × 0.5 pin damage
+    Left Thigh
+        damage      🟠 62% → 🟠 69.5%            +7.5 = power 7.5 × 0.20 × scale 5
+        resistance  🟦 101.19% → 🟩 99.78%       -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -994.65% → ❤️ -995.49%    -0.84 = damage 7.5 × 0.2 × 0.7 × vital 0.8
+
+  ▸ press 16 × 0.5 pin damage
+    Chest
+        damage      ⚫ 1131.01% → ⚫ 1149.01%    +18 = power 8 × 0.45 (pin cap) × scale 5
+        resistance  🟧 32.38% → 🟧 30.88%        -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -995.49% → ❤️ -1000.53%   -5.04 = damage 18 × 0.2 × 1 × vital 1.4
+
+  Total: +52.5% damage  ·  ❤️ Ripples -987.63% → **-1000.53%** (-12.9)
+
+📌 **Pin: Nocturne on Ripples** — beat 3 of it (30 s held) · going under 48.5% → **81.6%** (+33.1
+      this beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at
+      100%) (fading)
+- Ripples struggles (escape 0%, else break loose 0%, roll 30 / 40; she bucks) → **fails**; Nocturne
+      punishes it:
+    Left Thigh
+        damage      🟠 69.5% → 🔴 107.75%         +38.25 = power 17 × 0.45 × scale 5
+        resistance  🟩 99.78% → 🟩 96.59%         -3.19 = power 17 × 0.25 × 0.75 resistance scale
+        health      ❤️ -1000.53% → ❤️ -1006.65%   -6.12 = damage 38.25 × 0.2 × 1 × vital 0.8
+
+  Total: +38.25% damage  ·  ❤️ Ripples -1000.53% → **-1006.65%** (-6.12)
+- 😮‍💨 Nocturne is running out of breath holding the pin: it holds less surely
+
+⏳ Beat 59 health: ❤️ Nocturne -195.84% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -1037% (-0.5%
+      exertion, -29.85% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples making an escape attempt 72%, rolled 72 → she tries
+----------------------------------------
+
+
+============================== beat 61 ==============================
+  [director is choosing the next beat]
+  [lingering on one blow this beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+She didn't try again. She lay under the weight and looked up past the white shape over her at the sky, at the clouds sliding by, at the sun coming and going. Her breath came shallow and quick. Every one of them pushed her stomach up into the paw, and every one was a little shorter than the last.
+
+*Can't. Can't anymore.*
+
+— Nocturne —
+
+Nocturne looked down at her and saw the eyes going unfocused. She did not let up.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: bears down and holds the pin
+
+🔒 **Nocturne on Ripples** (holds #4, #5, #6), beat 4 of the hold · pin damage ×0.5
+  ▸ press 24 × 0.5 pin damage
+    Stomach
+        damage      ⚫ 1678.58% → ⚫ 1705.58%     +27 = power 12 × 0.45 (pin cap) × scale 5
+        resistance  🟥 0% → 🟥 0%                 -0 (it can't go lower)
+        health      ❤️ -1037% → ❤️ -1044.02%      -7.02 = damage 27 × 0.2 × 1 × vital 1.3
+
+  ▸ press 15 × 0.5 pin damage
+    Left Thigh
+        damage      🔴 107.75% → 🔴 124.62%       +16.88 = power 7.5 × 0.45 × scale 5
+        resistance  🟩 96.59% → 🟩 95.19%         -1.4 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -1044.02% → ❤️ -1046.72%   -2.7 = damage 16.88 × 0.2 × 1 × vital 0.8
+
+  ▸ press 16 × 0.5 pin damage
+    Chest
+        damage      ⚫ 1149.01% → ⚫ 1167.01%     +18 = power 8 × 0.45 (pin cap) × scale 5
+        resistance  🟧 30.88% → 🟥 29.38%         -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -1046.72% → ❤️ -1051.76%   -5.04 = damage 18 × 0.2 × 1 × vital 1.4
+
+  Total: +61.88% damage  ·  ❤️ Ripples -1037% → **-1051.76%** (-14.76)
+
+📌 **Pin: Nocturne on Ripples** — beat 4 of it (40 s held) · going under 81.6% → **92.1%** (+10.5
+      this beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at
+      100%) (nearly gone)
+- Ripples doesn't make a real attempt this stretch
+- 😮‍💨 Nocturne is running out of breath holding the pin: it holds less surely
+
+⏳ Beat 60 health: ❤️ Nocturne -214.64% (-0.5% exertion, -18.3% injuries) | ❤️ Ripples -1082.11%
+      (-0.5% exertion, -29.85% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples making an escape attempt 43%, rolled 81 → no real attempt
+----------------------------------------
+
+
+============================== beat 62 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+The edges of the sky went grey and soft. Her breath went small, then smaller. The pain in her stomach went from everything to something far away, and her paws, which had been pushing at the forepaw on her belly, slid off it and lay still in the grass. Her eyes closed. She was still breathing, slow and shallow, when the rest of her went quiet.
+
+— Nocturne —
+
+Nocturne felt her go slack under her paws. She held a moment longer, to be sure. Then she lifted her weight off, slowly, and stepped back, and stood over the still orange shape in the grass with her head low and her flanks heaving and her own legs trembling under her.
+
+The bird in the oaks was still singing. The lake lapped at the sand.
+
+*Done. It's done.*
+
+She did not feel like she had won. She felt like she had survived. She turned her head away from the Buizel and looked at the water for a long time.
+
+Nocturne held a moment longer, felt nothing push back, and eased her weight off.
+
+----------------------------------------
+⏸️ **Breather**: bears down and holds the pin
+
+🔒 **Nocturne on Ripples** (holds #4, #5, #6), beat 5 of the hold · pin damage ×0.5
+  ▸ press 24 × 0.5 pin damage
+    Stomach
+        damage      ⚫ 1705.58% → ⚫ 1732.58%     +27 = power 12 × 0.45 (pin cap) × scale 5
+        resistance  🟥 0% → 🟥 0%                 -0 (it can't go lower)
+        health      ❤️ -1082.11% → ❤️ -1089.13%   -7.02 = damage 27 × 0.2 × 1 × vital 1.3
+
+  ▸ press 15 × 0.5 pin damage
+    Left Thigh
+        damage      🔴 124.62% → 🔴 141.5%        +16.88 = power 7.5 × 0.45 × scale 5
+        resistance  🟩 95.19% → 🟩 93.78%         -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -1089.13% → ❤️ -1091.83%   -2.7 = damage 16.88 × 0.2 × 1 × vital 0.8
+
+  ▸ press 16 × 0.5 pin damage
+    Chest
+        damage      ⚫ 1167.01% → ⚫ 1185.01%     +18 = power 8 × 0.45 (pin cap) × scale 5
+        resistance  🟥 29.38% → 🟥 27.88%         -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -1091.83% → ❤️ -1096.87%   -5.04 = damage 18 × 0.2 × 1 × vital 1.4
+
+  Total: +61.88% damage  ·  ❤️ Ripples -1082.11% → **-1096.87%** (-14.76)
+
+📌 **Pin: Nocturne on Ripples** — beat 5 of it (50 s held) · going under 92.1% → **100%** (+21.9 this
+      beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at 100%)
+      (nearly gone)
+- Ripples doesn't make a real attempt this stretch
+- 😮‍💨 Nocturne is running out of breath holding the pin: it holds less surely
+- ⏱️ **She goes under after 5 beats (50 s).** ❌ **Ripples faints and is out.** It was the pain that
+      took her under (her Stomach).
+- 🏆 **Winner: Nocturne**
+
+⏳ Beat 61 health: ❤️ Nocturne -233.44% (-0.5% exertion, -18.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples making an escape attempt 42%, rolled 68 → no real attempt
+----------------------------------------
+
+*** Ripples faints after 50 seconds pinned by Nocturne. ***
+*** Winner: Nocturne ***
+(The match is over. Keep pressing Enter to watch the aftermath: the loser may stir and even get back up. Type what happens to steer it, or /undo.)
+
+🩹 INJURY REPORT (what each will feel when it's over): Nocturne: head (devastated: deep bruising, stiff and swollen for days); chest (devastated: deep bruising, stiff and swollen for days); neck (devastated: deep bruising, stiff and swollen for days); left ribs (devastated: deep bruising, stiff and swollen for days)
+   Ripples: stomach (devastated: deep bruising, stiff and swollen for days); chest (devastated: deep bruising, stiff and swollen for days); right thigh (devastated: deep bruising, stiff and swollen for days); left shoulder (devastated: deep bruising, stiff and swollen for days)
+
+
