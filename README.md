@@ -678,6 +678,12 @@ After each beat's prose, the program prints the exact numbers in this format:
   `per_hit`, `per_beat`, `above`; `enabled` false = the old rule. The health it keeps from her isn't simply lost:
   `to_resistance` (0.1) resistance points come off the hit part for every point of health softened away, so a ruined
   part keeps getting softer ("+N from the softened health" in the stat block).
+- **Whose eyes these are.** Each part of a beat's narration is headed with whose side it is told from: a line
+  `— Nocturne —`, `— Ripples —`, or `— Both —` for a part about both of them. Beats already came in two parts (the
+  attacker's side, then the receiver's); now you can see where one ends and the other begins. A beat where nobody is
+  hit (one of them catches her breath) is now told in two parts too, one for each fighter, at the same length. The
+  labels are put in after every check and only for you: the models read earlier beats without them, so they don't
+  start copying them. `narration.pov_labels` false turns them off.
 - **Fixes found in a long stand-in fight:** a strike with a count on a fighter who could not be pummelled (standing,
   not held) landed every blow at full power; a nearly spent fighter in a pin was described as having "plenty of fight";
   blows on a pinned or downed fighter were told "nobody stays latched on"; the build-on-it reaction named "the same
