@@ -396,6 +396,26 @@
       "below_strength": 25,
       "chance": 0.12,
       "mult": 0.6
+    },
+    "devastating": {
+      "_comment": "Very rarely a blow lands DEVASTATINGLY: its power x a roll in mult, and health.soft_cap is much looser for that one hit (per_hit and per_beat x cap_mult, the part past them counts at cap_above), so it can swing the fight. chance per landed attack (not pummels), x weak_point_mult on a part already devastated (300%+) or hurt_part_mult on one excruciating (150%+), x open_mult when she is caught open (moves.vulnerable); at most max_chance. ground_chance: a hard landing on a fighter with two or more badly hurt parts finds every sore spot at once (x ground_mult). The narrator is told why it was so severe.",
+      "enabled": true,
+      "chance": 0.015,
+      "weak_point_mult": 2.0,
+      "hurt_part_mult": 1.4,
+      "open_mult": 2.0,
+      "max_chance": 0.1,
+      "mult": [
+        1.7,
+        2.2
+      ],
+      "cap_mult": 3.0,
+      "cap_above": 0.7,
+      "ground_chance": 0.05,
+      "ground_mult": [
+        1.5,
+        1.9
+      ]
     }
   },
   "severity": {

@@ -1969,3 +1969,108 @@ the same place, again, again, until the spot is all there is
 somewhere in it the blows stop being a choice and become a rhythm
 she hears herself panting in time with it and doesn't stop
 the first blows were aimed; the last ones are just hers, falling where the others fell
+
+# ---------------------------------------------------------------------------------------------------------------
+# DEVASTATING BLOWS (very rare: moves.devastating). Why this one is so much worse, and how both of them feel it.
+#   reason: position (caught open), weak_point (a weak point in a weak point), angle (perfect angle and timing),
+#           ground (the landing found every sore spot)
+# ---------------------------------------------------------------------------------------------------------------
+== devastating | reason: position
+she had no ground under her, nothing braced, nothing to give with: the whole force went in and stayed in
+it came while she was turned the wrong way, and her body had already spent its guard on something else
+caught mid-movement, every muscle committed elsewhere, there was nothing between the blow and the inside of her
+she couldn't roll with it, couldn't twist, couldn't even tense: it simply arrived, all of it
+
+== devastating | reason: weak_point
+it found the one place in the {part} that was already hurt the deepest, and went straight into it
+the {part} had been holding together on nothing but stubbornness, and this was the blow that found the bottom of it
+of all the places on the {part}, it hit the exact spot that had already taken the most, and the old hurt and the new one became one thing
+the earlier blows had softened the {part}; this one arrived at the soft centre of it
+
+== devastating | reason: angle
+the angle was perfect: not a sliver of force glanced away, all of it went in
+it caught her on the breath out, when everything inside her was loose and open
+the timing was so exact it was almost quiet: one instant she was set, the next the force was already inside her
+it landed square, flush, with the whole weight behind it, the kind of blow that only comes once in a fight
+
+== devastating | reason: ground
+she came down so that every hurt part hit at once, as if the ground had been waiting for each one
+the landing found the bruises, the swollen places, the wounds, all together, and hammered each of them
+there was no good way to land, and she found the worst one: every sore spot first
+
+== devastated_reaction | state: fresh, winded
+the shock of it goes through her like cold water, and for a moment she can only stand there and take it
+a sharp cry is out before she can stop it, and then her jaw is clamped and she is breathing hard through her nose
+she staggers, catches herself, and her eyes have gone wide: she has never been hit like that
+everything in her goes very still for a heartbeat, the way it does after a near fall, and then the ache arrives
+she shakes her head hard, as if she could shake it off, and knows she can't
+
+== devastated_reaction | state: tired, spent
+a sound comes out of her she has never made before, and doesn't stop when she wants it to
+for a long moment she cannot do anything at all: not breathe, not move, not see
+her whole body locks round the hurt and starts shaking, a hard, deep shudder from the core outward
+her legs simply stop holding her up, and she has to fight to stay where she is
+the colour seems to go out of everything; there is the pain, and a high ringing, and nothing else
+she curls in on it so hard her own claws dig into her
+
+== devastated_thought | state: fresh, winded
+*Where did that come from?*
+*Okay. Okay. Don't let that happen again.*
+*That was— no. Focus.*
+
+== devastated_thought | state: tired, spent
+*That one. That one did something.*
+*Can't. Can't breathe. Can't—*
+*How is it so much worse?*
+*Get up. Get up get up get up.*
+*Something's wrong. Something's really wrong.*
+
+== devastating_thought
+*She felt that. All of it.*
+*That went in. That went all the way in.*
+*There. Right there. That's the one.*
+*Didn't even feel it land. Just felt it go through.*
+
+== devastating_thought | fighter: nocturne
+*Finally. The opening I wanted.*
+*Now she understands.*
+
+== devastated_thought | fighter: ripples
+*No. No no no. Not like that.*
+*Okay, that— that was bad. That was really bad.*
+
+# DEVASTATING_SELL: how to make a devastating hit believable at every point in the fight.
+#   health: fresh (60%+ of her strength left), worn (30-60%), spent (under 30%)
+#   partlevel: light (the part isn't badly hurt even now), hurt (very painful to excruciating), ruined (devastated)
+== devastating_sell | health: fresh | partlevel: light
+for a heartbeat she just stands there, blinking, as if her body is waiting for permission to feel it
+it rattles her down to her paws: not the {part} so much as all of her, shaken like a struck bell
+her eyes go wide and stay wide; nobody has hit her like that in a long time, maybe ever
+she laughs, once, short and shocked, because the alternative is something else
+the cry gets out, sharp and surprised, and she is angry at it before it has finished echoing
+
+== devastating_sell | health: fresh | partlevel: hurt, ruined
+the {part} stops answering her for a moment, and she looks down at it as if it belonged to someone else
+she's still strong, still fresh, and that makes it worse: she can feel exactly how much it took out of her
+the hurt in the {part} goes from a fact to the only fact, and it is far too early in the fight for that
+
+== devastating_sell | health: worn | partlevel: light
+it doesn't break anything open, but it knocks loose whatever she was holding together with
+she sways, steadies, sways again: the blow is spent but her balance hasn't heard yet
+somewhere in her the fight changes its mind about how long she can last
+
+== devastating_sell | health: worn | partlevel: hurt, ruined
+the {part} was what she was hiding, and now there is no hiding it
+she has been rationing her strength all fight; this spends a week of it in a heartbeat
+her body folds round the {part}, unfolds because she makes it, and folds again a little further
+
+== devastating_sell | health: spent | partlevel: light
+there's nothing left in her to absorb it, so even this goes straight through
+she doesn't fall, quite, but she stops being sure which way is down
+it lands somewhere that wasn't even hurt, and somehow that is the most frightening thing yet
+
+== devastating_sell | health: spent | partlevel: hurt, ruined
+there is no buffer left: the {part} takes it raw, and everything in her goes with it
+the scream, when it comes, sounds far away to her, like someone else's
+or there is no scream at all, just a long, terrible quiet, and her eyes not quite finding anything
+she shakes, a deep, steady shaking she can't stop, from the {part} outward to every limb

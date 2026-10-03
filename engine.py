@@ -457,6 +457,7 @@ class Engine:
         return {
             "defender": defender.name,
             "part": p.name,
+            "devastating": bool(getattr(self, "_dev_active", None)),
             "power": power,
             "bracket": bracket["label"],
             "mult": bmult,
@@ -486,11 +487,16 @@ class Engine:
         if not cfg.get("enabled", True) or raw <= 0 or not defender.max_health:
             return raw
         k = max(0.0, min(1.0, float(cfg.get("above", 0.3))))
+        dv = getattr(self, "_dev_active", None)
+        dcfg = (self.rules.get("moves") or {}).get("devastating") or {}
+        if dv:    # a devastating blow is ALLOWED to swing the fight: the cap is much looser for it
+            k = max(k, float(dcfg.get("cap_above", 0.7)))
         squash = lambda x, cap: x if cap <= 0 or x <= cap else cap + (x - cap) * k
-        loss = squash(raw, float(cfg.get("per_hit", 0.05)) * defender.max_health)
+        loss = squash(raw, float(cfg.get("per_hit", 0.05)) * defender.max_health
+                      * (float(dcfg.get("cap_mult", 3.0)) if dv else 1.0))
         tally = self.__dict__.setdefault("beat_loss", {})
         before = tally.get(defender.name, 0.0)
-        cap = float(cfg.get("per_beat", 0.12)) * defender.max_health
+        cap = float(cfg.get("per_beat", 0.12)) * defender.max_health * (float(dcfg.get("cap_mult", 3.0)) if dv else 1.0)
         out = squash(before + loss, cap) - squash(before, cap)
         tally[defender.name] = before + loss
         return out
@@ -893,7 +899,7 @@ class Engine:
         if clash and clash["outcome"] == "through":
             powers = [round(pw * clash["share"], 2) for pw in powers]
         dodge = None if (clash or fed) else (self.dodge_roll(a, d, target, move["name"]) if enforce else None)
-        guard = None
+        guard, dev = None, None
         if enforce and not clash and not dodge and not pum and not fed:
             guard = self._guard_roll(a, d, move, target)
         if guard and guard["kind"] == "block":
@@ -913,7 +919,15 @@ class Engine:
         if dodge or (clash and clash["outcome"] != "through") or (guard and guard["kind"] == "deflect"):
             hits = []
         else:
-            hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
+            dev = (self._devastating_roll(a, d, move, plan) if enforce and not pum and math["type_mult"] != 0
+                   and move.get("target") not in ("status", "self") else None)
+            if dev:
+                powers = [round(pw * dev["mult"], 2) for pw in powers]
+                self._dev_active = dev
+            try:
+                hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
+            finally:
+                self._dev_active = None
             if hits and not move.get("improvised"):    # she remembers what has landed on her (learning)
                 felt = d.learned.setdefault("moves", {})
                 felt[f"{a.name}|{move['name']}"] = felt.get(f"{a.name}|{move['name']}", 0) + 1
@@ -935,6 +949,8 @@ class Engine:
                "tags": self._tags(hits) if hits else ["no_effect"]}
         if clash:
             res["clash"] = clash
+        if hits and dev:
+            res["devastating"] = dev
         if fe:
             res["feint"] = fe
         if self._overcommit_now:
@@ -2532,10 +2548,17 @@ class Engine:
         landings, hits = [], []
         if counted:
             self._count(counted, d.name)
+        dev = self._devastating_landing(d, plan) if not in_place else None
+        if dev:
+            plan = dev.pop("plan")
         for surface, names, sev in plan:
             self._source = f"landing on {surface}"[:60]
-            power = max(1, round(table[sev] * self.rng.uniform(1 - v, 1 + v)))
-            these = [self._apply_damage(d, n, power) for n in names]
+            power = max(1, round(table[sev] * self.rng.uniform(1 - v, 1 + v) * (dev["mult"] if dev else 1.0)))
+            self._dev_active = dev
+            try:
+                these = [self._apply_damage(d, n, power) for n in names]
+            finally:
+                self._dev_active = None
             landings.append({"surface": surface, "severity": sev, "power": power, "parts": names})
             if tumbled and len(landings) > tumbled["from"]:
                 landings[-1]["tumble"] = True
@@ -2584,6 +2607,7 @@ class Engine:
             status.append({"fighter": d.name, "status": "soaked", "beats": self._cfg("status_effects").get("soaked_beats", 3)})
         route = " → ".join(l["surface"] for l in landings)
         return {"type": "instant", "environment": True, "attacker": credited or d.name, "defender": d.name,
+                "devastating": dev,
                 "defenders": [d.name], "flavor": how or f"slams into {route}", "landings": landings,
                 "status_applied": status, "facing": facing, "in_place": in_place, "knock_on": loose,
                 "from_ground": from_ground, "kept_feet": kept_feet, "ends": ends,
@@ -3170,6 +3194,62 @@ class Engine:
                                                              if p.damage >= 150 else "aching tomorrow") + ")")
             rows.append(f"{f.name}: " + "; ".join(words))
         return "INJURY REPORT (what each will feel when it's over): " + " | ".join(rows)
+
+    DEV_REASONS = {
+        "position": "the position: {why}, she had no way to roll with it, twist away, or soften it, and it caught her "
+                    "exactly where and when she could least take it",
+        "weak_point": "a weak point in a weak point: it found the one place on her already-ruined {part} where the "
+                      "damage was deepest, and drove straight into it",
+        "angle": "the perfect angle and timing: it caught her mid-breath, mid-step, at the exact angle and instant that "
+                 "let the whole force go in with nothing wasted",
+        "ground": "the landing found every sore spot at once: she came down so that every part already hurt hit "
+                  "first ({parts}), all of them together",
+    }
+
+    def _devastating_roll(self, a, d, move, plan):
+        """Very rarely a blow lands DEVASTATINGLY (moves.devastating): x mult, and the health cap is much looser for
+        it, so it can swing the fight. Likelier when there is a reason: she is caught open, or it lands on a part that
+        was already badly hurt. Returns {"mult", "reason", "why"} or None."""
+        cfg = (self.rules.get("moves") or {}).get("devastating") or {}
+        if not cfg.get("enabled", True) or not plan:
+            return None
+        part = d.parts.get(plan[0]) if plan[0] in d.parts else None
+        vu = self.vulnerable(a, d, move)
+        ch = float(cfg.get("chance", 0.015))
+        reason, why = "angle", ""
+        if part is not None and part.damage >= 300:
+            ch *= float(cfg.get("weak_point_mult", 2.0)); reason = "weak_point"
+        elif part is not None and part.damage >= 150:
+            ch *= float(cfg.get("hurt_part_mult", 1.4)); reason = "weak_point"
+        if vu:
+            ch *= float(cfg.get("open_mult", 2.0))
+            if reason != "weak_point" or self.rng.random() < 0.5:
+                reason, why = "position", vu[0]
+        ch = min(float(cfg.get("max_chance", 0.1)), ch)
+        if not self._chance(ch, f"{poss_word(a.name)} {move['name']} landing devastatingly", "DEVASTATING", "no"):
+            return None
+        lo, hi = cfg.get("mult", [1.7, 2.2])
+        mult = round(self.rng.uniform(float(lo), float(hi)), 2)
+        text = self.DEV_REASONS[reason].format(why=why or "caught open", part=(plan[0] or "").lower(), parts="")
+        return {"mult": mult, "reason": reason, "why": text, "part": plan[0]}
+
+    def _devastating_landing(self, d, plan):
+        """A hard landing that, very rarely, finds every sore spot on her body at once (moves.devastating.ground_chance,
+        only when she has two or more hurt parts): the landing goes onto the hurt parts, x mult."""
+        cfg = (self.rules.get("moves") or {}).get("devastating") or {}
+        sore = sorted((p for p in d.parts.values() if p.damage >= 150), key=lambda p: -p.damage)
+        if not cfg.get("enabled", True) or len(sore) < 2 or not plan:
+            return None
+        ch = float(cfg.get("ground_chance", 0.05)) * (1.5 if len(sore) >= 4 else 1.0)
+        if not self._chance(min(0.12, ch), f"the landing finding every sore spot on {d.name}", "DEVASTATING", "no"):
+            return None
+        n = max(len(plan[0][1]), 2)
+        worst = [p.name for p in sore[:max(n, 3)]]
+        new = [(plan[0][0], worst, plan[0][2])] + list(plan[1:])
+        lo, hi = cfg.get("ground_mult", [1.5, 1.9])
+        mult = round(self.rng.uniform(float(lo), float(hi)), 2)
+        return {"mult": mult, "reason": "ground", "plan": new, "part": worst[0],
+                "why": self.DEV_REASONS["ground"].format(parts=", ".join(p.lower() for p in worst), why="", part="")}
 
     def _recoil(self, a, move, math):
         """Reckless moves hurt the one who uses them when they land (moves.recoil: move name -> share of its power,

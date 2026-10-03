@@ -587,6 +587,9 @@ class Display:
                 out.append(f"🪨 **{a['defender']} is {a.get('flavor', 'driven into the ground')}** where she lies"
                            + (f" (still {a['facing']})" if a.get("facing") else "") + ": no new fall")
             else:
+                if a.get("devastating"):
+                    out.append(f"💥💥 **DEVASTATING LANDING** (×{num(a['devastating']['mult'])}): the ground finds every "
+                               f"sore spot at once")
                 out.append(f"🪨 **{a['defender']} lands hard**{' — smashed down out of the air' if a.get('spiked_by') else ''} ({a.get('flavor', '')}"
                            + (", from the ground" if a.get("from_ground") else "") + ")"
                            + (", **rolls through it and comes up on her feet**" if a.get("kept_feet") else
@@ -648,6 +651,11 @@ class Display:
                               "back": f"{ps(a['defender'])} TURNS IT BACK onto {a['attacker']} at ×{num(cl['share'])}"}[cl["outcome"]])
                 if cl.get("hits_on_attacker"):
                     out += self.hits_block(a["attacker"], cl["hits_on_attacker"])
+            if a.get("devastating"):
+                dv = a["devastating"]
+                out.append(f"💥💥 **DEVASTATING** (×{num(dv['mult'])}; the health cap is looser for it) — "
+                           + {"position": "caught open, no way to soften it", "weak_point": f"a weak point in a weak point ({dv.get('part')})",
+                              "angle": "the perfect angle and timing"}.get(dv.get("reason"), dv.get("reason", "")))
             if a.get("feint"):
                 fe = a["feint"]
                 out.append(f"🎭 **Feint** ({a['defender']} bites {fe['chance'] * 100:.0f}%): "

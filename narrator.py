@@ -1671,11 +1671,13 @@ class Narrator:
         """The impact note for a real blow on a part that was already very painful or worse, or None (the ordinary
         note stands). narration.raw_reactions false turns it off."""
         ncfg = self.rules.get("narration", {})
-        if not ncfg.get("raw_reactions", True) or before_label not in ("very painful", "excruciating", "devastated"):
+        dev = bool(h.get("devastating"))
+        if not ncfg.get("raw_reactions", True) or (before_label not in ("very painful", "excruciating", "devastated")
+                                                   and not dev):
             return None
         who = h["defender"]
         size = self._strength_key(h["damage_taken"])
-        part_score = {"very painful": 0, "excruciating": 1, "devastated": 2}[before_label]
+        part_score = {"very painful": 0, "excruciating": 1, "devastated": 2}.get(before_label, 1)
         size_score = {"glancing": -2, "solid": 0, "heavy": 1, "tremendous": 2}[size]
         # how much she has left as THIS blow lands (not at the end of the beat: in a long pummel the first blow
         # finds her stronger than the last)
@@ -1691,6 +1693,15 @@ class Narrator:
         level = min(level, 1 + cond_score)
         if size == "glancing":
             level = min(level, 1)
+        held_up = dev and float(h.get("damage_after", 0)) < 150 and left >= 60
+        if held_up:
+            # devastating, but the part isn't ruined and she still has most of her strength: a cry she can't stop,
+            # not a scream
+            level = 1
+        elif dev:
+            # a devastating blow: nobody holds that in. At least a scream, and one step past what her strength
+            # would normally allow
+            level = max(2, min(3, max(level, 2 + cond_score)))
         self.__dict__.setdefault("_raw_done", {})
         self.__dict__.setdefault("_raw_parts", {})
         done = self._raw_done.get(who)
@@ -1711,7 +1722,14 @@ class Narrator:
                 "solid": f"a real blow on a part that was already {before_label}: ",
                 "heavy": f"a heavy blow on a part that was already {before_label}: ",
                 "tremendous": f"a tremendous blow on a part that was already {before_label}: "}[size]
-        held = (" She still has most of her strength, so she fights to keep it in, and mostly does." if cond_score == 0
+        if dev:
+            lead = ("a DEVASTATING blow" + (f" on a part that was already {before_label}"
+                                            if before_label in ("very painful", "excruciating", "devastated") else "")
+                    + ", far worse than anything like it before: ")
+        held = (" She still has most of her strength and the part isn't ruined: the cry is out before she can stop it, "
+                "but she clamps down on the rest. No scream." if held_up
+                else " Even with most of her strength left, she can't keep this one in." if dev and cond_score == 0
+                else " She still has most of her strength, so she fights to keep it in, and mostly does." if cond_score == 0
                 else " She is too worn to hold all of it in." if cond_score == 1
                 else " She has almost nothing left to hold it in with.")
         return (lead + text + "." + held + " It is pain, nothing more: nothing breaks or tears unless listed, she "
@@ -2152,6 +2170,7 @@ class Narrator:
                              + f" She lands away from {att}. Show the grab, the heave, her body in the air, and each impact. This is "
                              f"{poss(att)} doing, no named move.{told}{intent}")
             lines += self._tumble_line(a)
+            lines += self._devastating_line(a)
             lines += [self._hit_line(h, i + 1) for i, h in enumerate(a["hits"])]
             lines += self._arena_status_lines(a.get("status_applied"))
             return lines
@@ -2398,6 +2417,7 @@ class Narrator:
                     f"she is turned the wrong way, wide open, with no time to twist, roll with it or soften it (it "
                     f"lands harder for that)." if fe["bit"] else
                     f"{a['defender']} READS it and doesn't commit; the real blow comes as an ordinary attack."))
+            lines += self._devastating_line(a)
             if a.get("juggled_up"):
                 lines.append(f"  - The blow knocks {a['defender']} UP OFF HER FEET into the air: she is still in the air, "
                              f"helpless, when the next blow comes (listed next). She does not land before it.")
@@ -4257,6 +4277,20 @@ class Narrator:
                 side[0] = "take" if take else "act"
                 add("the guard", B.pick("guard", 1, moment={"catch" if g_["kind"] == "block" else "turn"},
                                         has=feats(dfn_)))
+            if a.get("devastating"):
+                side[0] = "take" if take else "act"
+                add("why it is so severe", B.pick("devastating", 2, reason={a["devastating"].get("reason", "angle")},
+                                                  fmt={"part": str(a["devastating"].get("part") or "the hurt").lower()}))
+                hb_, pb_ = self._dev_bands(a)
+                add("selling it", B.pick("devastating_sell", 1, health={hb_}, partlevel={pb_},
+                                         fmt={"part": str(a["devastating"].get("part") or "the hurt").lower()}))
+                if take:
+                    add(f"{dfn_}, after it", B.pick("devastated_reaction", 1, has=feats(dfn_), state=state(dfn_),
+                                                    fighter=(dfn_ or "").lower()))
+                    add(f"{poss(dfn_)} thought", B.pick("devastated_thought", 1, state=state(dfn_),
+                                                        fighter=(dfn_ or "").lower()))
+                if act and a["devastating"].get("reason") != "ground":
+                    add(f"{poss(att_)} thought", B.pick("devastating_thought", 1, fighter=(att_ or "").lower()))
             if act and (a.get("pummel") or {}).get("frenzy"):
                 side[0] = "act"
                 add(f"{poss(att_)} frenzy", B.pick("frenzy", 1))
@@ -4602,6 +4636,8 @@ class Narrator:
             add("coil", "coil take")
         if any(e.get("struggle") == "escape" and e.get("aftereffects") for e in pin_events):
             add(None, "escape aftermath")
+        if any(a.get("devastating") for a in acts):
+            add("devastating", "devastating take")
         if any(a.get("clash") for a in acts):
             add("clash", "clash take")
         if any(a.get("dive") or a.get("carried") or a.get("grounded") or a.get("type") == "take_off" for a in acts):
@@ -6538,6 +6574,82 @@ class Narrator:
         paras = [p for p in paras if p.strip(" .,;:—-*\"“”") or not p]
         return _drop_orphans(text, re.sub(r"\n{3,}", "\n\n", "\n".join(paras)).strip())
 
+    DEV_SELL_ANY = [
+        "THE DELAY: one heartbeat where nothing hurts at all and she almost thinks it missed, then it arrives all at once",
+        "THE SILENCE: she goes completely quiet, no sound at all, and the quiet is worse than any cry; the attacker hears it",
+        "THE BODY BETRAYS HER: a knee dips, a paw opens, the tail drops, without her permission, and she has to drag it back",
+        "THE WRONGNESS: not just more pain but a different KIND, deep and wrong, something she has no word for yet",
+        "THE ATTACKER'S SIDE OF IT: she feels it land differently through her own body: the give, the absence of resistance",
+        "THE STARE: for one heartbeat they look at each other and both of them know exactly what just happened",
+        "THE PLACE ANSWERS: the sound of it in this place (its echo, the water shivering, dust sifting down) marks it",
+        "THE BREATH: the air goes out of her and does not come back for one, two, three heartbeats",
+        "SLOW TIME: the instant of contact stretched out, every detail of it, then time snapping back",
+        "THE TELL SHE CAN'T HIDE: her ears, fins, ruff or tail react in a way that tells the attacker everything",
+        "THE OLD HURT DWARFED: every earlier blow on her suddenly feels small next to this one",
+        "THE FIGHT CHANGES: from now on her stance, her distance and her eyes are different, and both of them see it",
+    ]
+    DEV_SELL_BAND = {
+        "fresh": ["DISBELIEF: she is fresh and strong, and nothing has hurt her like this yet; the shock is that it COULD",
+                  "STUNG PRIDE: a sharp cry she is furious at herself for, and then a new, hard wariness",
+                  "THE REALISATION: she suddenly understands what her opponent can do to her, and it changes how she stands"],
+        "worn": ["THE RESERVE SPENT: the strength she was saving to get through the next few blows goes all at once",
+                 "THE GRIP SLIPS: the hold she has kept on her pain all fight loosens, and some of it gets out",
+                 "THE FOLD: her body starts to fold round it before she catches herself, and catching herself costs her"],
+        "spent": ["NOTHING TO BUFFER IT: there is no strength left to take it with; it goes straight through her",
+                  "THE NARROWING: the world shrinks to the hurt and the next breath, and the edges go grey",
+                  "THE BREAK IN HER: the scream, or the frightening silence where a scream should be, and shaking that won't stop"],
+    }
+    DEV_REACT = {
+        "fresh": ("her reaction is clear and real but sized to someone still strong: shock, a sharp cry or a hiss she "
+                  "can't stop, a stagger, a change in her eyes and her stance. A GOOD reaction, not a breakdown: no "
+                  "screaming, no collapse, and she is steady again before long, but different"),
+        "worn": ("her reaction is bigger than anything before it: the hold she has kept on her pain slips, a cry that "
+                 "gets away from her, her body folding round it before she can stop it"),
+        "spent": ("her reaction is the rawest of the fight: there is nothing left to hold it in with (the scream, or the "
+                  "frightening silence, and shaking she can't stop)"),
+    }
+    DEV_SELL_PART = {
+        "light": "the part itself isn't ruined (yet): the severity is in the SHOCK, the force, the stagger, the way it rattles her whole body",
+        "hurt": "the part was already hurting and is now far worse: it stops working properly, and every use of it will remind her",
+        "ruined": "the part is ruined now: it is the centre of everything, and her whole body arranges itself round protecting it",
+    }
+
+    def _dev_bands(self, a):
+        """(health band, part band) for a devastating hit: fresh/worn/spent and light/hurt/ruined."""
+        mine = [h for h in a.get("hits") or [] if h.get("devastating")] or list(a.get("hits") or [])
+        top = max(mine, key=lambda h: h.get("damage_after", 0), default={})
+        dmg = float(top.get("damage_after", 0))
+        part = "ruined" if dmg >= 300 else "hurt" if dmg >= 90 else "light"
+        mx, hp = top.get("max_health"), top.get("health_after", top.get("health_before"))
+        left = 100.0 * float(hp) / float(mx) if mx and hp is not None else float(
+            (getattr(self, "strengths", None) or {}).get(a.get("defender"), 100))
+        return ("fresh" if left >= 60 else "worn" if left >= 30 else "spent"), part
+
+    def _devastating_line(self, a):
+        """A blow (or a landing) that lands devastatingly: the story has to make the severity believable."""
+        dv = a.get("devastating")
+        if not dv:
+            return []
+        mine = [h for h in a.get("hits") or [] if h.get("devastating")]
+        top = max(mine, key=lambda h: h.get("damage_after", 0), default=None)
+        strong = bool(top and top.get("damage_after", 0) < 150 and top.get("max_health")
+                      and float(top.get("health_after", top.get("health_before", 0))) >= 0.6 * float(top["max_health"]))
+        size = (" TRUE TO SIZE: she still has most of her strength and the part is not ruined, so it is a deep shock and "
+                "a sharp cry she can't stop, NOT a scream; she reels and fights her way back to steady."
+                if strong else "")
+        hb, pb = self._dev_bands(a)
+        ways = random.sample(self.DEV_SELL_ANY, 2) + [random.choice(self.DEV_SELL_BAND[hb])]
+        size += (f" WAYS TO SELL IT (use them, in your own words): " + "; ".join(ways) + f". And {self.DEV_SELL_PART[pb]}.")
+        return [f"  - A DEVASTATING {'LANDING' if dv.get('reason') == 'ground' else 'BLOW'} (×{dv['mult']}, far worse "
+                f"than this would normally be): the reason is {dv['why']}. MAKE THE SEVERITY BELIEVABLE: show exactly "
+                f"why this one is so much worse than anything like it before (the angle, the timing, where she was, what "
+                f"was already hurt there), and give the impact and what it does to her body real room. SELL IT IN "
+                f"BOTH OF THEM: {self.DEV_REACT[self._dev_bands(a)[0]]}; her thoughts show how bad it is; the attacker FEELS "
+                f"it land differently, knows at once that this one went in deep, and her thoughts show it (surprise, "
+                f"savage satisfaction, even a flicker of something else). It changes the fight; let both of them feel "
+                f"that.{size} (The usual rules on bones and injuries still hold: the "
+                f"severity is in the pain, the shock and the strength going out of her.)"]
+
     BAD_LEVELS = ("very painful", "excruciating", "devastated", "numb with shock")
 
     def _sound_note(self):
@@ -6623,7 +6735,8 @@ class Narrator:
                              and (a.get("hits") or a.get("type") in ("hold_start", "grapple_start", "pin_start"))), None)
         if not by or by == v or by in out_now:
             by = None
-        badly = strength <= float(dcfg.get("max_strength", 55)) or label in tuple(
+        devastated = any(a.get("devastating") for a in acts)
+        badly = devastated or strength <= float(dcfg.get("max_strength", 55)) or label in tuple(
             dcfg.get("part_levels") or ("excruciating", "devastated", "numb with shock"))
         down = "GROUND" in str((getattr(self, "posture_end", None) or {}).get(v, "")).upper() or holding
         what = "squeeze" if kind == "pressure" else "blow"
@@ -6634,6 +6747,8 @@ class Narrator:
         def ready(key, cfg, ok):
             if not cfg.get("enabled", True) or not ok:
                 return False
+            if devastated:
+                return True      # a devastating blow always gets its aftermath, cooldown or not
             if cool and beat_no - last.get(key, -99) <= cool:
                 return False
             return random.random() < float(cfg.get("chance", 0.6))
@@ -6753,6 +6868,10 @@ class Narrator:
         self._facts = ("WHAT HAPPENS IN THIS BEAT (nothing else happens):\n" + self.describe(bundle)
                        + "\n\nCURRENT CONDITION (after this beat):\n" + condition_summary)
         context += self._sound_note() + self._fading_thoughts_note()
+        if any(a.get("devastating") for a in acts):
+            words += int(((n.get("devastating") or {}).get("extra_words", 150)))
+            if self.progress:
+                self.progress("a devastating blow: giving it room")
         self._moments = self._extra_moments(bundle, acts, pin_events)
         linger, extra = self._linger() if not self._moments else ("", 0)
         if linger:

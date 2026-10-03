@@ -819,6 +819,17 @@ After each beat's prose, the program prints the exact numbers in this format:
   untouched). With all the new mechanics in, she had drifted to about 50% against Ripples in /simulate at your
   settings (scale 5, resscale 0.75, healthloss 0.2, numb off); +5 brings her to about 56% there, and the director
   plays her better than the dice do. At damage scale 5 resistance matters a lot: +6 measured 65%, +8 68%.
+- **Devastating blows (rare).** Now and then a blow lands far harder than it should (×1.7-2.2) and the health cap is
+  much looser for that one hit, so it can swing the fight. About 1.5% of landed attacks, more when there is a reason:
+  she is caught open (in the air, off balance, fooled by a feint, down), or it lands on a part that is already
+  excruciating or devastated (a weak point in a weak point). A hard landing on someone with several badly hurt parts
+  can find every sore spot at once. Pummels never roll it (frenzies are their big moment). The narrator is told the
+  reason, gets about 150 more words, and is given ways to sell it chosen for where she is in the fight (fresh, worn,
+  spent) and how hurt the part ends up: the delay before it hurts, the silence, her body betraying her, the attacker
+  feeling it go in, the stare between them, the place answering. Reactions stay true to size: fresh and with the part
+  not ruined, it's a real, visible reaction (shock, a cry she can't stop, a stagger, a change in her), never a scream
+  or a breakdown; worn, her hold on the pain slips; spent, the rawest. The aftermath part (dwell) always follows one.
+  New story blocks for every combination, and two sample sections. `moves.devastating`.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
