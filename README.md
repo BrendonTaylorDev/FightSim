@@ -675,7 +675,9 @@ After each beat's prose, the program prints the exact numbers in this format:
   that lands on her in one beat costs past 12%, counts only at 30%. In a long test fight a five-blow pummel on a
   destroyed chest had cost 855 health in one beat (half her health); across 60 fights at your settings the worst beat
   is now about 155-365, and fights run about 40-50 beats. The stat block shows "softened from" on a hit it applies to.
-  `per_hit`, `per_beat`, `above`; `enabled` false = the old rule.
+  `per_hit`, `per_beat`, `above`; `enabled` false = the old rule. The health it keeps from her isn't simply lost:
+  `to_resistance` (0.1) resistance points come off the hit part for every point of health softened away, so a ruined
+  part keeps getting softer ("+N from the softened health" in the stat block).
 - **Fixes found in a long stand-in fight:** a strike with a count on a fighter who could not be pummelled (standing,
   not held) landed every blow at full power; a nearly spent fighter in a pin was described as having "plenty of fight";
   blows on a pinned or downed fighter were told "nobody stays latched on"; the build-on-it reaction named "the same

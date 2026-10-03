@@ -427,6 +427,15 @@ class Engine:
         raw_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital
         health_loss = self._soften_loss(defender, raw_loss)
         defender.health = self._floor(hp_b - health_loss)
+        # the health the soft cap kept from her doesn't vanish: a share of it wears the part down further
+        # (health.soft_cap.to_resistance resistance points per point of health softened away)
+        over = max(0.0, raw_loss - health_loss)
+        to_res = float((r["health"].get("soft_cap") or {}).get("to_resistance", 0.1) or 0)
+        res_over = 0.0
+        if over > 0 and to_res > 0:
+            before_over = p.resistance
+            p.resistance = max(r["resistance"]["minimum"], p.resistance - over * to_res)
+            res_over = before_over - p.resistance
 
         pain_a = tier_for(p.damage, pain_tiers(r))
         htier_a = tier_for(self._health_pct(defender), r["health_tiers"])
@@ -449,6 +458,7 @@ class Engine:
             "res_before": round(res_b, 2), "res_after": round(p.resistance, 2),
             "health_mult": hmult, "vital": vital, "health_loss": round(health_loss, 2),
             "health_raw": round(raw_loss, 2), "softened": round(raw_loss - health_loss, 2) > 0.01,
+            "res_overflow": round(res_over, 2),
             "health_before": round(hp_b, 2), "health_after": round(defender.health, 2),
             "max_health": defender.max_health,
             "pain_tier": pain_a["label"],

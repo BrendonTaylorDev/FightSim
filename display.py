@@ -138,10 +138,12 @@ class Display:
                 rs = h.get("res_scale", 1)
                 loss = h["res_before"] - h["res_after"]
                 lpd0 = float(self.rules["resistance"].get("loss_per_damage", 0) or 0)   # wear by the damage done (/wear)
-                full = (h["power"] * lpp0 + h["damage_taken"] * lpd0) * rs
+                ro = float(h.get("res_overflow") or 0)
+                full = (h["power"] * lpp0 + h["damage_taken"] * lpd0) * rs + ro
                 how_res = ((f"= power {num(h['power'])} × {num(lpp0)}" if not lpd0 else
                             f"= (power {num(h['power'])} × {num(lpp0)} + damage {num(h['damage_taken'])} × {num(lpd0)})")
                            + ("" if rs == 1 else f" × {num(rs)} resistance scale")
+                           + (f" + {num(ro)} from the softened health" if ro > 0.005 else "")
                            if abs(full - loss) < 0.03 else "(it can't go lower)")
                 dmg, res, hp = cells[k:k + 3]
                 k += 3

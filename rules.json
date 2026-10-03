@@ -407,7 +407,9 @@
       "enabled": true,
       "per_hit": 0.05,
       "per_beat": 0.12,
-      "above": 0.3
+      "above": 0.3,
+      "_to_resistance_comment": "to_resistance: the health the soft cap keeps from her is not simply lost: this many resistance points come off the hit part for every point of health softened away (0.1: a blow softened by 100 health wears the part 10 points more). 0 = off.",
+      "to_resistance": 0.1
     },
     "_part_weights_comment": "How much each body part matters to OVERALL health. Health lost from a hit (and the per-beat drain from a badly hurt part) is multiplied by the part's weight: 1 = as before; the throat, neck, chest and stomach count for more, limbs for less, ears, fins, horn and tail for much less. The part still hurts just as much and takes the same damage %; only what it costs her overall changes. A word in the part's name decides first (the longest that fits), then its region. /vital shows every part's weight; /vital ear 0.3 changes one; /vital off = every part counts the same (the old rule).",
     "part_weights": {

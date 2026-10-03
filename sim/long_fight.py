@@ -74,6 +74,16 @@ ANSWERS = {
 }
 
 
+PIN_SHAPES = [
+    ([{"part": "Chest", "severity": "crushing", "with": "her forepaws"}, {"part": "Left Thigh", "severity": "firm", "with": "her hind paw"},
+      {"part": "Right Upper Arm", "severity": "firm", "with": "her jaws"}], "pinned flat on her back, forepaws planted on her chest"),
+    ([{"part": "Stomach", "severity": "crushing", "with": "her left forepaw"}, {"part": "Left Thigh", "severity": "firm", "with": "her right hind paw"},
+      {"part": "Chest", "severity": "firm", "with": "her chest and ruff"}], "pinned flat, a forepaw ground into the belly"),
+    ([{"part": "Upper Back", "severity": "crushing", "with": "her full weight"}, {"part": "Left Upper Arm", "severity": "firm", "with": "her jaws"},
+      {"part": "Right Thigh", "severity": "firm", "with": "her hind paw"}], "pressed flat on her front, the whole Absol on her back"),
+]
+
+
 def run(seed, verbose=False):
     answers = {R: 0, N: 0}
     rests = [0]
@@ -83,13 +93,25 @@ def run(seed, verbose=False):
     pins_started, i, beats, pin_pummel = 0, 0, 0, False
 
     def play(acts, tag):
-        out, cap = beat(s, acts, log)
+        out, cap = beat(s, acts, log, roll=False)    # the pin openings were rolled once for this beat
         caps.append((tag, cap))
         tags.append(tag)
 
     while beats < 60 and not s.over:
         beats += 1
         n, r = eng.get(N), eng.get(R)
+        eng.roll_pin_windows()      # once a beat, as the real director does
+        # like the real director: when there is an opening for a pin, she goes for it (pin_urge)
+        if (not eng.pins and N not in eng.downed and n.energy >= 15 and not eng.pinned_by(N)
+                and eng.pin_allowed(R)[0] and eng.strength(n) > 10):
+            shape = PIN_SHAPES[pins_started % len(PIN_SHAPES)]
+            try:
+                play([A(N, action="pin", hits=shape[0], flavor=shape[1])], "pin start")
+                pins_started += 1
+                continue
+            except ValueError as e:
+                if verbose:
+                    print(f"[pin] refused: {e}")
         if eng.pin_on(R):
             if False and pins_started >= 2 and not pin_pummel:     # pummels inside a pin are off by default (build 113)
                 pin_pummel = True
@@ -170,6 +192,7 @@ def summary(s, log, tags):
             "ripples_end": round(s.eng.strength(s.eng.get(R))),
             "worst_beat": max([float(x) for x in re.findall(r"❤️ Ripples [-\d.]+% → \*\*[-\d.]+%\*\* \(-([\d.]+)\)", text)] or [0]),
             "escapes": len(re.findall(r"breaks free of Nocturne's pin", text)),
+            "pins": len(re.findall(r"📌 \*\*PIN: Nocturne", text)),
             "nocturne": round(s.eng.strength(s.eng.get(N))), "pin_pummel": "pin pummel" in tags}
 
 

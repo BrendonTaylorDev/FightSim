@@ -36,8 +36,9 @@ def session(seed, scene="1", settings=()):
     return s
 
 
-def beat(s, actions, log):
-    s.eng.roll_pin_windows()
+def beat(s, actions, log, roll=True):
+    if roll:
+        s.eng.roll_pin_windows()
     CAPTURE.clear()
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
