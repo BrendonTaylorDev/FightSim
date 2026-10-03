@@ -40,12 +40,16 @@ def way(kind, key, lead=" · how: "):
     return f"{lead}{text}" if text else ""
 
 
+def poss_name(n):
+    return n + ("'" if n.endswith("s") else "'s")
+
+
 class Display:
     def __init__(self, rules):
         self.rules = rules
         self.heart = rules["health"].get("icon", "❤️")
 
-    STATUS_ICON = {"protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
+    STATUS_ICON = {"off_balance": "🌀", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
 
@@ -609,6 +613,11 @@ class Display:
             elif a.get("grapple"):
                 out.append(f"💨 **{who} slips** {owner} grab (dodge chance {a.get('dodge_chance', 0) * 100:.0f}%"
                            f"{way('dodge', a.get('manner'))}): no grip closes")
+            elif (a.get("guard") or {}).get("kind") == "deflect":
+                g = a["guard"]
+                out.append(f"🤚 **{who} turns {owner} {mv} aside** ({g['how']}; chance {g['chance'] * 100:.1f}%): nothing lands"
+                           + (f" — **{a['attacker']} is off balance** (1 beat: slower to dodge, weaker next blow)"
+                              if g.get("off_balance") else ""))
             else:
                 out.append(f"💨 **{who} dodges** {owner} {mv} (dodge chance {a.get('dodge_chance', 0) * 100:.0f}%"
                            f"{way('dodge', a.get('manner'))})")
@@ -621,6 +630,11 @@ class Display:
             if a.get("counter_hits"):
                 out.append(f"↩️ **{who} counters!**")
                 out += self.hits_block(a["attacker"], a["counter_hits"])
+            mc = a.get("missed_charge")
+            if mc:
+                out.append(f"💥 **{a['attacker']}'s charge carries her on into {mc['surface']}** (power {num(mc['power'])})"
+                           + (f" — she goes down ({mc.get('facing')})" if mc.get("down") else " — she stays up"))
+                out += self.hits_block(a["attacker"], mc["hits"])
         elif t == "instant":
             out.append(f"⚔️ **{a['attacker']} → {a['defender']}**: {a.get('flavor', '')}")
             cl = a.get("clash")
@@ -633,6 +647,10 @@ class Display:
                               "back": f"{ps(a['defender'])} TURNS IT BACK onto {a['attacker']} at ×{num(cl['share'])}"}[cl["outcome"]])
                 if cl.get("hits_on_attacker"):
                     out += self.hits_block(a["attacker"], cl["hits_on_attacker"])
+            if (a.get("guard") or {}).get("kind") == "block":
+                g = a["guard"]
+                out.append(f"🛡️ **{a['defender']} blocks** with her {g['part']} (chance {g['chance'] * 100:.1f}%): it lands "
+                           f"there instead, at ×{num(g['share'])}")
             if a.get("protected"):
                 out.append(f"🛡️ **{a['defender']} is behind {a['protected'] if isinstance(a['protected'], str) else 'Protect'}**: "
                            f"the attack stops against it, nothing lands")
@@ -740,6 +758,10 @@ class Display:
                 if i and not self.tight():
                     out.append("")
                 out += self.hits_block(who, hs, by_def.get(who, a.get("move")), tags or None)
+            if a.get("recoil"):
+                rc = a["recoil"]
+                out.append(f"💢 **Recoil**: {poss_name(a['attacker'])} own {a['move']['name']} jars back into her (power {num(rc['power'])})")
+                out += self.hits_block(a["attacker"], rc["hits"])
             if a.get("reflected"):
                 rf = a["reflected"]
                 ps = rf["by"] + ("'" if rf["by"].endswith("s") else "'s")

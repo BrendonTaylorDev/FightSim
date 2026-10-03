@@ -859,7 +859,17 @@ class Engine:
         if clash and clash["outcome"] == "through":
             powers = [round(pw * clash["share"], 2) for pw in powers]
         dodge = None if clash else (self.dodge_roll(a, d, target, move["name"]) if enforce else None)
-        if dodge or (clash and clash["outcome"] != "through"):
+        guard = None
+        if enforce and not clash and not dodge and not pum:
+            guard = self._guard_roll(a, d, move, target)
+        if guard and guard["kind"] == "block":
+            plan = [guard["part"]] * len(plan) if target == "targeted" else [guard["part"]]
+            powers = [round(pw * guard["share"], 2) for pw in powers[:len(plan)]]
+            charge_into = ""     # caught on a guard: she isn't driven anywhere
+        missed = None
+        if enforce and move.get("charge") and (dodge or (guard and guard["kind"] == "deflect")):
+            missed = self._missed_charge(a, d, move, math, charge_into)
+        if dodge or (clash and clash["outcome"] != "through") or (guard and guard["kind"] == "deflect"):
             hits = []
         else:
             hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
@@ -881,6 +891,12 @@ class Engine:
                "tags": self._tags(hits) if hits else ["no_effect"]}
         if clash:
             res["clash"] = clash
+        if guard:
+            res["guard"] = guard
+            if guard["kind"] == "deflect":     # told and shown like a dodge, with its own manner
+                res.update(dodged=True, manner="deflected", dodge_chance=guard["chance"], counter_hits=[])
+        if missed:
+            res["missed_charge"] = missed
         if pum:
             res["pummel"] = pum
             if pum.get("ended") == "answered" and hits and not dodge:
@@ -924,6 +940,10 @@ class Engine:
                 d.status.pop("airborne", None)
                 res["grounded"] = True
                 res["auto_launch"], res["drop_severity"] = res.get("auto_launch") or "thrown", res.get("drop_severity") or "solid"
+        if hits and not move.get("improvised"):
+            rc = self._recoil(a, move, math)
+            if rc:
+                res["recoil"] = rc
         if hits and not d.eliminated:
             back = self._reflect(a, d, move, math)
             if back:
@@ -1470,6 +1490,8 @@ class Engine:
             out.append(("arms trapped in the coils", float(cfg.get("constricted_power_mult", 0.75))))
         if self.has(a, "sputtering"):
             out.append(("choking on water", float(cfg.get("sputtering_power_mult", 0.9))))
+        if self.has(a, "off_balance"):
+            out.append(("off balance", float(cfg.get("off_balance_power_mult", 0.85))))
         if self._pin_mult(a, d) != 1.0:
             out.append(("pin damage", self._pin_mult(a, d)))
         if self.has(a, "paralyzed"):
@@ -1734,7 +1756,8 @@ class Engine:
         slow = (float(sc.get("stiff_dodge_mult", 0.6)) if self.has(d, "stiff") else 1.0) * \
                (float(sc.get("cramped_dodge_mult", 0.7)) if self.has(d, "cramped") else 1.0) * \
                (float(sc.get("constricted_dodge_mult", 0.3)) if self.has(d, "constricted") else 1.0) * \
-               (float(sc.get("sputtering_dodge_mult", 0.8)) if self.has(d, "sputtering") else 1.0)
+               (float(sc.get("sputtering_dodge_mult", 0.8)) if self.has(d, "sputtering") else 1.0) * \
+               (float(sc.get("off_balance_dodge_mult", 0.6)) if self.has(d, "off_balance") else 1.0)
         s = max(0.0, min(1.0, self.strength(d) / 100))
         legs = [p.damage for p in d.parts.values() if body_region(p.name) in ("hind_up", "hind_low", "fore_low", "tail")]
         leg = 1.0 / (1.0 + (sum(legs) / len(legs) if legs else 0) / 150.0)
@@ -2813,6 +2836,88 @@ class Engine:
         self._source = mine
         self.involved.add(d.name)
         return {"by": d.name, "kind": "Mirror Coat" if ranged else "Counter", "power": power, "hits": hits}
+
+    GUARD_KEYS = {"biped": ("forearm", "upper arm", "arm", "paw"), "quadruped": ("lower foreleg", "upper foreleg", "horn"),
+                  "avian": ("wing",), "serpent": ("upper tail", "tail", "coil", "lower back", "upper back")}
+
+    def _guard_roll(self, a, d, move, target):
+        """Now and then (moves.guard) the one being attacked gets something in the way instead of dodging:
+        BLOCK, catching a close blow on a forearm, a foreleg, a wing, her horn or her coils (it lands there, much
+        lighter), or DEFLECT, turning it aside so it lands on nothing and the attacker is left OFF BALANCE for a beat
+        (a beam or a blast is now and then batted aside too). Only a fighter on her feet, free, and able to see it
+        coming; the fresher she is, the likelier. Returns the guard, or None."""
+        cfg = (self.rules.get("moves") or {}).get("guard") or {}
+        if not cfg.get("enabled", True) or move.get("target") in ("status", "self", "hold", "whole_body"):
+            return None
+        if (d.name in self.downed or self.pinned_by(d.name) or self.grab_between(a.name, d.name)
+                or any(h.defender == d.name for h in self.holds.values())
+                or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched", "constricted", "airborne"))
+                or (self.pressed.get(d.name) or {}).get("surface")):
+            return None
+        fresh = 0.4 + 0.6 * max(0.0, min(1.0, self.strength(d) / 100))
+        ranged = self.is_ranged(move)
+        plan = self.body_plan(d)
+        keys = self.GUARD_KEYS.get(plan, ())
+        guards = [p for p in d.parts.values() if any(k in p.name.lower() for k in keys) and p.damage < 300]
+        block_p = 0.0 if ranged or target != "targeted" or not guards else float(cfg.get("block_chance", 0.07)) * fresh
+        defl_p = float(cfg.get("deflect_ranged_chance", 0.03) if ranged else cfg.get("deflect_chance", 0.04)) * fresh
+        if self.has(d, "off_balance") or self.has(d, "stiff"):
+            block_p, defl_p = block_p * 0.5, defl_p * 0.5
+        r = self.rng.random()
+        if r < block_p:
+            self.note_roll(f"{d.name} getting a guard up against {poss_word(a.name)} {move['name']}", block_p, r, "BLOCKED")
+            g = max(guards, key=lambda p: (p.resistance - p.damage / 4, self.rng.random()))
+            return {"kind": "block", "part": g.name, "share": float(cfg.get("block_share", 0.45)), "chance": round(block_p, 4),
+                    "manner": self.rng.choice(("braced", "crossed", "caught", "turned into"))}
+        if r < block_p + defl_p:
+            self.note_roll(f"{d.name} turning {poss_word(a.name)} {move['name']} aside", defl_p, r - block_p, "DEFLECTED")
+            if not ranged:
+                self.set_status(a, "off_balance", 1)
+            how = (self.rng.choice(("a burst of her own power", "a sweep of her arm or paw", "a twist of her whole body"))
+                   if ranged else self.rng.choice(("a paw or forearm across it", "a shoulder turned into it",
+                                                   "a sidestep and a shove")))
+            return {"kind": "deflect", "ranged": ranged, "how": how, "off_balance": not ranged, "chance": round(defl_p, 4)}
+        return None
+
+    def _recoil(self, a, move, math):
+        """Reckless moves hurt the one who uses them when they land (moves.recoil: move name -> share of its power,
+        or "recoil" on the move itself): the jolt comes back into her head, shoulders and chest."""
+        cfg = (self.rules.get("moves") or {}).get("recoil") or {}
+        share = move.get("recoil", (cfg.get("moves") or {}).get(move["name"]))
+        if not cfg.get("enabled", True) or not share:
+            return None
+        front = [p for p in a.parts if body_region(p) in ("head", "shoulder", "chest", "neck")] or list(a.parts)
+        self.rng.shuffle(front)
+        power = round(math["effective"] * float(share), 2)
+        keep, self._source = self._source, f"the recoil of her own {move['name']}"
+        hits = [self._apply_damage(a, front[0], power)] + ([self._apply_damage(a, front[1], round(power * 0.5, 2))]
+                                                            if len(front) > 1 else [])
+        self._source = keep
+        return {"power": power, "hits": hits}
+
+    def _missed_charge(self, a, d, move, math, charge_into=""):
+        """A charge that finds nothing to hit (dodged, or turned aside) may carry the charger on into whatever is
+        behind (moves.missed_charge): she slams into it herself. The faster and heavier the charge, the worse."""
+        cfg = (self.rules.get("moves") or {}).get("missed_charge") or {}
+        if not cfg.get("enabled", True):
+            return None
+        ch = float(cfg.get("aimed_chance", 0.6) if charge_into else cfg.get("chance", 0.3))
+        if not self._chance(ch, f"{a.name} carried on past by her missed {move['name']}", "she crashes", "she pulls up"):
+            return None
+        props = (getattr(self, "scene_cfg", None) or {}).get("props") or []
+        surface = charge_into or (self.rng.choice(props) if props and self.rng.random() < 0.7 else self.scene_word("ground"))
+        front = [p for p in a.parts if body_region(p) in ("head", "shoulder", "chest", "neck", "fore_up")] or list(a.parts)
+        self.rng.shuffle(front)
+        power = round(math["effective"] * float(cfg.get("power_share", 0.4)), 2)
+        keep, self._source = self._source, f"{surface} (her own missed {move['name']})"
+        hits = [self._apply_damage(a, p, power if i == 0 else round(power * 0.6, 2)) for i, p in enumerate(front[:2])]
+        self._source = keep
+        out = {"surface": surface, "power": power, "hits": hits}
+        if self._chance(float(cfg.get("down_chance", 0.3)), f"{a.name} going down after crashing into {surface}",
+                        "she goes down", "she stays up"):
+            out["facing"] = self.knock_down(a.name, why=f"{a.name} crashed into {surface} with her own charge")
+            out["down"] = True
+        return out
 
     def wing_damage(self, f):
         """The worse of her wings (0 for a fighter without wings)."""
@@ -4499,6 +4604,8 @@ class Engine:
                        "never stops)",
         "sputtering": "SPUTTERING: water forced into her mouth and up her nose: coughing, choking it up, eyes and nose "
                       "burning, short of breath (never drowning)",
+        "off_balance": "OFF BALANCE: her last blow was turned aside and she is still recovering her footing; slower to "
+                       "dodge, weaker on the next strike",
         "protecting": "behind a PROTECT barrier (Protect/Detect): braced and shielded; the next attack on her stops "
                       "against it",
         "countering": "set to COUNTER: braced, weight back, waiting for a close blow to return it twice as hard",

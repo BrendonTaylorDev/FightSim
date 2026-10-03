@@ -314,7 +314,38 @@
       "Population Bomb",
       "Thrash",
       "Close Combat"
-    ]
+    ],
+    "guard": {
+      "_comment": "Rare: the one attacked gets something in the way instead of dodging. block_chance (close single-target blows): caught on a forearm, foreleg, wing, horn or coils, landing there at block_share. deflect_chance (close) / deflect_ranged_chance (beams, blasts): turned aside, nothing lands, and a close attacker is OFF BALANCE for a beat. Both scale with how fresh she is; never while down, held, pinned or stunned.",
+      "enabled": true,
+      "block_chance": 0.04,
+      "block_share": 0.45,
+      "deflect_chance": 0.02,
+      "deflect_ranged_chance": 0.015
+    },
+    "missed_charge": {
+      "_comment": "A charge that is dodged or turned aside may carry the charger into what's behind: chance (aimed_chance when the director named a target to drive into). She takes power_share of the charge's power on her front, and may go down (down_chance).",
+      "enabled": true,
+      "chance": 0.3,
+      "aimed_chance": 0.6,
+      "power_share": 0.4,
+      "down_chance": 0.3
+    },
+    "recoil": {
+      "_comment": "Reckless moves hurt the user when they land: move name -> share of the move's power that comes back into her head, shoulders and chest (a move can also carry \"recoil\": share itself). enabled false turns it off.",
+      "enabled": true,
+      "moves": {
+        "Take Down": 0.15,
+        "Double-Edge": 0.2,
+        "Brave Bird": 0.2,
+        "Flare Blitz": 0.2,
+        "Wild Charge": 0.15,
+        "Volt Tackle": 0.2,
+        "Head Smash": 0.25,
+        "Wave Crash": 0.2,
+        "Submission": 0.15
+      }
+    }
   },
   "severity": {
     "_severity_comment": "Used for hits that aren't named moves: improvised blows, environmental damage (landing on stone, slamming into a wall, being dragged).",
@@ -593,7 +624,26 @@
       "spoken_gap": 2,
       "thoughts_per_part": 2
     },
-    "words_per_extra_link": 70
+    "words_per_extra_link": 70,
+    "_dwell_comment": "After a blow or squeeze on someone already badly hurt (strength at or under max_strength %, or the part now at one of part_levels), the beat may get an extra part from HER side that stays with what it did: the hurt settling in, her body, her breath, the sounds she tries to hold in, her thoughts. Nothing new happens in it. chance per eligible beat; words for the part. watch: the same moment from the side of the one who did it, studying her (every twitch, what each tells her); also on holds, pins and grapples on the ground once the one held is at hold_max_strength % or less. moment_cooldown_beats: beats to wait before the same kind of part comes again. enabled false turns either off.",
+    "dwell": {
+      "enabled": true,
+      "chance": 0.6,
+      "words": 260,
+      "max_strength": 55,
+      "part_levels": [
+        "excruciating",
+        "devastated",
+        "numb with shock"
+      ]
+    },
+    "watch": {
+      "enabled": true,
+      "chance": 0.5,
+      "words": 220,
+      "hold_max_strength": 80
+    },
+    "moment_cooldown_beats": 1
   },
   "pain_tiers": [
     {
@@ -869,7 +919,9 @@
     "confused_self_hit_chance": 0.33,
     "burned_power_mult": 0.85,
     "burn_power": 5,
-    "poison_health_pct": 1.0
+    "poison_health_pct": 1.0,
+    "off_balance_dodge_mult": 0.6,
+    "off_balance_power_mult": 0.85
   },
   "energy": {
     "_comment": "Stamina (0-100). Each move costs energy: by target type here, or a move's own \"energy\" in fighters.json. Everyone regains regen_per_beat each beat, plus rest_bonus if they sat the beat out. Below tired_below a fighter dodges worse. The director can't use a move she can't afford; your /commands always work.",

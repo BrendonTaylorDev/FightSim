@@ -735,6 +735,29 @@ After each beat's prose, the program prints the exact numbers in this format:
   guards, water in the mouth, constriction by how far gone she is, weather, and the stiff moment after an escape; wing,
   beak and talon moves. New sample sections (clash, dive, sputter, coil, escape aftermath) are shown when one of those
   happens.
+- **Staying with the damage.** When a blow (or a squeeze) lands on someone already badly hurt (at 55% strength or
+  less, or the part it hit now excruciating or worse), the beat may get an extra part from HER side that stays with
+  what it did: nothing new happens; the hurt arriving and settling, what her body does on its own, her heavy breathing,
+  the sounds she tries to hold in (and by the end can't), her thoughts, how she looks at her opponent now. Another
+  extra part may come from the side of the one who did it, WATCHING: studying every twitch and flinch, the breath
+  hitching, what she guards, what each sign tells her. The watcher comes for any attack on someone badly hurt, and
+  also for holds, pins and grapples on the ground. Each part is labelled with whose side it is. `narration.dwell`
+  (chance 0.6, 260 words), `narration.watch` (chance 0.5, 220 words), `narration.moment_cooldown_beats` (1: never two
+  beats running). New story blocks for both (what the hurt does by body zone, sounds held in by how spent she is,
+  ragged breathing, what the watcher sees, her thoughts) and two new sample sections ("dwell", "watch").
+- **Blocks and redirects (rare).** Now and then the one attacked gets something in the way instead of dodging: she
+  BLOCKS a close blow on a forearm, foreleg, wing, horn or coils (it lands there at ×0.45), or TURNS IT ASIDE (nothing
+  lands, and the attacker is OFF BALANCE 🌀 for a beat: slower to dodge, weaker next blow); a beam or blast is very
+  occasionally batted aside too. Only when she is on her feet, free and fresh enough; about one block a fight and a
+  redirect every other fight. `moves.guard`.
+- **Charges that miss.** A charge that is dodged or turned aside may carry the charger on into the scenery (or the
+  ground): she hurts her own head, shoulders or chest, and may go down. More likely when she was aiming to drive her
+  opponent into something. `moves.missed_charge`.
+- **Recoil.** Reckless moves (Take Down, Double-Edge, Brave Bird, Flare Blitz, Wild Charge, Volt Tackle, Head Smash,
+  Wave Crash, Submission) jar back into the user when they land: a small share of their power on her own front.
+  `moves.recoil`.
+- **More story blocks** across the thin categories: breathing by where it hurts, back and tail sensations, how pain
+  travels, late-fight thoughts, struggling, landings, dodges, getting up, sputtering, clashes, guards, crashes.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
