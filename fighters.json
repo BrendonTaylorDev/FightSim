@@ -253,7 +253,8 @@
           "power": 30,
           "target": "targeted",
           "about": "water-sheathed body charge",
-          "charge": true
+          "charge": true,
+          "energy": 40
         },
         {
           "name": "Brick Break",

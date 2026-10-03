@@ -650,6 +650,7 @@ class Session:
         self.narrator.damage_by = {f.name: {part.name.lower(): part.damage for part in f.parts.values()}
                                    for f in self.eng.active()}
         self.narrator.strengths = {f.name: self.eng.strength(f) for f in self.eng.active()}
+        self.narrator.max_health = {f.name: f.max_health for f in self.eng.fighters.values()}
         self.narrator.on_ground = set(self.eng.downed) | {pin["defender"] for pin in self.eng.pins.values()}
         self.narrator.on_ground |= set(getattr(self, "_rising", set()))
         # anyone who was down when the beat began (then got up, was hauled up, or broke free) may be shown lying too

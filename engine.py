@@ -858,9 +858,9 @@ class Engine:
             same, near = neighbor_parts(list(d.parts), struck[0])
             self.rng.shuffle(same)
             self.rng.shuffle(near)
-            around = (same[:1] + near + same[1:])[:int(scfg.get("parts", 2) or 0)]
+            around = (same[:1] + near + same[1:])[:int(scfg.get("parts", 3) or 0)]
             base = next((pw for p, pw in zip(plan, powers) if p == struck[0]), powers[0])
-            each = round(base * float(scfg.get("power", 0.2)) * float(distances[dist]), 2)
+            each = round(base * float(scfg.get("power", 0.25)) * float(distances[dist]), 2)
             self._source = f"{poss_word(a.name)} {move['name']} still driving into her"[:70]
             drive_hits = [self._apply_damage(d, p, each) for p in [struck[0]] + around if each > 0]
         self._source = f"being driven into {into}"[:60]

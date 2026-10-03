@@ -1677,7 +1677,13 @@ class Narrator:
         size = self._strength_key(h["damage_taken"])
         part_score = {"very painful": 0, "excruciating": 1, "devastated": 2}[before_label]
         size_score = {"glancing": -2, "solid": 0, "heavy": 1, "tremendous": 2}[size]
-        left = float((getattr(self, "strengths", None) or {}).get(who, 100))
+        # how much she has left as THIS blow lands (not at the end of the beat: in a long pummel the first blow
+        # finds her stronger than the last)
+        top = h.get("max_health") or (getattr(self, "max_health", None) or {}).get(who)
+        if top and h.get("health_before") is not None:
+            left = 100.0 * float(h["health_before"]) / float(top)
+        else:
+            left = float((getattr(self, "strengths", None) or {}).get(who, 100))
         cond_score = 0 if left >= 60 else 1 if left >= 30 else 2
         level = max(0, min(3, (part_score + size_score + 2 * cond_score + 1) // 2))
         # overall strength caps it: a fighter who still has most of her strength holds it in, a middling one can

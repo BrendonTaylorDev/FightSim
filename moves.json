@@ -748,7 +748,8 @@
    "power": 20,
    "target": "targeted",
    "about": "a water-sheathed body charge",
-   "charge": true
+   "charge": true,
+   "energy": 40
   },
   {
    "name": "Aqua Tail",

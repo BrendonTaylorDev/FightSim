@@ -91,8 +91,8 @@
       "max_obstacles": 3,
       "_sheath_comment": "A charge wrapped in its element (Aqua Jet, Wave Crash, Flame Wheel, Flare Blitz, Spark, Wild Charge, Volt Tackle...: \"sheathed\": true in moves.json, or the move's description says so) never leaves her between the hit and the slam: the water, fire or current stays on her the whole way back and keeps working on the struck part and the parts round it. power: each of those extra contacts as a share of the struck part's hit (times the distance); parts: how many parts round the struck one it reaches. power 0 = off.",
       "sheath": {
-        "power": 0.2,
-        "parts": 2
+        "power": 0.25,
+        "parts": 3
       }
     },
     "_auto_spill_comment": "A targeted strike that names only one body part also jars the parts right next to it (a jaw strike catches the muzzle and neck). parts = how many neighbors; factor = their power as a share of the move's base power. Set parts to 0 to turn it off.",
