@@ -772,7 +772,9 @@ After each beat's prose, the program prints the exact numbers in this format:
   escapes), dazed 💫 (head: slow to dodge, weaker), doubled over 🤕 (a blow on a part that was already devastated: guard
   down). `moves.jolts`.
 - **Guarding a wound.** Below 60% strength, a fighter shields her worst part once it's excruciating: blows there land a
-  little lighter, her other side a little harder. The director is told which side is open. `moves.guarding_wound`.
+  little lighter, and what she leaves open a little harder: her other side for a left or right part, her back while
+  she curls over her chest, belly or throat, her front while she shields her back. The director is told what is open.
+  Not while she is held (nothing free to cover it with). `moves.guarding_wound`.
 - **Last stand.** Once a fight, a fighter below 15% may put everything into one blow (×1.3), then has no energy at
   all. `moves.last_stand`.
 - **Wet fur.** A soaked fighter slips holds and pins a little more easily, and a soaked fighter's own grips slide.
@@ -795,6 +797,24 @@ After each beat's prose, the program prints the exact numbers in this format:
   what the reactions feed on. Ground pummels run as long as any other and land harder (×1.08 a blow, plus the softer
   parts she has turned up): about a third more damage than the same pummel in a grab. `grapple.frenzy`,
   `grapple.ground_end_mult`.
+- **Payback.** Now and then the director gets the idea that a fighter with a wrecked part goes for the same place
+  on the one who did it (`director.grudge_chance`).
+- **Drag, then pin.** When someone is down and not pinned, now and then the director gets the idea to drag her into a
+  wall or the water and pin her there on the next beat (wall choke, the dunk) (`director.drag_to_pin_chance`).
+- **Fury after a long pin.** Breaking a pin held 3 beats or more may leave her FURIOUS 😤 for a beat: harder blows
+  (`pin.second_wind`).
+- **Wariness.** A move that left one of her parts excruciating makes her wary of it: she dodges it more, but jumps
+  at a feint of it more (`learning.wary`).
+- **Exhaustion mistakes.** A very tired fighter sometimes overcommits: the blow lands sloppy (×0.6) and she is off
+  balance after it (`moves.exhaustion_mistakes`).
+- **Held, can't cover up.** A fighter in someone's hold takes blows ×1.1 (`moves.vulnerable.held`), and can't
+  guard a wound.
+- **How they move now.** Every beat the narrator is told what each fighter's injuries do to how she moves (favouring
+  a leg, an arm tucked in, a tail hanging low).
+- **Arena memory.** What the fight breaks stays broken (a stalagmite driven through, a pillar that toppled), and the
+  narrator is reminded every beat.
+- **Injury report.** When the fight is won, the console shows what each fighter will feel when it's over, and the
+  narrator gets it for the aftermath.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
