@@ -673,6 +673,9 @@ class Display:
                 tags.update({id(h): "crush" for h in ch.get("crush_hits", [])})
                 tags.update({id(h): f"carried inside the {ch['sheath']}" for h in ch.get("drive_hits", [])})
                 tags.update({id(h): f"{ch['into']} breaks" for h in ch.get("break_hits", [])})
+                for st in ch.get("onward") or []:      # carried on THROUGH what broke, into the next thing
+                    tags.update({id(h): f"driven on into {st['into']}" for h in st.get("surface_hits", [])})
+                    tags.update({id(h): f"{st['into']} breaks" for h in st.get("break_hits", [])})
                 tags.update({id(h): "the charge" for h in a["hits"] if id(h) not in tags})
             if a.get("sustain"):
                 for p in a["sustain"]["pulses"]:

@@ -24,9 +24,7 @@ STAGES = [
     (R, [[A(R, action="strike", move="Water Gun", hits=H("Head", "Chest Ruff", "Neck"), flavor="a hard jet of water into the face")]]),
     (R, [[A(R, action="strike", move="Aqua Jet", part="Chest", charge_into="a stalagmite", flavor="Aqua Jet, straight into the Absol's chest")]]),
     (N, [[A(N, action="strike", move="Thunderbolt", flavor="the stored lightning let go through the Buizel")]]),
-    (R, [[A(R, action="strike", move="Ice Fang", part="Left Upper Foreleg", flavor="a darting bite at the foreleg"),
-          A(R, action="strike", move="Brick Break", part="Chest", flavor="a chop to the bruised chest"),
-          A(R, action="strike", move="Crunch", part="Neck", flavor="jaws at the side of the neck")]]),
+    (R, [[A(R, action="strike", move="Ice Fang", part="Left Upper Foreleg", flavor="a darting bite at the foreleg")]]),
     (N, [[A(N, action="strike", move="Sucker Punch", part="Stomach", flavor="a feint, then a forepaw driven into the belly"),
           A(N, action="strike", move="Night Slash", part="Left Thigh", flavor="the horn raked across the thigh"),
           A(N, action="strike", move="Iron Tail", part="Upper Back", flavor="the sickle tail brought down across her back")]]),
@@ -40,12 +38,12 @@ STAGES = [
           A(N, action="strike", move="Hydro Pump", hits=H("Stomach", "Chest", "Left Hip"), sustain=4, flavor="Hydro Pump held point-blank")]]),
     (R, [[A(R, action="strike", move="Brick Break", part="Muzzle", flavor="a desperate chop at the Absol's face")]]),
     (N, [[A(N, action="strike", move="Iron Tail", part="Left Knee", launch="knocked down", flavor="the tail sweeps the knee out from under her")]]),
-    (N, [[A(N, action="strike", move="Bite", part="Stomach", count=3, flavor="standing over her, biting down again and again")]]),
+    (N, [[A(N, action="strike", move="Bite", part="Stomach", count=3, flavor="a hard bite, wherever she can get her teeth")]]),
     (N, [[A(N, action="pin", hits=[{"part": "Chest", "severity": "crushing", "with": "her forepaws"},
                                    {"part": "Left Thigh", "severity": "firm", "with": "her hind paw"},
                                    {"part": "Right Upper Arm", "severity": "firm", "with": "her jaws"}],
             flavor="pinned flat on her back, forepaws planted on her chest")]]),
-    (R, [[A(R, action="strike", move="Ice Beam", hits=H("Head", "Chest", "Neck"), sustain=3,
+    (R, [[A(R, action="strike", move="Ice Beam", hits=H("Head", "Chest", "Neck"), sustain=2,
             flavor="Ice Beam held into the Absol's face and chest")]]),
     (N, [[A(N, action="strike", move="Take Down", part="Chest", charge_into="a fallen boulder", flavor="a shoulder-first ram across the ledge")]]),
     (R, [[A(R, action="strike", move="Aqua Jet", part="Belly", charge_into="the cave wall", flavor="a second Aqua Jet, low, into the belly")],
@@ -118,7 +116,8 @@ def run(seed, verbose=False):
             other = R if who == N else N
             o = eng.get(other)
             rests[0] += 1
-            if rests[0] % 2 == 1 and other not in eng.downed and o.energy >= 20 and not eng.pinned_by(other):
+            if rests[0] % 2 == 1 and other not in eng.downed and o.energy >= 20 and not eng.pinned_by(other) \
+                    and eng.strength(o) > 10:      # a fighter who is spent doesn't press anyone
                 for acts in ANSWERS[other][answers[other] % len(ANSWERS[other]):] + ANSWERS[other]:
                     try:
                         play(acts, f"{other.lower()} presses")
@@ -168,6 +167,8 @@ def summary(s, log, tags):
     text = "\n".join(log)
     cause = re.search(r"It was the (\w+)", text)
     return {"winner": s.eng.winner(), "beats": len(tags), "cause": cause.group(1) if cause else None,
+            "ripples_end": round(s.eng.strength(s.eng.get(R))),
+            "worst_beat": max([float(x) for x in re.findall(r"❤️ Ripples [-\d.]+% → \*\*[-\d.]+%\*\* \(-([\d.]+)\)", text)] or [0]),
             "escapes": len(re.findall(r"breaks free of Nocturne's pin", text)),
             "nocturne": round(s.eng.strength(s.eng.get(N))), "pin_pummel": "pin pummel" in tags}
 
