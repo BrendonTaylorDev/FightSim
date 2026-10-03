@@ -1023,7 +1023,8 @@
     "soaked_grip_mult": 1.1,
     "fury_power_mult": 1.15,
     "bound_power_mult": 0.9,
-    "bound_dodge_mult": 0.75
+    "bound_dodge_mult": 0.75,
+    "breathless_regen_mult": 0.5
   },
   "energy": {
     "_comment": "Stamina (0-100). Each move costs energy: by target type here, or a move's own \"energy\" in fighters.json. Everyone regains regen_per_beat each beat, plus rest_bonus if they sat the beat out. Below tired_below a fighter dodges worse. The director can't use a move she can't afford; your /commands always work.",

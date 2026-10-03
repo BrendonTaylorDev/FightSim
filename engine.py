@@ -4002,8 +4002,10 @@ class Engine:
             regen = float(en.get("regen_per_beat", 5)) + (0 if f.name in self.involved else float(en.get("rest_bonus", 10)))
             if self.has(f, "constricted"):      # the coils squeeze her breath: she gets none back, and loses some
                 regen = -float(cfg_s.get("constricted_energy_loss", 4))
-            elif self.has(f, "sputtering") or self.has(f, "breathless"):     # no breath to get back
+            elif self.has(f, "sputtering"):     # coughing water up: no breath to get back
                 regen = 0.0
+            elif self.has(f, "breathless"):     # winded: half the breath comes back (resting still helps)
+                regen *= float(cfg_s.get("breathless_regen_mult", 0.5))
             f.energy = max(0.0, min(100.0, f.energy + regen))
             if (ad.get("enabled", True) and not f.adrenaline_used
                     and self.strength(f) < float(ad.get("below_strength", 25))):

@@ -4,8 +4,8 @@ import argparse, io, json, os, re, sys, contextlib, shutil, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.dirname(HERE)
 # work in a throwaway copy, so settings commands never touch your rules.json or my_settings.json
-ROOT = os.path.join(tempfile.gettempdir(), "fightsim_simrun")
-shutil.rmtree(ROOT, ignore_errors=True)
+# (a folder of its own for every run, so runs side by side don't wipe each other's copy)
+ROOT = os.path.join(tempfile.mkdtemp(prefix="fightsim_simrun_"), "repo")
 shutil.copytree(SRC, ROOT, ignore=shutil.ignore_patterns("sim", ".git", "__pycache__", "my_settings.json",
                                                          "blocks_memory.json", "autosave.json"))
 sys.path.insert(0, ROOT)
