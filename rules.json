@@ -100,6 +100,14 @@
       "stay_chance": 0.5,
       "near_share": 0.7
     },
+    "_limb_limits_comment": "A move thrown WITH a badly hurt limb lands weaker: a chop or a slash with a ruined paw or arm, a charge or a kick on a ruined leg, a bite with a ruined jaw, a horn strike with a ruined horn, a tail strike with a ruined tail. 'at': the damage % on the worst such part, and the power multiplier from there (150 = excruciating, 300 = devastated). Streams, beams and whole-body moves are not thrown with a limb. enabled false = off.",
+    "limb_limits": {
+      "enabled": true,
+      "at": {
+        "150": 0.8,
+        "300": 0.6
+      }
+    },
     "_auto_spill_comment": "A targeted strike that names only one body part also jars the parts right next to it (a jaw strike catches the muzzle and neck). parts = how many neighbors; factor = their power as a share of the move's base power. Set parts to 0 to turn it off.",
     "auto_spill": {
       "parts": 2,
@@ -684,6 +692,17 @@
     "attacks_between_pins": 1,
     "director_can_eliminate": false,
     "_secure_comment": "secure: when enabled, a pin can only be WON if the pinned fighter has at least min_parts body parts at part_damage % or more AND her strength is at or below max_strength %. Until then her escape chance is multiplied by unmet_escape_mult every beat, and if the clock runs out she kicks out at the last second final_kickout_chance of the time. Encourages spreading the damage. Toggle with /secure on|off.",
+    "_pinner_energy_comment": "Holding a pin is work: pinner_energy_per_beat comes off the pinner's energy every pin beat, and a pinner who is tired (below energy.tired_below) holds less surely: the pinned fighter's escape chance x tired_pinner_escape_mult.",
+    "pinner_energy_per_beat": 3,
+    "tired_pinner_escape_mult": 1.2,
+    "_aftereffects_comment": "What a broken pin leaves behind: the fighter who got out is STIFF for stiff_beats (trapped limbs numb and slow: weaker blows, poor dodges) if the pin lasted at least stiff_after_beats; a pinner who held on cramped_after_beats or more comes off CRAMPED (slow to dodge) for cramped_beats. enabled false = off.",
+    "aftereffects": {
+      "enabled": true,
+      "stiff_after_beats": 2,
+      "stiff_beats": 1,
+      "cramped_after_beats": 4,
+      "cramped_beats": 1
+    },
     "_pressure_cap_comment": "A pin wears her down; it doesn't wreck her. Its steady pressure on each pressed part, and the extra press that punishes a failed struggle, never use more than these multipliers, however worn the part is: mult (damage; 0.45 = as if the part were only 'sturdy') and health_mult (health). Blows are not capped. Set enabled false for the old rule, where pressure on a ruined part hit as hard as a blow.",
     "pressure_cap": {
       "enabled": true,
@@ -806,6 +825,10 @@
       }
     },
     "paralyzed_power_mult": 0.75,
+    "_stiff_comment": "stiff (after breaking out of a pin) and cramped (after holding a long one): power and dodge multipliers.",
+    "stiff_power_mult": 0.85,
+    "stiff_dodge_mult": 0.6,
+    "cramped_dodge_mult": 0.7,
     "paralyzed_escape_mult": 0.5,
     "soaked_electric_mult": 1.5,
     "soaked_beats": 3,
@@ -1123,5 +1146,13 @@
   "variants": {
     "_comment": "Which version of a fighter a new fight uses, for fighters that have a \"variants\" section in fighters.json. \"original\" = the entry as it is written. Ripples: \"sleek\" has no flotation sac (a bare throat instead; her tells and body parts are written around that). Change with /variant Ripples original | sleek; it takes effect in the next fight.",
     "Ripples": "sleek"
+  },
+  "learning": {
+    "_comment": "Fighters learn during a fight. A fighter who has broken out of a pin of the same shape before (the same body regions pressed) escapes it more easily: x (1 + pin_escape_per_time per escape), at most pin_escape_cap. A move that has landed on her twice or more is one she has learned to read: her dodge chance against THAT attacker's move x (1 + dodge_per_hit per hit after the first), at most dodge_cap. enabled false = off.",
+    "enabled": true,
+    "pin_escape_per_time": 0.15,
+    "pin_escape_cap": 1.45,
+    "dodge_per_hit": 0.2,
+    "dodge_cap": 1.5
   }
 }

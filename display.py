@@ -45,7 +45,8 @@ class Display:
         self.rules = rules
         self.heart = rules["health"].get("icon", "❤️")
 
-    STATUS_ICON = {"paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
+    STATUS_ICON = {"stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
+                   "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
 
     def _status_tag(self, f):
@@ -427,6 +428,16 @@ class Display:
             out += self.hits_block(d, e["punish_hits"])
         if e.get("hits_on_pinner"):
             out += self.hits_block(e["hits_on_pinner"][0].get("defender", e["attacker"]), e["hits_on_pinner"])
+        for x in e.get("aftereffects") or []:
+            out.append(f"- {self.STATUS_ICON.get(x['status'], '✳️')} **{x['fighter']} is {x['status']}** ({x['beats']} "
+                       f"beat{'s' if x['beats'] != 1 else ''})"
+                       + (": trapped limbs numb and slow after the pin" if x["status"] == "stiff" else
+                          ": locked up from holding the pin so long"))
+        if e.get("knows_pin"):
+            out.append(f"- 🧠 {d} has broken out of a pin like this before (escape ×"
+                       f"{num(min(1.45, 1 + 0.15 * e['knows_pin']))})")
+        if e.get("pinner_tired"):
+            out.append(f"- 😮‍💨 {a} is running out of breath holding the pin: it holds less surely")
         if isinstance(e.get("pinner_down"), dict):
             out.append(f"- ⬇️ **{e['pinner_down']['fighter']} is thrown off and goes down too** "
                        f"({e['pinner_down'].get('facing') or 'down'}); she can try to get up from the next beat")

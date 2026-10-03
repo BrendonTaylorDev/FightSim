@@ -198,6 +198,7 @@ class Fighter:
     adrenaline_used: bool = False                # the one-time surge when strength first drops low
     voice: str = ""                              # how this fighter sounds (thoughts, cries, speech)
     out_beats: int = 0                           # beats since being put out (or since the last recovery stage)
+    learned: dict = field(default_factory=dict)  # what she has learned this fight: pin shapes broken, moves felt
 
     def part(self, name):
         found = match_part(list(self.parts), name)
@@ -647,6 +648,9 @@ class Engine:
         aim = cfg.get("targeting", {}).get(target, 1.0)
         stab = cfg.get("same_type_bonus", 1.0) if move["type"] in a.types else 1.0
         extras = self.power_extras(a, d, move["type"])
+        limb = self.limb_mult(a, move)
+        if limb:
+            extras = extras + [limb]
         xm = 1.0
         for _, m in extras:
             xm *= m
@@ -825,11 +829,14 @@ class Engine:
             powers += [spill] * (len(names) - 1)
             math["spillover_parts"] = names[1:]
             math["spillover_effective"] = spill
-        dodge = self.dodge_roll(a, d, target) if enforce else None
+        dodge = self.dodge_roll(a, d, target, move["name"]) if enforce else None
         if dodge:
             hits = []
         else:
             hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
+            if hits and not move.get("improvised"):    # she remembers what has landed on her (learning)
+                felt = d.learned.setdefault("moves", {})
+                felt[f"{a.name}|{move['name']}"] = felt.get(f"{a.name}|{move['name']}", 0) + 1
         sustained = None
         if hits and int(sustain or 0) > 1 and move.get("sustainable"):
             sustained = self._sustain(a, d, move, plan, powers, int(sustain), against, enforce)
@@ -1350,10 +1357,47 @@ class Engine:
             return 1.0
         return float(self.rules.get("pin", {}).get("damage_mult", 1.0))
 
+    LIMB_KINDS = (("charge", None), ("bite", r"bite|fang|crunch|jaw"), ("horn", r"horn|scythe|night slash|psycho cut"),
+                  ("tail", r"\btails?\b|iron tail|aqua tail|tail slap|dragon tail"),
+                  ("arm", r"punch|chop|break|slash|claw|scratch|swipe|cut|paw|jab|fist|thrust|fury"),
+                  ("leg", r"kick|stomp|stamp"))
+
+    def limb_mult(self, a, move):
+        """A move thrown with a badly hurt limb lands weaker (moves.limb_limits): a chop with a ruined paw, a charge
+        on a ruined leg, a bite with a ruined jaw. Streams, beams and whole-body moves aren't thrown with a limb.
+        Returns (label, multiplier) or None."""
+        cfg = self.rules.get("moves", {}).get("limb_limits") or {}
+        if not cfg.get("enabled", True) or not move or move.get("target") in ("whole_body", "status", "hold"):
+            return None
+        text = f"{move.get('name', '')} {move.get('about', '')}".lower()
+        if move.get("target") == "spread" and not move.get("charge"):
+            return None
+        kind = "charge" if move.get("charge") else next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, text)), None)
+        if not kind:
+            return None
+        regions = {"charge": ("hind_up", "hind_low"), "leg": ("hind_up", "hind_low"), "arm": ("fore_up", "fore_low"),
+                   "tail": ("tail",)}.get(kind)
+        words = {"bite": r"jaw|muzzle", "horn": r"\bhorn"}.get(kind)
+        parts = [p for p in a.parts.values()
+                 if (regions and body_region(p.name) in regions) or (words and re.search(words, p.name.lower()))]
+        if kind == "charge" and not parts:      # a serpent charges with her body
+            parts = [p for p in a.parts.values() if body_region(p.name) in ("tail", "belly")]
+        if not parts:
+            return None
+        worst = max(parts, key=lambda p: p.damage)
+        steps = sorted(((float(k), float(v)) for k, v in (cfg.get("at") or {"150": 0.8, "300": 0.6}).items()),
+                       reverse=True)
+        mult = next((m for at, m in steps if worst.damage >= at), None)
+        if mult is None or mult >= 1:
+            return None
+        return (f"her hurt {worst.name.lower()}", mult)
+
     def power_extras(self, a, d, move_type):
         """Status multipliers on a move's power: (label, multiplier) pairs."""
         cfg = self._cfg("status_effects")
         out = []
+        if self.has(a, "stiff"):
+            out.append(("stiff from the pin", float(cfg.get("stiff_power_mult", 0.85))))
         if self._pin_mult(a, d) != 1.0:
             out.append(("pin damage", self._pin_mult(a, d)))
         if self.has(a, "paralyzed"):
@@ -1614,10 +1658,12 @@ class Engine:
             return 0.0
         if self.grab_between(a.name, d.name):
             return 0.0   # held at point-blank: there is nowhere to go (it cuts both ways)
+        slow = (float(self._cfg("status_effects").get("stiff_dodge_mult", 0.6)) if self.has(d, "stiff") else 1.0) * \
+               (float(self._cfg("status_effects").get("cramped_dodge_mult", 0.7)) if self.has(d, "cramped") else 1.0)
         s = max(0.0, min(1.0, self.strength(d) / 100))
         legs = [p.damage for p in d.parts.values() if body_region(p.name) in ("hind_up", "hind_low", "fore_low", "tail")]
         leg = 1.0 / (1.0 + (sum(legs) / len(legs) if legs else 0) / 150.0)
-        ch = float(cfg.get("base", 0.18)) * (0.4 + 0.6 * s) * leg
+        ch = float(cfg.get("base", 0.18)) * (0.4 + 0.6 * s) * leg * slow
         if self.has(d, "chilled"):
             ch *= 0.5
         if d.energy < float(self._cfg("energy").get("tired_below", 25)):
@@ -1652,9 +1698,15 @@ class Engine:
             return None
         return "dodge" if self.dodge_chance(a, d, "targeted") > 0 else "spent"
 
-    def dodge_roll(self, a, d, target):
-        """None if the attack lands; otherwise the dodge (and maybe a counter-hit)."""
+    def dodge_roll(self, a, d, target, move_name=None):
+        """None if the attack lands; otherwise the dodge (and maybe a counter-hit). A move that has already landed on
+        her twice is one she has learned to read (learning.dodge_per_hit)."""
         ch = self.dodge_chance(a, d, target)
+        lcfg = self.rules.get("learning") or {}
+        seen = (d.learned.get("moves") or {}).get(f"{a.name}|{move_name}", 0) if move_name else 0
+        if ch > 0 and seen >= 2 and lcfg.get("enabled", True):
+            ch = min(float(self._cfg("evasion").get("max", 0.35)) * 1.3,
+                     ch * min(float(lcfg.get("dodge_cap", 1.5)), 1 + float(lcfg.get("dodge_per_hit", 0.2)) * (seen - 1)))
         forced, self._force_dodge = bool(getattr(self, "_force_dodge", False)) and ch > 0, False
         if not forced and (ch <= 0 or not self._chance(ch, f"{d.name} dodging {poss_word(a.name)} attack", "DODGED",
                                                        "it lands")):
@@ -3359,9 +3411,35 @@ class Engine:
         return {"type": "struggle_request", "fighter": d.name, "pinner": pins[0]["attacker"],
                 "seconds": pins[0]["seconds"]}
 
-    def _after_escape(self, ev, pinner, forced=False):
+    def pin_shape(self, p):
+        """What kind of pin this is, for learning: the body regions pressed (a pin on the chest, thigh and arm is the
+        same pin whoever does it and whichever side)."""
+        regions = sorted({body_region(h.part) for h in self._pin_holds(p)})
+        return "+".join(r for r in regions if r)
+
+    def _after_escape(self, ev, pinner, p=None, dfn=None, forced=False):
         """A pin has just been broken. Usually the pinner is shoved off and keeps her feet; sometimes she is thrown
-        down beside the fighter she was pinning (pin.struggle.pinner_down_chance; never on your own /pinescape)."""
+        down beside the fighter she was pinning (pin.struggle.pinner_down_chance; never on your own /pinescape).
+        What it leaves behind (pin.aftereffects): the one who was pinned comes out STIFF (trapped limbs numb and
+        slow for a beat); a pinner who held on for a long time comes off CRAMPED. And the one who got out remembers
+        how (learning)."""
+        if p is not None and dfn is not None:
+            shape = self.pin_shape(p)
+            if shape:
+                got = dfn.learned.setdefault("pins", {})
+                got[shape] = got.get(shape, 0) + 1
+            acfg = self.rules.get("pin", {}).get("aftereffects") or {}
+            if acfg.get("enabled", True):
+                after = []
+                if int(p.get("beats", 0)) >= int(acfg.get("stiff_after_beats", 2)):
+                    self.set_status(dfn, "stiff", int(acfg.get("stiff_beats", 1)))
+                    after.append({"fighter": dfn.name, "status": "stiff", "beats": int(acfg.get("stiff_beats", 1))})
+                pf = self.fighters.get(str(pinner).lower())
+                if pf and int(p.get("beats", 0)) >= int(acfg.get("cramped_after_beats", 4)):
+                    self.set_status(pf, "cramped", int(acfg.get("cramped_beats", 1)))
+                    after.append({"fighter": pf.name, "status": "cramped", "beats": int(acfg.get("cramped_beats", 1))})
+                if after:
+                    ev["aftereffects"] = after
         s = self.rules.get("pin", {}).get("struggle", {})
         f = self.fighters.get(str(pinner).lower())
         if forced or f is None or f.eliminated or f.name in self.downed:
@@ -3662,6 +3740,19 @@ class Engine:
                 esc_try *= float(self._cfg("adrenaline").get("escape_mult", 1.5))
             if p.get("against"):   # jammed against something solid: nowhere to bridge or roll to on that side
                 esc_try *= float(cfg.get("against_escape_mult", 0.85))
+            # holding a pin is work: every beat costs the pinner breath, and a pinner who is running out of it holds
+            # less surely (pin.pinner_energy_per_beat, pin.tired_pinner_escape_mult)
+            per = float(cfg.get("pinner_energy_per_beat", 3) or 0)
+            for m in crew:
+                m.energy = max(0.0, m.energy - per)
+            tired_pinner = att.energy < float(self._cfg("energy").get("tired_below", 25))
+            if tired_pinner:
+                esc_try *= float(cfg.get("tired_pinner_escape_mult", 1.2))
+            # she has broken out of a pin like this before: she knows where it gives (learning.pin_escape_per_time)
+            lcfg = self.rules.get("learning") or {}
+            known = (dfn.learned.get("pins") or {}).get(self.pin_shape(p), 0) if lcfg.get("enabled", True) else 0
+            if known:
+                esc_try *= min(float(lcfg.get("pin_escape_cap", 1.45)), 1 + float(lcfg.get("pin_escape_per_time", 0.15)) * known)
             esc = self._per_beat(min(0.95, esc_try), tf)
             # if the escape fails: the chance to break loose for a moment and land a hit, same halving curve
             part_try = s.get("partial_chance", 0.50) * curve * (1 + 0.6 * a_weak) * fade * crowd
@@ -3675,7 +3766,7 @@ class Engine:
                   "fight_left": (lambda v: "fighting hard" if v > 0.7 else "weakening" if v > 0.45
                                  else "fading" if v > 0.2 else "nearly gone")(fade * (0.25 + 0.75 * d_str)),
                   "hits_on_pinner": [], "punish_hits": [], "pressed": [h.part for h in holds],
-                  "helpers": [m.name for m in crew[1:]]}
+                  "helpers": [m.name for m in crew[1:]], "pinner_tired": tired_pinner, "knows_pin": known}
             if p.get("against"):
                 ev["against"] = p["against"]
             forced_try = p.pop("force_attempt", False)  # the story asked for an escape attempt this beat
@@ -3692,7 +3783,7 @@ class Engine:
                     self.pins.pop(key, None)
                     self.last_pin_end = {"pinner": att.name, "pinned": dfn.name, "how": "broke free",
                                          "second": p["seconds"], "turn": self.turn}
-                    self._after_escape(ev, att.name)
+                    self._after_escape(ev, att.name, p, dfn)
                 elif (ev.__setitem__("roll2", round(self.rng.random(), 3)) or ev["roll2"]) < part:
                     ev["struggle"] = "partial"
                     p["buff_beats"] = int(s.get("break_loose_buff_beats", 1) or 0)  # momentum for the next try
@@ -3725,7 +3816,7 @@ class Engine:
                 self.last_pin_end = {"pinner": att.name, "pinned": dfn.name, "how": "kicked out at the last second",
                                      "second": p["seconds"], "turn": self.turn}
                 ev.setdefault("try_how", self.vary("struggle"))
-                self._after_escape(ev, att.name)
+                self._after_escape(ev, att.name, p, dfn)
             if key in self.pins and done:
                 ev["complete"] = True
                 ev["out_cause"] = self.out_cause(p)
@@ -4006,6 +4097,10 @@ class Engine:
     STATUS_LOOK = {
         "paralyzed": "PARALYZED: muscles locking up, sparks crawling over her, stiff and jerky, slow to react",
         "chilled": "CHILLED: frost in her fur or on her scales, shivering, limbs stiff and slow",
+        "stiff": "STIFF from the pin she just broke: the limbs that were trapped are numb and slow to answer, pins and "
+                 "needles coming back into them; her blows are weaker and she can barely dodge",
+        "cramped": "CRAMPED from holding a long pin: her legs and shoulders locked up from bearing down so long, slow "
+                   "to move and stiff to turn",
         "soaked": "SOAKED: drenched and dripping, heavier, and badly exposed to Electric attacks",
         "flinched": "FLINCHED: rattled and a half-second behind, she can't launch an attack this beat",
         "reeling": "REELING: just crushed against the scenery, breath not back and legs unsteady; she can still strike, "

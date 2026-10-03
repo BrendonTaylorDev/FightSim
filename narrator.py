@@ -2715,7 +2715,11 @@ class Narrator:
                       f"{e.get('fade_words') or 'still fighting'}"
                       + (" (this stretch took a lot out of her)" if went >= 22 else
                          " (she lost little ground in this stretch)" if 0 < went <= 9 else ""))
-                   + f". Against the pin itself she is {e['fight_left'].upper()}."]
+                   + f". Against the pin itself she is {e['fight_left'].upper()}."
+                   + (f" {a} is running short of breath from holding it so long: show the effort it costs her."
+                      if e.get("pinner_tired") else "")
+                   + (f" {d} has broken out of a pin like this before, and she knows where it gives: show her "
+                      f"looking for that place." if e.get("knows_pin") else "")]
         else:
             out = [f"PIN CLOCK: this beat covers ONLY seconds {e['seconds_from']} to {e['seconds_to']} of {e['duration']} "
                    f"of {poss(a)} pin on {d}. The clock counts UP (seconds held so far), never down like a referee's count. "
@@ -2931,6 +2935,12 @@ class Narrator:
             out.append(f"  - The blow that frees her lands on {a} (a kick, a bite, a swung limb, a blast at point-blank: "
                        f"whatever fits {poss(d)} body), and it hurts {a}:")
             out += [self._hit_line(h) for h in e["hits_on_pinner"]]
+        for x in e.get("aftereffects") or []:
+            out.append(f"  - WHAT THE PIN LEAVES BEHIND: {x['fighter']} is "
+                       + (f"STIFF: the limbs that were trapped are numb, pins and needles coming back into them, slow "
+                          f"to answer her (show it in how she gets up and moves)." if x["status"] == "stiff" else
+                          f"CRAMPED from bearing down so long: her legs and shoulders locked, stiff to straighten "
+                          f"(show it as she comes off).") + " No new injury.")
         pd = e.get("pinner_down")
         if isinstance(pd, dict):
             out.append(f"  - AFTER THE ESCAPE: this time {pd['fighter']} is THROWN OFF and GOES DOWN: she lands ON THE "
