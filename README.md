@@ -983,6 +983,11 @@ After each beat's prose, the program prints the exact numbers in this format:
   quotes (that would count as speech) and never ending a paragraph (that would trip the trailing-dash check). It is
   fitted to each fighter's voice from fighters.json (Nocturne growls and hisses until it breaks through; Ripples
   chitters, squeaks and barks). About 180 tokens a prompt; rules.json narration.sounds.enabled turns it off.
+- **Sounds more often, and your call.** By default every hit, grip or squeeze that hurts now gets a sound (it used to
+  be left to the model), and about every other sound is written out. /sounds always | often | sometimes | rarely
+  sets how often a hurt fighter makes a sound (the badly hurt places always get one, except on "rarely"); /sounds
+  write often | sometimes | rarely | never sets how often it is written out; /sounds on | off. Saved to rules.json
+  (narration.sounds.how_often / write_out).
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

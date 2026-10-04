@@ -6946,13 +6946,26 @@ class Narrator:
                         if re.search(r"growl|hiss|chitter|squeak|bark|cr(?:y|ies)|whine|yelp|snarl|screech|chirp", s, re.I)), "")
             if bit:
                 voices.append(f"{name}: {bit.rstrip('.;, ')}")
-        return out + ("SOUNDS THEY MAKE: never just 'a small sound' or 'a noise'. Every pained sound is described: what it is "
-                      "(a hiss through the teeth, a whine high in the nose, a choked gasp, a yelp, a growl ground out, a "
-                      "ragged cry that cracks in the middle), where it comes from (throat, chest, nose, teeth), and its "
-                      "shape and pitch (short, cut off, dragged out, rising, wet, rasping). The worse it hurts, the bigger "
-                      "and less controlled the sound. Now and then (not every time) write the sound out as it sounds, as "
-                      "ONE italic word in the middle of a sentence, never in quotes and never ending a paragraph: *Hhk*, "
-                      "*Nngh*, *Hss*, *Ahh*, *Kh-hah*, *Yip*. Sounds only: no words, no sobbing or weeping."
+        how = {"always": "Every hit, grip or squeeze that hurts gets a sound out of her, even a small one held behind "
+                          "her teeth, and the badly hurt places get loud ones.",
+               "often": "Most hits that hurt get a sound out of her; the badly hurt places always do.",
+               "sometimes": "Some hits get a sound out of her; others she takes in silence; the badly hurt places "
+                            "always do.",
+               "rarely": "She mostly keeps quiet: only the worst moments get a sound out of her."}.get(
+            str(cfg.get("how_often", "always")), "")
+        write = {"often": "Often (about every other sound) write the sound out as it sounds",
+                 "sometimes": "Now and then (not every time) write the sound out as it sounds",
+                 "rarely": "Once in a while write a sound out as it sounds",
+                 "never": ""}.get(str(cfg.get("write_out", "often")), "")
+        return out + ("SOUNDS THEY MAKE: " + how + " Never just 'a small sound' or 'a noise'. Every pained sound is "
+                      "described: what it is (a hiss through the teeth, a whine high in the nose, a choked gasp, a yelp, a "
+                      "growl ground out, a ragged cry that cracks in the middle), where it comes from (throat, chest, nose, "
+                      "teeth), and its shape and pitch (short, cut off, dragged out, rising, wet, rasping). The worse it "
+                      "hurts, the bigger and less controlled the sound."
+                      + (f" {write}, as ONE italic word in the middle of a sentence, never in quotes and never ending a "
+                         f"paragraph: *Hhk*, *Nngh*, *Hss*, *Ahh*, *Kh-hah*, *Yip*." if write else
+                         " Describe the sounds; don't write them out.")
+                      + " Sounds only: no words, no sobbing or weeping."
                       + (" Fit them to who makes them: " + "; ".join(voices) + "." if voices else "") + "\n\n")
 
     def _fading_thoughts_note(self):

@@ -275,6 +275,8 @@ HELP = """
   /vital [word n | on | off]   how much each body part matters to overall health (a throat more, an ear far less)
                       /vital = show every part's weight      /vital ear 0.3      /vital off = all parts count the same
   /talk quiet|less|normal|free   how much the fighters speak and think in italics (default: less)
+  /sounds always|often|sometimes|rarely   how often a hurt fighter makes a sound (default: always)
+  /sounds write often|sometimes|rarely|never   how often a sound is written out, *Nngh* (default: often)
   /style on|off|auto  real bold and italic on screen instead of **asterisks** (auto: on in Spyder and terminals)
   /style color <name> give the bold parts a colour too (yellow, cyan, green...; none = plain bold)
   /numb [on|off]      the "numb with shock" pain level at 1000%+ (off: those parts stay devastated)
@@ -2498,6 +2500,27 @@ def handle_command(s, line):
         cfg["styled_text"] = word
         _save_rules_key(["console", "styled_text"], word)
         print(f"Styled text {word} (saved to rules.json): **bold** and *italic* look like this now"); return
+    if cmd in ("sounds", "sound"):
+        cfg = s.eng.rules.setdefault("narration", {}).setdefault("sounds", {})
+        hows, writes = ("always", "often", "sometimes", "rarely"), ("often", "sometimes", "rarely", "never")
+        if not a:
+            print(f"Pained sounds: {'on' if cfg.get('enabled', True) else 'off'}; how often she makes one: "
+                  f"{cfg.get('how_often', 'always')}; written out (*Nngh*, *Hss*): {cfg.get('write_out', 'often')}.\n"
+                  "Use: /sounds always | often | sometimes | rarely      /sounds write often | sometimes | rarely | never"
+                  "      /sounds on | off"); return
+        word = a[0].lower()
+        if word in ("on", "off"):
+            cfg["enabled"] = word == "on"
+        elif word == "write" and len(a) > 1 and a[1].lower() in writes:
+            cfg["write_out"] = a[1].lower()
+        elif word in hows:
+            cfg["how_often"] = word
+        else:
+            raise ValueError("use /sounds always|often|sometimes|rarely, /sounds write often|sometimes|rarely|never, "
+                             "or /sounds on|off")
+        _save_rules_key(["narration", "sounds"], cfg)
+        print(f"Sounds: {cfg.get('how_often', 'always')}, written out {cfg.get('write_out', 'often')}"
+              f"{'' if cfg.get('enabled', True) else ' (off)'} (saved to rules.json)"); return
     if cmd == "talk":
         cfg = s.eng.rules.setdefault("narration", {}).setdefault("talk", {})
         presets = {"quiet": (True, 0, 0, 1), "less": (True, 1, 2, 2), "normal": (True, 2, 0, 4), "free": (False, 9, 0, 9)}
