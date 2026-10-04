@@ -1456,5 +1456,12 @@
         "Ice"
       ]
     }
+  },
+  "summary": {
+    "_comment": "The end-of-fight summary (printed under the injury report, /summary, and given to the narrator for the aftermath). It only reads what happened; it changes nothing in the fight.",
+    "moments": 10,
+    "per_kind": 3,
+    "big_hit_pct": 9.0,
+    "lead_margin": 5.0
   }
 }

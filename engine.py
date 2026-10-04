@@ -315,6 +315,7 @@ class Engine:
         self.alliances = []    # temporary alliances: {"members", "name", "beats", "until", "home"}
         self.weather = {}      # {"kind": "rain"/"sun"/"hail", "beats": N, "by": name}: Rain Dance, Sunny Day, Hail
         self.arena_marks = []  # what the fight has done to the place (a broken stalagmite, a toppled pillar)
+        self.chronicle = self.new_chronicle()  # key moments, damage dealt and the strength track, for the summary
         self._pending_events = []  # things settled between beats (an alliance ending) that the next beat reports
         self._last_reposition = {}  # fighter -> the beat she was last rolled over or hauled up
         self.scenes = self._load_scenes(here)
@@ -565,7 +566,7 @@ class Engine:
                               self._fresh_down, self._fresh_status,
                               self.pressed, self.alliances, self._pending_events, list(getattr(self, "rolls", [])),
                               self.tally, getattr(self, "weather", {}), list(getattr(self, "arena_marks", [])),
-                              self.rng.getstate()))
+                              getattr(self, "chronicle", None) or self.new_chronicle(), self.rng.getstate()))
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -573,7 +574,7 @@ class Engine:
          self.pins, self.positions, self.downed, self.since_pin, self.momentum, self.move_log, self.last_pin_end,
          self.injury_log, self.plan, self.facing, self._last_reposition, self._fresh_down, self._fresh_status,
          self.pressed, self.alliances, self._pending_events, self.rolls, self.tally, self.weather, self.arena_marks,
-         rng) = copy.deepcopy(snap)
+         self.chronicle, rng) = copy.deepcopy(snap)
         self._last_manhandle = {k[3:]: v for k, v in self._last_reposition.items() if k.startswith("by:")}
         self._last_reposition = {k: v for k, v in self._last_reposition.items() if not k.startswith("by:")}
         self._knock_on = []
@@ -3232,6 +3233,227 @@ class Engine:
             rows.append(f"{f.name}: " + "; ".join(words))
         return "INJURY REPORT (what each will feel when it's over): " + " | ".join(rows)
 
+    # ---------- the fight's story so far: key moments and what decided it (the end-of-fight summary) ----------
+    @staticmethod
+    def new_chronicle():
+        return {"moments": [], "track": [], "dealt": {}, "pins": {}, "escapes": {}, "biggest": None, "finish": None}
+
+    def _moment(self, kind, text, who="", to="", loss=0.0, weight=1):
+        ch = self.__dict__.setdefault("chronicle", self.new_chronicle())
+        ch["moments"].append({"beat": self.turn, "kind": kind, "text": text, "who": who, "to": to,
+                              "loss": round(float(loss), 1), "weight": weight})
+        del ch["moments"][:-80]
+
+    def record_beat(self, results, events):
+        """Write this beat's key moments into the chronicle (the end-of-fight summary reads it). Called once a beat,
+        after the beat's actions and the clock have both run. It only reads what happened: no dice, no changes."""
+        ch = self.__dict__.setdefault("chronicle", self.new_chronicle())
+        for k, v in self.new_chronicle().items():
+            ch.setdefault(k, v)
+        big_at = float((self.rules.get("summary") or {}).get("big_hit_pct", 9.0))
+
+        def pct(name, loss):
+            f = self.fighters.get(str(name).lower())
+            return float(loss) / max(1.0, f.max_health) * 100 if f else 0.0
+
+        def deal(who, hits, default_to=""):
+            total = {}
+            for h in hits or []:
+                to = h.get("defender") or default_to
+                loss = float(h.get("health_loss") or 0.0)
+                if not to or loss <= 0:
+                    continue
+                total[to] = total.get(to, 0.0) + loss
+                if who:
+                    ch["dealt"][who] = round(ch["dealt"].get(who, 0.0) + pct(to, loss), 2)
+            return total
+
+        for r in results or []:
+            if not isinstance(r, dict):
+                continue
+            att, dfn = r.get("attacker", ""), r.get("defender", "")
+            if r.get("type") == "pin_start":
+                ch["pins"][att] = ch["pins"].get(att, 0) + 1
+                took = " takes her down and" if r.get("taken_down") else ""
+                self._moment("pin", f"{att}{took} pins {dfn}", att, dfn, weight=1.5)
+                continue
+            if r.get("type") != "instant":
+                continue
+            mv = (r.get("move") or {}).get("name") or "a blow"
+            if r.get("environment"):
+                mv = "the landing"
+            lost = deal(att, r.get("hits"), dfn)
+            deal(dfn, r.get("counter_hits"), att)
+            loss = pct(dfn, lost.get(dfn, 0.0))
+            hits = r.get("hits") or []
+            part = max(hits, key=lambda h: float(h.get("health_loss") or 0))["part"].lower() if hits else ""
+            if loss > 0 and (ch["biggest"] is None or loss > ch["biggest"]["pct"]):
+                ch["biggest"] = {"beat": self.turn, "who": att, "to": dfn, "move": mv, "part": part,
+                                 "pct": round(loss, 1)}
+            if r.get("devastating") and hits:
+                dp = next((h["part"].lower() for h in hits if h.get("devastating")), part)
+                self._moment("devastating", f"{poss_word(att)} {mv} lands DEVASTATINGLY on {poss_word(dfn)} {dp}",
+                             att, dfn, loss, 3)
+            elif loss >= big_at:
+                self._moment("big", f"{poss_word(att)} {mv} hammers {poss_word(dfn)} {part}", att, dfn, loss, 1.5)
+            if r.get("juggle") and hits:
+                self._moment("juggle", f"{att} catches {dfn} helpless in the air with {mv}", att, dfn, loss, 2)
+            if (r.get("feint") or {}).get("bit") and hits:
+                self._moment("feint", f"{dfn} bites on {poss_word(att)} feint and eats the {mv}", att, dfn, loss, 1)
+            if r.get("last_stand"):
+                self._moment("last_stand", f"{att} throws everything she has left into one last {mv}", att, dfn, loss, 2)
+            if r.get("clash"):
+                self._moment("clash", f"{att} and {dfn} meet head-on in a clash", att, dfn, loss, 1)
+            if r.get("reflected"):
+                self._moment("reflect", f"{dfn} turns {poss_word(att)} {mv} back on her", dfn, att, 0, 2)
+            g = r.get("guard") or {}
+            if g.get("kind") in ("block", "deflect"):
+                self._moment("guard", f"{dfn} {'blocks' if g['kind'] == 'block' else 'turns aside'} "
+                                      f"{poss_word(att)} {mv}", dfn, att, 0, 1)
+            if r.get("missed_charge"):
+                self._moment("crash", f"{poss_word(att)} {mv} misses and she crashes", att, dfn, 0, 1)
+            if (r.get("pummel") or {}).get("frenzy"):
+                self._moment("frenzy", f"{att} loses herself in a frenzy of blows on {dfn}", att, dfn, loss, 2)
+        for e in events or []:
+            t = e.get("type")
+            if t == "hold_ongoing":
+                deal(e.get("attacker"), e.get("hits"), e.get("defender"))
+            elif t == "pin_progress":
+                att, dfn = e.get("attacker", ""), e.get("defender", "")
+                deal(att, e.get("punish_hits"), dfn)
+                deal(dfn, e.get("hits_on_pinner"), att)
+                if e.get("struggle") == "escape":
+                    ch["escapes"][dfn] = ch["escapes"].get(dfn, 0) + 1
+                    self._moment("escape", f"{dfn} breaks out of {poss_word(att)} pin"
+                                + (f" after {e['seconds_to']} seconds" if e.get("seconds_to") else ""), dfn, att,
+                                 weight=1.5 + min(1.0, float(e.get("seconds_to") or 0) / 10.0))
+                if e.get("complete"):
+                    oc = e.get("out_cause") or {}
+                    ch["finish"] = {"beat": self.turn, "who": att, "to": dfn, "fade": bool(e.get("fade_mode")),
+                                    "seconds": e.get("seconds_to"), "beats": e.get("beats"),
+                                    "cause": oc.get("cause", ""), "part": (oc.get("part") or "").lower(),
+                                    "with": (oc.get("with") or "").lower(),
+                                    "strength": round(self.strength(self.fighters[dfn.lower()]), 1) if dfn.lower() in self.fighters else None}
+                    how = {"choking": "the choke", "constriction": "the constriction"}.get(oc.get("cause"), "the pain")
+                    self._moment("finish", f"{att} holds {dfn} down until {how} puts her out", att, dfn, weight=3)
+            elif t == "adrenaline":
+                self._moment("adrenaline", f"{e.get('fighter')} gets a surge of adrenaline", e.get("fighter"),
+                             weight=1)
+        ch["track"].append({"beat": self.turn, **{f.name: round(self.strength(f), 1)
+                                                   for f in self.fighters.values()}})
+        del ch["track"][:-400]
+
+    def _turning_point(self, win, lose):
+        """The beat after which the winner was clearly ahead (summary.lead_margin points of strength) for good, or None
+        if she was from the very first beat."""
+        track = (getattr(self, "chronicle", None) or {}).get("track") or []
+        margin = float((self.rules.get("summary") or {}).get("lead_margin", 5.0))
+        last_behind = None
+        for row in track:
+            if win in row and lose in row and row[win] - row[lose] < margin:
+                last_behind = row["beat"]
+        if last_behind is None:
+            return None
+        after = next((row for row in track if row["beat"] > last_behind), None)
+        return {"beat": after["beat"] if after else last_behind, "win": after.get(win) if after else None,
+                "lose": after.get(lose) if after else None}
+
+    def fight_summary(self, for_story=False):
+        """After the win: the key moments in order, how it was finished, the turning point and what decided it.
+        for_story leaves out the numbers, for the narrator's aftermath."""
+        win = self.winner()
+        ch = getattr(self, "chronicle", None) or {}
+        if not win or not ch.get("track"):
+            return ""
+        losers = [f for f in self.fighters.values() if f.name != win]
+        if not losers:
+            return ""
+        lose = max(losers, key=lambda f: ch.get("dealt", {}).get(win, 0)).name
+        moments = [m for m in ch.get("moments", []) if m["kind"] != "finish"]
+        cap = int((self.rules.get("summary") or {}).get("moments", 10))
+        per_kind = int((self.rules.get("summary") or {}).get("per_kind", 3))
+        keep, kinds = [], {}
+        for m in sorted(moments, key=lambda m: -(m["weight"] + m["loss"] / 10.0)):
+            k = "pin" if m["kind"] in ("pin", "escape") else m["kind"]
+            if kinds.get(k, 0) < (per_kind + 1 if k == "pin" else per_kind) and len(keep) < cap:
+                kinds[k] = kinds.get(k, 0) + 1
+                keep.append(m)
+        keep.sort(key=lambda m: m["beat"])
+        fin = ch.get("finish") or {}
+        tp = self._turning_point(win, lose)
+        dealt = ch.get("dealt", {})
+        names = [f.name for f in self.fighters.values()]
+        pins, esc = ch.get("pins", {}), ch.get("escapes", {})
+        lf = self.get(lose)
+        worst = sorted((p for p in lf.parts.values() if p.damage >= 90), key=lambda p: -p.damage)[:3]
+
+        def causes(p):
+            log = [c for c in self.injury_log.get(f"{lose}|{p.name}", []) if c]
+            return ", ".join(log[-2:])
+
+        reasons = []
+        if fin:
+            how = {"choking": "the choke on her " + fin["part"] if fin.get("part") else "the choke",
+                   "constriction": "the constriction around her " + fin["part"] if fin.get("part") else "the constriction"
+                   }.get(fin.get("cause"), f"the pain in her {fin['part']}" if fin.get("part") else "the pain")
+            reasons.append(f"{win} got her pinned when {lose} had too little left to throw her off, and {how} "
+                           f"took her the rest of the way")
+        if esc.get(lose):
+            reasons.append(f"{lose} broke out {esc[lose]} time{'s' if esc[lose] != 1 else ''} before the last one held")
+        if worst:
+            p = worst[0]
+            c = causes(p)
+            reasons.append(f"{poss_word(lose)} {p.name.lower()} was the wound that mattered: once it was ruined"
+                           + (f" (by {c})" if c else "") + " every touch there sapped her")
+        devs = [m for m in moments if m["kind"] == "devastating" and m["who"] == win and m["loss"] >= 5]
+        if devs:
+            reasons.append(f"{poss_word(win)} devastating blow{'s' if len(devs) > 1 else ''} "
+                           f"swung it harder than anything else")
+        dw, dl = dealt.get(win, 0), dealt.get(lose, 0)
+        if dw > dl * 1.3:
+            reasons.append(f"{win} simply hurt her more" + ("" if for_story else
+                           f" ({dw:.0f}% of {poss_word(lose)} strength against {dl:.0f}%)"))
+        elif dl > dw * 1.1:
+            reasons.append(f"{lose} actually did more damage" + ("" if for_story else f" ({dl:.0f}% against {dw:.0f}%)")
+                           + f", but {win} made what she landed count where it mattered")
+        else:
+            reasons.append("the damage was close" + ("" if for_story else f" ({dw:.0f}% to {dl:.0f}%)")
+                           + ": it came down to who could hold the other down")
+        if for_story:
+            out = ["HOW THE FIGHT WENT (the key moments, for the aftermath to look back on; do not list them, "
+                   "let the characters remember one or two): " + "; ".join(m["text"] for m in keep)]
+            if tp:
+                out.append(f"THE TURNING POINT: {win} was behind or level until beat {tp['beat']}, then never again")
+            out.append("WHAT DECIDED IT: " + "; ".join(reasons))
+            return "\n".join(out)
+        rows = ["📜 FIGHT SUMMARY", "  Key moments:"]
+        rows += [f"   • beat {m['beat']}: {m['text']}" + (f" (−{m['loss']:.0f}%)" if m["loss"] >= 1 else "")
+                 for m in keep] or ["   • (nothing out of the ordinary)"]
+        if fin:
+            how = {"choking": "the choke", "constriction": "the constriction"}.get(fin.get("cause"), "the pain")
+            length = (f"{fin['beats']} beats" if fin.get("fade") and fin.get("beats") else
+                      f"{fin['seconds']} seconds" if fin.get("seconds") else "")
+            rows.append(f"  Finish: {win} pinned {lose}" + (f" for {length}" if length else "") + f"; {how}"
+                        + (f" ({fin['part']})" if fin.get("part") else "") + " put her out at "
+                        + (f"{max(0.0, fin['strength']):.0f}% strength" if fin.get("strength") is not None else "the end"))
+        if tp:
+            rows.append(f"  Turning point: beat {tp['beat']} — {win} took the lead for good"
+                        + (f" ({tp['win']:.0f}% vs {tp['lose']:.0f}%)" if tp.get("win") is not None else ""))
+        else:
+            rows.append(f"  Turning point: none — {win} was ahead from the first beat")
+        rows.append("  Damage dealt: " + ", ".join(f"{n} {dealt.get(n, 0):.0f}%" for n in names))
+        b = ch.get("biggest")
+        if b:
+            rows.append(f"  Biggest blow: beat {b['beat']}, {poss_word(b['who'])} {b['move']} on "
+                        f"{poss_word(b['to'])} {b['part']} (−{b['pct']:.0f}%)")
+        if worst:
+            rows.append(f"  {poss_word(lose)} worst injuries: " + "; ".join(
+                f"{p.name.lower()} ({tier_for(p.damage, pain_tiers(self.rules))['label']}"
+                + (f", from {causes(p)}" if causes(p) else "") + ")" for p in worst))
+        rows.append("  Pins / escapes: " + ", ".join(f"{n} {pins.get(n, 0)} / {esc.get(n, 0)}" for n in names))
+        rows.append("  What decided it: " + ("; ".join(reasons) or "a long grind"))
+        return "\n".join(rows)
+
     DEV_REASONS = {
         "position": "the position: {why}, she had no way to roll with it, twist away, or soften it, and it caught her "
                     "exactly where and when she could least take it",
@@ -5184,6 +5406,9 @@ class Engine:
                      + "; ".join(self.arena_marks))
         if self.winner():
             text += "\n" + self.injury_report()
+            summary = self.fight_summary(for_story=True)
+            if summary:
+                text += "\n" + summary
         return text + (f"\nPOSITIONS (where everyone is after this beat; the CAPITALS are certain): "
                        f"{self.positions_now(include_out=bool(self.winner()))}")
 
@@ -5321,6 +5546,7 @@ class Engine:
                 "tally": self.tally, "momentum": self.momentum, "facing": self.facing, "move_log": self.move_log,
                 "last_reposition": getattr(self, "_last_reposition", {}), "alliances": self.alliances,
                 "weather": getattr(self, "weather", {}), "arena_marks": getattr(self, "arena_marks", []),
+                "chronicle": getattr(self, "chronicle", None) or self.new_chronicle(),
                 "extra": extra or {},
                 "fighters": {k: {**asdict(f), "parts": {n: asdict(p) for n, p in f.parts.items()}}
                              for k, f in self.fighters.items()},
@@ -5362,5 +5588,6 @@ class Engine:
         self.alliances = data.get("alliances", [])
         self.weather = data.get("weather", {})
         self.arena_marks = data.get("arena_marks", [])
+        self.chronicle = {**self.new_chronicle(), **(data.get("chronicle") or {})}
         self.pressed, self._pending_events, self.pin_window = {}, [], {}
         return data.get("extra", {})

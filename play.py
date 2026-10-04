@@ -56,6 +56,8 @@ HELP = """
   /newfight [names | all]     start a fresh fight without restarting: everyone back to full health, the story
                               starts over. With names, only those fighters take part (two or more):
                                 /newfight Nocturne Ripples      /newfight all      /newfight (same line-up again)
+  /summary                    after a win: the fight summary again (key moments, the finish, the turning point,
+                              damage dealt, the biggest blow, the loser's worst injuries, what decided it)
   /simulate [fights] [names]  balance check with NO model: whole fights played by dice-driven stand-in choices on
                               the real engine (copies of your rules and arena; the fight in progress is untouched),
                               then win rates, lengths, pins, escapes and the worst health swing:
@@ -858,6 +860,7 @@ class Session:
                 self.recent_attacks.append(f"{res['attacker']}: {'pin' if res['type'] == 'pin_start' else 'hold'} on "
                                            f"{res['defender']}")
         also = self.eng.beat(skip_hold_ids=started)
+        self.eng.record_beat(results, also)   # key moments and the strength track, for the end-of-fight summary
         for e in also:  # blows landed inside a pin are real attacks too: the story may refer back to them
             if e.get("type") == "hold_end" and e.get("broke_free"):
                 self.recent_attacks.append(f"{e['defender']}: wrenched free of {poss_name(e['attacker'])} hold")
@@ -996,6 +999,7 @@ class Session:
                 self.out(f"*** Winner: {winner} ***\n(The match is over. Keep pressing Enter to watch the aftermath: "
                          f"the loser may stir and even get back up. Type what happens to steer it, or /undo.)\n")
                 self.out("🩹 " + self.eng.injury_report().replace(" | ", "\n   ") + "\n")
+                self.out(self.eng.fight_summary() + "\n")
             else:
                 self.out(f"Still in the fight: {', '.join(f.name for f in self.eng.active())}\n")
         for e in also:
@@ -2739,6 +2743,8 @@ def handle_command(s, line):
             names = list(s.eng.roster)
         s.new_fight(names or None)
         print("Press Enter to begin."); return
+    if cmd == "summary":
+        print(s.eng.fight_summary() or "No winner yet: the summary comes when the fight is over."); return
     if cmd in ("simulate", "sim"):
         from simulate import simulate
         count = int(a[0]) if a and a[0].isdigit() else 20

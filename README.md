@@ -856,6 +856,22 @@ After each beat's prose, the program prints the exact numbers in this format:
   vomiting or retching (the narrator's checks now catch those words too). This rawness is only WHERE she is badly
   hurt: a blow on a part that was untouched still stings and jars what's round it, but it isn't agony however
   worn she is; even a devastating blow on an untouched part is a deep shock and a cry, not the raw breakdown.
+- **Status effects are told in three parts.** When a fighter is flinched, dazed, off balance, doubled over,
+  breathless, sputtering, stiff, cramped, bound, constricted (and the old ones: paralysed, frozen, asleep, confused),
+  the narrator is told the visible tell (her head jerks away, her eyes lose focus, she stumbles past her own blow),
+  that she knows it is happening to her, and that her opponent sees the opening. A blow thrown into that opening (the
+  engine's caught-open bonus) is called out: she tries to cover it and is too late, and it lands harder for it. When
+  the status wears off, she shakes it off on the page too ("the world settles back into one piece; she finds Nocturne
+  again"). New story blocks for the tell and for the opponent reading it. Nothing about the numbers changed.
+- **End-of-fight summary.** Under the injury report after a win: the key moments in order (devastating blows, big
+  hits, juggles, bitten feints, last stands, clashes, reflects, blocks, crashed charges, frenzies, pins, escapes,
+  adrenaline), how it was finished (who pinned whom, how long, what put her out and at what strength), the turning
+  point (the beat the winner went ahead by 5+ points for good, or "ahead from the first beat"), damage dealt by each,
+  the biggest blow, the loser's worst injuries and what caused them, pins and escapes for each, and what decided it.
+  `/summary` shows it again. The narrator gets a version without numbers for the aftermath, so the fighters can look
+  back on a moment or two. It is kept through /undo, saves and loads. `rules.json` "summary" sets how many moments
+  (10, at most 3 of a kind) and what counts as a big hit (9% of max health) or a lead (5 points). It only reads what
+  happened: no dice, no balance change (`/simulate` gives the same results as before).
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

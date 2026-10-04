@@ -2040,7 +2040,10 @@ class Narrator:
                              f"for the next {e['beats']} beats she moves faster, hits harder, and the pain falls away "
                              f"behind sheer will. Make this a turning point: show it rising in her body.")
             elif e["type"] == "status_end":
-                lines.append(f"{e['fighter']} shakes off being {e['status']}: show it wearing off.")
+                other = next((w for w in (getattr(self, "strengths", None) or {}) if w != e["fighter"]), "her opponent")
+                end = self.STATUS_ENDS.get(e["status"])
+                lines.append(f"{e['fighter']} shakes off being {e['status'].replace('_', ' ')}: show it wearing off"
+                             + (f" ({end.format(other=other)})" if end else "") + ".")
             elif e["type"] == "recovery":
                 lines.append(f"{e['fighter']} COMES AROUND {'' if e.get('forced') else 'A LITTLE '}this beat: from "
                              f"{e['from'].upper()} to {e['to'].upper()} ({e['look']}). Show that change happening "
@@ -2358,6 +2361,7 @@ class Narrator:
             for s in got:
                 lines.append(f"  - This leaves {s['fighter']} {Engine.STATUS_LOOK.get(s['status'], s['status'].upper())} "
                              f"(for the next {s['beats']} beat(s)). Show it taking hold.")
+                lines += self._status_story(s, a.get("attacker") if s.get("fighter") == a.get("defender") else a.get("defender"))
             return lines
         if t == "grapple_start":
             att, dfn = a["attacker"], a["defender"]
@@ -2479,6 +2483,7 @@ class Narrator:
                     f"{a['defender']} READS it and doesn't commit; the real blow comes as an ordinary attack."))
             lines += self._devastating_line(a)
             lines += self._anticipation_line(a)
+            lines += self._opening_line(a)
             if a.get("juggled_up"):
                 lines.append(f"  - The blow knocks {a['defender']} UP OFF HER FEET into the air: she is still in the air, "
                              f"helpless, when the next blow comes (listed next). She does not land before it.")
@@ -2831,7 +2836,79 @@ class Narrator:
                 continue
             look = Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
             lines.append(f"  - This leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
+            lines += self._status_story(s, a.get("attacker") if s.get("fighter") == a.get("defender") else a.get("defender"))
         return lines or [f"({t})"]
+
+    # what a status looks like, how she takes it, and what her opponent reads in it (an opening, mostly): told when it
+    # lands, so it is never just a word. {who} = the one it is on, {other} = her opponent
+    STATUS_STORY = {
+        "flinched": ("her head or whole body jerks away from it on its own and she can't make it come back for a moment",
+                     "she knows she has frozen and hates every heartbeat of it",
+                     "{other} sees the flinch: an opening, and {other} means to use it"),
+        "dazed": ("her eyes lose their focus, she blinks and shakes her head and the world won't settle",
+                  "she can't find {other} properly; everything is a beat late",
+                  "{other} sees the glazed eyes and the late reactions: she is slow now"),
+        "off_balance": ("she stumbles past her own blow, weight on the wrong foot, arms out to catch herself",
+                        "she knows she is wide open while she gets her feet back",
+                        "{other} sees her stagger and the open side she can't cover"),
+        "doubled_over": ("she folds round the hurt, head down, guard gone for a moment",
+                         "she can't straighten yet, and she knows exactly how that looks",
+                         "{other} sees her fold and the guard drop"),
+        "breathless": ("her chest heaves and nothing goes in; her mouth opens on air that won't come",
+                       "she can't get a breath and every movement costs her",
+                       "{other} sees her gasping and knows she has nothing behind her blows for a moment"),
+        "sputtering": ("she coughs and chokes, water streaming from her nose and mouth, eyes running",
+                       "she can't stop coughing long enough to fight properly",
+                       "{other} sees her choking and closes in while she can't"),
+        "stiff": ("she moves stiffly, the limbs that were trapped slow and numb to answer",
+                  "she can feel how slow she is and can't hurry it",
+                  "{other} sees how stiffly she moves"),
+        "cramped": ("her muscles have locked from holding on so long; she shakes them out and they won't loosen",
+                    "every movement pulls at the cramp",
+                    "{other} sees the cramped, careful way she moves"),
+        "bound": ("one limb held tight, numb and tingling, dragging when she moves",
+                  "she can feel the limb going dead under the grip",
+                  "{other} feels the limb weaken in the grip"),
+        "constricted": ("the coils press the breath and blood out of her; her movements go slow and heavy",
+                        "she can feel her strength draining out with every squeeze",
+                        "{other} feels her weaken inside the coils"),
+        "paralyzed": ("her muscles lock and jerk, sparks crawling over her",
+                      "her body won't do what she tells it",
+                      "{other} sees her seize up"),
+        "frozen": ("ice locks her in place", "she can't move at all", "{other} sees her held fast in the ice"),
+        "asleep": ("her eyes close and her body goes slack", "", "{other} sees her slump, helpless"),
+        "confused": ("her eyes swim and she sways, unsure where anything is", "she can't trust her own sense of where things are",
+                     "{other} sees her swaying, lost"),
+    }
+    STATUS_ENDS = {
+        "flinched": "the freeze lets go of her and she can move again; {other} sees her come back",
+        "dazed": "the world settles back into one piece; she finds {other} again, sharp and single",
+        "off_balance": "she gets her feet back under her and her guard back up",
+        "doubled_over": "she makes herself straighten, slowly, the hurt still there",
+        "breathless": "breath finally comes back into her, ragged but real",
+        "sputtering": "she gets the last of the water out and can breathe clean again",
+        "stiff": "the stiffness works out of her limbs",
+        "cramped": "the cramp lets go",
+        "bound": "feeling floods back into the limb, prickling and hot",
+        "constricted": "blood and breath come back into her in a rush",
+        "paralyzed": "the last of the sparks fade and her muscles answer again",
+        "confused": "her head clears; she knows where she is again",
+    }
+
+    def _status_story(self, s, other=None):
+        """The three-part telling for a status that just landed (the tell, her taking it, her opponent reading it)."""
+        st = s.get("status")
+        if st not in self.STATUS_STORY:
+            return []
+        who = s.get("fighter")
+        other = other or next((w for w in (getattr(self, "strengths", None) or {}) if w != who), "her opponent")
+        tell, mine, seen = self.STATUS_STORY[st]
+        out = f"    show it: {tell}"
+        if mine:
+            out += f"; {who} knows it: {mine}"
+        if seen and other:
+            out += f"; {seen.format(other=other, who=who)}"
+        return [out + "."]
 
     def _sw(self, key, default=""):
         """A word for this arena (scenes.json): place, ground, rough, slick, ambience."""
@@ -2851,6 +2928,7 @@ class Narrator:
                 out.append(f"  - The water leaves {s['fighter']} SOAKED: drenched, heavier, badly exposed to Electric.")
             else:
                 out.append(f"  - This leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
+                out += self._status_story(s)
         return out
 
     def _scene_event_lines(self, e):
@@ -2868,6 +2946,7 @@ class Narrator:
         for s in e.get("status_applied") or []:
             look = Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
             lines.append(f"  - It leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
+            lines += self._status_story(s)
         if not e.get("hits") and not e.get("status_applied"):
             lines.append("  - It hurts nobody this time: a near thing, a shock, and both of them wary of the place now.")
         return lines
@@ -4338,6 +4417,19 @@ class Narrator:
                 side[0] = "take" if take else "act"
                 add("the guard", B.pick("guard", 1, moment={"catch" if g_["kind"] == "block" else "turn"},
                                         has=feats(dfn_)))
+            for st_ in (a.get("status_applied") or []):
+                nm = st_.get("status")
+                if nm in self.STATUS_STORY and nm not in ("asleep", "frozen"):
+                    if take:
+                        side[0] = "take"
+                        add(f"{st_.get('fighter')}, {nm.replace('_', ' ')}", B.pick("status_tell", 1, status={nm},
+                                                                                   has=feats(st_.get("fighter"))))
+                    if act:
+                        side[0] = "act"
+                        add(f"the opening it gives", B.pick("status_seen", 1, status={nm}))
+            if act and self._opening_line(a):
+                side[0] = "act"
+                add(f"{att_}, going for the opening", B.pick("status_seen", 1, status={"opening"}))
             if take and a.get("type") == "instant" and self._anticipation_line(a):
                 side[0] = "take"
                 add(f"{dfn_}, seeing it come", B.pick("anticipate", 1, has=feats(dfn_), fighter=(dfn_ or "").lower()))
@@ -6696,6 +6788,21 @@ class Narrator:
         left = 100.0 * float(hp) / float(mx) if mx and hp is not None else float(
             (getattr(self, "strengths", None) or {}).get(a.get("defender"), 100))
         return ("fresh" if left >= 60 else "worn" if left >= 30 else "spent"), part
+
+    OPENING_WORDS = {"caught flinching": "still frozen in her flinch", "dazed, slow to react": "still dazed",
+                     "caught off balance": "still off balance", "doubled over in pain": "still doubled over",
+                     "held, can't cover up": "held, with nothing free to cover herself",
+                     "down, nowhere to roll with it": "down, with nowhere to roll"}
+
+    def _opening_line(self, a):
+        """An attack thrown INTO an opening a status left (the engine's caught-open bonus): say that it is."""
+        ex = [lbl for lbl, _ in ((a.get("move") or {}).get("extras") or [])]
+        hit = next((self.OPENING_WORDS[x] for x in ex if x in self.OPENING_WORDS), None)
+        if not hit or not a.get("hits"):
+            return []
+        return [f"  - THE OPENING: {a['defender']} is {hit}, and {a['attacker']} has seen it: this blow goes straight "
+                f"into it. Show {a['defender']} trying to cover it and being too late, and the blow landing harder "
+                f"for it."]
 
     def _anticipation_line(self, a):
         """A blow coming at a part that is already soft or badly hurt: she sees it coming and flinches before it lands

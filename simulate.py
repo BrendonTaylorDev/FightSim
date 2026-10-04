@@ -96,6 +96,7 @@ def one_fight(names, rules, scene, seed, max_beats=150):
             results, started = resolve_many(eng, [act])
             stats["pins"] += sum(1 for r in results if isinstance(r, dict) and r.get("type") == "pin_start")
         except Exception:
+            results = []
             stats["errors"] += 1
             try:
                 _, started = resolve_many(eng, [{"attacker": f.name, "defender": d.name, "action": "breather",
@@ -103,6 +104,7 @@ def one_fight(names, rules, scene, seed, max_beats=150):
             except Exception:
                 started = ()
         events = eng.beat(skip_hold_ids=started)
+        eng.record_beat(results, events)
         for e in events:
             if e.get("struggle") == "escape":
                 stats["escapes"] += 1
@@ -112,6 +114,7 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         last = f.name
     stats["beats"] = eng.turn
     stats["winner"] = eng.winner() or ""
+    stats["summary"] = eng.fight_summary()
     stats["end"] = {x.name: round(x.health / x.max_health * 100) for x in eng.fighters.values()}
     return stats
 

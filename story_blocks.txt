@@ -2107,3 +2107,64 @@ she curls so hard round the {part} that her own claws dig into her, and still sh
 == raw | raw: scream, raw
 even the touch was too much: the {part} has nothing left to take anything with
 the scream comes before she even knows she's been touched there
+
+# ---------------------------------------------------------------------------------------------------------------
+# STATUS TELLS: what a status looks like on her (status_tell) and what her opponent reads in it (status_seen).
+#   status: flinched, dazed, off_balance, doubled_over, breathless, sputtering, stiff, cramped, bound, constricted,
+#           paralyzed, confused; status_seen also: opening (a blow going into one)
+# ---------------------------------------------------------------------------------------------------------------
+== status_tell | status: flinched
+her head snaps away from it and stays turned, eyes screwed shut, for one heartbeat too long
+every muscle locks at once and for a moment she is a statue of a fighter
+she tells her legs to move and they don't, not yet
+her ears flatten and her whole face pinches shut round the blow | has: ears
+her fins clamp flat to her forearms and won't open | has: fins
+
+== status_tell | status: dazed
+the world comes in two copies that slide slowly back together
+she blinks hard and shakes her head, and the ringing doesn't go
+sounds arrive late, as if from the other side of water
+her eyes drift off her opponent and have to be dragged back
+
+== status_tell | status: off_balance
+her weight goes too far forward and she has to throw a paw down to catch herself
+she stumbles a step past where she meant to stop
+for a moment her feet are in the wrong places and she knows it
+
+== status_tell | status: doubled_over
+she folds round it, head down, unable to straighten
+her guard drops to clutch the hurt, and stays there
+she stays bent, breathing at the ground, for one heartbeat, two
+
+== status_tell | status: breathless
+her mouth opens and nothing goes in
+her ribs heave against nothing; the breath is just gone
+she can't get enough air to do anything but stand there and want it
+
+== status_tell | status: stiff
+her limbs answer slowly, numb from the hold, like borrowed ones
+she shakes out the arm that was trapped and it tingles all the way down
+
+== status_tell | status: bound
+the held limb goes cold and heavy, prickling with pins and needles
+she pulls and the grip only tightens; the limb hardly feels like hers
+
+== status_tell | status: sputtering
+water streams out of her nose and she coughs until her eyes run
+she can't stop coughing long enough to set her feet
+
+== status_seen | status: flinched, dazed, off_balance, doubled_over, breathless, sputtering
+she sees it and her whole body leans toward the opening
+that's the moment, and she knows it
+*Now. While she can't.*
+she doesn't wait to see if it lasts
+she marks the opening the way she marks a weak spot: once, coldly
+
+== status_seen | status: stiff, cramped, bound
+she sees how slowly the limb answers, and files it away
+she feels the strength going out of the held limb
+
+== status_seen | status: opening
+she goes straight into the gap the flinch left
+she doesn't aim; she just goes where the guard isn't
+the blow is already moving before the opening has finished appearing
