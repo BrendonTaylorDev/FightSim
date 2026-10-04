@@ -3605,23 +3605,88 @@ class Engine:
             w.append(mark)
             del w[:-6]
 
+    # what the damage looks like, by what did it: [light, worse, worst], three wordings each
     MARKS = {
-        "claw": ("fine scratches through the fur", "raked furrows through the fur, the skin red beneath",
-                 "deep raked lines, the fur torn away in strips"),
-        "bite": ("tooth marks pressed into the fur", "a ring of tooth marks, puffy and red round each one",
-                 "deep tooth marks, the fur matted and clumped round them"),
-        "blunt": ("the fur ruffled up the wrong way", "bruising showing dark through the fur wherever it parts",
-                  "dark bruising under the fur, swollen out of its shape"),
-        "grip": ("the fur crushed flat in the shape of what held it", "the fur ruffled into ridges, bruising beneath "
-                 "where it parts", "the fur crushed and matted, the flesh beneath bruised dark and puffy"),
-        "shock": ("the fur frizzed and standing up", "the fur singed and frizzed", "the fur singed in patches, the "
-                  "skin beneath angry red"),
-        "cold": ("frost-stiff fur", "frost-burned patches, the fur dull and stiff", "frost-burned patches gone red "
-                 "and raw-looking under stiff fur"),
+        "claw": (["fine scratches through the fur", "thin claw lines combed through the coat",
+                  "a few scratches, the fur split along them"],
+                 ["raked furrows through the fur, the skin red beneath", "claw lines scored through the coat, red and "
+                  "raised", "parallel scratches cutting the fur into tufts, the skin angry beneath"],
+                 ["deep raked lines, the fur torn away in strips", "the coat clawed ragged, whole tufts gone and the skin "
+                  "welted", "gouged furrows, the fur hanging in torn clumps round them"]),
+        "bite": (["tooth marks pressed into the fur", "a crescent of dents where teeth closed",
+                  "the fur pinched up in a line of small tooth prints"],
+                 ["a ring of tooth marks, puffy and red round each one", "bite marks swollen into a raised ring",
+                  "a double row of tooth prints, the skin round them puffed"],
+                 ["deep tooth marks, the fur matted and clumped round them", "a ragged bite mark, the fur torn and the "
+                  "flesh round it swollen tight", "deep tooth marks gone dark, the fur round them stiff and matted"]),
+        "blunt": (["the fur ruffled up the wrong way", "the coat scuffed and standing up in a patch",
+                   "a faint flattened patch where it struck"],
+                  ["bruising showing dark through the fur wherever it parts", "a purpling under the coat you can see "
+                   "when the fur shifts", "the skin dark beneath the fur, puffed and tender-looking"],
+                  ["dark bruising under the fur, swollen out of its shape", "swollen and lumpy, the fur stretched over "
+                   "the bruising", "a great dark bruise spreading under the coat, the shape of the part gone puffy"]),
+        "grip": (["the fur crushed flat in the shape of what held it", "the coat pressed into a smooth print of the "
+                  "grip", "fur flattened and twisted round where it was held"],
+                 ["the fur ruffled into ridges, bruising beneath where it parts", "grip marks printed into the coat, "
+                  "bruising coming up under them", "the fur twisted and crushed, red welts where the hold dug in"],
+                 ["the fur crushed and matted, the flesh beneath bruised dark and puffy", "deep grip marks, the coat "
+                  "mashed flat and the flesh round them swollen", "the shape of the hold bruised into her, fur crushed "
+                  "into the skin"]),
+        "shock": (["the fur frizzed and standing up", "the coat crackling, every hair on end",
+                   "a static-fluffed patch of fur"],
+                  ["the fur singed and frizzed", "scorched tips to the fur, smelling of burnt hair",
+                   "the coat frizzed and darkened at the ends"],
+                  ["the fur singed in patches, the skin beneath angry red", "burnt, brittle fur over reddened skin",
+                   "singed bare in spots, the skin shiny and red beneath"]),
+        "cold": (["frost-stiff fur", "the fur rimed white and crunchy", "a patch of fur stiff with ice"],
+                 ["frost-burned patches, the fur dull and stiff", "the coat frozen into stiff spikes, the skin pale "
+                  "beneath", "cold-burned patches gone numb and white"],
+                 ["frost-burned patches gone red and raw-looking under stiff fur", "the skin blotched red and white "
+                  "from the cold, the fur brittle", "cold-burned and swollen, the fur frozen into clumps"]),
     }
-    CARTILAGE = {"ear": "folded and creased, not standing the way it should", "nose": "swollen and pushed a little "
-                 "crooked", "fin": "bent along a crease, not lying flat", "horn": "", "cheek": "puffed up",
-                 "muzzle": "swollen", "jaw": "swollen along the line of it"}
+    # more wordings for each (merged into MARKS / CARTILAGE below): as much variety as the narrator can be given
+    MARKS_MORE = {
+        "claw": (["a light scoring of claw marks", "shallow nicks in the coat, the fur parted in thin lines"],
+                 ["claw furrows crossing each other, the fur ragged", "long red scratches showing through the parted fur"],
+                 ["deep claw tracks, the coat shredded round them", "the fur raked off in strips, the skin beneath "
+                  "raw-looking"]),
+        "bite": (["small dents in the coat where fangs pressed", "a faint arc of bite marks"],
+                 ["bite marks raised and reddened", "the fur bunched and wet round a ring of tooth marks"],
+                 ["a crushing bite mark, the flesh round it swollen out", "deep fang marks, the coat round them clumped "
+                  "and torn"]),
+        "blunt": (["the coat mussed where it landed", "a dull patch where the fur was knocked flat"],
+                  ["a bruise blooming under the coat, plain when the fur lifts", "the fur raised over a bruised swelling"],
+                  ["bruised deep and swollen tight, the fur standing up over it", "the swelling pushing the fur apart, "
+                   "dark beneath"]),
+        "grip": (["the shape of the grip pressed into her coat", "fur smoothed flat in a band where it held"],
+                 ["the coat creased into folds that won't lie down, bruising beneath", "grip-shaped bruises showing "
+                  "through the flattened fur"],
+                 ["the fur ground flat and the flesh puffed up dark round the grip lines", "crushed and swollen where "
+                  "the hold was, the coat matted down hard"]),
+        "shock": (["the fur puffed out and twitching", "hairs standing up in a crackling halo"],
+                  ["a burnt smell off the frizzed fur", "the fur curled and singed at the tips"],
+                  ["the fur crisped away in patches", "scorched streaks through the coat, the skin hot and red"]),
+        "cold": (["frost glittering in the coat", "the fur crusted white at the tips"],
+                 ["the coat iced into hard clumps", "pale frost-bitten patches under stiff fur"],
+                 ["the skin mottled and raw from the frost", "frostbitten patches gone dark red under brittle fur"]),
+    }
+    for _k, _more in MARKS_MORE.items():
+        for _lvl, _words in enumerate(_more):
+            MARKS[_k][_lvl].extend(_words)
+    CARTILAGE = {"ear": ["folded and creased, not standing the way it should", "bent over at the tip",
+                         "drooping, a crease across it"],
+                 "nose": ["swollen and pushed a little crooked", "puffed up and sitting slightly askew",
+                          "swollen, the tip bent a little to one side"],
+                 "fin": ["bent along a crease, not lying flat", "crumpled at the edge", "creased and sticking out wrong"],
+                 "cheek": ["puffed up", "swollen round", "puffy and lopsided"],
+                 "muzzle": ["swollen", "puffed along its length", "swollen out of its line"],
+                 "jaw": ["swollen along the line of it", "puffy along the hinge", "swollen under the jaw"]}
+
+    CARTILAGE_MORE = {"ear": ["flopped sideways, not lifting"], "nose": ["puffed and tender, a little off true"],
+                      "fin": ["folded back on itself at the edge"], "cheek": ["swollen up tight"],
+                      "muzzle": ["thick and puffy"], "jaw": ["puffed up so it hangs a little crooked"]}
+    for _k, _more in CARTILAGE_MORE.items():
+        CARTILAGE[_k].extend(_more)
 
     def _mark_kind(self, src):
         s = str(src or "").lower()
@@ -3649,8 +3714,10 @@ class Engine:
         lvl = 2 if p.damage >= 300 else 1 if p.damage >= 150 else 0
         srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
         kinds = list(dict.fromkeys(self._mark_kind(c) for c in srcs)) or ["blunt"]
-        marks = [self.MARKS[k][lvl] for k in kinds[:2]]
-        cart = next((v for k, v in self.CARTILAGE.items() if k in p.name.lower() and v), "")
+        import zlib
+        pick = lambda lst, salt: lst[zlib.crc32(f"{f.name}|{p.name}|{salt}".encode()) % len(lst)]
+        marks = [pick(self.MARKS[k][lvl], k) for k in kinds[:2]]
+        cart = next((pick(v, "c") for k, v in self.CARTILAGE.items() if k in p.name.lower() and v), "")
         if cart and lvl >= 1:
             marks.append(cart + " for now")
         if lvl == 2 and "swollen" not in " ".join(marks):

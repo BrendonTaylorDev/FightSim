@@ -1794,28 +1794,58 @@ class Narrator:
 
     PRESS_LOOK = {
         "light": ["the fur flattened and parted under it, a shallow dent where it presses",
-                  "the fur pushed flat round it, the shape of the grip printed into it"],
+                  "the fur pushed flat round it, the shape of the grip printed into it",
+                  "the coat creased under it, the fur parting in a line along the edge",
+                  "a soft give under it, the fur fanned out flat round the spot",
+                  "the fur ruffled the wrong way where it drags, a faint hollow beneath",
+                  "the coat dimpled under it, the hairs bent over flat in a ring",
+                  "a light print sunk into the fur, the skin under it barely giving",
+                  "the fur smoothed down hard against her, a clean hollow where it rests"],
         "firm": ["the muscle pressed flat under it, the flesh bulging round the edges",
-                 "sunk in, the fur and flesh squeezed out round it in a ridge"],
+                 "sunk in, the fur and flesh squeezed out round it in a ridge",
+                 "the muscle flattened and pushed aside, a deep crease running out from it",
+                 "pressed in far enough to change her outline, the flesh round it puffed and tight",
+                 "the fur crushed into the skin and the muscle under it spread wide and flat",
+                 "squeezing her out of shape, the muscle bunched up hard on either side of it",
+                 "pressed in so the flesh rolls up round it in a thick fold",
+                 "deep enough to leave a trench in the fur, the muscle under it quivering"],
         "heavy": ["sunk deep, the muscle squashed flat, the flesh swelling out round it",
-                  "driven in hard, everything round it pushed out of its shape"],
+                  "driven in hard, everything round it pushed out of its shape",
+                  "buried in her, the body there mashed flat and bulging out on every side",
+                  "crushing down so the part folds round it, the fur and flesh squeezed up in thick rolls",
+                  "pressed so deep the bone beneath shows its shape through the flattened muscle",
+                  "grinding her down until the part spreads out flat under it, the fur splayed in every direction",
+                  "so hard that her whole outline caves in there, the flesh pouring out to the sides",
+                  "mashing the muscle against the bone, the skin pulled drum-tight round the edges"],
     }
     JOINT_LOOK = ["the joint forced toward the edge of where it bends, the limb at an unnatural angle (bent, not broken)",
-                  "the joint wrenched round, the limb held at a strange, wrong-looking angle (nothing breaks)"]
+                  "the joint wrenched round, the limb held at a strange, wrong-looking angle (nothing breaks)",
+                  "the limb twisted against its own joint, the angle of it plainly wrong (strained, not broken)",
+                  "the joint bowed the way it does not want to go, the tendons standing out taut under the fur",
+                  "the limb folded too far at the joint, trembling there at the very end of its bend (not broken)",
+                  "the joint cranked open past its comfortable reach, the limb sticking out at an odd, stiff angle",
+                  "the joint locked straight and then pushed a little further, the limb rigid and shaking",
+                  "the limb turned in at the joint so the paw points the wrong way (wrenched, not broken)"]
+    THROAT_LOOK = ["the throat pressed in, a visible dip where it pushes",
+                   "the soft front of the throat caved in under it, the fur bunched round the dip",
+                   "the throat squeezed narrow, the windpipe's ridge standing out under the fur",
+                   "the fur at the throat pushed into a deep crease, the skin stretched tight round it",
+                   "the throat flattened under it, every swallow showing as a jerk under the fur"]
 
     def _press_look(self, h):
         """What a press LOOKS like on the body: fur, muscle, and a joint bent toward its limit, by how hard it is."""
         from engine import body_region
         pw = float(h.get("power") or 0)
         k = "light" if pw < 10 else "firm" if pw < 20 else "heavy"
-        seed = int(getattr(self, "beat_now", 0) or 0) + len(h["part"])
-        look = self.PRESS_LOOK[k][seed % 2]
+        import zlib
+        seed = int(getattr(self, "beat_now", 0) or 0) + zlib.crc32(h["part"].encode())
+        look = self.PRESS_LOOK[k][seed % len(self.PRESS_LOOK[k])]
         part, reg = h["part"].lower(), body_region(h["part"])
         if k != "light" and (reg in ("shoulder", "fore_up", "hind_low", "tail") or any(
                 w in part for w in ("knee", "hock", "elbow", "hip", "wrist", "ankle"))):
-            look += "; " + self.JOINT_LOOK[seed % 2]
+            look += "; " + self.JOINT_LOOK[seed % len(self.JOINT_LOOK)]
         elif reg == "neck" and k != "light":
-            look += "; the throat pressed in, a visible dip where it pushes"
+            look += "; " + self.THROAT_LOOK[seed % len(self.THROAT_LOOK)]
         return look
 
     def _many_hits(self, hits):

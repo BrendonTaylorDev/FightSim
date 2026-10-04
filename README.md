@@ -1003,6 +1003,10 @@ After each beat's prose, the program prints the exact numbers in this format:
   - Shaking is never vague any more: whenever a fighter shakes, trembles, jerks, thrashes or writhes, the narrator is
     told to say where and how (a foreleg trembling at the elbow, the head shaking side to side, claws scraping at the
     ground again and again, twisting at the hips, the back arching) and how hard and fast.
+  - Wording variety: eight ways to describe each strength of press (light, firm, heavy), eight for a joint forced
+    toward its limit, five for the throat; five for each depth of each kind of mark (claws, teeth, blows, grips,
+    lightning, cold) and four for each creased or swollen ear, nose, fin, cheek, muzzle and jaw. Which one is used
+    changes from beat to beat and part to part, and the same part keeps its look for the same damage.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
