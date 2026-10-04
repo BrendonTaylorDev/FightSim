@@ -955,6 +955,7 @@ After each beat's prose, the program prints the exact numbers in this format:
   0.45 → 0.85, weak_downed 0.85 → 0.95, new curve 1.3, hurt_bonus 0.035, hurt_cap 0.3.) 400 fights at your
   settings: 8.0 pins a fight (was 4.8), 95% of fights with 4+, 0.86 submissions a fight, Nocturne 59.5%. Fights are
   shorter in beats (about 50, was about 75) because pins end them sooner.
+
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
   her legs would only"), the program used to trim it, taking it for an answer cut off by the word limit. Now it
