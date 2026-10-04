@@ -124,8 +124,11 @@ Craft:
 - PROPORTION: a light hit gets a wince and a line; only the worst gets a cry and a long passage. If every blow is
   shattering, none is. A blow on a part that is ALREADY badly hurt hurts far more than the same blow on a fresh part,
   and its note says how raw the reaction is: a fighter with most of her strength fights to keep it in; one who is
-  spent cannot. A brush on a ruined part is less than a real blow there. Screams, shaking and streaming eyes are
-  allowed when the note asks; sobbing and weeping are not.
+  spent cannot. A ruined part hurts at the slightest touch, though a brush there is still less than a real blow.
+  Being worn down makes her rawer only WHERE she is badly hurt: a blow on a part that was NOT hurt still stings,
+  jars what is round it, and is one more thing her trembling body didn't need, but it is not agony and she does
+  not come apart over it. Screams, shaking and streaming eyes are allowed when the note asks; sobbing and weeping
+  are not.
 - CLEVERNESS: a fighter with no good options thinks; she uses the arena, her species' body (a flotation sac,
   a tail, a coil), and her opponent's injuries. Show the idea forming, then the attempt.
 - Concrete physical detail: exactly where contact lands, weight, grip, texture, temperature, sound, breath,
@@ -146,7 +149,7 @@ GORE = re.compile(
     r"muscle and fat|gristle|wet (?:crunch|tearing)|bones? (?:poking|jutting|sticking) (?:out|through)|"
     r"holes? (?:in|through) (?:her|his|its|the)|open wounds?|gaping|gash\w* (?:open|to the bone)|"
     r"blood\w*(?:\s*[—–-]\s*|\s+)(?:[\w,]+(?:\s*[—–-]\s*|\s+)){0,4}(?:pool\w*|spray\w*|gush\w*|pour\w*|fountain\w*|splatter\w*|spurt\w*|soak\w*|flood\w*|stream\w*)|"
-    r"pools? of blood|covered in blood|soaked in blood|blood loss|bled out|vomit\w*|"
+    r"pools? of blood|covered in blood|soaked in blood|blood loss|bled out|vomit\w*|retch\w*|puk(?:e|ed|ing)\b|throw(?:s|ing)? up\b|threw up\b|"
     r"corpse|dead body|(?:was|is|lay|lies|she's|he's) dying|to (?:her|his|its) death|death|kill(?:s|ed|ing)?|"
     r"charred flesh|skin (?:bubbl\w*|peel\w*)|"
     r"split (?:it |her |the |\w+ )?(?:nearly |almost |half ?way |halfway )?(?:clean )?(?:through|in two|apart)|"
@@ -1675,8 +1678,8 @@ class Narrator:
         ("scream", "a real scream, her whole body jerking round the hurt part; she shakes afterwards, her breath comes in "
                    "ragged pulls, and it is a moment before she can do anything at all"),
         ("raw", "a raw scream that cracks in the middle, all of her clenching round the hurt; her body reacts on its own "
-                "now, past anything she can restrain: jerking and curling round it, a limb scrabbling at the ground, a "
-                "retch, shaking she cannot stop, eyes streaming, a long moment where there is nothing in her head but "
+                "now, past anything she can restrain: jerking and curling round it, a limb scrabbling at the ground, "
+                "shaking she cannot stop, eyes streaming, a long moment where there is nothing in her head but "
                 "that part"),
     ]
 
@@ -1713,7 +1716,8 @@ class Narrator:
                 level = min(max(level, 1), 2)
             else:
                 level = min(level, 1)
-        held_up = dev and float(h.get("damage_after", 0)) < 150 and left >= 60
+        # the part wasn't hurt before this blow, or isn't badly hurt even now: a shock and a cry, never the rawest
+        held_up = dev and (float(h.get("damage_before", 0)) < 90 or float(h.get("damage_after", 0)) < 150)
         if held_up:
             # devastating, but the part isn't ruined and she still has most of her strength: a cry she can't stop,
             # not a scream
@@ -1747,8 +1751,13 @@ class Narrator:
             lead = ("a DEVASTATING blow" + (f" on a part that was already {before_label}"
                                             if before_label in ("very painful", "excruciating", "devastated") else "")
                     + ", far worse than anything like it before: ")
-        held = (" She still has most of her strength and the part isn't ruined: the cry is out before she can stop it, "
-                "but she clamps down on the rest. No scream." if held_up
+        held = ((" She still has most of her strength and the part isn't ruined: the cry is out before she can stop it, "
+                 "but she clamps down on the rest. No scream." if cond_score == 0 else
+                 (" The part was untouched before this blow" if float(h.get("damage_before", 0)) < 90 else
+                  " The part itself isn't badly hurt") +
+                 ": it is a deep shock through a body already trembling, a cry that gets out, the rest of her jolting "
+                 "with it, but not the raw breakdown a part that was already ruined would bring.")
+                if held_up
                 else " Even with most of her strength left, she can't keep this one in." if dev and cond_score == 0
                 else " She still has most of her strength, so she fights to keep it in, and mostly does." if cond_score == 0
                 else " She is too worn to hold all of it in." if cond_score == 1
@@ -6672,6 +6681,11 @@ class Narrator:
         "ruined": "the part is ruined now: it is the centre of everything, and her whole body arranges itself round protecting it",
     }
 
+    def _dev_untouched(self, a):
+        """Was the part a devastating blow landed on untouched before it (under 'very painful')?"""
+        mine = [h for h in a.get("hits") or [] if h.get("devastating")]
+        return bool(mine) and float(mine[0].get("damage_before", 0)) < 90
+
     def _dev_bands(self, a):
         """(health band, part band) for a devastating hit: fresh/worn/spent and light/hurt/ruined."""
         mine = [h for h in a.get("hits") or [] if h.get("devastating")] or list(a.get("hits") or [])
@@ -6716,13 +6730,15 @@ class Narrator:
                 "a sharp cry she can't stop, NOT a scream; she reels and fights her way back to steady."
                 if strong else "")
         hb, pb = self._dev_bands(a)
+        if (pb == "light" or self._dev_untouched(a)) and hb == "spent":
+            hb = "worn"      # an untouched part: worn-down shock, not the rawest breakdown
         ways = random.sample(self.DEV_SELL_ANY, 2) + [random.choice(self.DEV_SELL_BAND[hb])]
         size += (f" WAYS TO SELL IT (use them, in your own words): " + "; ".join(ways) + f". And {self.DEV_SELL_PART[pb]}.")
         return [f"  - A DEVASTATING {'LANDING' if dv.get('reason') == 'ground' else 'BLOW'} (×{dv['mult']}, far worse "
                 f"than this would normally be): the reason is {dv['why']}. MAKE THE SEVERITY BELIEVABLE: show exactly "
                 f"why this one is so much worse than anything like it before (the angle, the timing, where she was, what "
                 f"was already hurt there), and give the impact and what it does to her body real room. SELL IT IN "
-                f"BOTH OF THEM: {self.DEV_REACT[self._dev_bands(a)[0]]}; her thoughts show how bad it is; the attacker FEELS "
+                f"BOTH OF THEM: {self.DEV_REACT['fresh' if self._dev_bands(a)[0] == 'fresh' and (self._dev_bands(a)[1] == 'light' or self._dev_untouched(a)) else 'worn' if (self._dev_bands(a)[1] == 'light' or self._dev_untouched(a)) else self._dev_bands(a)[0]]}; her thoughts show how bad it is; the attacker FEELS "
                 f"it land differently, knows at once that this one went in deep, and her thoughts show it (surprise, "
                 f"savage satisfaction, even a flicker of something else). It changes the fight; let both of them feel "
                 f"that.{size} (The usual rules on bones and injuries still hold: the "
@@ -6848,7 +6864,11 @@ class Narrator:
                 + self._callback_clause(v, part)
                 + f"; her thoughts, short and in her own voice; how she looks at {by or 'her opponent'} now. TRUE TO "
                 f"SIZE: her {part.lower()} is now {label} and she has about {strength:.0f}% of her strength left; the "
-                f"length comes from attention and detail, not from making it worse. No sobbing or weeping. " + stays)})
+                f"length comes from attention and detail, not from making it worse. No sobbing or weeping. "
+                + (f"This part itself was NOT badly hurt before: the blow is one more weight on a body already worn "
+                   f"down (the trembling, the breath, the old hurts flaring with the jolt), but the {part.lower()} "
+                   f"itself only stings; keep its own reaction modest. " if label in ("minor", "sore", "hurting") else "")
+                + stays)})
         watch_ok = bool(by) and (badly or (holding and down and (strength <= float(wcfg.get("hold_max_strength", 80))
                                                                 or label in self.BAD_LEVELS)))
         if watch_ok and ready("watch", wcfg, True):

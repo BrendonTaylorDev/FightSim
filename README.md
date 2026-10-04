@@ -852,7 +852,10 @@ After each beat's prose, the program prints the exact numbers in this format:
   sees her protecting it (new story blocks for both sides). A ruined part hurts at the slightest touch: even a brush
   gets a real reaction (fresh, a cry; worn, a scream; spent, the rawest), and steady pressure on it in a hold or pin
   is agony. Under 30% strength she is past restraining her body's reactions: the rawest level now has her body
-  reacting on its own (jerking and curling, a limb scrabbling, a retch, shaking she can't stop). Still no sobbing.
+  reacting on its own (jerking and curling, a limb scrabbling, shaking she can't stop). Still no sobbing, and no
+  vomiting or retching (the narrator's checks now catch those words too). This rawness is only WHERE she is badly
+  hurt: a blow on a part that was untouched still stings and jars what's round it, but it isn't agony however
+  worn she is; even a devastating blow on an untouched part is a deep shock and a cry, not the raw breakdown.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
