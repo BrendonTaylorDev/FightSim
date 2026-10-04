@@ -2125,6 +2125,8 @@ class Narrator:
         dfn = a.get("defender")
         if dfn in (getattr(self, "pinned_now", None) or ()) or a.get("target_against"):
             return ""
+        if any(g[0] == dfn for g in (getattr(self, "grips", None) or [])):
+            return ""   # she has hold of someone (a submission, a grip): she isn't knocked about the clearing
         m = a.get("move") or {}
         h = a["hits"][0]
         import random as _r, zlib
@@ -2138,6 +2140,8 @@ class Narrator:
             return ""
         name = f"{m.get('name', '')} {m.get('about', '')}".lower()
         if dfn in (getattr(self, "on_ground", None) or ()):
+            if "GROUND" not in str((getattr(self, "posture_start", None) or {}).get(dfn, "")).upper():
+                return ""   # she was up when it landed and it put her down: the fall is the movement, told below
             kind = "down"
         elif re.search(r"slash|claw|swipe|scratch|rake|cut", name):
             kind = "claw"

@@ -1883,9 +1883,10 @@ def pin_shapes(engine, pinner, target, skip=()):
         fc = engine.facing_of(target.name)
         if fc == "face-down":
             out = {k: v for k, v in out.items() if not any(
-                re.search(r"\b(throat|chest|belly|stomach)\b", p.lower()) for p, _ in v[1])} or out
+                re.search(r"\b(throat|chest|belly|stomach)\b", p.lower()) for p, _ in v[1])
+                and not re.search(r"face-up|on her back", v[0], re.I)} or out
         elif fc == "face-up":
-            out = {k: v for k, v in out.items() if "from behind" not in v[0]} or out
+            out = {k: v for k, v in out.items() if not re.search(r"from behind|face-down|on her front", v[0], re.I)} or out
     # most pins use far more of her than two points: whatever she has free goes on too (pin.contacts)
     return {k: fuller_pin(engine, pinner, target, look, contacts) for k, (look, contacts) in out.items()}
 

@@ -4580,7 +4580,7 @@ class Engine:
                 # borne down flat by the pin)
                 guess = self._guess_facing(d.name, names)
                 self.facing[d.name] = {"face-down": "face-up", "face-up": "face-down"}.get(guess, guess)
-                if re.search(r"\bfrom behind\b", flavor or "", re.I):
+                if re.search(r"\bfrom behind\b|face-down", flavor or "", re.I):
                     self.facing[d.name] = "face-down"   # a hold from behind (a sleeper) bears her down onto her front
             self.momentum = (self.momentum + [f"{a.name}>{d.name}"])[-20:]
         # the presses and the way she lies must agree (your own named parts turn her; the director's follow her)
