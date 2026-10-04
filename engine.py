@@ -3486,6 +3486,8 @@ class Engine:
             return None
         if a.name in self.lucky:
             return None   # /play dice free: nothing gets in the way of her attacks
+        if any({h.attacker, h.defender} == {a.name, d.name} for h in self.holds.values()):
+            return None   # locked together in a hold or a submission: nothing to put in the way, nowhere to step
         if (d.name in self.downed or self.pinned_by(d.name) or self.grab_between(a.name, d.name)
                 or any(h.defender == d.name for h in self.holds.values())
                 or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched", "constricted", "airborne"))
