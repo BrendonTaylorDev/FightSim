@@ -3280,8 +3280,10 @@ class Engine:
             if r.get("type") != "instant":
                 continue
             mv = (r.get("move") or {}).get("name") or "a blow"
-            if r.get("environment"):
+            land = bool(r.get("environment"))
+            if land:
                 mv = "the landing"
+            whose = f"{poss_word(dfn)} landing" if land else f"{poss_word(att)} {mv}"
             lost = deal(att, r.get("hits"), dfn)
             deal(dfn, r.get("counter_hits"), att)
             loss = pct(dfn, lost.get(dfn, 0.0))
@@ -3292,10 +3294,12 @@ class Engine:
                                  "pct": round(loss, 1)}
             if r.get("devastating") and hits:
                 dp = next((h["part"].lower() for h in hits if h.get("devastating")), part)
-                self._moment("devastating", f"{poss_word(att)} {mv} lands DEVASTATINGLY on {poss_word(dfn)} {dp}",
+                self._moment("devastating", (f"{whose} comes down DEVASTATINGLY on her {dp}" if land else
+                                             f"{whose} lands DEVASTATINGLY on {poss_word(dfn)} {dp}"),
                              att, dfn, loss, 3)
             elif loss >= big_at:
-                self._moment("big", f"{poss_word(att)} {mv} hammers {poss_word(dfn)} {part}", att, dfn, loss, 1.5)
+                self._moment("big", (f"{whose} slams her {part} into the ground" if land else
+                                     f"{whose} hammers {poss_word(dfn)} {part}"), att, dfn, loss, 1.5)
             if r.get("juggle") and hits:
                 self._moment("juggle", f"{att} catches {dfn} helpless in the air with {mv}", att, dfn, loss, 2)
             if (r.get("feint") or {}).get("bit") and hits:
@@ -3444,8 +3448,9 @@ class Engine:
         rows.append("  Damage dealt: " + ", ".join(f"{n} {dealt.get(n, 0):.0f}%" for n in names))
         b = ch.get("biggest")
         if b:
-            rows.append(f"  Biggest blow: beat {b['beat']}, {poss_word(b['who'])} {b['move']} on "
-                        f"{poss_word(b['to'])} {b['part']} (−{b['pct']:.0f}%)")
+            rows.append(f"  Biggest blow: beat {b['beat']}, " + (f"{poss_word(b['to'])} landing on her {b['part']}"
+                        if b["move"] == "the landing" else
+                        f"{poss_word(b['who'])} {b['move']} on {poss_word(b['to'])} {b['part']}") + f" (−{b['pct']:.0f}%)")
         if worst:
             rows.append(f"  {poss_word(lose)} worst injuries: " + "; ".join(
                 f"{p.name.lower()} ({tier_for(p.damage, pain_tiers(self.rules))['label']}"
