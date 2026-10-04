@@ -3134,6 +3134,13 @@ class Narrator:
                                    f"still get a little air; it doesn't matter. It is quick at the very end, quicker "
                                    f"than she expects: she goes out almost before she knows it. The pain is still there, "
                                    f"but it is not what ends it. She is out cold, breathing, and she will wake.")
+                    elif oc.get("kind") == "both":
+                        out.append(f"  - WHY SHE GOES OUT: the CHOKE, air and blood together. It is {grip} that takes "
+                                   f"her under: it crushes the front of her throat and squeezes the sides at once. Show "
+                                   f"both: the breath that will not come, whistling and burning, AND the pressure "
+                                   f"swelling behind her eyes, the roaring in her ears, the grey closing in and the world "
+                                   f"shrinking to a point, her limbs going heavy. The pain is still there, but it is not "
+                                   f"what ends it. She is out cold, breathing again once it is off her, and she will wake.")
                     else:
                         out.append(f"  - WHY SHE GOES OUT: the CHOKE ON HER WINDPIPE. It is {grip} that takes her under: "
                                    f"it presses the FRONT of her throat in. Show it that way: the breath that will not "

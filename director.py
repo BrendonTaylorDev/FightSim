@@ -126,7 +126,7 @@ Beat types:
   wrenches (head shaking side to side) is a strike on Neck/Throat (with the jarred parts around it), or a hold on
   those parts when the jaws stay locked on. Use them now and then, like any other technique.
 - EVERY OTHER ATTACK CAN BE AS BRUTAL AS THAT, AND NO MORE: a limb seized and wrenched or twisted, a hurt part
-  ground into the stone or stamped on, a body slammed and held down, a grip worried at and tightened, a blow
+  ground into the floor or stamped on, a body slammed and held down, a grip worried at and tightened, a blow
   driven into a spot that is already swollen. Say it in "flavor" and give it the severity it deserves (heavy,
   brutal, crushing). A throat bite is the ceiling: nothing is torn off, dislocated, or broken by your choice.
 - combo: one action that hits SEVERAL body parts (use "hits"), e.g. thrown down stairs, slammed through a table.
@@ -175,7 +175,7 @@ Beat types:
 - ANY LIMB CAN GRIP ANY PART. A choke doesn't need jaws: twin tails or a tail looped round the neck, a forearm
   barred across the throat, coils, a paw or a knee pressed on the windpipe ("with": "her twin tails", "her forearm",
   "her coils", "her forepaw"). And jaws aren't only for the neck: jaws clamped on a forearm, a paw, a hock, an ear or
-  a tail hold that limb fast and pin it to the stone, as a hold of its own or as one of a pin's contacts
+  a tail hold that limb fast and pin it to the ground, as a hold of its own or as one of a pin's contacts
   ("with": "her jaws"). Vary who grips what with what; the body part in "hits" is always the DEFENDER's.
 - hold_adjust: change an active hold (by hold_id): new severity and/or ramp (tightening, steady, easing).
 - hold_release: holds end: escape, rope break, released, broken up. Give a hold_id to end one hold, or
@@ -186,10 +186,14 @@ Beat types:
   pinned on their BACK (face-up) has chest, belly, neck, and limbs pressed; someone pinned FACE-DOWN has their
   upper back, lower back, hips, and the back of the neck pressed, never the chest. If an attack in the same beat
   knocked them down, decide which way they landed and choose contacts to match. VARY THE SHAPE of your pins:
-  jaws on the throat with weight on the chest is one of many. Jaws can pin a paw or a forearm to the stone while a
+  jaws on the throat with weight on the chest is one of many. Jaws can pin a paw or a forearm to the ground while a
   forepaw or forearm bars the throat; tails or coils can loop the neck while paws pin the shoulders; an arm can be
   wrenched out straight and trapped; both legs can be tangled; now and then (rarely) a leg is hooked and hauled up
-  off the ground, folded back toward her chest. Say it in "with" ("her jaws", "her forearm", "her twin tails",
+  off the ground, folded back toward her chest. Other shapes: standing on her throat with a foot or a paw; a knee
+  driven across the neck; legs locked round the neck (a leg scissor) or round the middle (a body scissor); a
+  headlock or an arm locked round the neck from behind (hands and arms that can lock only); a four-legged fighter
+  lying on her side behind her with both forelegs hooked round the sides of her neck; both arms trapped at once.
+  Say it in "with" ("her jaws", "her forearm", "her twin tails",
   "her foreleg hauling the leg up"). The engine then
   holds her until she breaks out or passes out (no fixed length), and rolls her escape attempts every beat. While a pin is in progress,
   continue it with 'breather' or 'hold_adjust' (never start a second pin), and let the pinned fighter strike
@@ -1545,7 +1549,7 @@ def pin_shapes(engine, pinner, target, skip=()):
                               + (f", {t['hind']} on her hips" if t.get("hind") and hips else ""),
                               [(neck, t["jaws"]), (front, t["weight"])] + [(h, t.get("hind", "")) for h in hips if t.get("hind")])
     if t.get("jaws") and arm and neck and t.get("fore"):
-        out["trapped_arm"] = (f"jaws clamped on her {arm}, pinning that limb to the stone, while {t['fore']} bars across her "
+        out["trapped_arm"] = (f"jaws clamped on her {arm}, pinning that limb to the ground, while {t['fore']} bars across her "
                               f"{neck} as the choke" + (f" and her weight settles on her {front}" if front else ""),
                               [(arm, t["jaws"]), (neck, t["fore"])] + ([(front, t["weight"])] if front else []))
     if t.get("coil") and neck:
@@ -1589,6 +1593,56 @@ def pin_shapes(engine, pinner, target, skip=()):
         out["sleeper"] = (f"a sleeper hold from behind: {t['fore']} hooked under her chin and locked round her {neck}, "
                           f"squeezing the sides of it shut, her weight along her {back} so she can't turn",
                           [(neck, t["fore"] + ", locked round it from behind"), (back, t["weight"])])
+    throat = next((n for n in sp["neck"] if "throat" in n.lower()), neck)
+    tailp = [p for p in pinner.parts.values() if "tail" in p.name.lower() and "base" not in p.name.lower()
+             and p.damage < 150]
+    # standing on her throat: a foot or a paw planted on it, the weight on it, another on her chest
+    if throat and front and plan in ("biped", "quadruped"):
+        foot = ("her foot" if plan == "biped" else rng.choice(["a forepaw", "a hind paw"]))
+        other = "her other foot" if plan == "biped" else ("her other forepaw" if "fore" in foot else "her forepaws")
+        out["throat_stand"] = (f"standing over her with {foot} planted on her {throat}, her weight on it, {other} on "
+                               f"her {front}",
+                               [(throat, f"{foot}, standing on the throat"), (front, other)])
+    # a knee driven across her neck, both hands pinning an arm
+    if plan == "biped" and t.get("hind") and neck and arm:
+        out["knee_on_neck"] = (f"her knee driven across her {neck}, her weight behind it, {t.get('fores', 'her paws')} "
+                               f"pinning her {arm} out to the side",
+                               [(neck, "her knee, driven across the neck"), (arm, t.get("fores", "her paws"))])
+    # a cat's clutch: lying on her side behind her, forelegs hooked round the sides of her neck and hugging it in,
+    # hind paws braced against her hips (a four-legged fighter can wrap that way only from her side or on top)
+    if plan == "quadruped" and t.get("fore") and neck:
+        hip = hips[0] if hips else thigh
+        out["foreleg_clutch"] = (f"lying on her side behind her, both forelegs hooked round the sides of her {neck} and "
+                                 f"hugging it in"
+                                 + (f", {t['hind']} braced against her {hip}" if t.get("hind") and hip else ""),
+                                 [(neck, "her forelegs, hooked round the sides of it, hugging it in")]
+                                 + ([(hip, t["hind"])] if t.get("hind") and hip else []))
+    # the flat of a tail barred across the throat (a tail that isn't wound round anything), forepaws on her chest
+    if tailp and plan == "quadruped" and throat and front and not t.get("coil"):
+        tname = tailp[0].name.lower()
+        out["tail_bar"] = (f"the flat of her {tname} pressed across her {throat}, {t.get('fores', 'her forepaws')} on "
+                           f"her {front}",
+                           [(throat, f"the flat of her {tname}, pressed across the throat"),
+                            (front, t.get("fores", "her forepaws"))])
+    # a headlock pin: her arm locked round head and neck from the side, her weight across the chest
+    if plan == "biped" and t.get("fore") and neck and front:
+        out["headlock_pin"] = (f"her arm locked round her head and {neck} from the side, her weight across her {front}",
+                               [(neck, "her arm, locked round it"), (front, t["weight"])])
+    # a crucifix: both arms trapped (one under a knee or paw, one in her paws or jaws), her weight across the chest
+    arms2 = sp["upper_arm"][:2] if len(sp["upper_arm"]) >= 2 else []
+    if len(arms2) == 2 and front and (t.get("hind") or t.get("fore")) and (t.get("fores") or t.get("jaws")):
+        out["crucifix"] = (f"both her arms trapped, her {arms2[0]} under {t.get('hind') or t['fore']} and her {arms2[1]} "
+                           f"in {t.get('jaws') or t['fores']}, her weight across her {front}",
+                           [(arms2[0], t.get("hind") or t["fore"]), (arms2[1], t.get("jaws") or t["fores"]),
+                            (front, t["weight"])])
+    # a body scissor: legs locked round her middle, squeezing the ribs, from her side
+    ribs = [n for n in target.parts if "rib" in n.lower() or "flank" in n.lower()] or sp["front"]
+    if plan in ("biped", "quadruped") and t.get("hind") and ribs:
+        legs_w = "her legs" if plan == "biped" else "her hind legs"
+        mid = rng.choice(ribs)
+        out["body_scissor"] = (f"{legs_w} locked round her middle from the side, squeezing her {mid}"
+                               + (f", jaws on her {neck}" if t.get("jaws") and neck else ""),
+                               [(mid, f"{legs_w}, locked round her middle")] + ([(neck, t["jaws"])] if t.get("jaws") and neck else []))
     # throttled: hands closed round the sides of the neck (a body with hands to do it), knees on her chest
     if plan == "biped" and t.get("fores") and neck and front:
         out["throttle"] = (f"{t['fores']} closed round the sides of her {neck}, squeezing it shut, "
@@ -1647,7 +1701,8 @@ def pin_shape_hint(engine, pinner, target):
     kind is suggested; 0 = never)."""
     cfg = engine.rules.get("director", {})
     weights = {"throat_bite": 3, "trapped_arm": 3, "tail_choke": 3, "twisted_arm": 2, "leg_tangle": 2, "lifted_leg": 1,
-               "sleeper": 1, "wall_choke": 0.6}
+               "sleeper": 1, "wall_choke": 0.6, "throat_stand": 1.5, "knee_on_neck": 1.5, "foreleg_clutch": 1.5,
+               "tail_bar": 1, "headlock_pin": 1.5, "crucifix": 1, "body_scissor": 1, "throttle": 1.5, "leg_scissor": 1.5}
     weights.update({k: v for k, v in (cfg.get("pin_shape_weights") or {}).items() if not str(k).startswith("_")})
     shapes = {k: v for k, v in pin_shapes(engine, pinner, target,
                                           skip=[k for k, w in weights.items() if float(w) <= 0]).items()
@@ -1831,7 +1886,7 @@ def reposition_hint(engine, roll=None):
         if last is None or engine.turn - last >= int(cfg.get("manhandle_cooldown", 0) or 0):
             ideas.append(f"haul her up off the ground and THROW her (action \"throw\"): list what she crashes into in "
                          f"\"landing\", using the scene")
-            ideas.append(f"lift her and SLAM her back down (action \"slam\"): onto the stone, a rock, or into the "
+            ideas.append(f"lift her and SLAM her back down (action \"slam\"): onto the ground, a rock, or into the "
                          f"shallows (\"landing\")")
             ideas.append(f"take her by a leg, the scruff or the tail and DRAG her across the ground (action \"drag\"): "
                          f"over the rough stone and into or against something in the scene (\"landing\")")
