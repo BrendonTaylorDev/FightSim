@@ -1600,7 +1600,7 @@ def fuller_pin(engine, pinner, target, look, contacts):
          free([n for n in names if regions[n] == "fore_low" and any(k in n.lower() for k in ("paw", "hand", "forearm"))
                and "fin" not in n.lower()] or [n for n in names if regions[n] in ("fore_low", "fore_up")]), 2,
          lambda w: w),
-        ("feet|hind paw|knee|talon", feet,
+        ("feet|hind paw|hind leg|knee|talon|legs, locked", feet,
          free([n for n in names if any(k in n.lower() for k in ("flank", "rib", "hip"))]), 2,
          lambda w: f"{w}, pressed into it"),
         ("tail|coil", t.get("coil"), free([n for n in names if regions[n] in ("hind_up", "hind_low")]), 2,
@@ -1725,7 +1725,8 @@ def pin_shapes(engine, pinner, target, skip=()):
     # a crucifix: both arms trapped (one under a knee or paw, one in her paws or jaws), her weight across the chest
     arms2 = sp["upper_arm"][:2] if len(sp["upper_arm"]) >= 2 else []
     if len(arms2) == 2 and front and (t.get("hind") or t.get("fore")) and (t.get("fores") or t.get("jaws")):
-        out["crucifix"] = (f"both her arms trapped, her {arms2[0]} under {t.get('hind') or t['fore']} and her {arms2[1]} "
+        limbs = "forelegs" if engine.body_plan(target) == "quadruped" else "arms"
+        out["crucifix"] = (f"both her {limbs} trapped, her {arms2[0]} under {t.get('hind') or t['fore']} and her {arms2[1]} "
                            f"in {t.get('jaws') or t['fores']}, her weight across her {front}",
                            [(arms2[0], t.get("hind") or t["fore"]), (arms2[1], t.get("jaws") or t["fores"]),
                             (front, t["weight"])])

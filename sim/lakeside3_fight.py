@@ -118,7 +118,7 @@ def run(seed, verbose=False, finish_at=14.0):
         look, contacts = shapes[name]
         st["last_shape"] = name
         sev = ["crushing"] + ["firm"] * (len(contacts) - 1)
-        return A(who, action="pin", flavor=look[:150], hits=[{"part": p, "severity": v, "with": w}
+        return A(who, action="pin", flavor=look.split("; and ")[0], hits=[{"part": p, "severity": v, "with": w}
                                                               for (p, w), v in zip(contacts, sev)])
 
     def try_pin(who):

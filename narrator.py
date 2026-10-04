@@ -2519,7 +2519,9 @@ class Narrator:
                              f"under her to push from, and this one catches her there (it lands harder for that) and "
                              f"smashes her back down to the ground (the landing below).")
             if a.get("overcommit"):
-                lines.append(f"  - {a['attacker']} is so tired she OVERCOMMITS: the blow is sloppy, badly timed, half its "
+                worn = (getattr(self, "strengths", None) or {}).get(a["attacker"], 0) < 60
+                lines.append(f"  - {a['attacker']} is so {'tired' if worn else 'out of breath'} she OVERCOMMITS: the blow is "
+                             f"sloppy, badly timed, half its "
                              f"usual force, and she overbalances on it and has to catch herself (OFF BALANCE after it).")
             if a.get("last_stand"):
                 lines.append(f"  - LAST STAND: {a['attacker']} is nearly spent, and she puts EVERYTHING she has left into "
@@ -2946,7 +2948,7 @@ class Narrator:
         tell, mine, seen = self.STATUS_STORY[st]
         out = f"    show it: {tell}"
         if mine:
-            out += f"; {who} knows it: {mine}"
+            out += f"; {who} knows it: {mine.format(other=other, who=who)}"
         if seen and other:
             out += f"; {seen.format(other=other, who=who)}"
         return [out + "."]
