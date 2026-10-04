@@ -286,7 +286,8 @@ Guidance:
 - "flavor" names the move in a few words (under 15), e.g. "raking claw swipe" or "tail coil around her
   chest". It must agree with the body parts you chose. It is a label, not narration: never copy sentences
   from the story.
-- "intent" is one short sentence on why this happens now.
+- "intent" is one short sentence on why this happens now. When a fighter is setting something up (soaking her
+  opponent before using lightning, calling rain before using water) or cashing in a setup, say the plan here.
 Use only the fighter names, body parts, severities and hold_ids listed. Fill every field; fields that don't apply
 to the chosen beat are ignored (use 0 for hold_id and an empty list for hits when unused).
 """
@@ -1366,7 +1367,8 @@ class Director:
         steer = plan_hint(engine)
         if not direction and not hint:
             # a submission (rarer) is offered before a pin when both are open; one already on comes first too
-            hint = submission_urge(engine) or pin_urge(engine)
+            hint = submission_urge(engine) or tactic_hint(engine, payoff_only=True) or pin_urge(engine) \
+                or tactic_hint(engine)
         rng_hint = range_hint(engine) if not direction else ""
         bite = throat_hint(engine) if not direction else ""
         if bite:
@@ -2335,6 +2337,33 @@ def pin_urge(engine, roll=None):
             f"{pinner.name} takes her down into a pin: either action 'pin' on its own (a tackle, a trip, dragging her "
             f"to the ground and pinning her there), or a knockdown strike first and the pin as the second action.{odds}"
             f"{shape}")
+
+
+def tactic_hint(engine, payoff_only=False):
+    """Plans (tactics): a PAYOFF nudge while a setup is waiting for it (her opponent soaked and her lightning ready;
+    the rain called and her water ready), or now and then (tactics.idea_chance) an idea for a setup or a read."""
+    cfg = engine.rules.get("tactics") or {}
+    if not cfg.get("enabled", True):
+        return ""
+    for s in engine.tactic_payoffs():
+        who = engine.fighters.get(s["who"].lower())
+        if who is None or who.eliminated or who.name in engine.downed or engine.pinned_by(who.name):
+            continue
+        # (the director chooses before the beat's clock moves on: the setup was made at the end of a beat already counted)
+        left = max(1, s["until"] - engine.turn)
+        ago = max(1, engine.turn - s["made"] + 1)
+        return (f"PAYOFF (a plan in motion): {s['setup']} {ago} beat(s) ago. Now: {s['payoff']} "
+                f"(it has {left} beat(s) left before the chance is gone). Unless the story clearly calls for something "
+                f"else, {who.name} does it this beat, and says so in 'intent' (the plan, in a few words).")
+    if payoff_only:
+        return ""
+    ideas = engine.tactic_ideas()
+    if not ideas or engine.rng.random() >= float(cfg.get("idea_chance", 0.3)):
+        return ""
+    reads = [i for i in ideas if i["step"] == "read"]
+    i = engine.rng.choice(reads or ideas)
+    return (f"TACTIC IDEA ({'a read' if i['step'] == 'read' else 'a setup, with a payoff to come'}): {i['text']}. If "
+            f"{i['who']} does it, put the plan in 'intent' in a few words, so the story can show it was meant.")
 
 
 def submission_urge(engine):

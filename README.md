@@ -955,6 +955,20 @@ After each beat's prose, the program prints the exact numbers in this format:
   0.45 → 0.85, weak_downed 0.85 → 0.95, new curve 1.3, hurt_bonus 0.035, hurt_cap 0.3.) 400 fights at your
   settings: 8.0 pins a fight (was 4.8), 95% of fights with 4+, 0.86 submissions a fight, Nocturne 59.5%. Fights are
   shorter in beats (about 50, was about 75) because pins end them sooner.
+- **Plans: setups and payoffs.** The engine now notices when a fighter has set something up, watches for the
+  payoff, and tells the director and the narrator, so a plan can run over several beats and actually pay off:
+  - Setups it recognises: her opponent SOAKED (dragged into water, a water move, a wave) while she has lightning
+    (it goes through a soaked body far worse); the RAIN called by a fighter with water moves; the SUN by one with
+    fire. Each one waits up to 3 beats for its payoff (tactics.payoff_beats; a soak only as long as it lasts).
+  - The director gets a PAYOFF nudge while a setup is waiting ("Ripples got soaked through 1 beat ago. Now:
+    Thunderbolt into her while she is still soaked"), ahead of a pin opening. Now and then (30%) it also gets an
+    idea: drag a downed opponent into the water to set up the lightning, call the weather before using its
+    moves, or READ a trap: don't throw a blast into a Mirror Coat, wait out a Protect, strike from range at a
+    Counter. It is asked to put the plan in "intent".
+  - The narrator is told when a beat is a setup ("THE PLAN": one short thought shows it, in her own words), when it
+    is the payoff ("THE PAYOFF": it was planned, and the other realises too late what the earlier move was for),
+    and when a fighter reads a trap and goes round it.
+  - The screen shows them as 🧠 lines (Plan / Payoff / Read). Kept through /undo, saves and loads.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

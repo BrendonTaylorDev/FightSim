@@ -326,6 +326,7 @@ class Engine:
         self.weather = {}      # {"kind": "rain"/"sun"/"hail", "beats": N, "by": name}: Rain Dance, Sunny Day, Hail
         self.arena_marks = []  # what the fight has done to the place (a broken stalagmite, a toppled pillar)
         self.chronicle = self.new_chronicle()  # key moments, damage dealt and the strength track, for the summary
+        self.setups = []       # tactics: plans made (a soaked opponent and lightning ready...) waiting for their payoff
         self._pending_events = []  # things settled between beats (an alliance ending) that the next beat reports
         self._last_reposition = {}  # fighter -> the beat she was last rolled over or hauled up
         self.scenes = self._load_scenes(here)
@@ -576,7 +577,8 @@ class Engine:
                               self._fresh_down, self._fresh_status,
                               self.pressed, self.alliances, self._pending_events, list(getattr(self, "rolls", [])),
                               self.tally, getattr(self, "weather", {}), list(getattr(self, "arena_marks", [])),
-                              getattr(self, "chronicle", None) or self.new_chronicle(), self.rng.getstate()))
+                              getattr(self, "chronicle", None) or self.new_chronicle(),
+                              list(self.__dict__.get("setups") or []), self.rng.getstate()))
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -584,7 +586,7 @@ class Engine:
          self.pins, self.positions, self.downed, self.since_pin, self.momentum, self.move_log, self.last_pin_end,
          self.injury_log, self.plan, self.facing, self._last_reposition, self._fresh_down, self._fresh_status,
          self.pressed, self.alliances, self._pending_events, self.rolls, self.tally, self.weather, self.arena_marks,
-         self.chronicle, rng) = copy.deepcopy(snap)
+         self.chronicle, self.setups, rng) = copy.deepcopy(snap)
         self._last_manhandle = {k[3:]: v for k, v in self._last_reposition.items() if k.startswith("by:")}
         self._last_reposition = {k: v for k, v in self._last_reposition.items() if not k.startswith("by:")}
         self._knock_on = []
@@ -2924,6 +2926,162 @@ class Engine:
         return bool(re.search(r"\bcoil|\bwrap|wound round|wrapped round|looped round|tails? (?:round|around|wrapped)",
                               f"{with_part} {flavor}".lower()))
 
+    # ---------- tactics: setups and payoffs (a plan the director can follow and the narrator can show) ----------
+    def _usable_moves(self, f, mtype=None, damaging=True):
+        out = []
+        for m in f.moves:
+            if f.move_uses.get(m["name"], 1) <= 0 or m.get("target") == "hold":
+                continue
+            if damaging and (float(m.get("power", 0)) <= 0 or m.get("target") in ("status", "self")):
+                continue
+            if mtype and m.get("type") != mtype:
+                continue
+            out.append(m)
+        return out
+
+    def _knows_move(self, f, name):
+        return next((m for m in f.moves if m["name"].lower() == name.lower() and f.move_uses.get(m["name"], 1) > 0), None)
+
+    def _wet_hazards(self):
+        return [h.get("name") for h in ((getattr(self, "scene_cfg", None) or {}).get("hazards") or [])
+                if any((e or {}).get("status") == "soaked" for e in (h.get("effects") or []))]
+
+    def tactic_ideas(self):
+        """Plans a fighter could make right now, from the state of the fight: [{kind, who, on, step: "setup" or
+        "read", text}]. A setup has a payoff that the engine then watches for (tactics.setups)."""
+        out = []
+        cfg = self.rules.get("tactics") or {}
+        if not cfg.get("enabled", True):
+            return out
+        act = self.active()
+        weather = (getattr(self, "weather", None) or {}).get("kind")
+        for who in act:
+            if who.name in self.downed or self.pinned_by(who.name) or any(self.has(who, s) for s in ("asleep", "frozen")):
+                continue
+            for on in act:
+                if on is who or (who.team and on.team == who.team):
+                    continue
+                volt = self._usable_moves(who, "Electric")
+                wet = self._wet_hazards()
+                if volt and wet and not self.has(on, "soaked") and on.name in self.downed and not self.pinned_by(on.name):
+                    out.append({"kind": "drag_wet", "who": who.name, "on": on.name, "step": "setup",
+                                "text": f"{on.name} is down and {wet[0]} is right there: {who.name} drags her into it to "
+                                        f"soak her (action 'drag', landing on {wet[0]}), meaning to use {volt[0]['name']} "
+                                        f"next: lightning goes through a soaked body far worse"})
+                rain = self._knows_move(who, "Rain Dance")
+                if rain and weather != "rain" and self._usable_moves(who, "Water"):
+                    out.append({"kind": "rain_water", "who": who.name, "on": on.name, "step": "setup",
+                                "text": f"{who.name} calls the rain (Rain Dance) so her water hits harder from the next "
+                                        f"beat on, and then uses it"})
+                sun = self._knows_move(who, "Sunny Day")
+                if sun and weather != "sun" and self._usable_moves(who, "Fire"):
+                    out.append({"kind": "sun_fire", "who": who.name, "on": on.name, "step": "setup",
+                                "text": f"{who.name} calls the sun (Sunny Day) so her fire hits harder, and then uses it"})
+                if self.has(on, "mirroring") and self._usable_moves(who):
+                    out.append({"kind": "read_mirror", "who": who.name, "on": on.name, "step": "read",
+                                "text": f"{on.name} has a Mirror Coat on: a blast or beam would come straight back at "
+                                        f"{who.name}. She reads it and uses a close blow (claws, teeth, a tail, a ram) "
+                                        f"or waits it out"})
+                if self.has(on, "protecting"):
+                    out.append({"kind": "read_protect", "who": who.name, "on": on.name, "step": "read",
+                                "text": f"{on.name} is behind a Protect barrier: the next attack stops against it. "
+                                        f"{who.name} reads it: she feints, or waits it out (a breather), and strikes "
+                                        f"when it drops"})
+                if self.has(on, "countering"):
+                    out.append({"kind": "read_counter", "who": who.name, "on": on.name, "step": "read",
+                                "text": f"{on.name} is set to Counter: a close blow would come back harder. {who.name} "
+                                        f"reads it and attacks from range (a blast, a beam, a spray) or waits"})
+        return out
+
+    def tactic_payoffs(self):
+        """Setups still waiting for their payoff (tactics.setups), with what the payoff is."""
+        return [s for s in (self.__dict__.get("setups") or []) if not s.get("paid") and self.turn <= s["until"]]
+
+    def tactics_before(self):
+        """Remember how things stand before the beat's actions (so track_tactics can see what an action changed)."""
+        self._tac_before = {"soaked": {f.name for f in self.active() if self.has(f, "soaked")},
+                            "weather": (getattr(self, "weather", None) or {}).get("kind")}
+
+    def _new_setup(self, kind, who, on, setup, payoff, beats=None):
+        cfg = self.rules.get("tactics") or {}
+        s = {"kind": kind, "who": who, "on": on, "made": self.turn, "setup": setup, "payoff": payoff,
+             "until": self.turn + int(beats or cfg.get("payoff_beats", 3))}
+        lst = self.__dict__.setdefault("setups", [])
+        lst[:] = [x for x in lst if not (x["kind"] == kind and x["who"] == who and x["on"] == on and not x.get("paid"))]
+        lst.append(s)
+        del lst[:-12]
+        return s
+
+    def track_tactics(self, results):
+        """After the beat's actions: which setups were made (a fighter soaked where her opponent has lightning, the
+        rain or the sun called by a fighter whose moves it powers up) and which earlier setups were paid off (the
+        lightning into the soaked body, the water in the rain, the fire in the sun; a read of a Mirror Coat, a
+        Protect or a Counter). Returns notes for the screen and the narrator: [{stage, who, on, text, ...}]."""
+        cfg = self.rules.get("tactics") or {}
+        if not cfg.get("enabled", True):
+            return []
+        before = getattr(self, "_tac_before", None) or {"soaked": set(), "weather": None}
+        notes = []
+        acts = [r for r in results or [] if isinstance(r, dict)]
+        # payoffs first (a setup made this beat can't be paid in the same beat)
+        for s in self.tactic_payoffs():
+            for r in acts:
+                if r.get("type") != "instant" or r.get("attacker") != s["who"] or not r.get("hits"):
+                    continue
+                if s["on"] not in ([r.get("defender")] + list(r.get("defenders") or [])):
+                    continue
+                mt = (r.get("move") or {}).get("type")
+                if {"wet_shock": "Electric", "rain_water": "Water", "sun_fire": "Fire"}.get(s["kind"]) == mt:
+                    s["paid"] = self.turn
+                    notes.append({"stage": "payoff", "who": s["who"], "on": s["on"], "kind": s["kind"],
+                                  "ago": self.turn - s["made"], "setup": s["setup"], "text": s["payoff"]})
+                    break
+        # reads: the attacker saw the trap and went round it
+        for r in acts:
+            if r.get("type") != "instant" or not r.get("attacker") or not r.get("defender"):
+                continue
+            mv = r.get("move") or {}
+            on = self.fighters.get(str(r["defender"]).lower())
+            if on is None:
+                continue
+            was = (getattr(self, "_tac_status", None) or {}).get(on.name, set())
+            ranged = self.is_ranged(mv) if mv else False
+            if "mirroring" in was and mv and not ranged and mv.get("target") not in ("self", "status"):
+                notes.append({"stage": "read", "who": r["attacker"], "on": on.name, "kind": "read_mirror",
+                              "text": f"saw the Mirror Coat and came in close instead of throwing anything it could send back"})
+            if "countering" in was and mv and ranged:
+                notes.append({"stage": "read", "who": r["attacker"], "on": on.name, "kind": "read_counter",
+                              "text": "saw the Counter set and struck from range instead of walking into it"})
+        # new setups
+        for f in self.active():
+            foes = [g for g in self.active() if g is not f and not (f.team and g.team == f.team)]
+            if self.has(f, "soaked") and f.name not in before["soaked"]:
+                for g in foes:
+                    volt = self._usable_moves(g, "Electric")
+                    if volt:
+                        by = next((r.get("attacker") for r in acts if r.get("attacker") == g.name), None)
+                        setup = (f"{g.name} soaked {f.name} on purpose" if by else f"{f.name} got soaked through")
+                        notes.append({"stage": "setup", "who": g.name, "on": f.name, "kind": "wet_shock",
+                                      "text": f"{setup}: {g.name} has lightning ({volt[0]['name']}), and it goes through "
+                                              f"a soaked body far worse", "planned": bool(by)})
+                        self._new_setup("wet_shock", g.name, f.name, setup,
+                                        f"{volt[0]['name']} into {f.name} while she is still soaked",
+                                        beats=max(1, min(int(cfg.get("payoff_beats", 3)), f.status.get("soaked", 3))))
+        wk = (getattr(self, "weather", None) or {}).get("kind")
+        by = (getattr(self, "weather", None) or {}).get("by")
+        if wk and wk != before["weather"] and by:
+            f = self.fighters.get(str(by).lower())
+            kind, mtype = {"rain": ("rain_water", "Water"), "sun": ("sun_fire", "Fire")}.get(wk, (None, None))
+            if f is not None and kind and self._usable_moves(f, mtype):
+                foe = next((g.name for g in self.active() if g is not f), "")
+                notes.append({"stage": "setup", "who": f.name, "on": foe, "kind": kind, "planned": True,
+                              "text": f"{f.name} called the {wk} so her {mtype.lower()} would hit harder"})
+                self._new_setup(kind, f.name, foe, f"{f.name} called the {wk}",
+                                f"{self._usable_moves(f, mtype)[0]['name']} on {foe} while the {wk} lasts")
+        self._tac_status = {f.name: {s for s in ("mirroring", "countering", "protecting") if self.has(f, s)}
+                            for f in self.active()}
+        return notes
+
     # ---------- submission holds: very rare, a hold that WRENCHES (damage), not a pin ----------
     # each: which way she must lie, who can do it, the contacts (target part picker, role, what it is done with, by
     # the attacker's body plan), what the attacker still has free to use on her, and what it does to the body
@@ -5133,6 +5291,7 @@ class Engine:
             self.pin_window[f.name] = bool(open_all) or self._chance(self.pin_chance(f), f"pin opening on {f.name}",
                                                                      "OPEN", "none")
         self.roll_sub_windows(open_all)
+        self.tactics_before()
         for name in [f.name for f in self.active()]:
             hs = [h for h in self.holds.values() if h.defender == name and h.sub]
             if hs and self.sub_stuck(self.get(name), hs):
@@ -5886,6 +6045,7 @@ class Engine:
                 "last_reposition": getattr(self, "_last_reposition", {}), "alliances": self.alliances,
                 "weather": getattr(self, "weather", {}), "arena_marks": getattr(self, "arena_marks", []),
                 "chronicle": getattr(self, "chronicle", None) or self.new_chronicle(),
+                "setups": self.__dict__.get("setups") or [],
                 "extra": extra or {},
                 "fighters": {k: {**asdict(f), "parts": {n: asdict(p) for n, p in f.parts.items()}}
                              for k, f in self.fighters.items()},
@@ -5928,5 +6088,6 @@ class Engine:
         self.weather = data.get("weather", {})
         self.arena_marks = data.get("arena_marks", [])
         self.chronicle = {**self.new_chronicle(), **(data.get("chronicle") or {})}
+        self.setups = list(data.get("setups") or [])
         self.pressed, self._pending_events, self.pin_window = {}, [], {}
         return data.get("extra", {})

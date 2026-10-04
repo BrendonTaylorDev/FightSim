@@ -1498,5 +1498,11 @@
     "stuck_below": 25,
     "stuck_damage": 300,
     "stuck_mult": 0.6
+  },
+  "tactics": {
+    "_comment": "Setups and payoffs. The engine notices when a fighter has set something up (her opponent soaked while she has lightning; the rain called by a fighter with water moves; the sun by one with fire) and watches for the payoff for payoff_beats beats. The director gets a PAYOFF nudge while one is waiting, and now and then (idea_chance) an idea for a setup or a read (a Mirror Coat, a Protect or a Counter to go round). The narrator is told when a beat is a setup (the plan shows in a thought) and when it is the payoff (it was planned, and the other realises). The screen shows both (🧠).",
+    "enabled": true,
+    "payoff_beats": 3,
+    "idea_chance": 0.3
   }
 }

@@ -882,7 +882,13 @@ class Session:
         if forced_recovery:
             also = [e for e in also if not (e.get("type") == "recovery" and e["fighter"] == forced_recovery["fighter"])]
             also.insert(0, forced_recovery)
-        bundle = {"actions": results, "also_this_beat": also, "after_win": aftermath}
+        tactics = [] if aftermath else self.eng.track_tactics(results)   # plans made and paid off this beat
+        for t in tactics:
+            self.out("🧠 " + {"setup": f"Plan: {t['text']}.",
+                              "payoff": f"Payoff ({t['ago']} beat{'s' if t['ago'] != 1 else ''} in the making): "
+                                        f"{t['who']}: {t['text']}.",
+                              "read": f"Read: {t['who']} {t['text']}."}[t["stage"]])
+        bundle = {"actions": results, "also_this_beat": also, "after_win": aftermath, "tactics": tactics}
         headers = []
         for res in results:
             if res.get("type") == "instant":

@@ -2079,6 +2079,20 @@ class Narrator:
             elif e["type"] == "fatigue_shift":
                 for name, f in e["fighters"].items():
                     lines.append(f"{poss(name)} overall condition worsens to {f['now'].upper()}: {f['reaction_guide']}")
+        for t in bundle.get("tactics") or []:
+            if t["stage"] == "setup" and t.get("planned"):
+                lines.append(f"THE PLAN: {t['text']}. {t['who']} means it: let one short thought of hers show the plan "
+                             f"(in her own words: no move names, no rules), and let {t['on']} see it coming or not.")
+            elif t["stage"] == "setup":
+                lines.append(f"AN OPENING FOR LATER: {t['text']}. {t['who']} notices it: one short thought of hers can "
+                             f"show she has seen what it means (in her own words: no move names, no rules).")
+            elif t["stage"] == "payoff":
+                lines.append(f"THE PAYOFF: this is what {t['who']} has been waiting for since {t['ago']} beat(s) ago "
+                             f"({t['setup']}). Show that it was planned: the moment she has been waiting for, and "
+                             f"{t['on']} realising, too late, what the earlier move was for.")
+            elif t["stage"] == "read":
+                lines.append(f"A READ: {t['who']} {t['text']}. Show her seeing it and choosing; {t['on']} sees her "
+                             f"trap go unused.")
         last_level = {}
         for who, part, level in self._breaking:
             last_level[(who, part)] = level      # hit twice in one beat: the level it ENDS at
