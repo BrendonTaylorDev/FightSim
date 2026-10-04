@@ -620,7 +620,7 @@ She kept her feet, just. She stood in the shallows with the water pouring off he
 
 — Ripples —
 
-She got as far as the waterline and stopped there, on her front, retching up lake into the sand. Every breath was a scrape. Her neck felt bruised all the way round. She tried to get her arms under her, and they shook, and folded, and she lay with her cheek on the wet sand and her eyes half shut and simply breathed, because breathing was suddenly the best thing she had ever done.
+She got as far as the waterline and stopped there, on her front, coughing up lake into the sand. Every breath was a scrape. Her neck felt bruised all the way round. She tried to get her arms under her, and they shook, and folded, and she lay with her cheek on the wet sand and her eyes half shut and simply breathed, because breathing was suddenly the best thing she had ever done.
 
 ## beat 33
 — Nocturne —
@@ -768,7 +768,7 @@ Nocturne saw it coming and met it head-on. She opened her jaws and threw the dar
 
 Then the water won.
 
-It tore straight through the dark and hit her in the head, the chest, the belly, and it did not stop. It held there: three long, brutal pulses of it, battering her head back on her neck, filling her mouth, driving into her chest until she couldn't breathe, soaking her through. She doubled over round her belly in the middle of it, retching.
+It tore straight through the dark and hit her in the head, the chest, the belly, and it did not stop. It held there: three long, brutal pulses of it, battering her head back on her neck, filling her mouth, driving into her chest until she couldn't breathe, soaking her through. She doubled over round her belly in the middle of it, coughing.
 
 — Ripples —
 
