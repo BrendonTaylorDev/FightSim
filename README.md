@@ -843,7 +843,8 @@ After each beat's prose, the program prints the exact numbers in this format:
   60 ×0.8 / ×1.3, 40 ×1.3 / ×1.7, 15 and below ×1.8 / ×2.2. The brackets still give the icons, labels and the
   narrator's words. Same pace (about 51 beats against 53, about 5 pins a fight), and the worst single beat roughly halves
   (at most about 25% of full health against 45%). `resistance.smooth` (anchors editable; enabled false = the old
-  thresholds).
+  thresholds). With the gradient, Nocturne's original body measured 50% against Ripples and +3 63% (600 fights at your
+  settings), so her body parts are +2 over the original (about 60%). Ripples untouched.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
