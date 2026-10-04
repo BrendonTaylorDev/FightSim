@@ -440,7 +440,11 @@ class Engine:
         # resistance lost: by the blow's power, and (resistance.loss_per_damage, 0 = off) by the damage it really did,
         # so a part that takes a great deal of damage also softens faster
         wear = power * r["resistance"]["loss_per_power"] + taken * float(r["resistance"].get("loss_per_damage", 0) or 0)
-        p.resistance = max(r["resistance"]["minimum"], res_b - wear * rscale)
+        wear = wear * rscale
+        cap_res = float(r["resistance"].get("max_loss_per_hit", 0) or 0)
+        if cap_res > 0 and wear > cap_res:
+            wear = cap_res   # resistance.max_loss_per_hit: no single blow, however devastating, wears a part past this
+        p.resistance = max(r["resistance"]["minimum"], res_b - wear)
         # health lost: damage x loss_per_damage_point x the bracket's health_mult (a soft, worn-down part costs more)
         # x how much the part matters to the whole body (health.part_weights: a throat far more than an ear)
         vital = self.part_weight(p.name)
@@ -454,7 +458,8 @@ class Engine:
         res_over = 0.0
         if over > 0 and to_res > 0:
             before_over = p.resistance
-            p.resistance = max(r["resistance"]["minimum"], p.resistance - over * to_res)
+            room = (cap_res - (res_b - p.resistance)) if cap_res > 0 else over * to_res
+            p.resistance = max(r["resistance"]["minimum"], p.resistance - max(0.0, min(over * to_res, room)))
             res_over = before_over - p.resistance
 
         pain_a = tier_for(p.damage, pain_tiers(r))

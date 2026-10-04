@@ -553,7 +553,9 @@
           0.7
         ]
       ]
-    }
+    },
+    "max_loss_per_hit": 0,
+    "_max_loss_per_hit_comment": "max_loss_per_hit: the most resistance (in points) one blow can take off a part, however devastating, the soft cap's extra wear included. 0 = no limit."
   },
   "health": {
     "icon": "❤️",
