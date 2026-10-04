@@ -845,6 +845,14 @@ After each beat's prose, the program prints the exact numbers in this format:
   (at most about 25% of full health against 45%). `resistance.smooth` (anchors editable; enabled false = the old
   thresholds). With the gradient, Nocturne's original body measured 50% against Ripples and +3 63% (600 fights at your
   settings), so her body parts are +2 over the original (about 60%). Ripples untouched.
+- **Reactions follow the gradient.** How tough a part still is now comes in finer words that soften as gradually as
+  the numbers ("sturdy, barely marked", "starting to give", "soft, giving under blows", "thin, close to giving way").
+  A part that has gone soft but doesn't hurt much yet gets its own note: it's holding, and won't hold many more. A
+  blow coming at a part that is soft or badly hurt: she sees it coming and flinches before it lands, and the attacker
+  sees her protecting it (new story blocks for both sides). A ruined part hurts at the slightest touch: even a brush
+  gets a real reaction (fresh, a cry; worn, a scream; spent, the rawest), and steady pressure on it in a hold or pin
+  is agony. Under 30% strength she is past restraining her body's reactions: the rawest level now has her body
+  reacting on its own (jerking and curling, a limb scrabbling, a retch, shaking she can't stop). Still no sobbing.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

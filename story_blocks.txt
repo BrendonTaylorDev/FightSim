@@ -2074,3 +2074,38 @@ there is no buffer left: the {part} takes it raw, and everything in her goes wit
 the scream, when it comes, sounds far away to her, like someone else's
 or there is no scream at all, just a long, terrible quiet, and her eyes not quite finding anything
 she shakes, a deep, steady shaking she can't stop, from the {part} outward to every limb
+
+# ---------------------------------------------------------------------------------------------------------------
+# ANTICIPATION: a blow coming at a part that is already soft or badly hurt. She sees it coming and her body tries
+# to protect it before it lands; the attacker sees that.
+# ---------------------------------------------------------------------------------------------------------------
+== anticipate
+her whole body flinches before it lands, the hurt part snatched in against her
+she turns the hurt side away without meaning to, a fraction too late
+everything in her braces round that one place, and she knows it shows
+she sees where it's going and a small sound gets out of her before it even arrives
+the old hurt flares just from seeing it come, as if it already knew
+her guard drops to cover it, and leaves the rest of her open
+her fins clamp flat against her arms before the blow even reaches her | has: fins
+her ears pin back and her ruff goes up as she twists the hurt part away | has: ruff
+
+== anticipate_seen
+she sees the flinch before she lands it, and aims for exactly that place
+the way she guards it tells her everything she needs to know
+she watches the hurt part get pulled in, and smiles inside
+she feels her opponent brace, and puts the blow where the bracing is
+*There. That's what she's afraid of.*
+*Protecting it. Good. Now I know.*
+
+# ---------------------------------------------------------------------------------------------------------------
+# RAW, MORE: a ruined part touched, or worse, struck, by a fighter with almost nothing left to hold it in with
+# ---------------------------------------------------------------------------------------------------------------
+== raw | raw: raw
+her body jerks away from the {part} on its own, every limb pulling in, and a raw sound tears out with every breath
+she can't stop her legs from scrabbling at the ground, trying to get away from the {part} that is part of her
+a retch comes up out of her with the pain, and then another sound, cracked and helpless
+she curls so hard round the {part} that her own claws dig into her, and still she can't stop shaking
+
+== raw | raw: scream, raw
+even the touch was too much: the {part} has nothing left to take anything with
+the scream comes before she even knows she's been touched there

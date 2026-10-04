@@ -1616,7 +1616,15 @@ class Narrator:
         table = self.rules["severity"]["hold"]
         return min(table, key=lambda k: abs(table[k] - power))
 
+    FEEL_STEPS = [(120, "armored"), (100, "sturdy, barely marked"), (85, "sturdy"), (72, "starting to give"),
+                  (60, "weakened"), (50, "soft, giving under blows"), (40, "thin and vulnerable"),
+                  (28, "thin, close to giving way"), (-1e9, "fragile and exposed")]
+
     def _feel(self, res):
+        """How tough a part still is, in words. With resistance.smooth on, finer steps that follow the gradient (so the
+        story softens a part as gradually as the numbers do); otherwise the bracket's own word."""
+        if (self.rules.get("resistance", {}).get("smooth") or {}).get("enabled", False):
+            return next(w for at, w in self.FEEL_STEPS if float(res) >= at)
         return tier_for(res, self.rules["resistance"]["brackets"]).get("feel", "")
 
     def _hit_line(self, h, n=None, how=None):
@@ -1627,6 +1635,9 @@ class Narrator:
         fb, fa = self._feel(h["res_before"]), self._feel(h["res_after"])
         tough = (f"; its toughness drops from {fb} to {fa} (it will take the next hit worse)"
                  if fb != fa and fa else "")
+        if float(h.get("res_after", 100)) <= 55 and after["label"] in ("minor", "sore", "hurting"):
+            tough += ("; it doesn't hurt much yet, but it has gone SOFT: it's holding for now and won't hold many more "
+                      "(she can feel it, and so can a careful opponent)")
         label = f"Hit {n}: " if n else ""
         if before["label"] != after["label"] and after["label"] in ("excruciating", "devastated", "numb with shock"):
             self._breaking.append((h["defender"], h["part"], after["label"]))
@@ -1663,8 +1674,10 @@ class Narrator:
                 "her, and she makes herself go on, which costs her and shows"),
         ("scream", "a real scream, her whole body jerking round the hurt part; she shakes afterwards, her breath comes in "
                    "ragged pulls, and it is a moment before she can do anything at all"),
-        ("raw", "a raw scream that cracks in the middle, all of her clenching round the hurt; shaking she cannot stop, "
-                "eyes streaming, a long moment where there is nothing in her head but that part"),
+        ("raw", "a raw scream that cracks in the middle, all of her clenching round the hurt; her body reacts on its own "
+                "now, past anything she can restrain: jerking and curling round it, a limb scrabbling at the ground, a "
+                "retch, shaking she cannot stop, eyes streaming, a long moment where there is nothing in her head but "
+                "that part"),
     ]
 
     def _raw_reaction(self, h, before_label):
@@ -1692,7 +1705,14 @@ class Narrator:
         # scream but not come apart, only a spent one has the rawest reactions
         level = min(level, 1 + cond_score)
         if size == "glancing":
-            level = min(level, 1)
+            if before_label == "devastated":
+                # a part this ruined hurts at the slightest touch: even a brush gets a real reaction, and the less
+                # she has left the less of it she can hold in
+                level = max(min(level, 1 + cond_score), cond_score, 1)
+            elif before_label == "excruciating" and cond_score == 2:
+                level = min(max(level, 1), 2)
+            else:
+                level = min(level, 1)
         held_up = dev and float(h.get("damage_after", 0)) < 150 and left >= 60
         if held_up:
             # devastating, but the part isn't ruined and she still has most of her strength: a cry she can't stop,
@@ -1717,8 +1737,9 @@ class Narrator:
         self._raw_done[who] = level
         self._raw_parts[who] = h["part"]
         name, text = self.RAW_LEVELS[level]
-        lead = {"glancing": "only a brush, on a part that is already "
-                            f"{before_label}: smaller than a full blow there would be, but ",
+        lead = {"glancing": ("only a brush, but on a part this ruined even a touch is agony: "
+                             if before_label == "devastated" else "only a brush, on a part that is already "
+                             f"{before_label}: smaller than a full blow there would be, but "),
                 "solid": f"a real blow on a part that was already {before_label}: ",
                 "heavy": f"a heavy blow on a part that was already {before_label}: ",
                 "tremendous": f"a tremendous blow on a part that was already {before_label}: "}[size]
@@ -1744,7 +1765,19 @@ class Narrator:
         self._linger_pool.append((h["defender"], h["part"], h["damage_taken"], after["label"], "pressure"))
         change = (f"{before['label']} → {after['label'].upper()}" if before["label"] != after["label"]
                   else f"still {after['label']}")
-        return f"    • {h['part']}" + (f" ({with_})" if with_ else "") + f": {self._strength(h['damage_taken'])} squeeze, {change}"
+        note = ""
+        top = h.get("max_health") or (getattr(self, "max_health", None) or {}).get(h["defender"])
+        left = (100.0 * float(h["health_before"]) / float(top)) if top and h.get("health_before") is not None else 100.0
+        if float(h["damage_before"]) >= 300:
+            note = (" — the part is RUINED: even steady pressure on it is agony"
+                    + (", and she is past holding back her body's reactions to it (jerking, a raw sound with every "
+                       "breath, the limb trying to pull away on its own)" if left < 30 else
+                       ", and it shows however hard she tries to keep it in" if left < 60 else
+                       ", and keeping it in takes everything she has"))
+        elif float(h["damage_before"]) >= 150:
+            note = " — the part can't bear pressure: every bit of it tells"
+        return (f"    • {h['part']}" + (f" ({with_})" if with_ else "") + f": {self._strength(h['damage_taken'])} squeeze, "
+                f"{change}{note}")
 
     def _many_hits(self, hits):
         """Whole-body attacks: summarize instead of listing 30+ lines."""
@@ -2436,6 +2469,7 @@ class Narrator:
                     f"lands harder for that)." if fe["bit"] else
                     f"{a['defender']} READS it and doesn't commit; the real blow comes as an ordinary attack."))
             lines += self._devastating_line(a)
+            lines += self._anticipation_line(a)
             if a.get("juggled_up"):
                 lines.append(f"  - The blow knocks {a['defender']} UP OFF HER FEET into the air: she is still in the air, "
                              f"helpless, when the next blow comes (listed next). She does not land before it.")
@@ -4295,6 +4329,12 @@ class Narrator:
                 side[0] = "take" if take else "act"
                 add("the guard", B.pick("guard", 1, moment={"catch" if g_["kind"] == "block" else "turn"},
                                         has=feats(dfn_)))
+            if take and a.get("type") == "instant" and self._anticipation_line(a):
+                side[0] = "take"
+                add(f"{dfn_}, seeing it come", B.pick("anticipate", 1, has=feats(dfn_), fighter=(dfn_ or "").lower()))
+            if act and a.get("type") == "instant" and self._anticipation_line(a):
+                side[0] = "act"
+                add(f"{att_}, seeing her protect it", B.pick("anticipate_seen", 1, fighter=(att_ or "").lower()))
             if a.get("devastating"):
                 side[0] = "take" if take else "act"
                 add("why it is so severe", B.pick("devastating", 2, reason={a["devastating"].get("reason", "angle")},
@@ -6642,6 +6682,26 @@ class Narrator:
         left = 100.0 * float(hp) / float(mx) if mx and hp is not None else float(
             (getattr(self, "strengths", None) or {}).get(a.get("defender"), 100))
         return ("fresh" if left >= 60 else "worn" if left >= 30 else "spent"), part
+
+    def _anticipation_line(self, a):
+        """A blow coming at a part that is already soft or badly hurt: she sees it coming and flinches before it lands
+        (turning it away, a limb snatched in), and the attacker sees her protecting it. Not when she couldn't see it
+        coming (a feint she bit on, caught in the air, pinned, asleep)."""
+        hits = [h for h in a.get("hits") or [] if h.get("defender", a.get("defender")) == a.get("defender")]
+        if not hits or a.get("juggle") or (a.get("feint") or {}).get("bit") or a.get("environment"):
+            return []
+        dfn = a.get("defender")
+        if dfn in (getattr(self, "pinned_now", None) or ()) or dfn in (getattr(self, "cant_act", None) or ()):
+            return []
+        h = hits[0]
+        soft = float(h.get("res_before", 100)) <= 60
+        hurt = float(h.get("damage_before", 0)) >= 150
+        if not (soft or hurt):
+            return []
+        why = "already badly hurt" if hurt else "gone soft"
+        return [f"  - She SEES it coming at her {h['part'].lower()} ({why}) and flinches before it lands: the part "
+                f"snatched in or turned away a fraction too late, her whole body bracing for it. {a.get('attacker')} "
+                f"sees her protecting it, and knows exactly what that means."]
 
     def _devastating_line(self, a):
         """A blow (or a landing) that lands devastatingly: the story has to make the severity believable."""
