@@ -469,7 +469,8 @@ class Display:
             out.append((f"- ⏱️ **She goes under after {e.get('beats', '?')} beats ({num(e['seconds_to'])} s).**"
                         if e.get("fade_mode") else f"- ⏱️ **Full {num(e['duration'])} seconds held.**")
                        + (f" ❌ **{d} faints and is out.**" if e.get("elimination") else "")
-                       + ({"choking": " It was the choke that took her under"
+                       + ({"choking": " It was the " + {"blood": "blood choke", "air": "choke on her windpipe"}.get(
+                                          (e.get("out_cause") or {}).get("kind"), "choke") + " that took her under"
                                       + self._grip_words(e.get("out_cause") or {}) + ".",
                            "constriction": " It was the constriction that took her under"
                                            + (f" ({(e.get('out_cause') or {}).get('with')} round her {(e.get('out_cause') or {}).get('part')})"

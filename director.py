@@ -1582,11 +1582,27 @@ def pin_shapes(engine, pinner, target, skip=()):
                              + ([(neck, t["jaws"])] if t.get("jaws") and neck else []))
     from engine import body_region
     backs = [n for n in target.parts if body_region(n) == "back_up"]
-    if t.get("fore") and neck and backs and "sleeper" not in skip:
+    plan = engine.body_plan(pinner)
+    # a sleeper needs an arm that can lock round a neck: a four-legged fighter's foreleg can only press down
+    if t.get("fore") and neck and backs and "sleeper" not in skip and plan in ("biped", "serpent"):
         back = rng.choice(backs)
         out["sleeper"] = (f"a sleeper hold from behind: {t['fore']} hooked under her chin and locked round her {neck}, "
                           f"squeezing the sides of it shut, her weight along her {back} so she can't turn",
                           [(neck, t["fore"] + ", locked round it from behind"), (back, t["weight"])])
+    # throttled: hands closed round the sides of the neck (a body with hands to do it), knees on her chest
+    if plan == "biped" and t.get("fores") and neck and front:
+        out["throttle"] = (f"{t['fores']} closed round the sides of her {neck}, squeezing it shut, "
+                           f"{t.get('hind') or t['weight']} on her {front}",
+                           [(neck, t["fores"] + ", closed round the sides of it"), (front, t.get("hind") or t["weight"])])
+    # a leg scissor: legs locked round her neck from the side, squeezing the sides of it shut. Any fighter whose
+    # legs still work can do it (a four-legged fighter with her hind legs)
+    scissor = {"biped": "her legs" if t.get("hind") else "", "quadruped": "her hind legs" if t.get("hind") else ""}.get(plan, "")
+    if scissor and neck:
+        arms = sp["upper_arm"][:1] or sp["shoulder"][:1]
+        grab = t.get("fore") or t.get("jaws")
+        out["leg_scissor"] = (f"{scissor} locked round her {neck} from the side, squeezing the sides of it shut"
+                              + (f", {grab} trapping her {arms[0]}" if arms and grab else ""),
+                              [(neck, scissor + ", locked round it")] + ([(arms[0], grab)] if arms and grab else []))
     # the dunk: held face-down in the shallows, her head pushed under and let up and pushed under again (a choke by
     # water; never drowning). Only where the arena has shallow water to do it in
     pools = [h.get("name") for h in ((getattr(engine, "scene_cfg", None) or {}).get("hazards") or [])

@@ -2921,6 +2921,33 @@ class Engine:
         return bool(re.search(r"\bcoil|\bwrap|wound round|wrapped round|looped round|tails? (?:round|around|wrapped)",
                               f"{with_part} {flavor}".lower()))
 
+    def choke_kind(self, pinner, with_part="", coil=False):
+        """How a grip on the neck or throat puts her out: "blood" (the sides of the neck squeezed, the blood to her
+        head cut off: quick, a roaring and a greying, often before she is short of air) or "air" (the front of the
+        throat pressed in, the windpipe: slow, gasping and burning, the blood cut too in the end). It follows the
+        grip and the body doing it: anything wound round her neck, jaws closed over it, and paws, arms or legs that can
+        close round the sides (a biped's hands and arms, any fighter's legs locked round it) are a blood choke; a
+        forearm, foreleg, knee or weight barred or pressed across the front is the windpipe. A four-legged fighter's
+        forepaws and forelegs can't close round the sides, so they press: the windpipe."""
+        w = str(with_part or "").lower()
+        if coil or re.search(r"\bcoil|\bwrap|wound round|wrapped round|looped round|tails?\b", w):
+            return "blood"
+        if re.search(r"\bjaws?\b|\bteeth\b|\bfangs?\b|\bbite\b|\bmouth\b", w):
+            return "blood"
+        f = self.fighters.get(str(pinner or "").lower())
+        plan = self.body_plan(f) if f else "biped"
+        rounds = re.search(r"\bround\b|\baround\b|\blocked\b|\bsqueez|\bgrip|\bclamp|\bboth sides\b|\bsides of\b|"
+                           r"between her (?:thighs|legs|knees)", w)
+        if re.search(r"\bhind ?legs?\b|\bthighs?\b|\blegs\b", w) and rounds:
+            return "blood"                       # legs locked round the neck: anyone's legs can do that
+        if plan == "quadruped" and re.search(r"\bfore ?(?:paws?|legs?)\b|\bpaws?\b|\bforearm", w):
+            return "air"                         # she can only press down with those
+        if re.search(r"\bacross\b|\bbarred?\b|\bpress|\bknees?\b|\bweight\b|\bon (?:the|her) throat\b", w) and not rounds:
+            return "air"
+        if plan in ("biped", "serpent") and (rounds or re.search(r"\bpaws?\b|\bhands?\b|\bfingers\b|\barms?\b", w)):
+            return "blood"
+        return "air"
+
     @staticmethod
     def coil_scope(part):
         """What a wrap is round: "body" (chest, belly, back: full constriction, the blood held back, her heart slowing),
@@ -3353,9 +3380,10 @@ class Engine:
                     ch["finish"] = {"beat": self.turn, "who": att, "to": dfn, "fade": bool(e.get("fade_mode")),
                                     "seconds": e.get("seconds_to"), "beats": e.get("beats"),
                                     "cause": oc.get("cause", ""), "part": (oc.get("part") or "").lower(),
-                                    "with": (oc.get("with") or "").lower(),
+                                    "with": (oc.get("with") or "").lower(), "kind": oc.get("kind", ""),
                                     "strength": round(self.strength(self.fighters[dfn.lower()]), 1) if dfn.lower() in self.fighters else None}
-                    how = {"choking": "the choke", "constriction": "the constriction"}.get(oc.get("cause"), "the pain")
+                    how = {"choking": {"blood": "the blood choke", "air": "the choke on her windpipe"}.get(
+                               oc.get("kind"), "the choke"), "constriction": "the constriction"}.get(oc.get("cause"), "the pain")
                     self._moment("finish", f"{att} holds {dfn} down until {how} puts her out", att, dfn, weight=3)
             elif t == "adrenaline":
                 self._moment("adrenaline", f"{e.get('fighter')} gets a surge of adrenaline", e.get("fighter"),
@@ -3414,7 +3442,8 @@ class Engine:
 
         reasons = []
         if fin:
-            how = {"choking": "the choke on her " + fin["part"] if fin.get("part") else "the choke",
+            how = {"choking": ("the blood choke on her " + (fin.get("part") or "neck") if fin.get("kind") == "blood"
+                               else "the choke on her windpipe"),
                    "constriction": "the constriction around her " + fin["part"] if fin.get("part") else "the constriction"
                    }.get(fin.get("cause"), f"the pain in her {fin['part']}" if fin.get("part") else "the pain")
             reasons.append(f"{win} got her pinned when {lose} had too little left to throw her off, and {how} "
@@ -3451,7 +3480,8 @@ class Engine:
         rows += [f"   • beat {m['beat']}: {m['text']}" + (f" (−{m['loss']:.0f}%)" if m["loss"] >= 1 else "")
                  for m in keep] or ["   • (nothing out of the ordinary)"]
         if fin:
-            how = {"choking": "the choke", "constriction": "the constriction"}.get(fin.get("cause"), "the pain")
+            how = {"choking": {"blood": "the blood choke", "air": "the choke on her windpipe"}.get(fin.get("kind"), "the choke"),
+                   "constriction": "the constriction"}.get(fin.get("cause"), "the pain")
             length = (f"{fin['beats']} beats" if fin.get("fade") and fin.get("beats") else
                       f"{fin['seconds']} seconds" if fin.get("seconds") else "")
             rows.append(f"  Finish: {win} pinned {lose}" + (f" for {length}" if length else "") + f"; {how}"
@@ -4727,7 +4757,7 @@ class Engine:
         throat_coils = [h for h in holds if h.coil and self.coil_scope(h.part) == "throat"]
         if throat_coils:
             h = max(throat_coils, key=lambda x: x.power)
-            return {"cause": "choking", "part": h.part, "with": h.with_part, "coil": True}
+            return {"cause": "choking", "part": h.part, "with": h.with_part, "coil": True, "kind": "blood"}
         coils = [h for h in holds if h.coil and self.coil_scope(h.part) != "limb"]
         if coils:
             h = max(coils, key=lambda x: (body_region(x.part) in ("chest", "belly", "neck"), x.power))
@@ -4740,8 +4770,10 @@ class Engine:
         pick = random.Random(zlib.crc32((f"{getattr(self, '_seed0', 0)}|{self.turn}|{p['attacker']}|{dfn.name}|"
                                          f"{self.times('pinned', dfn.name)}|{worst:.2f}").encode())).random()
         if choke and (not hurt or pick >= share):
-            h = choke[0]
-            return {"cause": "choking", "part": h.part, "with": h.with_part}
+            # a grip round the sides of the neck takes her before one pressing the front: that one counts first
+            kinds = [(h, self.choke_kind(p["attacker"], h.with_part, h.coil)) for h in choke]
+            h, kind = next(((h, k) for h, k in kinds if k == "blood"), kinds[0])
+            return {"cause": "choking", "part": h.part, "with": h.with_part, "kind": kind}
         h = hurt[0] if hurt else (holds[0] if holds else None)
         return {"cause": "pain", "part": h.part if h else "", "with": h.with_part if h else ""}
 

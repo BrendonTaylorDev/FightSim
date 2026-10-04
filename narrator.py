@@ -1935,8 +1935,9 @@ class Narrator:
                 throat = scopes == {"throat"}
                 more = ", worse than the beat before" if beats > 1 else ""
                 if throat:
-                    feel = (f". They squeeze her THROAT: her air comes thin and whistling, the blood pounding in her "
-                            f"head, her sight greying at the edges{more}. Squeezing, not striking: no new wounds.")
+                    feel = (f". They squeeze the SIDES of her NECK: the blood to her head held back, pressure pounding "
+                            f"behind her eyes, a roaring in her ears, her sight greying at the edges, her breath "
+                            f"thin as well{more}. Squeezing, not striking: no new wounds.")
                 else:
                     feel = (f". They work on her BLOOD more than her breath: her circulation cut off where they hold, "
                             f"the trapped limbs going cold, heavy and tingling, her pulse pounding in her ears and then "
@@ -3124,11 +3125,22 @@ class Narrator:
                 self._faint = (d, a, e["duration"])
                 oc = e.get("out_cause") or {}
                 if oc.get("cause") == "choking":
-                    out.append(f"  - WHY SHE GOES OUT: the CHOKE. It is the grip on her {oc.get('part') or 'neck'}"
-                               + (f" ({oc['with']})" if oc.get("with") else "")
-                               + f" that takes her under: her air, not the pain. Show it that "
-                               f"way: the breath that will not come, her sight narrowing, sounds going far away, her "
-                               f"limbs getting heavy. The pain is still there, but it is not what ends it.")
+                    grip = f"the grip on her {oc.get('part') or 'neck'}" + (f" ({oc['with']})" if oc.get("with") else "")
+                    if oc.get("kind") == "blood":
+                        out.append(f"  - WHY SHE GOES OUT: a BLOOD CHOKE. It is {grip} that takes her under: it squeezes "
+                                   f"the SIDES of her neck and cuts off the blood to her head. Show it that way: pressure "
+                                   f"swelling behind her eyes, a roaring in her ears, the edges of everything going grey "
+                                   f"and the world shrinking to a point, the strength draining out of her limbs. She may "
+                                   f"still get a little air; it doesn't matter. It is quick at the very end, quicker "
+                                   f"than she expects: she goes out almost before she knows it. The pain is still there, "
+                                   f"but it is not what ends it. She is out cold, breathing, and she will wake.")
+                    else:
+                        out.append(f"  - WHY SHE GOES OUT: the CHOKE ON HER WINDPIPE. It is {grip} that takes her under: "
+                                   f"it presses the FRONT of her throat in. Show it that way: the breath that will not "
+                                   f"come, whistling and burning, the panic of it, and then the grey coming in from the "
+                                   f"sides as the blood is cut off too: her sight narrowing, sounds going far away, her "
+                                   f"limbs getting heavy. The pain is still there, but it is not what ends it. She is out "
+                                   f"cold, breathing again once it is off her, and she will wake.")
                 elif oc.get("cause") == "constriction":
                     out.append(f"  - WHY SHE GOES OUT: the CONSTRICTION. The coils"
                                + (f" round her {oc['part']}" if oc.get("part") else "")
@@ -4555,7 +4567,7 @@ class Narrator:
                 pressed = sorted(list((e or {}).get("pressure_hits") or []) + [
                     x["hits"][0] for x in also or () if x.get("type") == "hold_ongoing" and x.get("defender") == d_
                     and x.get("hits")], key=lambda h: -h.get("damage_after", 0))
-                if cause == "choking":        # it is her air that goes: the press that counts is the one on her neck
+                if cause == "choking":        # the choke (blood or windpipe): the press that counts is the one on her neck
                     pressed = [h for h in pressed if body_region(h["part"]) == "neck"]
                 elif cause == "constriction":  # the coils: what counts is where they are wound tightest
                     oc_part = (((e or {}).get("out_cause") or {}).get("part") or "")

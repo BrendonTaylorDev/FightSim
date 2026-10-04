@@ -893,6 +893,21 @@ After each beat's prose, the program prints the exact numbers in this format:
   still the constriction. As before, about a fifth of the time the pain under the press gets there first when
   the pressed parts are badly hurt. The pass-out line no longer repeats the part ("her jaws, closed on the throat",
   not "...on the throat on her Throat").
+- **Blood choke or windpipe choke, by the grip.** A throat pass-out is now told the way that grip would really do
+  it. Anything that closes round the SIDES of the neck is a blood choke (the blood to her head cut off: pressure
+  behind the eyes, a roaring in the ears, the world greying and shrinking to a point, quick at the very end, often
+  before she is short of air): tails or coils looped round it, jaws closed over it (either fighter), Ripples' paws
+  closed round it or her arm locked round it, and legs locked round it (Ripples' legs, Nocturne's hind legs). A
+  forearm, foreleg, knee or weight barred or pressed across the FRONT is the windpipe (the breath that won't come,
+  whistling and burning, then the grey as the blood goes too). A four-legged fighter's forepaws and forelegs can't
+  close round the sides, so they always press the front. The console, the fight summary and the narrator all say
+  which. Tails wound round the throat during a hold now feel like the blood choke too.
+  The director's pin options follow the same bodies: the sleeper hold (an arm locked round the neck from behind)
+  is now only offered to a fighter with arms that can lock (Ripples, not Nocturne); new options are a throttle
+  (both paws closed round the sides of the neck, knees on the chest) for a fighter with hands, and a leg scissor
+  (legs locked round the neck from the side) for any fighter whose legs still work. How fast she goes under is
+  unchanged: this is how it is told. Check after these and the block fix: 400 fights at your settings, Nocturne
+  63.5% (±2.5), pins 4.8 a fight, 73% of fights with 4+.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
