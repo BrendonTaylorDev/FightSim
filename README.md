@@ -879,6 +879,13 @@ After each beat's prose, the program prints the exact numbers in this format:
   uses on herself (Mirror Coat, Protect, the weather moves) no longer shows a type matchup against her opponent
   ("Psychic vs Dark: no effect"). Status lines read as words ("doubled over", "off balance", "furious") instead
   of "doubled_over"; the fury after a long pin says what it is instead of borrowing the cramp's line; "down 1 beat".
+  For the narrator: the fury after a pin was being described as a cramp from bearing down (to the one who'd been
+  pinned); it is now a cold anger with harder blows. Statuses wearing off read as words ("shakes off being
+  furious", "the surge drains out of her") instead of "being fury" / "being adrenaline". "For the third time",
+  not "3th". Self moves no longer appear in the fight-so-far list as "Rain Dance → Nocturne's" with nothing after.
+  Who is ahead, late in a fight: a few points of strength now count for more when both are low (9% against 15% is
+  no longer called "ahead" for the one at 9% just because she has fewer badly hurt parts). Story only: no balance
+  change.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
