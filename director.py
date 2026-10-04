@@ -1367,7 +1367,7 @@ class Director:
         if getattr(engine, "_windows_ready", False):
             engine._windows_ready = False
         else:
-            engine.roll_pin_windows(open_all=bool(direction))
+            engine.roll_pin_windows(open_all=bool(direction) and getattr(engine, "dice_mode", "fair") != "strict")
         # your words decide where blows land; the dice only fill in what you left open
         engine.directed = bool(direction) or any(v and v != "WAIT" for v in players.values())
         hint = initiative_hint(engine) if not direction else ""

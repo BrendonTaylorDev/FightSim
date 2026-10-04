@@ -2237,3 +2237,17 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
     - If the director can't turn your words into a valid action (for example, a pin with no opening), you get the reason and can try again.
   - **Openings:** a played fighter gets the same dice-rolled pin and submission openings as everyone else, shown to you before you choose. `play.free_pins: true` lets her always try a pin.
   - **Direct control:** every /command still works at the `Nocturne > ` prompt (/strike, /pin, /down, /getup, /undo, /auto…), so you can decide outcomes yourself at any time. A /command typed at a later fighter's prompt runs instead of that beat.
+- **Dice for the fighters you play (`/play dice fair|strict|free`).** The setting is saved as `play.dice`.
+  - **fair** (the default): the dice decide, and your /commands can still force any outcome.
+  - **strict** (at the mercy of the dice):
+    - Pins, submissions, getting up and escapes happen only when the dice allow.
+    - Your commands follow the same rules as the director's choices, and their openings are rolled first.
+    - Typed directions no longer open a pin.
+    - Commands that decide an outcome or edit the fight are refused while you play: /pinsuccess, /pinescape, /getup, /down, /land, /eliminate, /heal, /restore, /face, /part, /fighter, /extendpin, /pinclock, /hazard and /undo. After the match, /getup and /recover still work.
+  - **free** (the dice are off for your fighters):
+    - Their attacks always land, with no dodge, block or deflect.
+    - Pin and submission openings on their opponents are always there.
+    - They get up at the first try.
+    - A pin breaks whenever they try to escape it, and any hold on them breaks at once.
+    - Rolls against them, such as their own dodges, still count.
+  - In every mode, a beat's openings are rolled once. A refused attempt doesn't roll them again, so retrying can't fish for an opening.

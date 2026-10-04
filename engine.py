@@ -336,6 +336,7 @@ class Engine:
         # the place acts by its own dice, so adding or removing arena events never changes how a fight's own rolls fall
         self.event_rng = random.Random(None if seed is None else int(seed) * 7919 + 13)
         self._last_event, self._forced_event = None, None
+        self.lucky = set()     # fighters you play with the dice off for them (/play dice free): their own tries succeed
         mpath = os.path.join(here, "moves.json")
         self.movedex = load_json(mpath).get("moves", []) if os.path.exists(mpath) else []
         for fd in fdata["fighters"]:
@@ -1949,6 +1950,8 @@ class Engine:
     def dodge_roll(self, a, d, target, move_name=None):
         """None if the attack lands; otherwise the dodge (and maybe a counter-hit). A move that has already landed on
         her twice is one she has learned to read (learning.dodge_per_hit)."""
+        if a.name in self.lucky:
+            return None   # /play dice free: her attacks always land
         ch = self.dodge_chance(a, d, target)
         lcfg = self.rules.get("learning") or {}
         seen = (d.learned.get("moves") or {}).get(f"{a.name}|{move_name}", 0) if move_name else 0
@@ -2417,6 +2420,8 @@ class Engine:
             tries = next((i + 1 for i, c in enumerate(cuts) if score >= c), None)
             if tries is None and beats >= int(cfg.get("max_beats_down", 4)):
                 tries = 3  # nobody stays down forever unless pinned out
+            if f.name in self.lucky:
+                tries = 1  # /play dice free: she gets up at the first try
             props = self.scene_props()
             grab = self.rng.choice(props)
             # (the dice are rolled as before; but a fighter lying at the foot of something uses THAT to get up)
@@ -3475,6 +3480,8 @@ class Engine:
         cfg = (self.rules.get("moves") or {}).get("guard") or {}
         if not cfg.get("enabled", True) or move.get("target") in ("status", "self", "hold", "whole_body"):
             return None
+        if a.name in self.lucky:
+            return None   # /play dice free: nothing gets in the way of her attacks
         if (d.name in self.downed or self.pinned_by(d.name) or self.grab_between(a.name, d.name)
                 or any(h.defender == d.name for h in self.holds.values())
                 or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched", "constricted", "airborne"))
@@ -4766,6 +4773,8 @@ class Engine:
             ch = self.hold_break_chance(a, d)
             if any(h.sub for h in hs):
                 ch, _ = self.sub_break_chance(ch, fd, hs)
+            if fd.name in self.lucky:
+                ch = 1.0   # /play dice free: she breaks any hold on her at once
             if ch <= 0:
                 continue
             cfg = self.rules.get("holds", {}).get("break", {})
@@ -5513,6 +5522,12 @@ class Engine:
             self.pin_window[f.name] = bool(open_all) or self._chance(self.pin_chance(f), f"pin opening on {f.name}",
                                                                      "OPEN", "none")
         self.roll_sub_windows(open_all)
+        for f in self.active():   # /play dice free: every opening is there for her
+            if f.name in self.lucky:
+                for o in self.active():
+                    if o is not f and not (f.team and o.team == f.team) and not self.pinned_by(o.name):
+                        self.pin_window[o.name] = True
+                        self.sub_window[o.name] = True
         self.tactics_before()
         for name in [f.name for f in self.active()]:
             hs = [h for h in self.holds.values() if h.defender == name and h.sub]
@@ -5648,7 +5663,7 @@ class Engine:
                 roll = self.rng.random()
                 ev["roll"] = round(roll, 3)
                 ev["try_how"] = self.vary("struggle")
-                if roll < esc:
+                if roll < esc or dfn.name in self.lucky:   # /play dice free: every try of hers gets her out
                     ev["struggle"] = "escape"
                     ev["hits_on_pinner"] = self._escape_hit(self.rng.choice(crew), dfn)
                     for h in holds:  # free of everyone who was pressing on her

@@ -42,6 +42,13 @@ HELP = """
                               decide what lands. Every /command works at those prompts too, for direct control over
                               what happens (/strike, /pin, /down, /getup, /undo...).
                                 /play Nocturne      /play Nocturne Ripples      /play all      /play off      /play
+  /play dice fair|strict|free how the dice treat the fighters you play. fair (default): the dice decide, and your
+                              /commands can still force outcomes. strict: at the mercy of the dice: pins,
+                              submissions, getting up and escapes only when the dice allow; commands follow the same
+                              rules as the director, and the ones that decide an outcome (/pinsuccess, /getup, /down,
+                              /eliminate, /undo...) are refused. free: the dice are off for your fighters: their
+                              attacks always land, openings are always there, they rise at the first try and break
+                              any pin or hold they try to (rolls against them still count).
   /auto <n>                   let the director run n beats on its own (for whole fights: /autofight)
   /auto pin                   play the running pin out, beat by beat, until it ends
   /wait [what happens]        a beat with no new attack (holds and pins keep going)
@@ -477,12 +484,33 @@ class Session:
             names = names[k:] + names[:k]
         return names
 
+    DICE_MODES = {"fair": "the dice decide what happens; your /commands can still force any outcome",
+                  "strict": "you are at the mercy of the dice: pins, submissions, getting up and escapes only when the "
+                            "dice allow, and no command forces an outcome",
+                  "free": "the dice are off for the fighters you play: their attacks always land, openings are always "
+                          "there, they get up at the first try and break any pin or hold they try to"}
+
+    def dice_mode(self):
+        m = str((self.eng.rules.get("play") or {}).get("dice", "fair")).lower()
+        return m if m in self.DICE_MODES else "fair"
+
+    def sync_dice(self):
+        """Tell the engine how the dice treat the fighters you play (/play dice)."""
+        on = self.play_order() if self.players else []
+        mode = self.dice_mode() if on else "fair"
+        self.eng.lucky = set(on) if mode == "free" else set()
+        self.eng.dice_mode = mode
+
+    def strict(self):
+        return bool(self.players) and self.dice_mode() == "strict" and not self.over
+
     def playing(self):
         return bool(self.play_order()) and not self.over and not self.pending and bool(self.story or not self.use_llm)
 
     def play_panel(self, name, first=False):
         """What your fighter has to work with before you choose: her state, her moves, and this beat's openings."""
         e = self.eng
+        self.sync_dice()
         if first and not getattr(e, "_windows_ready", False):
             # the openings are rolled now (once for the whole beat, however many times you're asked), so you can
             # see them before you choose
@@ -500,7 +528,8 @@ class Session:
                  for m in f.moves if f.move_uses.get(m["name"], 1) > 0]
         pinner = e.pinned_by(name)
         state = e.posture_text(name, short=True)
-        lines = [f"🎮 {name} — {e.strength(f):.0f}% strength · {state}"]
+        lines = [f"🎮 {name} — {e.strength(f):.0f}% strength · {state}"
+                 + ("" if self.dice_mode() == "fair" else f" · dice: {self.dice_mode()}")]
         if pinner:
             lines.append(f"   PINNED: you can struggle to break free, or strike at the one on top of you")
         held = [h for h in e.holds.values() if h.defender == name]
@@ -896,6 +925,16 @@ class Session:
             self.intro()  # first Enter sets the scene; the next one starts the fight
             if not direction:
                 return
+        self.sync_dice()
+        if manual is not None and self.strict():
+            if not getattr(self.eng, "_windows_ready", False):
+                # the openings for this beat haven't been rolled yet (you weren't asked first): roll them now
+                self.eng.rolls = []
+                self.eng.roll_pin_windows()
+                self.eng._pre_rolls, self.eng._windows_ready = list(self.eng.rolls), True
+            for b in (manual if isinstance(manual, list) else [manual]):
+                if isinstance(b, dict):
+                    b.pop("_manual", None)   # at the mercy of the dice: your commands follow the same rules as the director
         self.push_history()
         # this beat's dice, from here on (the openings rolled when your fighters were asked for their moves count too)
         self.eng.rolls = list(getattr(self.eng, "_pre_rolls", None) or []) if getattr(self.eng, "_windows_ready", False) else []
@@ -924,9 +963,8 @@ class Session:
                     self.eng, self.eng.scene, self.recent_story(), direction, self.recent_attacks, players=orders)
         except Exception:
             self.history.pop()  # nothing happened, so there's nothing to undo
-            raise
-        finally:
-            self.eng._windows_ready = False  # the openings were used (or the beat failed): the next ask rolls fresh
+            raise   # (this beat's openings stay as they were: trying again doesn't roll them again)
+        self.eng._windows_ready = False  # the openings were used: the next beat rolls fresh ones
         if direction:
             self.transcript.append(f"> {direction}")  # you already see what you typed; keep it for /export
         history_before = list(self.recent_attacks)  # what had happened before this beat, for the narrator
@@ -1735,8 +1773,24 @@ def _autofight(s, a):
     s.auto_fights(count, after, names or None)
 
 
+STRICT_BLOCK = {"eliminate", "pinsuccess", "pinescape", "land", "down", "getup", "heal", "restore", "face", "part",
+                "fighter", "extendpin", "pinclock", "hazard", "undo"}
+
+
+def _strict_check(s, cmd):
+    """At the mercy of the dice (/play dice strict): commands that decide an outcome or change the fight's state
+    are refused while you play a fighter."""
+    if s.strict() and cmd in STRICT_BLOCK and not (s.over and cmd in ("getup", "recover")):
+        raise ValueError(f"/{cmd} decides the outcome itself, and you're playing at the mercy of the dice "
+                         f"(/play dice strict). /play dice fair allows it again.")
+
+
 def handle_command(s, line):
     if SAME_BEAT.search(line):
+        for piece in SAME_BEAT.split(line)[:3]:
+            bits = shlex.split(piece.strip()[1:])
+            if bits:
+                _strict_check(s, bits[0].lower())
         # several attack commands joined with " + " happen in the same beat (up to three), so a follow-up can land
         # before the first one's consequences play out: before a charged fighter crumples, say
         beats = []
@@ -1759,6 +1813,7 @@ def handle_command(s, line):
     if not parts:
         return
     cmd, a = parts[0].lower(), parts[1:]
+    _strict_check(s, cmd)
     if cmd in ("quit", "exit"):
         return "quit"
     if cmd == "help":
@@ -1769,8 +1824,26 @@ def handle_command(s, line):
             print(("You play: " + ", ".join(s.players) + ". The director runs the rest.") if s.players else
                   "You aren't playing anyone: the director runs every fighter. /play <name> [name...] or /play all")
             return
+        if a[0].lower() == "dice":
+            if len(a) < 2:
+                print(f"Dice for the fighters you play: {s.dice_mode()} ({s.DICE_MODES[s.dice_mode()]}).\n"
+                      "  /play dice fair     the dice decide; /commands can still force outcomes (default)\n"
+                      "  /play dice strict   at the mercy of the dice: no forcing, pins and getting up only when "
+                      "the dice allow, no /undo\n"
+                      "  /play dice free     ignore the dice for your fighters: their own tries always work")
+                return
+            mode = a[1].lower()
+            if mode not in s.DICE_MODES:
+                raise ValueError("/play dice fair | strict | free")
+            s.eng.rules.setdefault("play", {})["dice"] = mode
+            _save_rule_path(["play", "dice"], mode)
+            s.eng._windows_ready = False   # openings are rolled again under the new rule
+            s.sync_dice()
+            print(f"Dice for the fighters you play: {mode}: {s.DICE_MODES[mode]} (saved)")
+            return
         if a[0].lower() == "off":
             s.players, s.eng._windows_ready = [], False
+            s.sync_dice()
             print("Play-as is off: the director runs every fighter again."); return
         if a[0].lower() == "all":
             want = [f.name for f in s.eng.active()]
@@ -1782,6 +1855,8 @@ def handle_command(s, line):
                     raise ValueError(f"no fighter called {x} (in this fight: {', '.join(f.name for f in s.eng.active())})")
                 want.append(n)
         s.players, s.eng._windows_ready = want, False
+        s.sync_dice()
+        print(f"Dice: {s.dice_mode()} ({s.DICE_MODES[s.dice_mode()]}). /play dice to change it.")
         if not s.use_llm:
             print("(The director is off (--no-llm), so your moves can only be /commands for now.)")
         print("You play: " + ", ".join(want) + (". Every fighter is yours." if len(want) >= len(s.eng.active()) else
