@@ -2225,3 +2225,15 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - It shows on screen as "💥 the drop on try N hurts" and goes to the narrator as a real hit.
   - Balance check after these changes (400 fights at your settings): Nocturne 59.0%, 7.6 pins a fight, 93.5% of fights with 4+ pins, 0.82 submissions a fight.
 - **Fix:** the 🧠 plan line crashed whenever a new setup was made, because the payoff text was built even for setups. It now only builds the line it needs.
+- **Play as fighters (`/play`).** Play as one fighter (`/play Nocturne`), several, or all of them (`/play all`). `/play off` hands everyone back to the director.
+  - **Each beat:**
+    - The prompt becomes `Nocturne > `.
+    - Before it, a panel shows her strength, her state (standing, down, pinned, held, holding), her moves with any uses left, and this beat's openings on each opponent: whether a pin is open, and a submission when one is.
+    - Type her move in plain words, for example "slash at her face" or "I bite her throat and hold".
+    - Press Enter to let the director choose for her this beat, or type `wait` to have her hold back.
+    - With several played fighters you're asked for each in turn, and who goes first rotates every beat.
+  - **The director's job:** it turns your words into actions and never adds, changes or chooses actions for a played fighter. It then runs the fighters you don't play; by default each of them answers your moves every beat (`play.ai_answers`).
+    - The dice still decide what lands, dodges and escapes.
+    - If the director can't turn your words into a valid action (for example, a pin with no opening), you get the reason and can try again.
+  - **Openings:** a played fighter gets the same dice-rolled pin and submission openings as everyone else, shown to you before you choose. `play.free_pins: true` lets her always try a pin.
+  - **Direct control:** every /command still works at the `Nocturne > ` prompt (/strike, /pin, /down, /getup, /undo, /auto…), so you can decide outcomes yourself at any time. A /command typed at a later fighter's prompt runs instead of that beat.

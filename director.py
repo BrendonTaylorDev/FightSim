@@ -1356,13 +1356,20 @@ class Director:
         self.model, self.host = model, host
         self.temperature, self.retries = temperature, retries
 
-    def next_beat(self, engine, scene, story_so_far, direction="", recent_attacks=None):
-        """Ask the model for the next beat and apply it. Returns (beat_json, result, started_ids)."""
+    def next_beat(self, engine, scene, story_so_far, direction="", recent_attacks=None, players=None):
+        """Ask the model for the next beat and apply it. Returns (beat_json, result, started_ids).
+        players: {fighter: what her player ordered (text), "WAIT" (she holds back), or None (the director chooses)}
+        for the fighters the user plays (/play)."""
         recent = "\n".join(f"- {x}" for x in (recent_attacks or [])[-8:]) or "(none yet)"
+        players = {k: v for k, v in (players or {}).items() if any(f.name == k for f in engine.active())}
         # is there an opening for a pin on anyone this beat? (rolled once, so retries don't re-roll it; a typed
-        # direction always may pin)
-        engine.roll_pin_windows(open_all=bool(direction))
-        engine.directed = bool(direction)   # your words decide where blows land; the dice only fill in what you left open
+        # direction always may pin). When you play a fighter they were rolled as you were asked, and shown to you.
+        if getattr(engine, "_windows_ready", False):
+            engine._windows_ready = False
+        else:
+            engine.roll_pin_windows(open_all=bool(direction))
+        # your words decide where blows land; the dice only fill in what you left open
+        engine.directed = bool(direction) or any(v and v != "WAIT" for v in players.values())
         hint = initiative_hint(engine) if not direction else ""
         steer = plan_hint(engine)
         if not direction and not hint:
@@ -1416,6 +1423,7 @@ class Director:
                 f"{('...' + story_so_far[-1500:]) if len(story_so_far or '') > 1500 else (story_so_far or '(the fight is just starting)')}\n\n"
                 + (f"{steer}\n\n" if steer else "")
                 + (f"{hint}\n\n" if hint else "")
+                + (play_block(engine, players) + "\n\n" if players else "")
                 + f"USER DIRECTION FOR THIS BEAT (follow it exactly): {direction or '(none — your call)'}\n\n"
                 "Return the next beat as JSON.")
         story = userprompt.story_prompt(engine.rules)
@@ -1444,6 +1452,8 @@ class Director:
                             mv = None
                         if mv and mv.get("sustainable"):
                             b["sustain"] = 3
+                if players:
+                    actions = apply_players(engine, actions, players)
                 results, started = resolve_many(engine, actions)
                 pos = " ".join(str(beat.get("positions", "") if isinstance(beat, dict) else "").split())
                 if len(pos) >= 15 and pos.lower().strip(". ") not in ("same", "unchanged", "no change", "as before"):
@@ -1453,7 +1463,11 @@ class Director:
                 last_err = e
                 messages += [{"role": "assistant", "content": raw},
                              {"role": "user", "content": f"That beat is invalid: {e}. Return a corrected beat."}]
-        if direction:  # the user asked for something specific: don't silently replace it with a pause
+        if direction or any(v and v != "WAIT" for v in players.values()):
+            # the user asked for something specific: don't silently replace it with a pause
+            if not direction:
+                raise ValueError(f"the director couldn't turn your move into a valid beat ({last_err}). Try wording "
+                                 f"it differently, or use a /command for direct control")
             raise ValueError(f"the director couldn't turn that direction into a valid beat ({last_err}). "
                              f"Try wording it differently, or use a /command")
         # Don't stall the story: fall back to a quiet beat (holds still tick) and say why.
@@ -1462,6 +1476,58 @@ class Director:
                     "flavor": "the fighters reset, circling and catching their breath", "intent": "reset"}
         results, started = resolve_many(engine, [fallback])
         return [fallback], results, started
+
+
+def play_block(engine, players):
+    """The part of the director's prompt that says who the user plays and what each played fighter does."""
+    run = [f.name for f in engine.active() if f.name not in players]
+    lines = ["PLAYERS: the user is PLAYING as " + ", ".join(players) + ". A played fighter does ONLY what her player "
+             "ordered: never invent, add or change an action for her, and never make her choices for her. Any hint "
+             "above about what a played fighter should do does not apply to her (it is only for the fighters you "
+             "run). Put the played fighters' actions FIRST, in this order:"]
+    for name, order in players.items():
+        if order == "WAIT":
+            lines.append(f"- {name} (player): holds back this beat. NO action for her at all.")
+        elif order:
+            lines.append(f"- {name} (player) orders: \"{order}\". Turn exactly this into her action(s), using her "
+                         f"moves and the rules ('I', 'me', 'my' in the order mean {name}). If the order says how it "
+                         f"turns out, still only choose the action: the dice decide what happens.")
+        else:
+            lines.append(f"- {name} (player): the player lets you choose her action this beat, as you normally would.")
+    cfg = engine.rules.get("play", {})
+    if run:
+        lines.append("Fighters you run: " + ", ".join(run) + ". After the played fighters' actions, "
+                     + ("give each of them who can act ONE action that answers what just happened (a counter, a "
+                        "strike, a grab, a struggle if pinned), or more only for a held moment or a combo as you "
+                        "normally would."
+                        if cfg.get("ai_answers", True) else
+                        "you may add an action for them if the moment calls for it."))
+    else:
+        lines.append("Every fighter is played: add NO actions beyond the ones ordered (and the ones you were told to "
+                     "choose).")
+    return "\n".join(lines)
+
+
+def apply_players(engine, actions, players):
+    """Keep the director to the players' orders: no actions for a fighter who holds back, at least one for every
+    fighter given an order, and the played fighters' actions first, in the order they were asked."""
+    if not isinstance(actions, list):
+        actions = [actions]
+    def who(b):
+        return str(b.get("attacker") or "") if isinstance(b, dict) else ""
+    names = {n.lower(): n for n in players}
+    waiting = {n.lower() for n, o in players.items() if o == "WAIT"}
+    kept = [b for b in actions if who(b).lower() not in waiting]
+    for n, o in players.items():
+        if o and o != "WAIT" and not any(who(b).lower() == n.lower() for b in kept):
+            raise ValueError(f"{n}'s player ordered \"{o}\", but there is no action for {n} (her action must have "
+                             f"\"attacker\": \"{n}\")")
+    order = [n.lower() for n in players]
+    kept.sort(key=lambda b: order.index(who(b).lower()) if who(b).lower() in names else len(order))
+    if not kept:
+        kept = [{"action": "breather", "attacker": next(iter(players)), "flavor": "nobody presses; they watch each "
+                 "other", "intent": "reset"}]
+    return kept
 
 
 def initiative_hint(engine, roll=None):

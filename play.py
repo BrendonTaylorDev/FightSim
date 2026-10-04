@@ -34,6 +34,14 @@ HELP = """
 =============================================================================================
   [Enter]                     the director picks the next beat
   <any text>                  your direction for the next beat ("Ripples goes for the throat")
+  /play <names | all | off>   PLAY AS one, several or all fighters. Each beat you're asked for each one's move
+                              ("Nocturne > "), with her strength, state, moves and this beat's pin openings shown
+                              first. Type the move in plain words ("slash at her face", "I bite her throat and
+                              hold"); Enter lets the director choose for her this beat; "wait" = she holds back. The
+                              director turns your words into actions and runs everyone you don't play; the dice still
+                              decide what lands. Every /command works at those prompts too, for direct control over
+                              what happens (/strike, /pin, /down, /getup, /undo...).
+                                /play Nocturne      /play Nocturne Ripples      /play all      /play off      /play
   /auto <n>                   let the director run n beats on its own (for whole fights: /autofight)
   /auto pin                   play the running pin out, beat by beat, until it ends
   /wait [what happens]        a beat with no new attack (holds and pins keep going)
@@ -423,6 +431,8 @@ class Session:
         self.last_narration = None  # what the last beat's prose was written from, for /reroll
         self.pending = None         # a beat whose narration failed, waiting for /reroll
         self.autosave_enabled = not getattr(args, "no_autosave", False)
+        self.players = []           # fighters you play yourself (/play); the director runs the rest
+        self._play_rot = 0          # with several played fighters, who is asked first turns over each beat
 
     # ---------- output ----------
     def out(self, text=""):
@@ -443,12 +453,12 @@ class Session:
         elif "writing more" in msg:
             BEAT_TALLY["top-ups"] += 1
 
-    def play_beat(self, direction="", manual=None):
+    def play_beat(self, direction="", manual=None, orders=None):
         """One beat, and then how long it took and what had to be written again (console -> timing, /timing)."""
         before, t0 = dict(llm.stats), time.time()
         BEAT_TALLY.clear()
         try:
-            return self._play_beat(direction, manual)
+            return self._play_beat(direction, manual, orders)
         finally:
             d = {k: llm.stats[k] - before.get(k, 0) for k in llm.stats}
             if d["calls"] > 0:
@@ -457,6 +467,89 @@ class Session:
                 self.timings.append(row)
                 if self.eng.rules.get("console", {}).get("timing", True):
                     print(timing_line(row))
+
+    # ---------- playing as fighters (/play) ----------
+    def play_order(self):
+        """The fighters you play who are still in the fight, the first one asked turning over each beat."""
+        names = [f.name for f in self.eng.active() if f.name in self.players]
+        if len(names) > 1:
+            k = self._play_rot % len(names)
+            names = names[k:] + names[:k]
+        return names
+
+    def playing(self):
+        return bool(self.play_order()) and not self.over and not self.pending and bool(self.story or not self.use_llm)
+
+    def play_panel(self, name, first=False):
+        """What your fighter has to work with before you choose: her state, her moves, and this beat's openings."""
+        e = self.eng
+        if first and not getattr(e, "_windows_ready", False):
+            # the openings are rolled now (once for the whole beat, however many times you're asked), so you can
+            # see them before you choose
+            e.rolls = []
+            e.roll_pin_windows(open_all=False)
+            cfg = e.rules.get("play", {})
+            if cfg.get("free_pins", False):
+                for o in e.active():
+                    if o.name not in self.players and not e.pinned_by(o.name):
+                        e.pin_window[o.name] = True
+            e._pre_rolls, e._windows_ready = list(e.rolls), True
+        f = e.get(name)
+        foes = [o for o in e.active() if o is not f and not (f.team and o.team == f.team)]
+        moves = [m["name"] + (f" ({f.move_uses[m['name']]} left)" if m["name"] in f.move_uses else "")
+                 for m in f.moves if f.move_uses.get(m["name"], 1) > 0]
+        pinner = e.pinned_by(name)
+        state = e.posture_text(name, short=True)
+        lines = [f"🎮 {name} — {e.strength(f):.0f}% strength · {state}"]
+        if pinner:
+            lines.append(f"   PINNED: you can struggle to break free, or strike at the one on top of you")
+        held = [h for h in e.holds.values() if h.defender == name]
+        holding = [h for h in e.holds.values() if h.attacker == name]
+        if held:
+            lines.append("   held: " + "; ".join(f"{h.attacker} has your {h.part}" for h in held))
+        if holding:
+            lines.append("   holding: " + "; ".join(f"your grip on {poss_name(h.defender)} {h.part}" for h in holding))
+        lines.append("   moves: " + ", ".join(moves))
+        ops = []
+        for o in foes:
+            pin = (e.pin_window or {}).get(o.name)
+            sub = (getattr(e, "sub_window", None) or {}).get(o.name)
+            ops.append(f"{o.name} ({e.strength(o):.0f}%): pin {'OPEN' if pin else 'no'}"
+                       + (", submission OPEN" if sub else ""))
+        if ops:
+            lines.append("   openings: " + " · ".join(ops))
+        lines.append("   (type her move · Enter: the director chooses for her · wait: she holds back · "
+                     "/command: direct control)")
+        print("\n".join(lines))
+
+    @staticmethod
+    def _order(text):
+        t = text.strip()
+        if not t:
+            return None
+        if t.lower() in ("wait", "-", "pass", "hold back", "nothing", "skip"):
+            return "WAIT"
+        return t
+
+    def play_turn(self, first, line, read=input):
+        """Your move for the first fighter you play is `line`; ask for the others, then play the beat."""
+        names = self.play_order()
+        orders = {first: self._order(line)}
+        for name in names[1:]:
+            self.play_panel(name)
+            try:
+                more = read(f"{name} > ").strip()
+            except (EOFError, KeyboardInterrupt):
+                print("(beat cancelled)")
+                self.eng._windows_ready = False
+                return
+            if more.startswith("/"):
+                # direct control instead: the command runs as it would anywhere else, and this beat's asks are dropped
+                self.eng._windows_ready = False
+                return handle_command(self, more)
+            orders[name] = self._order(more)
+        self._play_rot += 1
+        self.play_beat(orders=orders)
 
     # ---------- undo / reroll / save ----------
     def _snapshot(self):
@@ -778,7 +871,7 @@ class Session:
         self.story.append(text)
         self.autosave()
 
-    def _play_beat(self, direction="", manual=None):
+    def _play_beat(self, direction="", manual=None, orders=None):
         aftermath = self.over
         forced_recovery = None
         if not aftermath and isinstance(manual, dict) and manual.get("action") == "recover":
@@ -804,7 +897,9 @@ class Session:
             if not direction:
                 return
         self.push_history()
-        self.eng.rolls, self.eng.nudges = [], []  # this beat's dice, from here on
+        # this beat's dice, from here on (the openings rolled when your fighters were asked for their moves count too)
+        self.eng.rolls = list(getattr(self.eng, "_pre_rolls", None) or []) if getattr(self.eng, "_windows_ready", False) else []
+        self.eng.nudges = []
         self._was_in = {f.name for f in self.eng.active()}  # anyone knocked out this beat keeps their full profile
         # how everyone is placed as the beat begins, so the story can tell "was down, got up" from "never fell"
         self._posture_start = {f.name: self.eng.posture_text(f.name, short=True) for f in self.eng.active()}
@@ -826,10 +921,12 @@ class Session:
                     return
                 self.progress("director is choosing the next beat")
                 beats, results, started = self.director.next_beat(
-                    self.eng, self.eng.scene, self.recent_story(), direction, self.recent_attacks)
+                    self.eng, self.eng.scene, self.recent_story(), direction, self.recent_attacks, players=orders)
         except Exception:
             self.history.pop()  # nothing happened, so there's nothing to undo
             raise
+        finally:
+            self.eng._windows_ready = False  # the openings were used (or the beat failed): the next ask rolls fresh
         if direction:
             self.transcript.append(f"> {direction}")  # you already see what you typed; keep it for /export
         history_before = list(self.recent_attacks)  # what had happened before this beat, for the narrator
@@ -1666,6 +1763,31 @@ def handle_command(s, line):
         return "quit"
     if cmd == "help":
         print(HELP); return
+    if cmd == "play":
+        names = [f.name for f in s.eng.fighters.values()]
+        if not a:
+            print(("You play: " + ", ".join(s.players) + ". The director runs the rest.") if s.players else
+                  "You aren't playing anyone: the director runs every fighter. /play <name> [name...] or /play all")
+            return
+        if a[0].lower() == "off":
+            s.players, s.eng._windows_ready = [], False
+            print("Play-as is off: the director runs every fighter again."); return
+        if a[0].lower() == "all":
+            want = [f.name for f in s.eng.active()]
+        else:
+            want = []
+            for x in a:
+                n = next((m for m in names if m.lower() == _clean_name(x).lower()), None)
+                if n is None:
+                    raise ValueError(f"no fighter called {x} (in this fight: {', '.join(f.name for f in s.eng.active())})")
+                want.append(n)
+        s.players, s.eng._windows_ready = want, False
+        if not s.use_llm:
+            print("(The director is off (--no-llm), so your moves can only be /commands for now.)")
+        print("You play: " + ", ".join(want) + (". Every fighter is yours." if len(want) >= len(s.eng.active()) else
+                                                ". The director runs the rest.")
+              + " Each beat you're asked for their moves; /commands still work for direct control. /play off to stop.")
+        return
     if cmd == "status":
         if not a:
             print(s.display.status_brief(s.eng)); return
@@ -2882,10 +3004,25 @@ def _run(s, args):
     print("\nPress Enter to begin. Type a direction to steer, or /help for commands.\n")
 
     while True:
+        asked = s.play_order()[0] if s.use_llm and s.playing() else None
         try:
-            line = input("> ").strip()
+            if asked:
+                s.play_panel(asked, first=True)
+            line = input(f"{asked} > " if asked else "> ").strip()
         except (EOFError, KeyboardInterrupt):
             break
+        if asked and not line.startswith("/") and line not in ("+", "++", "...") and "&&" not in line:
+            try:
+                if s.play_turn(asked, line) == "quit":
+                    break
+            except llm.LLMError as e:
+                print(f"[model unavailable: {e}]")
+            except KeyboardInterrupt:
+                print("\n(Stopped. Everything up to the last finished beat is kept; if a beat was cut off halfway, "
+                      "/undo takes it back or /reroll writes its story.)")
+            except (ValueError, IndexError, KeyError) as e:
+                print(f"Error: {e}  (type /help)")
+            continue
         pieces = split_commands(line) if "&&" in line else [line]
         quit_now = False
         for piece in pieces:

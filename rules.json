@@ -1521,5 +1521,10 @@
     "enabled": true,
     "payoff_beats": 3,
     "idea_chance": 0.3
+  },
+  "play": {
+    "_comment": "Playing as fighters (/play). free_pins: true = a fighter you play may always try to pin (like a typed direction); false = she gets the same dice-rolled openings as everyone (shown to you before you choose). ai_answers: true = after your moves, each fighter the director runs answers with an action of her own every beat; false = only when the moment calls for it.",
+    "free_pins": false,
+    "ai_answers": true
   }
 }
