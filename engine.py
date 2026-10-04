@@ -710,6 +710,9 @@ class Engine:
         for _, m in extras:
             xm *= m
         effective = round(move["power"] * tmult * aim * stab * xm, 2)
+        if target == "self":
+            tmult = 1.0     # a move she uses on herself (Protect, Mirror Coat, a weather move) doesn't meet the foe's type
+            effective = round(move["power"] * aim * stab * xm, 2)
         word = ("no effect" if tmult == 0 else "super effective" if tmult > 1
                 else "not very effective" if tmult < 1 else "normal")
         if move.get("improvised"):
@@ -928,8 +931,13 @@ class Engine:
         if enforce and not clash and not dodge and not pum and not fed:
             guard = self._guard_roll(a, d, move, target)
         if guard and guard["kind"] == "block":
-            plan = [guard["part"]] * len(plan) if target == "targeted" else [guard["part"]]
-            powers = [round(pw * guard["share"], 2) for pw in powers[:len(plan)]]
+            # caught on the guard: the blow lands once on the blocking part (each blow, for a flurry), and nothing
+            # jars past it (the knocks around the target never happen)
+            plan = [guard["part"]] * max(1, int(count or 1)) if target == "targeted" else [guard["part"]]
+            powers = [round(powers[0] * guard["share"], 2)] * len(plan)
+            for k in ("auto_spill_parts", "auto_spill_effective", "auto_spill_factor", "spillover_parts",
+                      "spillover_effective"):
+                math.pop(k, None)
             charge_into = ""     # caught on a guard: she isn't driven anywhere
         shield = self.guarded_wound(d) if enforce and not fed and not pum else None
         if shield and not guard:

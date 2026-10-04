@@ -2,7 +2,7 @@
 Prints the stat blocks in your format, straight from engine numbers.
 Resistance uses colored squares, damage uses colored circles, and the heart is only ever health.
 """
-from engine import tier_for, pain_tiers
+from engine import tier_for, pain_tiers, poss_word
 
 
 def num(x):
@@ -48,6 +48,13 @@ class Display:
     def __init__(self, rules):
         self.rules = rules
         self.heart = rules["health"].get("icon", "❤️")
+
+    STATUS_WORD = {"fury": "furious", "doubled_over": "doubled over", "off_balance": "off balance",
+                   "protecting": "protected", "countering": "set to counter", "mirroring": "coated in a mirror sheen"}
+
+    def sw(self, status):
+        """A status as words ("doubled over", not "doubled_over")."""
+        return self.STATUS_WORD.get(status, str(status).replace("_", " "))
 
     STATUS_ICON = {"bound": "🪢", "fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
@@ -434,10 +441,11 @@ class Display:
         if e.get("hits_on_pinner"):
             out += self.hits_block(e["hits_on_pinner"][0].get("defender", e["attacker"]), e["hits_on_pinner"])
         for x in e.get("aftereffects") or []:
-            out.append(f"- {self.STATUS_ICON.get(x['status'], '✳️')} **{x['fighter']} is {x['status']}** ({x['beats']} "
+            out.append(f"- {self.STATUS_ICON.get(x['status'], '✳️')} **{x['fighter']} is {self.sw(x['status'])}** ({x['beats']} "
                        f"beat{'s' if x['beats'] != 1 else ''})"
-                       + (": trapped limbs numb and slow after the pin" if x["status"] == "stiff" else
-                          ": locked up from holding the pin so long"))
+                       + {"stiff": ": trapped limbs numb and slow after the pin",
+                          "fury": ": a cold, hard anger after being held down so long (harder blows)"}.get(
+                           x["status"], ": locked up from holding the pin so long"))
         if e.get("knows_pin"):
             out.append(f"- 🧠 {d} has broken out of a pin like this before (escape ×"
                        f"{num(min(1.45, 1 + 0.15 * e['knows_pin']))})")
@@ -760,7 +768,7 @@ class Display:
                                   else " — it holds: pressed against it, still up"))
             if a.get("target_against"):
                 out.append(f"- ({a['defender']} is still pressed against {a['target_against']}: no dodge)")
-            if a.get("move") and a["move"]["effectiveness"] == "no effect":
+            if a.get("move") and a["move"]["effectiveness"] == "no effect" and a["move"].get("target") != "self":
                 out.append(self.move_line(a["move"]))
                 out.append(f"- It has no effect on {a['defender']}.")
             groups = {}
@@ -969,7 +977,7 @@ class Display:
                                                   if a.get("holds_moved") else ""))
 
         for s in a.get("status_applied", []) or []:
-            out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{s['fighter']} is {s['status']}** ({s['beats']} beat{'s' if s['beats'] != 1 else ''}"
+            out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{s['fighter']} is {self.sw(s['status'])}** ({s['beats']} beat{'s' if s['beats'] != 1 else ''}"
                        + (f"; from {s['hazard']}" if s.get("hazard") else "") + ")")
         if a.get("launch_blocked"):
             out.append(f"- (no knockdown or throw: {a['launch_blocked']})")
@@ -1054,8 +1062,8 @@ class Display:
                 out.append((f"🧗 **{e['fighter']} gets up** on the {ordinal} try (using {e['grab']}{way('getup_rise', e.get('rise'), '; ')})"
                             if e["stands"] else
                             f"🧗 **{e['fighter']} can't get up** this beat, but **gets as far as sitting up** "
-                            f"({e['tries']} tries; down {e['beats_down']} beats)" if e.get("sits") else
-                            f"🧗 **{e['fighter']} can't get up** this beat ({e['tries']} tries; down {e['beats_down']} beats)")
+                            f"({e['tries']} tries; down {e['beats_down']} beat{'s' if e['beats_down'] != 1 else ''})" if e.get("sits") else
+                            f"🧗 **{e['fighter']} can't get up** this beat ({e['tries']} tries; down {e['beats_down']} beat{'s' if e['beats_down'] != 1 else ''})")
                            + roll)
             elif e["type"] == "stays_down":
                 out.append(f"🧗 {e['fighter']} stays down this beat: she only just went down, so there is no get-up roll "
@@ -1072,7 +1080,7 @@ class Display:
                 for who, hs in by.items():
                     out += self.hits_block(who, hs)
                 for s in e.get("status_applied") or []:
-                    out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{s['fighter']} is {s['status']}** "
+                    out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{s['fighter']} is {self.sw(s['status'])}** "
                                f"({s['beats']} beat{'s' if s['beats'] != 1 else ''})")
                 if not e.get("hits") and not e.get("status_applied"):
                     out.append("- nobody is hurt by it")
@@ -1092,8 +1100,8 @@ class Display:
             elif e["type"] == "status_tick":
                 out.append(f"☠️ {e['fighter']} is poisoned: {self.heart} -{num(e['health_loss'])}% → {pct(e['health_after'])}")
             elif e["type"] == "status_end":
-                out.append(f"- {e['fighter']}'s adrenaline surge is over" if e["status"] == "adrenaline" else
-                           f"- {e['fighter']} is no longer {e['status']}")
+                out.append(f"- {poss_word(e['fighter'])} adrenaline surge is over" if e["status"] == "adrenaline" else
+                           f"- {e['fighter']} is no longer {self.sw(e['status'])}")
         for e in bundle["also_this_beat"]:
             if e["type"] == "recovery":
                 out.append(f"💫 **{e['fighter']}**: {e['from']} → **{e['to']}** (chance {e['chance'] * 100:.0f}% per beat)")

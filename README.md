@@ -872,6 +872,13 @@ After each beat's prose, the program prints the exact numbers in this format:
   back on a moment or two. It is kept through /undo, saves and loads. `rules.json` "summary" sets how many moments
   (10, at most 3 of a kind) and what counts as a big hit (9% of max health) or a lead (5 points). It only reads what
   happened: no dice, no balance change (`/simulate` gives the same results as before).
+- **Fixes found in test fight 2:** a BLOCK now lands once on the blocking limb (it used to land there once for the
+  blow and again for each knock it would have jarred around the target, and the screen still named those other
+  parts), and a blocked blow no longer knocks her down or throws her: she caught it on her guard and kept her feet.
+  This makes blocks slightly more protective than before; they are still rare (4% at full strength). A move she
+  uses on herself (Mirror Coat, Protect, the weather moves) no longer shows a type matchup against her opponent
+  ("Psychic vs Dark: no effect"). Status lines read as words ("doubled over", "off balance", "furious") instead
+  of "doubled_over"; the fury after a long pin says what it is instead of borrowing the cramp's line; "down 1 beat".
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

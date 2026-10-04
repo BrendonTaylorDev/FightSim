@@ -929,6 +929,9 @@ def _landing(engine, b, res):
     explicit = bool(impacts)
     in_place = False
     att = res.get("attacker")
+    if (res.get("guard") or {}).get("kind") == "block" and not impacts:
+        res["launch_blocked"] = f"{who} caught it on her guard and kept her feet"
+        return None   # a blocked blow doesn't knock her down or throw her (a crash into scenery still happens)
     if not manual and att and engine.pinned_by(engine.get(att).name):
         res["launch_blocked"] = "the attacker is pinned: only a struggle gets her out"
         return None  # a pinned fighter can't throw her pinner off with a strike; escapes are rolled
