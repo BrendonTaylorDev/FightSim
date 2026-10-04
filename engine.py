@@ -5094,18 +5094,28 @@ class Engine:
 
     def pin_chance(self, target):
         """How likely an opening for a NEW pin on this fighter is in any one beat. A pin can come at any point, but
-        rarely against a fighter who is on her feet with more than half her strength; a knockdown makes it likelier,
-        and under half strength it is much likelier, rising toward certain as she nears nothing."""
+        the more hurt she is, the likelier: rare against a fresh fighter on her feet, rising smoothly as she wears down,
+        much likelier under half strength and toward certain as she nears nothing. Each badly hurt part adds a little
+        (her opponent knows where they are). A knockdown makes it likelier at every level. It rises over a fight only
+        because she gets more hurt."""
         cfg = self.rules.get("director", {}).get("pin_urge")
         cfg = cfg if isinstance(cfg, dict) else {}
         weak_below = float(cfg.get("weak_below", 50))
         s = self.strength(target)
         down = target.name in self.downed
+        fresh = float(cfg.get("downed", 0.30) if down else cfg.get("standing", 0.06))
+        weak = float(cfg.get("weak_downed", 0.85) if down else cfg.get("weak_standing", 0.45))
         if s < weak_below:
-            base = float(cfg.get("weak_downed", 0.85) if down else cfg.get("weak_standing", 0.45))
-            base += (float(cfg.get("max", 0.95)) - base) * max(0.0, min(1.0, (weak_below - s) / max(1.0, weak_below)))
+            base = weak + (float(cfg.get("max", 0.95)) - weak) * max(0.0, min(1.0, (weak_below - s) / max(1.0, weak_below)))
         else:
-            base = float(cfg.get("downed", 0.30) if down else cfg.get("standing", 0.06))
+            # the more hurt she is, the likelier: from `fresh` at full strength up to `weak` at weak_below (a curve:
+            # a little worn changes little, badly worn a lot)
+            t = max(0.0, min(1.0, (100.0 - s) / max(1.0, 100.0 - weak_below)))
+            base = fresh + (weak - fresh) * t ** float(cfg.get("curve", 1.5))
+        # badly hurt parts make her easier to get down and hold, and her opponent knows where they are: each part at
+        # hurt_at %+ damage adds hurt_bonus (up to hurt_cap)
+        bad = sum(1 for p in target.parts.values() if p.damage >= float(cfg.get("hurt_at", 150)))
+        base += min(float(cfg.get("hurt_cap", 0.2)), float(cfg.get("hurt_bonus", 0.02)) * bad)
         if self.has(target, "asleep") or self.has(target, "frozen"):
             base = max(base, float(cfg.get("helpless", 0.9)))  # she can't defend herself at all
         if any(h.coil and h.defender == target.name and self.coil_scope(h.part) != "limb" for h in self.holds.values()):

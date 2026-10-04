@@ -947,12 +947,14 @@ After each beat's prose, the program prints the exact numbers in this format:
   there, and the director is told to let it go into a pin or hurt her another way with what is free. A pin the
   holder starts replaces the submission. In the dice fights they last about 3 beats (longest 10): about 60% end with
   the holder letting go into a pin, 40% with the held one breaking out.
-- **More pins: about 8 a fight.** director.pin_urge (the chance of a pin opening each beat): on her feet 0.1 →
-  0.4, down 0.4 → 0.9, under half strength on her feet 0.45 → 0.85, under half strength and down 0.85 → 0.95.
-  400 fights at your settings: 8.2 pins a fight (was 4.8), 95% of fights with 4+, Nocturne 57% (with the 200
-  calibration fights, 59% over 600: still about 60%). Fights are shorter in beats (about 50, was about 75) because
-  pins end them sooner.
-
+- **More pins: about 8 a fight, and they follow how hurt she is.** The chance of a pin opening each beat now slides
+  with her strength instead of jumping at half strength: on her feet 12% at full strength, 27% at 85%, 50% at 70%,
+  76% at 55%, 86% under half; on the ground 50%, 59%, 73%, 89%, 95%. Each badly hurt part (150%+ damage) adds 3.5%
+  (up to 30%): her opponent knows where she's hurt. There is no time factor: pins come more often late in a fight
+  only because she is more hurt by then. (director.pin_urge: standing 0.1 → 0.12, downed 0.4 → 0.5, weak_standing
+  0.45 → 0.85, weak_downed 0.85 → 0.95, new curve 1.3, hurt_bonus 0.035, hurt_cap 0.3.) 400 fights at your
+  settings: 8.0 pins a fight (was 4.8), 95% of fights with 4+, 0.86 submissions a fight, Nocturne 59.5%. Fights are
+  shorter in beats (about 50, was about 75) because pins end them sooner.
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
   her legs would only"), the program used to trim it, taking it for an answer cut off by the word limit. Now it
