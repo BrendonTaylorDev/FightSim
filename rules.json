@@ -758,6 +758,10 @@
       "_comment": "Each part of a beat is told CLOSE (tight on bodies) or, on wide_chance of parts, WIDE (both bodies and the place). The dwell and watch parts are always close.",
       "enabled": true,
       "wide_chance": 0.35
+    },
+    "sounds": {
+      "_comment": "Pained sounds are always described (what kind, where from, pitch and shape, bigger and less controlled the worse it hurts) and now and then written out as one italic word (*Hhk*, *Nngh*, *Hss*), fitted to each fighter's voice from fighters.json. enabled: false turns the note off.",
+      "enabled": true
     }
   },
   "pain_tiers": [

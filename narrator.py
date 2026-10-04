@@ -6932,9 +6932,28 @@ class Narrator:
     BAD_LEVELS = ("very painful", "excruciating", "devastated", "numb with shock")
 
     def _sound_note(self):
-        """How this place carries sound (scenes.json acoustics): for the sounds fighters make and try to hold in."""
+        """How this place carries sound (scenes.json acoustics), and how to tell the sounds the fighters make (every
+        pained sound described: what kind, where from, pitch and shape; now and then written out as it sounds)."""
         ac = str((getattr(self, "scene_cfg", None) or {}).get("acoustics") or "").strip()
-        return f"SOUND IN THIS PLACE (for the sounds they make, and the ones they try to keep in): {ac}\n\n" if ac else ""
+        out = f"SOUND IN THIS PLACE (for the sounds they make, and the ones they try to keep in): {ac}\n\n" if ac else ""
+        cfg = (self.rules.get("narration") or {}).get("sounds") or {}
+        if not cfg.get("enabled", True):
+            return out
+        voices = []
+        for name in list((getattr(self, "strengths", None) or {}))[:4]:
+            v = str((getattr(self, "voices", None) or {}).get(name) or "")
+            bit = next((s.strip() for s in re.split(r"(?<=[.;])\s+", v)
+                        if re.search(r"growl|hiss|chitter|squeak|bark|cr(?:y|ies)|whine|yelp|snarl|screech|chirp", s, re.I)), "")
+            if bit:
+                voices.append(f"{name}: {bit.rstrip('.;, ')}")
+        return out + ("SOUNDS THEY MAKE: never just 'a small sound' or 'a noise'. Every pained sound is described: what it is "
+                      "(a hiss through the teeth, a whine high in the nose, a choked gasp, a yelp, a growl ground out, a "
+                      "ragged cry that cracks in the middle), where it comes from (throat, chest, nose, teeth), and its "
+                      "shape and pitch (short, cut off, dragged out, rising, wet, rasping). The worse it hurts, the bigger "
+                      "and less controlled the sound. Now and then (not every time) write the sound out as it sounds, as "
+                      "ONE italic word in the middle of a sentence, never in quotes and never ending a paragraph: *Hhk*, "
+                      "*Nngh*, *Hss*, *Ahh*, *Kh-hah*, *Yip*. Sounds only: no words, no sobbing or weeping."
+                      + (" Fit them to who makes them: " + "; ".join(voices) + "." if voices else "") + "\n\n")
 
     def _fading_thoughts_note(self):
         """A fighter who is fading (narration.fading_thoughts): on some beats her THOUGHTS come in fragments. Only her

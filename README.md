@@ -976,6 +976,13 @@ After each beat's prose, the program prints the exact numbers in this format:
   sent back at her") and what she'll feel, worded differently from part to part and fighter to fighter ("black
   with bruising, stiff and swollen for days", "stiff by morning and tender to the touch", "a dull ache, gone in a day
   or two"). It is the same on the screen and for the narrator's aftermath.
+- **Pained sounds are described, not just mentioned.** Every narrator prompt now says: never just "a small sound";
+  say what it is (a hiss through the teeth, a whine high in the nose, a choked gasp, a yelp, a growl ground out, a
+  cry that cracks in the middle), where it comes from, and its shape and pitch, bigger and less controlled the worse
+  it hurts; and now and then write it out as one italic word mid-sentence (*Hhk*, *Nngh*, *Hss*, *Kh-hah*), never in
+  quotes (that would count as speech) and never ending a paragraph (that would trip the trailing-dash check). It is
+  fitted to each fighter's voice from fighters.json (Nocturne growls and hisses until it breaks through; Ripples
+  chitters, squeaks and barks). About 180 tokens a prompt; rules.json narration.sounds.enabled turns it off.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
