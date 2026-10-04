@@ -764,6 +764,14 @@
       "enabled": true,
       "how_often": "always",
       "write_out": "often"
+    },
+    "impact_motion": {
+      "_comment": "How a blow that lands moves the body, now and then: a slash sweeping the struck limb along the cut or twisting her round, a blow knocking her back a step, a bite yanking her toward the biter, a blast shoving her back, lightning locking her rigid, a fighter on the ground rolled or shunted. chance per landed blow, + hard_bonus when it hits hard (hard_at % damage or more), + weak_bonus when she is under half strength. Never with a knockdown, throw or launch, never while she is pinned, held at point-blank or pressed against scenery, and she stays where the engine has her.",
+      "enabled": true,
+      "chance": 0.4,
+      "hard_at": 40,
+      "hard_bonus": 0.25,
+      "weak_bonus": 0.15
     }
   },
   "pain_tiers": [

@@ -1832,6 +1832,96 @@ class Narrator:
                    "the fur at the throat pushed into a deep crease, the skin stretched tight round it",
                    "the throat flattened under it, every swallow showing as a jerk under the fur"]
 
+    MOTION = {
+        "claw": ["her {part} swept along with the cut, flung out the way the claws went",
+                 "the force of the rake twists her half round, a shoulder turning away with it",
+                 "she staggers a step sideways with the slash, a paw scrabbling for footing",
+                 "she reels back out of it, her {part} snatched in against her",
+                 "her {part} jerks across her body with the swipe before she can pull it back",
+                 "the slash spins her a quarter turn, her tail swinging wide to balance her"],
+        "bite": ["her {part} yanked toward the biter as the jaws close, her balance dragged after it",
+                 "pulled half off her footing by the bite, jerked forward a stumbling step",
+                 "the jaws twist as they let go and wrench her {part} round with them",
+                 "she is hauled sideways by the bite, feet sliding, then torn free"],
+        "blunt": ["knocked back a full step, her feet skidding",
+                  "her head snaps back with it and her whole body follows half a step",
+                  "the blow rocks her sideways, a shoulder dipping, legs spreading to catch herself",
+                  "she buckles a little at the knees and comes back up",
+                  "driven back, she has to plant herself hard not to go over",
+                  "it turns her half round, and she has to twist back to face her"],
+        "blast": ["shoved back by the force of it, sliding a stride",
+                  "the blast pushes her back on her heels, her fur streaming",
+                  "driven back a step, her head turned away from it",
+                  "it lifts her weight off her front feet for an instant and sets her down a pace back"],
+        "shock": ["she locks rigid where she stands, legs splayed, then sags",
+                  "her whole body jerks straight up off its stance and drops back",
+                  "every limb goes stiff, and she totters when it lets go"],
+        "cold": ["she flinches back from the cold of it, her {part} jerked away and held stiff",
+                 "the cold makes her recoil, hunching away from it"],
+        "down": ["the blow rolls her half over on the ground",
+                 "she is shunted along the ground by it",
+                 "her {part} flung out across the ground with it",
+                 "her body jolts and slides a little where she lies"],
+    }
+
+    MOTION_MORE = {
+        "bite": ["the bite drags her {part} out from her body, her stance twisting after it",
+                 "she is tugged in close by the teeth and shoved away again as they open"],
+        "blast": ["the force bowls into her and she skids back, claws furrowing the ground",
+                  "it hits her like a wall, folding her backward a step before she catches it"],
+        "shock": ["her limbs kick out stiff in every direction and snap back in",
+                  "she goes up on her toes, rigid and shaking, and comes down hard on her heels"],
+        "cold": ["she shies sideways from the bite of the cold, her {part} curled in tight",
+                 "she rears back from it, stiff and shivering, her {part} held away from her body"],
+        "down": ["the blow knocks her limbs loose, her {part} skidding out across the ground",
+                 "her whole body shudders along the ground with it and comes to rest a little further on"],
+    }
+    for _k, _more in MOTION_MORE.items():
+        MOTION[_k].extend(_more)
+
+    def _impact_motion(self, a):
+        """Now and then (narration.impact_motion), how a blow that lands MOVES the body: a slash sweeping the struck
+        limb along the cut or twisting her round, a blow knocking her back a step, a bite yanking her toward the
+        biter, a blast shoving her back, lightning locking her rigid. Only when nothing bigger happens (no knockdown,
+        throw or launch), never while she is pinned or held fast, and she stays where the engine has her."""
+        cfg = (self.rules.get("narration") or {}).get("impact_motion") or {}
+        if not cfg.get("enabled", True) or a.get("type") != "instant" or not a.get("hits") or a.get("environment"):
+            return ""
+        if a.get("landings") or a.get("launch") or a.get("dodged") or a.get("pummel") or a.get("point_blank"):
+            return ""
+        dfn = a.get("defender")
+        if dfn in (getattr(self, "pinned_now", None) or ()) or a.get("target_against"):
+            return ""
+        m = a.get("move") or {}
+        h = a["hits"][0]
+        import random as _r, zlib
+        rnd = _r.Random(zlib.crc32(f"{getattr(self, 'beat_now', 0)}|{a.get('attacker')}|{h['part']}".encode()))
+        ch = float(cfg.get("chance", 0.4))
+        if float(h.get("damage_taken", 0)) >= float(cfg.get("hard_at", 40)):
+            ch += float(cfg.get("hard_bonus", 0.25))
+        if ((getattr(self, "strengths", None) or {}).get(dfn) or 100) < 50:
+            ch += float(cfg.get("weak_bonus", 0.15))
+        if rnd.random() >= min(0.9, ch):
+            return ""
+        name = f"{m.get('name', '')} {m.get('about', '')}".lower()
+        if dfn in (getattr(self, "on_ground", None) or ()):
+            kind = "down"
+        elif re.search(r"slash|claw|swipe|scratch|rake|cut", name):
+            kind = "claw"
+        elif re.search(r"bite|fang|crunch|jaws", name):
+            kind = "bite"
+        elif m.get("type") == "Electric":
+            kind = "shock"
+        elif m.get("type") == "Ice":
+            kind = "cold"
+        elif m.get("target") in ("spread", "whole_body"):
+            kind = "blast"
+        else:
+            kind = "blunt"
+        look = rnd.choice(self.MOTION[kind]).format(part=h["part"].lower())
+        stay = "She stays down where she is." if kind == "down" else "She stays on her feet: no fall, no knockdown."
+        return f"  - MOVEMENT (part of the same instant, how the blow moves her body): {look}. {stay}"
+
     def _press_look(self, h):
         """What a press LOOKS like on the body: fur, muscle, and a joint bent toward its limit, by how hard it is."""
         from engine import body_region
@@ -2795,6 +2885,9 @@ class Narrator:
                      "soaked": f"{a['defender']} is soaked, so the electricity tears through her far worse",
                      "pin damage": f"it is delivered from on top of the pin, short and cramped"
                      }.get(label, label) for label, _ in m["extras"]) + ".")
+            mv_line = self._impact_motion(a)
+            if mv_line:
+                lines.append(mv_line)
             if a.get("counter_hits"):
                 lines.append(f"  - It caught one target, but another dodged and countered {a['attacker']}:")
                 lines += [self._hit_line(h) for h in a["counter_hits"]]

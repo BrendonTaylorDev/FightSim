@@ -1007,6 +1007,14 @@ After each beat's prose, the program prints the exact numbers in this format:
     toward its limit, five for the throat; five for each depth of each kind of mark (claws, teeth, blows, grips,
     lightning, cold) and four for each creased or swollen ear, nose, fin, cheek, muzzle and jaw. Which one is used
     changes from beat to beat and part to part, and the same part keeps its look for the same damage.
+- **Blows move bodies.** Now and then (40%, more when it hits hard or she is under half strength) a blow that lands
+  comes with how it MOVES her, as part of the same instant: a slash sweeps the struck limb along the line of the cut,
+  spins her a quarter turn or sends her staggering sideways; a blunt blow knocks her back a step, snaps her head
+  back or buckles her knees; a bite yanks her toward the biter; a blast shoves her back skidding; lightning locks
+  her rigid; cold makes her recoil; on the ground she is rolled half over or shunted along. Five or six wordings for
+  each. Never with a knockdown, throw or launch, never while she is pinned, held at point-blank or pressed against
+  scenery, and she always stays where the engine has her (on her feet, or down where she lies).
+  rules.json narration.impact_motion sets the chance.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
