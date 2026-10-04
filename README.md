@@ -2251,3 +2251,22 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
     - A pin breaks whenever they try to escape it, and any hold on them breaks at once.
     - Rolls against them, such as their own dodges, still count.
   - In every mode, a beat's openings are rolled once. A refused attempt doesn't roll them again, so retrying can't fish for an opening.
+- **Play-as test (Ripples, fair dice) and the fixes it found.** The fight is in `sim/play_ripples_fight.py`, played through the real play-as path. Run 2 (seed 2) is narrated in `sim/play_ripples/`, with its transcript.
+  - **Play-as fixes:**
+    - A player's order is never refused for repeating a move, and it lands where she said; the director doesn't re-aim it.
+    - The director's ideas for played fighters are filtered out of its prompt. A new hint for the fighters it runs names moves they haven't used lately (`director.move_variety`, 0.35).
+    - The panel shows energy and conditions. It marks moves she's too tired for and hold-only moves, and says plainly when she can't act (flinched, asleep, frozen).
+    - The panel hides pin openings while she is pinned or pinning, and shows a pin as OPEN only when the pin rules allow one.
+  - **Engine fixes:**
+    - Pin descriptions match how she lies: no foot on the throat of a fighter lying on her front (the grip takes the back of her neck instead), and no hold "from behind" on one lying on her back.
+    - A sleeper or dunk turns her onto her front.
+    - Two fighters locked in a hold or a submission can't dodge, block, deflect or clash with each other.
+    - A fighter working a submission gets her own posture line (LOCKED ONTO … in a …) instead of ON HER FEET.
+  - **Wording fixes:**
+    - Pins are told in beats, not seconds (the screen banners and the fight summary).
+    - Self moves have no target in the notes.
+    - Breather and hold-continues lines name who is resting and aren't repeated.
+    - No movement line when the blow itself knocks her down, or for a fighter who has hold of someone.
+    - An escape is no longer called "a pin is kicked off".
+    - Possessives fixed ("Ripples's").
+  - **Balance after the fixes** (400 fights): Nocturne 57.0%, 7.5 pins a fight, 93% of fights with 4+ pins, 0.88 submissions a fight.

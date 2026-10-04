@@ -1882,9 +1882,15 @@ def pin_shapes(engine, pinner, target, skip=()):
     if target.name in engine.downed:
         fc = engine.facing_of(target.name)
         if fc == "face-down":
+            # her throat is against the ground: a grip there takes the back of her neck instead
+            nape = next((p for p in target.parts if p.lower() == "neck"), None)
+            if nape:
+                out = {k: (re.sub(r"\b[Tt]hroat\b", nape, look),
+                           [(nape if p.lower() == "throat" else p, w) for p, w in contacts])
+                       for k, (look, contacts) in out.items()}
             out = {k: v for k, v in out.items() if not any(
                 re.search(r"\b(throat|chest|belly|stomach)\b", (p + " " + w).lower()) for p, w in v[1])
-                and not re.search(r"face-up|on her back|on her throat|on her chest|on her belly", v[0], re.I)} or out
+                and not re.search(r"face-up|on her back|on her chest|on her belly", v[0], re.I)} or out
         elif fc == "face-up":
             out = {k: v for k, v in out.items() if not re.search(r"from behind|face-down|on her front", v[0], re.I)} or out
     # most pins use far more of her than two points: whatever she has free goes on too (pin.contacts)

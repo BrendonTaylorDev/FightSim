@@ -551,9 +551,10 @@ class Session:
         lines.append("   moves: " + ", ".join(moves))
         ops = []
         for o in ([] if pinner or e.pinning(name) else foes):   # pinned, or already pinning: no new pin to open
-            pin = (e.pin_window or {}).get(o.name)
+            pin, why = e.pin_allowed(o.name)
             sub = (getattr(e, "sub_window", None) or {}).get(o.name)
-            ops.append(f"{o.name} ({e.strength(o):.0f}%): pin {'OPEN' if pin else 'no'}"
+            wait = "she has to take a blow since the last pin attempt" if "attacks needed" in why else ""
+            ops.append(f"{o.name} ({e.strength(o):.0f}%): pin {'OPEN' if pin else ('not yet: ' + wait) if wait else 'no'}"
                        + (", submission OPEN" if sub else ""))
         if ops:
             lines.append("   openings: " + " · ".join(ops))

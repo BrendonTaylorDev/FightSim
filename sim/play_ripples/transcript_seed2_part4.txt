@@ -1,0 +1,846 @@
+(Part 4 of 5: beats 31-40.)
+
+============================== beat 31 ==============================
+🎮 Ripples — 42% strength · energy 20 · ON HER FEET
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left), Water Gun, Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse, Swift, Ice Beam, Rain Dance, Protect, Mirror Coat
+   openings: Nocturne (3%): pin OPEN
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > Crunch her throat
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 24 — Ripples → Nocturne: CRUNCH (targeted — Throat, Neck, Left Ear, energy 20→10)
+Attack 25 — Nocturne → Ripples: SUCKER PUNCH (targeted — Tail Base, Twin Tails, Right Hip, energy
+      60→50)
+  [staying with the damage: Nocturne's side]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+She went for the neck one more time. She lunged and bit, and the Absol's throat and neck were right there, and she clamped down with a crunching grind of jaws, and her teeth caught the Absol's left ear on the way.
+
+— Nocturne —
+
+Her neck stiffened, rigid, the head held very still, a fresh jolt through the shaking that was already in her. Her ear took the side of the bite; her paw went up toward it and stopped, and a strangled grunt came out of her, *Ghk*. The ear stung now in a soft, wrong way.
+
+The bite tugged her in close, then the teeth opened and she was shoved away again.
+
+She came back. Fast, faster than the Buizel, the way she had always been faster: a sudden lunge from nowhere, before the Buizel had finished pulling back, and her forepaw slammed into the Buizel's left side, low, at the base of the tails.
+
+— Ripples —
+
+She had been guarding her right ear without thinking, her shoulder up round it, and the blow came in on the left, where she was open.
+
+It hit the base of her tails. They clamped down hard against her, and she squeaked, *Eek*. The twin tails lashed once and went stiff; a quick chirrup of surprise, *Prrt*. And her right hip, already hurt: her leg buckled under her and a sharp, startled yelp came out of her, *Yeep*, and she favored it, testing her weight on it.
+
+Her head snapped back with the force of the blow and her whole body followed half a step. She stayed on her feet.
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a lunge for the throat
+🩹 Nocturne is guarding her Throat (blows there ×0.85; her back is open, ×1.1)
+  Power **40** = base 40 × 0.5 (Dark vs Dark, not very effective) × 2 (targeted)
+  Jarred next to it (Neck, Left Ear): power 10 (×0.5)
+
+    Throat
+        damage      ⚫ 1881.78% → ⚫ 2187.78%   +306 = power 34 × 1.80 × scale 5
+        resistance  🟥 0% → 🟥 0%               -0 (it can't go lower)
+        health      ❤️ 53.27% → ❤️ -78.39%      -131.67 = damage 306 × 0.2 × 2.2 × vital 1.7
+              (softened from 228.89)
+    Neck
+        damage      ⚫ 790.12% → ⚫ 858.34%     +68.22 = power 10 × 1.36 × scale 5
+        resistance  🟧 36.78% → 🟧 34.91%       -1.87 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ -78.39% → ❤️ -116.91%    -38.52 = damage 68.22 × 0.2 × 1.76 × vital 1.6
+    Left Ear
+        damage      🟢 0% → 🟡 50%              +50 = power 10 × 1.00 × scale 5
+        resistance  🟨 52% → 🟨 50.12%          -1.88 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ -116.91% → ❤️ -119.83%   -2.92 = damage 50 × 0.2 × 1.46 × vital 0.2
+
+  Total: +424.22% damage  ·  ❤️ Nocturne 53.27% → **-119.83%** (-173.1)
+
+⚔️ **Nocturne → Ripples**: Sucker Punch
+🩹 Ripples is guarding her Right Ear (blows there ×0.85; her left side is open, ×1.1)
+  Power **40** = base 25 × 1 (Dark vs Water) × 2 (targeted) × 0.8 (her hurt right upper foreleg)
+  Jarred next to it (Twin Tails, Right Hip): power 10 (×0.5)
+
+    Tail Base
+        damage      🟢 16% → 🟡 56%           +40 = power 40 × 0.20 × scale 5
+        resistance  🟦 125% → 🟦 117.5%       -7.5 = power 40 × 0.25 × 0.75 resistance scale
+        health      ❤️ 709.33% → ❤️ 705.97%   -3.36 = damage 40 × 0.2 × 0.7 × vital 0.6
+    Twin Tails
+        damage      🟢 16% → 🟢 26%           +10 = power 10 × 0.20 × scale 5
+        resistance  🟦 165% → 🟦 163.12%      -1.88 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ 705.97% → ❤️ 705.41%   -0.56 = damage 10 × 0.2 × 0.7 × vital 0.4
+    Right Hip
+        damage      🟠 86.71% → 🔴 104.68%    +17.97 = power 10 × 0.36 × scale 5
+        resistance  🟩 97.69% → 🟩 95.81%     -1.88 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ 705.41% → ❤️ 702.85%   -2.56 = damage 17.97 × 0.2 × 0.89 × vital 0.8
+
+  Total: +67.97% damage  ·  ❤️ Ripples 709.33% → **702.85%** (-6.48)
+
+⏳ Beat 31 health: ❤️ Nocturne -135.58% (-0.5% exertion, -15.25% injuries) | ❤️ Ripples 686.1% (-0.5%
+      exertion, -16.25% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples overcommitting, sloppy with tiredness 12%, rolled 88 → no
+    Nocturne dodging Ripples' attack 9%, rolled 27 → it lands
+    Ripples' Crunch landing devastatingly 3%, rolled 54 → no
+    Nocturne flinched by Crunch 25%, rolled 91 → no
+    Nocturne doubled over by the blow to her Throat 15%, rolled 90 → no
+    Nocturne doubled over by the blow to her Neck 15%, rolled 71 → no
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 55 → no
+    Ripples dodging Nocturne's attack 5%, rolled 91 → it lands
+    Nocturne's Sucker Punch landing devastatingly 2%, rolled 31 → no
+    Ripples flinched by Sucker Punch 25%, rolled 93 → no
+    the clearing doing something by itself 5%, rolled 73 → nothing
+💡 **Director was pointed at**
+    range variety (Nocturne on Ripples)
+    targets (Nocturne)
+    big moment: a chain of attacks (overdue) (Nocturne on Ripples)
+    moves not used lately (Nocturne)
+----------------------------------------
+
+
+============================== beat 32 ==============================
+🎮 Ripples — 40% strength · energy 15 · ON HER FEET
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left) (too tired), Water Gun (too tired), Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse (too tired), Swift (too tired), Ice Beam (too tired), Rain Dance, Protect, Mirror Coat
+   openings: Nocturne (-8%): pin OPEN
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > back off and get my breath back
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+*Down. Now. Before she.*
+
+She did not finish the thought. She hooked a foreleg behind the Buizel's left thigh and hauled it up, and the Buizel went over onto her back in the grass with the leg cranked high. Nocturne followed her down. She dropped her full weight onto the Buizel's stomach. She put her jaws on the Buizel's throat. She put a forepaw on the Buizel's left paw, claws in.
+
+Her thoughts were coming in pieces now.
+
+*Hold. Just. Hold.*
+
+— Ripples —
+
+Pinned. Again. The third time.
+
+The sun went soft above them; the hard white light thinned as the sky she had been fighting under eased back to its ordinary afternoon. It was too late to matter.
+
+The teeth were on her throat. Her ruined throat. The weight was on her stomach and she could not breathe properly under it.
+
+She was so tired. Gasping, sloppy, slow. Her thoughts kept going away from her and coming back.
+
+*Next time she shifts. Next time. Get the leg.*
+
+
+
+
+----------------------------------------
+📌 **PIN: Nocturne on Ripples** — one of her legs hooked and hauled up off the ground (Left Thigh,
+      her foreleg hau
+  Pressing on:
+    Left Thigh ← with her foreleg hauling the leg up  ·  power 22 each beat, steady
+    Stomach ← with her full weight  ·  power 14 each beat, steady
+    Throat ← with her jaws  ·  power 15 each beat, steady
+    Left Paw ← with her forepaw, claws digging  ·  power 15 each beat, steady
+- The pin is on. No fixed length: each beat brings her closer to passing out (about 6 beats,
+      sometimes more, sometimes fewer). Pressure starts next beat.
+- Ripples was on her feet: taken down into the pin
+- Ripples is face-up
+
+🌤️ The sun clears
+
+⏳ Beat 32 health: ❤️ Nocturne -151.33% (-0.5% exertion, -15.25% injuries) | ❤️ Ripples 669.35%
+      (-0.5% exertion, -16.25% injuries, now exhausted)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples landing hard from the takedown 40%, rolled 66 → put down clean
+💡 **Director was pointed at**
+    pin shape idea (Ripples on Nocturne)
+    range variety (Nocturne on Ripples)
+----------------------------------------
+
+
+============================== beat 33 ==============================
+🎮 Ripples — 39% strength · energy 20 · ON THE GROUND, face-up, PINNED under Nocturne
+   PINNED: you can struggle to break free, or strike at the one on top of you
+   held: Nocturne has your Left Thigh; Nocturne has your Stomach; Nocturne has your Throat; Nocturne has your Left Paw
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left), Water Gun, Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse, Swift, Ice Beam, Rain Dance, Protect, Mirror Coat
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > I fight to get out from under her
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+She worked the trapped leg. Short, hard tugs, the way the Absol had done it to her, the thigh twisting under the hooked foreleg, and on the third tug it slid down enough. She did not try to get it all the way out. She bent the knee and drove her foot straight up into the Absol's face.
+
+— Nocturne —
+
+It hit her nose. The soft, bruised, wrong-feeling nose, and the nose went over the line: blink, blink, blink, her eyes running so hard she could not see, and a howl came out of her that cracked into gasping, *Hhaaah-hah-hah*. A hot, bursting, throbbing pain right at the end of her face that would not let her think.
+
+But her jaws did not open. She threw her weight down and forward, and the leg was trapped again under her foreleg.
+
+— Ripples —
+
+Her throat. Under the teeth her throat went past anything it had been before. It was not a pain any more; it was the whole front of her neck burning and crushed and ruined, and she convulsed under it, limbs flailing, howling.
+
+The thigh hauled up in the air was hurting; she tensed all over, held her breath, let it out in a hiss. Her stomach under the weight: she strained until she shook, then sagged with a groan. And her left paw under the claws, past bearing since the dark wave: her claws tore at the grass, a groan wrung out of her.
+
+----------------------------------------
+💢 **Ripples will try to break free** of Nocturne's pin this beat (outcome rolled).
+
+🔒 **Nocturne on Ripples** (holds #26, #27, #28, #29), beat 1 of the hold · pin damage ×0.5
+  ▸ press 22 × 0.5 pin damage
+    Left Thigh
+        damage      🟠 65.8% → 🟠 83.21%      +17.41 = power 11 × 0.32 × scale 5
+        resistance  🟦 103.67% → 🟦 101.61%   -2.06 = power 11 × 0.25 × 0.75 resistance scale
+        health      ❤️ 669.35% → ❤️ 667.01%   -2.34 = damage 17.41 × 0.2 × 0.84 × vital 0.8
+
+  ▸ press 14 × 0.5 pin damage
+    Stomach
+        damage      🟠 79.84% → 🔴 95.59%     +15.75 = power 7 × 0.45 (pin cap) × scale 5
+        resistance  🟩 72% → 🟩 70.69%        -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 667.01% → ❤️ 662.91%   -4.1 = damage 15.75 × 0.2 × 1 × vital 1.3
+
+  ▸ press 15 × 0.5 pin damage
+    Throat
+        damage      🟣 297.14% → ⚫ 314.01%   +16.88 = power 7.5 × 0.45 (pin cap) × scale 5
+        resistance  🟧 44.48% → 🟧 43.08%     -1.4 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 662.91% → ❤️ 657.17%   -5.74 = damage 16.88 × 0.2 × 1 × vital 1.7
+    Left Paw
+        damage      🟣 186.49% → 🟣 203.37%   +16.88 = power 7.5 × 0.45 (pin cap) × scale 5
+        resistance  🟨 65.67% → 🟨 64.27%     -1.4 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 657.17% → ❤️ 655.82%   -1.35 = damage 16.88 × 0.2 × 1 × vital 0.4
+
+  Total: +66.92% damage  ·  ❤️ Ripples 669.35% → **655.82%** (-13.53)
+
+📌 **Pin: Nocturne on Ripples** — beat 1 of it (10 s held) · going under 0% → **9.9%** (+9.9 this
+      beat: broke loose ×0.4; the pressed parts are in agony ×1.15; she passes out at 100%)
+      (weakening)
+- Ripples struggles (escape 43%, else break loose 33%, roll 96 / 4; she wrenches at a trapped limb)
+      → **breaks loose for a moment** and hits Nocturne:
+    Nose
+        damage      🟠 67.5% → 🟣 238.79%       +171.29 = power 29 × 1.18 × scale 5
+        resistance  🟧 44.75% → 🟧 39.31%       -5.44 = power 29 × 0.25 × 0.75 resistance scale
+        health      ❤️ -151.33% → ❤️ -178.82%   -27.49 = damage 171.29 × 0.2 × 1.6 × vital 0.5
+
+  Total: +171.29% damage  ·  ❤️ Nocturne -151.33% → **-178.82%** (-27.49)
+
+⏳ Beat 33 health: ❤️ Nocturne -195.57% (-0.5% exertion, -16.25% injuries) | ❤️ Ripples 638.42%
+      (-0.5% exertion, -16.9% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    director nudge: moving a downed opponent (roll her over / haul her up) 12%, rolled 65 → none
+💡 **Director was pointed at**
+    range variety (Nocturne on Ripples)
+----------------------------------------
+
+
+============================== beat 34 ==============================
+🎮 Ripples — 38% strength · energy 25 · ON THE GROUND, face-up, PINNED under Nocturne
+   PINNED: you can struggle to break free, or strike at the one on top of you
+   held: Nocturne has your Left Thigh; Nocturne has your Stomach; Nocturne has your Throat; Nocturne has your Left Paw
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left), Water Gun, Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse, Swift, Ice Beam, Rain Dance, Protect, Mirror Coat
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > I bite whatever of her I can reach
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 26 — Ripples → Nocturne: CRUNCH (targeted — Right Upper Foreleg, Chest Ruff, Chest, energy
+      25→15)
+  [staying with the damage: Ripples watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Ripples —
+
+The Absol's right foreleg, the one she had bitten twice already, was braced beside her head, bearing the weight. The Absol saw her look at it and flinched, trying to pull it in, and it was too late. Ripples bit it.
+
+— Nocturne —
+
+There was nothing in her that could hold that in. The foreleg jerked and curled in toward her chest on its own, shaking she could not stop, her eyes streaming, a long moment where she could not do anything at all. The bite drove into her chest ruff and her chest beside it, a wheeze on every breath after, the breath knocked out and coming back shallow.
+
+She was rattled, a half-second behind, and she could not make herself do anything for a moment but hold on.
+
+She held on.
+
+— Ripples —
+
+She had felt the pin shake. She had felt it. She wrenched her shoulders round, trying to get onto her front.
+
+The foreleg hooked behind her left thigh hauled it higher, and the leg jerked and a shudder went through her, and the twist died.
+
+Her thigh, cranked up in the air, hurt badly now; her paws pushed and pushed at the white foreleg holding it, frantic. Her stomach: her breath came in ragged yelps. Her throat: every press of the teeth tore a scream out of her, and her legs kicked wildly. Her left paw: she wrenched against the claws again and again, gasping for breath.
+
+*Get out. Get out. Get out.*
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a bite at the foreleg holding her down
+🩹 Nocturne is guarding her Throat (blows there ×0.85; her back is open, ×1.1)
+  Power **40** = base 40 × 0.5 (Dark vs Dark, not very effective) × 2 (targeted)
+  Jarred next to it (Chest Ruff, Chest): power 10 (×0.5)
+
+    Right Upper Foreleg
+        damage      🟣 179.42% → 🟣 283.6%      +104.18 = power 40 × 0.52 × scale 5
+        resistance  🟩 79.94% → 🟩 72.44%       -7.5 = power 40 × 0.25 × 0.75 resistance scale
+        health      ❤️ -195.57% → ❤️ -211.05%   -15.47 = damage 104.18 × 0.2 × 1.06 × vital 0.7
+    Chest Ruff
+        damage      🔴 102.58% → 🔴 114.95%     +12.38 = power 10 × 0.25 × scale 5
+        resistance  🟦 113.34% → 🟦 111.47%     -1.87 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ -211.05% → ❤️ -212.17%   -1.12 = damage 12.38 × 0.2 × 0.76 × vital 0.6
+    Chest
+        damage      🟣 175.06% → 🟣 195.77%     +20.71 = power 10 × 0.41 × scale 5
+        resistance  🟩 90.02% → 🟩 88.14%       -1.88 = power 10 × 0.25 × 0.75 resistance scale
+        health      ❤️ -212.17% → ❤️ -217.72%   -5.55 = damage 20.71 × 0.2 × 0.96 × vital 1.4
+
+  Total: +137.27% damage  ·  ❤️ Nocturne -195.57% → **-217.72%** (-22.15)
+😵 **Nocturne is flinched** (1 beat)
+
+🔒 **Nocturne on Ripples** (holds #26, #27, #28, #29), beat 2 of the hold · pin damage ×0.5
+  ▸ press 22 × 0.5 pin damage
+    Left Thigh
+        damage      🟠 83.21% → 🔴 101.44%    +18.23 = power 11 × 0.33 × scale 5
+        resistance  🟦 101.61% → 🟩 99.55%    -2.06 = power 11 × 0.25 × 0.75 resistance scale
+        health      ❤️ 638.42% → ❤️ 635.92%   -2.5 = damage 18.23 × 0.2 × 0.86 × vital 0.8
+
+  ▸ press 14 × 0.5 pin damage
+    Stomach
+        damage      🔴 95.59% → 🔴 111.34%    +15.75 = power 7 × 0.45 (pin cap) × scale 5
+        resistance  🟩 70.69% → 🟨 69.38%     -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 635.92% → ❤️ 631.83%   -4.1 = damage 15.75 × 0.2 × 1 × vital 1.3
+
+  ▸ press 15 × 0.5 pin damage
+    Throat
+        damage      ⚫ 314.01% → ⚫ 330.89%   +16.88 = power 7.5 × 0.45 (pin cap) × scale 5
+        resistance  🟧 43.08% → 🟧 41.67%     -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 631.83% → ❤️ 626.09%   -5.74 = damage 16.88 × 0.2 × 1 × vital 1.7
+    Left Paw
+        damage      🟣 203.37% → 🟣 220.24%   +16.88 = power 7.5 × 0.45 (pin cap) × scale 5
+        resistance  🟨 64.27% → 🟨 62.86%     -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 626.09% → ❤️ 624.74%   -1.35 = damage 16.88 × 0.2 × 1 × vital 0.4
+
+  Total: +67.74% damage  ·  ❤️ Ripples 638.42% → **624.74%** (-13.68)
+
+📌 **Pin: Nocturne on Ripples** — beat 2 of it (20 s held) · going under 9.9% → **26.8%** (+16.9 this
+      beat: the pressed parts are in agony ×1.15; she passes out at 100%) (weakening)
+- Ripples struggles (escape 61% (×1.5 from breaking loose), else break loose 31%, roll 67 / 31; she
+      twists to one side) → **fails**; Nocturne punishes it:
+    Left Thigh
+        damage      🔴 101.44% → 🔴 126.53%   +25.09 = power 14.5 × 0.35 × scale 5
+        resistance  🟩 99.55% → 🟩 96.83%     -2.72 = power 14.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 624.74% → ❤️ 621.23%   -3.51 = damage 25.09 × 0.2 × 0.88 × vital 0.8
+
+  Total: +25.09% damage  ·  ❤️ Ripples 624.74% → **621.23%** (-3.51)
+
+⏳ Beat 34 health: ❤️ Nocturne -234.47% (-0.5% exertion, -16.25% injuries) | ❤️ Ripples 603.43%
+      (-0.5% exertion, -17.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    director nudge: moving a downed opponent (roll her over / haul her up) 12%, rolled 90 → none
+    Ripples overcommitting, sloppy with tiredness 12%, rolled 72 → no
+    Ripples' Crunch landing devastatingly 2%, rolled 13 → no
+    Nocturne flinched by Crunch 25%, rolled 24 → flinched
+    Ripples making an escape attempt 85%, rolled 68 → she tries
+💡 **Director was pointed at**
+    range variety (Nocturne on Ripples)
+    payback (Nocturne on Ripples)
+----------------------------------------
+
+
+============================== beat 35 ==============================
+🎮 Ripples — 35% strength · energy 20 · ON THE GROUND, face-up, PINNED under Nocturne
+   PINNED: you can struggle to break free, or strike at the one on top of you
+   held: Nocturne has your Left Thigh; Nocturne has your Stomach; Nocturne has your Throat; Nocturne has your Left Paw
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left), Water Gun, Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse, Swift, Ice Beam, Rain Dance, Protect, Mirror Coat
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > I fight to get out from under her
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+Not a limb. Everything.
+
+She heaved up under the Absol all at once, every muscle she had left at once, her back, her hips, her trapped leg, her free one, and the white weight came up off her stomach and the jaws on her throat slid, and her free foot found something and kicked it with all of that heave behind it. It was the Absol's left hind paw, braced in the grass beside her.
+
+— Nocturne —
+
+The paw. The hind paw under the ruined hock, and it went past bearing: a long, hoarse wail with no breath behind it, *Hhaaaaa*, and the leg folded. She went over. She was thrown off sideways and landed on her front in the grass with her face in it and her hind leg drawn up under her, shaking.
+
+The rattled freeze that had held her a moment before let go of her. She could move again. She did not move. She lay with her cheek on the grass and breathed.
+
+— Ripples —
+
+She was out. She lay on her back with her throat burning under the crushed fur where the jaws had been, and her stomach aching, and her hauled-up leg numb, pins and needles crawling into it, and something came up in her that was not pain.
+
+Cold. Hard. She had been held down three times, and she was angry, and the anger sat in her chest like a stone in a stream.
+
+She rolled toward the beach and grabbed the boulder at its edge and hauled. Her feet skidded on the wet sand at the waterline and she went down again, onto her back, and her spine flinched straight, *Eek*. She tried twice more, each try shorter and weaker. Her left arm would not hold her.
+
+She did not get to her feet. She got as far as sitting up, propped against the boulder, her legs out in front of her on the sand, her chest heaving, staring at the white shape lying face-down in the grass.
+
+
+
+
+----------------------------------------
+💢 **Ripples will try to break free** of Nocturne's pin this beat (outcome rolled).
+
+🔒 **Nocturne on Ripples** (holds #26, #27, #28, #29), beat 3 of the hold · pin damage ×0.5
+  ▸ press 22 × 0.5 pin damage
+    Left Thigh
+        damage      🔴 126.53% → 🔴 146.63%   +20.1 = power 11 × 0.37 × scale 5
+        resistance  🟩 96.83% → 🟩 94.77%     -2.06 = power 11 × 0.25 × 0.75 resistance scale
+        health      ❤️ 603.43% → ❤️ 600.54%   -2.89 = damage 20.1 × 0.2 × 0.9 × vital 0.8
+
+  ▸ press 14 × 0.5 pin damage
+    Stomach
+        damage      🔴 111.34% → 🔴 127.09%   +15.75 = power 7 × 0.45 (pin cap) × scale 5
+        resistance  🟨 69.38% → 🟨 68.06%     -1.32 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ 600.54% → ❤️ 596.44%   -4.1 = damage 15.75 × 0.2 × 1 × vital 1.3
+
+  ▸ press 15 × 0.5 pin damage
+    Throat
+        damage      ⚫ 330.89% → ⚫ 347.76%   +16.88 = power 7.5 × 0.45 (pin cap) × scale 5
+        resistance  🟧 41.67% → 🟧 40.27%     -1.4 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 596.44% → ❤️ 590.7%    -5.74 = damage 16.88 × 0.2 × 1 × vital 1.7
+    Left Paw
+        damage      🟣 220.24% → 🟣 237.12%   +16.88 = power 7.5 × 0.45 (pin cap) × scale 5
+        resistance  🟨 62.86% → 🟨 61.45%     -1.41 = power 7.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ 590.7% → ❤️ 589.35%    -1.35 = damage 16.88 × 0.2 × 1 × vital 0.4
+
+  Total: +69.61% damage  ·  ❤️ Ripples 603.43% → **589.35%** (-14.08)
+
+📌 **Pin: Nocturne on Ripples** — beat 3 of it (30 s held) · going under 26.8% → **26.8%** (+0 this
+      beat; she passes out at 100%) (weakening)
+- Ripples struggles (escape 38%, else break loose 29%, roll 23; she bucks) → **ESCAPES!** The pin is
+      broken; the blow that frees her lands on Nocturne:
+    Left Hind Paw
+        damage      🟠 83.6% → 🟣 240.42%       +156.82 = power 49 × 0.64 × scale 5
+        resistance  🟩 71.42% → 🟨 62.23%       -9.19 = power 49 × 0.25 × 0.75 resistance scale
+        health      ❤️ -234.47% → ❤️ -249.06%   -14.59 = damage 156.82 × 0.2 × 1.16 × vital 0.4
+
+  Total: +156.82% damage  ·  ❤️ Nocturne -234.47% → **-249.06%** (-14.59)
+- 🪵 **Ripples is stiff** (1 beat): trapped limbs numb and slow after the pin
+- 😤 **Ripples is furious** (1 beat): a cold, hard anger after being held down so long (harder blows)
+- ⬇️ **Nocturne is thrown off and goes down too** (face-down); she can try to get up from the next
+      beat
+🧗 **Ripples can't get up** this beat, but **gets as far as sitting up** (3 tries; down 1 beat)
+      get-up roll 0.13 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+   💥 the drop on try 1 hurts: Upper Back damage 20% → **28.15%**
+🧗 Nocturne stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+- Nocturne is no longer flinched
+
+⏳ Beat 35 health: ❤️ Nocturne -266.61% (-0.5% exertion, -17.05% injuries) | ❤️ Ripples 570.27%
+      (-0.5% exertion, -17.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples coming out of the pin furious 30%, rolled 17 → FURY
+    Nocturne thrown down by the escape 25%, rolled 15 → she goes down too
+    Ripples getting as far as sitting up 40%, rolled 10 → she sits up
+    Ripples's drop back down hurting 60%, rolled 3 → it jars her
+💡 **Director was pointed at**
+    range variety (Nocturne on Ripples)
+----------------------------------------
+
+*** Ripples breaks free of Nocturne's pin after 3 beats! ***
+
+============================== beat 36 ==============================
+🎮 Ripples — 34% strength · energy 25 · ON THE GROUND, sitting up, not pinned
+   condition: stiff (1 beat), fury (1 beat)
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left), Water Gun, Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse, Swift, Ice Beam, Rain Dance, Protect, Mirror Coat
+   openings: Nocturne (-15%): pin OPEN, submission OPEN
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > throw up Protect
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 27 — Ripples → Nocturne: PROTECT (self, energy 25→15)
+Attack 28 — Nocturne → Ripples: HYDRO PUMP (spread, energy 36→36)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+The Absol's head came up off the grass, and her horn turned toward Ripples, and Ripples knew what was coming without knowing what it would be.
+
+She threw her paws up from where she sat. The air in front of her went hard and bright, the shimmering shell curving round her, and she held it with every bit of cold anger she had left.
+
+— Nocturne —
+
+Water. She had water too. She had never used it against this one; water against water. She used it now, because it was the last strong thing she had: a roaring blast out of her open mouth across the grass at the small sitting shape.
+
+It hit the shell and stopped dead. The water burst off it in every direction, a wall of spray, and the shimmer flared white where it struck and guttered out with it, and nothing reached the Buizel. Not a drop.
+
+She tried to get up. Partway, against the trunk of a tall pine, and her hock and her bitten foreleg gave out and she dropped back down hard. Twice more, each try shorter. She stayed down.
+
+— Ripples —
+
+The shell was gone. She had not been touched.
+
+She got up. Against the boulder: partway, and her left arm gave out and she dropped hard onto it, and the fin went white with pain, and she shook afterward, her breath coming in pulls. Nearly all the way, and it gave again. And then one ugly heave, nearly overbalancing, her shoulder against the stone, and she was up.
+
+The stiffness was going out of her legs. The cold anger was going out of her too, draining away and leaving only tiredness in its place. Tired all the way through.
+
+She looked at the Absol lying face-down under the pine.
+
+*She can't get up. She can't get up.*
+
+
+
+
+----------------------------------------
+⚔️ **Ripples → Nocturne**: a shimmering shell
+🛡️ **Protect** (Ripples, chance 50%): set — it lasts until the next attack on her or the end of next
+      beat
+
+⚔️ **Nocturne → Ripples**: Hydro Pump
+🛡️ **Ripples is behind Protect**: the attack stops against it, nothing lands
+
+🧗 **Ripples gets up** on the third try (using a boulder at the edge of the beach; one ugly heave)
+      get-up roll 0.39 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+   💥 the drop on try 2 hurts: Left Forearm Fin damage 239.49% → **275.78%**
+🧗 **Nocturne can't get up** this beat (3 tries; down 1 beat)
+      get-up roll 0.05 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+- Ripples is no longer stiff
+- Ripples is no longer furious
+
+⏳ Beat 36 health: ❤️ Nocturne -284.16% (-0.5% exertion, -17.05% injuries) | ❤️ Ripples 549.47%
+      (-0.5% exertion, -17.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    submission opening on Nocturne 90%, rolled 31 → OPEN
+    submission opening on Ripples 90%, rolled 15 → OPEN
+    director nudge: moving a downed opponent (roll her over / haul her up) 12%, rolled 16 → none
+    Ripples' Protect holding 50%, rolled 43 → it holds
+    Nocturne overcommitting, sloppy with tiredness 12%, rolled 97 → no
+    Ripples's drop back down hurting 60%, rolled 81 → it doesn't hurt
+    Ripples's drop back down hurting 60%, rolled 14 → it jars her
+    Nocturne getting as far as sitting up 40%, rolled 56 → she stays lying
+    Nocturne's drop back down hurting 60%, rolled 90 → it doesn't hurt
+    the clearing doing something by itself 5%, rolled 38 → nothing
+💡 **Director was pointed at**
+    pin shape idea (Ripples on Nocturne)
+    range variety (Nocturne on Ripples)
+----------------------------------------
+
+
+============================== beat 37 ==============================
+🎮 Ripples — 32% strength · energy 20 · ON HER FEET
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left), Water Gun, Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse, Swift, Ice Beam, Rain Dance, Protect, Mirror Coat
+   openings: Nocturne (-16%): pin OPEN
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > pin her: jaws clamped on her Throat as the choke, her weight on her Chest, her knees on her hips
+  [director is choosing the next beat]
+
+────────────────────────────────────────
+Attack 29 — Nocturne → Ripples: SUNNY DAY (self, energy 41→31)
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Ripples —
+
+She went to her. She did not run; she did not have a run left. She walked, and limped, and came down on the white back.
+
+The Absol was lying on her front. Ripples dropped onto her back with her full weight, knelt with one knee on each hip, and leaned down and put her jaws on the back of the white neck, behind the horn, where the throat met it, and closed them.
+
+Not a bite. A grip. A choke. She clamped down, and she could feel the windpipe and the great vessels on either side of it under her teeth, and she held.
+
+— Nocturne —
+
+She lifted her head against the jaws, and the horn glowed one more time, and she did the one thing she still had the strength for: she reached up for the sky and burned the clouds away.
+
+The sun came down hard and white on both of them. It would make the Buizel's water weak.
+
+The Buizel was not using water.
+
+*Off. Get. Off.*
+
+— Ripples —
+
+The heat lay on her back like a hand. She held on.
+
+----------------------------------------
+📌 **PIN: Ripples on Nocturne** — jaws clamped on her Throat as the choke, her weight on her Chest,
+      her knees on h
+  Pressing on:
+    Neck ← with her jaws  ·  power 22 each beat, steady
+    Back ← with her full weight  ·  power 14 each beat, steady
+    Left Hip ← with her knees  ·  power 13 each beat, steady
+    Right Hip ← with her knees  ·  power 16 each beat, steady
+- The pin is on. No fixed length: each beat brings her closer to passing out (about 6 beats,
+      sometimes more, sometimes fewer). Pressure starts next beat.
+- Nocturne is face-down (so the press moved to the side facing up: Throat → Neck, Chest → Back)
+
+⚔️ **Nocturne → Ripples**: Sunny Day
+🌦️ **SUN** over the arena for 5 beats
+
+⏳ Beat 37 health: ❤️ Nocturne -301.71% (-0.5% exertion, -17.05% injuries) | ❤️ Ripples 531.67%
+      (-0.5% exertion, -17.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    submission opening on Nocturne 90%, rolled 100 → none
+    director nudge: moving a downed opponent (roll her over / haul her up) 12%, rolled 8 → suggested
+💡 **Director was pointed at**
+    pin shape idea (Ripples on Nocturne)
+----------------------------------------
+
+
+============================== beat 38 ==============================
+🎮 Ripples — 31% strength · energy 13 · ON TOP of Nocturne, pinning her down
+   holding: your grip on Nocturne's Neck; your grip on Nocturne's Back; your grip on Nocturne's Left Hip; your grip on Nocturne's Right Hip
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left) (too tired), Water Gun (too tired), Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse (too tired), Swift (too tired), Ice Beam (too tired), Rain Dance, Protect, Mirror Coat
+   you're pinning her: hold her down, strike at what you can reach, or let her go
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > hold her down, all my weight on her
+  [director is choosing the next beat]
+  [staying with the damage: Ripples watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+She tried to slide out from under, backward, dragging her body along the grass a little at a time. It was everything she had, and it was not much: slow, late. The Buizel felt it coming and drove her knees down into her hips, and the right hip, which had been only a bruise, took it: she hopped her hind legs, the right one jerking up off the ground, a hiss that turned into a growl, *Hssrrr*.
+
+The jaws on her neck crushed the fur into the skin, the muscle under it spread wide and flat.
+
+The weight on her back she tested, straining against it. The knee on her left hip, already hurting: her legs pushed and slipped, pushed and slipped. The knee on her right: she grunted and braced.
+
+— Ripples —
+
+Ripples did not let go. Her jaws ached. Her whole body ached. She held.
+
+
+
+
+----------------------------------------
+💢 **Nocturne will try to break free** of Ripples' pin this beat (outcome rolled).
+
+🔒 **Ripples on Nocturne** (holds #30, #31, #32, #33), beat 1 of the hold · pin damage ×0.5
+  ▸ press 22 × 0.5 pin damage
+    Neck
+        damage      ⚫ 858.34% → ⚫ 883.09%     +24.75 = power 11 × 0.45 (pin cap) × scale 5
+        resistance  🟧 34.91% → 🟧 32.84%       -2.07 = power 11 × 0.25 × 0.75 resistance scale
+        health      ❤️ -301.71% → ❤️ -309.63%   -7.92 = damage 24.75 × 0.2 × 1 × vital 1.6
+
+  ▸ press 14 × 0.5 pin damage
+    Back
+        damage      🟢 15.63% → 🟢 22.87%       +7.23 = power 7 × 0.21 × scale 5
+        resistance  🟦 119.07% → 🟦 117.76%     -1.31 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ -309.63% → ❤️ -310.65%   -1.02 = damage 7.23 × 0.2 × 0.71
+
+  ▸ press 13 × 0.5 pin damage
+    Left Hip
+        damage      🟠 63.2% → 🟠 73.57%        +10.37 = power 6.5 × 0.32 × scale 5
+        resistance  🟦 103.33% → 🟦 102.11%     -1.22 = power 6.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -310.65% → ❤️ -312.05%   -1.4 = damage 10.37 × 0.2 × 0.84 × vital 0.8
+
+  ▸ press 16 × 0.5 pin damage
+    Right Hip
+        damage      🟢 9.64% → 🟢 20.33%        +10.69 = power 8 × 0.27 × scale 5
+        resistance  🟦 110.59% → 🟦 109.09%     -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -312.05% → ❤️ -313.39%   -1.33 = damage 10.69 × 0.2 × 0.78 × vital 0.8
+
+  Total: +53.04% damage  ·  ❤️ Nocturne -301.71% → **-313.39%** (-11.68)
+
+📌 **Pin: Ripples on Nocturne** — beat 1 of it (10 s held) · going under 0% → **10.7%** (+10.7 this
+      beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at 100%)
+      (fading)
+- Nocturne struggles (escape 1%, else break loose 1%, roll 24 / 90; she tries to slide out) →
+      **fails**; Ripples punishes it:
+    Right Hip
+        damage      🟢 20.33% → 🟡 41.17%       +20.84 = power 15 × 0.28 × scale 5
+        resistance  🟦 109.09% → 🟦 106.28%     -2.81 = power 15 × 0.25 × 0.75 resistance scale
+        health      ❤️ -313.39% → ❤️ -316.03%   -2.65 = damage 20.84 × 0.2 × 0.79 × vital 0.8
+
+  Total: +20.84% damage  ·  ❤️ Nocturne -313.39% → **-316.03%** (-2.64)
+- 😮‍💨 Ripples is running out of breath holding the pin: it holds less surely
+
+⏳ Beat 38 health: ❤️ Nocturne -333.58% (-0.5% exertion, -17.05% injuries) | ❤️ Ripples 513.87%
+      (-0.5% exertion, -17.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    director nudge: moving a downed opponent (roll her over / haul her up) 12%, rolled 67 → none
+💡 **Director was pointed at**
+    tactic idea (Ripples)
+----------------------------------------
+
+
+============================== beat 39 ==============================
+🎮 Ripples — 30% strength · energy 15 · ON TOP of Nocturne, pinning her down
+   holding: your grip on Nocturne's Neck; your grip on Nocturne's Back; your grip on Nocturne's Left Hip; your grip on Nocturne's Right Hip
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left) (too tired), Water Gun (too tired), Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse (too tired), Swift (too tired), Ice Beam (too tired), Rain Dance, Protect, Mirror Coat
+   you're pinning her: hold her down, strike at what you can reach, or let her go
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > hold her down, all my weight on her
+  [director is choosing the next beat]
+  [lingering on one blow this beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She heaved, all at once, every muscle at once. It was a slow heave, and the Buizel rode it, and bore her weight down on Nocturne's back, and the back took it, a hiss of pain through her bared teeth, *Ssshh*, a twist away that would not quite reach the place.
+
+The jaws on her neck squeezed her out of shape, the muscle bunched up hard on either side of the teeth. Her back was sore now under the weight; her lips peeled back as she strained against it. The left hip: she squirmed, a low growl breaking into a grunt. The right: a sharp breath and a shove against it.
+
+Nothing moved.
+
+— Ripples —
+
+The heat beat down. Sweat ran under her fur. Her throat burned with every breath through her nose. She held.
+
+*Stay. Stay. Go to sleep.*
+
+
+
+
+----------------------------------------
+💢 **Nocturne will try to break free** of Ripples' pin this beat (outcome rolled).
+
+🔒 **Ripples on Nocturne** (holds #30, #31, #32, #33), beat 2 of the hold · pin damage ×0.5
+  ▸ press 22 × 0.5 pin damage
+    Neck
+        damage      ⚫ 883.09% → ⚫ 907.84%     +24.75 = power 11 × 0.45 (pin cap) × scale 5
+        resistance  🟧 32.84% → 🟧 30.78%       -2.06 = power 11 × 0.25 × 0.75 resistance scale
+        health      ❤️ -333.58% → ❤️ -341.5%    -7.92 = damage 24.75 × 0.2 × 1 × vital 1.6
+
+  ▸ press 14 × 0.5 pin damage
+    Back
+        damage      🟢 22.87% → 🟡 30.43%       +7.56 = power 7 × 0.22 × scale 5
+        resistance  🟦 117.76% → 🟦 116.44%     -1.32 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ -341.5% → ❤️ -342.59%    -1.09 = damage 7.56 × 0.2 × 0.72
+
+  ▸ press 13 × 0.5 pin damage
+    Left Hip
+        damage      🟠 73.57% → 🟠 84.22%       +10.65 = power 6.5 × 0.33 × scale 5
+        resistance  🟦 102.11% → 🟦 100.89%     -1.22 = power 6.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -342.59% → ❤️ -344.05%   -1.45 = damage 10.65 × 0.2 × 0.85 × vital 0.8
+
+  ▸ press 16 × 0.5 pin damage
+    Right Hip
+        damage      🟡 41.17% → 🟡 53.09%       +11.92 = power 8 × 0.30 × scale 5
+        resistance  🟦 106.28% → 🟦 104.78%     -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -344.05% → ❤️ -345.6%    -1.56 = damage 11.92 × 0.2 × 0.82 × vital 0.8
+
+  Total: +54.88% damage  ·  ❤️ Nocturne -333.58% → **-345.6%** (-12.02)
+
+📌 **Pin: Ripples on Nocturne** — beat 2 of it (20 s held) · going under 10.7% → **27.4%** (+16.7
+      this beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at
+      100%) (fading)
+- Nocturne struggles (escape 1%, else break loose 0%, roll 81 / 12; she bucks) → **fails**; Ripples
+      punishes it:
+    Back
+        damage      🟡 30.43% → 🟡 47.9%       +17.47 = power 15.5 × 0.23 × scale 5
+        resistance  🟦 116.44% → 🟦 113.54%    -2.9 = power 15.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -345.6% → ❤️ -348.16%   -2.55 = damage 17.47 × 0.2 × 0.73
+
+  Total: +17.47% damage  ·  ❤️ Nocturne -345.6% → **-348.16%** (-2.56)
+- 😮‍💨 Ripples is running out of breath holding the pin: it holds less surely
+
+⏳ Beat 39 health: ❤️ Nocturne -365.71% (-0.5% exertion, -17.05% injuries) | ❤️ Ripples 496.07%
+      (-0.5% exertion, -17.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    director nudge: moving a downed opponent (roll her over / haul her up) 12%, rolled 24 → none
+💡 **Director was pointed at**
+    tactic idea (Ripples)
+----------------------------------------
+
+
+============================== beat 40 ==============================
+🎮 Ripples — 29% strength · energy 17 · ON TOP of Nocturne, pinning her down
+   holding: your grip on Nocturne's Neck; your grip on Nocturne's Back; your grip on Nocturne's Left Hip; your grip on Nocturne's Right Hip
+   moves: Aqua Jet (too tired), Brick Break, Crunch, Ice Fang, Hydro Pump (4 left) (too tired), Water Gun (too tired), Tail Bind (hold: for pins and grips), Pin Down (hold: for pins and grips), Water Pulse (too tired), Swift (too tired), Ice Beam (too tired), Rain Dance, Protect, Mirror Coat
+   you're pinning her: hold her down, strike at what you can reach, or let her go
+   (type her move · Enter: the director chooses for her · wait: she holds back · /command: direct control)
+Ripples > hold her down, all my weight on her
+  [director is choosing the next beat]
+  [staying with the damage: Ripples watching]
+  [narrator is writing part 1/3]
+  [narrator is writing part 2/3]
+  [narrator is writing part 3/3]
+
+— Nocturne —
+
+She planted her hind paws, even the ruined one, and pushed up through her heels and shoulders with her back bowed, trying to throw the weight over her head. It came up a little. It did not come off.
+
+The Buizel bore down, and the jaws on her neck closed harder, and her neck, ruined since the vise of the first pin, took it: her body jerked and curled round it on its own, a hind paw scrabbling at the ground, shaking she could not stop, her eyes streaming.
+
+Her back was sore and she twisted under it, a grunt with every push. Her left hip had gone past hurting into something worse; she could not keep still under the knee on it, twisting, straining, a cry each time it bore down. Her right hip was hurting now too; she writhed, a groan leaking out of her.
+
+— Ripples —
+
+It was very quiet. The birds had gone silent. The lake lapped at the sand somewhere behind her. There was only the Absol's breath, whistling and short past her teeth, and her own, and the heat.
+
+Neither of them knew how long this would go. Ripples did not think about it. She held.
+
+
+
+
+----------------------------------------
+💢 **Nocturne will try to break free** of Ripples' pin this beat (outcome rolled).
+
+🔒 **Ripples on Nocturne** (holds #30, #31, #32, #33), beat 3 of the hold · pin damage ×0.5
+  ▸ press 22 × 0.5 pin damage
+    Neck
+        damage      ⚫ 907.84% → ⚫ 932.59%     +24.75 = power 11 × 0.45 (pin cap) × scale 5
+        resistance  🟧 30.78% → 🟥 28.72%       -2.06 = power 11 × 0.25 × 0.75 resistance scale
+        health      ❤️ -365.71% → ❤️ -373.63%   -7.92 = damage 24.75 × 0.2 × 1 × vital 1.6
+
+  ▸ press 14 × 0.5 pin damage
+    Back
+        damage      🟡 47.9% → 🟡 56.51%        +8.62 = power 7 × 0.25 × scale 5
+        resistance  🟦 113.54% → 🟦 112.22%     -1.32 = power 7 × 0.25 × 0.75 resistance scale
+        health      ❤️ -373.63% → ❤️ -374.93%   -1.3 = damage 8.62 × 0.2 × 0.76
+
+  ▸ press 13 × 0.5 pin damage
+    Left Hip
+        damage      🟠 84.22% → 🔴 95.16%       +10.94 = power 6.5 × 0.34 × scale 5
+        resistance  🟦 100.89% → 🟩 99.67%      -1.22 = power 6.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -374.93% → ❤️ -376.44%   -1.51 = damage 10.94 × 0.2 × 0.86 × vital 0.8
+
+  ▸ press 16 × 0.5 pin damage
+    Right Hip
+        damage      🟡 53.09% → 🟠 65.44%       +12.35 = power 8 × 0.31 × scale 5
+        resistance  🟦 104.78% → 🟦 103.28%     -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -376.44% → ❤️ -378.08%   -1.64 = damage 12.35 × 0.2 × 0.83 × vital 0.8
+
+  Total: +56.66% damage  ·  ❤️ Nocturne -365.71% → **-378.08%** (-12.37)
+
+📌 **Pin: Ripples on Nocturne** — beat 3 of it (30 s held) · going under 27.4% → **57.2%** (+29.8
+      this beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at
+      100%) (fading)
+- Nocturne struggles (escape 1%, else break loose 0%, roll 69 / 39; she bridges) → **fails**;
+      Ripples punishes it:
+    Neck
+        damage      ⚫ 932.59% → ⚫ 961.84%     +29.25 = power 13 × 0.45 (pin cap) × scale 5
+        resistance  🟥 28.72% → 🟥 26.28%       -2.44 = power 13 × 0.25 × 0.75 resistance scale
+        health      ❤️ -378.08% → ❤️ -387.44%   -9.36 = damage 29.25 × 0.2 × 1 × vital 1.6
+
+  Total: +29.25% damage  ·  ❤️ Nocturne -378.08% → **-387.44%** (-9.36)
+- 😮‍💨 Ripples is running out of breath holding the pin: it holds less surely
+
+⏳ Beat 40 health: ❤️ Nocturne -405.39% (-0.5% exertion, -17.45% injuries) | ❤️ Ripples 478.27%
+      (-0.5% exertion, -17.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    director nudge: moving a downed opponent (roll her over / haul her up) 12%, rolled 96 → none
+💡 **Director was pointed at**
+    tactic idea (Ripples)
+----------------------------------------
+
+
