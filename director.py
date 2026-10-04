@@ -635,7 +635,8 @@ def resolve(engine, b):
                 and act == "hold_adjust"):
             b["hold_id"] = next(iter(engine.holds))  # only one hold, so it must be that one
 
-    if not manual and act in ("strike", "combo"):
+    if not manual and act in ("strike", "combo") and engine.get(att).name not in (getattr(engine, "ordered", None) or ()):
+        # (a player's own order lands where she said: no re-aiming for the fighters you play)
         b = _apply_focus(engine, att, dfn, b)
         if not b.get("_aimed"):
             b = _apply_variety(engine, att, dfn, b)

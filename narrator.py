@@ -3260,9 +3260,17 @@ class Narrator:
         elif t == "breather" and getattr(self, "_ongoing", False):
             lines.append(f"No new attack: only the pin or hold listed below continues. {a.get('flavor', '')}{intent}")
         elif t == "breather":
-            lines.append(f"No new attack, and nothing new happens to anyone's body: no new grips, bites, holds, falls, "
-                         f"or injuries. Fighters reposition, breathe, size each other up, and feel what they already "
-                         f"have. {a.get('flavor', '')}{intent}")
+            who, fl = a.get("attacker") or a.get("focus") or "", str(a.get("flavor") or "").strip().rstrip(".")
+            what = (f" {who}: {fl}." if who and fl else f" {fl[:1].upper() + fl[1:]}." if fl else "")
+            key = (getattr(self, "beat_now", None), id(getattr(self, "_must_parts", None)))
+            if getattr(self, "_breather_key", None) == key:
+                # the other one rests too: one line for her, not the whole rule again
+                lines.append(f"{who or 'The other'} doesn't attack either.{what}{intent}")
+            else:
+                self._breather_key = key
+                lines.append(f"No new attack, and nothing new happens to anyone's body: no new grips, bites, holds, "
+                             f"falls, or injuries. Fighters reposition, breathe, size each other up, and feel what "
+                             f"they already have.{what}{intent}")
 
         for s in a.get("status_applied") or []:
             if s.get("hazard"):
