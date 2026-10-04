@@ -988,6 +988,21 @@ After each beat's prose, the program prints the exact numbers in this format:
   sets how often a hurt fighter makes a sound (the badly hurt places always get one, except on "rarely"); /sounds
   write often | sometimes | rarely | never sets how often it is written out; /sounds on | off. Saved to rules.json
   (narration.sounds.how_often / write_out).
+- **Bodies you can see.**
+  - Every press in a pin or a hold now says what it LOOKS like, by how hard it is: light, the fur flattened and
+    parted, the grip's shape printed into it; firm, the muscle pressed flat and the flesh bulging round the edges;
+    heavy, sunk deep and everything round it pushed out of shape. On a joint (shoulder, knee, hock, hip, upper limb,
+    tail), a firm or heavy press forces it toward the edge of where it bends, the limb at an unnatural angle (bent,
+    never broken); on the throat, a visible dip.
+  - VISIBLE WEAR now shows the marks of what did the damage, deeper the worse the part is: claws leave scratches,
+    then raked furrows, then the fur torn away in strips; teeth leave tooth marks, then puffy rings of them; blows
+    ruffle the fur, then show bruising dark through it wherever it parts; grips crush the fur flat in the shape of
+    the grip, then ruffle it into ridges with bruising beneath; lightning frizzes and singes it; cold leaves
+    frost-burned patches. Ears, noses and fins get creased, bent or pushed crooked for now. Up to four parts per
+    fighter, kept the same from beat to beat.
+  - Shaking is never vague any more: whenever a fighter shakes, trembles, jerks, thrashes or writhes, the narrator is
+    told to say where and how (a foreleg trembling at the elbow, the head shaking side to side, claws scraping at the
+    ground again and again, twisting at the hips, the back arching) and how hard and fast.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

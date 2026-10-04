@@ -1790,7 +1790,33 @@ class Narrator:
         elif float(h["damage_before"]) >= 150:
             note = " — the part can't bear pressure: every bit of it tells"
         return (f"    • {h['part']}" + (f" ({with_})" if with_ else "") + f": {self._strength(h['damage_taken'])} squeeze, "
-                f"{change}{note}")
+                f"{change}{note}; LOOKS: {self._press_look(h)}")
+
+    PRESS_LOOK = {
+        "light": ["the fur flattened and parted under it, a shallow dent where it presses",
+                  "the fur pushed flat round it, the shape of the grip printed into it"],
+        "firm": ["the muscle pressed flat under it, the flesh bulging round the edges",
+                 "sunk in, the fur and flesh squeezed out round it in a ridge"],
+        "heavy": ["sunk deep, the muscle squashed flat, the flesh swelling out round it",
+                  "driven in hard, everything round it pushed out of its shape"],
+    }
+    JOINT_LOOK = ["the joint forced toward the edge of where it bends, the limb at an unnatural angle (bent, not broken)",
+                  "the joint wrenched round, the limb held at a strange, wrong-looking angle (nothing breaks)"]
+
+    def _press_look(self, h):
+        """What a press LOOKS like on the body: fur, muscle, and a joint bent toward its limit, by how hard it is."""
+        from engine import body_region
+        pw = float(h.get("power") or 0)
+        k = "light" if pw < 10 else "firm" if pw < 20 else "heavy"
+        seed = int(getattr(self, "beat_now", 0) or 0) + len(h["part"])
+        look = self.PRESS_LOOK[k][seed % 2]
+        part, reg = h["part"].lower(), body_region(h["part"])
+        if k != "light" and (reg in ("shoulder", "fore_up", "hind_low", "tail") or any(
+                w in part for w in ("knee", "hock", "elbow", "hip", "wrist", "ankle"))):
+            look += "; " + self.JOINT_LOOK[seed % 2]
+        elif reg == "neck" and k != "light":
+            look += "; the throat pressed in, a visible dip where it pushes"
+        return look
 
     def _many_hits(self, hits):
         """Whole-body attacks: summarize instead of listing 30+ lines."""
@@ -6966,6 +6992,11 @@ class Narrator:
                          f"paragraph: *Hhk*, *Nngh*, *Hss*, *Ahh*, *Kh-hah*, *Yip*." if write else
                          " Describe the sounds; don't write them out.")
                       + " Sounds only: no words, no sobbing or weeping."
+                      + " BODY IN MOTION: whenever she shakes, trembles, jerks, thrashes or writhes, say WHERE and HOW: "
+                      "which part (a foreleg trembling at the elbow, the head shaking side to side, the tail lashing), "
+                      "the motion itself (short scrapes of the claws at the ground, a limb stretched out and clawing at "
+                      "the dirt again and again, twisting at the hips, the back arching off the ground), and how hard "
+                      "and fast. Never just 'she shook' or 'her body jerked'."
                       + (" Fit them to who makes them: " + "; ".join(voices) + "." if voices else "") + "\n\n")
 
     def _fading_thoughts_note(self):

@@ -3605,6 +3605,58 @@ class Engine:
             w.append(mark)
             del w[:-6]
 
+    MARKS = {
+        "claw": ("fine scratches through the fur", "raked furrows through the fur, the skin red beneath",
+                 "deep raked lines, the fur torn away in strips"),
+        "bite": ("tooth marks pressed into the fur", "a ring of tooth marks, puffy and red round each one",
+                 "deep tooth marks, the fur matted and clumped round them"),
+        "blunt": ("the fur ruffled up the wrong way", "bruising showing dark through the fur wherever it parts",
+                  "dark bruising under the fur, swollen out of its shape"),
+        "grip": ("the fur crushed flat in the shape of what held it", "the fur ruffled into ridges, bruising beneath "
+                 "where it parts", "the fur crushed and matted, the flesh beneath bruised dark and puffy"),
+        "shock": ("the fur frizzed and standing up", "the fur singed and frizzed", "the fur singed in patches, the "
+                  "skin beneath angry red"),
+        "cold": ("frost-stiff fur", "frost-burned patches, the fur dull and stiff", "frost-burned patches gone red "
+                 "and raw-looking under stiff fur"),
+    }
+    CARTILAGE = {"ear": "folded and creased, not standing the way it should", "nose": "swollen and pushed a little "
+                 "crooked", "fin": "bent along a crease, not lying flat", "horn": "", "cheek": "puffed up",
+                 "muzzle": "swollen", "jaw": "swollen along the line of it"}
+
+    def _mark_kind(self, src):
+        s = str(src or "").lower()
+        if re.search(r"\bpin\b|\bhold\b|coils|clutch|crab|armbar|crossface|lock|crank|wrench|squeez", s):
+            return "grip"
+        mv = None
+        m = re.match(r"^.+?'s? (.+?)(?: \(.*\))?$", str(src or ""))
+        if m:
+            mv = self.dex_move(m.group(1))
+        name = ((mv or {}).get("name") or "").lower() + " " + ((mv or {}).get("about") or "").lower()
+        if re.search(r"slash|claw|swipe|scratch|rake|cut", name):
+            return "claw"
+        if re.search(r"bite|fang|crunch|jaws", name):
+            return "bite"
+        t = (mv or {}).get("type")
+        if t == "Electric":
+            return "shock"
+        if t == "Ice":
+            return "cold"
+        return "blunt"
+
+    def visible_marks(self, f, p):
+        """What the damage to one part LOOKS like by now: the marks of what did it (claws, teeth, blows, grips,
+        lightning, cold), how deep, and cartilage (ears, nose, fins) creased or bent out of shape for now."""
+        lvl = 2 if p.damage >= 300 else 1 if p.damage >= 150 else 0
+        srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
+        kinds = list(dict.fromkeys(self._mark_kind(c) for c in srcs)) or ["blunt"]
+        marks = [self.MARKS[k][lvl] for k in kinds[:2]]
+        cart = next((v for k, v in self.CARTILAGE.items() if k in p.name.lower() and v), "")
+        if cart and lvl >= 1:
+            marks.append(cart + " for now")
+        if lvl == 2 and "swollen" not in " ".join(marks):
+            marks.append("swollen")
+        return f"her {p.name.lower()}: " + ", ".join(marks)
+
     def wear_text(self):
         """VISIBLE WEAR: how each fighter looks by now, so the narrator keeps it the same from beat to beat."""
         rows = []
@@ -3616,8 +3668,8 @@ class Engine:
                 bits.append("singed patches in her fur")
             if self.has(f, "chilled"):
                 bits.append("frost in her fur, shivering")
-            bad = sorted((p for p in f.parts.values() if p.damage >= 150), key=lambda p: -p.damage)[:3]
-            bits += [f"her {p.name.lower()} swollen, the fur there torn up and matted" for p in bad]
+            bad = sorted((p for p in f.parts.values() if p.damage >= 90), key=lambda p: -p.damage)[:4]
+            bits += [self.visible_marks(f, p) for p in bad]
             if bits:
                 rows.append(f"{f.name}: " + "; ".join(dict.fromkeys(bits)))
         return ("VISIBLE WEAR (how they look by now; keep it the same unless this beat changes it): "
