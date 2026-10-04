@@ -3061,6 +3061,9 @@ class Engine:
         if not cfg.get("enabled", True) or f.name not in self.downed or self.pinned_by(f.name) \
                 or any(h.defender == f.name for h in self.holds.values()):
             return 0.0
+        cap = int(cfg.get("max_per_fight", 0) or 0)      # 0 = no cap: how often is the chance's job
+        if cap and sum(self.times("submission", x.name) for x in self.fighters.values()) >= cap:
+            return 0.0
         ch = float(cfg.get("chance", 0.03))
         if self.strength(f) < 50:
             ch *= float(cfg.get("weak_mult", 1.5))
@@ -3074,6 +3077,28 @@ class Engine:
                 self.sub_window[f.name] = bool(open_all) or self._chance(ch, f"submission opening on {f.name}",
                                                                          "OPEN", "none")
         return self.sub_window
+
+    def sub_stuck(self, d, hs):
+        """True when the one in a submission can't hope to break it: she is very weak (submissions.stuck_below % of
+        her strength) or the parts it wrenches are ruined (submissions.stuck_damage)."""
+        cfg = self.rules.get("submissions") or {}
+        ruined = any(h.part in d.parts and d.parts[h.part].damage >= float(cfg.get("stuck_damage", 300)) for h in hs)
+        return self.strength(d) < float(cfg.get("stuck_below", 25)) or ruined
+
+    def sub_break_chance(self, ch, d, hs):
+        """The break-free chance against a submission: the plain-hold chance x break_mult, and x (1 + grow per beat
+        it has been on), so the longer it's on the likelier she gets out, up to max_break. Unless she is stuck
+        (sub_stuck): then it does not grow (x stuck_mult), and the holder is pointed at a pin or other damage
+        instead. Returns (chance, stuck)."""
+        cfg = self.rules.get("submissions") or {}
+        ch *= float(cfg.get("break_mult", 0.8))
+        stuck = self.sub_stuck(d, hs)
+        beats = max(h.turns_active for h in hs)
+        if stuck:
+            ch *= float(cfg.get("stuck_mult", 0.6))
+        else:
+            ch *= 1.0 + float(cfg.get("grow", 0.3)) * max(0, beats - 1)
+        return round(min(float(cfg.get("max_break", 0.85)), ch), 3), stuck
 
     def in_submission(self, name):
         """The submission hold on her, if any: (holder, hold name)."""
@@ -4127,6 +4152,9 @@ class Engine:
             if d.name not in self.downed:
                 # taken down into the pin: whatever she was pinning or holding (except her grip on the pinner) ends
                 loose += self._lose_grip(d.name, f"{d.name} was taken down", keep_on=a.name)
+        if new_pin:
+            for h in [h for h in self.holds.values() if h.attacker == a.name and h.defender == d.name and h.sub]:
+                self.holds.pop(h.id, None)      # the submission is let go for the pin
         names = [d.part(c[0]).name for c in contacts]
         # grips she already has on this fighter when a NEW pin starts: they become part of the pin
         had = ([{"hold_id": h.id, "part": h.part, "with": h.with_part, "flavor": h.flavor, "beats_held": h.turns_active}
@@ -4356,8 +4384,8 @@ class Engine:
             if not fa or not fd or fa.eliminated or fd.eliminated:
                 continue
             ch = self.hold_break_chance(a, d)
-            if any(h.sub for h in hs):     # a locked-in submission is harder to wrench out of than a plain grip
-                ch = round(ch * float((self.rules.get("submissions") or {}).get("break_mult", 0.8)), 3)
+            if any(h.sub for h in hs):
+                ch, _ = self.sub_break_chance(ch, fd, hs)
             if ch <= 0:
                 continue
             cfg = self.rules.get("holds", {}).get("break", {})
@@ -4366,6 +4394,7 @@ class Engine:
                 for h in hs:
                     self.holds.pop(h.id, None)
                 events.append({"type": "hold_end", "broke_free": True, "attacker": a, "defender": d,
+                               "submission": next((h.sub for h in hs if h.sub), ""),
                                "hold_ids": [h.id for h in hs], "parts": [h.part for h in hs],
                                "with": [h.with_part for h in hs if h.with_part],
                                "beats_held": max(h.turns_active for h in hs), "chance": ch,
@@ -5094,6 +5123,10 @@ class Engine:
             self.pin_window[f.name] = bool(open_all) or self._chance(self.pin_chance(f), f"pin opening on {f.name}",
                                                                      "OPEN", "none")
         self.roll_sub_windows(open_all)
+        for name in [f.name for f in self.active()]:
+            hs = [h for h in self.holds.values() if h.defender == name and h.sub]
+            if hs and self.sub_stuck(self.get(name), hs):
+                self.pin_window[name] = True    # she can't break it: the holder can let go and pin her
         return self.pin_window
 
     PIN_REACH = ("muzzle", "nose", "jaw", "cheek", "ear", "head", "neck", "throat", "chest", "ruff", "shoulder",

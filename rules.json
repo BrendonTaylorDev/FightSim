@@ -1112,11 +1112,11 @@
     "initiative_min_strength": 35,
     "_pin_urge_comment": "How often there is an OPENING for a new pin on a fighter, rolled each beat before the director chooses (the director can only start a pin where there is one; your /commands and typed directions always can). standing: on her feet with at least weak_below % of her strength (rare, but a pin can come at any point). downed: knocked down, same strength. weak_standing / weak_downed: under weak_below % of her strength; these then climb toward max as she nears 0. helpless: asleep or frozen. When there is an opening and you just press Enter, the director is told to go for it.",
     "pin_urge": {
-      "standing": 0.1,
-      "downed": 0.4,
+      "standing": 0.4,
+      "downed": 0.9,
       "weak_below": 50,
-      "weak_standing": 0.45,
-      "weak_downed": 0.85,
+      "weak_standing": 0.85,
+      "weak_downed": 0.95,
       "max": 0.95,
       "helpless": 0.9
     },
@@ -1477,15 +1477,21 @@
     "lead_margin": 5.0
   },
   "submissions": {
-    "_comment": "Submission holds: very rare wrestling holds that WRENCH (a camel clutch, a crossface, a Boston crab, an armbar, a leg lock, a tail crank, a limb wrench). They do damage every beat, harder each beat, and are NOT pins (no clock, no pass-out). An opening is rolled each beat on a fighter who is down and not pinned or held: chance (x weak_mult under half strength). power / second_power: the main grips and the bracing ones; ramp / second_ramp: how much harder each beat. max_beats: after that the holder lets it go. break_mult: the break-free chance against it (x the plain-hold chance). The one held can't get up while it's on, and blows on her land x moves.vulnerable.submission.",
+    "_comment": "Submission holds: wrestling holds that WRENCH (a camel clutch, a crossface, a Boston crab, an armbar, a leg lock, a tail crank, a limb wrench). They do damage every beat, harder each beat, and are NOT pins (no clock, no pass-out). An opening is rolled each beat on a fighter who is down and not pinned or held (chance, x weak_mult under half strength), max_per_fight a fight at most (0 = no cap; the chance is tuned for about one a fight). power / second_power: the main grips and the bracing ones; ramp / second_ramp: how much harder each beat. max_beats: after that the holder lets it go. Breaking out: the plain-hold chance x break_mult, growing by grow per beat it has been on (up to max_break), unless she is STUCK (under stuck_below % strength, or a gripped part at stuck_damage %+): then it doesn't grow (x stuck_mult), a pin opening on her is always there, and the holder is pointed at letting go into a pin or hurting her another way. The one held can't get up while it's on, and blows on her land x moves.vulnerable.submission.",
     "enabled": true,
-    "chance": 0.03,
+    "chance": 0.6,
     "weak_mult": 1.5,
     "power": 16,
     "second_power": 9,
     "ramp": 3,
     "second_ramp": 1,
-    "max_beats": 3,
-    "break_mult": 0.8
+    "max_beats": 10,
+    "break_mult": 0.8,
+    "max_per_fight": 0,
+    "grow": 0.3,
+    "max_break": 0.85,
+    "stuck_below": 25,
+    "stuck_damage": 300,
+    "stuck_mult": 0.6
   }
 }

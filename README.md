@@ -938,6 +938,20 @@ After each beat's prose, the program prints the exact numbers in this format:
   point pin; 85% have three or more, over half four or more (rules.json pin.contacts.weights). The director is told
   the same. More presses means more pressure: 400 fights at your settings, Nocturne 58% (it was 62%; within the
   noise, ±2.5), pins 4.8 a fight, 71% of fights with 4+.
+- **Submissions, final build.** No cap on how many: the opening chance on a fighter who is down and not pinned or
+  held went from 3% to 60% a beat (rules.json submissions.chance), and a submission opening is now offered BEFORE a
+  pin when both are open (it used to lose to the pin every time). That gives about one submission a fight (0.88 in
+  400 fights). They run up to 10 beats (was 3). Breaking out: the plain-hold chance x0.8, growing +30% for every
+  beat it has been on (up to 85%), so a long one gets harder to keep on. Unless she is STUCK (under 25% strength,
+  or a part it wrenches is at 300%+ damage): then it doesn't grow (x0.6 instead), a pin opening on her is always
+  there, and the director is told to let it go into a pin or hurt her another way with what is free. A pin the
+  holder starts replaces the submission. In the dice fights they last about 3 beats (longest 10): about 60% end with
+  the holder letting go into a pin, 40% with the held one breaking out.
+- **More pins: about 8 a fight.** director.pin_urge (the chance of a pin opening each beat): on her feet 0.1 →
+  0.4, down 0.4 → 0.9, under half strength on her feet 0.45 → 0.85, under half strength and down 0.85 → 0.95.
+  400 fights at your settings: 8.2 pins a fight (was 4.8), 95% of fights with 4+, Nocturne 57% (with the 200
+  calibration fights, 59% over 600: still about 60%). Fights are shorter in beats (about 50, was about 75) because
+  pins end them sooner.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

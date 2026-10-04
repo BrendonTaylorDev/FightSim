@@ -37,6 +37,14 @@ def _pick_action(eng, rng, f, d):
     a = {"attacker": f.name, "defender": d.name, "flavor": "", "_sim": True}
     if eng.pinned_by(f.name) or eng.pinning(f.name) or f.energy < 12:
         return dict(a, action="breather")
+    # a submission opening (rarer than a pin, so offered first): usually taken, and now and then something free is used on her as well
+    if (getattr(eng, "sub_window", None) or {}).get(d.name) and f.name not in eng.downed and rng.random() < 0.7:
+        shapes = eng.submission_shapes(f.name, d.name)
+        if shapes:
+            return dict(a, action="submission", improvised_name=rng.choice(sorted(shapes)))
+    held = [h for h in eng.holds.values() if h.sub and h.attacker == f.name and h.defender == d.name]
+    if held and not eng.sub_stuck(d, held) and rng.random() < 0.5:
+        return dict(a, action="breather")    # keeps cranking the submission
     ok, _ = eng.pin_allowed(d.name)
     # like the director: when there is an opening it is told to go for it, and usually does
     if ok and f.name not in eng.downed and not eng.has(f, "reeling") and rng.random() < 0.85:
@@ -46,11 +54,6 @@ def _pick_action(eng, rng, f, d):
             sev = ["crushing"] + ["firm"] * (len(contacts) - 1)
             return dict(a, action="pin", flavor=look[:80],
                         hits=[{"part": p, "severity": s, "with": w} for (p, w), s in zip(contacts, sev)])
-    # a submission opening (very rare): usually taken, and now and then something free is used on her as well
-    if (getattr(eng, "sub_window", None) or {}).get(d.name) and f.name not in eng.downed and rng.random() < 0.7:
-        shapes = eng.submission_shapes(f.name, d.name)
-        if shapes:
-            return dict(a, action="submission", improvised_name=rng.choice(sorted(shapes)))
     if eng.body_plan(f) == "avian" and not eng.has(f, "airborne") and eng.can_fly(f) and rng.random() < 0.3:
         a["reposition"] = "take off"
     moves = _usable(eng, f, d)

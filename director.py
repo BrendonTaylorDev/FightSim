@@ -1365,7 +1365,8 @@ class Director:
         hint = initiative_hint(engine) if not direction else ""
         steer = plan_hint(engine)
         if not direction and not hint:
-            hint = pin_urge(engine) or submission_urge(engine)
+            # a submission (rarer) is offered before a pin when both are open; one already on comes first too
+            hint = submission_urge(engine) or pin_urge(engine)
         rng_hint = range_hint(engine) if not direction else ""
         bite = throat_hint(engine) if not direction else ""
         if bite:
@@ -2337,6 +2338,21 @@ def pin_urge(engine, roll=None):
 
 def submission_urge(engine):
     """Point the director at a submission hold when the engine rolled one of its very rare openings this beat."""
+    for h0 in list(engine.holds.values()):
+        if not h0.sub:
+            continue
+        hs = [h for h in engine.holds.values() if h.sub and h.attacker == h0.attacker and h.defender == h0.defender]
+        held = engine.get(h0.defender)
+        beats = max(h.turns_active for h in hs)
+        free = (engine.SUBMISSIONS.get(h0.sub) or {}).get("free", {}).get(engine.body_plan(engine.get(h0.attacker)), "")
+        if engine.sub_stuck(held, hs):
+            return (f"SUBMISSION, AND SHE CAN'T GET OUT: {held.name} has been in {poss_name(h0.attacker)} {h0.sub} for "
+                    f"{beats} beat(s) and has nothing left to break it with. Don't just keep cranking it: {h0.attacker} "
+                    f"lets it go and PINS her (action 'pin': the hold comes off for it; there is an opening), or hurts "
+                    f"her another way while she's locked in it (a strike with what she has free: {free}).")
+        return (f"SUBMISSION ON: {poss_name(h0.attacker)} {h0.sub} on {held.name} has been on {beats} beat(s); the "
+                f"longer it stays on, the likelier she wrenches out of it. {h0.attacker} keeps cranking it ('breather' "
+                f"keeps every grip on), or uses what she has free on her ({free}) as a strike.")
     for target in engine.active():
         if (getattr(engine, "sub_window", None) or {}).get(target.name) is not True:
             continue
