@@ -331,9 +331,10 @@ def _ngrams(text, n=7):
     return {" ".join(words[i:i + n]) for i in range(len(words) - n + 1)}
 
 
-def degeneration(text, earlier=""):
+def degeneration(text, earlier="", allowed=frozenset()):
     """Signs a local model's prose is breaking down: run-on chains, dropped articles, copied phrases.
-    Returns a list of short descriptions (empty if the prose looks healthy)."""
+    Returns a list of short descriptions (empty if the prose looks healthy). allowed: phrases the notes for this
+    beat use themselves (an injury's wording, a building block), which the story may say again."""
     out = []
     words = re.findall(r"[A-Za-z']+", text)
     sents = [x for x in re.split(r"(?<=[.!?…])\s+|\n+", text) if x.strip()]
@@ -345,7 +346,7 @@ def degeneration(text, earlier=""):
         if arts / len(words) < 0.03:
             out.append("telegraphic wording that drops 'the' and 'a'")
     if earlier:
-        copied = _ngrams(text) & _ngrams(earlier)
+        copied = (_ngrams(text) & _ngrams(earlier)) - set(allowed)
         if len(copied) >= 3:
             out.append(f"whole phrases copied from earlier in the story (\"{sorted(copied)[0]}…\")")
     dash_end = sum(1 for p in text.split("\n") if p.strip().endswith(("—", "-")))
@@ -5575,18 +5576,22 @@ class Narrator:
             return False
         return True
 
+    def _bone_slip(self, sent):
+        """The severe bone wording in one sentence that isn't about a part allowed to break, or None."""
+        m = BONE_SEVERE.search(sent)
+        if not m:
+            return None
+        if m.group(0).lower().startswith("something") and re.search(
+                r"\b(patience|temper|resolve|control|composure|mind|anger|rage|fury|restraint|will|nerve|calm)\b",
+                sent, re.I):
+            return None   # "something in her snapped": her temper, not a bone
+        if any(_mentions_exact(sent.lower(), p) for p in self.breakable):
+            return None
+        return m
+
     def _bad_bones(self, text):
         """Severe bone damage in sentences that aren't about a part allowed to break."""
-        bad = []
-        for sent in re.split(r"(?<=[.!?…])\s+", text):
-            m = BONE_SEVERE.search(sent)
-            if m and m.group(0).lower().startswith("something") and re.search(
-                    r"\b(patience|temper|resolve|control|composure|mind|anger|rage|fury|restraint|will|nerve|calm)\b",
-                    sent, re.I):
-                continue   # "something in her snapped": her temper, not a bone
-            if m and not any(_mentions_exact(sent.lower(), p) for p in self.breakable):
-                bad.append(m.group(0).lower())
-        return bad
+        return [m.group(0).lower() for m in map(self._bone_slip, re.split(r"(?<=[.!?…])\s+", text)) if m]
 
     def _review(self, text, coverage, prior=""):
         """Problems with a draft that the program can detect: gore, the pin clock, skipped hits or struggles."""
@@ -5819,7 +5824,8 @@ class Narrator:
             if m:
                 issues.append(f"it showed extra failed tries at getting up (\"{m.group(0)}\"), but she gets up on the "
                               f"FIRST try: one attempt, and she ends on her feet")
-        broken = degeneration(text, (getattr(self, "_story_tail", "") or "") + "\n" + (prior or ""))
+        broken = degeneration(text, (getattr(self, "_story_tail", "") or "") + "\n" + (prior or ""),
+                              getattr(self, "_notes_grams", frozenset()))
         if broken:
             issues.append("the prose broke down: " + "; ".join(broken) + ". Write normal, complete sentences with "
                           "'the' and 'a', each ending in a period; vary the wording and never copy earlier lines")
@@ -6365,6 +6371,25 @@ class Narrator:
         return (f"\nTALK IN THIS PART: at most {thoughts} italic thought{'s' if thoughts != 1 else ''} (short; the "
                 f"building blocks' thoughts count toward it), {say}. Written-out sounds don't count.")
 
+    def _checked_note(self):
+        """The beat's other limits that the draft is checked against, told before it is written (electricity, bones,
+        swearing), so a first draft that keeps them never has to be written again."""
+        rows = []
+        if getattr(self, "_no_electric", False) and not getattr(self, "_sparks_ok", False):
+            rows.append("no electricity, sparks, static or lightning: no move in this beat is Electric"
+                        + (" (a shock from earlier may be remembered as something that HAD happened)"
+                           if getattr(self, "_seen_electric", False) else ""))
+        if gore_pattern(self.rules) is GORE:
+            ok = sorted(getattr(self, "breakable", None) or [])
+            rows.append("no bone breaks, cracks, snaps or gives way" + (
+                f" except in {', '.join(p.title() for p in ok)}, which can now break" if ok else
+                ": bones bruise and ache only"))
+        mode = str(self.rules.get("narration", {}).get("swearing", "rare")).lower()
+        since = getattr(self, "_beat_no", 0) - getattr(self, "_last_swear", -999)
+        if mode == "rare" and since <= int(self.rules.get("narration", {}).get("swearing_gap", 5)):
+            rows.append("no swearing (there was a curse just recently)")
+        return ("CHECKED IN THIS BEAT: " + "; ".join(rows) + ".\n\n") if rows else ""
+
     def _talk_problem(self, text, prior=""):
         spoken_left, thoughts = self._talk_allowance(prior)
         if spoken_left is None:
@@ -6423,7 +6448,17 @@ class Narrator:
                     f"beats, and there was one just recently. Use other words")
         return None
 
+    def _note_phrases(self, user_msg):
+        """The 7-word phrases this part's notes use themselves (not the story so far quoted in them): the story may
+        repeat those, so they never count as lines copied from earlier."""
+        notes = str(user_msg or "")
+        snip = getattr(self, "_story_snip", "") or ""
+        if snip:
+            notes = notes.replace(snip, " ")
+        self._notes_grams = frozenset(_ngrams(notes))
+
     def _call(self, user_msg, words, coverage=False, prior=""):
+        self._note_phrases(user_msg)
         text = self._generate(user_msg, words)
         issues = self._review(text, coverage, prior)
         mode = str(self.rules.get("narration", {}).get("best_of_two", "important")).lower()
@@ -6535,8 +6570,10 @@ class Narrator:
             text = _drop_matching(text, SWEAR)
         if self._talk_problem(text, prior):
             text = self._trim_talk(text, prior)
-        if degeneration(text, (getattr(self, "_story_tail", "") or "") + "\n" + (prior or "")):
-            old = _ngrams((getattr(self, "_story_tail", "") or "") + "\n" + (prior or ""))
+        if degeneration(text, (getattr(self, "_story_tail", "") or "") + "\n" + (prior or ""),
+                        getattr(self, "_notes_grams", frozenset())):
+            old = _ngrams((getattr(self, "_story_tail", "") or "") + "\n" + (prior or "")) \
+                - set(getattr(self, "_notes_grams", frozenset()))
             keep = []
             for para in text.split("\n"):
                 sents = re.split(r"(?<=[.!?…])\s+", para)
@@ -6574,9 +6611,7 @@ class Narrator:
         if gore is GORE and self._bad_bones(text):
             keep = []
             for para in text.split("\n"):
-                keep.append(" ".join(s for s in re.split(r"(?<=[.!?…])\s+", para)
-                                     if not (BONE_SEVERE.search(s) and not any(_mentions_exact(s.lower(), p)
-                                                                              for p in self.breakable))))
+                keep.append(" ".join(s for s in re.split(r"(?<=[.!?…])\s+", para) if not self._bone_slip(s)))
             text = re.sub(r"\n{3,}", "\n\n", "\n".join(keep)).strip()
         if window:
             text = _strip_clock_at(text, *window)  # "at thirty seconds" in a beat that ends at second ten
@@ -6648,7 +6683,8 @@ class Narrator:
         gore = gore_pattern(self.rules)
         numb_off = n.get("numb_tier", True) is False
         swearing = bool(self._swear_problem((prior or "") + "\n" + text))
-        old = _ngrams((getattr(self, "_story_tail", "") or "") + "\n" + (prior or ""))
+        old = _ngrams((getattr(self, "_story_tail", "") or "") + "\n" + (prior or "")) \
+            - set(getattr(self, "_notes_grams", frozenset()))
         scene_low = (str(getattr(self, "_scene_text", "") or "") + " " + str(getattr(self, "scene_words", "") or "")).lower()
         thoughtless = re.sub(r"\*[^*\n]+\*", " ", text)
         names = [w for w in (getattr(self, "strengths", None) or {})]
@@ -6695,7 +6731,7 @@ class Narrator:
             if degeneration_run_on(x) or len(_ngrams(x) & old) >= 2:
                 add(x, "it copies lines already written or runs on without articles: say something new, in plain "
                        "complete sentences")
-            if gore is GORE and BONE_SEVERE.search(x) and not any(_mentions_exact(x.lower(), p) for p in self.breakable):
+            if gore is GORE and self._bone_slip(x):
                 add(x, "something breaks, cracks, or gives way, but that part can't break: bruised and hurting only")
         for who, words, kind, sent in self._posture_problems(text):
             add(sent, (f"it shows {who or 'a fighter'} lying down or unable to stand (\"{words}\"), but she is ON HER "
@@ -6969,6 +7005,7 @@ class Narrator:
         facts = getattr(self, "_facts", None)
         if not n.get("reader_check", True) or not facts or len(text.split()) < 25:
             return text
+        self._note_phrases(user_msg)
         facts = (self._timeline() + "\n\n" + facts).strip()
         paras = text.split("\n")
         index = [i for i, p in enumerate(paras) if p.strip()]
@@ -7734,12 +7771,13 @@ class Narrator:
             # a pin beat covers only a few seconds: keep it to a moment, like one "Second N:" entry
             pc = self.rules.get("pin", {})
             words = min(words, max(80, int(pc.get("pin_words_per_second", 50) * pc.get("seconds_per_beat", 10))))
+        self._story_snip = _tail(story_so_far, 1800)
         context = (
             f"SCENE: {scene}\n\n"
             f"FIGHTERS:\n{fighter_notes}\n\n"
             f"CURRENT CONDITION (after this beat):\n{condition_summary}\n\n"
             f"PREVIOUS BEATS (already told; context only, do NOT retell):\n"
-            f"{_tail(story_so_far, 1800) or '(none: this is the FIRST beat of the fight. Nobody has attacked anyone yet, so nobody has any earlier injuries, hits, or history to mention.)'}\n\n"
+            f"{self._story_snip or '(none: this is the FIRST beat of the fight. Nobody has attacked anyone yet, so nobody has any earlier injuries, hits, or history to mention.)'}\n\n"
             + (f"EXTRA STYLE NOTE FOR THIS SESSION: {self.style}\n\n" if self.style else "")
             + f"WHAT HAPPENS IN THIS BEAT (the only events you may narrate):\n{self.describe(bundle)}\n\n"
         )
@@ -7757,7 +7795,7 @@ class Narrator:
             words = int(words * float(n.get("turning_point_length", 1.3)))
         self._facts = ("WHAT HAPPENS IN THIS BEAT (nothing else happens):\n" + self.describe(bundle)
                        + "\n\nCURRENT CONDITION (after this beat):\n" + condition_summary)
-        context += self._sound_note() + self._fading_thoughts_note()
+        context += self._sound_note() + self._fading_thoughts_note() + self._checked_note()
         if any(a.get("devastating") for a in acts):
             words += int(((n.get("devastating") or {}).get("extra_words", 150)))
             if self.progress:
