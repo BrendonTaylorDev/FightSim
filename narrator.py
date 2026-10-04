@@ -108,7 +108,15 @@ Hard rules (these override everything else):
   beat, and never the same opening image as the previous beat.
 
 Craft:
-- Third person, PAST tense ("she lunged", not "she lunges").
+- Third person, PAST tense ("she lunged", not "she lunges"), every sentence; only italic thoughts may be in the
+  present.
+- PLAIN, CONCRETE WORDS: no stock phrases ("a symphony of", "the canvas of", "the tension was palpable", "held its
+  breath", "like a sleeping giant", "ready to clash", "time stood still"). Say exactly what is there.
+- ONLY THE PLACE AS GIVEN: no smells, insects, animals or sounds the SCENE doesn't mention.
+- TELL EACH THING ONCE: an action (testing the ground, shaking off water) or a blow happens once in a part; never
+  tell the same hit a second time later in the passage.
+- SIZE TO MATCH: a light hit gets a light reaction (a wince, a hiss), not a full-body shudder or a flood of rage.
+- BODIES AS THEY ARE: a Buizel's twin tails drive her through WATER; on land they only balance her.
 - INTENT: let the attacker read the opponent before striking: what she notices (a guarded side, a limb held
   wrong, a part nothing has touched yet), and why she picks that target. A long look, then the strike.
 - CALLBACKS: when an injured part is hit again or aches, remember where that injury came from (CURRENT
@@ -725,6 +733,23 @@ OVERBLOWN = re.compile(r"\b(scream\w*|shriek\w*|howl\w*|agon\w+|white-hot|explod
                        r"searing|tore through|ripped through)\b", re.I)
 # a sound standing alone as its own paragraph ("Crack.")
 # an impact word from the beat's notes standing as a sentence of its own ("Tremendous.")
+# present-tense narration ("she lunges", "Nocturne shifts"): the story is told in the past
+PRESENT_TENSE = re.compile(r"\b(?:[Ss]he|[Hh]e|[Ii]t)\s+(?:is|has|does|(?!was\b|has\b|is\b|always\b|perhaps\b|"
+                           r"almost\b|nearly\b|thus\b)[a-z]{2,}(?<![su])s)\b(?!['’])")
+STOCK_PHRASE = re.compile(r"\b(?:a symphony of|symphony of (?:nature|sound)|(?:vast )?canvas of|tension (?:was|is|hung|hangs)"
+                          r"(?: thick)?(?: and)? palpable|palpable tension|(?:the|a) (?:clearing|world|air|forest) held its "
+                          r"breath|like a sleeping giant|ready to clash|time (?:seemed to )?st(?:ood|ands) still|a dance "
+                          r"of (?:death|light and shadow)|stage (?:was )?set)\b", re.I)
+PAIN_LABEL = re.compile(r"\b(?:pain|ache|hurt)\s+(?:stays?|stayed|is|was|remains?|remained|goes|went|stays at)\s+"
+                        r"(?:minor|sore|hurting|very painful|excruciating|devastated)\b", re.I)
+INVENTED_PLACE = re.compile(r"\b((?:scent|smell|aroma|odou?r)s? of (?:the )?(?:pine(?: needles)?|earth|soil|moss|flowers?|"
+                            r"blossoms?|rain|grass|leaves|resin)|insects?|crickets?|cicadas?|bees?|frogs?|fish(?:es)?|"
+                            r"dragonfl(?:y|ies)|deer|squirrels?)\b", re.I)
+TAIL_PROPEL = re.compile(r"\btails?\b[^.!?]{0,60}\b(?:propel\w*|driv\w+ her|push\w* her)\b", re.I)
+BLOCK_WORDS = re.compile(r"\b(?:block\w*|guard\w*|parr\w+|caught (?:it|the blow|the strike) on|took (?:it|the blow|the "
+                         r"brunt) on|(?:got|threw|flung|brought|jerked|snapped|whipped) (?:her|an?|one) (?:arm|forearm|"
+                         r"foreleg|wing|fin|tail|tails|shoulder|paw)s? up|in (?:its|the blow's|the strike's) way|"
+                         r"(?:arm|forearm|foreleg|fin) (?:came|snapped|whipped|jerked) up)\b", re.I)
 BARE_IMPACT = re.compile(r"^[\s*_\"“]*(?:Tremendous|Devastating|Solid|A (?:tremendous|heavy|solid) blow)[.!…]+[\s*_\"”]*$", re.I)
 SOUND_PARA = re.compile(r"^[\s*_\"“]*(?:crack|snap|pop|crunch|thunk|thud|click)[.!…—]*[\s*_\"”]*$", re.I)
 # a get-up attempt (made, or failed) by someone the engine has not rolled one for this beat
@@ -2953,6 +2978,7 @@ class Narrator:
                                                                     if gd.get("open_side") else "") + ".")
             g = a.get("guard") or {}
             if g.get("kind") == "block":
+                self._must_block = (a["defender"], g["part"])
                 lines.append(f"  - A BLOCK: {a['defender']} sees it coming and gets her {g['part'].lower()} in its way "
                              f"({g['manner']}): it does not reach where it was aimed, and lands on the "
                              f"{g['part'].lower()} instead, much lighter than it would have been. Show the guard coming "
@@ -3675,6 +3701,7 @@ class Narrator:
         self._time_window, self._no_clock, self._important = None, True, False
         self._pin_beat = "PIN:" in condition
         self._must_parts, self._must_struggle, self._struggle_kind = [], None, None
+        self._must_block = None
         self._landed, self._slammed, self._charge_beat, self._one_strike = set(), set(), False, None
         self._weapons_ok, self._attackers, self._no_getup = None, set(), set()
         self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
@@ -5821,6 +5848,11 @@ class Narrator:
                               + ". Every listed hit must appear, on that body part")
             kind = getattr(self, "_struggle_kind", None)
             full = prior + "\n" + text
+            mb = getattr(self, "_must_block", None)
+            if mb and not BLOCK_WORDS.search(full):
+                issues.append(f"it never showed the BLOCK: {mb[0]} got her {mb[1].lower()} up in the blow's way and it "
+                              f"landed on that, much lighter, not where it was aimed. Show the guard coming up and the "
+                              f"blow jarring into it")
             if self._must_struggle and kind == "escape" and not ESCAPE_WORDS.search(full):
                 issues.append(f"it never showed the ESCAPE: {self._must_struggle}. The pin is OVER this beat: show her "
                               f"actually breaking out from under the pinner (throwing her off, wrenching free, rolling "
@@ -6574,7 +6606,31 @@ class Narrator:
         numb_off = n.get("numb_tier", True) is False
         swearing = bool(self._swear_problem((prior or "") + "\n" + text))
         old = _ngrams((getattr(self, "_story_tail", "") or "") + "\n" + (prior or ""))
+        scene_low = (str(getattr(self, "_scene_text", "") or "") + " " + str(getattr(self, "scene_words", "") or "")).lower()
+        thoughtless = re.sub(r"\*[^*\n]+\*", " ", text)
+        names = [w for w in (getattr(self, "strengths", None) or {})]
+        name_rx = re.compile(r"\b(?:" + "|".join(map(re.escape, names)) + r")\s+(?:is|has|does|(?!was\b)[a-z]{2,}"
+                             r"(?<![su])s)\b(?!['’])") if names else None
+        present = [x for para in thoughtless.split("\n") for x in _SENT.split(para.strip())
+                   if x and (PRESENT_TENSE.search(x) or (name_rx and name_rx.search(x)))
+                   and not re.match(r'^\s*["“]', x)]
+        if n.get("tense", "past") == "past" and len(present) >= 3:
+            for x in present:
+                add(x, "present tense: the story is told in the PAST tense (\"she lunged\", not \"she lunges\")")
         for x in sents:
+            m = STOCK_PHRASE.search(x)
+            if m:
+                add(x, f"a stock phrase (\"{m.group(0)}\"): say it plainly and concretely")
+            m = PAIN_LABEL.search(x)
+            if m:
+                add(x, f"a pain level used as a label (\"{m.group(0)}\"): say how it FEELS instead")
+            for m in INVENTED_PLACE.finditer(x):
+                key = re.sub(r"s$", "", m.group(1).lower().split()[-1])
+                if key not in scene_low:
+                    add(x, f"\"{m.group(0)}\" isn't in this place: use only what the SCENE describes")
+                    break
+            if TAIL_PROPEL.search(x) and not re.search(r"\b(water|lake|shallows|swim\w*|current|waves?)\b", x, re.I):
+                add(x, "her twin tails only drive her through water; on land they balance her")
             m = gore.search(x) if gore is not None else None
             if m:
                 add(x, f"too graphic (\"{m.group(0)}\"): only a little blood, bruising, swelling; nothing torn or broken")
@@ -7626,6 +7682,7 @@ class Narrator:
 
     def _narrate_beat(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
         n = self.rules.get("narration", {})
+        self._scene_text = str(scene or "")
         words = int(n.get("words_per_beat", 500))
         pin_events = [e for e in bundle.get("also_this_beat", []) if e["type"] == "pin_progress"]
         forced = [a for a in (bundle.get("actions") or []) if a.get("type") == "pin_forced"]
