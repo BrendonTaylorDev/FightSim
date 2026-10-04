@@ -244,7 +244,9 @@ The rain was the loudest thing in the clearing. It hissed in the grass, drummed 
 
 She listened to the breathing above her and timed it.
 
-In. Out. In. Out. The weight shifted, very slightly, with each one: heavier on the in, a fraction lighter on the out. Not much. Enough.
+In. Out. In. Out. The weight shifted, very slightly, with each one: heavier on the in, a fraction lighter on the out. And every time it shifted, the teeth on her arm shifted with it, the smallest movement on the torn place, and every time the arm lit up all over again and a hiss forced its way out between her teeth. She could not keep it in. She stopped trying, and listened through it.
+
+Not much. Enough.
 
 On the out, she twisted. She threw her hips to the left and dragged her shoulder after them and for a moment the Absol's chest slid off her back and she was half turned, face out of the grass, and her left arm came free and swung blind. It hit something. The Absol's shoulder, the right one, solid and round under wet fur, and she felt it land with a thud that went all the way up her own arm.
 
@@ -377,7 +379,7 @@ She swung her head back the other way and the horn flashed and something leapt o
 
 — Ripples —
 
-She was flying. She was flying and she could not breathe and her jaw was on fire, and then something cut across her stomach and chest like a wire drawn tight and snapped, and she was not flying anymore. She was falling.
+She was flying. She was flying and she could not breathe and her jaw was on fire, and then something cut across her stomach and chest like a wire drawn tight and snapped. Her stomach, already sore from the horn, went to a white, searing agony in an instant, and a shriek came out of her in mid-air, high and thin. Her body curled round it while she hung there. And then she was not flying anymore. She was falling.
 
 She came down on the grass from a height and she came down wrong.
 
@@ -655,7 +657,13 @@ She felt her own heart going so hard it shook her. She pressed down with everyth
 
 — Nocturne —
 
-Face-down. Weight on her back. Something heavy pinning her tail. And the coil round her throat squeezing tighter, and her neck, which had been grinding with pain before, now so bad she could feel nothing else. It was ruined. She knew it the way you know a bone is broken. Every pulse of the coil on it was a fresh burst of agony, and the only sound she could make was a thin, wet, whistling moan through her crushed throat.
+Face-down. Weight on her back. Something heavy pinning her tail. And the coil round her throat squeezing tighter.
+
+It tightened once more, and her neck went over.
+
+She felt it happen. The grinding ache that had been there since the freezing bite was suddenly not an ache at all. It was a white, swelling, pounding thing that filled the whole column of her neck from her jaw to her shoulders, and every pulse of the coil drove it higher. Her head jerked against the grass, once, twice, on its own. Her forelegs scrabbled at nothing. The sound that came out of her was not a moan anymore: it was a thin, high, strangled keening forced out through her crushed throat in pieces, and she could not stop it, and she could not make it louder, and the not being able to was almost the worst of it.
+
+*Too much. Too much. Make it stop.*
 
 Her sight was going grey at the edges again. Worse than before. Much worse.
 
@@ -1015,7 +1023,13 @@ She could not get away. She could only hit back. Her right fist, the torn arm, c
 
 — Nocturne —
 
-The fist landed on her right shoulder, the ruined one, and she nearly let go of the arm. She did not. She held on, jaws locked, and felt the agony in the shoulder flare and burn and keep burning.
+The fist landed on her right shoulder, the ruined one, and the shoulder went over the edge.
+
+It had been agony since the Buizel stood on it. Now it was something past that. The punch went into the joint and the pain came up out of it like a flood over a bank, filling her whole right side, her chest, her neck, the inside of her skull. Her right foreleg jerked up off the grass on its own and curled in against her body. Her whole frame shuddered from nose to tail. A sound tore out of her round the arm in her jaws, a muffled, gargling howl that she could not swallow and could not stop, and her eyes squeezed shut so hard she saw red behind them.
+
+*Let go. Let go of her. Make it stop.*
+
+She did not let go. She did not know how she didn't. She held on, jaws locked, shaking all over, and the shoulder burned and burned and did not come back down.
 
 And then something happened inside her. A surge, from somewhere deep down, a hot rush that went through her whole body and lit it up. The pain did not go away. It just got smaller. Her legs firmed under her. Her breath came deeper. She could feel her heart going like a drum.
 
@@ -1034,7 +1048,7 @@ She had one thing she could do without breath. She closed her eyes and let a she
 
 It spread out from her chest across her fur, a thin bright silvery film, like light on water. It did nothing yet. It would do something when the next blow came.
 
-And she twisted. She wrenched her body against the jaws on her arm, turned and pulled and turned again, and felt the teeth slip a little, a fraction, and the grip was not as tight as it had been. She got a fuller breath. Her breath came back into her, ragged but real. She straightened, slowly, the hurt still there.
+And she twisted. It cost her: the jaws were sunk in her left arm, and the arm had been hammered by the tail and bitten and held, and the first wrench against the teeth sent a jagged spike of pain up into her shoulder that made her cry out through her clenched jaw. She did it anyway. She wrenched her body against the jaws on her arm, turned and pulled and turned again, gasping at each one, and felt the teeth slip a little, a fraction, and the grip was not as tight as it had been. She got a fuller breath. Her breath came back into her, ragged but real. She straightened, slowly, the hurt still there.
 
 — Nocturne —
 
@@ -1199,7 +1213,13 @@ She chopped the Absol's left hind leg out from under her, just above the paw, at
 
 It took her leg away.
 
-The chop went into the hock and the hock went from nothing to a blazing, tearing agony in one blow, and the force jarred down into her hind paw and up into her thigh, and the leg folded under her like a stalk. She went down on her back. Her back hit the ground, and her left shoulder, the ruined one, and her right hip, and she lay there with all four legs in the air and her throat, the throat she had been guarding, wide open to the sky.
+The chop went into the hock, and the hock had been nothing, a joint she had not even thought about all fight, and in one blow it was everything.
+
+The pain was so sudden and so total that for a moment she did not understand it. Then she did. It came up the leg like fire up a rope, a blazing, tearing agony that started in the joint and went down into her hind paw and up into her thigh, and the leg folded under her like a stalk. She screamed. There was nothing left in her to hold it back with, and it came out raw and cracked and broken off at the top, and every bird left in the oaks went up at once.
+
+She went down on her back. Her back hit the ground, and her left shoulder, the ruined one, and the jolt of that on top of everything wrenched another cry out of her. Her right hip hit. She lay there with her legs in the air, the hurt one drawn up tight and shaking on its own, kicking feebly at nothing, and her throat, the throat she had been guarding, wide open to the sky.
+
+*My leg. My leg. Not that too.*
 
 She could not get up. She could not even try. She had only just gone down.
 
@@ -1334,7 +1354,11 @@ She held.
 
 The breath would not come.
 
-It came a little, a thin, whistling trickle round the arm, and it was not enough, and every time it came it brought a jolt of agony from her throat that went right through her. Her chest was ruined under the knees now, a deep crushed throbbing that pulled a sound out of her with every heartbeat.
+It came a little, a thin, whistling trickle round the arm, and it was not enough, and every time it came it brought a jolt of agony from her throat that went right through her.
+
+And then her chest went too.
+
+The knees had been grinding into it all this time, and it had been bad, and she had been holding it at the edge of what she could bear. Now the Buizel shifted her weight forward onto them to lean harder on the arm, and the chest gave up holding. The pain in it doubled, and doubled again, a deep, crushing, total agony under the two hard points of the knees. Her body bucked under them without her. Her hind legs kicked. A raw, ragged sound came out of her with every thin breath, and then with every heartbeat, and she had nothing left to hold any of it back with. She was past holding anything back at all.
 
 The light was going strange. The sky was very bright and very far away. The edges of it were going grey.
 
@@ -1387,7 +1411,7 @@ The Absol did not push again.
 
 She tried to slide out. It was the smallest movement in the world.
 
-The Buizel leaned on her chest and the chest burned. It was far away.
+The Buizel leaned on her chest, and the ruined chest flared so hard that her whole body jerked under the knees, one last time, and a raw sound came up through her crushed throat. Even that was far away.
 
 She could not get a breath. The arm was across her throat and the breath would not come round it anymore, not even the thin whistling trickle. She opened her mouth and nothing came. She tried again and nothing came.
 
