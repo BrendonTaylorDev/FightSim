@@ -1877,6 +1877,15 @@ def pin_shapes(engine, pinner, target, skip=()):
                              f"{t['fore']} barred across her {neck} as the choke and her weight crushing her {front} "
                              f"(say so with \"pinned_against\": \"{prop}\")",
                              [(neck, t["fore"]), (front, t["weight"])])
+    # a fighter already lying on her front has her throat, chest and belly against the ground, and one on her back
+    # can't be held "from behind": only the shapes that fit the way she lies
+    if target.name in engine.downed:
+        fc = engine.facing_of(target.name)
+        if fc == "face-down":
+            out = {k: v for k, v in out.items() if not any(
+                re.search(r"\b(throat|chest|belly|stomach)\b", p.lower()) for p, _ in v[1])} or out
+        elif fc == "face-up":
+            out = {k: v for k, v in out.items() if "from behind" not in v[0]} or out
     # most pins use far more of her than two points: whatever she has free goes on too (pin.contacts)
     return {k: fuller_pin(engine, pinner, target, look, contacts) for k, (look, contacts) in out.items()}
 

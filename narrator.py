@@ -3258,7 +3258,14 @@ class Narrator:
                    else f"{a['defender']} is pinned and eliminated")
             lines.append(f"{a['attacker']} goes for a quick pin on {a['defender']}: {res}.")
         elif t == "breather" and getattr(self, "_ongoing", False):
-            lines.append(f"No new attack: only the pin or hold listed below continues. {a.get('flavor', '')}{intent}")
+            who, fl = a.get("attacker") or a.get("focus") or "", str(a.get("flavor") or "").strip().rstrip(".")
+            what = f" {who}: {fl}." if who and fl else (f" {fl[:1].upper() + fl[1:]}." if fl else "")
+            key = (getattr(self, "beat_now", None), id(getattr(self, "_must_parts", None)))
+            if getattr(self, "_breather_key", None) == key:
+                lines.append(f"{who or 'The other'} makes no new attack either.{what}{intent}")
+            else:
+                self._breather_key = key
+                lines.append(f"No new attack: only the pin or hold listed below continues.{what}{intent}")
         elif t == "breather":
             who, fl = a.get("attacker") or a.get("focus") or "", str(a.get("flavor") or "").strip().rstrip(".")
             what = (f" {who}: {fl}." if who and fl else f" {fl[:1].upper() + fl[1:]}." if fl else "")

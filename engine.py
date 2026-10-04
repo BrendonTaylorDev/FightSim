@@ -1892,6 +1892,8 @@ class Engine:
             return 0.0
         if self.grab_between(a.name, d.name):
             return 0.0   # held at point-blank: there is nowhere to go (it cuts both ways)
+        if any(h.attacker == d.name and h.defender == a.name for h in self.holds.values()):
+            return 0.0   # she has hold of her (a submission, a grip): locked on, she can't spring away
         if (getattr(self, "_juggle", None) or {}).get("who") == d.name:
             return 0.0   # knocked up into the air by the last blow: nothing to push off from
         sc = self._cfg("status_effects")
@@ -2884,8 +2886,9 @@ class Engine:
             return None
         if (d.name in self.downed or self.pinned_by(d.name) or self.pinning(d.name) or self.grab_between(a.name, d.name)
                 or any(self.has(d, st) for st in ("paralyzed", "asleep", "frozen", "flinched", "constricted"))
-                or d.name in self.pressed):
-            return None
+                or d.name in self.pressed
+                or any({h.attacker, h.defender} == {a.name, d.name} for h in self.holds.values())):
+            return None   # (locked together in a hold or a submission: no room to meet it head-on)
         options = []
         for m in d.moves:
             if not self.is_ranged(m) or (d.move_uses.get(m["name"], 1) <= 0):
@@ -5044,6 +5047,10 @@ class Engine:
             text = f"ON THE GROUND, {lie}, not pinned"
         elif p["pinning"]:
             text = f"ON TOP of {' and '.join(p['pinning'])}, pinning her down"
+        elif any(h.sub and h.attacker == f.name for h in self.holds.values()):
+            h = next(h for h in self.holds.values() if h.sub and h.attacker == f.name)
+            text = (f"LOCKED ONTO {h.defender} in a {h.sub.replace('_', ' ')} (down on her, wrapped round her; "
+                    f"not standing free)" if not short else f"LOCKED ONTO {h.defender} in a {h.sub.replace('_', ' ')}")
         elif self.has(f, "airborne"):
             text = "IN THE AIR (wings beating, above the ground)" if not short else "IN THE AIR"
         else:
