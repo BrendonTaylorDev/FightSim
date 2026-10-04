@@ -853,7 +853,10 @@ class Session:
                 if res.get("charge") and not res["charge"].get("skipped"):
                     what += f" (a charge that drove her into {res['charge']['into']})"
                 self.recent_attacks.append(f"{res['attacker']}: {what} → {poss_name(res['defender'])} {', '.join(parts[:3])}"
-                                           if not res.get("dodged") or res.get("hits") else
+                                           if parts else
+                                           f"{res['attacker']}: {what}" + ("" if (m or {}).get("target") == "self"
+                                                                           else f" → nothing landed on {res['defender']}")
+                                           if not res.get("dodged") else
                                            f"{res['attacker']}: {what} → {res['defender']} DODGED it"
                                            + (" and countered" if res.get("counter_hits") else ""))
             elif res.get("type") in ("hold_start", "pin_start"):

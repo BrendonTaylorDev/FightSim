@@ -145,6 +145,15 @@ def species_of(description, appearance=""):
     return m.group(1) if m and m.group(1).lower() not in ("female", "male") else ""
 
 
+def ordinal(n):
+    """3 -> "third", 11 -> "11th"."""
+    words = {1: "first", 2: "second", 3: "third", 4: "fourth", 5: "fifth", 6: "sixth", 7: "seventh", 8: "eighth",
+             9: "ninth", 10: "tenth"}
+    if n in words:
+        return words[n]
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
 def poss_word(name):
     return f"{name}'" if name.endswith("s") else f"{name}'s"
 
@@ -5183,7 +5192,9 @@ class Engine:
                     break
                 streak += 1
             # ahead or behind: strength, how many parts are badly hurt on each side, and who has been pressing
-            score = ((me - st[rival.name]) + 2.5 * max(-6, min(6, hurt[rival.name] - hurt[f.name]))
+            # late on, a few points of strength are a big share of what is left: 9% against 15% is not level
+            gap = (me - st[rival.name]) * max(1.0, 50.0 / max(me, st[rival.name], 10.0))
+            score = (gap + 2.5 * max(-6, min(6, hurt[rival.name] - hurt[f.name]))
                      + (12.0 * (share - 0.5) if len(recent) >= 3 else 0.0))
             bits = []
             if score >= 18:
@@ -5218,7 +5229,7 @@ class Engine:
             was_pinned = f.name in (getattr(self, "_story_pinned", None) or ())
             if f.name in pinned:
                 bits.append("she is pinned right now" + (", for the second time" if pins == 2 else
-                                                         f", for the {pins}th time" if pins > 2 else ""))
+                                                         f", for the {ordinal(pins)} time" if pins > 2 else ""))
             elif pins >= 1:
                 bits.append(f"she has already fought her way out of {'a pin' if pins == 1 else str(pins) + ' pins'}")
             if downs >= 3:

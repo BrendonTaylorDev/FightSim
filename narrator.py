@@ -2042,7 +2042,7 @@ class Narrator:
             elif e["type"] == "status_end":
                 other = next((w for w in (getattr(self, "strengths", None) or {}) if w != e["fighter"]), "her opponent")
                 end = self.STATUS_ENDS.get(e["status"])
-                lines.append(f"{e['fighter']} shakes off being {e['status'].replace('_', ' ')}: show it wearing off"
+                lines.append(f"{e['fighter']} shakes off being {self.STATUS_WORDS.get(e['status'], e['status'].replace('_', ' '))}: show it wearing off"
                              + (f" ({end.format(other=other)})" if end else "") + ".")
             elif e["type"] == "recovery":
                 lines.append(f"{e['fighter']} COMES AROUND {'' if e.get('forced') else 'A LITTLE '}this beat: from "
@@ -2880,6 +2880,8 @@ class Narrator:
         "confused": ("her eyes swim and she sways, unsure where anything is", "she can't trust her own sense of where things are",
                      "{other} sees her swaying, lost"),
     }
+    STATUS_WORDS = {"fury": "furious", "adrenaline": "on an adrenaline surge", "protecting": "behind her Protect barrier",
+                    "countering": "set to counter", "mirroring": "behind her Mirror Coat", "airborne": "in the air"}
     STATUS_ENDS = {
         "flinched": "the freeze lets go of her and she can move again; {other} sees her come back",
         "dazed": "the world settles back into one piece; she finds {other} again, sharp and single",
@@ -2893,6 +2895,11 @@ class Narrator:
         "constricted": "blood and breath come back into her in a rush",
         "paralyzed": "the last of the sparks fade and her muscles answer again",
         "confused": "her head clears; she knows where she is again",
+        "fury": "the cold anger drains out of her and leaves her just tired",
+        "adrenaline": "the surge drains out of her and every hurt comes back at full size",
+        "protecting": "the barrier thins and is gone",
+        "countering": "she lets the set go; nothing came to send back",
+        "mirroring": "the sheen fades off her fur",
     }
 
     def _status_story(self, s, other=None):
@@ -3265,10 +3272,13 @@ class Narrator:
             out += [self._hit_line(h) for h in e["hits_on_pinner"]]
         for x in e.get("aftereffects") or []:
             out.append(f"  - WHAT THE PIN LEAVES BEHIND: {x['fighter']} is "
-                       + (f"STIFF: the limbs that were trapped are numb, pins and needles coming back into them, slow "
-                          f"to answer her (show it in how she gets up and moves)." if x["status"] == "stiff" else
-                          f"CRAMPED from bearing down so long: her legs and shoulders locked, stiff to straighten "
-                          f"(show it as she comes off).") + " No new injury.")
+                       + {"stiff": "STIFF: the limbs that were trapped are numb, pins and needles coming back into them, "
+                                   "slow to answer her (show it in how she gets up and moves).",
+                          "fury": "FURIOUS: held down that long has left a cold, hard anger in her; her next blows come "
+                                  "harder for it (show it in her face and how she moves; she is not cramped or stiff "
+                                  "from it).",
+                          }.get(x["status"], "CRAMPED from bearing down so long: her legs and shoulders locked, stiff "
+                                             "to straighten (show it as she comes off).") + " No new injury.")
         pd = e.get("pinner_down")
         if isinstance(pd, dict):
             out.append(f"  - AFTER THE ESCAPE: this time {pd['fighter']} is THROWN OFF and GOES DOWN: she lands ON THE "
