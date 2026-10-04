@@ -521,6 +521,37 @@
         "spread": 1.0,
         "damage_scale": 2.5
       }
+    },
+    "smooth": {
+      "_comment": "A gradient instead of thresholds: a part's damage mult and health mult slide smoothly with its resistance, along straight lines between these anchor points [resistance, damage mult, health mult] (flat beyond the first and last). The anchors sit in the middle of each bracket, so the overall pace stays close to the brackets'; the brackets themselves still give the labels and icons. enabled false = the old thresholds.",
+      "enabled": true,
+      "points": [
+        [
+          15,
+          1.8,
+          2.2
+        ],
+        [
+          40,
+          1.3,
+          1.7
+        ],
+        [
+          60,
+          0.8,
+          1.3
+        ],
+        [
+          85,
+          0.45,
+          1.0
+        ],
+        [
+          120,
+          0.2,
+          0.7
+        ]
+      ]
     }
   },
   "health": {

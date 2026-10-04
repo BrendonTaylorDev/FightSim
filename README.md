@@ -837,6 +837,13 @@ After each beat's prose, the program prints the exact numbers in this format:
   squeeze her air and blood. Round ONE limb or a tail (Ripples' twin tails round a foreleg) they only BIND it 🪢: that
   limb numb and weak (×0.9 on her blows, dodges ×0.75), no energy drain, no heart slowing. Before, any wrap counted as
   a full-body coil.
+- **Resistance as a gradient.** A part's damage and health multipliers now slide smoothly with its resistance instead
+  of jumping at bracket edges (a part at 101 used to take less than half the damage of one at 99). Straight lines
+  between anchor points in the middle of each bracket: 120+ resistance ×0.2 damage / ×0.7 health, 85 ×0.45 / ×1.0,
+  60 ×0.8 / ×1.3, 40 ×1.3 / ×1.7, 15 and below ×1.8 / ×2.2. The brackets still give the icons, labels and the
+  narrator's words. Same pace (about 51 beats against 53, about 5 pins a fight), and the worst single beat roughly halves
+  (at most about 25% of full health against 45%). `resistance.smooth` (anchors editable; enabled false = the old
+  thresholds).
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

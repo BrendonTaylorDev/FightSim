@@ -414,8 +414,7 @@ class Engine:
 
         bracket = tier_for(res_b, r["resistance"]["brackets"])
         scale = float(r.get("damage", {}).get("damage_scale", 1.0))
-        bmult = float(bracket["mult"])
-        hmult = float(bracket.get("health_mult", 1.0))
+        bmult, hmult = self.resistance_mults(res_b, bracket)
         capped = False
         if cap:
             if cap.get("mult") is not None and bmult > float(cap["mult"]):
@@ -478,6 +477,30 @@ class Engine:
             "health_tier": htier_a["label"],
             "health_tier_changed": htier_a["label"] != htier_b["label"],
         }
+
+    def resistance_mults(self, res, bracket=None):
+        """(damage mult, health mult) for a part at this resistance. With resistance.smooth on, a gradient: straight
+        lines between anchor points (resistance, mult, health_mult), flat beyond the first and last, so a few points
+        of resistance change a hit a little instead of halving it at a bracket edge. Off: the bracket's own numbers."""
+        r = self.rules["resistance"]
+        sm = r.get("smooth") or {}
+        if not sm.get("enabled", False):
+            b = bracket or tier_for(res, r["brackets"])
+            return float(b["mult"]), float(b.get("health_mult", 1.0))
+        pts = sorted((float(a), float(m), float(h)) for a, m, h in (sm.get("points") or []))
+        if not pts:
+            b = bracket or tier_for(res, r["brackets"])
+            return float(b["mult"]), float(b.get("health_mult", 1.0))
+        x = float(res)
+        if x <= pts[0][0]:
+            return pts[0][1], pts[0][2]
+        if x >= pts[-1][0]:
+            return pts[-1][1], pts[-1][2]
+        for (x0, m0, h0), (x1, m1, h1) in zip(pts, pts[1:]):
+            if x0 <= x <= x1:
+                t = (x - x0) / (x1 - x0) if x1 > x0 else 0.0
+                return round(m0 + (m1 - m0) * t, 4), round(h0 + (h1 - h0) * t, 4)
+        return pts[-1][1], pts[-1][2]
 
     def _soften_loss(self, defender, raw):
         """health.soft_cap: a hit on a ruined part costs a lot of health, but no single blow and no single beat swings
