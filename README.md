@@ -2309,4 +2309,5 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **"pin clock":** in a beat with no pin, an ordinary sentence like "Two seconds later…" is no longer taken for a pin count. Only an actual countdown is.
   - **"broken bones":** "something in her snapped" (her temper) no longer counts as a bone.
   - **Prose checks relaxed:** stock phrases and small sensory touches are guidance only, never a rewrite.
+  - **"too much talking" (the most common rewrite in the log):** the narrator was checked against a limit on italic thoughts and spoken lines that it was never told. Each part's prompt now states the allowance up front ("TALK IN THIS PART: at most N italic thoughts…"). Written-out sounds (*Eek-*, *Nngh*, *Hhaaah-hah*) no longer count as thoughts. Nothing is cut; the model just gets the limit before writing instead of after.
   - **Version line** now says build 114.

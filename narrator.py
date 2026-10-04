@@ -301,6 +301,20 @@ ELECTRIC = re.compile(r"\b(electric\w*|electrif\w*|lightning|voltage|volts?|stat
                       r"flood)\w*|sparks? (?:flew|danced|crackl\w*|arced)|crackl\w* with (?:power|energy|charge))\b", re.I)
 
 
+_NOT_SOUND = {"a", "an", "the", "i", "me", "my", "she", "her", "he", "it", "is", "no", "not", "go", "get", "up", "down",
+              "now", "out", "off", "on", "in", "stay", "keep", "move", "hold", "run", "you", "this", "that", "too", "so"}
+
+
+def _is_sound(span):
+    """A written-out sound in italics (*Ack, ack*, *Eek-*, *Hhaaah-hah-hah*), not a thought: up to three short tokens,
+    none of them an ordinary word."""
+    toks = [t.strip(",.!?…—-").lower() for t in str(span).split()]
+    toks = [t for t in toks if t]
+    return 0 < len(toks) <= 3 and all(len(t) <= 14 and t not in _NOT_SOUND and re.fullmatch(r"[a-z]+(?:-[a-z]+)*", t)
+                                      for t in toks) and (any(re.search(r"(.)\1|h[^aeiou]|^[^aeiou]+$|-", t) for t in toks)
+                                                          or (len(toks) > 1 and len(set(toks)) == 1))
+
+
 def degeneration_run_on(x):
     """A sentence that has turned into a dash-chained run-on (long sentences alone are fine)."""
     words = x.split()
@@ -6323,7 +6337,8 @@ class Narrator:
     def _thoughts(text):
         """Italic thoughts, not single emphasised words like *snap* inside a sentence."""
         return [m for m in _THOUGHT.finditer(text or "")
-                if len(m.group(1).split()) >= 2 or re.search(r"[.!?…—-]\s*$", m.group(1))]
+                if (len(m.group(1).split()) >= 2 or re.search(r"[.!?…—-]\s*$", m.group(1)))
+                and not _is_sound(m.group(1))]
 
     def _talk_limits(self):
         t = self.rules.get("narration", {}).get("talk", {}) or {}
@@ -6338,6 +6353,17 @@ class Narrator:
         since = getattr(self, "_beat_no", 0) - getattr(self, "_last_spoken", -999)
         allowed = 0 if (gap and since <= gap) else per_beat
         return max(0, allowed - len(self._spoken(prior or ""))), thoughts
+
+    def _talk_note(self, prior=""):
+        """The talk allowance for this part, told up front (the same limits the draft is checked against), so the
+        first draft fits and doesn't have to be written again."""
+        spoken_left, thoughts = self._talk_allowance(prior)
+        if spoken_left is None:
+            return ""
+        say = ("no spoken lines at all (someone spoke a beat or two ago); a cry or a written-out sound is fine"
+               if spoken_left == 0 else f"at most {spoken_left} short spoken line")
+        return (f"\nTALK IN THIS PART: at most {thoughts} italic thought{'s' if thoughts != 1 else ''} (short; the "
+                f"building blocks' thoughts count toward it), {say}. Written-out sounds don't count.")
 
     def _talk_problem(self, text, prior=""):
         spoken_left, thoughts = self._talk_allowance(prior)
@@ -7871,7 +7897,8 @@ class Narrator:
                 self.progress("narrator is writing")
             self._sample_want = self._sample_tags("all", acts, pin_events, also_now)
             return self._call(context + f"Write this beat in about {words} words. {DETAIL}"
-                              + self._blocks_for("all", acts, pin_events, also_now, actor, receivers, True, True),
+                              + self._blocks_for("all", acts, pin_events, also_now, actor, receivers, True, True)
+                              + self._talk_note(""),
                               words, coverage=True)
 
         written = []
@@ -7901,6 +7928,7 @@ class Narrator:
             self._sample_want = self._sample_tags(key, acts, pin_events, also_now)
             ask += self._blocks_for(key, acts, pin_events, also_now, actor, receivers, i == 1, i == len(plan))
             ask += self._camera_note(key)
+            ask += self._talk_note(so_far)
             n_def = len(self._deferred)
             part = self._call(context + ask, seg_words, coverage=check, prior=so_far)
             written.append(self._drop_repeats(part, so_far) if so_far else part)  # no re-telling earlier parts
