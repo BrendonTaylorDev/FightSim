@@ -1774,6 +1774,10 @@ class Narrator:
         self._linger_pool.append((h["defender"], h["part"], h["damage_taken"], after["label"], "pressure"))
         change = (f"{before['label']} → {after['label'].upper()}" if before["label"] != after["label"]
                   else f"still {after['label']}")
+        if before["label"] != after["label"] and after["label"] in ("excruciating", "devastated", "numb with shock") \
+                and not any(b[:2] == (h["defender"], h["part"]) for b in self._breaking):
+            # a squeeze can push a part over the line too: a grip or a pin's press, not only a blow
+            self._breaking.append((h["defender"], h["part"], after["label"]))
         note = ""
         top = h.get("max_health") or (getattr(self, "max_health", None) or {}).get(h["defender"])
         left = (100.0 * float(h["health_before"]) / float(top)) if top and h.get("health_before") is not None else 100.0
@@ -1796,6 +1800,10 @@ class Narrator:
                  f"the whole body, all at the same instant. Do not narrate it as a series of separate strikes on "
                  f"each part; describe the whole body seizing, then where it hurts most afterward."]
         mark = len(self._must_parts)
+        for h in hits:      # a whole-body hit can push parts over the line as well
+            b_, a_ = self._pain(h["damage_before"])["label"], self._pain(h["damage_after"])["label"]
+            if b_ != a_ and a_ in ("excruciating", "devastated", "numb with shock"):
+                self._breaking.append((h["defender"], h["part"], a_))
         lines.append("  - Hardest hit: " + ", ".join(f"{h['part']} ({self._strength(h['damage_taken'])} blow)" for h in worst))
         tough = [h for h in hits if h["damage_taken"] < 5]
         if tough:
@@ -2058,7 +2066,9 @@ class Narrator:
         last_level = {}
         for who, part, level in self._breaking:
             last_level[(who, part)] = level      # hit twice in one beat: the level it ENDS at
-        for (who, part), level in list(last_level.items())[:2]:
+        # at most two a beat, the worst first (devastated before excruciating), so the biggest crossing is never dropped
+        rank = {"numb with shock": 3, "devastated": 2, "excruciating": 1}
+        for (who, part), level in sorted(last_level.items(), key=lambda kv: -rank.get(kv[1], 0))[:2]:
             lines.append(f"BREAKING POINT: {poss(who)} {part} has just become {level.upper()} for the first time. Slow "
                          f"down and give this its own focused moment: the instant the pain becomes too much to hold in, the "
                          f"sound she makes, how her body and her thoughts react. It is the biggest moment of this "

@@ -908,6 +908,14 @@ After each beat's prose, the program prints the exact numbers in this format:
   (legs locked round the neck from the side) for any fighter whose legs still work. How fast she goes under is
   unchanged: this is how it is told. Check after these and the block fix: 400 fights at your settings, Nocturne
   63.5% (±2.5), pins 4.8 a fight, 73% of fights with 4+.
+- **Breaking points from squeezes, too.** When a part first turns excruciating or devastated, the narrator gets a
+  BREAKING POINT (slow down, the sound she makes, her body and thoughts). It used to fire only for blows: a hold or
+  a pin pressing a part over the line (tails tightening on a throat, a pin's weight on a ruined chest) went by
+  without one, and so did whole-body hits. Now all of them count. At most two a beat as before, but the worst go
+  first: a part turning devastated is never dropped in favour of one turning excruciating.
+- More pin positions: standing on the throat (a foot or a paw), a knee across the neck, a four-legged fighter's
+  foreleg clutch from her side, the flat of a tail across the throat, a headlock, a crucifix (both arms trapped),
+  a body scissor. Jaws or hands closed round the throat are told as both chokes at once (air and blood).
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

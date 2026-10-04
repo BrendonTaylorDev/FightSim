@@ -27,7 +27,7 @@ def notes(caps, folder):
                 parts.append(f"PART {m.group(1)} of {m.group(2)}: " + m.group(0)[:900]
                              + ("\n" + u[b:b + 1500] if b >= 0 else ""))
         with open(os.path.join(folder, f"beat{n + 1:02d}_{tag.replace(' ', '_')}.txt"), "w", encoding="utf-8") as fh:
-            fh.write(facts[:9000] + "\n\n" + "\n\n".join(parts))
+            fh.write(facts + "\n\n" + "\n\n".join(parts))
 
 
 def build(seed, narration, dest):
