@@ -525,28 +525,40 @@ class Session:
         f = e.get(name)
         foes = [o for o in e.active() if o is not f and not (f.team and o.team == f.team)]
         moves = [m["name"] + (f" ({f.move_uses[m['name']]} left)" if m["name"] in f.move_uses else "")
+                 + (" (hold: for pins and grips)" if m.get("target") == "hold" else "")
+                 + (" (too tired)" if e.energy_cost(m) > f.energy else "")
                  for m in f.moves if f.move_uses.get(m["name"], 1) > 0]
         pinner = e.pinned_by(name)
         state = e.posture_text(name, short=True)
-        lines = [f"🎮 {name} — {e.strength(f):.0f}% strength · {state}"
+        lines = [f"🎮 {name} — {e.strength(f):.0f}% strength · energy {f.energy:.0f} · {state}"
                  + ("" if self.dice_mode() == "fair" else f" · dice: {self.dice_mode()}")]
+        conds = [f"{k.replace('_', ' ')} ({v} beat{'s' if v != 1 else ''})" for k, v in f.status.items() if v > 0]
+        if conds:
+            lines.append("   condition: " + ", ".join(conds))
+        stop = next((w for k, w in (("asleep", "ASLEEP"), ("frozen", "FROZEN SOLID"), ("flinched", "FLINCHED"))
+                     if e.has(f, k)), None)
+        if stop:
+            lines.append(f"   {stop}: she can't act this beat. Press Enter or type wait (or a /command)")
         if pinner:
             lines.append(f"   PINNED: you can struggle to break free, or strike at the one on top of you")
         held = [h for h in e.holds.values() if h.defender == name]
         holding = [h for h in e.holds.values() if h.attacker == name]
         if held:
-            lines.append("   held: " + "; ".join(f"{h.attacker} has your {h.part}" for h in held))
+            lines.append("   held: " + "; ".join(f"{h.attacker} has your {h.part}" for h in held)
+                         + "".join(f" (a SUBMISSION: {h.sub.replace('_', ' ')})" for h in held[:1] if h.sub))
         if holding:
             lines.append("   holding: " + "; ".join(f"your grip on {poss_name(h.defender)} {h.part}" for h in holding))
         lines.append("   moves: " + ", ".join(moves))
         ops = []
-        for o in foes:
+        for o in ([] if pinner or e.pinning(name) else foes):   # pinned, or already pinning: no new pin to open
             pin = (e.pin_window or {}).get(o.name)
             sub = (getattr(e, "sub_window", None) or {}).get(o.name)
             ops.append(f"{o.name} ({e.strength(o):.0f}%): pin {'OPEN' if pin else 'no'}"
                        + (", submission OPEN" if sub else ""))
         if ops:
             lines.append("   openings: " + " · ".join(ops))
+        elif e.pinning(name):
+            lines.append("   you're pinning her: hold her down, strike at what you can reach, or let her go")
         lines.append("   (type her move · Enter: the director chooses for her · wait: she holds back · "
                      "/command: direct control)")
         print("\n".join(lines))
@@ -963,8 +975,10 @@ class Session:
                     self.eng, self.eng.scene, self.recent_story(), direction, self.recent_attacks, players=orders)
         except Exception:
             self.history.pop()  # nothing happened, so there's nothing to undo
+            self.eng.ordered = set()
             raise   # (this beat's openings stay as they were: trying again doesn't roll them again)
         self.eng._windows_ready = False  # the openings were used: the next beat rolls fresh ones
+        self.eng.ordered = set()
         if direction:
             self.transcript.append(f"> {direction}")  # you already see what you typed; keep it for /export
         history_before = list(self.recent_attacks)  # what had happened before this beat, for the narrator
@@ -1127,12 +1141,15 @@ class Session:
                 self.out(f"*** {result['defender']} is eliminated by {result['attacker']}. ***")
         for e in also:
             if e.get("type") == "pin_progress" and e.get("elimination"):
-                self.out(f"*** {e['defender']} faints after {e['seconds_to'] if e.get('fade_mode') else e['duration']} "
-                         f"seconds pinned by {e['attacker']}. ***")
+                held = (f"{e.get('beats') or 1} beat{'s' if (e.get('beats') or 1) != 1 else ''}" if e.get("fade_mode")
+                        else f"{e['duration']} seconds")
+                self.out(f"*** {e['defender']} faints after {held} pinned by {e['attacker']}. ***")
             if e.get("type") == "pin_progress" and e.get("struggle") == "escape":
                 self.out(f"*** {e['defender']} kicks out at the last second of {poss_name(e['attacker'])} pin! "
                          f"(can't be won yet: {e.get('why_not', '')}) ***" if e.get("last_second") else
-                         f"*** {e['defender']} breaks free of {poss_name(e['attacker'])} pin at second {e['seconds_to']}! ***")
+                         f"*** {e['defender']} breaks free of {poss_name(e['attacker'])} pin "
+                         + (f"after {e.get('beats') or 1} beat{'s' if (e.get('beats') or 1) != 1 else ''}" if e.get("fade_mode")
+                            else f"at second {e['seconds_to']}") + "! ***")
         for e in also:
             if e.get("type") == "recovery" and aftermath:
                 self.out(f"*** {e['fighter']}: {e['from']} → {e['to']} ***")

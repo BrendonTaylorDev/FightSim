@@ -793,7 +793,8 @@ class Engine:
         still_against = (self.pressed.get(d.name) or {}).get("surface")  # a follow-up before she falls from a charge
         mine = [m for who, m in self.move_log if who == a.name][-2:]
         limit = int(self.rules.get("moves", {}).get("max_same_move_in_a_row", 2) or 0)
-        if enforce and limit and len(mine) >= limit and all(m == move["name"] for m in mine[-limit:]):
+        if (enforce and limit and len(mine) >= limit and all(m == move["name"] for m in mine[-limit:])
+                and a.name not in (getattr(self, "ordered", None) or ())):   # a player's own choice is hers to repeat
             raise ValueError(f"{a.name} just used {move['name']} {limit} times in a row. Pick a DIFFERENT move or an "
                              f"improvised technique (or let the opponent act)")
         self.move_log = (self.move_log + [(a.name, move["name"])])[-20:]
@@ -1691,7 +1692,7 @@ class Engine:
         rest = [m for m in self.pin_members(p) if m != name]
         if not rest:
             del self.pins[key]
-            note = f"{why}, so her pin on {p['defender']} broke at second {p['seconds']}"
+            note = f"{why}, so her pin on {p['defender']} broke " + self._pin_when(p)
             self.last_pin_end = {"pinner": name, "pinned": p["defender"], "how": how, "second": p["seconds"],
                                  "turn": self.turn, "note": note}
             return [{"type": "pin_broken", "attacker": name, "defender": p["defender"], "seconds": p["seconds"],
@@ -2013,7 +2014,7 @@ class Engine:
                     self.holds.pop(h.id, None)
                 del self.pins[key]
                 who = " and ".join(self.pin_members(p))
-                note = f"{why}, clear of the pin {who} had on her at second {p['seconds']}"
+                note = f"{why}, clear of the pin {who} had on her " + self._pin_when(p)
                 self.last_pin_end = {"pinner": p["attacker"], "pinned": p["defender"], "how": "got free",
                                      "second": p["seconds"], "turn": self.turn, "note": note}
                 out.append({"type": "pin_broken", "attacker": p["attacker"], "defender": p["defender"],
@@ -4012,7 +4013,9 @@ class Engine:
                 if e.get("struggle") == "escape":
                     ch["escapes"][dfn] = ch["escapes"].get(dfn, 0) + 1
                     self._moment("escape", f"{dfn} breaks out of {poss_word(att)} pin"
-                                + (f" after {e['seconds_to']} seconds" if e.get("seconds_to") else ""), dfn, att,
+                                + ((f" after {max(1, int(e.get('beats') or 1))} beat{'s' if int(e.get('beats') or 1) != 1 else ''}"
+                                    if e.get("fade_mode") or self.fade_mode() else f" after {e['seconds_to']} seconds")
+                                   if e.get("seconds_to") else ""), dfn, att,
                                  weight=1.5 + min(1.0, float(e.get("seconds_to") or 0) / 10.0))
                 if e.get("complete"):
                     oc = e.get("out_cause") or {}
@@ -4574,6 +4577,8 @@ class Engine:
                 # borne down flat by the pin)
                 guess = self._guess_facing(d.name, names)
                 self.facing[d.name] = {"face-down": "face-up", "face-up": "face-down"}.get(guess, guess)
+                if re.search(r"\bfrom behind\b", flavor or "", re.I):
+                    self.facing[d.name] = "face-down"   # a hold from behind (a sleeper) bears her down onto her front
             self.momentum = (self.momentum + [f"{a.name}>{d.name}"])[-20:]
         # the presses and the way she lies must agree (your own named parts turn her; the director's follow her)
         self._settle_facing(d.name, parts_win=not enforce)
@@ -5357,6 +5362,13 @@ class Engine:
         return ev
 
     # ---------- pins: clock + struggle ----------
+    def _pin_when(self, p):
+        """When in a pin something happened: 'after N beats' (pins without a clock) or 'at second N' (the old clock)."""
+        if self.fade_mode():
+            b = max(1, int(p.get("beats") or 0))
+            return f"after {b} beat{'s' if b != 1 else ''}"
+        return f"at second {p['seconds']}"
+
     def fade_mode(self):
         """True (the default): a pin has no fixed length. Every beat brings the pinned fighter closer to passing
         out by a varying amount, so it usually takes about pin.fade.typical_beats beats, sometimes fewer, sometimes

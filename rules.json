@@ -1206,7 +1206,9 @@
     "target_variety": 0.35,
     "grudge_chance": 0.15,
     "drag_to_pin_chance": 0.12,
-    "_grudge_comment": "grudge_chance: per beat, a PAYBACK idea for a fighter with a wrecked part (go for the same place on the one who did it). drag_to_pin_chance: per beat, when someone is down and not pinned, the idea to drag her to a wall or the water and pin her there next."
+    "_grudge_comment": "grudge_chance: per beat, a PAYBACK idea for a fighter with a wrecked part (go for the same place on the one who did it). drag_to_pin_chance: per beat, when someone is down and not pinned, the idea to drag her to a wall or the water and pin her there next.",
+    "move_variety": 0.35,
+    "_move_variety_comment": "move_variety: the chance each beat that the director is shown the moves each fighter hasn't used yet this fight (status and set-up moves included; hold-only moves are left out). 0 = off."
   },
   "_teams_comment": "Teams set with /team: fighter -> team name. Fighters who share a team never attack each other and win together, in every fight. Empty = everyone fights alone. (Temporary alliances are made during a fight with /ally and are not kept here.)",
   "teams": {},

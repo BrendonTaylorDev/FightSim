@@ -403,11 +403,11 @@ class Display:
             elif k["type"] == "flattened":
                 out.append(f"⬇️ **{k['fighter']} is knocked flat** from sitting: now {k['facing']}")
             elif k["type"] == "hold_end" and k.get("shaken"):
-                out.append(f"💥 **The hit breaks {k['attacker']}'s hold** on {k['defender']}'s {k['part']} "
+                out.append(f"💥 **The hit breaks {poss_word(k['attacker'])} hold** on {poss_word(k['defender'])} {k['part']} "
                            f"(#{k['hold_id']}) after {k['beats_held']} beat{'s' if k['beats_held'] != 1 else ''} — "
                            f"{k['reason']} (chance to lose it {k['chance'] * 100:.0f}%)")
             elif k["type"] == "hold_end":
-                out.append(f"🔓 **{k['attacker']} loses her grip** on {k['defender']}'s {k['part']} "
+                out.append(f"🔓 **{k['attacker']} loses her grip** on {poss_word(k['defender'])} {k['part']} "
                            f"(#{k['hold_id']}): {k['reason']}")
             elif k["type"] == "slumps":
                 out.append(f"💤 **{k['fighter']} slumps to the ground**" + (f" ({k['facing']})" if k.get("facing") else ""))
@@ -655,11 +655,12 @@ class Display:
                 out += self.hits_block(a["attacker"], a["counter_hits"])
             mc = a.get("missed_charge")
             if mc:
-                out.append(f"💥 **{a['attacker']}'s charge carries her on into {mc['surface']}** (power {num(mc['power'])})"
+                out.append(f"💥 **{poss_word(a['attacker'])} charge carries her on into {mc['surface']}** (power {num(mc['power'])})"
                            + (f" — she goes down ({mc.get('facing')})" if mc.get("down") else " — she stays up"))
                 out += self.hits_block(a["attacker"], mc["hits"])
         elif t == "instant":
-            out.append(f"⚔️ **{a['attacker']} → {a['defender']}**: {a.get('flavor', '')}")
+            fl = a.get("flavor") or (a.get("move") or {}).get("name", "") if isinstance(a.get("move"), dict) else a.get("flavor", "")
+            out.append(f"⚔️ **{a['attacker']} → {a['defender']}**" + (f": {fl}" if fl else ""))
             cl = a.get("clash")
             if cl:
                 ps = lambda n: n + ("'" if n.endswith("s") else "'s")
@@ -932,7 +933,7 @@ class Display:
         elif t == "alliance_end":
             out.append(f"💔 **The alliance between {' and '.join(a['members'])} is over**: {a['why']}")
         elif t == "struggle_request":
-            out.append(f"💢 **{a['fighter']} will try to break free** of {a['pinner']}'s pin this beat (outcome rolled).")
+            out.append(f"💢 **{a['fighter']} will try to break free** of {poss_word(a['pinner'])} pin this beat (outcome rolled).")
         elif t == "pinfall":
             out.append(f"📌 **{a['attacker']} covers {a['defender']}** "
                        f"({self.heart} {pct(a['defender_health'], a['max_health'])})")

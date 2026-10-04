@@ -1370,6 +1370,7 @@ class Director:
             engine.roll_pin_windows(open_all=bool(direction) and getattr(engine, "dice_mode", "fair") != "strict")
         # your words decide where blows land; the dice only fill in what you left open
         engine.directed = bool(direction) or any(v and v != "WAIT" for v in players.values())
+        engine.ordered = {n for n, v in players.items() if v and v != "WAIT"}   # fighters acting on a player's order
         hint = initiative_hint(engine) if not direction else ""
         steer = plan_hint(engine)
         if not direction and not hint:
@@ -1396,8 +1397,19 @@ class Director:
             held = big_moment_hint(engine, prefer=who)
             if held:
                 rng_hint = (rng_hint + "\n" + held).strip()
+        unused = move_variety_hint(engine, skip=[n for n, o in players.items() if o]) if not direction else ""
+        if unused:
+            rng_hint = (rng_hint + "\n" + unused).strip()
         if rng_hint:
             hint = (hint + "\n" + rng_hint).strip()
+        if players:
+            # an idea for what a PLAYED fighter should do is the player's to have: keep only the ones for the
+            # fighters the director runs (and the ones for a played fighter the player handed to the director)
+            mine = [n for n, o in players.items() if o]
+            hint = "\n".join(l for l in (hint or "").split("\n") if not any(re.search(
+                r"\b" + re.escape(n) + r"\b(?: could| should| can| has an? (?:opening|chance)| keeps| takes| goes| strings| "
+                r"seizes| charges| is (?:pointed|told))", l) or re.match(r"[A-Z ]+:?\s*" + re.escape(n) + r"\b", l)
+                for n in mine))
         names = [f.name for f in engine.active()]
         engine.nudges = []
         for line in (hint or "").split("\n"):
@@ -1476,6 +1488,28 @@ class Director:
                     "flavor": "the fighters reset, circling and catching their breath", "intent": "reset"}
         results, started = resolve_many(engine, [fallback])
         return [fallback], results, started
+
+
+def move_variety_hint(engine, skip=()):
+    """Now and then (director.move_variety, 0 = off): name moves a fighter hasn't used yet this fight, so she doesn't
+    lean on her strongest two or three. Hold-only moves (used inside pins and holds) aren't named."""
+    v = float(engine.rules.get("director", {}).get("move_variety", 0.35) or 0)
+    if v <= 0 or engine.pins or engine.rng.random() >= v:
+        return ""
+    used = {m for _, m in engine.move_log}
+    out = []
+    for f in engine.active():
+        if f.name in skip or f.name in engine.downed:
+            continue
+        fresh = [m["name"] for m in f.moves if m["name"] not in used and m.get("target") != "hold"
+                 and f.move_uses.get(m["name"], 1) > 0 and engine.energy_cost(m) <= f.energy]
+        if fresh:
+            engine.rng.shuffle(fresh)
+            out.append(f"{f.name} hasn't used {', '.join(fresh[:4])} lately")
+    if not out:
+        return ""
+    return ("MOVES NOT USED LATELY (an idea, not an order): " + "; ".join(out) + ". A fighter who uses all she has, "
+            "status and set-up moves too, is more interesting than one who leans on her strongest two or three.")
 
 
 def play_block(engine, players):
@@ -1952,7 +1986,7 @@ def throat_hint(engine, roll=None):
                               f"twist (a pin technique: a bite hold on that part)")]
             if t.get("jaws") and free("arm"):
                 ideas += [(3, f"clamp her jaws on {poss_word(d)} {engine.rng.choice(free('arm'))} and pin that limb to the "
-                              f"stone (add it to the pin: action 'pin', that part in \"hits\", \"with\": \"her jaws\")")]
+                              f"{engine.scene_word('ground').split()[-1]} (add it to the pin: action 'pin', that part in \"hits\", \"with\": \"her jaws\")")]
             if (t.get("coil") or t.get("fore")) and [x for x in spots if x not in held]:
                 w = t.get("coil") or t["fore"]
                 ideas += [(3, f"get {w} across {poss_word(d)} {[x for x in spots if x not in held][0]} as a choke (add it to "

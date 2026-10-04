@@ -2862,8 +2862,8 @@ class Narrator:
                 aim = {"targeted": "aimed at one spot", "spread": "spread across several parts",
                        "whole_body": "hitting the whole body"}.get(m["target"], "")
                 kind = "an improvised move" if m.get("improvised") else f"{m['type']}-type move"
-                lines.append(f"{a['attacker']} uses {m['name'].upper()} ({kind}: {m['about']}) on "
-                             f"{a['defender']}, {aim}.{eff}{intent}")
+                on = ("" if m.get("target") == "self" else f" on {a['defender']}") + (f", {aim}" if aim else "")
+                lines.append(f"{a['attacker']} uses {m['name'].upper()} ({kind}: {m['about']}){on}.{eff}{intent}")
                 mine = {w for w, rx in WEAPONS
                         if re.search(rx, " ".join([str(a.get("flavor") or ""), str(m.get("about") or ""), m["name"]]), re.I)}
                 if mine and len(mine) <= 2 and not a.get("dodged"):
@@ -2882,7 +2882,7 @@ class Narrator:
                 keep = {"pin": "The pin that is already on stays on", "down": "She stays down where she is",
                         "against": "She stays pressed where she is"}[a["pummel"]["where"]]
                 lines.append(f"  (The blows themselves are not a hold: nothing NEW latches on with them. {keep}.)")
-            else:
+            elif (m or {}).get("target") not in ("self", "status"):
                 lines.append("  (An instant hit: any bite, grab, or grip lets go as soon as it lands. It is NOT a hold, so "
                              "nobody is still latched on afterward.)")
             if a.get("recoil"):
@@ -4620,7 +4620,7 @@ class Narrator:
         for e in also:
             if e.get("type") == "pin_progress" and e.get("struggle") == "escape":
                 deep = float(e.get("fade_from") or 0) >= 35 or int(e.get("beats") or 0) >= 3
-                (why if deep else big).append("she breaks a pin that had begun to tell on her" if deep else "a pin is kicked off")
+                (why if deep else big).append("she breaks a pin that had begun to tell on her" if deep else "she throws off a pin")
         if ss.get("turned"):
             why.append(ss["turned"])
         if why:
