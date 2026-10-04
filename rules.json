@@ -724,7 +724,7 @@
     "more_words": 300,
     "more_after_attacks": 0,
     "two_pass_pov": true,
-    "context_window": 12288,
+    "context_window": 20480,
     "_sampler_comment": "repeat_penalty above 1 discourages looping/repeated phrases (1.05-1.2 is typical). min_p and top_p trim unlikely words. Lower temperature = steadier, higher = wilder.",
     "temperature": 0.8,
     "repeat_penalty": 1.03,
@@ -787,7 +787,8 @@
       "hard_at": 40,
       "hard_bonus": 0.25,
       "weak_bonus": 0.15
-    }
+    },
+    "_context_window_comment": "context_window: how many tokens the model reads at once (prompt + answer), for the narrator, the director and the reader. 20480 with Ollama set to OLLAMA_FLASH_ATTENTION=1 and OLLAMA_KV_CACHE_TYPE=q8_0 (half-size context memory) uses about what 12288 did before. If `ollama ps` shows any CPU share, step down to 16384; if it's still tight, 12288. The narrator trims the oldest story first when a prompt doesn't fit."
   },
   "pain_tiers": [
     {

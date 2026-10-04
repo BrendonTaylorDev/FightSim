@@ -2294,3 +2294,8 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
     - It can't go numb again for 4 beats.
     - The old permanent "numb with shock" level at 1000%+ is not used while this is on.
   - **Balance:** Nocturne 57.5% on the current curve, 60% on the recommended one (200 fights each).
+- **Bigger narrator window (`narration.context_window` 12288 → 20480).**
+  - At 12k the prompts were full, about 10,400 tokens on a typical part and up to 11,900. The story so far was being trimmed to almost nothing, so the model wrote each part with almost no memory of earlier beats.
+  - 20k fits everything with real story memory, and no detail is cut.
+  - To make it fit on a 16 GB card, start Ollama with `OLLAMA_FLASH_ATTENTION=1` and `OLLAMA_KV_CACHE_TYPE=q8_0`. That stores the context at half size, so 20k takes about the memory 12k did.
+  - Check with `ollama ps` while a fight is running: it should say 100% GPU. If it shows a CPU share, set `/set narration.context_window 16384`.
