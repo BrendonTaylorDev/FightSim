@@ -110,9 +110,10 @@ Hard rules (these override everything else):
 Craft:
 - Third person, PAST tense ("she lunged", not "she lunges"), every sentence; only italic thoughts may be in the
   present.
-- PLAIN, CONCRETE WORDS: no stock phrases ("a symphony of", "the canvas of", "the tension was palpable", "held its
-  breath", "like a sleeping giant", "ready to clash", "time stood still"). Say exactly what is there.
-- ONLY THE PLACE AS GIVEN: no smells, insects, animals or sounds the SCENE doesn't mention.
+- PREFER CONCRETE WORDS to stock phrases ("a symphony of", "the tension was palpable", "ready to clash"); one now
+  and then is fine, a string of them is not.
+- THE PLACE: small sensory touches that fit it (a smell, an insect, a sound) are welcome now and then; don't add
+  landmarks, structures or creatures that would change the scene.
 - TELL EACH THING ONCE: an action (testing the ground, shaking off water) or a blow happens once in a part; never
   tell the same hit a second time later in the passage.
 - SIZE TO MATCH: a light hit gets a light reaction (a wince, a hiss), not a full-body shudder or a flood of rage.
@@ -2313,8 +2314,12 @@ class Narrator:
         self._slammed = {d for d in rammed if d not in self._landed}  # hit the scenery but kept her feet
         self._charge_beat = bool(rammed)
         moves = [m for a in actions for m in [a.get("move")] + list((a.get("move_by_defender") or {}).values()) if m]
+        # a clash: the defender's own move met the attack in the air, so its type is in this beat too
+        clash_types = {str((a.get("clash") or {}).get("move_type", "")).lower() for a in actions if a.get("clash")}
         self._no_electric = bool(moves) and not any(str(m.get("type", "")).lower() == "electric" for m in moves) \
-            and not any(a.get("status_move") for a in actions)
+            and not any(a.get("status_move") for a in actions) and "electric" not in clash_types
+        if "electric" in clash_types or any(str(m.get("type", "")).lower() == "electric" for m in moves):
+            self._seen_electric = True   # remembered later in the fight ("where the lightning had met her water")
         # anyone touched by a tick, landing, pin, or the like counts as hurt (only clean beats get the check)
         for e in bundle.get("also_this_beat", []):
             for k in ("fighter", "defender"):
@@ -5549,8 +5554,9 @@ class Narrator:
             return False
         if getattr(self, "_sparks_ok", False):
             return False
-        hit_before = any(re.search(r"thunder|bolt|shock|spark|volt|electr|zap|discharge|charge beam|wild charge", str(mv), re.I)
-                         for mv in (getattr(self, "move_victims", None) or {}))
+        hit_before = getattr(self, "_seen_electric", False) or any(
+            re.search(r"thunder|bolt|shock|spark|volt|electr|zap|discharge|charge beam|wild charge", str(mv), re.I)
+            for mv in (getattr(self, "move_victims", None) or {}))
         if hit_before and re.search(r"\b(?:had|earlier|before|still|left|last|remember\w*|again|since|after)\b", sent, re.I):
             return False
         return True
@@ -5560,6 +5566,10 @@ class Narrator:
         bad = []
         for sent in re.split(r"(?<=[.!?…])\s+", text):
             m = BONE_SEVERE.search(sent)
+            if m and m.group(0).lower().startswith("something") and re.search(
+                    r"\b(patience|temper|resolve|control|composure|mind|anger|rage|fury|restraint|will|nerve|calm)\b",
+                    sent, re.I):
+                continue   # "something in her snapped": her temper, not a bone
             if m and not any(_mentions_exact(sent.lower(), p) for p in self.breakable):
                 bad.append(m.group(0).lower())
         return bad
@@ -5592,7 +5602,9 @@ class Narrator:
                               f"{window[1]}, ending at second {window[1]}, and the pin is still going after that")
         window = getattr(self, "_time_window", None)
         if self._no_clock:
-            found = _COUNTDOWN.search(text) or _bare_count(text, getattr(self, "_pin_beat", False)) or _TIME_MARK.search(text) or (
+            # no pin at all this beat: only a referee-style count is a pin clock ("Two seconds later" is just prose)
+            found = _COUNTDOWN.search(text) or _bare_count(text, getattr(self, "_pin_beat", False)) or (
+                _TIME_MARK.search(text) if getattr(self, "_pin_beat", False) else None) or (
                 _FADE_CLOCK.search(text) if getattr(self, "_fade_pin", False) and getattr(self, "_pin_beat", False) else None)
             if found:
                 issues.append((f"it counted the pin in seconds (\"{found.group(0).strip()}\"), but a pin has NO clock: "
@@ -6623,17 +6635,9 @@ class Narrator:
             for x in present:
                 add(x, "present tense: the story is told in the PAST tense (\"she lunged\", not \"she lunges\")")
         for x in sents:
-            m = STOCK_PHRASE.search(x)
-            if m:
-                add(x, f"a stock phrase (\"{m.group(0)}\"): say it plainly and concretely")
             m = PAIN_LABEL.search(x)
             if m:
                 add(x, f"a pain level used as a label (\"{m.group(0)}\"): say how it FEELS instead")
-            for m in INVENTED_PLACE.finditer(x):
-                key = re.sub(r"s$", "", m.group(1).lower().split()[-1])
-                if key not in scene_low:
-                    add(x, f"\"{m.group(0)}\" isn't in this place: use only what the SCENE describes")
-                    break
             if TAIL_PROPEL.search(x) and not re.search(r"\b(water|lake|shallows|swim\w*|current|waves?)\b", x, re.I):
                 add(x, "her twin tails only drive her through water; on land they balance her")
             m = gore.search(x) if gore is not None else None

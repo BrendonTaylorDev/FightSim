@@ -2304,3 +2304,9 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - Before, it ran between parts, and its prompt pushed the narrator's long prompt (about 10,000 tokens) out of Ollama's memory, so every part re-read it. On a partly-CPU setup that's about 45 s a part.
   - Paragraph rewrites already reuse the cached prompt. `"part"` = the old order.
 - **Defaults are now the settings the balance is tuned for:** damage scale 5, health loss 0.2, resistance scale 1, the recommended resistance curve with `max_loss_per_hit` 35, and the permanent numb level off (temporary numbness replaces it). Your own `my_settings.json` still wins for anything you saved; `/settings` lists those, and `/settings forget` drops them.
+- **Fewer wasted rewrites (build 114).** False alarms that cost rewrite calls, found in a live fight log:
+  - **"stray electricity":** the defender's clash move (a Thunderbolt meeting a Hydro Pump) now counts as this beat's electricity, and lightning seen earlier in the fight may be remembered later.
+  - **"pin clock":** in a beat with no pin, an ordinary sentence like "Two seconds later…" is no longer taken for a pin count. Only an actual countdown is.
+  - **"broken bones":** "something in her snapped" (her temper) no longer counts as a bone.
+  - **Prose checks relaxed:** stock phrases and small sensory touches are guidance only, never a rewrite.
+  - **Version line** now says build 114.
