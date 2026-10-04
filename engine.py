@@ -4723,6 +4723,11 @@ class Engine:
         holds = self._pin_holds(p)
         # coils: the constriction cuts off her circulation and slows her heart until she goes under. When coils are
         # part of the pin, that is what takes her (a constrictor's pin is about the squeeze, not the pain)
+        # tails or coils wound round her THROAT choke her: that is her air going, told as a choke (by the coils)
+        throat_coils = [h for h in holds if h.coil and self.coil_scope(h.part) == "throat"]
+        if throat_coils:
+            h = max(throat_coils, key=lambda x: x.power)
+            return {"cause": "choking", "part": h.part, "with": h.with_part, "coil": True}
         coils = [h for h in holds if h.coil and self.coil_scope(h.part) != "limb"]
         if coils:
             h = max(coils, key=lambda x: (body_region(x.part) in ("chest", "belly", "neck"), x.power))

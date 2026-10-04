@@ -52,6 +52,17 @@ class Display:
     STATUS_WORD = {"fury": "furious", "doubled_over": "doubled over", "off_balance": "off balance",
                    "protecting": "protected", "countering": "set to counter", "mirroring": "coated in a mirror sheen"}
 
+    @staticmethod
+    def _grip_words(oc):
+        """" (her jaws, closed on the throat)" or " (her knees on her Chest)": the part only when the grip doesn't
+        already name it."""
+        part, w = str(oc.get("part") or ""), str(oc.get("with") or "")
+        if not part:
+            return ""
+        if not w:
+            return f" (her {part})"
+        return f" ({w})" if part.lower() in w.lower() else f" ({w} on her {part})"
+
     def sw(self, status):
         """A status as words ("doubled over", not "doubled_over")."""
         return self.STATUS_WORD.get(status, str(status).replace("_", " "))
@@ -459,8 +470,7 @@ class Display:
                         if e.get("fade_mode") else f"- ⏱️ **Full {num(e['duration'])} seconds held.**")
                        + (f" ❌ **{d} faints and is out.**" if e.get("elimination") else "")
                        + ({"choking": " It was the choke that took her under"
-                                      + (f" ({(e.get('out_cause') or {}).get('with')} on her {(e.get('out_cause') or {}).get('part')})"
-                                         if (e.get('out_cause') or {}).get('part') else "") + ".",
+                                      + self._grip_words(e.get("out_cause") or {}) + ".",
                            "constriction": " It was the constriction that took her under"
                                            + (f" ({(e.get('out_cause') or {}).get('with')} round her {(e.get('out_cause') or {}).get('part')})"
                                               if (e.get('out_cause') or {}).get('part') else "") + ": her circulation cut off, her heart slowing.",

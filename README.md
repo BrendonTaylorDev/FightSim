@@ -886,6 +886,13 @@ After each beat's prose, the program prints the exact numbers in this format:
   Who is ahead, late in a fight: a few points of strength now count for more when both are low (9% against 15% is
   no longer called "ahead" for the one at 9% just because she has fewer badly hurt parts). Story only: no balance
   change.
+- **Throat pins with tails or coils finish as a choke.** A pin can hold the throat with anything that fits the
+  body: jaws closed on it, a forearm or foreleg barred across it, tails or coils looped round it. All of them choke
+  her out. Tails or coils round the throat used to be told as a "constriction" (her circulation cut off, her heart
+  slowing), the way coils round the chest are; now they are the choke: her air going. Coils round her body are
+  still the constriction. As before, about a fifth of the time the pain under the press gets there first when
+  the pressed parts are badly hurt. The pass-out line no longer repeats the part ("her jaws, closed on the throat",
+  not "...on the throat on her Throat").
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If
