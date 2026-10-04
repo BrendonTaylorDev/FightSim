@@ -1520,6 +1520,17 @@ fur skin breath breathe breathing air ground floor weight place beat beats front
 """.split())
 
 
+# the passage shows a fighter being taken down (any way of getting her from her feet onto the ground)
+TAKEDOWN_SHOWN = re.compile(
+    r"\b(?:threw|throws?|thrown|throwing|hurl\w*|flung|fling\w*|swept|sweep\w*|trip\w*|tackl\w*|hook\w*|tipp\w*|"
+    r"topple\w*|toppling|flip\w*|slam\w*|drove|driv\w+|bore|bear\w* (?:her )?down|dragg?\w* (?:her )?(?:down|to)|"
+    r"haul\w* (?:her )?(?:down|off)|pull\w* (?:her )?(?:down|off)|took (?:her )?down|tak\w+ (?:her )?down|"
+    r"brought (?:her )?down|bring\w* (?:her )?down|off (?:her|its) feet|legs? (?:went )?out from under|went over|"
+    r"(?:went|came|crash\w*|fell|falling|hit|hitting|struck|landed|landing|thudd?\w*) (?:down )?(?:on|onto|into|to|against) "
+    r"(?:the |her )?(?:ground|grass|earth|sand|stone|rock|floor|back|side|belly|front|dirt|mud|ice)|"
+    r"(?:ground|grass|earth|sand|floor) (?:came up|rushed up|slammed|hit|met)|went down|goes down|go down|"
+    r"(?:onto|on) her back)\b", re.I)
+
 # how a takedown into a pin goes (the engine picks one: variety.takedown)
 TAKEDOWN_WAYS = {
     "tackle": "a low tackle that takes both of them to the ground, her underneath",
@@ -2281,6 +2292,7 @@ class Narrator:
         self._getup_failed = {e["fighter"] for e in bundle.get("also_this_beat", []) or []
                               if e.get("type") == "get_up" and not e.get("stands")}
         self._one_strike = None
+        self._takedown = None       # (pinner, pinned): she was on her feet and is taken down into the pin this beat
         self._chain_beat = False    # several attacks by one fighter this beat (a chain, a pummel): "again" is right
         self._must_tumble = None    # thrown and tumbling on: the passage has to show her going on across the ground
         actions = bundle.get("actions") or [bundle["action"]]
@@ -3224,6 +3236,7 @@ class Narrator:
                              f"still has {sub['free']} free.")
             if a.get("taken_down"):
                 td = a.get("takedown") or {}
+                self._takedown = (a["attacker"], a["defender"])   # checked afterwards: the passage has to show it
                 how = (TAKEDOWN_WAYS.get(td.get("how") or "") + "; fit it to their bodies" if td.get("how") in TAKEDOWN_WAYS
                        else "as the line above already says" if td.get("told")
                        else "a tackle, a leg hooked out from under her, a drag to the ground: whatever fits their bodies")
@@ -5824,6 +5837,11 @@ class Narrator:
             if m:
                 issues.append(f"it showed extra failed tries at getting up (\"{m.group(0)}\"), but she gets up on the "
                               f"FIRST try: one attempt, and she ends on her feet")
+        td = getattr(self, "_takedown", None)
+        if td and coverage and not TAKEDOWN_SHOWN.search((prior or "") + "\n" + text):
+            issues.append(f"it never showed the takedown: {td[1]} was ON HER FEET when this beat began, so before the "
+                          f"pin is held {td[0]} has to get her to the ground (the way listed above), in a sentence or two "
+                          f"of its own")
         broken = degeneration(text, (getattr(self, "_story_tail", "") or "") + "\n" + (prior or ""),
                               getattr(self, "_notes_grams", frozenset()))
         if broken:
@@ -6480,7 +6498,7 @@ class Narrator:
                 labels = [_slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
                            else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
                            else "missing escape" if "ESCAPE" in i
-                           else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
+                           else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
                            else "parts called useless too early" if "as useless" in i
                            else "wrong strike count" if "ONE strike" in i
                            else "invented bite" if "a bite that isn't" in i
