@@ -916,6 +916,21 @@ After each beat's prose, the program prints the exact numbers in this format:
 - More pin positions: standing on the throat (a foot or a paw), a knee across the neck, a four-legged fighter's
   foreleg clutch from her side, the flat of a tail across the throat, a headlock, a crucifix (both arms trapped),
   a body scissor. Jaws or hands closed round the throat are told as both chokes at once (air and blood).
+- **Submission holds (very rare).** Wrestling holds that WRENCH rather than pin: a camel clutch (sitting on her
+  back, hauling her head and chest up by the chin, or by the scruff in the jaws), a crossface, a Boston crab, an
+  armbar, a leg lock, a tail crank, and for a four-legged fighter a limb wrench (a limb clamped in the jaws, twisted
+  and shaken). Which ones fit depends on both bodies and on how she is lying (face-down for a camel clutch, face-up
+  for an armbar...). They do damage every beat, harder each beat (power 16 +3 a beat on the main grips, 9 +1 on
+  the bracing ones), for at most 3 beats, then the holder lets go, spent. They are NOT pins: no clock, nobody passes
+  out. The one held can't get up while it's on, breaks out at 0.8x the usual hold chance, and anything thrown at
+  her meanwhile lands x1.25 ("locked in a submission hold, nothing free to cover up with"). The holder can use what
+  she still has free: Ripples in a camel clutch has her mouth right at the back of the Absol's head (a jet of water
+  there as a second action in the same beat); Nocturne holding one with her jaws still has her horn and her tail.
+  An opening is rolled each beat on a fighter who is down and not pinned or held (3%, x1.5 under half strength);
+  the director is told the hold, what it does and what's left free. At your settings that is about one
+  submission in 30 fights. Director action "submission" with the hold's name in "improvised_name";
+  rules.json "submissions" holds every number. 400 fights at your settings with them in: Nocturne 62%, pins 4.9 a
+  fight, 75% of fights with 4+.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

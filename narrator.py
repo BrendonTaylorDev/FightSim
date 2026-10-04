@@ -1908,6 +1908,11 @@ class Narrator:
         for e in pins:  # the struggle outcome goes first so it can't get lost under the pressure lines
             lines += self._pin_lines(e)
         pairs = {}
+        eng = getattr(self, "engine", None)
+        self._sub_of = {}
+        for e in bundle.get("also_this_beat", []):
+            if e["type"] == "hold_ongoing" and e.get("sub"):
+                self._sub_of[(e["attacker"], e["defender"])] = e["sub"]
         for e in bundle.get("also_this_beat", []):
             if e["type"] == "hold_ongoing":
                 pairs.setdefault((e["attacker"], e["defender"]), []).append(e)
@@ -1921,6 +1926,12 @@ class Narrator:
                              f"the two are still locked together at point-blank"
                              + ("" if dfn in getattr(self, "on_ground", ()) else ", both on their feet")
                              + f". The grip itself only pinches, on these spots (it is not a strike):")
+                lines += [self._pressure_line(e["hits"][0], e.get("with", "")) for e in old]
+            elif old and getattr(self, "_sub_of", {}).get((att, dfn)):
+                name = self._sub_of[(att, dfn)]
+                lines.append(f"{poss(att)} {name.upper()} goes on (held {max(e['beats_held'] for e in old)} beat(s)): "
+                             f"she cranks it harder, and the strain on these spots is WORSE than the beat before "
+                             f"(a hold, not a strike; she is wrenched, not hit):")
                 lines += [self._pressure_line(e["hits"][0], e.get("with", "")) for e in old]
             elif old:
                 # (a pin is as old as its newest press: a grip that was on before the pin began does not age it)
@@ -1993,6 +2004,11 @@ class Narrator:
                                  + (f", ending up {Engine.FACING_LOOK[fc]}" if fc in Engine.FACING_LOOK else "")
                                  + ". Show her going down; it does no new damage.")
                 lines += self._knock_on_lines(e.get("knock_on"))
+            elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
+                lines.append(f"THE {e['submission'].upper()} ENDS at the END of this beat: {e['attacker']} lets it go, "
+                             f"spent; she can't keep it on any longer. {e['defender']} is left on the ground where she "
+                             f"was, hurting from it, free to try to get up from the next beat. Show it as the last thing "
+                             f"that happens.")
             elif e["type"] == "hold_end" and e.get("broke_free"):
                 parts = " and ".join(e.get("parts") or [])
                 with_ = " and ".join(dict.fromkeys(e.get("with") or []))
@@ -2727,6 +2743,13 @@ class Narrator:
                 "first_beat_damage", 0.0 if t == "pin_start" else 1.0))
             mv = f" with {a['move']['name'].upper()} ({a['move']['about']})" if a.get("move") else ""
             lines.append(f"{a['attacker']} {kind} {a['defender']}{mv}: {a.get('flavor', '')}{intent}")
+            sub = a.get("submission")
+            if sub:
+                lines.append(f"  - A SUBMISSION HOLD: a {sub['name'].upper()}, {sub['look']}. It is NOT a pin: there is "
+                             f"no clock, nobody is counting, and she will not pass out from it. It is about the STRAIN: "
+                             f"{sub['strain']}, more every beat it stays on. Show exactly how their bodies lock together, "
+                             f"and the first wrench of it. {a['defender']} can't get up while it's on. {a['attacker']} "
+                             f"still has {sub['free']} free.")
             if a.get("taken_down"):
                 td = a.get("takedown") or {}
                 how = (TAKEDOWN_WAYS.get(td.get("how") or "") + "; fit it to their bodies" if td.get("how") in TAKEDOWN_WAYS

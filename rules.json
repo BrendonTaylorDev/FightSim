@@ -357,7 +357,8 @@
       "flinched": 1.15,
       "down": 1.1,
       "down_pummel": 1.08,
-      "held": 1.1
+      "held": 1.1,
+      "submission": 1.25
     },
     "feint": {
       "_comment": "A fake before the real blow (the director's \"feint\": true). Costs energy. chance the defender bites (higher when she is worn down; seen_mult per feint she has already seen from this attacker). If she bites, no dodge, clash or guard, and the blow lands at vulnerable.feinted.",
@@ -1463,5 +1464,17 @@
     "per_kind": 3,
     "big_hit_pct": 9.0,
     "lead_margin": 5.0
+  },
+  "submissions": {
+    "_comment": "Submission holds: very rare wrestling holds that WRENCH (a camel clutch, a crossface, a Boston crab, an armbar, a leg lock, a tail crank, a limb wrench). They do damage every beat, harder each beat, and are NOT pins (no clock, no pass-out). An opening is rolled each beat on a fighter who is down and not pinned or held: chance (x weak_mult under half strength). power / second_power: the main grips and the bracing ones; ramp / second_ramp: how much harder each beat. max_beats: after that the holder lets it go. break_mult: the break-free chance against it (x the plain-hold chance). The one held can't get up while it's on, and blows on her land x moves.vulnerable.submission.",
+    "enabled": true,
+    "chance": 0.03,
+    "weak_mult": 1.5,
+    "power": 16,
+    "second_power": 9,
+    "ramp": 3,
+    "second_ramp": 1,
+    "max_beats": 3,
+    "break_mult": 0.8
   }
 }

@@ -819,6 +819,9 @@ class Display:
         elif t in ("hold_start", "pin_start"):
             icon, word = ("📌", "PIN") if t == "pin_start" else ("🔒", "Hold")
             mv = f" ({a['move']['name'].upper()})" if a.get("move") else ""
+            if a.get("submission"):
+                icon, word = "🔐", "SUBMISSION HOLD"
+                mv = f" ({a['submission']['name'].upper()})"
             if a.get("joined"):
                 out.append(f"📌 **DOUBLE PIN{mv}: {a['attacker']} joins {' and '.join(a['joined'])} on {a['defender']}** — "
                            f"{a.get('flavor', '')}")
@@ -1032,19 +1035,22 @@ class Display:
             if e["type"] == "hold_end" and e.get("broke_free"):
                 if not self.tight():
                     out.append("")
-                out.append(f"💥 **{e['defender']} breaks {e['attacker']}'s hold** on her {', '.join(e['parts'])} "
+                out.append(f"💥 **{e['defender']} breaks {poss_word(e['attacker'])} hold** on her {', '.join(e['parts'])} "
                            f"(#{', #'.join(str(i) for i in e['hold_ids'])}) after {e['beats_held']} "
                            f"beat{'s' if e['beats_held'] != 1 else ''} — break-free chance this beat "
                            f"{e['chance'] * 100:.0f}%{way('hold_break', e.get('manner'))}")
+            elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
+                out.append(f"🔓 **{e['attacker']} lets the {e['submission'].upper()} go** after {e['beats_held']} "
+                           f"beat{'s' if e['beats_held'] != 1 else ''}: she can't keep it on any longer")
             elif e["type"] == "hold_loosened":
                 if not self.tight():
                     out.append("")
-                out.append(f"🫳 **{e['defender']} works {e['attacker']}'s hold looser** on her {', '.join(e['parts'])}: it "
+                out.append(f"🫳 **{e['defender']} works {poss_word(e['attacker'])} hold looser** on her {', '.join(e['parts'])}: it "
                            f"stays on, pressing at {' / '.join(num(x) for x in e['power_to'])} from the next beat (was "
                            f"{' / '.join(num(x) for x in e['power_from'])}) — a near miss on the break-free roll "
                            f"({e['roll'] * 100:.0f} against {e['chance'] * 100:.0f}%{way('hold_strain', e.get('manner'))})")
             elif e["type"] == "hold_strain":
-                out.append(f"💢 {e['defender']} fights {e['attacker']}'s hold on her {', '.join(e['parts'])}; it holds as "
+                out.append(f"💢 {e['defender']} fights {poss_word(e['attacker'])} hold on her {', '.join(e['parts'])}; it holds as "
                            f"it was{way('hold_strain', e.get('manner'))}")
         for e in bundle["also_this_beat"]:
             if e["type"] == "crumple":

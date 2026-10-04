@@ -232,6 +232,7 @@ class Hold:
     with_part: str = ""      # what the attacker presses with (her knees, teeth, coils...)
     grab: bool = False       # a grapple: she is held at point-blank, on her feet (neither can dodge the other)
     coil: bool = False       # coils, tails or a body wrapped round her: it tightens every beat and squeezes her breath
+    sub: str = ""            # a submission hold (engine.SUBMISSIONS): it wrenches, it doesn't pin
 
 
 USER_SETTINGS = "my_settings.json"
@@ -2356,6 +2357,8 @@ class Engine:
                 continue
             if any(p["defender"] == name for p in self.pins.values()):
                 continue  # still pinned
+            if any(h.defender == name and h.sub for h in self.holds.values()):
+                continue  # locked in a submission hold: she can't rise until it's off
             if name in self._fresh_down:
                 # just went down this beat: no get-up roll yet (said out loud, so nobody has to guess)
                 events.append({"type": "stays_down", "fighter": name, "why": "fresh", "facing": self.facing.get(name)})
@@ -2921,6 +2924,221 @@ class Engine:
         return bool(re.search(r"\bcoil|\bwrap|wound round|wrapped round|looped round|tails? (?:round|around|wrapped)",
                               f"{with_part} {flavor}".lower()))
 
+    # ---------- submission holds: very rare, a hold that WRENCHES (damage), not a pin ----------
+    # each: which way she must lie, who can do it, the contacts (target part picker, role, what it is done with, by
+    # the attacker's body plan), what the attacker still has free to use on her, and what it does to the body
+    SUBMISSIONS = {
+        "camel clutch": {
+            "facing": ("face-down",), "by": ("biped", "quadruped"),
+            "look": {"biped": "sitting astride her back, both paws locked under her chin, hauling her head and chest up "
+                              "and back",
+                     "quadruped": "sitting her weight on her back, jaws locked in her scruff, hauling her head and chest "
+                                  "up and back"},
+            "contacts": [("neck", "main", {"biped": "both paws, locked under her chin, hauling back",
+                                           "quadruped": "her jaws, locked in her scruff, hauling back"}),
+                         ("back_low|back_up", "main", {"biped": "her weight, sitting on it, bending it",
+                                                       "quadruped": "her weight, sitting on it, bending it"})],
+            "free": {"biped": "her mouth, right at the back of her head (a bite, or a blast from point-blank)",
+                     "quadruped": "her horn and her tail"},
+            "strain": "her spine bent backward like a bow, her neck cranked up and back"},
+        "boston crab": {
+            "facing": ("face-down",), "by": ("biped",), "needs": "two_legs",
+            "look": {"biped": "both her legs hauled up under her arms, sitting back on them, folding them back over "
+                              "her own spine"},
+            "contacts": [("legs", "main", {"biped": "her arms, the legs tucked under them, hauled back"}),
+                         ("back_low|back_up", "main", {"biped": "her weight, sitting back on it"})],
+            "free": {"biped": "her tails"},
+            "strain": "her legs folded back toward her head and her lower back bent the wrong way under the weight"},
+        "armbar": {
+            "facing": ("face-up",), "by": ("biped",), "needs": "arm",
+            "look": {"biped": "lying across her, one arm pulled out straight across her own hips and wrenched against "
+                              "the joint, her legs pinning the shoulder"},
+            "contacts": [("arm", "main", {"biped": "both paws, wrenching it straight across her hips"}),
+                         ("shoulder", "second", {"biped": "her legs across it, pinning it"})],
+            "free": {"biped": "her tails"},
+            "strain": "the elbow forced straight and past straight, the shoulder wrenched in its socket"},
+        "crossface": {
+            "facing": ("face-down",), "by": ("biped",),
+            "look": {"biped": "on her back with a forearm cranked across her face, pulling her head back and round, "
+                              "her knees trapping one arm"},
+            "contacts": [("head:jaw|muzzle", "main", {"biped": "her forearm, cranked across her face, pulling back"}),
+                         ("neck", "main", {"biped": "pulled back and round by it"}),
+                         ("shoulder", "second", {"biped": "her knees, trapping it"})],
+            "free": {"biped": "her tails"},
+            "strain": "her head cranked back and round, her neck twisted to the edge of where it goes"},
+        "leg lock": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped", "quadruped"), "needs": "leg",
+            "look": {"biped": "sitting on her legs with one leg twisted round in both paws, the joint turned against "
+                              "itself",
+                     "quadruped": "one leg clamped in her jaws and twisted, her forepaws pinning the other"},
+            "contacts": [("leg_joint", "main", {"biped": "both paws, twisting it", "quadruped": "her jaws, twisting it"}),
+                         ("hind_up", "second", {"biped": "her weight, sitting on it", "quadruped": "her forepaw"})],
+            "free": {"biped": "her mouth and her tails", "quadruped": "her horn"},
+            "strain": "the joint twisted against itself, turned the way it doesn't go"},
+        "tail crank": {
+            "facing": ("face-down", "on her side"), "by": ("biped", "quadruped"), "needs": "tail",
+            "look": {"biped": "her tail hauled up in both paws and twisted, a foot planted in the small of her back",
+                     "quadruped": "her tail clamped in her jaws and wrenched up and round, a forepaw planted on her back"},
+            "contacts": [("tail_part", "main", {"biped": "both paws, hauling it up and twisting it",
+                                                "quadruped": "her jaws, wrenching it up and round"}),
+                         ("tail:base", "main", {"biped": "twisted from it", "quadruped": "twisted from it"}),
+                         ("back_low|back_up", "second", {"biped": "her foot, planted on it", "quadruped": "her forepaw, planted on it"})],
+            "free": {"biped": "her mouth and her tails", "quadruped": "her horn"},
+            "strain": "the tail hauled up and twisted from its root, the base of it wrenched"},
+        "limb wrench": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("quadruped",), "needs": "arm",
+            "look": {"quadruped": "one forelimb clamped in her jaws and twisted and shaken, a forepaw pinning her "
+                                  "shoulder down"},
+            "contacts": [("arm", "main", {"quadruped": "her jaws, twisting and shaking it"}),
+                         ("shoulder", "second", {"quadruped": "her forepaw, pinning it"})],
+            "free": {"quadruped": "her horn and her tail"},
+            "strain": "the limb twisted and shaken in her jaws, the joint wrenched against itself"},
+    }
+
+    def _sub_part(self, d, spec, used=()):
+        """The defender's part for one submission contact."""
+        names = [n for n in d.parts if n not in used]
+        def region_of(n):
+            return body_region(n)
+        if spec == "legs":
+            legs = [n for n in names if region_of(n) == "hind_up" and "thigh" in n.lower()] or \
+                   [n for n in names if region_of(n) in ("hind_up", "hind_low")]
+            return legs[:2] if len(legs) >= 2 else None
+        if spec == "arm":
+            ups = [n for n in names if region_of(n) == "fore_up" and "wing" not in n.lower()]
+            return ups[0] if ups else None
+        if spec == "leg_joint":
+            j = [n for n in names if region_of(n) == "hind_low" and any(k in n.lower() for k in ("knee", "hock"))]
+            return j[0] if j else None
+        if spec == "tail_part":
+            t = [n for n in names if region_of(n) == "tail" and "base" not in n.lower()]
+            return t[0] if t else None
+        if spec == "tail:base":
+            t = [n for n in names if "tail base" in n.lower()]
+            return t[0] if t else None
+        if spec.startswith("head:"):
+            keys = spec.split(":", 1)[1].split("|")
+            for k in keys:
+                hit = [n for n in names if k in n.lower()]
+                if hit:
+                    return hit[0]
+            return None
+        for reg in spec.split("|"):
+            hit = [n for n in names if region_of(n) == reg and not (reg == "neck" and "throat" in n.lower()
+                                                                     and any("neck" in m.lower() for m in names))]
+            if hit:
+                return hit[0]
+        return None
+
+    def submission_shapes(self, attacker, defender):
+        """The submission holds THIS attacker could put on THIS defender as she lies now: {name: {"look",
+        "contacts": [(part, role, with)], "free", "strain"}}."""
+        a, d = self.get(attacker), self.get(defender)
+        plan = self.body_plan(a)
+        lie = self.facing_of(d.name) if d.name in self.downed else None
+        out = {}
+        for name, s in self.SUBMISSIONS.items():
+            if plan not in s["by"] or lie not in s["facing"]:
+                continue
+            used, contacts, ok = [], [], True
+            for spec, role, how in s["contacts"]:
+                got = self._sub_part(d, spec, used)
+                if not got:
+                    ok = False
+                    break
+                for p in (got if isinstance(got, list) else [got]):
+                    used.append(p)
+                    contacts.append((p, role, how[plan]))
+            if ok and contacts:
+                out[name] = {"look": s["look"][plan], "contacts": contacts, "free": s["free"][plan],
+                             "strain": s["strain"]}
+        return out
+
+    def sub_chance(self, f):
+        """The chance of an opening to lock a submission on her this beat: only while she is down and not pinned or
+        held, and very rare (submissions.chance; x weak_mult once she is under half strength)."""
+        cfg = self.rules.get("submissions") or {}
+        if not cfg.get("enabled", True) or f.name not in self.downed or self.pinned_by(f.name) \
+                or any(h.defender == f.name for h in self.holds.values()):
+            return 0.0
+        ch = float(cfg.get("chance", 0.03))
+        if self.strength(f) < 50:
+            ch *= float(cfg.get("weak_mult", 1.5))
+        return ch
+
+    def roll_sub_windows(self, open_all=False):
+        self.sub_window = {}
+        for f in self.active():
+            ch = self.sub_chance(f)
+            if ch > 0:
+                self.sub_window[f.name] = bool(open_all) or self._chance(ch, f"submission opening on {f.name}",
+                                                                         "OPEN", "none")
+        return self.sub_window
+
+    def in_submission(self, name):
+        """The submission hold on her, if any: (holder, hold name)."""
+        h = next((h for h in self.holds.values() if h.defender == name and h.sub), None)
+        return (h.attacker, h.sub) if h else None
+
+    def start_submission(self, attacker, defender, name, flavor="", enforce=False):
+        """Lock a submission hold (SUBMISSIONS) on a downed fighter: two or three grips that WRENCH the parts they
+        hold every beat, harder each beat (submissions.power / ramp), for at most submissions.max_beats beats, unless
+        she breaks it first (the ordinary break-free roll, x submissions.break_mult). It is not a pin: no clock, no
+        pass-out; she can't get up while it's on, and the holder can use what she has free on her at point-blank."""
+        a, d = self.get_active(attacker), self.get_active(defender)
+        cfg = self.rules.get("submissions") or {}
+        key = str(name or "").strip().lower()
+        shapes = self.submission_shapes(a.name, d.name)
+        if key not in self.SUBMISSIONS:
+            raise ValueError(f"no submission hold called '{name}'. Holds: {', '.join(self.SUBMISSIONS)}")
+        if enforce:
+            if not cfg.get("enabled", True):
+                raise ValueError("submission holds are off (rules.json submissions.enabled)")
+            if d.name not in self.downed:
+                raise ValueError(f"{d.name} is on her feet: a submission hold needs her on the ground first")
+            if self.pinned_by(d.name):
+                raise ValueError(f"{d.name} is pinned: finish the pin or release it before a submission hold")
+            if a.name in self.downed or self.pinned_by(a.name) or self.pinning(a.name):
+                raise ValueError(f"{a.name} isn't free to lock a hold on anyone right now")
+            if self.__dict__.get("sub_window", {}).get(d.name) is not True:
+                raise ValueError(f"no submission opening on {d.name} this beat (they are very rare). Choose another "
+                                 f"action")
+        if key not in shapes:
+            lie = self.facing_of(d.name) if d.name in self.downed else "on her feet"
+            raise ValueError(f"{a.name} can't put {d.name} in a {key} as she is ({lie}). She could: "
+                             f"{', '.join(shapes) or 'none right now'}")
+        s = shapes[key]
+        main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
+        ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
+        contacts = [(p, main if role == "main" else second, ramp if role == "main" else ramp2, w)
+                    for p, role, w in s["contacts"]]
+        res = self.start_holds(a.name, d.name, contacts, flavor or s["look"], pin=False, enforce=enforce)
+        for hid in res.get("hold_ids") or []:
+            if hid in self.holds:
+                self.holds[hid].sub = key
+        self.__dict__.setdefault("sub_window", {})[d.name] = False
+        self._count("submission", d.name)
+        res["submission"] = {"name": key, "look": s["look"], "free": s["free"], "strain": s["strain"],
+                             "max_beats": int(cfg.get("max_beats", 3))}
+        return res
+
+    def _submission_tick(self):
+        """A submission hold that has run submissions.max_beats beats is let go: she can't keep it on any longer."""
+        cfg = self.rules.get("submissions") or {}
+        cap = int(cfg.get("max_beats", 3))
+        events, done = [], {}
+        for h in list(self.holds.values()):
+            if h.sub and h.turns_active >= cap:
+                done.setdefault((h.attacker, h.defender, h.sub), []).append(h)
+        for (a, d, name), hs in done.items():
+            for h in hs:
+                self.holds.pop(h.id, None)
+            events.append({"type": "hold_end", "released": True, "attacker": a, "defender": d, "submission": name,
+                           "hold_ids": [h.id for h in hs], "parts": [h.part for h in hs],
+                           "with": [h.with_part for h in hs if h.with_part], "beats_held": max(h.turns_active for h in hs),
+                           "reason": f"{a} lets the {name} go: she can't keep it on any longer"})
+        return events
+
     def choke_kind(self, pinner, with_part="", coil=False):
         """How a grip on the neck or throat puts her out: "both" (jaws or hands closed round it: the windpipe crushed
         and the sides squeezed together), "blood" (the sides of the neck squeezed, the blood to her
@@ -3091,7 +3309,10 @@ class Engine:
             if self.has(d, st):
                 opts.append((label, float(cfg.get(key, dflt))))
         holders = {h.attacker for h in self.holds.values() if h.defender == d.name}
-        if holders and not getattr(self, "_pummel_now", False) and not self.pinned_by(d.name):
+        locked = any(h.defender == d.name and h.sub for h in self.holds.values())
+        if locked and not self.pinned_by(d.name):
+            opts.append(("locked in a submission hold, nothing free to cover up with", float(cfg.get("submission", 1.25))))
+        elif holders and not getattr(self, "_pummel_now", False) and not self.pinned_by(d.name):
             opts.append(("held, can't cover up", float(cfg.get("held", 1.1))))
         if d.name in self.downed and not self.pinned_by(d.name) and not self.is_ranged(move):
             # a pummel on the ground lands blow after blow: each one gets its own, smaller bonus (down_pummel)
@@ -4135,6 +4356,8 @@ class Engine:
             if not fa or not fd or fa.eliminated or fd.eliminated:
                 continue
             ch = self.hold_break_chance(a, d)
+            if any(h.sub for h in hs):     # a locked-in submission is harder to wrench out of than a plain grip
+                ch = round(ch * float((self.rules.get("submissions") or {}).get("break_mult", 0.8)), 3)
             if ch <= 0:
                 continue
             cfg = self.rules.get("holds", {}).get("break", {})
@@ -4192,7 +4415,7 @@ class Engine:
             # during a pin, pressure is per reference_seconds and scales with the length of the beat
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0))
                      if in_pin else h.power) * first
-            self._source = f"{poss_word(h.attacker)} {'pin' if in_pin else 'coils' if h.coil else 'hold'}"
+            self._source = f"{poss_word(h.attacker)} {'pin' if in_pin else h.sub or ('coils' if h.coil else 'hold')}"
             hit = self._apply_damage(d, h.part, round(power, 2), cap=self.pin_cap() if in_pin else None)
             h.turns_active += 1
             if h.coil and not d.eliminated:
@@ -4210,13 +4433,14 @@ class Engine:
                                         if in_pin else None),
                            "first": fresh, "first_mult": first if fresh else None,
                            "defender": h.defender, "flavor": h.flavor, "with": h.with_part, "grab": bool(h.grab),
-                           "coil": bool(h.coil),
+                           "coil": bool(h.coil), "sub": h.sub,
                            "beats_held": h.turns_active, "hits": [hit], "tags": self._tags([hit])})
             if not fresh:
                 h.power = max(0, h.power + h.change_per_turn)
 
         events += self._advance_pins(skip_hold_ids)
         events += self._hold_break_tick(skip_hold_ids)
+        events += self._submission_tick()
         events += self._crumple_tick()
         events += self.get_up_tick()
         events += self._scene_event_tick(busy=had_grip)
@@ -4246,6 +4470,7 @@ class Engine:
         events += self._weather_tick()
         events += self._alliance_tick()
         self.pin_window = {}  # openings are rolled fresh for every beat
+        self.sub_window = {}
         events.append({"type": "time_passes", "beat": self.turn, "fighters": fighters})
         self.involved = set()
         self.beat_loss = {}   # health.soft_cap counts each beat on its own
@@ -4868,6 +5093,7 @@ class Engine:
                 continue
             self.pin_window[f.name] = bool(open_all) or self._chance(self.pin_chance(f), f"pin opening on {f.name}",
                                                                      "OPEN", "none")
+        self.roll_sub_windows(open_all)
         return self.pin_window
 
     PIN_REACH = ("muzzle", "nose", "jaw", "cheek", "ear", "head", "neck", "throat", "chest", "ruff", "shoulder",

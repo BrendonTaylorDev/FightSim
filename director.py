@@ -11,7 +11,7 @@ import llm
 import userprompt
 
 ACTIONS = ["strike", "combo", "hold_start", "hold_adjust", "hold_release", "pin", "struggle", "throw", "slam", "drag",
-           "grapple", "eliminate", "breather"]
+           "grapple", "submission", "eliminate", "breather"]
 LAUNCHES = ["none", "staggered", "knocked down", "thrown", "launched"]
 REPOSITIONS = ["none", "roll over", "onto her back", "onto her front", "onto her side", "sit her up", "pick up",
                "stand her up", "take off", "land"]
@@ -180,6 +180,12 @@ Beat types:
 - hold_adjust: change an active hold (by hold_id): new severity and/or ramp (tightening, steady, easing).
 - hold_release: holds end: escape, rope break, released, broken up. Give a hold_id to end one hold, or
   hold_id 0 to end ALL of the attacker's holds on the defender (e.g. breaking free of a whole pin). Say how in flavor.
+- submission: VERY RARE, and only when the beat's notes say there is a SUBMISSION OPENING. A wrestling hold that
+  WRENCHES (a camel clutch, a crossface, a Boston crab, an armbar, a leg lock, a tail crank, a limb wrench): it does
+  damage every beat, harder each beat, and it is NOT a pin (no clock, nobody passes out from it). Put the hold's name
+  in "improvised_name" ("camel clutch"); the engine sets the grips. While it's on, the holder can use what she still
+  has free on her at point-blank as a second action in the same beat or later (a jet of water into the back of the
+  head during a camel clutch): she can't cover up, so it lands hard.
 - pin: the attacker pins the defender, pressing several body parts at once. List every point of contact in
   "hits": the defender's part, a hold severity, and "with" = what the attacker presses it with ("her full
   weight", "both knees", "teeth", "forepaws", "coils"). Match the contacts to the defender's position: someone
@@ -629,6 +635,18 @@ def resolve(engine, b):
         b = _apply_focus(engine, att, dfn, b)
         if not b.get("_aimed"):
             b = _apply_variety(engine, att, dfn, b)
+    started = ()
+    if act == "submission":
+        if not dfn:
+            raise ValueError("'submission' needs a defender")
+        name = str(b.get("improvised_name") or b.get("submission") or "").strip().lower()
+        if name not in engine.SUBMISSIONS:
+            fits = list(engine.submission_shapes(att, dfn))
+            name = next((n for n in engine.SUBMISSIONS if n in f"{name} {b.get('flavor', '')}".lower()),
+                        fits[0] if fits else name)
+        res = engine.start_submission(att, dfn, name, flavor, enforce=not manual)
+        res["intent"] = intent
+        return res, tuple(res.get("hold_ids") or ())
     started = ()
     if act == "grapple":
         hits = [h for h in (b.get("hits") or []) if h.get("part")]
@@ -1344,7 +1362,7 @@ class Director:
         hint = initiative_hint(engine) if not direction else ""
         steer = plan_hint(engine)
         if not direction and not hint:
-            hint = pin_urge(engine)
+            hint = pin_urge(engine) or submission_urge(engine)
         rng_hint = range_hint(engine) if not direction else ""
         bite = throat_hint(engine) if not direction else ""
         if bite:
@@ -2239,6 +2257,30 @@ def pin_urge(engine, roll=None):
             f"{pinner.name} takes her down into a pin: either action 'pin' on its own (a tackle, a trip, dragging her "
             f"to the ground and pinning her there), or a knockdown strike first and the pin as the second action.{odds}"
             f"{shape}")
+
+
+def submission_urge(engine):
+    """Point the director at a submission hold when the engine rolled one of its very rare openings this beat."""
+    for target in engine.active():
+        if (getattr(engine, "sub_window", None) or {}).get(target.name) is not True:
+            continue
+        holders = [f for f in engine.active() if f.team != target.team and f.name not in engine.downed
+                   and not engine.pinned_by(f.name) and not engine.pinning(f.name)
+                   and not any(engine.has(f, st) for st in ("flinched", "asleep", "frozen", "reeling"))
+                   and engine.submission_shapes(f.name, target.name)]
+        if not holders:
+            continue
+        h = max(holders, key=engine.strength)
+        shapes = engine.submission_shapes(h.name, target.name)
+        name = engine.rng.choice(sorted(shapes))
+        s = shapes[name]
+        return (f"SUBMISSION OPENING (very rare): {target.name} is down and {h.name} can lock her in a {name.upper()} "
+                f"({s['look']}). Unless the story clearly calls for something else, {h.name} does it this beat: action "
+                f"'submission' with \"improvised_name\": \"{name}\". It wrenches her ({s['strain']}) every beat, "
+                f"harder each beat, for a few beats; it is not a pin. {h.name} still has {s['free']} free: she can use "
+                f"it on her as a second action in the same beat. Other holds that fit: "
+                f"{', '.join(n for n in shapes if n != name) or 'none'}.")
+    return ""
 
 
 TARGETING_TEXT = {

@@ -46,6 +46,11 @@ def _pick_action(eng, rng, f, d):
             sev = ["crushing"] + ["firm"] * (len(contacts) - 1)
             return dict(a, action="pin", flavor=look[:80],
                         hits=[{"part": p, "severity": s, "with": w} for (p, w), s in zip(contacts, sev)])
+    # a submission opening (very rare): usually taken, and now and then something free is used on her as well
+    if (getattr(eng, "sub_window", None) or {}).get(d.name) and f.name not in eng.downed and rng.random() < 0.7:
+        shapes = eng.submission_shapes(f.name, d.name)
+        if shapes:
+            return dict(a, action="submission", improvised_name=rng.choice(sorted(shapes)))
     if eng.body_plan(f) == "avian" and not eng.has(f, "airborne") and eng.can_fly(f) and rng.random() < 0.3:
         a["reposition"] = "take off"
     moves = _usable(eng, f, d)
@@ -77,7 +82,7 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         except Exception:
             pass
     rng = random.Random(seed * 7919 + 1)
-    stats = {"pins": 0, "escapes": 0, "worst_beat": 0.0, "errors": 0, "beats": 0}
+    stats = {"pins": 0, "escapes": 0, "worst_beat": 0.0, "errors": 0, "beats": 0, "subs": 0}
     last = None
     while not eng.winner() and eng.turn < max_beats:
         eng.roll_pin_windows()      # once a beat, as in the game: is there an opening for a pin on anyone?
@@ -95,6 +100,7 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         try:
             results, started = resolve_many(eng, [act])
             stats["pins"] += sum(1 for r in results if isinstance(r, dict) and r.get("type") == "pin_start")
+            stats["subs"] += sum(1 for r in results if isinstance(r, dict) and r.get("submission"))
         except Exception:
             results = []
             stats["errors"] += 1
@@ -132,7 +138,8 @@ def simulate(names, rules, scene, count=20, seed=None, max_beats=150):
            "  wins: " + ", ".join(f"{k} {v} ({v * 100 // n}%)" for k, v in sorted(wins.items(), key=lambda kv: -kv[1])),
            f"  beats: average {avg('beats'):.0f} (shortest {min(r['beats'] for r in runs)}, longest "
            f"{max(r['beats'] for r in runs)})",
-           f"  pins started: {avg('pins'):.1f} a fight; escapes: {avg('escapes'):.1f} a fight",
+           f"  pins started: {avg('pins'):.1f} a fight; escapes: {avg('escapes'):.1f} a fight; submission holds: "
+           f"{avg('subs'):.2f} a fight",
            f"  worst single beat: {max(r['worst_beat'] for r in runs):.0f}% of max health "
            f"(average worst {avg('worst_beat'):.0f}%)"]
     errs = sum(r["errors"] for r in runs)
