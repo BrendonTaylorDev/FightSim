@@ -59,7 +59,7 @@ An oak. She was pinned against an oak, and the Buizel was still coming.
 
 The weight crushed into her chest against the trunk, and her chest gave up.
 
-It had been hurting since the first instant. Now it was something else. It went white. It went enormous. It filled her from her throat to her belly with a crushing, bursting pressure that had nowhere to go, and a sound came out of her she had never made before, a ragged, broken howl that went up into the oak's own branches and sent birds clattering out of them. Her forepaws scrabbled at the Buizel's shoulder. Her eyes were squeezed shut. She could not breathe in. She could not do anything but feel it.
+It had been hurting since the first instant. Now it was something else. It went white. It went enormous. It filled her from her throat to her belly with a crushing, bursting pressure that had nowhere to go, and a sound came out of her she had never made before: not a growl, nothing she could hold behind her teeth, but a ragged, rising howl torn up out of her chest, *Hhaaa-ahh*, that cracked at the top and went up into the oak's own branches and sent birds clattering out of them. Her forepaws scrabbled at the Buizel's shoulder. Her eyes were squeezed shut. She could not breathe in. She could not do anything but feel it.
 
 *Too much. Too much. Get off. Get off me.*
 
@@ -161,7 +161,7 @@ She tightened her grip, and leaned.
 
 The arms pulled. The neck burned. She could not bear it anymore, and still it went on.
 
-Every heartbeat was a fresh wave of agony through the stretched column of her neck, and every breath scraped past the arms under her chin. Her back was a long cramping fire under the weight. A low, steady, broken sound was coming out of her and she could not stop it.
+Every heartbeat was a fresh wave of agony through the stretched column of her neck, and every breath scraped past the arms under her chin. Her back was a long cramping fire under the weight. A low growl was coming out of her through clenched teeth, steady and broken, catching in her throat on every pull of the arms, *nnhh, nnhh*, and she could not stop it.
 
 And then the world came back into one piece.
 
@@ -350,7 +350,7 @@ The edge of the paw came down across the root of her horn, and the horn rang in 
 
 Her neck, that had been strained and bent and burned in the Buizel's arms until there was nothing left in it that did not hurt, took the chop, and went past anything she had a word for.
 
-It was not a sharp pain. It was huge and deep and total, a slow, sick, swelling agony that rose up the whole length of her neck from her shoulders into the back of her skull and kept rising. Her head dropped. She could not hold it up. A sound came out of her, a long, low, shuddering groan that would not stop, and her forelegs trembled under her.
+It was not a sharp pain. It was huge and deep and total, a slow, sick, swelling agony that rose up the whole length of her neck from her shoulders into the back of her skull and kept rising. Her head dropped. She could not hold it up. A sound came out of her from deep in her chest, a long, low, shuddering groan that wavered as it went, *hhhoooh*, and would not stop, and her forelegs trembled under her.
 
 *Not my neck. Not again. I can't. I can't.*
 
@@ -527,7 +527,7 @@ She twisted. She threw herself hard to one side, trying to turn under the weight
 
 The fist hit the side of her neck.
 
-Her ruined neck. And it was not even a hard blow, but it went into the place that could not bear anything, and the pain went through her like a nail. She made a choked, high sound round the arm in her jaws and her whole body jerked. Her neck felt thin now. Thin as paper. As if there was almost nothing left between the outside and everything that mattered.
+Her ruined neck. And it was not even a hard blow, but it went into the place that could not bear anything, and the pain went through her like a nail. A choked, high whine forced out through her nose round the arm in her jaws, *hnnk*, and her whole body jerked. Her neck felt thin now. Thin as paper. As if there was almost nothing left between the outside and everything that mattered.
 
 She forced the pin back down. She did not know how.
 
@@ -660,7 +660,7 @@ It came out of her whole body at once, an ugly ring of black force rolling outwa
 
 She saw it coming and could not cover herself. Her one arm was in the Absol's jaws and the other came up too late.
 
-It hit her head, a hard ringing blow. It hit her chest, the raked place, and the chest burned. And then it hit her stomach, and her stomach was past bearing, and the dark went into it and her whole body jerked and a raw sound tore out of her that cracked in the middle.
+It hit her head, a hard ringing blow. It hit her chest, the raked place, and the chest burned. And then it hit her stomach, and her stomach was past bearing, and the dark went into it and her whole body jerked and a raw, piercing squeal tore out of her, high and splitting, *Kyaaa*, that cracked in the middle.
 
 And then the sheen on her fur took all of it and threw it back.
 
@@ -782,7 +782,7 @@ She did not stop. She drove the Buizel back across the grass, her paws scrabblin
 
 The shoulder came into her chest.
 
-Her chest, that had been raked and pressed on and burned for most of the fight, took the full weight of the Absol, and went past the end of anything. It was not pain anymore. It was everything. A crushing, total, white agony that filled her from her throat to her belly, and her throat went with it, the force driving up into it, and a sound came out of her that was not a scream because there was no air for a scream: a long, rasping, broken howl.
+Her chest, that had been raked and pressed on and burned for most of the fight, took the full weight of the Absol, and went past the end of anything. It was not pain anymore. It was everything. A crushing, total, white agony that filled her from her throat to her belly, and her throat went with it, the force driving up into it, and a sound came out of her that was not a scream because there was no air for a scream: a long, rasping, broken wheeze dragged up through her crushed throat, *hhkkhh*, that went on and on.
 
 Then the tree hit her from behind. Her upper back took it, and her left shoulder, and her hip, and each of them flared, and she could not tell them apart from the rest.
 
@@ -862,7 +862,7 @@ She bucked. It was everything she had left, and it was not much: a slow, late he
 
 The jaws on her neck pressed down to answer it.
 
-Her neck went over. The bite had left it burning, and the legs had squeezed it, and now the jaws were pressing into it, and it went past bearing all at once. She could not hold anything in. Her whole body jerked under the Absol, again and again. Her free foot kicked at nothing. A raw, broken sound came out of her with every breath. Her chest under the weight was the same: she could not hold any of it back now, her body was doing it on its own.
+Her neck went over. The bite had left it burning, and the legs had squeezed it, and now the jaws were pressing into it, and it went past bearing all at once. She could not hold anything in. Her whole body jerked under the Absol, again and again. Her free foot kicked at nothing. A raw, broken yelp came out of her with every breath, short and high and squeezed off by the jaws at her neck: *yip, yip*. Her chest under the weight was the same: she could not hold any of it back now, her body was doing it on its own.
 
 And then something else came.
 
@@ -965,7 +965,7 @@ Her upper back hit the ground again and it was past bearing and she cried out, a
 
 Legs round her middle, squeezing her stomach. Her stomach, that had been torn open inside and raked and blasted until there was nothing left of it that was not agony. Teeth at her throat. A chest on her chest. Claws in both paws. Paws digging into her hip.
 
-She could not hold any of it in. She did not try. Her body jerked against the white body wrapped round it, again and again, on its own, and a raw sound came out of her with every breath, and her free feet scrabbled at the grass.
+She could not hold any of it in. She did not try. Her body jerked against the white body wrapped round it, again and again, on its own, and a raw chittering cry came out of her with every breath, high and ragged and breaking, *Ki-ki-kih*, and her free feet scrabbled at the grass.
 
 ## beat 48
 — Ripples —
@@ -978,7 +978,7 @@ It was not a big blow. It did not need to be. The paw could not bear anything, a
 
 And the hind paws dug into her hip, steady, and the hip went over the line.
 
-It had been agony since the pine. Now it was something past that, a deep, crushing, grinding pain that went into the joint and filled it, and she could not move it, could not get it away from the paws, and her leg kicked on its own and her body twisted against the legs round her middle and found nowhere to go. The sound she made went thin and high and broken.
+It had been agony since the pine. Now it was something past that, a deep, crushing, grinding pain that went into the joint and filled it, and she could not move it, could not get it away from the paws, and her leg kicked on its own and her body twisted against the legs round her middle and found nowhere to go. The squeal she made went thin and high and broken, a reedy *eeeh* that came apart in the middle.
 
 *Stop. Stop. Make it stop.*
 
@@ -995,7 +995,7 @@ The jaws at her throat pressed down to answer it, and her throat was ruined, and
 
 And her left paw, under the claws, went over too. It had been holding; the claws had been digging in and digging in, and the digging became more than it could bear, and it went to a bright, sharp, unbearable throb that ran up her arm to join the fire in the fin.
 
-Everything hurt. Every part of her that was being held hurt past bearing. Her body shook against the Absol's on its own and made its raw sound with every breath.
+Everything hurt. Every part of her that was being held hurt past bearing. Her body shook against the Absol's on its own, and every breath came out of her as a thin, wet whimper past the teeth: *hnn. Hnn.*
 
 — Nocturne —
 
@@ -1029,7 +1029,7 @@ She was still awake. She did not know how.
 
 The breath came thinner every time. The teeth at her throat did not have to do anything now but stay where they were. She could feel her heartbeat in her throat, under them, pounding against them, too fast and too hard.
 
-Her paws twitched under the claws. Her hip twitched under the hind paws. Her body was still making its sound, on its own, but the sound was getting smaller.
+Her paws twitched under the claws. Her hip twitched under the hind paws. Her body was still making its sound, on its own, a faint creaking whimper at the bottom of each breath, *hh*, but the sound was getting smaller.
 
 *Stay. Stay awake. Stay.*
 
@@ -1044,7 +1044,7 @@ She kept her jaws exactly where they were.
 
 She tried to slide out. Backward, under the Absol, the smallest movement she had ever made. It was nothing.
 
-The forepaw came down on her crushed right paw, and the paw went past the end of everything, and she could not even scream about it. Her body jerked once under the weight. A thin, raw sound came out past the teeth at her throat, and stopped.
+The forepaw came down on her crushed right paw, and the paw went past the end of everything, and she could not even scream about it. Her body jerked once under the weight. A thin, raw squeak came out past the teeth at her throat, *ih*, and stopped.
 
 Because the teeth closed.
 
