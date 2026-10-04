@@ -1855,8 +1855,22 @@ class Narrator:
             return next(w for at, w in self.FEEL_STEPS if float(res) >= at)
         return tier_for(res, self.rules["resistance"]["brackets"]).get("feel", "")
 
+    def _numb_tier(self):
+        return next((t for t in self.rules["pain_tiers"] if t.get("label") == "numb with shock"),
+                    {"label": "numb with shock", "reaction": "the part has gone numb, heavy and strange"})
+
+    def _numb_note(self, h):
+        """A part that goes numb this hit (numbness): it is temporary, and the story has to know both halves."""
+        if not h.get("goes_numb"):
+            return ""
+        return (f" — and her {h['part'].lower()} GOES NUMB with it: the pain cuts out all at once, and in its place a "
+                f"dead, heavy strangeness and a cold shock spreading round it; she can barely feel it. It is NOT healed "
+                f"and it is not over: it will come back. Show the eeriness of it, maybe a relief she doesn't trust")
+
     def _hit_line(self, h, n=None, how=None):
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
+        if h.get("numb"):
+            before = after = self._numb_tier()   # the part is numb right now: the blow lands dull, not sharp
         self._tiers_used.add(after["label"])
         change = (f"lasting pain {before['label']} → {after['label'].upper()}" if before["label"] != after["label"]
                   else f"lasting pain still {after['label']}")
@@ -1877,21 +1891,21 @@ class Narrator:
         impact = self._impact(h["damage_taken"], seed)
         if after["label"] == "numb with shock" and before["label"] == "numb with shock":
             impact = "a dull, sickening jolt she barely feels as pain, then a lurch of nausea and shallow breath"
-        raw = self._raw_reaction(h, before["label"])
+        raw = None if h.get("numb") else self._raw_reaction(h, before["label"])
         if raw:
             impact = raw
         if how:
             # not a blow: something that stays on her and keeps working (the water of a charge that carries her)
             return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
                     f"{how}, {self._strength_key(h['damage_taken'])} in size"
-                    + (f" ({raw})" if raw else "") + f"; {change}{tough}.")
+                    + (f" ({raw})" if raw else "") + f"; {change}{tough}{self._numb_note(h)}.")
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
                 f"{self._strength(h['damage_taken'])} blow "
                 f"(impact, e.g. {impact}; a hit here shows as "
                 f"{self._region_tell(h['part'], sum(map(ord, seed)))}"
                 + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
                    if self._voice_cue(h, after['label'], 0) else "")
-                + f"); {change}{tough}.")
+                + f"); {change}{tough}{self._numb_note(h)}.")
 
     # a blow on a part that was ALREADY badly hurt. Three things set how raw the reaction is: how hurt the part was
     # (very painful < excruciating < devastated), how big THIS blow is (a brush on a ruined part still hurts, but far
@@ -1996,6 +2010,8 @@ class Narrator:
     def _pressure_line(self, h, with_=""):
         """One compact line per pin/hold contact, so long pins don't drown the beat in repetition."""
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
+        if h.get("numb"):
+            before = after = self._numb_tier()
         self._tiers_used.add(after["label"])
         self._must_parts.append(h["part"])
         self._hurt_now.add(h["defender"])
@@ -2447,6 +2463,12 @@ class Narrator:
                 lines.append(f"ADRENALINE SURGE: {e['fighter']} has been pushed past her limit and something kicks in: "
                              f"for the next {e['beats']} beats she moves faster, hits harder, and the pain falls away "
                              f"behind sheer will. Make this a turning point: show it rising in her body.")
+            elif e["type"] == "numb_end":
+                lines.append(f"THE FEELING COMES BACK in {poss(e['fighter'])} {e['part'].lower()}: the numbness drains "
+                             f"out of it and the pain floods back all at once, as bad as it has ever been and worse for "
+                             f"the moment it returns. She cannot hold this in: a raw sound torn out of her, her body "
+                             f"seizing round the part, the shaking starting again. Give it its own moment. Nothing new "
+                             f"hit her: it is the old injury, awake again.")
             elif e["type"] == "status_end":
                 other = next((w for w in (getattr(self, "strengths", None) or {}) if w != e["fighter"]), "her opponent")
                 end = self.STATUS_ENDS.get(e["status"])

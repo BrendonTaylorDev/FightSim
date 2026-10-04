@@ -2283,3 +2283,14 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **Balance** (your settings):
     - Current curve: Nocturne 58.5% (200 fights).
     - Recommended curve (`resistance.smooth.points` [[15,2.0,2.8],[40,1.35,1.9],[60,0.75,1.15],[85,0.3,0.7],[120,0.12,0.5]], `/resscale 1`, `max_loss_per_hit` 35): Nocturne 62% over 400 fights, about 64 beats a fight, 9.3 pins and 1.1 submissions a fight.
+- **Part damage numbers climb slowly past 300%, and numbness is temporary.**
+  - **Part curve (`damage.part_curve`):** a part's damage number counts every blow in full up to 300% (devastated). Past that it climbs ever more slowly: about 630% after another 700% of blows, and about 1,100% after 3,000%.
+    - Health, the size of the blow in the story, and everything that reads the blow use the full amount, so fighters lose exactly as much health as before.
+    - The screen shows both: "+X = power × …, (the part counts +Y)".
+    - In a full test fight the highest part reached 567%.
+  - **Numbness (`numbness`):** a devastated part (300%+) hit hard (40%+) goes numb 30% of the time, for 1–3 beats.
+    - The pain cuts out, replaced by a dead, strange heaviness and shock, and blows there land as a dull jolt and a lurch of nausea.
+    - Then it wears off and the pain floods back: the narrator gets THE FEELING COMES BACK, and the screen shows 🫥 … the numbness wears off.
+    - It can't go numb again for 4 beats.
+    - The old permanent "numb with shock" level at 1000%+ is not used while this is on.
+  - **Balance:** Nocturne 57.5% on the current curve, 60% on the recommended one (200 fights each).

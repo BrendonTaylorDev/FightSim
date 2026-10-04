@@ -171,8 +171,14 @@ class Display:
                 dmg, res, hp = cells[k:k + 3]
                 k += 3
                 out.append(f"    {label}")
+                added = h.get("damage_added", h["damage_taken"])
                 out.append(f"        damage      {pad(dmg)}   +{num(h['damage_taken'])} = power {num(h['power'])} × "
-                           f"{h['mult']:.2f}{' (pin cap)' if h.get('capped') else ''}{sc}")
+                           f"{h['mult']:.2f}{' (pin cap)' if h.get('capped') else ''}{sc}"
+                           + (f" (the part counts +{num(added)}: past 300% its number climbs slowly)"
+                              if added < h["damage_taken"] - 0.05 else "")
+                           + (" · NUMB: it lands dull" if h.get("numb") else "")
+                           + (f" · 🫥 it goes NUMB for {h['goes_numb']} beat{'s' if h['goes_numb'] != 1 else ''}"
+                              if h.get("goes_numb") else ""))
                 out.append(f"        resistance  {pad(res)}   -{num(loss)} {how_res}")
                 if "health_loss" in h:
                     out.append(f"        health      {pad(hp)}   -{num(h['health_loss'])} = damage "
@@ -1125,6 +1131,9 @@ class Display:
                            f"{num(h['damage_after'])}%")
             elif e["type"] == "status_tick":
                 out.append(f"☠️ {e['fighter']} is poisoned: {self.heart} -{num(e['health_loss'])}% → {pct(e['health_after'])}")
+            elif e["type"] == "numb_end":
+                out.append(f"🫥 **{poss_word(e['fighter'])} {e['part']}: the numbness wears off** and the pain floods back "
+                           f"({num(e['damage'])}%)")
             elif e["type"] == "status_end":
                 out.append(f"- {poss_word(e['fighter'])} adrenaline surge is over" if e["status"] == "adrenaline" else
                            f"- {e['fighter']} is no longer {self.sw(e['status'])}")

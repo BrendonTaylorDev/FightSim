@@ -451,7 +451,13 @@
     "_comment": "damage_scale multiplies every hit's damage (and so the health it costs). It does NOT change how fast resistance wears down (that's resistance_scale, below). 1 = the base numbers; the default is 1.25. Change it here or in the program with /scale.",
     "damage_scale": 1.25,
     "_resistance_scale_comment": "resistance_scale multiplies how fast resistance wears down (resistance lost = power x loss_per_power x resistance_scale). It does NOT change damage. 1 = normal; 2 = parts soften twice as fast; 0.5 = half as fast. Change it in the program with /resscale.",
-    "resistance_scale": 1.0
+    "resistance_scale": 1.0,
+    "part_curve": {
+      "enabled": true,
+      "knee": 300,
+      "soften": 150
+    },
+    "_part_curve_comment": "part_curve: a body part's damage number counts every blow in full up to `knee` (300%: devastated); past it, it climbs ever more slowly (soften 150: about 630% after another 700% of blows, about 1,100% after 3,000%). Health, the size of the blow in the story, and everything else use the FULL blow, so fighters lose exactly as much health as before. enabled false = the old open-ended numbers."
   },
   "resistance": {
     "_comment": "Damage % = power x the part's CURRENT resistance bracket mult x damage_scale. Then resistance drops by power x loss_per_power x resistance_scale. Health lost = damage x health.loss_per_damage_point x the bracket's health_mult, so hits on a worn-down part cost far more health. Brackets are checked top to bottom.",
@@ -1545,5 +1551,15 @@
     "ai_answers": true,
     "dice": "fair",
     "_dice_comment": "dice (/play dice): fair = the dice decide, /commands can still force outcomes; strict = at the mercy of the dice (no forcing commands, no /undo, typed directions don't open pins); free = the dice are off for the fighters you play (their attacks land, openings always there, first-try get-ups, any pin or hold on them breaks)."
-  }
+  },
+  "numbness": {
+    "enabled": true,
+    "at_damage": 300,
+    "hard_at": 40,
+    "chance": 0.3,
+    "beats_min": 1,
+    "beats_max": 3,
+    "cooldown": 4
+  },
+  "_numbness_comment": "numbness: a devastated part (at_damage 300%+) that takes a hard blow (hard_at 40%+ of damage before the part curve) goes NUMB chance 30% of the time, for 1-3 beats: the pain cuts out, a dead, strange heaviness and shock instead, and blows there land as a dull jolt and a lurch of nausea. Then it wears off and the pain floods back, horribly. It can't go numb again for `cooldown` beats. With this on, the old permanent 'numb with shock' level at 1000%+ is not used."
 }

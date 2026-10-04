@@ -1113,7 +1113,7 @@ class Session:
                 if mode == "compact":
                     # who got up, who crumpled, which status ended: these change what you can do next
                     side = [e for e in also if e["type"] in ("get_up", "stays_down", "crumple", "adrenaline", "status_tick", "hold_end",
-                                                             "status_end", "recovery", "alliance_end")]
+                                                             "status_end", "recovery", "alliance_end", "numb_end")]
                     tail = self.display.beat({"action": {"type": "none"}, "also_this_beat": side}).strip() if side else ""
                     if tail:
                         self.out(tail + "\n")

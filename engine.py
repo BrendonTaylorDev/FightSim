@@ -42,7 +42,8 @@ def pain_tiers(rules):
     """The pain levels in use. narration.numb_tier = false drops the 'numb with shock' level (1000%+),
     so those parts simply stay 'devastated'."""
     tiers = rules["pain_tiers"]
-    if rules.get("narration", {}).get("numb_tier", True) is False:
+    if (rules.get("narration", {}).get("numb_tier", True) is False
+            or (rules.get("numbness") or {}).get("enabled", False)):
         tiers = [t for t in tiers if t.get("label") != "numb with shock"]
     return tiers
 
@@ -437,7 +438,8 @@ class Engine:
             if cap.get("health_mult") is not None and hmult > float(cap["health_mult"]):
                 hmult, capped = float(cap["health_mult"]), True
         taken = power * bmult * scale
-        p.damage = dmg_b + taken
+        p.damage = dmg_b + self._part_added(dmg_b, taken)
+        was_numb = int(getattr(p, "numb", 0) or 0) > 0
         rscale = float(r.get("damage", {}).get("resistance_scale", 1.0))
         # resistance lost: by the blow's power, and (resistance.loss_per_damage, 0 = off) by the damage it really did,
         # so a part that takes a great deal of damage also softens faster
@@ -481,7 +483,9 @@ class Engine:
             if not log or log[-1] != self._source:
                 log.append(self._source)
                 del log[:-4]
+        numb_new = self._maybe_numb(defender, p, taken, was_numb)
         return {
+            "numb": was_numb, "goes_numb": numb_new,
             "defender": defender.name,
             "part": p.name,
             "devastating": bool(getattr(self, "_dev_active", None)),
@@ -493,6 +497,7 @@ class Engine:
             "res_scale": rscale,
             "damage_taken": round(taken, 2),
             "damage_before": round(dmg_b, 2), "damage_after": round(p.damage, 2),
+            "damage_added": round(p.damage - dmg_b, 2),
             "res_before": round(res_b, 2), "res_after": round(p.resistance, 2),
             "res_start": round(float(getattr(p, "start_resistance", res_b) or res_b), 2),
             "cond_before": round(cond_b, 2), "cond_after": round(self.condition(p), 2),
@@ -507,6 +512,57 @@ class Engine:
             "health_tier": htier_a["label"],
             "health_tier_changed": htier_a["label"] != htier_b["label"],
         }
+
+    def _part_added(self, before, taken):
+        """damage.part_curve: how much of a blow's damage the PART's number takes. Up to `knee` (300%: devastated) all
+        of it; past that it climbs ever more slowly (a closed form of d(damage)/d(blow) = soften / (soften + over the
+        knee)), so a ruined part's number stops running into the thousands. Health always uses the full blow."""
+        pc = (self.rules.get("damage") or {}).get("part_curve") or {}
+        if not pc.get("enabled", True) or taken <= 0:
+            return taken
+        knee, soft = float(pc.get("knee", 300)), max(1.0, float(pc.get("soften", 150)))
+        lin = max(0.0, min(taken, knee - before))     # the part of the blow below the knee counts in full
+        y0, x = max(0.0, before + lin - knee), taken - lin
+        if x <= 0:
+            return lin
+        return lin + (((soft + y0) ** 2 + 2 * soft * x) ** 0.5 - soft) - y0
+
+    def _maybe_numb(self, d, p, taken, was_numb):
+        """numbness: a devastated part that takes a hard blow can go NUMB for a little while (1-3 beats): the pain
+        cuts out, replaced by a dead, strange heaviness and shock. Then it wears off and the pain floods back. Returns
+        the beats it goes numb for, or 0."""
+        cfg = self.rules.get("numbness") or {}
+        if not cfg.get("enabled", False) or was_numb or d.eliminated or getattr(p, "numb_cool", 0):
+            return 0
+        if p.damage < float(cfg.get("at_damage", 300)) or taken < float(cfg.get("hard_at", 40)):
+            return 0
+        if not self._chance(float(cfg.get("chance", 0.3)), f"{poss_word(d.name)} {p.name.lower()} going numb",
+                            "it goes NUMB", "it doesn't"):
+            return 0
+        p.numb = self.rng.randint(int(cfg.get("beats_min", 1)), int(cfg.get("beats_max", 3)))
+        p.numb_new = True
+        return p.numb
+
+    def numb_tick(self):
+        """Numb parts count down; when one wears off the feeling comes back (numb_end), and it can't go numb again
+        for numbness.cooldown beats."""
+        cfg = self.rules.get("numbness") or {}
+        events = []
+        for f in self.fighters.values():
+            for p in f.parts.values():
+                if getattr(p, "numb_new", False):
+                    p.numb_new = False
+                    continue
+                if int(getattr(p, "numb", 0) or 0) > 0:
+                    p.numb -= 1
+                    if p.numb <= 0:
+                        p.numb_cool = int(cfg.get("cooldown", 4))
+                        if not f.eliminated:
+                            events.append({"type": "numb_end", "fighter": f.name, "part": p.name,
+                                           "damage": round(p.damage, 2)})
+                elif int(getattr(p, "numb_cool", 0) or 0) > 0:
+                    p.numb_cool -= 1
+        return events
 
     def condition(self, p, res=None):
         """How sound a part is, on the resistance scale, for how much a blow hurts it and how it looks
@@ -4983,6 +5039,7 @@ class Engine:
         events = []
         en = self._cfg("energy")
         ad = self._cfg("adrenaline")
+        events += self.numb_tick()
         for f in self.fighters.values():
             for st in list(f.status):
                 if (f.name, st) in self._fresh_status:
