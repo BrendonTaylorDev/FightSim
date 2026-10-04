@@ -4576,6 +4576,30 @@ class Engine:
             why.append(f"{d.name} has taken only {got} of the {need} attacks needed since the last pin attempt")
         return (not why), "; ".join(why)
 
+    @staticmethod
+    def _grip_flavor_fix(flavor, d, started):
+        """The pin's one-line description is written by the director; the grips are what the engine set. When the
+        line puts the jaws on a part they aren't on ("jaw lock across her throat" with the jaws on her right paw),
+        it is rebuilt from the grips themselves, so the screen and the story agree."""
+        text = str(flavor or "")
+        jaw_rx = r"\b(?:jaws?|teeth|bit(?:e|es|ing)?|fangs?|mouth)\b"
+        jaw_parts = {str(st["part"]).lower() for st in started if re.search(jaw_rx, str(st.get("with") or ""), re.I)}
+        if not text or not jaw_parts:
+            return text
+        names = sorted({str(p).lower() for p in getattr(d, "parts", {})}, key=len, reverse=True)
+        wrong = False
+        for clause in re.split(r",|;|\band\b", text):
+            if not re.search(jaw_rx, clause, re.I):
+                continue
+            low = clause.lower()
+            named = [p for p in names if re.search(r"\b" + re.escape(p) + r"\b", low)]
+            if named and not any(p in jaw_parts for p in named):
+                wrong = True
+        if not wrong:
+            return text
+        bits = [f"{st.get('with') or 'pressure'} on her {str(st['part']).lower()}" for st in started]
+        return ", ".join(bits[:-1]) + (" and " if len(bits) > 1 else "") + bits[-1]
+
     def start_holds(self, attacker, defender, contacts, flavor="", pin=False, move=None, enforce=False):
         """Several holds at once, e.g. a pin: weight on the chest, teeth in the neck, knees in the sides.
         contacts: list of (part, power, ramp) or (part, power, ramp, with_part). All are validated first.
@@ -4726,6 +4750,12 @@ class Engine:
                 takedown["hits"] = [self._apply_damage(d, x, power) for x in under]
                 self._source = keep_src
                 takedown["hard"] = bool(takedown["hits"])
+        fixed = self._grip_flavor_fix(flavor, d, started)
+        if fixed != flavor:
+            flavor = fixed
+            for st in started:
+                if st["hold_id"] in self.holds and not st.get("existing"):
+                    self.holds[st["hold_id"]].flavor = flavor
         return {"type": "pin_start" if pin else "hold_start", "attacker": a.name, "defender": d.name,
                 "takedown": takedown,
                 "flavor": flavor, "move": move, "continuing": continuing,

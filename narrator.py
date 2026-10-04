@@ -741,6 +741,19 @@ BITING = re.compile(r"\b((?:fangs|teeth|jaws?|muzzle|mouth) (?:sank|sinking|sink
                     r"pierc\w+|punctur\w+|dug|driving|drove)\b|(?:sank|sinks|sinking|sunk|buried|drove) (?:her|his) "
                     r"(?:fangs|teeth)|\b(?:bit|bites|biting) (?:down )?(?:hard )?(?:on|into) (?:her|his|the)\b"
                     r"(?! (?:own |lower |bottom )?(?:cry|whimper|scream|snarl|yelp|sound|lip|tongue|pain|urge|growl|cheek)))", re.I)
+_NOT_BITTEN = re.compile(r"\s*(?:(?:the|a|an|her|his|its|her own|his own)\s+)?(?:\w+\s+)?(?:cry|cries|groan|moan|sound|"
+                         r"whimper|scream|yelp|snarl|growl|gasp|whine|howl|lip|lips|tongue|cheek|pain|nothing|air|"
+                         r"empty air|breath|curse|words?)\b", re.I)
+
+
+def _biting(sent):
+    """A bite landing in this sentence, or None: teeth closing on a cry, her own lip or empty air bite no one."""
+    for m in BITING.finditer(sent):
+        if not _NOT_BITTEN.match(sent[m.end():]):
+            return m
+    return None
+
+
 HORN_STRIKE = re.compile(r"\bhorn[- ]first\b|\bled with (?:her|his) horn\b|\bhorn\b[^.!?,;—]{0,30}?\b(?:struck|slashed|"
                          r"sliced|cut|gored|rammed|slammed|caught|hit|drove|came down|hooked)\b", re.I)
 # big words for a hurt that is only minor
@@ -1520,6 +1533,25 @@ fur skin breath breathe breathing air ground floor weight place beat beats front
 """.split())
 
 
+# words that show a move of each type being used (a clash has to show the defender's own move meeting the attack)
+TYPE_SHOWN = {
+    "electric": r"electric\w*|lightning|bolt|spark\w*|crackl\w*|current|charge|static|volt\w*",
+    "water": r"water|spray|jet|stream|torrent|surge|wave|spout|blast",
+    "fire": r"fire|flame\w*|burn\w*|blaz\w*|ember\w*|heat|scorch\w*",
+    "ice": r"ice|icy|frost\w*|cold|freez\w*|rime|hail",
+    "grass": r"leaf|leaves|vine\w*|seed\w*|petal\w*",
+    "dark": r"dark\w*|shadow\w*|black",
+    "psychic": r"psychic|mind|unseen force|invisible",
+    "ghost": r"shadow\w*|ghost\w*|spectral",
+    "dragon": r"draconic|dragon\w*|roar\w*",
+    "rock": r"rock\w*|stone\w*",
+    "ground": r"earth|mud|sand|dirt|ground",
+    "poison": r"poison\w*|venom\w*|sludge|toxic",
+    "fairy": r"glitter\w*|shimmer\w*|sparkl\w*|pink light",
+    "steel": r"steel|metal\w*|iron",
+    "flying": r"wind|gust\w*|air",
+}
+
 # the passage shows a fighter being taken down (any way of getting her from her feet onto the ground)
 TAKEDOWN_SHOWN = re.compile(
     r"\b(?:threw|throws?|thrown|throwing|hurl\w*|flung|fling\w*|swept|sweep\w*|trip\w*|tackl\w*|hook\w*|tipp\w*|"
@@ -2293,6 +2325,7 @@ class Narrator:
                               if e.get("type") == "get_up" and not e.get("stands")}
         self._one_strike = None
         self._takedown = None       # (pinner, pinned): she was on her feet and is taken down into the pin this beat
+        self._clash = None          # (defender, her move, its type): she met the attack with a move of her own
         self._chain_beat = False    # several attacks by one fighter this beat (a chain, a pummel): "again" is right
         self._must_tumble = None    # thrown and tumbling on: the passage has to show her going on across the ground
         actions = bundle.get("actions") or [bundle["action"]]
@@ -2343,6 +2376,11 @@ class Narrator:
         moves = [m for a in actions for m in [a.get("move")] + list((a.get("move_by_defender") or {}).values()) if m]
         # a clash: the defender's own move met the attack in the air, so its type is in this beat too
         clash_types = {str((a.get("clash") or {}).get("move_type", "")).lower() for a in actions if a.get("clash")}
+        # every move name seen in the fight: one dropped into a sentence as a bare label ("her throat swelled—Hydro
+        # Pump—with the force") is the notes leaking into the prose
+        self._move_names = set(getattr(self, "_move_names", set())) | {
+            str(m.get("name")) for m in moves if m.get("name")} | {
+            str((a.get("clash") or {}).get("move")) for a in actions if (a.get("clash") or {}).get("move")}
         self._no_electric = bool(moves) and not any(str(m.get("type", "")).lower() == "electric" for m in moves) \
             and not any(a.get("status_move") for a in actions) and "electric" not in clash_types
         if "electric" in clash_types or any(str(m.get("type", "")).lower() == "electric" for m in moves):
@@ -2917,7 +2955,8 @@ class Narrator:
             lines.append(f"{a['attacker']} goes for {who} with {what}, but {who} "
                          + (f"{way}" if turned else "DODGES" + (f" (this time she {way})" if way else ""))
                          + ": it misses completely and "
-                         f"does no damage. "
+                         f"does no damage, to {who} or to {a['attacker']} (missing costs her balance or breath, no pain "
+                         f"of her own). "
                          + (f"But the footing is slick, and as she gets out of its way her feet go out from under her: "
                             f"she GOES DOWN, ending up "
                             + (Engine.FACING_LOOK.get(sl.get("facing"), "on the ground") if isinstance(sl, dict) else "on the ground")
@@ -3052,6 +3091,7 @@ class Narrator:
                              f"more and FALLS out of the air (the landing below).")
             cl = a.get("clash")
             if cl:
+                self._clash = (a["defender"], str(cl.get("move", "")), str(cl.get("move_type", "")))
                 atk_mv = (m or {}).get("name", "the attack")
                 lines.append(f"  - A CLASH: {a['defender']} does not dodge it. She meets it head-on with her own "
                              f"{cl['move'].upper()} ({cl['move_type']}-type: {cl['about']}), and the two attacks SLAM "
@@ -3061,7 +3101,9 @@ class Narrator:
                                            f"below are what gets through).",
                                 "cancel": f"Neither gives way: the two attacks break against each other and burst apart "
                                           f"in the middle. NOTHING reaches either of them; no damage to anyone. Show "
-                                          f"the meeting and the burst, and both of them braced against the blast of it.",
+                                          f"the meeting and the burst, and both of them braced against the blast of it: "
+                                          f"a gust or a fine mist may reach them, but neither is struck, soaked, burned "
+                                          f"or stung by it.",
                                 "back": f"{poss(a['defender'])} {cl['move']} is the stronger: it drives {atk_mv} back and "
                                         f"what is left of it hits {a['attacker']} instead. NOTHING reaches "
                                         f"{a['defender']}. It lands on {a['attacker']}:"}[cl["outcome"]])
@@ -4102,14 +4144,14 @@ class Narrator:
         for sent, whos, named in self._said(text):
             if ("teeth" not in ok and not getattr(self, "_pin_beat", False) and not getattr(self, "_ongoing", False)
                     and not re.search(r"\b(had|memory|remember\w*|earlier|before|still)\b", sent, re.I)):
-                m = BITING.search(sent)
+                m = _biting(sent)
                 if m:
                     out.append(("bite", m.group(0), sent))
                     continue
             elif not getattr(self, "_pin_beat", False) and not re.search(
                     r"\b(had|memory|remember\w*|earlier|before)\b", sent, re.I):
                 # teeth ARE in this beat: a bite still has to land on the fighter those teeth are on
-                m = BITING.search(sent)
+                m = _biting(sent)
                 victim = self._owner_after(sent, m.end()) if m else None
                 if victim and victim not in (getattr(self, "_bite_victims", None) or {victim}):
                     out.append(("bite on " + victim, m.group(0), sent))
@@ -5589,6 +5631,14 @@ class Narrator:
             return False
         return True
 
+    def _label_slip(self, sent):
+        """A move's name set into a sentence between dashes or brackets as a bare label, or None."""
+        names = [x for x in getattr(self, "_move_names", set()) if x]
+        if not names:
+            return None
+        alt = "|".join(sorted((re.escape(x) for x in names), key=len, reverse=True))
+        return re.search(r"(?:[—–]|\s-\s|\()\s*(?:" + alt + r")\s*(?:[—–]|\s-\s|\))", sent, re.I)
+
     def _bone_slip(self, sent):
         """The severe bone wording in one sentence that isn't about a part allowed to break, or None."""
         m = BONE_SEVERE.search(sent)
@@ -5837,6 +5887,15 @@ class Narrator:
             if m:
                 issues.append(f"it showed extra failed tries at getting up (\"{m.group(0)}\"), but she gets up on the "
                               f"FIRST try: one attempt, and she ends on her feet")
+        cl = getattr(self, "_clash", None)
+        if cl and coverage:
+            seen = (prior or "") + "\n" + text
+            words = [re.escape(w) for w in cl[1].split() if len(w) > 3] or [re.escape(cl[1])]
+            rx = r"\b(?:" + "|".join(words + ([TYPE_SHOWN[cl[2].lower()]] if cl[2].lower() in TYPE_SHOWN else [])) + r")\b"
+            if cl[1] and not re.search(rx, seen, re.I):
+                issues.append(f"it never showed {poss(cl[0])} own {cl[1].upper()} meeting the attack: she answers it "
+                              f"with that move ({cl[2]}), and the two collide between them. Show her move clearly, as "
+                              f"itself")
         td = getattr(self, "_takedown", None)
         if td and coverage and not TAKEDOWN_SHOWN.search((prior or "") + "\n" + text):
             issues.append(f"it never showed the takedown: {td[1]} was ON HER FEET when this beat began, so before the "
@@ -6498,7 +6557,7 @@ class Narrator:
                 labels = [_slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
                            else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
                            else "missing escape" if "ESCAPE" in i
-                           else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
+                           else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
                            else "parts called useless too early" if "as useless" in i
                            else "wrong strike count" if "ONE strike" in i
                            else "invented bite" if "a bite that isn't" in i
@@ -6639,7 +6698,8 @@ class Narrator:
                  | {x[2] for x in self._weapon_lines(text) if x[0].startswith("bite")}
                  | {x[4] for x in self._grip_released_lines(text)} | {x[4] for x in self._grip_gone_lines(text)}
                  | {x[4] for x in self._grip_place_lines(text)} | {x[2] for x in self._phantom_release_lines(text)}
-                 | {x[1] for x in self._foreign_mentions(text)} | {x[0] for x in self._log_slips(text)})
+                 | {x[1] for x in self._foreign_mentions(text)} | {x[0] for x in self._log_slips(text)}
+                 | {x for para in text.split("\n") for x in _SENT.split(para.strip()) if x and self._label_slip(x)})
         for rx in ([PROMPT_ECHO, _BARE_MORE, BARE_IMPACT] + ([NUMB] if self.rules.get("narration", {}).get("numb_tier", True) is False
                                                   else [])):
             if rx.search(text):
@@ -6731,6 +6791,8 @@ class Narrator:
             if PROMPT_ECHO.search(x) or _BARE_MORE.search(x):
                 add(x, "it repeats the instructions' wording (a pain level used as a label, 'the contact point'), or "
                        "counts the time left on the pin: say how it FEELS instead")
+            if self._label_slip(x):
+                add(x, "a move's name dropped into the sentence as a label: describe what the move does instead")
             if BARE_IMPACT.search(x):
                 add(x, "a strength word from the notes standing alone as a sentence: show the blow landing instead")
             if numb_off and NUMB.search(x):

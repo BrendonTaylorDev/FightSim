@@ -672,6 +672,8 @@
     "recent_beats_remembered": 2,
     "_words_comment": "words_per_beat: target length. With two_pass_pov on, the attacker's side and the receiver's side are written as two separate halves, which keeps long narration coherent.",
     "words_per_beat": 500,
+    "_scene_intro_comment": "scene_intro: false skips the opening narration that sets the scene (the arena and the fighters arriving); the first Enter goes straight to the first beat. /set narration.scene_intro false",
+    "scene_intro": true,
     "words_per_pass": 300,
     "_linger_comment": "Chance per beat (0-1) that one blow gets a long, slow reaction, and how many extra words it gets. 0 turns it off.",
     "linger_chance": 0.3,

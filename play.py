@@ -26,7 +26,7 @@ from engine import Engine, body_region as body_region_of
 from narrator import Narrator, strip_pov
 import llm
 
-VERSION = "2026-10-04 build 115 (fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
+VERSION = "2026-10-04 build 116 (clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
 
 HELP = """
 =============================================================================================
@@ -323,6 +323,7 @@ HELP = """
   /math auto|full|compact|both|off      how much of the stat math to show
   /get [rule.path]                      show rules            /get pin.struggle
   /set <rule.path> <value> [nosave]     change any rule       /set narration.swearing never
+                                        skip setting the scene:  /set narration.scene_intro false
   /fighter <name> <field> [value] [beats]
         fields: health, maxhealth, energy, status, clearstatus, down, up, recovery, revive
           /fighter Ripples health 900     /fighter Nocturne status paralyzed 2
@@ -937,7 +938,8 @@ class Session:
         if self.pending:
             print("[The last beat still has no narration. /reroll to write it, or /undo to take it back.]")
             return
-        if manual is None and self.use_llm and not self.story:
+        if manual is None and self.use_llm and not self.story \
+                and self.eng.rules.get("narration", {}).get("scene_intro", True):
             self.intro()  # first Enter sets the scene; the next one starts the fight
             if not direction:
                 return
