@@ -607,7 +607,9 @@ class Engine:
         "hold_break": {"wrench": 3, "pry": 2, "slip": 2, "shove": 2},
         "tumble": {"rolling": 4, "skidding": 3, "bouncing": 2, "cartwheeling": 2},
         "hold_strain": {"pry": 3, "twist": 3, "claw": 2, "brace": 2},
-        "struggle": {"buck": 3, "bridge": 3, "twist": 3, "limb": 3, "kick": 2, "squirm": 2},
+        "struggle": {"buck": 3, "bridge": 3, "twist": 3, "limb": 3, "kick": 2, "squirm": 2, "headbutt": 2,
+                     "bite": 2, "shrimp": 2, "roll": 2, "claw": 2, "pry": 2, "tuck": 2, "limp": 1, "reach": 1,
+                     "power": 1},
         "getup_fail": {"gives_out": 4, "slips": 2, "dizzy": 2, "breath": 2},
         "getup_rise": {"push": 4, "roll": 2, "lean": 3, "lurch": 2},
         "takedown": {"tackle": 3, "leg_hook": 3, "sweep": 3, "hip_throw": 3, "shoulder_drive": 2, "drag_down": 2,
@@ -2347,6 +2349,34 @@ class Engine:
             return "quadruped"
         return "serpent"
 
+    def _getup_falls(self, f, ev, worst, cfg):
+        """A failed try that drops her back down HARD (her legs give out, or she slips) can hurt: the limb that gave
+        way, or what she lands on, takes a small jolt (getting_up.fall_chance, fall_power). A dizzy sinking-back or a
+        breathless folding-down is soft and does no damage. Only the tries the narrator shows one by one count."""
+        chance = float(cfg.get("fall_chance", 0.6) or 0)
+        if chance <= 0:
+            return
+        shown = ev["fails"] if ev["stands"] else ev["fails"][:1]
+        hits = []
+        keep = self._source
+        for i, kind in enumerate(shown):
+            if kind not in ("gives_out", "slips"):
+                continue
+            if not self._chance(chance, f"{f.name}'s drop back down hurting", "it jars her", "it doesn't hurt"):
+                continue
+            hurt = [p for p in worst if p.damage >= 30]
+            part = (hurt[0].name if kind == "gives_out" and hurt else
+                    self.landing_parts(f.name, n=1)[0])
+            power = float(cfg.get("fall_power", 8)) * self.rng.uniform(0.75, 1.25)
+            self._source = f"{poss_word(f.name)} fall trying to get up"
+            h = self._apply_damage(f, part, power)
+            h["try"] = i + 1
+            h["how"] = kind
+            hits.append(h)
+        self._source = keep
+        if hits:
+            ev["fall_hits"] = hits
+
     def get_up_tick(self):
         """Fighters on the ground try to get back up. How many tries it takes (1-3, or not this beat) comes from
         their overall strength and how hurt the limbs they push up with are; each beat down makes it easier."""
@@ -2415,6 +2445,7 @@ class Engine:
                     ev["from_facing"] = self.facing.get(name)
                     self.facing[name] = "sitting up"
                     ev["sits"] = True
+            self._getup_falls(f, ev, worst, cfg)
             events.append(ev)
         self._fresh_down = set()
         return events

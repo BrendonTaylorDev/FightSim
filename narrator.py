@@ -1562,6 +1562,194 @@ class Narrator:
                        "the back arching off the blow, a cry with no air behind it"],
     }
 
+    IMPACTS_MORE = {
+        "glancing": ["an irritated flick of the ears", "a small shrug of the shoulders, as if shaking off a fly",
+                     "a quick glance down at the spot", "a twitch of the skin where it touched",
+                     "a huff through the nose, more annoyed than hurt", "the fur rippling where it landed",
+                     "a half-step to rebalance, nothing more", "a narrowing of the eyes",
+                     "a snort, and the head comes straight back round", "the muscles under the spot jumping once",
+                     "a tightening of the jaw", "a slight hitch in the step", "a brief, flat stare at the attacker",
+                     "a shiver along the coat", "a twitch of the tail"],
+        "solid": ["a grunt forced out by the jolt", "a step back to catch the weight of it",
+                  "the head ducking a moment too late", "a snapped breath and a grimace",
+                  "the struck part pulled in tight against the body", "a stagger caught on the next step",
+                  "a sharp exhale through the teeth, the lips drawn back", "a shake of the head to clear it",
+                  "a lurch, the paws scrabbling for footing", "the whole body flinching sideways",
+                  "a grunt and a hard blink", "a bark of surprise", "the shoulders hunching up round it"],
+        "heavy": ["a cry torn out before she can stop it", "the legs wobbling under her for a moment",
+                  "a strangled sound, the body twisting away from it", "a hard stagger, a paw going down to catch her",
+                  "a yowl, the head whipping round", "breath driven out of her in a rush, the mouth hanging open",
+                  "the struck part clutched in, shaking", "a groan dragged up from the chest",
+                  "eyes flying wide, the pupils shrinking", "a stumble that nearly takes her down",
+                  "a yelp and a sideways lurch, claws raking the ground"],
+        "tremendous": ["a howl that tears the throat, the body thrown sideways",
+                       "the legs folding for an instant before she forces them straight",
+                       "a scream that goes up and up and cracks", "every muscle seizing, then a long ragged gasp",
+                       "a choking cry, the head jerking back and forth",
+                       "the body curling round the blow like a fist closing",
+                       "a raw bellow, the mouth stretched wide, the eyes rolling",
+                       "a shriek and a wild scrabble of the paws at the ground"],
+    }
+    for _k, _more in IMPACTS_MORE.items():
+        IMPACTS[_k].extend(_more)
+
+    REGION_TELLS_MORE = {
+        "ear": ["the ear clamped flat to the skull", "the head shaking hard as if to clear a ringing",
+                "a paw going up toward the ear and stopping", "the head tilting away, the ear twitching"],
+        "face": ["the head snapping back, the eyes streaming", "the muzzle wrinkling hard, the teeth showing",
+                 "the face screwed up tight, the head ducking", "a blink-blink-blink as the eyes water"],
+        "neck": ["the head jerking down to guard the throat", "a dry, hacking cough", "the neck stiffening, the head "
+                 "held very still", "a gulp that won't go down"],
+        "chest": ["the ribs heaving in short, shallow jerks", "a hand or paw pressed to the chest",
+                  "the chest caving in on the blow, the shoulders rounding", "a wheeze on every breath after"],
+        "belly": ["the body hunching round the middle", "a hollow grunt, the belly pulled in tight",
+                  "the back rounding as she folds over it", "a sick sway, a paw pressed to the belly"],
+        "back": ["the spine flinching straight", "the shoulders hunching up round the spot",
+                 "a twist away from it that won't quite reach it", "the back held stiff and careful after"],
+        "limb": ["the limb snatched up off the ground", "a hop on the other legs, the struck one held up",
+                 "the limb shaking as she sets it down", "a limp in the next step", "the limb jerking out to the side"],
+        "tail": ["the tail clamping down hard", "the tail lashing once and going stiff",
+                 "the tail whipping round as if to strike back", "the tail curling tight against the body"],
+    }
+
+    VOICE = {
+        # by how hurt the part is and how much she has left: [growlers, chirpers, others] each a list of
+        # (what the sound is, how it might be written out)
+        "low": {"growl": [("a grunt through closed teeth", "Hff"), ("a short hiss", "Tss"), ("a low growl", "Grr"),
+                          ("a huff through the nose", "Hmph"), ("a clipped snort", "Hnk")],
+                "chirp": [("a sharp squeak", "Eek"), ("an indignant chitter", "Tch-tch"), ("a short bark", "Bwah"),
+                          ("a startled peep", "Pip"), ("a cross little huff", "Hff")],
+                "other": [("a grunt", "Hff"), ("a hiss", "Hss"), ("a sharp breath", "Hk")]},
+        "mid": {"growl": [("a snarl dragged through the teeth", "Rrnngh"), ("a hiss that turns into a growl", "Hssrrr"),
+                          ("a sharp bark of pain", "Ahk"), ("a groan from deep in the chest", "Nnngh"),
+                          ("a yowl bitten off short", "Yahh")],
+                "chirp": [("a high yelp", "Yip"), ("a pained chittering", "Ki-ki"), ("a squeal through the teeth",
+                          "Eeeh"), ("a yowl that cracks", "Yaah"), ("a string of sharp barks", "Ack, ack")],
+                "other": [("a cry", "Ahh"), ("a yelp", "Yip"), ("a groan", "Nngh")]},
+        "high": {"growl": [("a howl ripped out of her", "Hhaaagh"), ("a roar of pain that breaks", "Rraahh"),
+                           ("a scream through clenched teeth", "Nnnaaah"), ("a choking snarl", "Khhrr"),
+                           ("a long, rising whine", "Hnnnn")],
+                 "chirp": [("a piercing shriek", "Kyaaa"), ("a squeal that goes up and up", "Eeeeee"),
+                           ("a broken, chattering cry", "Ki-ki-kyah"), ("a scream that cracks into squeaks",
+                           "Aaahk-eek"), ("a wailing yowl", "Waaah")],
+                 "other": [("a scream", "Aaah"), ("a shriek", "Eeeh"), ("a howl", "Aoohh")]},
+        "raw": {"growl": [("a raw, ragged howl she has no control over", "HHAAAH"),
+                          ("a gargling cry torn up out of her chest", "Ghhaahk"),
+                          ("a broken bellow that runs out of air", "Ahhh-hhk"),
+                          ("a wet, rasping wail", "Hhaaahh")],
+                "chirp": [("a raw, splitting scream", "KYAAAAH"), ("a shrill, broken wail", "Eeeeeiih"),
+                          ("a gasping, hiccuping shriek", "Hik-eeeh"), ("a cry that cracks into hoarse squeaks",
+                          "Aaah-ih-ih")],
+                "other": [("a raw scream", "AAAH"), ("a broken howl", "Hhaaah")]},
+    }
+
+    BLOW_SOUND = {
+        "claw": ["the dry rip of claws through fur", "a ripping hiss as the claws drag", "the scrape of claw on hide",
+                 "a sound like cloth tearing", "the snick of claws catching and pulling free",
+                 "a raspy swish and the tug of fur parting"],
+        "bite": ["the wet clack of teeth closing", "a crunching grind of jaws", "the snap of teeth meeting through fur",
+                 "a muffled crunch, deep and close", "the hard click of fangs", "a grinding squeak of teeth on hide"],
+        "blunt": ["a dull, heavy thud", "a meaty smack", "a hollow thump that carries", "the crack of a hard hit",
+                  "a solid whump, like a sack dropped", "a deep, slapping thud"],
+        "blast": ["a roaring rush that drowns everything", "a heavy whump of force", "a sharp crack of air",
+                  "a booming impact that rolls away through the trees", "a hiss and a thud together"],
+        "water": ["a heavy slap of water", "a hissing roar of spray", "a drumming splash", "a wet crack, then the "
+                  "patter of falling drops", "a gushing thud of water on fur"],
+        "shock": ["a crack like a branch splitting", "a buzzing snap and the smell of scorched fur",
+                  "a sharp hiss of sparks", "a thunderclap at no distance", "a crackling sizzle that dies away"],
+        "cold": ["a crisp crackle of frost", "the tinkle of ice forming", "a cold, sharp snap", "a creak of freezing "
+                 "fur"],
+    }
+
+    HOLD_REACT = {
+        "minor": ["she tests it, straining against it", "she shifts under it, looking for give",
+                  "her muscles bunch against it", "she pushes at it, breath steady", "she grunts and braces"],
+        "sore": ["she squirms, breath hissing", "her lips peel back as she strains against it",
+                 "she twists under it, a grunt with every push", "her paws scrabble for purchase",
+                 "she sucks breath through her teeth"],
+        "hurting": ["she writhes under it, a groan leaking out", "her body twists against it, trying to ease it",
+                    "she kicks at nothing, a growl in her throat", "her breath comes in short, pained pulls",
+                    "she bucks once, hard, and settles, shaking"],
+        "very painful": ["she can't keep still under it: twisting, straining, a cry each time it bears down",
+                         "her legs kick and scrape at the ground", "her head thrashes side to side",
+                         "she arches against it with a ragged sound", "her claws dig and drag at the ground"],
+        "excruciating": ["she bucks and thrashes, crying out every time it presses", "every limb jerks and strains "
+                         "against it", "her whole body writhes, a long broken sound pouring out",
+                         "her head rocks back and forth, mouth open on raw cries",
+                         "she twists so hard her back comes off the ground, then slams back"],
+        "devastated": ["her body jerks on its own with every heartbeat of pressure, a raw sound with every breath",
+                       "she convulses under it, limbs flailing, howling", "every press tears a scream out of her and "
+                       "her legs kick wildly", "she thrashes without aim, paws clawing at anything",
+                       "her whole body shudders and bucks, sounds she can't stop pouring out"],
+    }
+
+    for _lvl, _more in {
+        "excruciating": ["she strains against it with a ragged, rising cry, then sags, panting", "her claws tear at the "
+                         "ground, a groan wrung out of her", "she wrenches against it again and again, gasping for "
+                         "breath", "her tail lashes and her legs paddle, a cry torn loose each time",
+                         "her body bows against it, every muscle standing out, a high keening sound"],
+        "devastated": ["her limbs jerk and scrape uselessly, a hoarse sound on every breath",
+                       "she bucks weakly and wildly, her cries cracking", "her head lolls and jerks, raw noises spilling "
+                       "out of her", "she twitches and shudders under it, past holding any of it in",
+                       "her whole body flinches with every shift of the weight, and she cries out each time"],
+    }.items():
+        HOLD_REACT[_lvl].extend(_more)
+    for _tier, _fam, _more in [
+        ("raw", "growl", [("a hoarse, ragged roar that breaks apart", "Rraaghh-hk"), ("a howl that cracks into "
+                          "gasping", "Hhaaah-hah-hah"), ("a strangled, gurgling snarl", "Ghhrrk"),
+                          ("a long, hoarse wail with no breath behind it", "Hhaaaaa")]),
+        ("raw", "chirp", [("a cracked, squealing cry", "Eeeyaaah"), ("a hoarse, breathless shriek", "Hhhiiieee"),
+                          ("a broken string of yelps", "Yip-yip-yaaah"), ("a thin, wavering wail", "Iiiiih")]),
+        ("high", "growl", [("a bellow forced out through the teeth", "Hrrraah"), ("a sharp, splitting yowl",
+                           "Yaaarrgh"), ("a groan that rises to a shout", "Nnnngh-AH")]),
+        ("high", "chirp", [("a frantic, high squeal", "Kyiii"), ("a sharp, splitting yelp", "Yaaip"),
+                           ("a wavering cry that jumps up in pitch", "Aaah-eeh")]),
+        ("mid", "growl", [("a choked-off grunt", "Hngk"), ("a snarl through bared teeth", "Grrah")]),
+        ("mid", "chirp", [("a sharp, startled yelp", "Yeep"), ("a squeak bitten off short", "Ik")]),
+    ]:
+        VOICE[_tier][_fam].extend(_more)
+
+    for _lvl, _more in {
+        "minor": ["she tests the weight with a shove, then another", "a flex of the shoulders to see what gives",
+                  "she huffs and plants her paws, unbothered for now", "her tail flicks, irritated, as she pushes back",
+                  "she rolls her weight, feeling for the edge of the grip", "her ears flatten; she shoves at it once, hard",
+                  "she wriggles a little, more annoyed than hurt"],
+        "sore": ["a sharp breath and a shove against it", "she wrinkles her muzzle and pushes back, grunting",
+                 "her ears pin back as she strains", "she jerks once against it, a short hiss escaping",
+                 "her tail lashes as she twists", "she tries to shift the sore spot out from under it",
+                 "a grimace, teeth showing, as she braces"],
+        "hurting": ["she groans and twists, trying to get the hurt spot clear", "her claws flex into the ground "
+                    "with each press", "a whine slips out as she strains", "she tenses all over, breath held, "
+                    "then lets it out in a hiss", "her legs push and slip, push and slip",
+                    "she squirms, a low growl breaking into a grunt"],
+        "very painful": ["a cry breaks out of her and her body twists away from it",
+                         "she strains until she shakes, then sags with a groan", "her breath comes in ragged yelps",
+                         "she bites down on a sound and it comes out anyway", "her paws push and push at it, frantic",
+                         "she squirms hard enough to scrape herself along the ground"],
+    }.items():
+        HOLD_REACT[_lvl].extend(_more)
+    for _tier, _fam, _more in [
+        ("low", "growl", [("a rumble low in the throat", "Hrrm"), ("a sharp breath through the nose", "Hnh"),
+                          ("a short, irritated snarl", "Rrh"), ("a grunt, more surprise than pain", "Uff"),
+                          ("a hiss through the side of the mouth", "Tsss")]),
+        ("low", "chirp", [("a short, startled squeak", "Ip"), ("an offended little bark", "Hah"),
+                          ("a quick chirrup of surprise", "Prrt"), ("a sharp huff", "Fff"), ("a tiny yip", "Yp")]),
+        ("low", "other", [("a grunt through the nose", "Hnh"), ("a startled breath", "Hah"),
+                          ("a low sound in the throat", "Mmh")]),
+        ("mid", "growl", [("a grunt that ends in a growl", "Hrrgh"), ("a hiss of pain through bared teeth", "Ssshh"),
+                          ("a strangled grunt", "Ghk")]),
+        ("mid", "chirp", [("a pained squeal cut off short", "Eek-"), ("a yip and a hiss together", "Yipss"),
+                          ("a whimpering chitter", "Ki-ii")]),
+        ("mid", "other", [("a sharp cry", "Ah"), ("a pained grunt", "Ngh"), ("a hiss of pain", "Sss")]),
+        ("high", "other", [("a wail", "Aaaah"), ("a broken cry", "Ah-ahh"), ("a ragged yell", "Haaagh")]),
+        ("raw", "other", [("a hoarse, broken wail", "Hhaaah-hh"), ("a cry with no breath behind it", "Aaa-h")]),
+    ]:
+        VOICE[_tier][_fam].extend(_more)
+    REGION_TELLS_MORE["limb"] += ["the limb flicked out and shaken, as if to shake the sting off",
+                                  "weight shifted off it for a step or two"]
+    REGION_TELLS_MORE["face"] += ["a sneeze-like snort and a toss of the head"]
+    REGION_TELLS_MORE["back"] += ["a ripple of the skin across the back"]
+
     # how a hit to each body region tends to show, so reactions fit WHERE the blow landed
     REGION_TELLS = [
         (("ear",), "ears flattening or ringing, the head jerking away"),
@@ -1591,12 +1779,49 @@ class Narrator:
             return " (her leg: she stands on it)"
         return ""
 
-    def _region_tell(self, part):
+    def _region_tell(self, part, seed=0):
         p = part.lower()
-        for keys, tell in self.REGION_TELLS:  # whole words: "forearm" must not count as an "ear"
+        groups = ["ear", "face", "neck", "chest", "belly", "back", "limb", "tail"]
+        for (keys, tell), g in zip(self.REGION_TELLS, groups):  # whole words: "forearm" must not count as an "ear"
             if any(re.search(r"\b\w*" + re.escape(k) + r"(?:s|es)?\b", p) for k in keys):
-                return tell
+                opts = [tell] + self.REGION_TELLS_MORE.get(g, [])
+                return opts[seed % len(opts)]
         return "a flinch away from the spot"
+
+    def _voice_family(self, who):
+        v = str((getattr(self, "voices", None) or {}).get(who) or "").lower()
+        if re.search(r"chitter|squeak|chirp|peep|bark", v):
+            return "chirp"
+        if re.search(r"growl|hiss|snarl", v):
+            return "growl"
+        return "other"
+
+    def _voice_cue(self, h, level, seed):
+        """The sound she makes at this hit: by how hurt the part is now and how much she has left, in her voice."""
+        cfg = (self.rules.get("narration") or {}).get("sounds") or {}
+        if not cfg.get("enabled", True):
+            return ""
+        who = h.get("defender", "")
+        left = ((getattr(self, "strengths", None) or {}).get(who) or 100)
+        tier = ("raw" if level in ("devastated", "numb with shock") or (left < 30 and level == "excruciating") else
+                "high" if level in ("excruciating",) or float(h.get("damage_taken", 0)) >= 60 else
+                "mid" if level in ("hurting", "very painful") else "low")
+        if left < 30 and tier == "low":
+            tier = "mid"
+        opts = self.VOICE[tier][self._voice_family(who)]
+        desc, written = opts[seed % len(opts)]
+        return f"{desc} (*{written}*)"
+
+    def _blow_sound(self, m):
+        name = f"{m.get('name', '')} {m.get('about', '')}".lower()
+        kind = ("claw" if re.search(r"slash|claw|swipe|scratch|rake|cut", name) else
+                "bite" if re.search(r"bite|fang|crunch|jaws", name) else
+                "shock" if m.get("type") == "Electric" else "cold" if m.get("type") == "Ice" else
+                "water" if m.get("type") == "Water" else
+                "blast" if m.get("target") in ("spread", "whole_body") else "blunt")
+        import zlib
+        opts = self.BLOW_SOUND[kind]
+        return opts[zlib.crc32(f"{getattr(self, 'beat_now', 0)}|{m.get('name')}".encode()) % len(opts)]
 
     def _relative(self, taken):
         """Damage relative to the damage scale, so /scale doesn't make every hit 'tremendous'."""
@@ -1663,7 +1888,10 @@ class Narrator:
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
                 f"{self._strength(h['damage_taken'])} blow "
                 f"(impact, e.g. {impact}; a hit here shows as "
-                f"{self._region_tell(h['part'])}); {change}{tough}.")
+                f"{self._region_tell(h['part'], sum(map(ord, seed)))}"
+                + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
+                   if self._voice_cue(h, after['label'], 0) else "")
+                + f"); {change}{tough}.")
 
     # a blow on a part that was ALREADY badly hurt. Three things set how raw the reaction is: how hurt the part was
     # (very painful < excruciating < devastated), how big THIS blow is (a brush on a ruined part still hurts, but far
@@ -1790,7 +2018,12 @@ class Narrator:
         elif float(h["damage_before"]) >= 150:
             note = " — the part can't bear pressure: every bit of it tells"
         return (f"    • {h['part']}" + (f" ({with_})" if with_ else "") + f": {self._strength(h['damage_taken'])} squeeze, "
-                f"{change}{note}; LOOKS: {self._press_look(h)}")
+                f"{change}{note}; LOOKS: {self._press_look(h)}; SHE REACTS: {self._hold_react(h, after['label'])}")
+
+    def _hold_react(self, h, level):
+        import zlib
+        opts = self.HOLD_REACT.get(level) or self.HOLD_REACT["minor"]
+        return opts[(zlib.crc32(h["part"].encode()) + int(getattr(self, "beat_now", 0) or 0)) % len(opts)]
 
     PRESS_LOOK = {
         "light": ["the fur flattened and parted under it, a shallow dent where it presses",
@@ -2885,6 +3118,8 @@ class Narrator:
                      "soaked": f"{a['defender']} is soaked, so the electricity tears through her far worse",
                      "pin damage": f"it is delivered from on top of the pin, short and cramped"
                      }.get(label, label) for label, _ in m["extras"]) + ".")
+            if a.get("hits") and not a.get("environment") and m:
+                lines.append(f"  - THE SOUND OF THE BLOW: {self._blow_sound(m)}.")
             mv_line = self._impact_motion(a)
             if mv_line:
                 lines.append(mv_line)
@@ -3206,6 +3441,10 @@ class Narrator:
             lines.append(f"  - Three tries, each one shorter and weaker (the first: {fail_way(None, 0)}). Her {hurt} "
                          f"won't hold her. She does NOT make it up this beat: she ends on the ground, gathering herself "
                          f"for the next try.")
+        for h in e.get("fall_hits") or []:
+            lines.append(f"  - THE DROP HURTS (try {h['try']}): she comes down hard and it jars "
+                         + ("the limb that gave way" if h.get("how") == "gives_out" else "what she lands on") + ":")
+            lines.append(self._hit_line(h))
         for g in e.get("held") or []:
             lines.append(f"  - {poss(g['by'])} grip on her {g['part']}" + (f" ({g['with']})" if g.get("with") else "")
                          + f" STAYS ON through every try" + (" and after she is up" if e["stands"] else "")
@@ -3274,6 +3513,8 @@ class Narrator:
             self._must_struggle = f"{d} tries to break free and fails"
             self._struggle_kind = "fail"
             out.append(f"  - YOU MUST SHOW THIS: {d} TRIES TO BREAK FREE (" + self._try_how(e) + ") and FAILS. "
+                       + ("Whatever she aims at the pinner misses, glances off or is smothered: it does NO damage. "
+                          if e.get("try_how") in ("bite", "headbutt", "claw", "power", "kick") else "")
                        + ("It is everything she has left, and it is not much: a slow, late try, not a strong one. "
                           if e.get("fight_left") in ("fading", "nearly gone") else "")
                        + f"{a} feels it coming and punishes it, bearing down harder"
@@ -3468,16 +3709,61 @@ class Narrator:
                 + ". The surfaces above marked 'tumbling on' are that stretch: tell it as its own part of the fall, "
                   "after the first impact and before she lies still."]
 
+    TRY_HOW = {
+        "buck": ["she bucks her whole body under the weight", "she heaves up under it all at once, every muscle at once",
+                 "she throws her body up against the weight, again and again, short and violent",
+                 "she jerks her hips and shoulders up together, trying to pitch the weight off"],
+        "bridge": ["she bridges, driving her middle up off the ground", "she plants her feet and arches her back hard, "
+                   "lifting the weight with her", "she pushes up through her heels and shoulders, back bowed, "
+                   "trying to tip the weight over her head"],
+        "twist": ["she twists hard to one side, trying to turn under her", "she wrenches her shoulders round, trying to "
+                  "get onto her front", "she corkscrews under the weight, hips one way, shoulders the other"],
+        "limb": ["she wrenches at one trapped limb to get it out", "she works one pinned limb in short, hard tugs, "
+                 "trying to slide it free", "she yanks a trapped limb sideways, against the angle of the grip"],
+        "kick": ["she lashes out with whatever she can still move: hind legs, tail, a free paw",
+                 "she drives her hind legs up and out, kicking at whatever is above her",
+                 "she flails a free limb at the body on top of her, hard and wild"],
+        "squirm": ["she tries to slide out from under, backward or sideways", "she wriggles, inch by inch, trying to "
+                   "slip out from under the weight", "she squirms and slithers, trying to work her body out the side"],
+        "headbutt": ["she snaps her head up into the body on top of her: skull, horn or brow, whatever she has",
+                     "she rams her head forward into the nearest part of the pinner", "she drives the top of her head "
+                     "up hard, trying to crack it into a jaw or a chest"],
+        "bite": ["she twists her head and bites at whatever of the pinner is in reach", "she snaps at the nearest limb "
+                 "holding her, teeth bared", "she gets her jaws onto a bit of the pinner and clamps down"],
+        "shrimp": ["she digs her feet in and shoves her hips away, making space to slip out", "she turns onto her side "
+                   "and drives her hips back, a little at a time, opening a gap", "she pushes off the ground with one "
+                   "foot and scoots her hips out from under"],
+        "roll": ["she throws her weight toward her trapped side, trying to roll the pinner over her", "she hooks a leg "
+                 "and rolls, trying to take the pinner over with her", "she rocks, once, twice, then rolls hard all at "
+                 "once"],
+        "claw": ["she rakes at the pinner with her claws, at legs or face, wherever she can reach",
+                 "she scratches and tears at the limbs holding her", "she claws blindly upward, aiming for eyes and face"],
+        "pry": ["she works at the grip itself, prying at the limb or jaw that holds her", "she gets a paw under the "
+                "holding limb and pushes it away, a little at a time", "she shoves at the pressing weight "
+                "with both free limbs, trying to lever it off"],
+        "tuck": ["she curls up tight and gets a hind leg between them, trying to push the pinner away",
+                 "she pulls her legs in and tries to wedge them under the pinner's body", "she folds herself small "
+                 "and shoves outward with everything at once"],
+        "limp": ["she goes limp for a moment, letting the weight settle, then explodes all at once",
+                 "she stops fighting, breathing slow, then heaves suddenly when the grip eases",
+                 "she plays dead for a heartbeat, then throws everything she has at once"],
+        "reach": ["she stretches her forelimbs out past her head, digs into the ground and hauls",
+                  "she claws at the ground beyond her head and drags herself toward it",
+                  "she digs her claws into the earth and pulls, trying to drag herself out"],
+        "power": ["she calls up her own power at point-blank range, whatever she has in her, aimed at the body on top",
+                  "she gathers her strength into a burst of her element against the pinner",
+                  "she turns her power on the pinner at no distance at all, a desperate burst"],
+    }
+
     @staticmethod
     def _try_how(e):
         """How the pinned fighter goes about this try (the engine's pick, for variety between beats)."""
-        return {"buck": "this time she bucks her whole body under the weight",
-                "bridge": "this time she bridges, driving her middle up off the ground",
-                "twist": "this time she twists hard to one side, trying to turn under her",
-                "limb": "this time she wrenches at one trapped limb to get it out",
-                "kick": "this time she lashes out with whatever she can still move: hind legs, tail, a free paw",
-                "squirm": "this time she tries to slide out from under, backward or sideways",
-                }.get(e.get("try_how"), "buck, bridge, twist, wrench a limb loose") + "; stage it your way"
+        import zlib
+        opts = Narrator.TRY_HOW.get(e.get("try_how"))
+        if not opts:
+            return "buck, bridge, twist, wrench a limb loose; stage it your way"
+        seed = zlib.crc32(f"{e.get('defender')}|{e.get('seconds_to')}|{e.get('beats')}|{e.get('try_how')}".encode())
+        return "this time " + opts[seed % len(opts)] + "; stage it your way"
 
     def _escape_lines(self, e):
         """An escape: the blow that frees her, and where both fighters are once the pin is gone."""

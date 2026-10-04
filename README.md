@@ -2208,3 +2208,20 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
 - Quieter fighters: at most one spoken line in a beat, none for the next two beats, and up to two italic thoughts per part; the narrator is told they're mostly silent and to carry feeling through body and breath. Extra lines are rewritten or removed (with their "she chittered" tags). /talk quiet | less | normal | free changes it (default: less). Single emphasised words like *snap* aren't counted as thoughts.
 - When a text still gets the events wrong after its rewrite (an invented fall, a missing hit), it gets one more rewrite aimed only at that, and the best of the three is kept (narration.max_rewrites).
 - More invented falls and holds are caught: "tried to push herself upright—and failed", "pinning her upper body against the shallow pool".
+- **More of everything (reactions, voices, blow sounds, breakouts).**
+  - **Impact reactions:** about 20 wordings for each size of blow (glancing, solid, heavy, tremendous). Each hit also gets a body-region tell, with 5 to 8 options per region.
+  - **Her voice on every hit:** each hit line carries the sound she makes, written out (for example *Hff*, *Ki-ki*, *KYAAAAH*). It depends on how hurt the part now is and how much strength she has left.
+    - The four tiers are low, mid, high and raw. A fighter under 30% strength never goes below mid.
+    - The voice is fitted to the fighter: growling, chirping, or other. There are 6 to 10 sounds per tier for each voice.
+  - **The sound of the blow:** a line on every landed attack, by kind: claw, bite, blunt, blast, water, shock or cold, with 4 to 6 wordings each.
+  - **Hold reactions:** every press in a pin or hold now says how she reacts, by pain level. There are 10 to 12 wordings at every level, low pain included.
+  - **Breakout attempts:** 16 kinds of escape try instead of 6. The new kinds are headbutt, bite, hip escape (shrimp), roll, claw, pry the grip, tuck a leg in, go limp then explode, reach and haul, and a point-blank burst of power. Each kind has 3 or 4 wordings.
+    - A failed bite, claw, headbutt, kick or burst is told as doing no damage. The engine never rolled damage for a failed try, so the story mustn't invent any.
+    - The mix is under `variety.struggle` in engine.py.
+  - **Impact motion:** `narration.impact_motion.chance` raised from 0.4 to 0.55.
+- **Failed get-ups can hurt.** When a failed try drops her back down hard (her legs give out, or she slips), there's a 60% chance it jars something (`getting_up.fall_chance`).
+  - It hits the limb that gave out, or what she lands on, with a small jolt (`fall_power` 8, ±25%).
+  - Sinking back dizzy or out of breath never hurts.
+  - It shows on screen as "💥 the drop on try N hurts" and goes to the narrator as a real hit.
+  - Balance check after these changes (400 fights at your settings): Nocturne 59.0%, 7.6 pins a fight, 93.5% of fights with 4+ pins, 0.82 submissions a fight.
+- **Fix:** the 🧠 plan line crashed whenever a new setup was made, because the payoff text was built even for setups. It now only builds the line it needs.

@@ -1082,6 +1082,9 @@ class Display:
                             f"({e['tries']} tries; down {e['beats_down']} beat{'s' if e['beats_down'] != 1 else ''})" if e.get("sits") else
                             f"🧗 **{e['fighter']} can't get up** this beat ({e['tries']} tries; down {e['beats_down']} beat{'s' if e['beats_down'] != 1 else ''})")
                            + roll)
+                for h in e.get("fall_hits") or []:
+                    out.append(f"   💥 the drop on try {h['try']} hurts: {h['part']} damage {num(h['damage_before'])}% → "
+                               f"**{num(h['damage_after'])}%**")
             elif e["type"] == "stays_down":
                 out.append(f"🧗 {e['fighter']} stays down this beat: she only just went down, so there is no get-up roll "
                            f"yet (the first one is next beat)")

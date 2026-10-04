@@ -768,7 +768,7 @@
     "impact_motion": {
       "_comment": "How a blow that lands moves the body, now and then: a slash sweeping the struck limb along the cut or twisting her round, a blow knocking her back a step, a bite yanking her toward the biter, a blast shoving her back, lightning locking her rigid, a fighter on the ground rolled or shunted. chance per landed blow, + hard_bonus when it hits hard (hard_at % damage or more), + weak_bonus when she is under half strength. Never with a knockdown, throw or launch, never while she is pinned, held at point-blank or pressed against scenery, and she stays where the engine has her.",
       "enabled": true,
-      "chance": 0.4,
+      "chance": 0.55,
       "hard_at": 40,
       "hard_bonus": 0.25,
       "weak_bonus": 0.15
@@ -1012,7 +1012,10 @@
     "per_beat_down": 0.15,
     "max_beats_down": 4,
     "sit_up_chance": 0.4,
-    "_sit_up_comment": "sit_up_chance: when a fighter on the ground fails to get up, the chance she at least makes it to SITTING (still down; front and back both in reach). 0 = a failed get-up always leaves her lying."
+    "_sit_up_comment": "sit_up_chance: when a fighter on the ground fails to get up, the chance she at least makes it to SITTING (still down; front and back both in reach). 0 = a failed get-up always leaves her lying.",
+    "fall_chance": 0.6,
+    "fall_power": 8,
+    "_fall_comment": "fall_chance: when a failed get-up try drops her back down HARD (her legs give out, or she slips), the chance the drop hurts: the limb that gave out (or what she lands on) takes a small jolt of fall_power. Sinking back dizzy or out of breath never hurts. 0 = failed tries never hurt."
   },
   "evasion": {
     "_comment": "Dodges: the engine rolls whether a single-target or spread attack misses. Chance = base x (0.4 + 0.6 x the defender's strength share) x a penalty for hurt legs, feet, and tails, capped at max. Chilled halves it, low energy x0.7, adrenaline x1.3, a paralyzed attacker x1.3, spread moves x0.5. Nobody dodges while down, pinned, or paralyzed, or a whole-body move. counter_chance: after a dodge, the chance to land a counter-hit. Your own /commands always land.",
