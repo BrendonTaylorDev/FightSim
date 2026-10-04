@@ -931,6 +931,13 @@ After each beat's prose, the program prints the exact numbers in this format:
   submission in 30 fights. Director action "submission" with the hold's name in "improvised_name";
   rules.json "submissions" holds every number. 400 fights at your settings with them in: Nocturne 62%, pins 4.9 a
   fight, 75% of fights with 4+.
+- **Pins use more of her.** Most pins now press three to six points at once, filled out from whatever the pinner
+  has free: jaws pressed into the neck (unless something else already has the neck), her chest against the other's
+  chest (or her weight on the back, face-down), her paws gripping the other's forelimbs with the claws digging in,
+  her feet or hind paws pressed into both flanks, tails across the legs. About one pin in seven stays a simple two-
+  point pin; 85% have three or more, over half four or more (rules.json pin.contacts.weights). The director is told
+  the same. More presses means more pressure: 400 fights at your settings, Nocturne 58% (it was 62%; within the
+  noise, ±2.5), pins 4.8 a fight, 71% of fights with 4+.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

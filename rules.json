@@ -974,6 +974,17 @@
       "after_beats": 3,
       "chance": 0.3,
       "beats": 1
+    },
+    "contacts": {
+      "_comment": "How many points of contact a pin aims for (weights; it never goes below what the pin shape itself uses). Each pin is filled out from whatever the pinner still has free: jaws on the neck (if nothing else is there), her chest or weight on the front (her back if face-down), her paws gripping the forelimbs with the claws in, her feet or hind paws on the flanks, her tails across the legs. Nothing is used twice.",
+      "enabled": true,
+      "weights": {
+        "2": 15,
+        "3": 30,
+        "4": 30,
+        "5": 15,
+        "6": 10
+      }
     }
   },
   "getting_up": {

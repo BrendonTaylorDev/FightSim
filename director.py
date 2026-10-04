@@ -186,7 +186,10 @@ Beat types:
   in "improvised_name" ("camel clutch"); the engine sets the grips. While it's on, the holder can use what she still
   has free on her at point-blank as a second action in the same beat or later (a jet of water into the back of the
   head during a camel clutch): she can't cover up, so it lands hard.
-- pin: the attacker pins the defender, pressing several body parts at once. List every point of contact in
+- pin: the attacker pins the defender, pressing several body parts at once. Usually use most of her body: three,
+  four, five points of contact, every limb she has free (her paws gripping the other's forelegs with the claws
+  digging in, jaws pressed hard into the neck, chest against chest, her feet or hind paws pressed into both flanks,
+  tails across the legs); now and then a simple two-point pin. List every point of contact in
   "hits": the defender's part, a hold severity, and "with" = what the attacker presses it with ("her full
   weight", "both knees", "teeth", "forepaws", "coils"). Match the contacts to the defender's position: someone
   pinned on their BACK (face-up) has chest, belly, neck, and limbs pressed; someone pinned FACE-DOWN has their
@@ -1552,6 +1555,78 @@ def _spots(target):
             "tail": pick(lambda n, r: r == "tail" and "base" not in n and "fan" not in n)}
 
 
+def fuller_pin(engine, pinner, target, look, contacts):
+    """Fill a pin out with every limb the pinner still has free (pin.contacts: how many points of contact to aim
+    for, weighted): jaws on the neck, her chest or her weight on the front (or the back, face-down), her paws gripping
+    the other's forelimbs with the claws in, her feet or hind paws on both flanks, her tails or tail across the legs.
+    Nothing is used twice and no part is pressed twice. Returns (look, contacts)."""
+    from engine import body_region
+    cfg = (engine.rules.get("pin") or {}).get("contacts") or {}
+    weights = {int(k): float(v) for k, v in (cfg.get("weights") or {"2": 15, "3": 30, "4": 30, "5": 15, "6": 10}).items()
+               if not str(k).startswith("_")}
+    if not cfg.get("enabled", True) or not weights:
+        return look, contacts
+    want = engine.rng.choices(list(weights), list(weights.values()))[0]
+    if len(contacts) >= want:
+        return look, contacts
+    plan = engine.body_plan(pinner)
+    t = _grip_tools(engine, pinner)
+    used_w = " ".join(str(w).lower() for _, w in contacts)
+    used_p = {p for p, _ in contacts}
+    names = list(target.parts)
+    regions = {n: body_region(n) for n in names}
+    # which way she lies: what is already pressed says so, or how she lies on the ground now, or face-up
+    if any(regions.get(p) in ("back_up", "back_low") for p in used_p):
+        down = True
+    elif any(regions.get(p) in ("chest", "belly") for p in used_p):
+        down = False
+    else:
+        down = engine.facing_of(target.name) == "face-down" if target.name in engine.downed else False
+    def free(ns):
+        return [n for n in ns if n not in used_p]
+    feet = {"biped": "her feet", "quadruped": "her hind paws", "avian": "her talons", "serpent": ""}.get(plan, "")
+    fore_hold = {"biped": "her paws, gripping it tight, claws digging in", "quadruped": "her forepaw, claws digging in",
+                 "avian": "her talons, gripping it"}.get(plan, "")
+    options = [
+        ("jaw", t.get("jaws"), [] if any(regions.get(p) == "neck" for p in used_p) else
+         free([n for n in names if regions[n] == "neck" and not (down and "throat" in n.lower())]),
+         1, lambda w: f"{w}, teeth pressed hard into it"),
+        ("weight|chest", t.get("weight"),
+         free([n for n in names if regions[n] in (("back_up", "back_low") if down else ("chest",))]), 1,
+         lambda w: ("her full weight, bearing down" if down else
+                    ("her chest, pressed hard against it" if plan in ("biped", "quadruped") else w))),
+        ("paw|claw|talon", fore_hold,
+         free([n for n in names if regions[n] == "fore_low" and any(k in n.lower() for k in ("paw", "hand", "forearm"))
+               and "fin" not in n.lower()] or [n for n in names if regions[n] in ("fore_low", "fore_up")]), 2,
+         lambda w: w),
+        ("feet|hind paw|knee|talon", feet,
+         free([n for n in names if any(k in n.lower() for k in ("flank", "rib", "hip"))]), 2,
+         lambda w: f"{w}, pressed into it"),
+        ("tail|coil", t.get("coil"), free([n for n in names if regions[n] in ("hind_up", "hind_low")]), 2,
+         lambda w: f"{w}, across it"),
+    ]
+    extra = []
+    for keys, tool, parts, n, how in options:
+        if len(contacts) + len(extra) >= want:
+            break
+        if not tool or not parts or any(k in used_w for k in keys.split("|")):
+            continue
+        # two of a pair at once (both forepaws gripped, a foot on each flank)
+        pick = parts[:2] if n == 2 and len(parts) >= 2 else parts[:1]
+        if n == 2:
+            lefts = [p for p in parts if "left" in p.lower()]
+            rights = [p for p in parts if "right" in p.lower()]
+            if lefts and rights:
+                pick = [lefts[0], rights[0]]
+        for p in pick[:max(1, want - len(contacts) - len(extra))]:
+            extra.append((p, how(tool)))
+            used_p.add(p)
+    if not extra:
+        return look, contacts
+    look = look + "; and " + ", ".join(f"{w.split(',')[0]} on her {p}" for p, w in extra)
+    return look, list(contacts) + extra
+
+
 def pin_shapes(engine, pinner, target, skip=()):
     """Every way THIS pinner could pin THIS target that her body allows: {name: (what it looks like, contacts)}.
     Contacts are (target part, what the pinner presses or grips it with)."""
@@ -1697,7 +1772,8 @@ def pin_shapes(engine, pinner, target, skip=()):
                              f"{t['fore']} barred across her {neck} as the choke and her weight crushing her {front} "
                              f"(say so with \"pinned_against\": \"{prop}\")",
                              [(neck, t["fore"]), (front, t["weight"])])
-    return out
+    # most pins use far more of her than two points: whatever she has free goes on too (pin.contacts)
+    return {k: fuller_pin(engine, pinner, target, look, contacts) for k, (look, contacts) in out.items()}
 
 
 def _pin_against(engine, b, flavor):
