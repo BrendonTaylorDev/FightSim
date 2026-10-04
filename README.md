@@ -969,6 +969,13 @@ After each beat's prose, the program prints the exact numbers in this format:
     is the payoff ("THE PAYOFF": it was planned, and the other realises too late what the earlier move was for),
     and when a fighter reads a trap and goes round it.
   - The screen shows them as 🧠 lines (Plan / Payoff / Read). Kept through /undo, saves and loads.
+- **The injury report reads like a person wrote it.** Each fighter gets a lead that fits how it ended ("won, and it
+  cost her", "won, barely, and every step home will tell her so", "lies out cold, and when she wakes it will all be
+  waiting for her"), then her worst parts with WHAT DID THEM in plain words (from the moves' own descriptions: "the
+  weight of Ripples' pin", "Ripples' crushing bite", "the blow Nocturne struck breaking free", "her own dark blast,
+  sent back at her") and what she'll feel, worded differently from part to part and fighter to fighter ("black
+  with bruising, stiff and swollen for days", "stiff by morning and tender to the touch", "a dull ache, gone in a day
+  or two"). It is the same on the screen and for the narrator's aftermath.
 
 ## Build 112
 - **An ending broken off on purpose is kept.** When the narrator ends on an unfinished thought ("Three strides. If

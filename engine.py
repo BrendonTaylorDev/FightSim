@@ -3669,22 +3669,94 @@ class Engine:
             marks.append(text)
             del marks[:-6]
 
+    def _cause_words(self, src, hurt=""):
+        """'Ripples' Water Gun' -> "Ripples' jet of water": what did it, in plain words (moves.json 'about')."""
+        s = str(src or "").strip()
+        turned = "(turned back)" in s or "turned back" in s
+        s = re.sub(r"\s*\((?:held|turned back)\)|\s+still driving into her", "", s)
+        m = re.match(r"^(.+?'s?) (.+)$", s)
+        if not m:
+            return (s.replace("landing on ", "the fall onto ").replace("being driven into ", "being slammed into ")
+                    .replace("being driven on into ", "being slammed on into ").replace("being pressed into ", "being "
+                    "crushed against "))
+        who, what = m.group(1), m.group(2)
+        low = what.lower()
+        if low == "pin":
+            return f"the weight of {who} pin"
+        if low in ("hold", "coils"):
+            return f"{who} {low}"
+        if low == "escape":
+            return f"the blow {who[:-2] if who.endswith(chr(39) + 's') else who.rstrip(chr(39))} struck breaking free"
+        if low == "struggle":
+            return f"{who} struggling"
+        if low in self.SUBMISSIONS:
+            return f"{who} {low}"
+        mv = self.dex_move(what)
+        about = str((mv or {}).get("about") or "")
+        if about[:2].lower() in ("a ", "an") or about[:4].lower() == "the ":
+            noun = re.split(r"\s+(?:across|into|from|that|with|to|which)\b|[,:;(]", about, maxsplit=1)[0].strip()
+            noun = re.sub(r"^(?:a|an|the)\s+", "", noun, flags=re.I)
+        else:
+            noun = {"Normal": "blow", "Fighting": "blow"}.get((mv or {}).get("type"), "blow") if mv else low
+        if turned:
+            mine = who.rstrip("'s").rstrip("'") == str(hurt)
+            return f"her own {noun}, sent back at her" if mine else f"{who} {noun}, turned back on her"
+        return f"{who} {noun}"
+
+    REPORT_LEAD = {
+        "won_fresh": ["won, and has little to show for it", "won without much damage", "came out of it largely whole"],
+        "won_hurt": ["won, and it cost her", "won, but she paid for it", "came out on top, though not cheaply"],
+        "won_wrecked": ["won, barely, and every step home will tell her so", "won on what she had left, which was not much",
+                        "is the one still standing, if only just"],
+        "lost": ["lies out cold, and when she wakes it will all be waiting for her",
+                 "is out cold; waking up will be the hard part",
+                 "lost, and her body will remember every part of it"],
+        "standing": ["is still on her feet, and feeling it", "made it through"],
+    }
+    REPORT_HURT = {
+        "deep": ["black with bruising, stiff and swollen for days", "swollen tight; it won't bear a touch for a week",
+                 "it will throb every time she moves for days to come", "the first thing she'll feel every morning for "
+                 "a while", "bruised deep and slow to mend"],
+        "sore": ["sore and stiff tomorrow, tender for a few days", "bruised and aching; she'll favour it for days",
+                 "stiff by morning and tender to the touch", "it will ache whenever she moves it for a few days"],
+        "light": ["aching tomorrow, nothing worse", "a dull ache, gone in a day or two",
+                  "bruised, and grumbling about it by morning"],
+    }
+    REPORT_FRAMES = [
+        "her {part}, from {cause}: {hurt}",
+        "{cause} did her {part}: {hurt}",
+        "her {part} took {cause}: {hurt}",
+        "the {part}, where {cause} landed: {hurt}",
+    ]
+
     def injury_report(self):
-        """After the fight: each fighter's worst parts and what they'll feel tomorrow (for the aftermath and the
-        console)."""
+        """After the fight: each fighter's worst parts, what did them, and what she'll feel tomorrow, in varied words
+        (for the aftermath and the console)."""
+        import zlib
+        win = self.winner()
         rows = []
         for f in self.fighters.values():
+            def pick(lst, salt):
+                return lst[zlib.crc32(f"{f.name}|{salt}|{getattr(self, '_seed0', 0)}".encode()) % len(lst)]
+            s = self.strength(f)
+            lead_key = ("lost" if f.eliminated or (win and f.name != win and self.get(win).team != f.team) else
+                        ("won_fresh" if s >= 70 else "won_hurt" if s >= 35 else "won_wrecked") if win else "standing")
+            lead = f"{f.name} {pick(self.REPORT_LEAD[lead_key], 'lead')}"
             worst = sorted((p for p in f.parts.values() if p.damage >= 90), key=lambda p: -p.damage)[:4]
             if not worst:
-                rows.append(f"{f.name}: bruised, nothing that will last")
+                rows.append(f"{lead}: bruised here and there, nothing that will last")
                 continue
-            words = []
-            for p in worst:
-                lvl = tier_for(p.damage, pain_tiers(self.rules))["label"]
-                words.append(f"{p.name.lower()} ({lvl}: " + ("deep bruising, stiff and swollen for days"
-                                                             if p.damage >= 300 else "sore and stiff tomorrow, tender for a few days"
-                                                             if p.damage >= 150 else "aching tomorrow") + ")")
-            rows.append(f"{f.name}: " + "; ".join(words))
+            bits = []
+            for i, p in enumerate(worst):
+                causes = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c]
+                causes = list(dict.fromkeys(self._cause_words(c, f.name) for c in causes[-2:]))
+                cause = " and ".join(causes) or "the fight"
+                sev = "deep" if p.damage >= 300 else "sore" if p.damage >= 150 else "light"
+                hurt = pick(self.REPORT_HURT[sev], p.name)
+                frame = self.REPORT_FRAMES[(zlib.crc32(f"{f.name}|{p.name}".encode()) + i) % len(self.REPORT_FRAMES)]
+                bits.append(frame.format(part=p.name.lower(), cause=cause, hurt=hurt))
+            bits[0] = bits[0][0].upper() + bits[0][1:]
+            rows.append(f"{lead}. " + "; ".join(bits))
         return "INJURY REPORT (what each will feel when it's over): " + " | ".join(rows)
 
     # ---------- the fight's story so far: key moments and what decided it (the end-of-fight summary) ----------
