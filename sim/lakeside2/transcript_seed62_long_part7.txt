@@ -1,0 +1,110 @@
+(Part 7 of 7: beats 61-61. Part 1 has the settings and the starting status board.)
+
+============================== beat 61 ==============================
+  [director is choosing the next beat]
+  [narrator is writing part 1/2]
+  [narrator is writing part 2/2]
+
+— Nocturne —
+
+She tried to slide out. It was the smallest movement in the world.
+
+The Buizel leaned on her chest and the chest burned. It was far away.
+
+She could not get a breath. The arm was across her throat and the breath would not come round it anymore, not even the thin whistling trickle. She opened her mouth and nothing came. She tried again and nothing came.
+
+The grey closed in from the edges, and there was only a small round piece of sky left in the middle of it, very blue, with the orange shape of the Buizel against it, very dark.
+
+The sound of the lake went away.
+
+The weight of her own paws went away.
+
+The pain in her throat, the one thing that had been left, went away last of all, and then there was nothing.
+
+— Ripples —
+
+The Absol went still under her.
+
+Not limp all at once. Slowly. The eyes clouded and closed. The body that had been jerking with every breath stopped jerking. The paw that had been resting against Ripples' arm slid off and lay on the grass. The breath, when it came, was very slow and very shallow and did not make a sound.
+
+Ripples took her arm off the throat.
+
+She stayed on her knees on the Absol's chest for a long moment, swaying, looking down at the white face. Then she slid off sideways onto the grass and lay there beside her, on her back, staring up at the sky.
+
+The clouds were drifting in from the far shore again. Their shadows slid across the clearing. The lake lapped at the sand. In the oaks, one bird, then another, began to sing.
+
+*Done. It's done. I did it.*
+
+She lay there in the warm grass with every part of her hurting, her chest and her stomach and her nose and both arms, and breathed, and did not try to get up.
+
+
+
+
+----------------------------------------
+⏸️ **Breather**: bears down and holds the pin
+
+🔒 **Ripples on Nocturne** (holds #17, #18), beat 6 of the hold · pin damage ×0.5
+  ▸ press 23 × 0.5 pin damage
+    Throat
+        damage      ⚫ 905.3% → ⚫ 931.17%      +25.88 = power 11.5 × 0.45 (pin cap) × scale 5
+        resistance  🟥 18.58% → 🟥 16.43%       -2.15 = power 11.5 × 0.25 × 0.75 resistance scale
+        health      ❤️ -194.15% → ❤️ -202.95%   -8.8 = damage 25.88 × 0.2 × 1 × vital 1.7
+
+  ▸ press 16 × 0.5 pin damage
+    Chest
+        damage      ⚫ 353.22% → ⚫ 371.22%     +18 = power 8 × 0.45 (pin cap) × scale 5
+        resistance  🟩 74.88% → 🟩 73.38%       -1.5 = power 8 × 0.25 × 0.75 resistance scale
+        health      ❤️ -202.95% → ❤️ -207.99%   -5.04 = damage 18 × 0.2 × 1 × vital 1.4
+
+  Total: +43.88% damage  ·  ❤️ Nocturne -194.15% → **-207.99%** (-13.84)
+
+📌 **Pin: Ripples on Nocturne** — beat 6 of it (60 s held) · going under 89.9% → **100%** (+14.9 this
+      beat: health below zero ×1.15; the pressed parts are in agony ×1.15; she passes out at 100%)
+      (nearly gone)
+- Nocturne struggles (escape 0%, else break loose 0%, roll 62 / 28; she tries to slide out) →
+      **fails**; Ripples punishes it:
+    Chest
+        damage      ⚫ 371.22% → ⚫ 407.22%     +36 = power 16 × 0.45 (pin cap) × scale 5
+        resistance  🟩 73.38% → 🟩 70.38%       -3 = power 16 × 0.25 × 0.75 resistance scale
+        health      ❤️ -207.99% → ❤️ -218.07%   -10.08 = damage 36 × 0.2 × 1 × vital 1.4
+
+  Total: +36% damage  ·  ❤️ Nocturne -207.99% → **-218.07%** (-10.08)
+- 😮‍💨 Ripples is running out of breath holding the pin: it holds less surely
+- ⏱️ **She goes under after 6 beats (60 s).** ❌ **Nocturne faints and is out.** It was the choke
+      that took her under (her forearm, pressed across the throat on her Throat).
+- 🏆 **Winner: Ripples**
+
+⏳ Beat 60 health: ❤️ Ripples 53.01% (-0.5% exertion, -15.7% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nocturne making an escape attempt 42%, rolled 11 → she tries
+----------------------------------------
+
+*** Nocturne faints after 60 seconds pinned by Ripples. ***
+*** Winner: Ripples ***
+(The match is over. Keep pressing Enter to watch the aftermath: the loser may stir and even get back up. Type what happens to steer it, or /undo.)
+
+🩹 INJURY REPORT (what each will feel when it's over): Nocturne: throat (devastated: deep bruising, stiff and swollen for days); neck (devastated: deep bruising, stiff and swollen for days); chest (devastated: deep bruising, stiff and swollen for days); head (devastated: deep bruising, stiff and swollen for days)
+   Ripples: stomach (devastated: deep bruising, stiff and swollen for days); chest (devastated: deep bruising, stiff and swollen for days); right upper arm (devastated: deep bruising, stiff and swollen for days); nose (devastated: deep bruising, stiff and swollen for days)
+
+📜 FIGHT SUMMARY
+  Key moments:
+   • beat 4: Ripples breaks out of Nocturne's pin after 10 seconds
+   • beat 6: Nocturne's Thunderbolt hammers Ripples' throat (−10%)
+   • beat 10: Ripples breaks out of Nocturne's pin after 30 seconds
+   • beat 12: Nocturne breaks out of Ripples' pin after 10 seconds
+   • beat 14: Ripples' landing comes down DEVASTATINGLY on her right upper arm (−7%)
+   • beat 14: Nocturne catches Ripples helpless in the air with Psycho Cut (−4%)
+   • beat 27: Nocturne breaks out of Ripples' pin after 10 seconds
+   • beat 29: Ripples' Brick Break hammers Nocturne's neck (−10%)
+   • beat 44: Ripples turns Nocturne's Psycho Cut back on her
+   • beat 50: Ripples throws everything she has left into one last Brick Break (−2%)
+  Finish: Ripples pinned Nocturne for 6 beats; the choke (throat) put her out at 0% strength
+  Turning point: beat 47 — Ripples took the lead for good (16% vs 10%)
+  Damage dealt: Nocturne 53%, Ripples 61%
+  Biggest blow: beat 6, Nocturne's Thunderbolt on Ripples' throat (−10%)
+  Nocturne's worst injuries: throat (devastated, from Ripples' Mirror Coat, Ripples' pin); neck (devastated, from Ripples' pin, Ripples' Brick Break); chest (devastated, from Ripples' Swift, Ripples' pin)
+  Pins / escapes: Nocturne 4 / 3, Ripples 4 / 4
+  What decided it: Ripples got her pinned when Nocturne had too little left to throw her off, and the choke on her throat took her the rest of the way; Nocturne broke out 3 times before the last one held; Nocturne's throat was the wound that mattered: once it was ruined (by Ripples' Mirror Coat, Ripples' pin) every touch there sapped her; the damage was close (61% to 53%): it came down to who could hold the other down
+
+
