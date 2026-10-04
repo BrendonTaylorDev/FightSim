@@ -7026,7 +7026,9 @@ class Narrator:
                       "which part (a foreleg trembling at the elbow, the head shaking side to side, the tail lashing), "
                       "the motion itself (short scrapes of the claws at the ground, a limb stretched out and clawing at "
                       "the dirt again and again, twisting at the hips, the back arching off the ground), and how hard "
-                      "and fast. Never just 'she shook' or 'her body jerked'."
+                      "and fast. Never just 'she shook' or 'her body jerked'. The LOOKS notes on each press and the "
+                      "VISIBLE WEAR are the picture to show (fur, flesh, joints, marks): show it in your own words, "
+                      "don't copy the notes."
                       + (" Fit them to who makes them: " + "; ".join(voices) + "." if voices else "") + "\n\n")
 
     def _fading_thoughts_note(self):
