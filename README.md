@@ -2270,3 +2270,16 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
     - An escape is no longer called "a pin is kicked off".
     - Possessives fixed ("Ripples's").
   - **Balance after the fixes** (400 fights): Nocturne 57.0%, 7.5 pins a fight, 93% of fights with 4+ pins, 0.88 submissions a fight.
+- **Condition-based sensitivity and building pin pressure.**
+  - **Condition (`resistance.relative`):** a part's resistance is measured against how it started.
+    - A part starting at or above `sound` (85, a normal sturdy part) behaves exactly as before.
+    - A part starting lower, such as a soft throat, a fin or a fighter's weak spot, counts as sound and shows green while untouched, so a gentle brush there is little.
+    - Its condition falls a bit faster than a normal part's: it wears ×(start/85)^`wear_exp` (0.6).
+    - Every blow on it lands ×(85/start)^`vulnerability` (0.35) harder: a start of 63 gives ×1.11, a start of 25 gives ×1.53.
+    - The damage and health curve, the colour icons and the narrator's "toughness" all follow condition. The screen still prints the real resistance number.
+  - **Per-hit cap (`resistance.max_loss_per_hit`, 0 = off):** the most one blow can wear a part. It counts in condition terms, so no part is spared.
+    - At 35 it is what keeps a green part out of the red after one devastating blow: with the recommended curve it lands at condition 50, at the yellow/orange edge.
+  - **Pin pressure ramp (`pin.ramp`):** each press of a pin bites ×(1 + 0.12 per beat held), up to ×1.6 by the fifth beat. This evens out pins against the struggles and blows of the one underneath.
+  - **Balance** (your settings):
+    - Current curve: Nocturne 58.5% (200 fights).
+    - Recommended curve (`resistance.smooth.points` [[15,2.0,2.8],[40,1.35,1.9],[60,0.75,1.15],[85,0.3,0.7],[120,0.12,0.5]], `/resscale 1`, `max_loss_per_hit` 35): Nocturne 62% over 400 fights, about 64 beats a fight, 9.3 pins and 1.1 submissions a fight.

@@ -425,9 +425,11 @@ class Engine:
         pain_b = tier_for(dmg_b, pain_tiers(r))
         htier_b = tier_for(self._health_pct(defender), r["health_tiers"])
 
-        bracket = tier_for(res_b, r["resistance"]["brackets"])
+        cond_b = self.condition(p)
+        bracket = tier_for(cond_b, r["resistance"]["brackets"])
         scale = float(r.get("damage", {}).get("damage_scale", 1.0))
-        bmult, hmult = self.resistance_mults(res_b, bracket)
+        bmult, hmult = self.resistance_mults(cond_b, bracket)
+        bmult *= self.vulnerability(p)
         capped = False
         if cap:
             if cap.get("mult") is not None and bmult > float(cap["mult"]):
@@ -442,6 +444,14 @@ class Engine:
         wear = power * r["resistance"]["loss_per_power"] + taken * float(r["resistance"].get("loss_per_damage", 0) or 0)
         wear = wear * rscale
         cap_res = float(r["resistance"].get("max_loss_per_hit", 0) or 0)
+        rel = r["resistance"].get("relative") or {}
+        start_r, sound = float(getattr(p, "start_resistance", 0) or 0), float(rel.get("sound", 85))
+        if rel.get("enabled", True) and 0 < start_r < sound:
+            # a part that starts low wears in proportion to what it has: its CONDITION falls at much the pace of a
+            # sound part's (a little faster, by wear_exp), and the per-hit cap counts in condition too
+            share = start_r / sound
+            wear *= share ** float(rel.get("wear_exp", 0.6))
+            cap_res = cap_res * share if cap_res > 0 else 0.0
         if cap_res > 0 and wear > cap_res:
             wear = cap_res   # resistance.max_loss_per_hit: no single blow, however devastating, wears a part past this
         p.resistance = max(r["resistance"]["minimum"], res_b - wear)
@@ -484,6 +494,8 @@ class Engine:
             "damage_taken": round(taken, 2),
             "damage_before": round(dmg_b, 2), "damage_after": round(p.damage, 2),
             "res_before": round(res_b, 2), "res_after": round(p.resistance, 2),
+            "res_start": round(float(getattr(p, "start_resistance", res_b) or res_b), 2),
+            "cond_before": round(cond_b, 2), "cond_after": round(self.condition(p), 2),
             "health_mult": hmult, "vital": vital, "health_loss": round(health_loss, 2),
             "health_raw": round(raw_loss, 2), "softened": round(raw_loss - health_loss, 2) > 0.01,
             "res_overflow": round(res_over, 2),
@@ -495,6 +507,31 @@ class Engine:
             "health_tier": htier_a["label"],
             "health_tier_changed": htier_a["label"] != htier_b["label"],
         }
+
+    def condition(self, p, res=None):
+        """How sound a part is, on the resistance scale, for how much a blow hurts it and how it looks
+        (resistance.relative). A part that starts at or above `sound` (85: a normal, sturdy part) is judged by its
+        resistance as it is. One that starts BELOW it (a soft throat, a thin fin, some fighters' weak spots) is judged
+        against its own start: untouched it counts as sound, so a gentle brush there is nothing much; every point it
+        loses is a bigger share of what it had, so it turns sensitive fast. Off: resistance as it is."""
+        res = float(p.resistance if res is None else res)
+        cfg = self.rules["resistance"].get("relative") or {}
+        start = float(getattr(p, "start_resistance", 0) or 0)
+        sound = float(cfg.get("sound", 85))
+        if not cfg.get("enabled", True) or start <= 0 or start >= sound:
+            return res
+        return min(sound, res * sound / start)
+
+    def vulnerability(self, p):
+        """resistance.relative.vulnerability: a part that starts below `sound` takes this much more from a blow,
+        (sound / start) ** vulnerability (0 = none). Untouched it is sound but fragile: real blows land harder there."""
+        cfg = self.rules["resistance"].get("relative") or {}
+        start = float(getattr(p, "start_resistance", 0) or 0)
+        sound = float(cfg.get("sound", 85))
+        v = float(cfg.get("vulnerability", 0.35) or 0)
+        if not cfg.get("enabled", True) or start <= 0 or start >= sound or v <= 0:
+            return 1.0
+        return round((sound / start) ** v, 4)
 
     def resistance_mults(self, res, bracket=None):
         """(damage mult, health mult) for a part at this resistance. With resistance.smooth on, a gradient: straight
@@ -4846,7 +4883,13 @@ class Engine:
                 continue
             d = self.get(h.defender)
             # during a pin, pressure is per reference_seconds and scales with the length of the beat
-            power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0))
+            ramp = 1.0
+            if in_pin:
+                rcfg = self.rules.get("pin", {}).get("ramp") or {}
+                if rcfg.get("enabled", True):
+                    # held pressure builds: each beat the press stays on, it bites a little deeper (pin.ramp)
+                    ramp = min(float(rcfg.get("max", 1.6)), 1.0 + float(rcfg.get("per_beat", 0.12)) * h.turns_active)
+            power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp
                      if in_pin else h.power) * first
             self._source = f"{poss_word(h.attacker)} {'pin' if in_pin else h.sub or ('coils' if h.coil else 'hold')}"
             hit = self._apply_damage(d, h.part, round(power, 2), cap=self.pin_cap() if in_pin else None)
@@ -4862,7 +4905,7 @@ class Engine:
                 else:
                     self.set_status(d, "constricted", 2)
             events.append({"type": "hold_ongoing", "hold_id": h.id, "attacker": h.attacker, "hold_power": h.power,
-                           "pin_mult": (round(time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)), 4)
+                           "pin_mult": (round(time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp, 4)
                                         if in_pin else None),
                            "first": fresh, "first_mult": first if fresh else None,
                            "defender": h.defender, "flavor": h.flavor, "with": h.with_part, "grab": bool(h.grab),

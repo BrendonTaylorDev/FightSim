@@ -138,7 +138,7 @@ class Display:
         for h in hits:
             cells += [f"{self.dmg_icon(h['damage_before'])} {num(h['damage_before'])}% → "
                       f"{self.dmg_icon(h['damage_after'])} {num(h['damage_after'])}%",
-                      f"{self.res_icon(h['res_before'])} {num(h['res_before'])}% → {self.res_icon(h['res_after'])} "
+                      f"{self.res_icon(h['res_before'], h.get('res_start'))} {num(h['res_before'])}% → {self.res_icon(h['res_after'], h.get('res_start'))} "
                       f"{num(h['res_after'])}%",
                       f"{self.heart} {pct(h['health_before'])} → {self.heart} {pct(h['health_after'])}"]
 
@@ -212,8 +212,8 @@ class Display:
                                  break_on_hyphens=False) or [line]
         return "\n".join(out)
 
-    def part_item(self, name, res, dmg):
-        return f"{name} {self.res_icon(res)}{num(res)}% {self.dmg_icon(dmg)}{num(dmg)}%"
+    def part_item(self, name, res, dmg, start=None):
+        return f"{name} {self.res_icon(res, start)}{num(res)}% {self.dmg_icon(dmg)}{num(dmg)}%"
 
     def move_line_tight(self, m):
         """Slash: base 30 × Normal vs Water 1 × targeted 2 = power 60 (res loss 15) · jarred Chest, Neck ×0.5 = 15 ..."""
@@ -255,7 +255,7 @@ class Display:
             sc = "" if h.get("scale", 1) == 1 else f" × {num(h['scale'])}"
             rows.append((
                 label,
-                f"{self.res_icon(h['res_before'])} {num(h['res_before'])} → {self.res_icon(h['res_after'])} "
+                f"{self.res_icon(h['res_before'], h.get('res_start'))} {num(h['res_before'])} → {self.res_icon(h['res_after'], h.get('res_start'))} "
                 f"{num(h['res_after'])}%{rs}",
                 f"{self.dmg_icon(h['damage_before'])} {num(h['damage_before'])} → {self.dmg_icon(h['damage_after'])} "
                 f"**{num(h['damage_after'])}%**",
@@ -293,14 +293,19 @@ class Display:
         """Resistance lost per point of power, including the resistance scale."""
         return self.rules["resistance"]["loss_per_power"] * float(self.rules.get("damage", {}).get("resistance_scale", 1.0))
 
-    def res_icon(self, res):
+    def res_icon(self, res, start=None):
+        """The colour for a part's resistance: by its CONDITION (resistance.relative) when its start is known."""
+        cfg = self.rules["resistance"].get("relative") or {}
+        sound = float(cfg.get("sound", 85))
+        if start and cfg.get("enabled", True) and 0 < float(start) < sound:
+            res = min(sound, float(res) * sound / float(start))
         return tier_for(res, self.rules["resistance"]["brackets"])["icon"]
 
     def dmg_icon(self, dmg):
         return tier_for(dmg, pain_tiers(self.rules))["icon"]
 
-    def part_line(self, name, res, dmg):
-        return f"- {name}: {self.res_icon(res)} {num(res)}% | {self.dmg_icon(dmg)} {num(dmg)}%"
+    def part_line(self, name, res, dmg, start=None):
+        return f"- {name}: {self.res_icon(res, start)} {num(res)}% | {self.dmg_icon(dmg)} {num(dmg)}%"
 
     def calc_line(self, h, label):
         loss = h["res_before"] - h["res_after"]
@@ -342,7 +347,7 @@ class Display:
         out = ["**Grouped by resistance:**"]
         for (rb, mult, taken, ra), hs in sorted(groups.items(), key=lambda kv: -kv[0][0]):
             sc = hs[0].get("scale", 1)
-            out.append(f"- Res {num(rb)}% {self.res_icon(rb)} → {num(ra)}% {self.res_icon(ra)} ({len(hs)}), {mult:.2f}×"
+            out.append(f"- Res {num(rb)}% {self.res_icon(rb, hs[0].get('res_start'))} → {num(ra)}% {self.res_icon(ra, hs[0].get('res_start'))} ({len(hs)}), {mult:.2f}×"
                        f"{'' if sc == 1 else ' ×' + num(sc) + ' scale'}, +{num(taken)}% each: "
                        + ", ".join(f"{h['part']} {num(h['damage_before'])}→{num(h['damage_after'])}%"
                                    f"{self.dmg_icon(h['damage_after'])}" for h in hs))
@@ -374,7 +379,7 @@ class Display:
             return out
 
         out = [f"**Before:** ({defender})"]
-        out += [self.part_line(p, first[p]["res_before"], first[p]["damage_before"]) for p in order]
+        out += [self.part_line(p, first[p]["res_before"], first[p]["damage_before"], first[p].get("res_start")) for p in order]
         out.append("")
         out.append(self.move_line(move) if move else "**Calculations:**")
         seen = {}
@@ -384,7 +389,7 @@ class Display:
             out.append(self.calc_line(h, label))
         out.append("")
         out.append("**After:**")
-        out += [self.part_line(p, last[p]["res_after"], last[p]["damage_after"]) for p in order]
+        out += [self.part_line(p, last[p]["res_after"], last[p]["damage_after"], last[p].get("res_start")) for p in order]
         out.append(health_line)
         return out
 
@@ -1194,10 +1199,10 @@ class Display:
             hurt = sorted((p for p in f.parts.values() if p.damage > 0 or p.resistance < p.start_resistance),
                           key=lambda p: -p.damage)
             if self.layout() != "classic":
-                out += self._wrap([self.part_item(p.name, p.resistance, p.damage) for p in hurt],
+                out += self._wrap([self.part_item(p.name, p.resistance, p.damage, p.start_resistance) for p in hurt],
                                   width=112 if self.tight() else 96) or ["  no damage yet"]
             else:
-                out += [self.part_line(p.name, p.resistance, p.damage) for p in hurt] or ["- no damage yet"]
+                out += [self.part_line(p.name, p.resistance, p.damage, p.start_resistance) for p in hurt] or ["- no damage yet"]
             untouched = len(f.parts) - len(hurt)
             if hurt and untouched:
                 out.append(f"- ({untouched} other part{'s' if untouched != 1 else ''} untouched)")
@@ -1235,10 +1240,10 @@ class Display:
             out.append(f"**{f.name}**{team}{out_tag} {self.heart} Health {pct(f.health, f.max_health)} ({ht})"
                        f"{self._status_tag(f)}")
             if self.layout() != "classic":
-                out += self._wrap([self.part_item(p.name, p.resistance, p.damage) for p in f.parts.values()],
+                out += self._wrap([self.part_item(p.name, p.resistance, p.damage, p.start_resistance) for p in f.parts.values()],
                                   width=112 if self.tight() else 96)
             else:
-                out += [self.part_line(p.name, p.resistance, p.damage) for p in f.parts.values()]
+                out += [self.part_line(p.name, p.resistance, p.damage, p.start_resistance) for p in f.parts.values()]
             out.append("")
         if engine.holds:
             out.append("Active holds:")

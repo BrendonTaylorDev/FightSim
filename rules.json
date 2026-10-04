@@ -555,7 +555,14 @@
       ]
     },
     "max_loss_per_hit": 0,
-    "_max_loss_per_hit_comment": "max_loss_per_hit: the most resistance (in points) one blow can take off a part, however devastating, the soft cap's extra wear included. 0 = no limit."
+    "_max_loss_per_hit_comment": "max_loss_per_hit: the most resistance (in points) one blow can take off a part, however devastating, the soft cap's extra wear included. 0 = no limit.",
+    "relative": {
+      "enabled": true,
+      "sound": 85,
+      "vulnerability": 0.35,
+      "wear_exp": 0.6
+    },
+    "_relative_comment": "relative: a part's CONDITION is its resistance measured against how it started. A part starting at or above `sound` (85) is judged by its resistance as it is. One starting below it (a soft throat, a thin fin) counts as sound while untouched, so a gentle brush there is little; every point it loses is a bigger share of what it had, so it becomes sensitive fast (the damage and health curve, the icons and the narrator's 'toughness' all use the condition). vulnerability: such a part also takes (sound/start)^vulnerability more from every blow (start 63: x1.11; start 25: x1.53). enabled false = raw resistance. wear_exp: such a part loses resistance x(start/sound)^wear_exp per blow, so its condition falls only a little faster than a sound part's (1 = exactly as fast; 0 = raw points, which can take a very weak part from sound to ruined in one blow); max_loss_per_hit counts in condition too."
   },
   "health": {
     "icon": "❤️",
@@ -1001,7 +1008,13 @@
         "5": 15,
         "6": 10
       }
-    }
+    },
+    "ramp": {
+      "enabled": true,
+      "per_beat": 0.12,
+      "max": 1.6
+    },
+    "_ramp_comment": "ramp: a pin's held pressure builds the longer each press stays on: x(1 + per_beat x beats held), up to max (0.12 a beat, at most x1.6, reached on the 5th beat)."
   },
   "getting_up": {
     "_comment": "A fighter on the ground tries to get up at the end of each beat after the one she went down in. Score = her strength share / (1 + damage of her worst 3 limb parts / limb_damage_halves_at), plus per_beat_down for each extra beat down, plus a little luck (adrenaline +0.2, paralyzed -0.3). Score >= thresholds[0]: up on the first try; [1]: second try; [2]: third try; lower: fails all three and stays down. After max_beats_down she always makes it on the third try.",

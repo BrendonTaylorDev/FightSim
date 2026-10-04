@@ -1860,10 +1860,10 @@ class Narrator:
         self._tiers_used.add(after["label"])
         change = (f"lasting pain {before['label']} → {after['label'].upper()}" if before["label"] != after["label"]
                   else f"lasting pain still {after['label']}")
-        fb, fa = self._feel(h["res_before"]), self._feel(h["res_after"])
+        fb, fa = self._feel(h.get("cond_before", h["res_before"])), self._feel(h.get("cond_after", h["res_after"]))
         tough = (f"; its toughness drops from {fb} to {fa} (it will take the next hit worse)"
                  if fb != fa and fa else "")
-        if float(h.get("res_after", 100)) <= 55 and after["label"] in ("minor", "sore", "hurting"):
+        if float(h.get("cond_after", h.get("res_after", 100))) <= 55 and after["label"] in ("minor", "sore", "hurting"):
             tough += ("; it doesn't hurt much yet, but it has gone SOFT: it's holding for now and won't hold many more "
                       "(she can feel it, and so can a careful opponent)")
         label = f"Hit {n}: " if n else ""
@@ -2177,7 +2177,7 @@ class Narrator:
 
     def _many_hits(self, hits):
         """Whole-body attacks: summarize instead of listing 30+ lines."""
-        changed = [h for h in hits if h["pain_tier_changed"] or self._feel(h["res_before"]) != self._feel(h["res_after"])]
+        changed = [h for h in hits if h["pain_tier_changed"] or self._feel(h.get("cond_before", h["res_before"])) != self._feel(h.get("cond_after", h["res_after"]))]
         worst = sorted(hits, key=lambda h: -h["damage_taken"])[:4]
         lines = [f"  - It hits EVERY part of {hits[0]['defender']} at once ({len(hits)} body parts): ONE surge through "
                  f"the whole body, all at the same instant. Do not narrate it as a series of separate strikes on "
@@ -7347,7 +7347,7 @@ class Narrator:
         if dfn in (getattr(self, "pinned_now", None) or ()) or dfn in (getattr(self, "cant_act", None) or ()):
             return []
         h = hits[0]
-        soft = float(h.get("res_before", 100)) <= 60
+        soft = float(h.get("cond_before", h.get("res_before", 100))) <= 60
         hurt = float(h.get("damage_before", 0)) >= 150
         if not (soft or hurt):
             return []
