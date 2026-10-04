@@ -2299,3 +2299,8 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - 20k fits everything with real story memory, and no detail is cut.
   - To make it fit on a 16 GB card, start Ollama with `OLLAMA_FLASH_ATTENTION=1` and `OLLAMA_KV_CACHE_TYPE=q8_0`. That stores the context at half size, so 20k takes about the memory 12k did.
   - Check with `ollama ps` while a fight is running: it should say 100% GPU. If it shows a CPU share, set `/set narration.context_window 16384`.
+- **Faster beats, nothing dropped (`narration.reader_timing` "beat").**
+  - The second reading now checks each part once the whole beat is written: each part against the text before it, with the same rules and limits.
+  - Before, it ran between parts, and its prompt pushed the narrator's long prompt (about 10,000 tokens) out of Ollama's memory, so every part re-read it. On a partly-CPU setup that's about 45 s a part.
+  - Paragraph rewrites already reuse the cached prompt. `"part"` = the old order.
+- **Defaults are now the settings the balance is tuned for:** damage scale 5, health loss 0.2, resistance scale 1, the recommended resistance curve with `max_loss_per_hit` 35, and the permanent numb level off (temporary numbness replaces it). Your own `my_settings.json` still wins for anything you saved; `/settings` lists those, and `/settings forget` drops them.

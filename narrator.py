@@ -6454,7 +6454,12 @@ class Narrator:
         if repair:
             # mistakes the program can point at: write just those paragraphs again; the rest stays word for word
             text = self._repair_paragraphs(user_msg, text, prior)
-            text = self._second_reading(user_msg, text, prior)
+            if getattr(self, "_defer_reader", False):
+                # read back once the whole beat is written (narration.reader_timing "beat"): same reading, same rules,
+                # but the narrator's prompt stays in the model's memory from one part to the next
+                self._deferred.append(user_msg)
+            else:
+                text = self._second_reading(user_msg, text, prior)
         loose = self._pin_broken_lines(text)
         if loose:
             # still there after the rewrites: what follows an escape that never happened is all invented, so the part
@@ -7868,6 +7873,8 @@ class Narrator:
         written = []
         self._part_leads = {}
         self._pov_marks = []      # (first sentence of a part, whose side it is told from), for the labels
+        self._defer_reader = len(plan) > 1 and str(self.rules.get("narration", {}).get("reader_timing", "beat")) == "beat"
+        self._deferred, part_msgs, part_leads = [], [], []
         for i, (key, focus, seg_words) in enumerate(plan, start=1):
             if self.progress:
                 self.progress(f"narrator is writing part {i}/{len(plan)}")
@@ -7890,8 +7897,11 @@ class Narrator:
             self._sample_want = self._sample_tags(key, acts, pin_events, also_now)
             ask += self._blocks_for(key, acts, pin_events, also_now, actor, receivers, i == 1, i == len(plan))
             ask += self._camera_note(key)
+            n_def = len(self._deferred)
             part = self._call(context + ask, seg_words, coverage=check, prior=so_far)
             written.append(self._drop_repeats(part, so_far) if so_far else part)  # no re-telling earlier parts
+            part_msgs.append(self._deferred[-1] if len(self._deferred) > n_def else None)
+            part_leads.append(self._lead_now)
             if written[-1]:
                 first = next((x.strip() for x in re.split(r"(?<=[.!?…])\s+|\n+", written[-1]) if x.strip()), None)
                 if first and self._lead_now:
@@ -7955,6 +7965,28 @@ class Narrator:
                                    "any attack, dodge, impact, or fall again (and add no new fall). Go deeper "
                                    "into what came after: how each hurt part feels now, breath, thoughts, how they move, "
                                    "guard injuries, and size each other up. No new attacks.", w2)
+        if self._defer_reader:
+            # the second reading, part by part, now that the whole beat is written (each part with the text before it)
+            self._defer_reader = False
+            changed = False
+            for k, msg in enumerate(part_msgs):
+                if not msg or not written[k]:
+                    continue
+                prior_k = "\n\n".join(w for w in written[:k] if w)
+                self._prior_now, self._lead_now = prior_k, part_leads[k]
+                new = self._second_reading(msg, written[k], prior_k)
+                if new != written[k]:
+                    written[k], changed = new, True
+            self._lead_now, self._prior_now = None, ""
+            if changed:
+                # whose side each part is told from follows the parts as they read now
+                self._pov_marks = []
+                for k, w in enumerate(written):
+                    sents = [x.strip() for x in re.split(r"(?<=[.!?…])\s+|\n+", w or "") if x.strip()]
+                    if sents and part_leads[k]:
+                        self._part_leads[sents[0]] = part_leads[k]
+                    if sents:
+                        self._pov_marks.append((sents[:3], part_leads[k] or "Both"))
         return "\n\n".join(w for w in written if w).strip()
 
     @staticmethod

@@ -448,8 +448,8 @@
     "variance": 0.15
   },
   "damage": {
-    "_comment": "damage_scale multiplies every hit's damage (and so the health it costs). It does NOT change how fast resistance wears down (that's resistance_scale, below). 1 = the base numbers; the default is 1.25. Change it here or in the program with /scale.",
-    "damage_scale": 1.25,
+    "_comment": "damage_scale multiplies every hit's damage (and so the health it costs). It does NOT change how fast resistance wears down (that's resistance_scale, below). 1 = the base numbers; the default is 5 (the one the balance is tuned for). Change it here or in the program with /scale.",
+    "damage_scale": 5,
     "_resistance_scale_comment": "resistance_scale multiplies how fast resistance wears down (resistance lost = power x loss_per_power x resistance_scale). It does NOT change damage. 1 = normal; 2 = parts soften twice as fast; 0.5 = half as fast. Change it in the program with /resscale.",
     "resistance_scale": 1.0,
     "part_curve": {
@@ -535,32 +535,32 @@
       "points": [
         [
           15,
-          1.8,
-          2.2
+          2.0,
+          2.8
         ],
         [
           40,
-          1.3,
-          1.7
+          1.35,
+          1.9
         ],
         [
           60,
-          0.8,
-          1.3
+          0.75,
+          1.15
         ],
         [
           85,
-          0.45,
-          1.0
+          0.3,
+          0.7
         ],
         [
           120,
-          0.2,
-          0.7
+          0.12,
+          0.5
         ]
       ]
     },
-    "max_loss_per_hit": 0,
+    "max_loss_per_hit": 35,
     "_max_loss_per_hit_comment": "max_loss_per_hit: the most resistance (in points) one blow can take off a part, however devastating, the soft cap's extra wear included. 0 = no limit.",
     "relative": {
       "enabled": true,
@@ -576,7 +576,7 @@
     "minimum": null,
     "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
     "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
-    "loss_per_damage_point": 0.5,
+    "loss_per_damage_point": 0.2,
     "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. Health one HIT costs past per_hit (a share of the fighter's own full health: 0.05 = 5%), and health everything that lands on her in one BEAT costs past per_beat (0.12 = 12%), counts only at `above` (0.3 = 30%). Below those limits nothing changes. The stat block shows 'softened from' when it applies. enabled false = the old rule (a pummel on a ruined part could cost half her health in a beat).",
     "soft_cap": {
       "enabled": true,
@@ -684,7 +684,7 @@
     "swearing": "rare",
     "swearing_gap": 5,
     "_numb_tier_comment": "true: parts at 1000%+ damage go 'numb with shock' (⚪). false: they stay 'devastated' (⚫). Toggle with /numb on|off or /set narration.numb_tier false",
-    "numb_tier": true,
+    "numb_tier": false,
     "_bone_break_comment": "Bones may always crack or bruise. Broken, fractured, or shattered bones are allowed only on a part with at least min_part_damage damage, on a fighter whose health is below max_health.",
     "bone_break": {
       "min_part_damage": 300,
@@ -788,7 +788,9 @@
       "hard_bonus": 0.25,
       "weak_bonus": 0.15
     },
-    "_context_window_comment": "context_window: how many tokens the model reads at once (prompt + answer), for the narrator, the director and the reader. 20480 with Ollama set to OLLAMA_FLASH_ATTENTION=1 and OLLAMA_KV_CACHE_TYPE=q8_0 (half-size context memory) uses about what 12288 did before. If `ollama ps` shows any CPU share, step down to 16384; if it's still tight, 12288. The narrator trims the oldest story first when a prompt doesn't fit."
+    "_context_window_comment": "context_window: how many tokens the model reads at once (prompt + answer), for the narrator, the director and the reader. 20480 with Ollama set to OLLAMA_FLASH_ATTENTION=1 and OLLAMA_KV_CACHE_TYPE=q8_0 (half-size context memory) uses about what 12288 did before. If `ollama ps` shows any CPU share, step down to 16384; if it's still tight, 12288. The narrator trims the oldest story first when a prompt doesn't fit.",
+    "reader_timing": "beat",
+    "_reader_timing_comment": "reader_timing: when the second reading checks a beat that is written in parts. 'beat' (default): once every part is written, part by part, each against the text before it, with the same rules and limits; the narrator's long prompt then stays in the model's memory from one part to the next, which saves re-reading it (about 45 s a part on a partly-CPU setup). 'part': right after each part (the old order)."
   },
   "pain_tiers": [
     {
