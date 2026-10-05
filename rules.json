@@ -1,4 +1,9 @@
 {
+  "models": {
+    "_comment": "Which Ollama models write the story and pick what happens. null = the default (mistral-small:24b, or --model). /model narrator <name> and /model director <name> change these.",
+    "narrator": null,
+    "director": null
+  },
   "_comment": "All tuning lives here. Values marked GUESS are placeholders until you confirm your real rules.",
   "body_templates": {
     "_comment": "Starting resistance (%) per body part. Fighters pick a template in fighters.json and can override any part. Resistance can go above 100%.",

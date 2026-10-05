@@ -26,7 +26,7 @@ from engine import Engine, body_region as body_region_of
 from narrator import Narrator, strip_pov
 import llm
 
-VERSION = "2026-10-05 build 117 (commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
+VERSION = "2026-10-05 build 118 (/model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
 
 HELP = """
 =============================================================================================
@@ -423,8 +423,11 @@ class Session:
         self.story_before = []      # the prose of earlier fights this session (for /export prose)
         self.use_llm = not args.no_llm
         # one model for both by default; --director-model / --narrator-model split them
-        self.director = Director(getattr(args, "director_model", None) or args.model, host=args.host)
-        self.narrator = Narrator(getattr(args, "narrator_model", None) or args.model, self.eng.rules, host=args.host)
+        saved = self.eng.rules.get("models") or {}   # what /model last chose (kept in my_settings.json)
+        self.director = Director(getattr(args, "director_model", None) or saved.get("director") or args.model,
+                                 host=args.host)
+        self.narrator = Narrator(getattr(args, "narrator_model", None) or saved.get("narrator") or args.model,
+                                 self.eng.rules, host=args.host)
         self.narrator.progress = self.progress
         self.story = []
         self.over = False
@@ -2203,15 +2206,24 @@ def handle_command(s, line):
         if not a:
             print(f"Narrator (writes the story): {nm}\nDirector (picks what happens): {dm}\n"
                   f"Change for this session with /model narrator <name>, /model director <name>, or /model <name> for "
-                  f"both (pull it in Ollama first). To keep it, start play.py with --narrator-model <name>."); return
+                  f"both (pull it in Ollama first). The choice is kept for next time."); return
         which = a[0].lower() if a[0].lower() in ("narrator", "director", "both") and len(a) > 1 else "both"
-        name = " ".join(a[1:] if a[0].lower() in ("narrator", "director", "both") and len(a) > 1 else a).strip()
+        rest = a[1:] if a[0].lower() in ("narrator", "director", "both") and len(a) > 1 else a
+        # a model name has no spaces: anything after it is another command pasted on the same line
+        name, more = rest[0].strip(), " ".join(rest[1:]).strip()
         if which in ("narrator", "both"):
             s.narrator.model = name
+            _save_rule_path(["models", "narrator"], name)
         if which in ("director", "both"):
             s.director.model = name
-        print(f"Narrator: {s.narrator.model}\nDirector: {s.director.model}\n(this session; the first beat on a new "
-              f"model is slow while Ollama loads it)"); return
+            _save_rule_path(["models", "director"], name)
+        print(f"Narrator: {s.narrator.model}\nDirector: {s.director.model}\n(kept for next time; the first beat on a "
+              f"new model is slow while Ollama loads it. /model narrator mistral-small:24b goes back)")
+        if more.startswith("/"):
+            handle_command(s, more)
+        elif more:
+            print(f"(ignored after the model name: {more})")
+        return
     if cmd in ("variant", "variants"):
         eng = s.eng
         if not eng.variants:
