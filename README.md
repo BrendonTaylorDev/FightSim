@@ -2423,3 +2423,15 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
       - More checks fire, and each can mean a paragraph rewrite or a second reading.
     - **The fix:** `narration.beat_budget_minutes` (6) is a time budget per beat. Past it, the optional extra passes stop: a second whole rewrite, wording-only fixes and the second reading. Past 1.5 times the budget, no whole part is written again; only the paragraphs that need it are fixed. Every part is still written in full, and the program's own checks and cleanup still run.
     - **Settings:** `/budget <minutes|off>` sets the budget. The ⏱ line now has a second line saying where the time went (drafts, rewrites, paragraph fixes, second reading, interlude), and `/budget timing off` hides it.
+- **Ranked checks and lighter notes (after build 132):**
+  - **Checks are ranked.**
+    - **Always fixed:** anything wrong about what happened (a missing hit, attack, escape or escape blow, an invented fall or pin), wrong anatomy, and pain past the limit.
+    - **Fixed by rewriting that paragraph:** tense, too much talk, the same hurt told again, blood with no wound. Wording-only ones stay capped at 2 a part.
+    - **Never cost a model call** (`narration.cleanup_only`): filler, a leaked move label and a bare sound. The program's cleanup swaps the filler for a finished line, cuts the label and puts the sound in italics.
+  - **The second reading runs on big beats only** (`narration.reader_when` "big"): a pin starting or ending, a knockdown or takedown, a devastating blow, the arena, a grip closing, someone out. `/set narration.reader_when always` brings it back for every beat.
+  - **Small details fade from the notes** (`narration.notes_decay`):
+    - How a part was hurt ("from Ripples' Ice Beam, then her pin") is kept while that part was hit in the last 4 beats. After that only its pain level stays, unless one huge hit did it (150%+ part damage at once), which is remembered for the rest of the fight.
+    - Visible marks on a part left alone shorten to the main one.
+    - Surface details like grit or a scuff last 6 beats.
+    - The "barely touched" list shows 6 parts and the movement list 3.
+    - Pain levels, injuries, posture and everything that happens are never trimmed.

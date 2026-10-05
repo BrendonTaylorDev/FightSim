@@ -7533,6 +7533,14 @@ class Narrator:
         # are always fixed
         style = ("tells it instead of showing", "it repeats \"", "a move's name dropped", "the sound *",
                  "has already been described")
+        # the lowest tier never costs a model call: filler, a leaked move label and a bare sound are handled by the
+        # program's cleanup at the end (filler swapped for a finished line, the label cut, the sound put in italics)
+        # (narration.cleanup_only: the markers; [] = rewrite them like the rest)
+        free = tuple(n.get("cleanup_only", ["tells it instead of showing", "a move's name dropped", "the sound *"]) or ())
+        if free:
+            found = {i: w for i, w in found.items() if not all(any(m in x for m in free) for x in w)}
+            if not found:
+                return text
         only_style = [i for i in sorted(found) if all(any(m in w for m in style) for w in found[i])]
         keep_style = set(only_style[:0 if self._late() else int(n.get("style_repairs_max", 2))])
         found = {i: w for i, w in found.items() if i not in only_style or i in keep_style}
@@ -7700,6 +7708,8 @@ class Narrator:
             if self.progress:
                 self.progress("past this beat's time budget: skipping the second reading (the program's own checks still ran)")
             return text
+        if str(n.get("reader_when", "big")).lower() == "big" and not self._big_beat():
+            return text     # an ordinary exchange: the program's own checks are enough (narration.reader_when)
         self._note_phrases(user_msg)
         facts = (self._timeline() + "\n\n" + facts).strip()
         paras = text.split("\n")
@@ -8014,6 +8024,15 @@ class Narrator:
         if not changed:
             return text
         return _drop_orphans(text, re.sub(r"\n{3,}", "\n\n", "\n".join(paras)).strip())
+
+    def _big_beat(self):
+        """A beat that changes something (a pin starting or ending, a knockdown or takedown, a devastating blow, the
+        arena hit, adrenaline, a breaking point, someone out): these get the second reading."""
+        if getattr(self, "_important", False):
+            return True
+        return any(a.get("devastating") or a.get("down") or a.get("taken_down") or a.get("environment")
+                   or a.get("type") in ("pin_start", "pin_forced", "eliminated", "hold_start")
+                   for a in (getattr(self, "_acts_now", None) or []))
 
     def _late(self, factor=1.0):
         """Has this beat run past its time budget (narration.beat_budget_minutes, times factor)? Past it, only the

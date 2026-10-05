@@ -422,6 +422,7 @@ class Engine:
         blow does: pin.pressure_cap)."""
         r = self.rules
         p = defender.part(part_name)
+        self.__dict__.setdefault("hit_turn", {})[f"{defender.name}|{p.name}"] = self.turn   # for the notes' decay
         res_b, dmg_b, hp_b = p.resistance, p.damage, defender.health
         pain_b = tier_for(dmg_b, pain_tiers(r))
         htier_b = tier_for(self._health_pct(defender), r["health_tiers"])
@@ -483,6 +484,13 @@ class Engine:
             if not log or log[-1] != self._source:
                 log.append(self._source)
                 del log[:-4]
+            # a huge hit on this part is remembered for the rest of the fight, however long ago it was
+            # (narration.notes_decay.big_hit: part damage added in one go)
+            added = p.damage - dmg_b
+            big = defender.learned.setdefault("big_hits", {})
+            if added >= float(((r.get("narration") or {}).get("notes_decay") or {}).get("big_hit", 150)) \
+                    and added > (big.get(p.name) or [None, 0])[1]:
+                big[p.name] = [self._source, round(added, 1)]
         numb_new = self._maybe_numb(defender, p, taken, was_numb)
         return {
             "numb": was_numb, "goes_numb": numb_new,
@@ -3753,9 +3761,22 @@ class Engine:
     def note_wear(self, f, mark):
         """Something about how she LOOKS that stays for the rest of the fight (grit in her coat, scuffs)."""
         w = f.learned.setdefault("wear", [])
+        f.learned.setdefault("wear_turn", {})[mark] = self.turn
         if mark not in w:
             w.append(mark)
             del w[:-6]
+
+    def _decay(self, key, default):
+        """narration.notes_decay: how many beats a small detail stays in the notes (0 = forever)."""
+        cfg = (self.rules.get("narration") or {}).get("notes_decay") or {}
+        if not cfg.get("enabled", True):
+            return 0
+        return int(cfg.get(key, default) or 0)
+
+    def _stale(self, f, part, beats):
+        """Has this part gone untouched for more than `beats` beats? (Unknown = not stale.)"""
+        t = (getattr(self, "hit_turn", None) or {}).get(f"{f.name}|{part}")
+        return bool(beats) and t is not None and self.turn - t > beats
 
     # what the damage looks like, by what did it: [light, worse, worst], three wordings each
     MARKS = {
@@ -3880,7 +3901,11 @@ class Engine:
         """VISIBLE WEAR: how each fighter looks by now, so the narrator keeps it the same from beat to beat."""
         rows = []
         for f in self.active():
-            bits = list(f.learned.get("wear") or [])
+            # small surface details (grit in her coat, a scuff) fade from the notes after a few beats: the fight has
+            # moved on and the fur has moved with it (narration.notes_decay.wear_beats)
+            wb, wt = self._decay("wear_beats", 6), f.learned.get("wear_turn") or {}
+            bits = [m for m in (f.learned.get("wear") or [])
+                    if not (wb and m in wt and self.turn - wt[m] > wb)]
             if self.has(f, "soaked"):
                 bits.append("fur soaked dark and plastered flat")
             if self.has(f, "burned"):
@@ -3888,7 +3913,10 @@ class Engine:
             if self.has(f, "chilled"):
                 bits.append("frost in her fur, shivering")
             bad = sorted((p for p in f.parts.values() if p.damage >= 90), key=lambda p: -p.damage)[:4]
-            bits += [self.visible_marks(f, p) for p in bad]
+            # a mark on a part nobody has touched for a while is given in short: the first thing that shows
+            ob = self._decay("origin_beats", 4)
+            bits += [(self.visible_marks(f, p).split(", ")[0] if self._stale(f, p.name, ob) else self.visible_marks(f, p))
+                     for p in bad]
             if bits:
                 rows.append(f"{f.name}: " + "; ".join(dict.fromkeys(bits)))
         return ("VISIBLE WEAR (how they look by now; keep it the same unless this beat changes it): "
@@ -6250,7 +6278,7 @@ class Engine:
                                                                                    f"off her {name}")
             else:
                 out.append(f"keeps her {name} tucked in, unusable" if arm else f"won't put any weight on her {name}")
-        return out[:5]
+        return out[:3]
 
     def breakable_parts(self, f):
         """Parts whose bones may break: devastated, on a fighter whose overall health is below the limit."""
@@ -6276,7 +6304,14 @@ class Engine:
                     lines.append(f"{f.name}: OUT of the fight ({st['label']}), off to one side. She plays no part in the "
                                  f"fight now: nobody watches for her, worries about her, or mentions her.")
                 continue
+            ob = self._decay("origin_beats", 4)
+
             def _origin(p, f=f):
+                # how it was done matters while it is fresh; a part left alone for a while is just its pain level
+                # (narration.notes_decay.origin_beats)
+                if self._stale(f, p.name, ob):
+                    big = (f.learned.get("big_hits") or {}).get(p.name)
+                    return f"; the worst of it from {big[0]}" if big else ""
                 src = self.injury_log.get(f"{f.name}|{p.name}", [])
                 return f"; from {', then '.join(src[-2:])}" if src else ""
             hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}{_origin(p)})"
@@ -6302,7 +6337,7 @@ class Engine:
             lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {ht['reaction']}{ground}\n"
                          f"   painful parts (they hurt and get favored, but do NOT override overall strength): "
                          f"{', '.join(hurt[:10]) or 'nothing serious'}"
-                         + (f"\n   barely touched so far: {', '.join(fresh[:12])}" if hurt and fresh else ""))
+                         + (f"\n   barely touched so far: {', '.join(fresh[:6])}" if hurt and fresh else ""))
         if not self.pins:
             lines.append("PINS: none. Nobody is pinned or held down for a count right now." + self.pin_end_note())
         for p in self.pins.values():
