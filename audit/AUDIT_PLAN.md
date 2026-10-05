@@ -64,6 +64,19 @@ Balance is checked once, after ALL groups' bugs are fixed (user's call), not aft
   - Beats ran 12–15 minutes and the ⏱ line had no breakdown. That log came from a build before the time budget. Confirm the user is on the latest build.
   - Nocturne went far below 0% health (-106%) and the fight went on into a new pin. Is that intended (the fight ends only by pin or pass-out)? Check how health below 0 is handled.
 
+## Design principles (from the user; follow these in every change)
+- **Variety comes from the engine's dice.** Rare outcomes (five pummel blows in a row into the same side) must stay
+  possible but rare, decided by a roll; if the roll goes another way, the attack does something else. Don't hard-code
+  patterns, force spreading, or group body parts together: every part stays separate.
+- **Collateral damage is natural**: a blow jars what's around it (head -> neck; arm -> shoulder, side, hip).
+- **The director is nudged now and then** (weak spots, big moments, flight), including during chains, pummels, charges
+  and held streams, but never forced.
+- **When the dice produce something unusual, help the narrator sell it**: reactions, the scene, the damage and how it
+  looks.
+- **Keep the narration files in step with the engine** (story_blocks.txt, story_lines.txt, style_sample_scenes.txt):
+  every new mechanic, move type, body type or fighter gets its blocks, lines and samples, and thin spots get topped up.
+- **Ask before "fixing" something that may be working as intended.** Don't change tuning or targeting on a hunch.
+
 ## Later
 Speed mechanics: a faster fighter attacks or dodges more, and a stronger one hits harder. Do this after the audit.
 
