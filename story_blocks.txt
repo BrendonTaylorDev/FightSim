@@ -3503,3 +3503,107 @@ the sound that comes out of her is high and broken, all the air she had left
 she sags into it, too spent to brace, and the weight does what it likes with her
 her eyes roll and water; for a moment she can only hang there between the two
 a thin whine leaks out of her with every bit of breath the weight lets her have
+
+# ---------------------------------------------------------------------------------------------------------------
+# BUILD 133: MORE HIT AND DAMAGE REACTIONS
+# Covered pain (a strong fighter badly hurt in one place) is shown in state: fresh/winded at high levels; the raw
+# ones are for the worn down (state: tired/spent).
+# ---------------------------------------------------------------------------------------------------------------
+== reaction | size: glancing
+she barely checks her stride; her eyes flick to the spot and away
+a small grunt, more surprise than hurt
+she shrugs the shoulder nearest it, as if settling a strap
+the skin there twitches once and is still
+she blinks it off and is already moving again
+
+== reaction | size: solid
+the breath goes out of her in a short, flat huff
+she rocks back a half step and plants herself again | has: legs
+her whole body stiffens round the spot for a heartbeat
+a sharp intake of breath through her nose, held, let out slowly
+her head turns away from it on its own before she drags it back
+she grunts and shifts her weight off that side
+her eyes squeeze shut for an instant and snap open again
+
+== reaction | size: heavy
+the blow knocks a sound out of her she didn't choose to make
+she folds a little round it, and has to make herself straighten
+her legs go loose for a moment and she has to lock them | has: legs
+she staggers, catches it, and the catching hurts too | has: legs
+the air goes out of her all at once and comes back in a ragged pull
+her mouth falls open on a gasp with no sound in it
+for a moment she simply stands there and lets it land on her
+
+== reaction | size: tremendous
+the force of it lifts her and drops her an arm's length away
+her whole body jerks, head to tail, as if she had been struck by lightning
+she sags round it, and the next breath does not come when she calls it
+the world goes quiet for a moment, as if someone had shut a door on it
+her eyes go wide and white, and for a moment she does not seem to be in there at all
+
+== pain_show | level: hurting
+she keeps the hurt side turned a little away from her opponent
+every few breaths her hand drifts toward the spot and she stops it | has: arms
+she tests it with a small movement and does not like the answer
+she breathes through her nose, slow and deliberate, the way you breathe through a cramp
+she moves a fraction more carefully now, as if carrying something that might spill
+
+== pain_show | level: very painful
+a low sound slips out of her and she bites the rest of it off
+her eyes water and she will not blink them clear in front of her opponent
+she holds the hurt part close and stiff, guarding it with her whole body
+the pain makes her clumsy for a moment; her next step is shorter than she meant
+her breath comes in short pulls, each one stopping where the hurt begins
+
+== pain_show | level: excruciating, devastated | state: fresh, winded
+she is clearly hurting badly, and just as clearly refusing to show how badly
+her face locks into a hard, flat look while her eyes water anyway
+she cries out once, sharp, and swallows the rest of it with her jaw clamped
+she keeps the part tucked in close and turns her other side to her opponent, guarding it with everything she has
+her breathing goes careful and shallow; she does not trust a deep breath near that place
+a shudder runs through her and she stamps it out by setting her stance
+she bares her teeth at the pain as if it were another opponent | has: forelegs
+she bares her teeth at the pain as if it were another opponent | has: arms
+
+== pain_show | level: excruciating, devastated | state: tired, spent
+the sound that comes out of her is raw and she cannot stop it
+she curls round the hurt part and for a moment does not move at all
+her whole body shakes, a fine, constant tremor she has no control over
+she makes a broken, keening sound on every breath out
+tears run and she does not even try to hide them now
+
+== pain_show | level: hurting, very painful, excruciating, devastated | zone: leg
+she takes the weight off that leg and leaves it just touching the ground | has: legs
+her stride hitches every time that leg takes her weight | has: legs
+she limps now, and is angry about it, which makes it worse | has: legs
+
+== pain_show | level: hurting, very painful, excruciating, devastated | zone: arm
+she holds that arm tucked against her body | has: arms
+she keeps the foreleg lifted a little, the paw curled, unwilling to put it down | has: forelegs
+she uses the other side for everything now, and anyone watching can see it
+
+== pain_show | level: hurting, very painful, excruciating, devastated | zone: chest, belly
+she breathes high and shallow, not letting her ribs move more than they must
+she hunches slightly round her middle, as if against cold
+every breath stops short of the full one she needs
+
+== pain_show | level: hurting, very painful, excruciating, devastated | zone: head, neck
+she shakes her head as if to clear water from her ears, and winces at the shake
+she holds her head very still, as if it might spill
+she swallows carefully, and the swallow costs her
+
+== held_in | state: fresh, winded
+a grunt through closed teeth, and nothing more
+her breath hisses in, sharp, and is let out slow and controlled
+a short, hard exhale through her nose, and her jaw sets
+a small sound, bitten off before it is fully out
+
+== held_in | state: tired
+a cry she only half catches, ragged at the end
+a groan that comes up from somewhere deep and does not stop at once
+she whimpers before she can stop herself, and hates it
+
+== held_in | state: spent
+a sob of pain, raw, unguarded
+a long, wavering cry that breaks in the middle
+she does not even try to keep it in any more

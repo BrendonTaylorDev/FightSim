@@ -1641,7 +1641,10 @@ AIRBORNE = re.compile(r"\b(?:mid-?air|in the air|through the air|airborne|in fli
 
 # how big a reaction is: the words that need a part at least this badly hurt (part damage %)
 INTENSE = (
-    (150, re.compile(r"\b(?:scream\w*|shriek\w*|howl\w*|agon\w+|unbearable|excruciating|white-hot|blinding|writh\w+|"
+    # the most visceral: only for a fighter who is badly worn down overall (or a part past bearing on a weak body)
+    (300, re.compile(r"\b(?:writh\w+|convuls\w+|thrash\w* in (?:agony|pain)|spasm\w* uncontrollably|black(?:ed)? out|"
+                     r"sob(?:bed|bing|s)?|went limp with (?:pain|agony))\b", re.I)),
+    (150, re.compile(r"\b(?:scream\w*|shriek\w*|howl\w*|agon\w+|unbearable|excruciating|white-hot|blinding|"
                      r"unfiltered|pure (?:pain|agony)|(?:world|clearing|everything|vision) (?:blurred|spun|swam|tilted|"
                      r"wavered|went (?:white|grey|gray|black|dark)))\b", re.I)),
     (90, re.compile(r"\b(?:cr(?:y|ied|ies) out|(?:a|the) (?:raw |sharp |desperate )?cry (?:tore|ripped|burst|broke)|"
@@ -2170,7 +2173,9 @@ class Narrator:
             left = 100.0 * float(h["health_before"]) / float(top)
         else:
             left = float((getattr(self, "strengths", None) or {}).get(who, 100))
-        cond_score = 0 if left >= 60 else 1 if left >= 30 else 2
+        caps = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+        strong, mid = float(caps.get("strong_from", 70)), float(caps.get("mid_from", 40))
+        cond_score = 0 if left >= strong else 1 if left >= mid else 2
         level = max(0, min(3, (part_score + size_score + 2 * cond_score + 1) // 2))
         # overall strength caps it: a fighter who still has most of her strength holds it in, a middling one can
         # scream but not come apart, only a spent one has the rawest reactions
@@ -2191,9 +2196,9 @@ class Narrator:
             # not a scream
             level = 1
         elif dev:
-            # a devastating blow: nobody holds that in. At least a scream, and one step past what her strength
-            # would normally allow
-            level = max(2, min(3, max(level, 2 + cond_score)))
+            # a devastating blow: nobody holds that in. A strong fighter goes one step past what she would hold
+            # (a scream); a middling one stays at her scream; only a worn-down one comes apart
+            level = 2 if cond_score <= 1 else 3
         self.__dict__.setdefault("_raw_done", {})
         self.__dict__.setdefault("_raw_parts", {})
         done = self._raw_done.get(who)
@@ -7005,16 +7010,35 @@ class Narrator:
                 or (getattr(self, "_pin_age", None) or {}).get(who, 0) >= 2:
             return None
         part, worst = max(parts.items(), key=lambda kv: kv[1])
-        if worst >= 150:
+        # the reaction is set by BOTH the worst part and her overall health: a ruined part on a strong body still
+        # hurts terribly, but she covers it; only a worn-down body lets it all out (narration.reaction_caps)
+        strength = float((self.strengths or {}).get(who, 100) or 100)
+        dev = any(h.get("devastating") for a in (getattr(self, "_acts_now", None) or [])
+                  if isinstance(a, dict) and a.get("defender") == who for h in (a.get("hits") or []))
+        by_part = 0 if worst < 90 else 90 if worst < 150 else 999
+        cfg = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+        strong, mid = float(cfg.get("strong_from", 70)), float(cfg.get("mid_from", 40))
+        by_health = ((150 if dev else 90) if strength >= strong else 150 if strength >= mid else 999)
+        eff = min(by_part, by_health)
+        if eff >= 999:
             return None
         label = self._pain(worst)["label"] if worst > 0 else "unhurt"
-        allowed = ("she may cry out, but no screaming, no 'agony', no writhing, and the world doesn't blur or spin"
-                   if worst >= 90 else
-                   "no crying out, no screams, no 'agony' or 'waves of pain', nothing 'explodes', and the world doesn't "
-                   "blur or spin: a grunt, a hiss, a wince, and she fights on")
+        if eff >= 150:
+            allowed = ("she may scream" + (" (briefly: she is still strong, and this was a devastating blow)"
+                                           if strength >= strong else "") +
+                       ", but no writhing, no convulsing, no thrashing in agony, no sobbing, and she doesn't black out")
+        elif eff >= 90 and worst >= 150:
+            allowed = ("she is in deep pain and it shows (a sharp cry, bared teeth, eyes watering, the part guarded), "
+                       "but she is still strong and covers it: no screaming, no writhing, no 'agony', and the world "
+                       "doesn't blur or spin")
+        elif eff >= 90:
+            allowed = "she may cry out, but no screaming, no 'agony', no writhing, and the world doesn't blur or spin"
+        else:
+            allowed = ("no crying out, no screams, no 'agony' or 'waves of pain', nothing 'explodes', and the world "
+                       "doesn't blur or spin: a grunt, a hiss, a wince, and she fights on")
         where = f" ({part})" if worst > 0 else ""
-        return worst, part, f"how much {who} hurts: at worst {label.upper()}{where}, so {allowed}", allowed, \
-            f"{label.upper()}{where}"
+        return eff, part, f"how much {who} hurts: at worst {label.upper()}{where}, at {round(strength)}% of her " \
+                          f"strength, so {allowed}", allowed, f"{label.upper()}{where}"
 
     def _replace_filler(self, text):
         """Each bare line of told resolve ("She would not be defeated.") is swapped for a finished line from the

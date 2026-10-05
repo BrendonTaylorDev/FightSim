@@ -1070,7 +1070,9 @@ class Engine:
             head = next((p for p in same if p.lower() == "head"), None)
             if head and names[0].lower() != "head" and self.rng.random() < 0.75:
                 same = [head] + [p for p in same if p != head]
-            extra = (same[:1] + near + same[1:])[:auto_n]
+            # collateral is a roll too: most solid blows jar something round them, some land clean
+            jar_n = (self.rng.randint(1, auto_n) if self.rng.random() < float(spill_cfg.get("chance", 0.75)) else 0)
+            extra = (same[:1] + near + same[1:])[:jar_n]
             if extra:
                 jar = round(move["power"] * math["type_mult"] * math["stab"] * math["extra_mult"]
                             * float(spill_cfg.get("factor", 0.5)), 2)
