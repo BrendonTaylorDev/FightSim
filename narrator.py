@@ -822,7 +822,9 @@ TRY_UP = re.compile(r"\b((?:tried|trying|tries|struggl\w+|fought|fighting|attemp
 NUMB = re.compile(r"\b(numb(?:ed|ing|ness)?|past (?:pain|feeling|hurting)|beyond pain|no feeling (?:left|at all)|"
                   r"(?:couldn't|could not|can't) feel (?:it|her|his|the))\b", re.I)
 # the instructions' own wording turning up as prose
-PROMPT_ECHO = re.compile(r"\b(separate from any (?:other )?(?:move|attack|strike)\b|past (?:excruciating|very painful|devastated)\b|seconds \d+ (?:to|through|until|–|—|-) ?\d+\b|"
+PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|every (?:press|hit|part|grip) listed\b|must appear in the "
+                         r"(?:prose|story|passage)\b|in the prose\b|(?:the )?notes (?:above|below|say)\b|word for word\b|"
+                         r"this (?:part|beat) (?:must|should)\b|separate from any (?:other )?(?:move|attack|strike)\b|past (?:excruciating|very painful|devastated)\b|seconds \d+ (?:to|through|until|–|—|-) ?\d+\b|"
                          r"sore squeezes?\b|(?:a|an|the|in a wild,?) improvisational\b|from (?:minor|sore|hurting|very painful|excruciating) to (?:sore|hurting|very painful|"
                          r"excruciating|devastated)\b|the (?:very painful|excruciating|devastated|hurting|sore) one\b|"
                          r"the contact point\b|the pin ha[sd] only just begun|real damage (?:would|will|builds?|built|was going to)\b[^.!?]{0,25}"
@@ -1530,7 +1532,9 @@ def _clean(text, cut_off=None, open_end=False):
     text = "\n".join(out_paras)
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
     # cut a dangling half-sentence if generation stopped mid-thought
-    if text and text[-1] not in ".!?…\"'”’—)]*" and re.search(r"[.!?…]", text):
+    # (a final "Ripples'" is a possessive left hanging, not a closing quote)
+    hanging = bool(re.search(r"\w+s['’]$", text or "")) and (text or "").count("'") % 2 == 1
+    if text and (text[-1] not in ".!?…\"'”’—)]*" or hanging) and re.search(r"[.!?…]", text):
         at = max(text.rfind("."), text.rfind("!"), text.rfind("?"), text.rfind("…")) + 1
         tail = text[at:].strip()
         deliberate = (cut_off is False or (cut_off is None and open_end)) and 2 <= len(tail.split()) <= 14 \
