@@ -938,7 +938,10 @@ class Engine:
                     names.append(n)
             if not names:
                 raise ValueError(f"{move['name']} needs a body part to hit")
-            plan = [names[0]] * max(1, int(count or 1)) if target == "targeted" else names
+            k_ = max(1, int(count or 1))
+            # several blows over several named parts: they go round the parts in order, the count in all
+            plan = ([names[i % len(names)] for i in range(k_)] if k_ > 1 and len(names) > 1 else [names[0]] * k_) \
+                if target == "targeted" else names
         powers = [math["effective"]] * len(plan)
         pum = None
         if pummel and target == "targeted" and len(plan) > 1:
@@ -1028,7 +1031,7 @@ class Engine:
                 math["auto_spill_parts"] = extra
                 math["auto_spill_effective"] = jar
                 math["auto_spill_factor"] = float(spill_cfg.get("factor", 0.5))
-        if target == "targeted" and len(names) > 1 and not pum:
+        if target == "targeted" and len(names) > 1 and not pum and int(count or 1) <= 1:
             # a strike that drags across neighboring parts: main part x2, the parts it carries over x1
             spill = round(move["power"] * math["type_mult"] * math["stab"] * math["extra_mult"]
                           * self.rules.get("moves", {}).get("targeting", {}).get("spread", 1.0), 2)
