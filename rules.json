@@ -134,6 +134,8 @@
       }
     },
     "_auto_spill_comment": "A targeted strike that names only one body part also jars the parts right next to it (a jaw strike catches the muzzle and neck). parts = how many neighbors; factor = their power as a share of the move's base power. Set parts to 0 to turn it off.",
+    "_rake_comment": "rake: now and then a slashing blow (slash, claw, scratch, rake, scythe, blade, talon) drags on in one stroke along the body: throat, chest, stomach, hip, leg, or shoulder down the arm, or along the back. chance: a roll each such blow; max_extra: 1 to this many more parts (the dice pick); power: the share of the blow each one takes (1 = full).",
+    "rake": {"chance": 0.3, "max_extra": 3, "power": 1.0},
     "auto_spill": {
       "_comment": "A single solid blow jars what's around it (half power by default). chance: how often it jars anything at all (a roll each blow); parts: at most this many neighbours, the dice pick 1 to parts.",
       "chance": 0.75,

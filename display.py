@@ -111,6 +111,9 @@ class Display:
         out = [f"  Power **{num(m['effective'])}**" + (" every beat" if every_beat else "") + " = " + " × ".join(bits)]
         if m.get("spillover_parts"):
             out.append(f"  Carry-over to {', '.join(m['spillover_parts'])}: power {num(m['spillover_effective'])}")
+        if m.get("rake_parts"):
+            out.append(f"  🗡️ The stroke rakes on across {', '.join(m['rake_parts'])}: power {num(m['rake_effective'])} "
+                       f"each (one continuous stroke)")
         if m.get("auto_spill_parts"):
             out.append(f"  Jarred next to it ({', '.join(m['auto_spill_parts'])}): power "
                        f"{num(m['auto_spill_effective'])} (×{num(m.get('auto_spill_factor', 0.5))})")

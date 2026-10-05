@@ -3431,6 +3431,12 @@ class Narrator:
             if a.get("target_against"):
                 lines.append(f"  - {a['defender']} is STILL PRESSED AGAINST {a['target_against']} from the charge when this "
                              f"lands: she hasn't fallen yet, has nowhere to go, and can't dodge it.")
+            if m and m.get("rake_parts") and a.get("hits"):
+                self._one_strike = a["attacker"]
+                lines.append(f"  - ONE CONTINUOUS STROKE: it lands on {a['hits'][0]['part']} and does not stop there: it "
+                             f"drags on across {', '.join(m['rake_parts'])} in a single line, full force the whole way. "
+                             f"Tell it as one rake travelling down her body, each place torn across in turn as it "
+                             f"passes, not as separate blows; her reactions come after.")
             jar = (m or {}).get("auto_spill_parts") or (m or {}).get("spillover_parts")
             if jar and a.get("hits") and len(a["hits"]) > 1:
                 if sum(1 for h in a["hits"] if h["part"] == a["hits"][0]["part"]) == 1:

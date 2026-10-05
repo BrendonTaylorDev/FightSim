@@ -1057,11 +1057,14 @@ class Engine:
                    "where": where, "frenzy": frenzy,
                    "against": (self.pressed.get(d.name) or {}).get("surface") or "",
                    "lying": self.facing_of(d.name) if d.name in self.downed else None}
+        raked = (self._rake(d, move, names, target, count, pum, no_spill, plan, powers, math)
+                 if target == "targeted" else [])
         spill_cfg = self.rules.get("moves", {}).get("auto_spill", {})
         auto_n = int(spill_cfg.get("parts", 0) or 0)
         auto_n = {"one": 0, "few": 2, "many": 4, "all": 6}.get(self.plan.get("targeting", ""), auto_n)
         # a real blow jars what's around it; so does a beam or a blast aimed at one spot (a spread move given one part)
-        if target in ("targeted", "spread") and len(names) == 1 and int(count or 1) == 1 and auto_n > 0 and not no_spill:
+        if (target in ("targeted", "spread") and len(names) == 1 and int(count or 1) == 1 and auto_n > 0 and not no_spill
+                and not raked):
             # a real blow jars what's around it: the parts next to the target take a lighter knock
             same, near = neighbor_parts(list(d.parts), names[0])
             self.rng.shuffle(same)
@@ -1811,6 +1814,50 @@ class Engine:
             out["knock_on"], self._knock_on = self._knock_on, []
         out["facing"] = self.facing_of(d.name)
         return out
+
+    RAKE_ROUTES = (("head", "neck", "chest", "belly", "hind_up", "hind_low"), ("shoulder", "fore_up", "fore_low"),
+                   ("neck", "back_up", "back_low", "tail"))
+    RAKE_MOVE = re.compile(r"slash|claw|scratch|rake|scythe|blade|swipe|talon|\bcut", re.I)
+
+    def _rake(self, d, move, names, target, count, pum, no_spill, plan, powers, math):
+        """Now and then a slashing blow doesn't stop where it lands: it drags on in one stroke along the body (from the
+        throat down the chest into the stomach and a hip, from the shoulder down the arm), 1 to moves.rake.max_extra
+        more parts, each taking the blow in full (moves.rake.power). A roll each blow (moves.rake.chance). Adds to
+        plan/powers in place; returns the parts raked (or [])."""
+        cfg = (self.rules.get("moves") or {}).get("rake") or {}
+        ch = float(cfg.get("chance", 0) or 0)
+        if (ch <= 0 or target != "targeted" or len(names) != 1 or int(count or 1) != 1 or pum or no_spill
+                or self.is_ranged(move) or move.get("charge")
+                or not self.RAKE_MOVE.search(f"{move.get('name', '')} {move.get('about', '')}")):
+            return []
+        if not self._chance(ch, f"{poss_word(move.get('name', 'the blow'))} stroke raking on along the body",
+                            "it drags on", "it stops where it lands"):
+            return []
+        start = names[0]
+        reg, side = body_region(start), _side(start)
+        routes = [r for r in self.RAKE_ROUTES if reg in r]
+        if not routes:
+            return []
+        route = self.rng.choice(routes)
+        i = route.index(reg)
+        step = 1 if i == 0 else -1 if i == len(route) - 1 else (1 if self.rng.random() < 0.7 else -1)
+        side = side or self.rng.choice(["left", "right"])
+        chain = []
+        for _ in range(self.rng.randint(1, max(1, int(cfg.get("max_extra", 3))))):
+            i += step
+            if not 0 <= i < len(route):
+                break
+            cand = [p for p in d.parts if body_region(p) == route[i] and _side(p) in (None, side) and p not in chain]
+            if not cand:
+                break
+            chain.append(self.rng.choice(cand))
+        if not chain:
+            return []
+        full = round(powers[0] * float(cfg.get("power", 1.0)), 2)
+        plan += chain
+        powers += [full] * len(chain)
+        math["rake_parts"], math["rake_effective"] = chain, full
+        return chain
 
     def _confusion(self, a, move, enforce, energy_before):
         """A confused fighter sometimes hurts herself instead of attacking."""
