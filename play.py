@@ -17,6 +17,7 @@ import os
 import time
 import json
 import re
+import random
 import shlex
 import sys
 
@@ -57,6 +58,8 @@ HELP = """
                               (no new attack, no pin seconds, no get-up roll); use it as often as you like.
                                 +        /more 400        /more "Ripples' ruined shoulder, and Nocturne watching"
   /more auto <0-3>            add that many such passages after every beat with an attack, on their own
+  /interlude [now [words] ["what to dwell on"]|next|chance x|words n|gap n|on|off]
+                      a long passage where the fight draws breath (sometimes on its own; now = one at once)
   cmd && cmd && ...           run several commands in a row, one beat each
                                 e.g.  /scale 5 && /pinbeat 5 && Nocturne goes for the pin
   /cmd + /cmd [+ /cmd]        up to three attack commands in the SAME beat, in order
@@ -657,6 +660,57 @@ class Session:
         self.out("\n" + text + "\n")
         self.autosave()
 
+    def _interlude_due(self):
+        """Should a long interlude follow this beat? narration.interlude: chance per beat, never in the first
+        from_beat beats, at least min_gap beats apart, never once the fight is decided. /interlude next forces one."""
+        cfg = self.eng.rules.get("narration", {}).get("interlude") or {}
+        if self.eng.winner() or self.over:
+            return False
+        if getattr(self, "interlude_next", False):
+            self.interlude_next = False
+            return True
+        if not cfg.get("enabled", True):
+            return False
+        turn, last = self.eng.turn, getattr(self, "_last_interlude", -999)
+        if turn < int(cfg.get("from_beat", 3)) or turn - last < int(cfg.get("min_gap", 4)):
+            return False
+        return random.random() < float(cfg.get("chance", 0.1))
+
+    def interlude(self, words=None, direction="", auto=False):
+        """A long passage where the fight draws breath (narration.interlude, /interlude): thoughts, the body taking
+        stock, the place in detail. Nothing happens in the fight; the text joins the last beat's story."""
+        if not self.use_llm:
+            raise ValueError("the narrator is off (--no-llm)")
+        if not self.story:
+            raise ValueError("nothing has happened yet: press Enter to begin")
+        if not auto:
+            self.push_history()
+        self._rising = set()
+        self._start_down = set(self.eng.downed) | {p["defender"] for p in self.eng.pins.values()}
+        self._posture_start = {f.name: self.eng.posture_text(f.name, short=True) for f in self.eng.active()}
+        self.sync_narrator()
+        try:
+            text = self.narrator.interlude(self.eng.narrator_condition(), self.notes(), self.eng.scene,
+                                           self.recent_story(), words, direction,
+                                           getattr(self, "reason_note", lambda: "")())
+        except Exception:
+            if not auto:
+                self.history.pop()
+            raise
+        self._last_interlude = self.eng.turn
+        if not (text or "").strip():
+            if not auto:
+                self.history.pop()
+            return
+        self.story[-1] = self.story[-1].rstrip() + "\n\n" + text
+        self.out("\n~ ~ ~\n\n" + text + "\n")
+        if self.eng.rules.get("narration", {}).get("show_timing", True):
+            t = self.narrator.beat_timing()
+            if t:
+                print(f"  [interlude {t.replace('beat written', 'written')}]")
+        if not auto:
+            self.autosave()
+
     def _extra(self):
         return {"story": self.story, "style": self.narrator.style, "over": self.over,
                 "transcript": self.transcript[-4000:], "attacks": self.attacks,
@@ -1129,6 +1183,11 @@ class Session:
                 self.out("\n" + text + "\n")
                 self.story.append(text)
                 self.last_narration = {"args": args, "index": len(self.story) - 1}
+                if self._interlude_due():
+                    try:
+                        self.interlude(auto=True)
+                    except llm.LLMError as e:
+                        self.out(f"[the interlude could not be written: {e}]\n")
         else:
             self.story.append(" / ".join(f"{b.get('attacker')}: {b.get('action')} — {b.get('flavor', '')}"
                                          for b in beats))
@@ -1361,7 +1420,7 @@ def ask_scene(s, read=input):
 
 
 HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the order of HELP's sections
-    ("play", "playing play enter direction auto wait more", "playing: Enter, typed directions, /play as a fighter, /auto, /more"),
+    ("play", "playing play enter direction auto wait more interlude lull long", "playing: Enter, typed directions, /play as a fighter, /auto, /more, /interlude"),
     ("fights", "fights fight newfight autofight simulate team ally results", "fights: who is in them, /newfight, /autofight, /simulate, teams"),
     ("attacks", "attacks attack move charge sustain strike combo land pummel", "attacks you choose: /move (pummels), /charge, /sustain, /strike, /combo, /land"),
     ("moving", "moving move throw slam drag grapple roll situp chain tumble", "one fighter moving another: /throw, /slam, /drag, /grapple, chains, rolling her over"),
@@ -2142,6 +2201,36 @@ def handle_command(s, line):
         print(f"{f.name} is now {s.eng.facing[f.name]} (pins and the story will follow)"
               + (f"; presses moved: {', '.join(moved)}" if moved else ""))
         s.autosave(); return
+    if cmd in ("interlude", "lull"):
+        cfg = s.eng.rules.setdefault("narration", {}).setdefault("interlude", {})
+        if not a:
+            print(f"Interludes (a long passage where the fight draws breath: thoughts, the body taking stock, the place): "
+                  f"{'on' if cfg.get('enabled', True) else 'off'}, chance {cfg.get('chance', 0.1)} a beat, about "
+                  f"{cfg.get('words', 900)} words, at least {cfg.get('min_gap', 4)} beats apart, not before beat "
+                  f"{cfg.get('from_beat', 3)}.\nUse: /interlude now [words] [\"what to dwell on\"]   /interlude next   "
+                  "/interlude chance <0-1>   /interlude words <n>   /interlude gap <beats>   /interlude on|off"); return
+        w = a[0].lower()
+        if w in ("now", "force"):
+            rest = a[1:]
+            words = int(rest[0]) if rest and rest[0].isdigit() else None
+            direction = " ".join(rest[1:] if words else rest).strip().strip('"')
+            s.interlude(words, direction); return
+        if w == "next":
+            s.interlude_next = True
+            print("An interlude will follow the next beat."); return
+        if w in ("on", "off"):
+            cfg["enabled"] = w == "on"
+            _save_rules_key(["narration", "interlude", "enabled"], w == "on")
+            print(f"Interludes {w} (saved). /interlude now still writes one when you ask."); return
+        if w in ("chance", "words", "gap") and len(a) > 1:
+            key = {"chance": "chance", "words": "words", "gap": "min_gap"}[w]
+            val = float(a[1].rstrip("%")) / (100 if a[1].endswith("%") else 1) if w == "chance" else int(a[1])
+            if w == "chance" and not 0 <= val <= 1:
+                raise ValueError("a chance between 0 and 1")
+            cfg[key] = val
+            _save_rules_key(["narration", "interlude", key], val)
+            print(f"Interlude {w} {val} (saved)"); return
+        raise ValueError("use /interlude now|next|chance|words|gap|on|off")
     if cmd in ("budget", "beatbudget"):
         n = s.eng.rules.setdefault("narration", {})
         if not a:

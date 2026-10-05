@@ -3952,6 +3952,76 @@ class Narrator:
         self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
         return text
 
+    def interlude(self, condition, fighter_notes, scene, story_so_far, words=None, direction="", reason=""):
+        """Now and then, between one exchange and the next: a long passage where the fight draws breath. Nobody is
+        hit, nothing changes in the fight; the room goes to what a beat has no space for: each fighter's thoughts
+        (what she makes of the other, what she is fighting for, what she will try next), the body taking stock,
+        small reactions, and the place itself in detail. narration.interlude; /interlude."""
+        n = self.rules.get("narration", {})
+        cfg = n.get("interlude") or {}
+        words = int(words or cfg.get("words", 900))
+        # what this passage may and may not contain: the same as /more (nothing happens in the fight)
+        self._time_window, self._no_clock, self._important = None, True, False
+        self._pin_beat = "PIN:" in condition
+        self._must_parts, self._must_struggle, self._struggle_kind = [], None, None
+        self._must_block = None
+        self._landed, self._slammed, self._charge_beat, self._one_strike = set(), set(), False, None
+        self._weapons_ok, self._attackers, self._no_getup = None, set(), set()
+        self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
+        self._must_manhandle = None
+        self._must_rise, self._rolled_up, self._loosened, self._must_event = None, set(), set(), None
+        self._hurt_now = set()
+        self._calm_beat = len(self.strengths) < 2
+        self._story_tail = _tail(story_so_far, 6000)
+        if self.progress:
+            self.progress(f"an interlude: the fight draws breath (about {words} words)")
+        pin = (" A pin is running: it holds exactly as it is the whole time, the pinned one held down, the pinner "
+               "bearing down; no seconds are marked or counted, no escape attempt, no new press. The lull is inside "
+               "the pin: two bodies locked together, breathing." if self._pin_beat else
+               " If both are on their feet they may circle a little, weight shifting, each waiting for the other to "
+               "move, but nobody closes in, strikes, or grabs, and they end about where they were.")
+        why = (f"\nWHY THEY ARE FIGHTING (what each of them can think about, remember of the last few minutes, or "
+               f"want): {reason}" if reason else "")
+        ideas = random.sample([
+            "what each of them makes of the other now: her strength, her tells, the way she is favouring a hurt part",
+            "a plan forming in one fighter's head, worked through step by step, and doubts about it",
+            "the body taking stock, part by part: what still works, what throbs, what she is hiding from her opponent",
+            "the place in detail: what has changed since the fight began (trampled ground, a broken branch, water "
+            "clouded, the light moved), the animals and weather carrying on as if nothing were happening",
+            "breath and heartbeat slowing, sweat or water cooling on fur or skin, the ache arriving where the shock was",
+            "small involuntary things: a tail twitching, an ear turning to a sound, a paw testing its weight",
+            "pride, fear, anger, grudging respect, or stubbornness, each shown through what she does, not named",
+            "what she is fighting for, and whether it is still worth this",
+            "the sounds of the place filling the silence between them, and the sounds of their own breathing",
+        ], 5)
+        msg = (f"SCENE: {scene}\n\nFIGHTERS:\n{fighter_notes}\n\n"
+               f"CURRENT CONDITION (right now):\n{condition}{why}\n\n"
+               f"THE STORY SO FAR (the last part of it; continue from its final line):\n"
+               f"{_tail(story_so_far, 3000) or '(nothing yet)'}\n\n"
+               + "\n".join(self._posture_lines()) + "\n\n"
+               f"AN INTERLUDE: THE FIGHT DRAWS BREATH. Between this exchange and the next there is a long moment where "
+               f"nobody attacks. Write a LONG passage of about {words} words, in many paragraphs, that continues "
+               f"directly from the last line. NOTHING NEW HAPPENS IN THE FIGHT: no attack, no move, no new grip or "
+               f"bite, nobody is hurt anew, nobody falls, gets up or escapes.{pin} Take your time with what a fast beat "
+               f"never has room for, moving between the fighters (each from her own side, her own thoughts in "
+               f"italics), for example: " + "; ".join(ideas) + ". Use only injuries listed under CURRENT CONDITION, "
+               f"as they really are. Never repeat or rephrase anything already written: find what hasn't been said. "
+               f"End with the lull about to break: one of them gathering herself to move, but not moving yet."
+               + (f" What the author wants this interlude to dwell on: {direction}." if direction else "")
+               + f" {DETAIL}")
+        self._pin_holds = None
+        self._facts = ("NOTHING NEW HAPPENS in this passage: no attack, no new hit or wound, nobody falls, gets up, "
+                       "escapes, or changes position.\n" + "\n".join(self._posture_lines())
+                       + "\n\nCURRENT CONDITION (right now):\n" + condition)
+        self._beat_t0 = _time.time()
+        del CALL_LOG[:]
+        text = self._call(msg, words)
+        text = _balance_marks(self._drop_said_repeats(self._drop_seen(self._drop_sample_copies(
+            self._drop_repeats(text, story_so_far)))))
+        text = _italic_sounds(text)
+        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        return text
+
     def _ends_line(self, a):
         """Where a fighter who was knocked down, thrown or launched ends up: usually on the ground the way the engine
         says; sometimes slumped sitting against what she hit, sat down hard, or (rolled through it) on her feet."""
