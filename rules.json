@@ -1572,6 +1572,10 @@
     "strain": {"from": 100, "energy_per_100": 1.0, "power": 6, "max_wing": 600},
     "_dodge_comment": "In the air her dodge rests on her wings, not her legs: chance x 1/(1 + wing damage/wing_per) (the worse wing counts double) x 1/(1 + flight-muscle damage/body_per) (shoulders, chest, belly, back) x 1/(1 + head and neck damage/head_per). The airborne_dodge_mult edge fades with the worse wing's damage and is gone at ground_at.",
     "dodge": {"wing_per": 100, "body_per": 250, "head_per": 400},
+    "_carry_comment": "carry: any winged fighter in the air with talons, feet or hands can seize one on the ground with a close strike (the director's \"carry\") and haul her up: chance x (0.5 + 0.5 x her strength) x 1/(1 + worse wing damage/wing_per) x (the lighter the load, the likelier: 0.75 against a fighter at full strength, up to 1 as she weakens), at most 0.95; costs energy. She is dropped from one of drop_heights. fall_strikes: how many strikes in the same chain can catch her on the way down beyond the first, by the drop's severity.",
+    "carry": {"chance": 0.8, "wing_per": 150, "energy": 6, "fall_strikes": {"solid": 0, "heavy": 1, "brutal": 2}},
+    "_spike_comment": "spike: a fighter falling (dropped from a carry, or launched by a chain) struck from ABOVE by one in the air with a dive, a charge or a held stream is driven straight into the ground: the blow takes mult (in place of the dive's edge; caught helpless in the air still applies), and her landing goes severity_bump steps harder than it would have been (at least heavy, at most brutal) with landing_force x its power, and she doesn't tumble on. A charge or a held stream from above always spikes; a close blow from above does on close_chance (the last one: a slash with more still to come in the chain is just a slash on the way down).",
+    "spike": {"enabled": true, "mult": 1.5, "close_chance": 0.6, "severity_bump": 1, "landing_force": 2.0},
     "drop_heights": {
       "a body's length up": "solid",
       "twice her height": "heavy",

@@ -68,6 +68,9 @@ def _pick_action(eng, rng, f, d):
         a["part"] = rng.choice(parts)
     if m.get("target") in ("targeted",) and not m.get("charge") and rng.random() < 0.1:
         a["feint"] = True
+    if eng.has(f, "airborne") and m.get("target") == "targeted" and not eng.is_ranged(m) and not m.get("charge") \
+            and not m.get("carry") and eng.can_carry(f, d)[0] and rng.random() < 0.25:
+        a["carry"] = True      # seize her and haul her up (one_fight may follow it with a blow as she falls)
     if m.get("target") != "self" and m.get("power", 0) >= 30 and rng.random() < 0.3:
         a["launch"] = rng.choice(["knocked down", "knocked down", "thrown"])   # as the director does for heavy hits
     if m.get("charge") and rng.random() < 0.3:
@@ -100,8 +103,16 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         d = rng.choice(foes)
         before = {x.name: x.health for x in eng.fighters.values()}
         act = _pick_action(eng, rng, f, d)
+        acts = [act]
+        if act.get("carry") and rng.random() < 0.6:
+            nxt = _pick_action(eng, rng, f, d)
+            if nxt.get("action") == "strike" and nxt.get("move") != act.get("move"):
+                acts.append(dict(nxt, carry=False, launch="none"))
         try:
-            results, started = resolve_many(eng, [act])
+            results, started = resolve_many(eng, acts)
+            stats["carries"] = stats.get("carries", 0) + sum(1 for r in results if isinstance(r, dict) and r.get("carried"))
+            stats["spikes"] = stats.get("spikes", 0) + sum(1 for r in results if isinstance(r, dict) and r.get("spiked_down")
+                                                            and r.get("type") == "instant" and r.get("move"))
             stats["pins"] += sum(1 for r in results if isinstance(r, dict) and r.get("type") == "pin_start")
             if stats["pins"] and "first_pin" not in stats:
                 stats["first_pin"] = eng.turn     # how early in the fight the first pin came

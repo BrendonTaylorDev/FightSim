@@ -1429,7 +1429,7 @@ a raw, broken sound goes on longer than she means it to, and stopping it costs h
 # ---------------------------------------------------------------------------------------------------------------
 # NEWER MOMENTS (build 113+): clashes, flight, guards, water in the mouth, coils, weather, the moment after an
 # escape. Offered only when that thing really happened this beat.
-#   moment: takeoff, dive, carried, grounded (aerial)     block, reflect, catch, turn (guard)
+#   moment: takeoff, dive, carried, lift_fail, falling, spiked, grounded (aerial)     block, reflect, catch, turn (guard)
 #   weather: rain, sun, hail
 # ---------------------------------------------------------------------------------------------------------------
 == movement | kind: wing
@@ -3100,7 +3100,9 @@ she gasps without sound
 # ---------------------------------------------------------------------------------------------------------------
 # BUILD 133: FLIGHT, ELEMENTS AND THE NEW BODIES
 # moment: takeoff, dive, carried, grounded (her own hurt wing gives out), knocked (a blow knocks a sound flyer out
-#         of the sky), struck_from_above (the one a dive lands on), strain (staying up on a badly hurt wing)
+#         of the sky), struck_from_above (the one a dive lands on), strain (staying up on a badly hurt wing),
+#         lift_fail (a flyer seizes her but can't haul her up), falling (struck on the way down after a carry),
+#         spiked (driven straight down into the ground from above, faster than she'd fall)
 # kind: fire, ice, wind, rock (the element of a move, alongside its shape: a Fire Fang is bite and fire)
 # has: wings, feathers (a bird: beak, no fur), crest, flame, mane, tails (several), talons, beak, arms
 # ---------------------------------------------------------------------------------------------------------------
@@ -3141,6 +3143,41 @@ the grip around her is the only solid thing in the world, and it is going to let
 she can feel each wingbeat above her as a lurch upward
 the arena below wheels slowly, the trees small, the water a bright coin
 for one long moment at the top of the climb neither of them moves at all
+
+== aerial | moment: carried
+the talons close on her and lock, and then her own weight is hanging from them | has: talons
+hands clamp under her arms and the ground simply leaves | has: arms
+the wingbeats come slow and enormous above her, each one a lurch that leaves her stomach behind
+she twists to look down and wishes at once that she hadn't
+the wind of their climb roars in her ears, and below them the arena shrinks to a map of itself
+she claws at the grip on her and it only tightens
+the higher they go the quieter it gets, until there is only the wingbeats and her own heart
+then the grip opens, almost gently, and there is nothing at all holding her up
+
+== aerial | moment: lift_fail
+the wings thrash and the dust boils up, but her feet never leave the ground
+she gets her grip and heaves, and the weight below simply does not come with her
+for a moment the two of them strain against each other, one pulling up, one dragging down, and the ground wins
+she braces and drops her weight, and the wings above her beat themselves out against it
+the grip tears loose and the flyer lurches upward alone, suddenly much lighter
+
+== aerial | moment: falling
+she is still falling when it reaches her: there is no ground to brace on, no footing to roll from
+it takes her in mid-air and spins her, and the sky and the ground swap places twice
+she has her limbs out for the landing, and the blow comes from the side instead
+the wind of her fall is still roaring in her ears when the strike arrives on top of it
+there is nothing to do in the air but take it, and she takes it
+she tumbles end over end from the blow, the ground somewhere below, closer every turn
+
+== aerial | moment: spiked
+the blow comes from above and adds itself to the fall, and the ground arrives far sooner than it should
+she is driven down like a stake into the ground, and the ground gives first
+the impact goes through her from the top down: the blow, then the earth, with nothing between
+dust jumps up in a ring around her where she hits, and she does not bounce
+for a moment the sound of it is louder than anything else in the arena, a single deep thud that the ground answers
+she hits so hard her body leaves its shape in the ground beneath her
+the flyer comes down with her the whole way and only pulls up at the very last instant, the impact hers alone
+the world goes white at the edges, and when it comes back she is lying in a hollow she made
 
 == aerial | moment: grounded
 the hurt wing folds under her in mid-beat and the sky lets go of her

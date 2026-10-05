@@ -2973,6 +2973,9 @@ class Narrator:
             if a.get("spiked_by"):
                 verb = (f"is SMASHED BACK DOWN out of the air by {poss(a['spiked_by'])} blow (she never landed from the "
                         f"launch: this is her landing, and a hard one)")
+            if a.get("spiked_down"):
+                verb = (f"is DRIVEN STRAIGHT DOWN out of the air (faster than she could ever have fallen, like a "
+                        f"dropped stone, the ground giving under her; she stays where she hits)")
             if a.get("from_ground"):
                 verb = ("was LYING ON THE GROUND when it hit (she was never standing this beat): the blow smashes into "
                         "her where she lies and sends her skidding, rolling, and tumbling across the ground")
@@ -3204,13 +3207,29 @@ class Narrator:
             lines += self._devastating_line(a)
             lines += self._anticipation_line(a)
             lines += self._opening_line(a)
-            if a.get("juggled_up"):
+            if a.get("juggled_up") and not a.get("carried"):
                 lines.append(f"  - The blow knocks {a['defender']} UP OFF HER FEET into the air: she is still in the air, "
                              f"helpless, when the next blow comes (listed next). She does not land before it.")
-            if a.get("juggle"):
+            jgl = a.get("juggle") or {}
+            if jgl and jgl.get("falling"):
+                lines.append(f"  - CAUGHT AS SHE FALLS: {a['defender']} is still dropping from {jgl['falling']}, where "
+                             f"{jgl.get('launched_by') or a['attacker']} let her go, limbs flailing, nothing to push from, "
+                             f"and this blow catches her on the way down (it lands harder for that).")
+            elif jgl:
                 lines.append(f"  - A JUGGLE: {a['defender']} is still in the air from the last blow, helpless, nothing "
-                             f"under her to push from, and this one catches her there (it lands harder for that) and "
-                             f"smashes her back down to the ground (the landing below).")
+                             f"under her to push from, and this one catches her there (it lands harder for that)"
+                             + ("." if jgl.get("spiked") or a.get("still_falling") else
+                                " and smashes her back down to the ground (the landing below)."))
+            if jgl and a.get("still_falling"):
+                lines.append(f"  - She is STILL FALLING after it: she hasn't touched the ground yet, and the next blow "
+                             f"listed catches her too before she lands.")
+            if jgl and jgl.get("spiked"):
+                lines.append(f"  - A SPIKE: {a['attacker']} comes down on her from ABOVE and drives her STRAIGHT DOWN, "
+                             f"faster than she was falling, the blow and the drop together, into the ground (the "
+                             f"landing below: far harder, and she doesn't bounce or roll away from it).")
+            if a.get("carry_failed"):
+                lines.append(f"  - {a['attacker']} gets her grip into {a['defender']} and beats her wings hard to haul her "
+                             f"up off the ground, but she CAN'T LIFT HER: too heavy, too braced. She lets go.")
             if a.get("overcommit"):
                 worn = (getattr(self, "strengths", None) or {}).get(a["attacker"], 0) < 60
                 lines.append(f"  - {a['attacker']} is so {'tired' if worn else 'out of breath'} she OVERCOMMITS: the blow is "
@@ -3253,7 +3272,10 @@ class Narrator:
                                      f"on the arena.",
                               "hail": f"  - {a['attacker']} calls HAIL: the air turns bitter and hailstones begin to "
                                       f"rattle down over the arena."}.get(a["weather"]["kind"], ""))
-            if a.get("dive"):
+            if a.get("dive") and a.get("juggle"):
+                lines.append(f"  - {a['attacker']} strikes from the air, on the wing above {a['defender']}, and stays up "
+                             f"there after it.")
+            elif a.get("dive"):
                 lines.append(f"  - A DIVE: {a['attacker']} comes down OUT OF THE AIR at her, wings folded, the whole drop "
                              f"behind the blow. "
                              + (f"But {a['dragged_down']['by']} CATCHES her as she comes in and drags her down out of the "
@@ -3261,9 +3283,10 @@ class Narrator:
                                 f"Then she beats her wings and climbs straight back up out of reach." if a.get("climbs") else
                                 f"She does not climb again: she comes down to land, wings spread to stop."))
             if a.get("carried"):
-                lines.append(f"  - CARRIED UP: {a['attacker']} seizes her in her talons and hauls her up off the ground, "
-                             f"{a['carried']['height']}, wings labouring, then LETS GO. {a['defender']} falls and hits "
-                             f"the ground (the landing below).")
+                lines.append(f"  - CARRIED UP: {a['attacker']} seizes her in her {self._grip_word(a['attacker'])} and hauls "
+                             f"her up off the ground, {a['carried']['height']}, wings labouring, then LETS GO. "
+                             + (f"{a['defender']} falls, and the next blow catches her before she reaches the ground."
+                                if a.get("juggled_up") else f"{a['defender']} falls and hits the ground (the landing below)."))
             if a.get("grounded"):
                 lines.append(f"  - the blow KNOCKS {a['defender']} OUT OF THE AIR"
                              + (": her hurt wing can't catch her" if a.get("grounded_wing") else ": it throws her off her "
@@ -5189,6 +5212,11 @@ class Narrator:
             self._line_offers = getattr(self, "_line_offers", 0) + 1
             add(label + " (use it word for word if it fits, or leave it)", fin)
 
+    def _grip_word(self, who):
+        """What a flyer grips her prey with: talons, feet, or hands (from her own part names)."""
+        parts = " ".join(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()).lower()
+        return "talons" if "talon" in parts else "hands" if "hand" in parts else "feet" if ("foot" in parts or "feet" in parts) else "grip"
+
     def _feats_of(self, who):
         """What a fighter's body has (tails, fins, horn, arms...), from her own part names."""
         return story_blocks.features(list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()))
@@ -5421,7 +5449,19 @@ class Narrator:
                 add(f"{poss(att_)} dive", B.pick("aerial", 1, moment={"dive"}))
             if a.get("carried"):
                 side[0] = "take" if take else "act"
-                add(f"{dfn_}, carried up and dropped", B.pick("aerial", 1, moment={"carried"}))
+                add(f"{dfn_}, carried up and dropped", B.pick("aerial", 1, moment={"carried"}, has=feats(att_)))
+                self._offer_line(add, f"a finished line for {dfn_} carried up", "aerial", moment={"carried"})
+            if a.get("carry_failed"):
+                side[0] = "act" if act else "take"
+                add(f"{att_} trying to lift {dfn_}", B.pick("aerial", 1, moment={"lift_fail"}))
+            if (a.get("juggle") or {}).get("spiked"):
+                side[0] = "take" if take else "act"
+                add(f"{dfn_}, driven down into the ground", B.pick("aerial", 1, moment={"spiked"}))
+                self._offer_line(add, f"a finished line for {dfn_} hitting the ground", "aerial", moment={"spiked"})
+            elif (a.get("juggle") or {}).get("falling"):
+                side[0] = "take" if take else "act"
+                add(f"{dfn_}, struck as she falls", B.pick("aerial", 1, moment={"falling"}))
+                self._offer_line(add, f"a finished line for {dfn_} struck as she falls", "aerial", moment={"falling"})
             if take and (a.get("charge") or {}).get("crush_hits"):
                 side[0] = "take"
                 sh = str((a.get("charge") or {}).get("sheath") or "").lower()
@@ -5487,7 +5527,8 @@ class Narrator:
                 side[0] = "act" if act else "take"
                 add("the feint", B.pick("feint", 1, moment={"bit" if a["feint"].get("bit") else "read"},
                                         fighter=(att_ if act else dfn_ or "").lower()))
-            if a.get("juggle") or a.get("juggled_up"):
+            if (a.get("juggle") and not (a["juggle"].get("falling") or a["juggle"].get("spiked"))) \
+                    or (a.get("juggled_up") and not a.get("carried")):
                 side[0] = "take" if take else "act"
                 add(f"{dfn_} in the air", B.pick("juggle", 1, moment={"caught" if a.get("juggle") else "up"}))
             if take and a.get("last_stand"):

@@ -1083,3 +1083,19 @@ She came down out of the air in a tangle of wings and feathers. | has: feathers
 She landed on her side with one wing pinned under her. | has: wings
 The fall from the air drove every breath out of her at once.
 She hit, bounced once, and lay with her wings spread in the dirt. | has: wings
+
+== aerial | moment: carried
+The ground fell away beneath her, and the grip on her was the only thing left in the world.
+She kicked once at the empty air, and then the wingbeats above her took them higher.
+The arena turned slowly below her, the trees small, and she knew exactly what was coming.
+For one long, quiet moment at the top of the climb, neither of them moved at all.
+
+== aerial | moment: spiked
+She hit the ground like something dropped from a cliff, and the ground gave first.
+The blow and the fall arrived together, and the earth came up to meet her far too fast.
+She did not bounce; she simply stopped, driven into a hollow of her own making.
+Dust jumped up in a ring around her, and for a moment the whole arena was silent.
+
+== aerial | moment: falling
+She was still falling when it caught her, and there was nothing to brace against.
+It spun her in mid-air, and the sky and the ground swapped places twice.

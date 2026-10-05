@@ -63,7 +63,13 @@ BIG HITS MOVE BODIES. Pokemon moves are powerful: a solid hit rarely touches jus
   harder). A WINGED fighter may instead "take off" (she rises
   into the air before her action: only beams, blasts and streams reach her there, and her close moves become
   dives from above) or "land" (she comes down by choice). A fighter in the air can't be grabbed or pinned; a
-  wing hurt badly enough brings her down. Carry moves (Sky Drop) need her in the air first. Flying is a winged
+  wing hurt badly enough brings her down. Carry moves (Sky Drop) need her in the air first. "carry" (usually
+  false): true on a close STRIKE by a winged fighter already in the air, with talons, feet or hands to grip: she
+  seizes the one on the ground and hauls her up (the engine rolls whether she can lift her) and lets her fall.
+  The higher she takes her, the harder she lands. As she falls, the NEXT links of the same CHAIN can catch her:
+  slashes on the way down (from high up, more than one), or a SPIKE: a dive, a charge, or a held stream from
+  ABOVE that drives her straight down into the ground faster than she'd fall (big damage, a far harder landing).
+  A rare, big moment, not a habit. Flying is a winged
   fighter's strength: she takes to the air every few beats, not rarely. The other repositions: use one NOW AND THEN, rarely, when it serves the moment
   (rolling her to reach her throat or chest for a pin, flipping her face-down to press her back, sitting her up
   for a blow to the chest, lifting her for a slam): most beats leave her where she lies. A running pin's presses
@@ -354,12 +360,13 @@ def action_schema(engine):
             "ramp": {"type": "string", "enum": list(sev["hold_ramp"])},
             "flavor": {"type": "string"},
             "feint": {"type": "boolean"},
+            "carry": {"type": "boolean"},
         },
         # Every field is required: local models tend to skip optional ones.
         # Fields that don't apply to the chosen action are simply ignored by the engine.
         "required": ["intent", "action", "move", "improvised_name", "improvised_type", "attacker", "defender", "part", "severity",
                      "count", "hits", "launch", "reposition", "landing", "sustain", "pinned_against", "charge_into", "hold_id",
-                     "ramp", "flavor", "feint"],
+                     "ramp", "flavor", "feint", "carry"],
     }
 
 
@@ -810,6 +817,11 @@ def resolve(engine, b):
         # "Forepaw slam to the head" filed as a hold: it lands as the blow it is (damage now, nothing left gripping)
         was_hold, act = act, "combo"
         b = dict(b, action="combo")
+    if (move is not None and act == "strike" and b.get("carry") is True and not engine.is_ranged(move)
+            and not move.get("charge") and not move.get("carry") and move.get("target", "targeted") == "targeted"
+            and engine.can_carry(att, dfn)[0]):
+        # she seizes her in her talons (feet, hands) on the way past and tries to haul her up: rolled (flight.carry)
+        move = dict(move, grab_carry=True)
     if move is not None and act in ("strike", "combo"):
         hits = [h for h in (b.get("hits") or []) if h.get("part")]
         if manual and not hits and not b.get("part") and move.get("target") in ("targeted", "spread"):
@@ -841,7 +853,8 @@ def resolve(engine, b):
         elif not manual and count > 1 and not _multi_hit(engine, move):
             count = 1  # a single charge or slash lands once; only flurry moves (Fury Swipes...) repeat
         results = [engine.move_attack(att, who, move["name"], parts, count, flavor,
-                                      move=move if (move.get("improvised") or move.get("one_off")) else None,
+                                      move=move if (move.get("improvised") or move.get("one_off")
+                                                     or move.get("grab_carry")) else None,
                                       enforce=not manual,
                                       sustain=int(b.get("sustain") or 0), against=b.get("pinned_against") or "",
                                       charge_into=str(b.get("charge_into") or "").strip()
@@ -1100,6 +1113,13 @@ def _juggle_next(engine, b, res, actions, i, limit):
     who = res.get("defender")
     if not who or engine.get(who).eliminated or engine.pinned_by(engine.get(who).name):
         return False
+    return _next_on(actions, i, who)
+
+
+def _next_on(actions, i, who):
+    """Is the action after this one a strike on `who`?"""
+    if i >= len(actions):
+        return False
     nxt = actions[i]
     return (nxt.get("action") in ("strike", "combo") and str(nxt.get("defender") or "").lower() == str(who).lower()
             and str(nxt.get("move") or "none").lower() != "none")
@@ -1148,9 +1168,20 @@ def _landing(engine, b, res):
         if not explicit:
             return None  # already on the ground: there's nowhere further to fall
         in_place = True  # already down: smashed against what's beside her, not knocked down again
+    force, spiked = 1.0, bool(res.get("spiked_by") and res.get("spike"))
     if not impacts and res.get("spiked_by"):
-        # knocked up into the air and smashed back down out of it by the next blow: the landing is a hard one
-        impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": "heavy"}]
+        # knocked up into the air and smashed back down out of it by the next blow: the landing is a hard one. From
+        # a height it is at least as hard as the fall; driven straight down (a SPIKE: a dive, a charge, a held stream
+        # from above) it is harder still (flight.spike: severity_bump, landing_force)
+        order = ["light", "solid", "heavy", "brutal"]
+        sev = "heavy"
+        if res.get("drop_severity") in order and order.index(res["drop_severity"]) > order.index(sev):
+            sev = res["drop_severity"]
+        if spiked:
+            sp = (engine.rules.get("flight") or {}).get("spike") or {}
+            sev = order[min(len(order) - 1, order.index(sev) + int(sp.get("severity_bump", 1)))]
+            force = float(sp.get("landing_force", 1.3))
+        impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": sev}]
         launch = "thrown"
     if not impacts and res.get("drop_severity"):
         # dropped out of the air (carried up and let go, or a wing gave out): the height decides how hard
@@ -1163,11 +1194,14 @@ def _landing(engine, b, res):
     word = "driven into" if in_place else (launch if launch != "none" else "knocked down")
     out = engine.land(who, [(x.get("surface"), x.get("parts") or [], x.get("severity")) for x in impacts],
                       credited=res.get("spiked_by") or res["attacker"], thrown=thrown, in_place=in_place, can_recover=(thrown or launch == "knocked down") and not manual,
-                      tumble=True if b.get("tumble") else (None if not manual else False),
+                      tumble=False if spiked else True if b.get("tumble") else (None if not manual else False),
+                      force=force,
                       how=f"{word}: " + " → ".join(short_phrase(x.get("surface"), default="the ground") for x in impacts))
     out["launch"] = "driven down" if out.get("in_place") else launch
     if res.get("spiked_by"):
         out["spiked_by"] = res["spiked_by"]
+    if spiked:
+        out["spiked_down"] = True
     return out
 
 
@@ -1381,8 +1415,23 @@ def resolve_many(engine, actions):
                 # the follow-up caught her in the air: it smashes her back down (her landing from the launch, harder)
                 engine._juggle = None
                 res["juggle"] = {"launched_by": jg["res"].get("attacker")}
-                jg["res"]["spiked_by"] = res.get("attacker")
-                land = _landing(engine, jg["b"], jg["res"]) if res.get("hits") else _landing(engine, jg["b"], dict(jg["res"], spiked_by=None))
+                if jg["res"].get("carried"):
+                    res["juggle"]["falling"] = jg["res"]["carried"].get("height")   # struck as she falls
+                if res.get("spiked_down"):
+                    res["juggle"]["spiked"] = True
+                    jg["res"]["spike"] = True
+                left = int(jg.get("falls_left", 0))
+                if res.get("hits") and not res.get("spiked_down") and left > 0 and i < limit \
+                        and _next_on(actions, i, jg["who"]) and not engine.get(jg["who"]).eliminated:
+                    # dropped from high enough, she is still falling: the next blow can catch her too
+                    engine._juggle = dict(jg, falls_left=left - 1,
+                                          mid=left - 1 > 0 and _next_on(actions, i + 1, jg["who"]))
+                    jg["res"]["spiked_by"] = res.get("attacker")
+                    res["still_falling"] = True
+                    land = None
+                else:
+                    jg["res"]["spiked_by"] = res.get("attacker") if (res.get("hits") or jg["res"].get("spiked_by")) else None
+                    land = _landing(engine, jg["b"], jg["res"])
             elif jg:
                 engine._juggle = None       # nothing followed her up: she lands from the launch as usual
                 jg["res"].pop("juggled_up", None)
@@ -1392,7 +1441,16 @@ def resolve_many(engine, actions):
                 land = _landing(engine, b, res)
             elif _juggle_next(engine, b, res, actions, i, limit):
                 engine._juggle = {"who": engine.get((res.get("defenders") or [res.get("defender")])[0]).name,
-                                  "b": b, "res": res}
+                                  "b": b, "res": res,
+                                  "falls_left": int((((engine.rules.get("flight") or {}).get("carry") or {})
+                                                     .get("fall_strikes") or {}).get(res.get("drop_severity"), 0))
+                                  if res.get("carried") else 0}
+                fl = engine._juggle["falls_left"]
+                sp = (engine.rules.get("flight") or {}).get("spike") or {}
+                # a slash on the way down when more are coming; the last blow from above may drive her down (rolled
+                # once: flight.spike.close_chance; a charge or a held stream from above always does)
+                engine._juggle["mid"] = fl > 0 and _next_on(actions, i + 1, engine._juggle["who"])
+                engine._juggle["close_spike"] = engine.rng.random() < float(sp.get("close_chance", 0.6))
                 res["juggled_up"] = True
                 land = None
             else:
@@ -2401,7 +2459,10 @@ def flight_hint(engine, roll=None):
                          f"left up there). From above, her close moves are DIVES that land harder"
                          + (f" ({', '.join(close)})" if close else "")
                          + (f", or {carry[0]} can seize {foe.name} and drop her from a height" if carry and
-                            foe.name not in engine.downed else "")
+                            foe.name not in engine.downed else
+                            f", or a close strike with \"carry\": true can seize {foe.name} and haul her up to drop "
+                            f"her (a second link can strike her as she falls, or SPIKE her down from above)"
+                            if engine.can_carry(f, foe)[0] else "")
                          + f". {foe.name} can only reach her with "
                          + (", ".join(reach) if reach else "nothing she has (no beams, blasts or streams)") + ".")
         elif engine.can_fly(f) and not engine.pinning(f.name) and not engine.pinned_by(f.name):

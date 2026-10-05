@@ -851,7 +851,13 @@ class Engine:
                                 float(((self.rules.get("moves") or {}).get("exhaustion_mistakes") or {}).get("mult", 0.6)))]
         if getattr(self, "_last_stand_now", None) == a.name:
             extras = extras + [("last stand", float(((self.rules.get("moves") or {}).get("last_stand") or {}).get("mult", 1.5)))]
-        if self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
+        if self.spike_ok(a, d, move):
+            # she is falling (carried up and dropped, or knocked up into the air) and this comes straight down on
+            # her from above: a dive, a charge, or a held stream that drives her into the ground faster than she
+            # would fall (flight.spike.mult, in place of the dive's own edge)
+            extras = extras + [("driven straight down out of the air",
+                                float(((self.rules.get("flight") or {}).get("spike") or {}).get("mult", 1.4)))]
+        elif self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
                 and move.get("target") not in ("status", "hold", "self") and not move.get("carry"):
             extras = extras + [("diving from above", float((self.rules.get("flight") or {}).get("dive_mult", 1.3)))]
         if move.get("improvised"):
@@ -881,6 +887,37 @@ class Engine:
 
     def uses_left(self, fighter, move_name):
         return self.get(fighter).move_uses.get(move_name)
+
+    def spike_ok(self, a, d, move):
+        """Is this blow a SPIKE: the one she is falling past (caught in the air by a chain, or carried up and
+        dropped) comes down on her from above, a dive, a charge, or a held stream, driving her into the ground?"""
+        sp = (self.rules.get("flight") or {}).get("spike") or {}
+        if not sp.get("enabled", True) or not move or move.get("target") in ("status", "self", "hold") or a is d:
+            return False
+        jg = getattr(self, "_juggle", None) or {}
+        if jg.get("who") != d.name or not self.has(a, "airborne") or jg.get("mid"):
+            return False     # (mid: a slash on the way down, with more blows still to come before she lands)
+        if move.get("charge") or (self.is_ranged(move) and int(getattr(self, "_sustain_now", 0) or 0) > 0):
+            return True
+        return not self.is_ranged(move) and bool(jg.get("close_spike", True))
+
+    GRIPS = re.compile(r"talon|foot|feet|hand|claw|paw", re.I)
+
+    def can_carry(self, a, d):
+        """Can `a` snatch `d` up and carry her into the air (any winged fighter in the air with talons, feet or hands
+        to grip with)? (ok, why not)"""
+        a, d = (x if hasattr(x, "parts") else self.get(x) for x in (a, d))
+        if not self.has(a, "airborne"):
+            return False, f"{a.name} isn't in the air"
+        if not any(self.GRIPS.search(p) for p in a.parts):
+            return False, f"{a.name} has nothing to grip with"
+        if self.has(d, "airborne"):
+            return False, f"{d.name} is in the air herself"
+        if self.pinned_by(d.name) or self.pinning(d.name):
+            return False, f"{d.name} is in a pin"
+        if any(d.name in (h.attacker, h.defender) for h in self.holds.values()):
+            return False, f"{d.name} is in a hold"
+        return True, ""
 
     def improvised_move(self, name, mtype, severity, target="targeted", about=""):
         """A move the director invents on the spot. Power comes from how hard it lands."""
@@ -951,7 +988,10 @@ class Engine:
         fe = self._feint(a, d, move) if feint and enforce and not ending else None
         self._last_stand_now = self._last_stand(a, move) if enforce else None
         self._overcommit_now = self._overcommit(a, move) if enforce and not self._last_stand_now else None
+        self._sustain_now = int(sustain or 0)
         math = self.move_math(a.name, d.name, move)
+        spiking = self.spike_ok(a, d, move)
+        self._sustain_now = 0
         target = math["target"]
         if target == "self":   # a stance or a weather move: on herself or the whole arena, not on the opponent
             return self._self_move(a, d, move, flavor, energy_before)
@@ -1220,6 +1260,21 @@ class Engine:
             if launch:
                 res["auto_launch"] = launch
             fcfg = self.rules.get("flight") or {}
+            grab = move.get("grab_carry") and not move.get("carry") and not d.eliminated
+            if grab:
+                # a winged fighter in the air seizes her with whatever she grips with and tries to haul her up:
+                # the stronger and fresher her wings, the likelier (flight.carry)
+                cc = fcfg.get("carry") or {}
+                ok, _ = self.can_carry(a, d)
+                wing = 1.0 / (1.0 + self.wing_damage(a) / float(cc.get("wing_per", 150)))
+                ch = float(cc.get("chance", 0.7)) * (0.5 + 0.5 * max(0.0, min(1.0, self.strength(a) / 100.0))) * wing \
+                    * (0.5 + 0.5 * max(0.0, min(1.0, 1.0 - self.strength(d) / 100.0 + 0.5)))
+                if ok and self._chance(min(0.95, ch), f"{a.name} hauling {d.name} up into the air", "she lifts her",
+                                       "too heavy"):
+                    a.energy = max(0.0, a.energy - float(cc.get("energy", 6)))
+                    move = dict(move, carry=True)
+                elif ok:
+                    res["carry_failed"] = True     # she gets a grip but can't get her off the ground
             if move.get("carry") and not d.eliminated:
                 # snatched up in her talons, carried up, and dropped: the higher, the harder she lands
                 h = self.rng.choice(list((fcfg.get("drop_heights") or {"a body's length up": "solid",
@@ -1251,9 +1306,16 @@ class Engine:
             back = self._reflect(a, d, move, math)
             if back:
                 res["reflected"] = back
-        if self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
+        if res.get("carried"):
+            self.set_status(a, "airborne", max(a.status.get("airborne", 0), 2))   # she is up there with her
+        elif self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
                 and move.get("target") not in ("status", "hold") and not move.get("carry"):
-            self._after_dive(a, d, res, bool(hits))
+            if (getattr(self, "_juggle", None) or {}).get("who") == d.name:
+                res["dive"], res["climbs"] = True, True    # she struck her in the air: there is no one to catch her
+            else:
+                self._after_dive(a, d, res, bool(hits))
+        if spiking and hits and not res.get("dodged"):
+            res["spiked_down"] = True     # driven down into the ground (director: her landing is the harder for it)
         return res
 
     def _charge(self, a, d, move, plan, powers, into):
@@ -2922,7 +2984,7 @@ class Engine:
     UPRIGHT_SURFACE = re.compile(r"wall|boulder|stalagmite|pillar|column|tree|trunk|rock face|cliff|fence|post|statue", re.I)
 
     def land(self, defender, impacts, credited="", how="", thrown=True, in_place=False, can_recover=False, slam=False,
-             tumble=False):
+             tumble=False, force=1.0):
         """Environmental damage after a launch or throw: each impact is (surface, [parts], severity).
         Every part listed on every surface takes a hit; the fighter ends up on the ground. thrown=False is a plain
         knockdown (she drops where she stands). in_place: she was already lying there and is driven into it: the
@@ -2989,7 +3051,8 @@ class Engine:
             plan = dev.pop("plan")
         for surface, names, sev in plan:
             self._source = f"landing on {surface}"[:60]
-            power = max(1, round(table[sev] * self.rng.uniform(1 - v, 1 + v) * (dev["mult"] if dev else 1.0)))
+            power = max(1, round(table[sev] * self.rng.uniform(1 - v, 1 + v) * (dev["mult"] if dev else 1.0)
+                                 * (float(force) if not landings else 1.0)))   # force: a spike drives the first impact
             self._dev_active = dev
             try:
                 these = [self._apply_damage(d, n, power) for n in names]
