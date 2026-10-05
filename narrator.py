@@ -3381,6 +3381,17 @@ class Narrator:
                                  f"{a['defender']} is pressed hard between {a['attacker']} and {ch['into']}, held there "
                                  f"for a long moment with nowhere to go:")
                     lines += [self._hit_line(h) for h in ch["crush_hits"]]
+                if ch["crush_hits"]:
+                    # the crush is a moment of its own: sell it, at the size her condition allows
+                    st_ = float((self.strengths or {}).get(a["defender"], 100) or 100)
+                    lines.append(f"  - SELL THE CRUSH as its own moment, after the slam: her head snapping back against "
+                                 f"{ch['into']}, the breath (and spit) forced out of her, the squeeze through her whole "
+                                 f"torso between {a['attacker']} and {ch['into']}, what of the charge is still on her "
+                                 f"front. "
+                                 + ("She is still strong: the sound is choked off, a squeal with no air behind it, and "
+                                    "she fights to hide how much it hurts." if st_ >= 60 else
+                                    "She is worn down: the sound is raw and she can't hide it." if st_ >= 30 else
+                                    "She is nearly spent: she can only hang there and take it, whimpering."))
                 last = ch.get("last") or ch["into"]
                 for st in ch.get("onward") or []:
                     # the charge does not stop at what it broke: she is driven on through it into the next thing
@@ -5406,6 +5417,12 @@ class Narrator:
             if a.get("carried"):
                 side[0] = "take" if take else "act"
                 add(f"{dfn_}, carried up and dropped", B.pick("aerial", 1, moment={"carried"}))
+            if take and (a.get("charge") or {}).get("crush_hits"):
+                side[0] = "take"
+                sh = str((a.get("charge") or {}).get("sheath") or "").lower()
+                add(f"{dfn_}, crushed between {att_} and {(a.get('charge') or {}).get('into', 'it')}",
+                    B.pick("crushed", 2, has=feats(dfn_), state=state(dfn_),
+                           kind={"fire" if "fire" in sh else "water" if "water" in sh else "body"}))
             if take and a.get("grounded"):
                 side[0] = "take"
                 # her own hurt wing failing her, or a blow knocking a sound flyer out of the sky
@@ -8925,6 +8942,7 @@ class Narrator:
                     if sents:
                         self._pov_marks.append((sents[:3], part_leads[k] or "Both"))
         written = self._tell_missing_attacks(written, [k for k, _, _ in plan])
+        written = self._tell_missing_events(written, [k for k, _, _ in plan])
         return "\n\n".join(w for w in written if w).strip()
 
     def _attack_shown(self, a, sents_all, seen):
@@ -8972,6 +8990,47 @@ class Narrator:
         if not out or abs(len(out.split()) - len(text.split())) > 0.15 * len(text.split()):
             return text          # it dropped or added something: keep what we had
         return out if len(self._present_sents(out, prior)) < len(before) else text
+
+    def _tell_missing_events(self, written, keys):
+        """After the attacks: anything else that happened this beat and is still missing from the whole passage (the
+        scenery she was slammed into, a tumble, a clash, the hits on a part) gets one short focused pass each, at most
+        narration.missing_event_passes a beat (2), on the receiving side. Only the program's own checks decide what
+        is missing; nothing is called when nothing is."""
+        cap = int(self.rules.get("narration", {}).get("missing_event_passes", 2) or 0)
+        if cap <= 0 or not any(written):
+            return written
+        joined = "\n\n".join(w for w in written if w)
+        try:
+            issues = self._review(joined, True, "")
+        except Exception:
+            return written
+        todo = [i for i in issues if ("never showed" in i or "left out the tumble" in i or "meeting the attack" in i)
+                and "every attack listed" not in i][:cap]
+        if not todo:
+            return written
+        at = next((k for k in range(len(written) - 1, -1, -1) if k < len(keys) and keys[k] == "take" and written[k]),
+                  None)
+        if at is None:
+            at = max(k for k, w in enumerate(written) if w)
+        written = list(written)
+        context = getattr(self, "_last_context", "") or ""
+        if self.progress:
+            self.progress(f"{len(todo)} thing{'s' if len(todo) != 1 else ''} the drafts left out "
+                          f"get{'' if len(todo) != 1 else 's'} a short passage of {'their' if len(todo) != 1 else 'its'} own")
+        for issue in todo:
+            seen = "\n\n".join(w for w in written if w)
+            ask = (f"\n\nTHE PASSAGE SO FAR (already written; never repeat it):\n<<<\n{_tail(seen, 1500)}\n>>>\n\n"
+                   f"Something that happens in this beat is missing from the passage: {issue}. Write ONLY that, in 2 to "
+                   f"4 sentences in the same voice and tense as the passage, as it happens, with the body's reaction "
+                   f"sized to how hurt she is. Nothing else happens: no new attacks, falls or pins.")
+            try:
+                text = self._generate(context + ask, 80)
+                text = self._drop_repeats(text, seen) if text else ""
+            except llm.LLMError:
+                text = ""
+            if text:
+                written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()
+        return written
 
     def _tell_missing_attacks(self, written, keys):
         """The last safety net: an attack every rewrite still left out of the story. The narrator is asked once more,

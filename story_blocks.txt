@@ -3477,3 +3477,29 @@ she growls through bared fangs, holding her ground
 == held_in | fighter: vixen
 a high, indignant yelp
 she yips, then catches herself and grins through it
+
+# ---------------------------------------------------------------------------------------------------------------
+# CRUSHED: a charge that drives her into something and keeps pushing (the receiver's side, sized to her condition)
+# ---------------------------------------------------------------------------------------------------------------
+== crushed
+her head snaps back and cracks against it a moment after her back does
+the breath is squeezed out of her in one long push she has no say in, spit flying with it
+there is no room to fall and no room to breathe: she is the thing caught between two hard things
+her ribs bow inward and she can feel each one take the weight
+the bark, the stone, whatever it is, prints itself into her back while the weight grinds into her front
+her arms come up to push and find nothing to push against but the weight itself | has: arms
+her hind feet scrabble at the ground for purchase and only slide | has: legs
+the heat of the charge is still on her front, pressed into her with the weight | kind: fire
+the water of the charge is still pouring over her face while she is pinned there, in her nose and mouth | kind: water
+
+== crushed | state: fresh, winded
+her mouth opens on a squeal that has no air behind it, only the shape of one
+she clamps her jaw and takes it, eyes squeezed shut, every muscle locked against the pressure
+a choked, voiceless gasp, and she will not give it more than that
+she twists against it once, hard, testing, and it gives her nothing
+
+== crushed | state: tired, spent
+the sound that comes out of her is high and broken, all the air she had left
+she sags into it, too spent to brace, and the weight does what it likes with her
+her eyes roll and water; for a moment she can only hang there between the two
+a thin whine leaks out of her with every bit of breath the weight lets her have

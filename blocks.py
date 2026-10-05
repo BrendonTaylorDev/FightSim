@@ -143,7 +143,7 @@ def kind_of(move_name="", about="", with_part="", manhandle="", grab=False, clos
                   ("punch", r"punch|break|chop|paw|cuff|jab|fist"), ("horn", r"horn|scythe"),
                   ("wing", r"\bwings?\b|aerial ace|air slash|gust|brave bird|sky attack|\bfly\b|acrobatics"),
                   ("beak", r"beak|peck|drill"), ("talon", r"talons?|sky drop"),
-                  ("fire", r"\bfire|flame|ember|heat|inferno|burn|blitz|flare|incinerat|lava|scald"),
+                  ("fire", r"\bfire\b|\bflames?\b|\bembers?\b|\bheat\b|\binferno|\bburn|blitz|\bflare|incinerat|\blava\b"),
                   ("ice", r"\bice\b|\bicy\b|blizzard|freeze|frost|hail|icicle"),
                   ("wind", r"hurricane|gust|twister|air slash|air cutter|\bwind\b|defog"),
                   ("rock", r"\brock\b|stone|accelerock|boulder")):
