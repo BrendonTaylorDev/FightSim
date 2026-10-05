@@ -283,7 +283,7 @@ HELP = """
 =============================================================================================
  RULES AND FIGHTERS   (changes are saved to rules.json unless noted)
 =============================================================================================
-  /scale [n]          how hard every hit lands on body parts (default 1.25)
+  /scale [n]          how hard every hit lands on body parts (default 5)
   /healthloss [n]     how much health each point of body-part damage costs (default 0.5)
   /resscale [n]       how fast body-part resistance wears down (separate from /scale)
   /wear [n]           resistance ALSO lost per 1% of damage a hit really does (0 = off)   /wear 0.05
@@ -2747,7 +2747,7 @@ def handle_command(s, line):
         s.eng.rules["damage"]["damage_scale"] = new
         if new >= 10:
             print(f"Note: at {new}x a single solid hit does roughly {round(60 * 0.4 * new)}% to a sturdy body part; "
-                  f"fights will end in a few hits. /scale 1.25 is the default.")
+                  f"fights will end much sooner. /scale 5 is the default (the win rates are tuned at 5).")
         _save_rule("damage_scale", new)
         print(f"Damage scale {cur} → {new} (saved to rules.json)"); return
     if cmd in ("reader", "secondreading"):
