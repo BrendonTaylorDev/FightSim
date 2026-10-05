@@ -1608,6 +1608,19 @@
     "big_hit_pct": 9.0,
     "lead_margin": 5.0
   },
+  "fight_length": {
+    "_comment": "Presets for /length: about how many beats a fight runs. Each sets health.loss_per_damage_point to base x health_loss and damage.resistance_scale to base x wear: fighters lose health and wear down faster, so a pin wins sooner (pin success follows her remaining health). Pin openings and escapes are not changed. Measured over 200 simulated fights each (Nocturne vs Ripples, lakeside forest).",
+    "default": "60",
+    "base": {"loss_per_damage_point": 0.155, "resistance_scale": 1.0},
+    "presets": {
+      "30": {"health_loss": 5.0, "wear": 2.3, "_measured": "31 beats, 2.7 pins, Nocturne wins 65%"},
+      "35": {"health_loss": 3.6, "wear": 1.8, "_measured": "36 beats, 3.2 pins, Nocturne wins 60%"},
+      "40": {"health_loss": 2.8, "wear": 1.5, "_measured": "41 beats, 3.6 pins, Nocturne wins 63%"},
+      "45": {"health_loss": 2.35, "wear": 1.3, "_measured": "45 beats, 4.0 pins, Nocturne wins 68%"},
+      "50": {"health_loss": 1.9, "wear": 1.2, "_measured": "49 beats, 4.4 pins, Nocturne wins 66%"},
+      "60": {"health_loss": 1.0, "wear": 1.0, "_measured": "62 beats, 5.6 pins, Nocturne wins 68%"}
+    }
+  },
   "submissions": {
     "_comment": "Submission holds: wrestling holds that WRENCH (a camel clutch, a crossface, a Boston crab, an armbar, a leg lock, a tail crank, a limb wrench). They do damage every beat, harder each beat, and are NOT pins (no clock, no pass-out). An opening is rolled each beat on a fighter who is down and not pinned or held (chance, x weak_mult under half strength), max_per_fight a fight at most (0 = no cap; the chance is tuned for about one a fight). power / second_power: the main grips and the bracing ones; ramp / second_ramp: how much harder each beat. max_beats: after that the holder lets it go. Breaking out: the plain-hold chance x break_mult, growing by grow per beat it has been on (up to max_break), unless she is STUCK (under stuck_below % strength, or a gripped part at stuck_damage %+): then it doesn't grow (x stuck_mult), a pin opening on her is always there, and the holder is pointed at letting go into a pin or hurting her another way. The one held can't get up while it's on, and blows on her land x moves.vulnerable.submission.",
     "enabled": true,
