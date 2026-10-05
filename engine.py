@@ -1911,7 +1911,8 @@ class Engine:
         p["attacker"], p["helpers"] = rest[0], rest[1:]
         self.pins[f"{rest[0]}>{p['defender']}"] = p
         note = (f"{why}, so she is off the pin on {p['defender']}; {' and '.join(rest)} still "
-                f"{'has' if len(rest) == 1 else 'have'} her pinned (second {p['seconds']})")
+                f"{'has' if len(rest) == 1 else 'have'} her pinned"
+                + ("" if self.fade_mode() else f" (second {p['seconds']})"))
         return [{"type": "pin_left", "attacker": name, "defender": p["defender"], "still": rest, "seconds": p["seconds"],
                  "duration": p["duration"], "why": why, "note": note}]
 
@@ -2106,6 +2107,8 @@ class Engine:
             return 0.0   # she has hold of her (a submission, a grip): locked on, she can't spring away
         if any(h.attacker == a.name and h.defender == d.name for h in self.holds.values()):
             return 0.0   # she is held by her (jaws on her arm, tails round her leg): she can't spring out of reach
+        if self.pinning(d.name):
+            return 0.0   # on top of someone, pinning her down: she can't spring away without letting go
         if (getattr(self, "hauled", None) or {}).get(d.name) == (a.name, self.turn):
             return 0.0   # hauled up and held there by this same attacker this beat
         if (getattr(self, "_juggle", None) or {}).get("who") == d.name:
@@ -2503,6 +2506,13 @@ class Engine:
                     if o.id != h.id and (o.attacker, o.defender, o.part) == (h.attacker, h.defender, h.part):
                         h.power, h.turns_active = max(h.power, o.power), max(h.turns_active, o.turns_active)
                         del self.holds[o.id]
+        if moved:
+            # the grips' own words still name the old spots ("her jaws in her throat"): point them at the new ones
+            for pair in moved:
+                old, new_ = [x.strip().lower() for x in pair.split("→")]
+                for h in self.holds.values():
+                    if h.defender == defender and h.flavor:
+                        h.flavor = re.sub(r"\b" + re.escape(old) + r"\b", new_, h.flavor, flags=re.I)
         return moved
 
     def fit_to_facing(self, defender, part_names, flavor=""):
@@ -3188,7 +3198,8 @@ class Engine:
         name = str((move or {}).get("name", "") if isinstance(move, dict) else move or "").lower()
         if any(w in name for w in self.COIL_MOVES):
             return True
-        return bool(re.search(r"\bcoil|\bwrap|wound round|wrapped round|looped round|tails? (?:round|around|wrapped)",
+        # (labels get cut short: "her twin tails, wound round her" can arrive as "her twin tails, wound")
+        return bool(re.search(r"\bcoil|\bwrap|\bwound\b|\blooped\b|tails? (?:round|around|wrapped)",
                               f"{with_part} {flavor}".lower()))
 
     # ---------- tactics: setups and payoffs (a plan the director can follow and the narrator can show) ----------
@@ -3713,6 +3724,8 @@ class Engine:
             return None   # /play dice free: nothing gets in the way of her attacks
         if any({h.attacker, h.defender} == {a.name, d.name} for h in self.holds.values()):
             return None   # locked together in a hold or a submission: nothing to put in the way, nowhere to step
+        if self.pinning(d.name):
+            return None   # her limbs are busy holding someone down
         if (d.name in self.downed or self.pinned_by(d.name) or self.grab_between(a.name, d.name)
                 or any(h.defender == d.name for h in self.holds.values())
                 or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched", "constricted", "airborne"))
@@ -4264,7 +4277,8 @@ class Engine:
             elif t == "pin_progress":
                 att, dfn = e.get("attacker", ""), e.get("defender", "")
                 deal(att, e.get("punish_hits"), dfn)
-                deal(dfn, e.get("hits_on_pinner"), att)
+                for h in e.get("hits_on_pinner") or []:      # each blow on the pinner it really hit (double pins)
+                    deal(dfn, [h], h.get("defender") or att)
                 if e.get("struggle") == "escape":
                     ch["escapes"][dfn] = ch["escapes"].get(dfn, 0) + 1
                     self._moment("escape", f"{dfn} breaks out of {poss_word(att)} pin"
@@ -4784,6 +4798,21 @@ class Engine:
             self._regrab_check(a, d)
         if a is d:
             raise ValueError(f"{a.name} can't hold or pin herself")
+        if enforce:
+            # one mouth: jaws already clamped somewhere (or named twice in this pin) can't close on a second part
+            jaws = lambda w: bool(re.search(r"\b(jaws?|teeth|fangs?|mouth|bite)\b", str(w or "").lower()))
+            busy = any(h.attacker == a.name and jaws(h.with_part) for h in self.holds.values())
+            kept, seen = [], busy
+            for c in contacts:
+                if len(c) > 3 and jaws(c[3]):
+                    if seen:
+                        continue
+                    seen = True
+                kept.append(c)
+            if not kept:
+                raise ValueError(f"{poss_word(a.name)} jaws are already clamped on someone: she can't bite down on a "
+                                 f"second part. Use her free limbs, or let go first")
+            contacts = kept
         key = f"{a.name}>{d.name}"
         host = self.pin_on(d.name)                                   # a pin already running on her, if any
         mine = host is not None and a.name in self.pin_members(host)  # ...that this fighter is already part of
@@ -5588,6 +5617,9 @@ class Engine:
                 and (pinner is None or str(pinner).lower() in [m.lower() for m in self.pin_members(p)])]
         if not pins:
             raise ValueError(f"{d.name} isn't pinned right now")
+        for st in ("asleep", "frozen"):
+            if self.has(d, st):
+                raise ValueError(f"{d.name} is {st}: she can't struggle until she comes round")
         for p in pins:
             p["force_attempt"] = True
         return {"type": "struggle_request", "fighter": d.name, "pinner": pins[0]["attacker"],
@@ -5606,7 +5638,7 @@ class Engine:
         slow for a beat); a pinner who held on for a long time comes off CRAMPED. And the one who got out remembers
         how (learning)."""
         if p is not None and dfn is not None:
-            shape = self.pin_shape(p)
+            shape = self.pin_shape(p) or p.get("shape", "")
             if shape:
                 got = dfn.learned.setdefault("pins", {})
                 got[shape] = got.get(shape, 0) + 1
@@ -5896,8 +5928,9 @@ class Engine:
         self.tactics_before()
         for name in [f.name for f in self.active()]:
             hs = [h for h in self.holds.values() if h.defender == name and h.sub]
-            if hs and self.sub_stuck(self.get(name), hs):
-                self.pin_window[name] = True    # she can't break it: the holder can let go and pin her
+            scale = float(((self.rules.get("director") or {}).get("pin_urge") or {}).get("scale", 1.0) or 0)
+            if hs and scale > 0 and self.sub_stuck(self.get(name), hs):
+                self.pin_window[name] = True    # she can't break it: the holder can let go and pin her (not with /pins off)
         return self.pin_window
 
     PIN_REACH = ("muzzle", "nose", "jaw", "cheek", "ear", "head", "neck", "throat", "chest", "ruff", "shoulder",
@@ -6003,13 +6036,18 @@ class Engine:
                 esc_try *= float(cfg.get("tired_pinner_escape_mult", 1.2))
             # she has broken out of a pin like this before: she knows where it gives (learning.pin_escape_per_time)
             lcfg = self.rules.get("learning") or {}
-            known = (dfn.learned.get("pins") or {}).get(self.pin_shape(p), 0) if lcfg.get("enabled", True) else 0
+            p["shape"] = self.pin_shape(p) or p.get("shape", "")   # kept: the holds are gone by the time she's out
+            known = (dfn.learned.get("pins") or {}).get(p["shape"], 0) if lcfg.get("enabled", True) else 0
             if known:
                 esc_try *= min(float(lcfg.get("pin_escape_cap", 1.45)), 1 + float(lcfg.get("pin_escape_per_time", 0.15)) * known)
             esc = self._per_beat(min(0.95, esc_try), tf)
             # if the escape fails: the chance to break loose for a moment and land a hit, same halving curve
             part_try = s.get("partial_chance", 0.50) * curve * (1 + 0.6 * a_weak) * fade * crowd
             part = self._per_beat(min(0.95, part_try), tf)
+            if self.has(dfn, "asleep") or self.has(dfn, "frozen"):
+                # asleep or frozen under the pin: no struggle at all, no breaking loose, no blow on the pinner
+                attempt_p, esc, part = 0.0, 0.0, 0.0
+                p.pop("force_attempt", None)
 
             ev = {"type": "pin_progress", "attacker": att.name, "defender": dfn.name,
                   "seconds_from": frm, "seconds_to": p["seconds"], "duration": p["duration"],
@@ -6031,12 +6069,30 @@ class Engine:
                 if roll < esc or dfn.name in self.lucky:   # /play dice free: every try of hers gets her out
                     ev["struggle"] = "escape"
                     ev["hits_on_pinner"] = self._escape_hit(self.rng.choice(crew), dfn)
+                    # now and then the pinner's jaws don't come off with the rest: she is thrown off the pin but
+                    # keeps her bite, and that one grip goes on as an ordinary hold (pin.struggle.keep_jaws)
+                    bite = next((h for h in holds if re.search(r"\b(jaws?|teeth|fangs?|bite)\b", str(h.with_part or "").lower())),
+                                None)
+                    keep = None
+                    if bite is not None and self._chance(float(s.get("keep_jaws", 0.25)),
+                                                         f"{bite.attacker} keeping her jaws on {poss_word(dfn.name)} "
+                                                         f"{bite.part.lower()} through the escape", "she hangs on",
+                                                         "they come off too"):
+                        keep = bite
                     for h in holds:  # free of everyone who was pressing on her
-                        self.holds.pop(h.id, None)
+                        if h is not keep:
+                            self.holds.pop(h.id, None)
                     self.pins.pop(key, None)
                     self.last_pin_end = {"pinner": att.name, "pinned": dfn.name, "how": "broke free",
                                          "second": p["seconds"], "turn": self.turn}
                     self._after_escape(ev, att.name, p, dfn)
+                    if keep is not None and isinstance(ev.get("pinner_down"), dict) \
+                            and ev["pinner_down"].get("fighter") == keep.attacker:
+                        self.holds.pop(keep.id, None)      # thrown down off her: the bite is torn loose too
+                    elif keep is not None:
+                        keep.change_per_turn = 0.0
+                        ev["kept_grip"] = {"hold_id": keep.id, "attacker": keep.attacker, "part": keep.part,
+                                           "with": keep.with_part}
                 elif (ev.__setitem__("roll2", round(self.rng.random(), 3)) or ev["roll2"]) < part:
                     ev["struggle"] = "partial"
                     p["buff_beats"] = int(s.get("break_loose_buff_beats", 1) or 0)  # momentum for the next try

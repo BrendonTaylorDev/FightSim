@@ -2451,6 +2451,7 @@ class Narrator:
         self._clash = None          # (defender, her move, its type): she met the attack with a move of her own
         self._must_surfaces = []    # (fighter, surface): scenery she is thrown, knocked or dragged into this beat
         self._escape_blows = []     # (pinned, pinner, parts): the blow she breaks a pin with, which has to be told
+        self._escaped = []          # (freed, pinner): every grip that pinner had on her ended this beat
         self._chain_beat = False    # several attacks by one fighter this beat (a chain, a pummel): "again" is right
         self._must_tumble = None    # thrown and tumbling on: the passage has to show her going on across the ground
         actions = bundle.get("actions") or [bundle["action"]]
@@ -2771,7 +2772,9 @@ class Narrator:
                 out.append(f"  - THE PIN ENDS HERE: {k['note']}. {k['defender']} is no longer held (she is still on "
                            f"the ground where she lay); no pin clock runs any more. Show the pin coming apart.")
             elif k["type"] == "pin_left":
-                out.append(f"  - {k['attacker']} COMES OFF THE PIN: {k['note']}. The pin itself goes on, same clock; show "
+                out.append(f"  - {k['attacker']} COMES OFF THE PIN: {k['note']}. The pin itself goes on"
+                           + ("" if self.rules.get("pin", {}).get("fade", {}).get("enabled", True) else ", same clock")
+                           + "; show "
                            f"her weight leaving and the other still holding {k['defender']} down.")
             elif k["type"] == "flattened":
                 out.append(f"  - {k['fighter']} was SITTING UP: the blow knocks her flat again. She ends "
@@ -3814,8 +3817,9 @@ class Narrator:
         elif s == "partial":
             self._must_struggle = f"{d} partly breaks loose and hits {a}"
             self._struggle_kind = "partial"
+            hit_on = (e.get("hits_on_pinner") or [{}])[0].get("defender") or a
             out.append(f"  - YOU MUST SHOW THIS: {d} PARTLY BREAKS LOOSE for a moment (" + self._try_how(e) + f") and "
-                       f"lands a hit on {a} before {a} forces the pin back down. The pin holds:")
+                       f"lands a hit on {hit_on} before {a} forces the pin back down. The pin holds:")
             out += [self._hit_line(h) for h in e.get("hits_on_pinner", [])]
         elif s == "overpowered":
             out.append(f"  - {d} fights it, but every attempt is overpowered; the struggles weaken second by second "
@@ -4134,13 +4138,21 @@ class Narrator:
         """An escape: the blow that frees her, and where both fighters are once the pin is gone."""
         a, d = e["attacker"], e["defender"]
         out = []
+        self._escaped = list(getattr(self, "_escaped", None) or []) + [(d, m) for m in [a] + list(e.get("helpers") or [])]
         if e.get("hits_on_pinner"):
-            # checked afterwards: the blow itself has to be in the story, not only the pain it leaves
+            # checked afterwards: the blow itself has to be in the story, not only the pain it leaves. In a double
+            # pin it lands on whichever pinner the engine picked, not always the lead
+            hit_on = e["hits_on_pinner"][0].get("defender") or a
             self._escape_blows = list(getattr(self, "_escape_blows", None) or []) + [
-                (d, a, sorted({h["part"].lower() for h in e["hits_on_pinner"]}))]
-            out.append(f"  - The blow that frees her lands on {a} (a kick, a bite, a swung limb, a blast at point-blank: "
-                       f"whatever fits {poss(d)} body), and it hurts {a}:")
+                (d, hit_on, sorted({h["part"].lower() for h in e["hits_on_pinner"]}))]
+            out.append(f"  - The blow that frees her lands on {hit_on} (a kick, a bite, a swung limb, a blast at "
+                       f"point-blank: whatever fits {poss(d)} body), and it hurts {hit_on}:")
             out += [self._hit_line(h) for h in e["hits_on_pinner"]]
+        helpers = [m for m in (e.get("helpers") or []) if m != a]
+        if helpers:
+            out.append(f"  - {' and '.join(helpers)} {'is' if len(helpers) == 1 else 'are'} thrown off her too, and "
+                       f"{'stays' if len(helpers) == 1 else 'stay'} on {'her' if len(helpers) == 1 else 'their'} feet: "
+                       f"nobody is on {d} any more.")
         for x in e.get("aftereffects") or []:
             out.append(f"  - WHAT THE PIN LEAVES BEHIND: {x['fighter']} is "
                        + {"stiff": "STIFF: the limbs that were trapped are numb, pins and needles coming back into them, "
@@ -4150,6 +4162,8 @@ class Narrator:
                                   "from it).",
                           }.get(x["status"], "CRAMPED from bearing down so long: her legs and shoulders locked, stiff "
                                              "to straighten (show it as she comes off).") + " No new injury.")
+        kept = [(ga, gd, gp, gw) for ga, gd, gp, gw in (getattr(self, "grips", None) or [])
+                if {ga, gd} == {e["attacker"], d}]
         pd = e.get("pinner_down")
         if isinstance(pd, dict):
             out.append(f"  - AFTER THE ESCAPE: this time {pd['fighter']} is THROWN OFF and GOES DOWN: she lands ON THE "
@@ -4157,10 +4171,12 @@ class Narrator:
                        + (f", {Engine.FACING_LOOK[pd['facing']]}" if pd.get("facing") in Engine.FACING_LOOK else "")
                        + f", and does not get up in this beat. {d} is loose but still ON THE GROUND where she was "
                        f"pinned, unless a GETTING UP line below says she rises. Nothing is pressing on {d} any more: no "
-                       f"weight, no paws, no jaws. End with them apart, both down.")
+                       f"weight, no paws, "
+                       + ("no jaws. End with them apart, both down." if not kept else
+                          "nothing of the pin. But they do NOT end apart: " + "; ".join(
+                              f"{ga} still has {gw or 'her grip'} on {poss(gd)} {gp}" for ga, gd, gp, gw in kept)
+                          + ", so the two of them lie joined by that."))
             return out
-        kept = [(ga, gd, gp, gw) for ga, gd, gp, gw in (getattr(self, "grips", None) or [])
-                if {ga, gd} == {e["attacker"], d}]
         out.append(f"  - AFTER THE ESCAPE: {a} is shoved or knocked off her but STAYS ON HER FEET (she doesn't fall and "
                    f"doesn't need to get up). {d} is loose but still ON THE GROUND where she was pinned, unless a "
                    f"GETTING UP line below says she rises. Nothing is pressing on {d} any more: no weight, no paws, "
@@ -7282,6 +7298,20 @@ class Narrator:
             if sent and sent not in out:
                 out[sent] = why
         sents = [x for para in text.split("\n") for x in _SENT.split(para.strip()) if x]
+        # an escape this beat ended every grip that pinner had on her: the story mustn't keep her jaws on, unless a
+        # grip really survived it (listed under HOLDS)
+        kept_pairs = {frozenset((ga, gd)) for ga, gd, _, _ in (getattr(self, "grips", None) or [])}
+        for freed, pinner in getattr(self, "_escaped", None) or []:
+            if frozenset((freed, pinner)) in kept_pairs:
+                continue
+            for x in sents:
+                if (re.search(r"\b(jaws?|teeth|fangs|grip|bite)\b", x, re.I)
+                        and re.search(r"\b(still|stayed|stays|kept|keeps|remained|never let go|held on|locked|clamped)\b",
+                                      x, re.I)
+                        and re.search(r"\b" + re.escape(pinner) + r"\b|\bher (?:jaws|teeth|grip)\b", x)
+                        and not re.search(r"\b(let go|released|tore free|ripped free|wrenched free|gone|no longer)\b", x, re.I)):
+                    add(x, f"the escape broke EVERY grip {pinner} had on {freed}, her jaws too: nothing of {poss(pinner)} "
+                           f"stays on {freed} after it (show it letting go)")
         gore = gore_pattern(self.rules)
         numb_off = n.get("numb_tier", True) is False
         swearing = bool(self._swear_problem((prior or "") + "\n" + text))

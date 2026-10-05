@@ -447,15 +447,21 @@ class Display:
         verdict = {"overpowered": f"- {d} struggles, but every attempt is overpowered (forced success)",
                    "none": f"- {d} doesn't make a real attempt this stretch",
                    "fail": f"- {d} struggles ({odds}{roll}) → **fails**; {a} punishes it:",
-                   "partial": f"- {d} struggles ({odds}{roll}) → **breaks loose for a moment** and hits {a}:",
+                   "partial": f"- {d} struggles ({odds}{roll}) → **breaks loose for a moment** and hits "
+                              f"{(e.get('hits_on_pinner') or [{}])[0].get('defender') or a}:",
                    "escape": (f"- **{d} kicks out at the last second!** The pin can't be won yet ({e.get('why_not', '')})"
                               if e.get("last_second") else
                               f"- {d} struggles ({odds}{roll}) → **ESCAPES!** The pin is broken"
-                              + (f"; the blow that frees her lands on {a}:" if e.get("hits_on_pinner") else ""))}[e["struggle"]]
+                              + (f"; the blow that frees her lands on {e['hits_on_pinner'][0].get('defender') or a}:"
+                                 if e.get("hits_on_pinner") else ""))}[e["struggle"]]
         if self.tight():
             out = [out[0] + " · " + verdict[2:]]
         else:
             out.append(verdict)
+        kg = e.get("kept_grip")
+        if kg:
+            out.append(f"- 🦷 {kg['attacker']} hangs on: {kg.get('with') or 'her jaws'} stay on {d}'s {kg['part']} "
+                       f"(the pin is over; that bite goes on as a hold, #{kg['hold_id']})")
         if e.get("pressure_hits"):
             out += self.hits_block(d, e["pressure_hits"])
         if e.get("punish_hits"):

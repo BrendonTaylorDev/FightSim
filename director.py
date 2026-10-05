@@ -867,12 +867,25 @@ def resolve(engine, b):
                 shapes = pin_shapes(engine, engine.get(att), engine.get(dfn))
             except Exception:
                 shapes = {}
+            weights = {k: float(v) for k, v in ((engine.rules.get("director") or {}).get("pin_shape_weights") or {}).items()
+                       if not str(k).startswith("_")}
+            shapes = {k: v for k, v in shapes.items() if weights.get(k, 1.0) > 0}     # a shape set to 0 is never used
             if shapes:
-                look, cts = shapes[engine.rng.choice(sorted(shapes))]
+                name = engine.rng.choices(sorted(shapes), weights=[weights.get(k, 1.0) for k in sorted(shapes)])[0]
+                look, cts = shapes[name]
                 hits = [{"part": p, "severity": "crushing" if i == 0 else "firm", "with": w}
                         for i, (p, w) in enumerate(cts)]
+                # the shape's words are an idea written for the director: its asides ("say so with ...") are not
+                # part of the label
+                look = re.sub(r"\s*\([^)]*\)", "", look).strip(" ,;")
+                if name == "dunk" and not b.get("pinned_against"):
+                    pool = next((h["name"] for h in (engine.scene_cfg.get("hazards") or [])
+                                 if any(w in ("pool", "shallows", "water") for w in h.get("words", []))), None)
+                    if pool:
+                        b["pinned_against"] = pool
                 if str(flavor or "").strip() in ("", "pins them down"):
                     flavor = look
+                b["_bare_pin"] = True
         if not hits:  # nothing named: press the defender's most-damaged parts, or their core if unhurt
             hits = [{"part": p, "severity": "crushing" if i == 0 else "firm"}
                     for i, p in enumerate(engine.default_pin_parts(dfn, 3 if act == "pin" else 1))]
@@ -905,10 +918,14 @@ def resolve(engine, b):
                 contacts = list(best.values())
         else:
             note = None
-        if act == "pin" and not manual and contacts:
+        if act == "pin" and (not manual or b.get("_bare_pin")) and contacts:
             # a pin the director wrote with too few points of contact (twin tails round one foreleg) is filled out
             # from what the pinner still has free, like any pin shape; its label is rebuilt from the real grips
             least = int(((engine.rules.get("pin") or {}).get("contacts") or {}).get("min", 3))
+            # only a pin that is starting is filled out: a grip added to a running pin, or a second pinner piling
+            # on, is just that grip (the pin already has its points of contact)
+            if engine.pin_on(engine.get(dfn).name) is not None:
+                least = 0
             if len(contacts) < least:
                 _, filled = fuller_pin(engine, engine.get(att), engine.get(dfn), "",
                                        [(c[0], c[3] if len(c) > 3 else "") for c in contacts], at_least=least)
@@ -920,12 +937,26 @@ def resolve(engine, b):
                 flavor = ", ".join(bits[:-1]) + " and " + bits[-1]
         res = engine.start_holds(att, dfn, contacts, flavor, pin=(act == "pin"), move=move_info, enforce=not manual)
         res["facing"] = engine.facing_of(dfn)
+        # a takedown that turned her over moved the presses (throat -> neck) and their words with them
+        hf = next((engine.holds[i].flavor for i in res.get("hold_ids") or [] if i in engine.holds), None)
+        if hf and res.get("flavor") and hf != res["flavor"] and hf.lower() != str(res["flavor"]).lower():
+            res["flavor"] = hf
         if act == "pin" and not res.get("continuing"):
-            prop = _pin_against(engine, b, flavor)
+            found = _pin_against(engine, b, flavor)
             pin_now = engine.pin_on(engine.get(dfn).name)
-            if prop and pin_now is not None and not pin_now.get("against"):
-                pin_now["against"] = prop      # jammed against something solid: harder to bridge out of
+            if found and pin_now is not None and not pin_now.get("against"):
+                prop, water = found
+                pin_now["against"] = prop      # jammed against something solid (or held under): harder to escape
                 res["against"] = prop
+                if water:
+                    # a DUNK: her face held down in the water. It soaks her and she comes up sputtering, for real
+                    target = engine.get(dfn)
+                    res["dunk"] = True
+                    pin_now["dunk"] = True
+                    res["hazard_status"] = engine.hazard_effects(target, [prop])
+                    if not engine.has(target, "soaked"):
+                        engine.set_status(target, "soaked", int(engine._cfg("status_effects").get("soaked_beats", 3)))
+                    engine.set_status(target, "sputtering", 2)
         if note:
             res["facing_note"] = note
         started = tuple(res["hold_ids"])
@@ -1992,7 +2023,7 @@ def pin_shapes(engine, pinner, target, skip=()):
                        f"back of her {neck} pushing her head under, letting her up for one gasp and pushing her under "
                        f"again, her weight across her {backs2[0]} (say so with \"pinned_against\": \"{pool}\")",
                        [(neck, t["fore"] + ", holding her head under the shallow water"), (backs2[0], t["weight"])])
-    props = [p for p in ((getattr(engine, "scene_cfg", None) or {}).get("props") or []) if p]
+    props = [p for p in ((getattr(engine, "scene_cfg", None) or {}).get("props") or []) if p and not engine.is_broken(p)]
     if props and t.get("fore") and neck and front and "wall_choke" not in skip:
         prop = rng.choice(props)
         out["wall_choke"] = (f"{target.name} driven back against {prop} and held there on the ground at the foot of it, "
@@ -2021,16 +2052,21 @@ def pin_shapes(engine, pinner, target, skip=()):
 
 
 def _pin_against(engine, b, flavor):
-    """The thing in the arena a pin is jammed against, if the beat says so and the arena has it."""
-    said = " ".join(str(x or "") for x in (b.get("pinned_against"), flavor)).lower()
+    """The thing in the arena a pin is jammed against, if the beat says so and the arena has it standing: one of its
+    props (not one that has broken), or water it has (a dunk in the shallows). Returns (name, is_water) or None."""
     asked = str(b.get("pinned_against") or "").strip().lower()
-    if asked in ("", "none", "no", "n/a") and "against" not in said:
+    if asked in ("none", "no", "n/a"):
+        asked = ""
+    m = re.search(r"\bagainst ((?:the |a |an )?(?:[\w-]+ ){0,4}[\w-]+)", str(flavor or "").lower())
+    said = asked or (m.group(1) if m else "")
+    if not said:
         return None
-    for prop in ((getattr(engine, "scene_cfg", None) or {}).get("props") or []):
-        words = [w for w in re.findall(r"[a-z]{4,}", str(prop).lower())]
-        if words and all(w in (asked or said) for w in words[-1:]) and (asked or re.search(
-                r"against (?:the |a |an )?(?:\w+ ){0,3}" + re.escape(words[-1]), said)):
-            return short_phrase(prop)
+    prop = engine.scene_prop_for(said)
+    if prop:
+        return short_phrase(prop), False
+    h = engine.hazard_for(said)
+    if h and (h.get("cushion") or any(e.get("status") == "soaked" for e in h.get("effects") or [])):
+        return h["name"], True
     return None
 
 
@@ -2087,7 +2123,7 @@ def drag_to_pin_hint(engine, roll=None):
     if ch <= 0 or (roll if roll is not None else engine.rng.random()) >= ch:
         return ""
     cfg = getattr(engine, "scene_cfg", None) or {}
-    props = [p for p in (cfg.get("props") or []) if p]
+    props = [p for p in (cfg.get("props") or []) if p and not engine.is_broken(p)]
     pools = [h["name"] for h in (cfg.get("hazards") or []) if any(w in ("pool", "shallows", "water") for w in h.get("words", []))]
     for d in engine.active():
         if d.name not in engine.downed or engine.pinned_by(d.name):
@@ -2124,6 +2160,9 @@ def throat_hint(engine, roll=None):
             # what she already presses stays; the idea is something she isn't doing yet
             held = {h.part for h in engine.holds.values() if h.attacker == a and h.defender == d}
             t, sp = _grip_tools(engine, engine.get(a)), _spots(engine.get(d))
+            if any(h.attacker == a and re.search(r"\b(jaws?|teeth|fangs?|mouth|bite)\b", str(h.with_part or "").lower())
+                   for h in engine.holds.values()):
+                t = dict(t, jaws=None)      # her jaws are already clamped on her: no second bite to suggest
             free = lambda key: [x for x in sp.get(key, []) if x not in held]
             ideas = []
             if t.get("jaws") and [x for x in spots if x not in held]:
