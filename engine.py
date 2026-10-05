@@ -119,12 +119,12 @@ _BODY_REGION_KEYS = [
     ("tail", ("tail", "fan")),
     ("hind_low", ("hind paw", "knee", "hock", "foot", "talon")),
     ("hind_up", ("hip", "thigh")),
-    ("head", ("head fin", "horn", "ear", "muzzle", "nose", "jaw", "cheek", "antenna", "spike", "head", "eye", "face",
+    ("head", ("head fin", "horn", "ear", "muzzle", "snout", "nose", "jaw", "cheek", "antenna", "spike", "head", "eye", "face",
               "beak", "crest")),
     ("neck", ("throat", "neck", "sac", "hood", "mane")),
     ("shoulder", ("shoulder",)),
     ("fore_up", ("upper arm", "upper foreleg", "wing")),
-    ("fore_low", ("forearm", "lower foreleg", "forepaw", "paw", "fin", "arm", "foreleg", "wingtip")),
+    ("fore_low", ("forearm", "lower foreleg", "forepaw", "paw", "hand", "fin", "arm", "foreleg", "wingtip")),
     ("chest", ("ruff", "chest", "rib")),
     ("belly", ("belly", "stomach", "midsection", "flank", "scales")),
     ("back_low", ("lower back",)),
@@ -2665,10 +2665,10 @@ class Engine:
 
     def body_plan(self, f):
         names = " ".join(f.parts).lower()
+        if "arm" in names:
+            return "biped"      # arms first: a winged dragon (Charizard, Dragonite) holds and pins like a biped
         if "wing" in names:
             return "avian"
-        if "arm" in names:
-            return "biped"
         if any(k in names for k in ("leg", "paw", "hock", "foot", "knee")):
             return "quadruped"
         return "serpent"
@@ -4617,7 +4617,7 @@ class Engine:
         """A fighter with wings that still work, free to take off (flight.ground_at: a wing hurt that badly grounds her)."""
         cfg = self.rules.get("flight") or {}
         reason = None
-        if self.body_plan(f) != "avian":
+        if not any("wing" in p.lower() for p in f.parts):     # a bird, or a winged dragon with arms too
             reason = f"{f.name} has no wings"
         elif self.wing_damage(f) >= float(cfg.get("ground_at", 150)):
             reason = f"{poss_word(f.name)} wings are too badly hurt to lift her"
@@ -6750,7 +6750,7 @@ class Engine:
             opn = [st.replace("_", " ") for st in ("doubled_over", "off_balance", "dazed", "flinched") if self.has(f, st)]
             if opn:
                 lines.append(f"   CAUGHT OPEN ({', '.join(opn)}): anything that lands on her now lands harder")
-            if self.body_plan(f) == "avian":
+            if any("wing" in p.lower() for p in f.parts):
                 lines.append("   IN THE AIR (only ranged moves reach her; her close moves are dives; she can't be held "
                              "or pinned)" if self.has(f, "airborne") else
                              "   can take off ('reposition': 'take off' on her own action)" if self.can_fly(f) else

@@ -725,6 +725,11 @@ After each beat's prose, the program prints the exact numbers in this format:
 - **New fighters** (on the bench: `"bench": true` keeps them out of the default fight; `/newfight Talon Nocturne`
   brings them in): **Talon** (Staraptor, flyer), **Vesper** (Arbok, coils and venom), **Blaze** (Arcanine), **Aura**
   (Lucario), **Undertow** (Floatzel). Ripples, Nocturne and Seraphina are unchanged.
+- **More fighters** (also on the bench). Flyers: **Cygnet** (Swanna), **Duchess** (Unfezant), **Valor** (Braviary,
+  Sky Drop), **Swift** (Swellow), **Zephyr** (Pidgeot), **Pyra** (Moltres), **Glacia** (Articuno), **Ember**
+  (Talonflame), and the winged dragons **Cinder** (Charizard) and **Tidecrest** (Dragonite), who have arms as well
+  as wings: they hold and pin like bipeds and can still take off. On the ground: **Gloam** (Goodra), **Kitsune**
+  (Ninetales), **Kindle** (Vulpix), **Sable** (Fennekin), **Dusk** (Lycanroc, Midday Form), **Vixen** (Thievul).
 - **New arenas**: the **mud swamp** (sucking mud, black water, gas bursts), the **tidal beach** (surf, barnacled rock,
   big waves), the **mountain shelf** (open sky for flyers, gusts, rockfall) and the **ruined temple** (pillars that
   topple, vines, moss).

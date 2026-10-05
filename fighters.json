@@ -1112,6 +1112,2263 @@
           "energy": 10
         }
       ]
+    },
+    {
+      "name": "Cygnet",
+      "bench": true,
+      "description": "A female Swanna. Elegant, haughty and unexpectedly vicious; a tall white swan who fights from the water and the air with heavy wingbeats, a stabbing bill and blasts of water. Proud of her looks, and furious when they are spoiled.",
+      "appearance": "Swanna. A large, upright swan with pure WHITE feathers, a long, gracefully curved white neck and a black crown of feathers on top of her head with a pale BLUE diamond-shaped feather tuft at its center. A short YELLOW bill. Pale blue feathers on her chest, layered like a ruff. Large white WINGS (she has no arms or paws). Long dark grey legs ending in webbed feet. A short, fanned white tail.",
+      "voice": "Cool, superior and precise. Thinks in clipped, scornful judgements, until she is hurt, and then in pure outrage. A loud, trumpeting honk when she attacks; in pain a harsh, hissing bugle.",
+      "tells": "Her long neck arches back like a drawn bow before she strikes; her wings lift and half-open, feathers raised, when she is angry; she hisses with her bill open; ruffled, soiled feathers make her shake and preen even mid-fight; a hurt wing droops and trails.",
+      "types": [
+        "Water",
+        "Flying"
+      ],
+      "health": 1850,
+      "body": {
+        "Head": 100,
+        "Crest": 70,
+        "Beak": 120,
+        "Left Eye": 55,
+        "Right Eye": 55,
+        "Neck": 80,
+        "Throat": 70,
+        "Chest": 115,
+        "Belly": 90,
+        "Upper Back": 120,
+        "Lower Back": 110,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Wing": 105,
+        "Right Wing": 105,
+        "Left Wingtip": 85,
+        "Right Wingtip": 85,
+        "Left Thigh": 110,
+        "Right Thigh": 110,
+        "Left Webbed Foot": 95,
+        "Right Webbed Foot": 95,
+        "Tail Feathers": 90,
+        "Chest Ruff": 120
+      },
+      "moves": [
+        {
+          "name": "Brave Bird",
+          "type": "Flying",
+          "power": 60,
+          "target": "targeted",
+          "about": "a reckless dive",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Air Slash",
+          "type": "Flying",
+          "power": 25,
+          "target": "spread",
+          "about": "a blade of air",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Hurricane",
+          "type": "Flying",
+          "power": 12,
+          "target": "whole_body",
+          "about": "a wrapping, battering wind",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 0.3,
+              "beats": 2
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.2
+            }
+          ]
+        },
+        {
+          "name": "Scald",
+          "type": "Water",
+          "power": 27,
+          "target": "spread",
+          "about": "boiling water",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.3,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Wing Attack",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "strikes with spread wings"
+        },
+        {
+          "name": "Hydro Pump",
+          "type": "Water",
+          "power": 37,
+          "target": "spread",
+          "about": "a massive high-pressure water blast",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Bubble Beam",
+          "type": "Water",
+          "power": 22,
+          "target": "spread",
+          "about": "a forceful spray of bubbles",
+          "sustainable": true
+        },
+        {
+          "name": "Ice Beam",
+          "type": "Ice",
+          "power": 30,
+          "target": "spread",
+          "about": "a freezing beam",
+          "effects": [
+            {
+              "status": "frozen",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Duchess",
+      "bench": true,
+      "description": "A female Unfezant. Proud, stately and sharp-tempered; a large grey pheasant who strikes in powerful swooping passes and drives home with her beak and steel-hard wings.",
+      "appearance": "Unfezant (female). A large pheasant-like bird with mottled BROWN-AND-GREY plumage, darker brown on the back and wings, and a pale, speckled brown breast. NO face wattle and no head plume (she is the plain female form). A small hooked grey beak. Bright red-ringed yellow eyes. Long, broad brown WINGS (she has no arms or paws). Grey legs with sharp talons. A long, sweeping dark tail.",
+      "voice": "Formal and cutting; thinks in short, disdainful sentences, every blow a correction. A shrill, ringing call when she attacks; in pain a choked, croaking squawk.",
+      "tells": "Her neck feathers ruffle up into a collar; her wings open wide and mantle low to make herself bigger; the long tail fans and flicks; her beak clacks; she bobs her head sharply before a dive.",
+      "types": [
+        "Normal",
+        "Flying"
+      ],
+      "health": 1800,
+      "body": {
+        "Head": 100,
+        "Beak": 130,
+        "Left Eye": 55,
+        "Right Eye": 55,
+        "Neck": 85,
+        "Throat": 70,
+        "Chest": 115,
+        "Belly": 90,
+        "Upper Back": 120,
+        "Lower Back": 110,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Wing": 105,
+        "Right Wing": 105,
+        "Left Wingtip": 85,
+        "Right Wingtip": 85,
+        "Left Thigh": 110,
+        "Right Thigh": 110,
+        "Left Talon": 125,
+        "Right Talon": 125,
+        "Tail Feathers": 90,
+        "Long Tail": 85
+      },
+      "moves": [
+        {
+          "name": "Sky Attack",
+          "type": "Flying",
+          "power": 70,
+          "target": "targeted",
+          "about": "a glowing, crushing dive",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            },
+            {
+              "launch": "launched",
+              "chance": 0.4
+            }
+          ]
+        },
+        {
+          "name": "Air Slash",
+          "type": "Flying",
+          "power": 25,
+          "target": "spread",
+          "about": "a blade of air",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Aerial Ace",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "an unavoidable slash"
+        },
+        {
+          "name": "Steel Wing",
+          "type": "Steel",
+          "power": 35,
+          "target": "targeted",
+          "about": "steel-hard wings"
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Night Slash",
+          "type": "Dark",
+          "power": 35,
+          "target": "targeted",
+          "about": "a dark-edged slash"
+        },
+        {
+          "name": "Hypnosis",
+          "type": "Psychic",
+          "power": 0,
+          "target": "status",
+          "about": "hypnotic suggestion that brings sleep",
+          "effects": [
+            {
+              "status": "asleep",
+              "chance": 0.6,
+              "beats": 2
+            }
+          ]
+        },
+        {
+          "name": "Detect",
+          "type": "Fighting",
+          "power": 0,
+          "target": "self",
+          "about": "reads the next attack and slips it completely (works like Protect)",
+          "stance": "protect",
+          "energy": 10
+        }
+      ]
+    },
+    {
+      "name": "Valor",
+      "bench": true,
+      "description": "A female Braviary. Brave to the point of recklessness and fiercely proud; a huge eagle who never backs off, seizes opponents in her talons and carries them up to drop them. Pain only makes her fight harder.",
+      "appearance": "Braviary. A huge, powerfully built eagle. A WHITE head topped with a crest of long feathers in RED, WHITE AND BLUE. A heavy, hooked YELLOW beak. Narrow, fierce yellow eyes. RED shoulders and BLUE wings and back, with a thick ruff of white feathers around her neck. Huge blue WINGS (she has no arms or paws). Strong yellow legs with heavy black TALONS. A broad tail of red and white feathers.",
+      "voice": "Loud, booming and fearless. Thinks of nothing but the next charge, and challenges out loud. A deep, ringing battle-scream when she attacks; in pain it becomes a defiant, rasping roar.",
+      "tells": "Her crest flares up tall and wide; she spreads her wings to full span to loom; her talons clench and scrape the ground; she screams in the opponent's face; a wound makes her press in harder, not back off; her beak gapes as she pants.",
+      "types": [
+        "Normal",
+        "Flying"
+      ],
+      "health": 2150,
+      "body": {
+        "Head": 100,
+        "Crest": 85,
+        "Beak": 155,
+        "Left Eye": 55,
+        "Right Eye": 55,
+        "Neck": 85,
+        "Throat": 70,
+        "Chest": 125,
+        "Belly": 90,
+        "Upper Back": 120,
+        "Lower Back": 110,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Wing": 115,
+        "Right Wing": 115,
+        "Left Wingtip": 90,
+        "Right Wingtip": 90,
+        "Left Thigh": 120,
+        "Right Thigh": 120,
+        "Left Talon": 135,
+        "Right Talon": 135,
+        "Tail Feathers": 100,
+        "Neck Ruff": 125
+      },
+      "moves": [
+        {
+          "name": "Brave Bird",
+          "type": "Flying",
+          "power": 60,
+          "target": "targeted",
+          "about": "a reckless dive",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Crush Claw",
+          "type": "Normal",
+          "power": 38,
+          "target": "targeted",
+          "about": "crushing, raking claws"
+        },
+        {
+          "name": "Sky Drop",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "seizes the opponent in her talons, carries her up into the air and drops her (she has to be in the air first)",
+          "carry": true,
+          "energy": 20
+        },
+        {
+          "name": "Close Combat",
+          "type": "Fighting",
+          "power": 40,
+          "target": "spread",
+          "about": "an all-out, close-range flurry",
+          "ranged": false
+        },
+        {
+          "name": "Aerial Ace",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "an unavoidable slash"
+        },
+        {
+          "name": "Wing Attack",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "strikes with spread wings"
+        },
+        {
+          "name": "Rock Slide",
+          "type": "Rock",
+          "power": 8,
+          "target": "whole_body",
+          "about": "a slide of boulders",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Air Slash",
+          "type": "Flying",
+          "power": 25,
+          "target": "spread",
+          "about": "a blade of air",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Swift",
+      "bench": true,
+      "description": "A female Swellow. Quick, cocky and relentless; a small, fast swallow who strikes in blinding passes and is gone before the opponent turns. Light and fragile, she relies on speed.",
+      "appearance": "Swellow. A sleek, small swallow. Glossy dark BLUE back, wings and head, with a RED face and throat and a cream-white breast. Two long, thin feathers stream back from her head. Sharp, narrow black beak. Long, pointed blue WINGS (she has no arms or paws). Small grey feet with sharp claws. A deeply forked tail of two long, scissor-like feathers.",
+      "voice": "Fast, teasing and impatient; thinks in quick darting fragments. A high, piercing chirp when she attacks; in pain a sharp, broken shriek.",
+      "tells": "Her forked tail flicks open and shut; she hops and sidesteps restlessly; her head plumes stream flat when she dives; feathers puff out when she's hurt; she pants with her beak open; she can't keep still.",
+      "types": [
+        "Normal",
+        "Flying"
+      ],
+      "health": 1550,
+      "body": {
+        "Head": 95,
+        "Beak": 104,
+        "Left Eye": 52,
+        "Right Eye": 52,
+        "Neck": 71,
+        "Throat": 66,
+        "Chest": 95,
+        "Belly": 86,
+        "Upper Back": 114,
+        "Lower Back": 104,
+        "Left Shoulder": 104,
+        "Right Shoulder": 104,
+        "Left Wing": 90,
+        "Right Wing": 90,
+        "Left Wingtip": 71,
+        "Right Wingtip": 71,
+        "Left Thigh": 90,
+        "Right Thigh": 90,
+        "Left Talon": 95,
+        "Right Talon": 95,
+        "Forked Tail": 76,
+        "Head Plumes": 57
+      },
+      "moves": [
+        {
+          "name": "Brave Bird",
+          "type": "Flying",
+          "power": 60,
+          "target": "targeted",
+          "about": "a reckless dive",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Aerial Ace",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "an unavoidable slash"
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Facade",
+          "type": "Normal",
+          "power": 35,
+          "target": "targeted",
+          "about": "a reckless strike, harder when hurt"
+        },
+        {
+          "name": "Wing Attack",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "strikes with spread wings"
+        },
+        {
+          "name": "Steel Wing",
+          "type": "Steel",
+          "power": 35,
+          "target": "targeted",
+          "about": "steel-hard wings"
+        },
+        {
+          "name": "Air Slash",
+          "type": "Flying",
+          "power": 25,
+          "target": "spread",
+          "about": "a blade of air",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Peck",
+          "type": "Flying",
+          "power": 18,
+          "target": "targeted",
+          "about": "a sharp jab"
+        }
+      ]
+    },
+    {
+      "name": "Zephyr",
+      "bench": true,
+      "description": "A female Pidgeot. Proud, watchful and graceful; a large hawk-like bird who commands the wind, buffeting opponents with gales from above and diving at blinding speed.",
+      "appearance": "Pidgeot. A large, sleek bird of prey with tan-and-cream plumage: BROWN back and wings, a cream breast. A long, flowing crest of RED-AND-YELLOW feathers sweeping back from her head to below her shoulders. A pink, hooked beak. Black markings around her sharp eyes. Large brown WINGS (she has no arms or paws). Pink legs with sharp talons. A long, fanned tail of red and yellow feathers.",
+      "voice": "Calm, composed and quietly proud; thinks in long, patient arcs, waiting for the opening. A clear, piercing cry when she attacks; in pain a ragged, gasping screech.",
+      "tells": "Her long crest lifts and streams in the wind she raises; she circles before she dives; her wings mantle when she lands; feathers fluff when she is hurt; her beak opens to pant; she shakes out her plumage to settle it.",
+      "types": [
+        "Normal",
+        "Flying"
+      ],
+      "health": 1900,
+      "body": {
+        "Head": 100,
+        "Head Plume": 70,
+        "Beak": 125,
+        "Left Eye": 55,
+        "Right Eye": 55,
+        "Neck": 85,
+        "Throat": 70,
+        "Chest": 115,
+        "Belly": 90,
+        "Upper Back": 120,
+        "Lower Back": 110,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Wing": 110,
+        "Right Wing": 110,
+        "Left Wingtip": 90,
+        "Right Wingtip": 90,
+        "Left Thigh": 110,
+        "Right Thigh": 110,
+        "Left Talon": 125,
+        "Right Talon": 125,
+        "Tail Feathers": 95
+      },
+      "moves": [
+        {
+          "name": "Hurricane",
+          "type": "Flying",
+          "power": 12,
+          "target": "whole_body",
+          "about": "a wrapping, battering wind",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 0.3,
+              "beats": 2
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.2
+            }
+          ]
+        },
+        {
+          "name": "Air Slash",
+          "type": "Flying",
+          "power": 25,
+          "target": "spread",
+          "about": "a blade of air",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Gust",
+          "type": "Flying",
+          "power": 13,
+          "target": "spread",
+          "about": "a gust of wind"
+        },
+        {
+          "name": "Wing Attack",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "strikes with spread wings"
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Twister",
+          "type": "Dragon",
+          "power": 4,
+          "target": "whole_body",
+          "about": "a vicious twister",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Steel Wing",
+          "type": "Steel",
+          "power": 35,
+          "target": "targeted",
+          "about": "steel-hard wings"
+        },
+        {
+          "name": "Heat Wave",
+          "type": "Fire",
+          "power": 11,
+          "target": "whole_body",
+          "about": "a scorching wave of heat",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Pyra",
+      "bench": true,
+      "description": "A female Moltres. Regal, fierce and burning; a legendary firebird whose wings and crest are living flame. She scorches from the air, rakes with her talons and burns everything she touches.",
+      "appearance": "Moltres. A huge, majestic firebird with bright YELLOW-ORANGE plumage. Her wings, crest and long tail are made of living ORANGE-RED FLAMES that flicker and stream. A long, thin neck, a sharp, narrow pinkish beak, and fierce dark eyes. Huge burning WINGS (she has no arms or paws). Long, thin pinkish legs with sharp talons. Heat shimmers around her body.",
+      "voice": "Imperious and scorching; thinks in pronouncements, contemptuous of anything that can't stand the heat. A high, ringing, triumphant call when she attacks; in pain it cracks into a raw, screaming shriek, and her flames gutter.",
+      "tells": "Her flames flare high and bright when she is angry and gutter low and smoky when she is hurt or tired; her crest of fire rises and roars; the heat around her grows before a big attack; embers drift from her wingtips; her beak opens as she pants and the air shimmers.",
+      "types": [
+        "Fire",
+        "Flying"
+      ],
+      "health": 2300,
+      "body": {
+        "Head": 105,
+        "Flame Crest": 94,
+        "Beak": 131,
+        "Left Eye": 58,
+        "Right Eye": 58,
+        "Neck": 89,
+        "Throat": 74,
+        "Chest": 126,
+        "Belly": 94,
+        "Upper Back": 126,
+        "Lower Back": 116,
+        "Left Shoulder": 116,
+        "Right Shoulder": 116,
+        "Left Wing": 116,
+        "Right Wing": 116,
+        "Left Wingtip": 94,
+        "Right Wingtip": 94,
+        "Left Thigh": 116,
+        "Right Thigh": 116,
+        "Left Talon": 121,
+        "Right Talon": 121,
+        "Flame Tail": 105
+      },
+      "moves": [
+        {
+          "name": "Flamethrower",
+          "type": "Fire",
+          "power": 30,
+          "target": "spread",
+          "about": "a stream of fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Fire Blast",
+          "type": "Fire",
+          "power": 37,
+          "target": "spread",
+          "about": "a huge star-shaped blast of fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Heat Wave",
+          "type": "Fire",
+          "power": 11,
+          "target": "whole_body",
+          "about": "a scorching wave of heat",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Hurricane",
+          "type": "Flying",
+          "power": 12,
+          "target": "whole_body",
+          "about": "a wrapping, battering wind",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 0.3,
+              "beats": 2
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.2
+            }
+          ]
+        },
+        {
+          "name": "Sky Attack",
+          "type": "Flying",
+          "power": 70,
+          "target": "targeted",
+          "about": "a glowing, crushing dive",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            },
+            {
+              "launch": "launched",
+              "chance": 0.4
+            }
+          ]
+        },
+        {
+          "name": "Wing Attack",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "strikes with spread wings"
+        },
+        {
+          "name": "Fire Spin",
+          "type": "Fire",
+          "power": 20,
+          "target": "hold",
+          "about": "a vortex of fire that traps the target",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.3,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Sunny Day",
+          "type": "Fire",
+          "power": 0,
+          "target": "self",
+          "about": "calls harsh sunlight for a few beats: Fire moves hit harder, Water moves weaker",
+          "weather": "sun",
+          "energy": 10
+        }
+      ]
+    },
+    {
+      "name": "Glacia",
+      "bench": true,
+      "description": "A female Articuno. Cold, serene and merciless; a legendary ice bird who chills the air around her, freezes opponents with beams and blizzards, and strikes from above with frost-hard wings.",
+      "appearance": "Articuno. A large, elegant bird with pale icy BLUE plumage. A crest of three long, darker blue feathers on her forehead. A short, sharp grey beak and calm, deep red eyes. Huge, translucent pale-blue WINGS that glitter with frost (she has no arms or paws). A very long, streaming tail of blue feathers. Thin grey legs with small talons. Frost and drifting snowflakes follow her.",
+      "voice": "Quiet, distant and icy; thinks in calm, detached observations, even when she is hurt. A clear, haunting, bell-like cry when she attacks; in pain it becomes a thin, cracking wail.",
+      "tells": "The air around her drops cold and her breath steams; frost spreads across her feathers when she is angry; her long tail ripples behind her; a hurt wing sheds a sparkle of loose frost; she holds unnaturally still before she strikes.",
+      "types": [
+        "Ice",
+        "Flying"
+      ],
+      "health": 2300,
+      "body": {
+        "Head": 105,
+        "Crest": 74,
+        "Beak": 121,
+        "Left Eye": 58,
+        "Right Eye": 58,
+        "Neck": 84,
+        "Throat": 74,
+        "Chest": 121,
+        "Belly": 94,
+        "Upper Back": 126,
+        "Lower Back": 116,
+        "Left Shoulder": 116,
+        "Right Shoulder": 116,
+        "Left Wing": 110,
+        "Right Wing": 110,
+        "Left Wingtip": 89,
+        "Right Wingtip": 89,
+        "Left Thigh": 116,
+        "Right Thigh": 116,
+        "Left Talon": 110,
+        "Right Talon": 110,
+        "Long Tail": 89
+      },
+      "moves": [
+        {
+          "name": "Ice Beam",
+          "type": "Ice",
+          "power": 30,
+          "target": "spread",
+          "about": "a freezing beam",
+          "effects": [
+            {
+              "status": "frozen",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Blizzard",
+          "type": "Ice",
+          "power": 12,
+          "target": "whole_body",
+          "about": "a howling blizzard",
+          "effects": [
+            {
+              "status": "frozen",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Freeze-Dry",
+          "type": "Ice",
+          "power": 23,
+          "target": "spread",
+          "about": "flash-freezes the target, even through water",
+          "effects": [
+            {
+              "status": "frozen",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Hurricane",
+          "type": "Flying",
+          "power": 12,
+          "target": "whole_body",
+          "about": "a wrapping, battering wind",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 0.3,
+              "beats": 2
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.2
+            }
+          ]
+        },
+        {
+          "name": "Air Slash",
+          "type": "Flying",
+          "power": 25,
+          "target": "spread",
+          "about": "a blade of air",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Ice Shard",
+          "type": "Ice",
+          "power": 20,
+          "target": "targeted",
+          "about": "a fast-flung chunk of ice"
+        },
+        {
+          "name": "Icy Wind",
+          "type": "Ice",
+          "power": 6,
+          "target": "whole_body",
+          "about": "a chilling wind that slows",
+          "effects": [
+            {
+              "status": "chilled",
+              "chance": 1.0,
+              "beats": 2
+            }
+          ]
+        },
+        {
+          "name": "Wing Attack",
+          "type": "Flying",
+          "power": 30,
+          "target": "targeted",
+          "about": "strikes with spread wings"
+        }
+      ]
+    },
+    {
+      "name": "Ember",
+      "bench": true,
+      "description": "A female Talonflame. Fast, fiery and ruthless; a falcon whose wings blaze when she dives. She strikes at terrifying speed, rakes with burning talons and wears herself out with reckless dives.",
+      "appearance": "Talonflame. A sleek, powerful falcon with dark grey and ORANGE-RED plumage: a grey head and back, a bright orange-red breast with black scale-like markings, and YELLOW-tipped flame markings on her wings. A short, hooked grey beak with a yellow base, and a black mask around fierce yellow eyes. Long, pointed WINGS that burst into flame in a dive (she has no arms or paws). Black legs with sharp talons. A long tail with a forked, flame-patterned tip.",
+      "voice": "Hot-tempered, impatient and ruthless; thinks in quick strikes and the next dive. A shrill, screaming cry when she dives; in pain a harsh, crackling shriek.",
+      "tells": "Embers spark from her wings when she's angry; she bobs and fidgets on her perch, eyes locked on the target; her feathers smoke after a dive; a hurt wing drags; she screams before she commits.",
+      "types": [
+        "Fire",
+        "Flying"
+      ],
+      "health": 1800,
+      "body": {
+        "Head": 100,
+        "Beak": 125,
+        "Left Eye": 55,
+        "Right Eye": 55,
+        "Neck": 85,
+        "Throat": 70,
+        "Chest": 110,
+        "Belly": 90,
+        "Upper Back": 120,
+        "Lower Back": 110,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Wing": 100,
+        "Right Wing": 100,
+        "Left Wingtip": 80,
+        "Right Wingtip": 80,
+        "Left Thigh": 105,
+        "Right Thigh": 105,
+        "Left Talon": 115,
+        "Right Talon": 115,
+        "Tail Feathers": 90
+      },
+      "moves": [
+        {
+          "name": "Flare Blitz",
+          "type": "Fire",
+          "power": 60,
+          "target": "targeted",
+          "about": "a reckless charge wrapped in fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Brave Bird",
+          "type": "Flying",
+          "power": 60,
+          "target": "targeted",
+          "about": "a reckless dive",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Acrobatics",
+          "type": "Flying",
+          "power": 28,
+          "target": "targeted",
+          "about": "a nimble flurry"
+        },
+        {
+          "name": "Steel Wing",
+          "type": "Steel",
+          "power": 35,
+          "target": "targeted",
+          "about": "steel-hard wings"
+        },
+        {
+          "name": "Flame Charge",
+          "type": "Fire",
+          "power": 25,
+          "target": "targeted",
+          "about": "a charge cloaked in flames",
+          "charge": true
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Fire Fang",
+          "type": "Fire",
+          "power": 32,
+          "target": "targeted",
+          "about": "a bite wreathed in flame",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            },
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Heat Wave",
+          "type": "Fire",
+          "power": 11,
+          "target": "whole_body",
+          "about": "a scorching wave of heat",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Cinder",
+      "bench": true,
+      "description": "A female Charizard. Proud, hot-headed and powerful; a big winged dragon who loves a strong opponent. She fights with claws, fangs and fire, grapples on the ground and takes to the air when it suits her.",
+      "appearance": "Charizard. A large, upright dragon with ORANGE scales and a cream-yellow belly. A long neck and a dragon's head with two short, backward-pointing horns, blue eyes and a wide jaw full of small fangs. Large, bat-like WINGS with BLUE-GREEN membranes on the inside, growing from her upper back. Short, strong ARMS with three-clawed hands. Heavy legs with three-clawed feet. A long tail tipped with a burning FLAME that flares with her mood (it must never go out).",
+      "voice": "Proud, cocky and fierce; thinks in challenges and reckless plans. A deep, rumbling roar when she attacks; in pain a roaring bellow that breaks into a hoarse growl.",
+      "tells": "Her tail flame flares high and white-hot when she's angry or excited, and shrinks to a low, sputtering flame when she's hurt or tired; smoke curls from her nostrils; her wings flare wide to loom; she snarls with her fangs bared; a hurt wing hangs half-folded.",
+      "types": [
+        "Fire",
+        "Flying"
+      ],
+      "health": 2200,
+      "body": {
+        "Head": 105,
+        "Left Horn": 110,
+        "Right Horn": 110,
+        "Muzzle": 90,
+        "Left Eye": 55,
+        "Right Eye": 55,
+        "Jaw": 100,
+        "Neck": 95,
+        "Throat": 70,
+        "Chest": 125,
+        "Belly": 95,
+        "Upper Back": 130,
+        "Lower Back": 120,
+        "Left Shoulder": 115,
+        "Right Shoulder": 115,
+        "Left Wing": 100,
+        "Right Wing": 100,
+        "Left Wingtip": 80,
+        "Right Wingtip": 80,
+        "Left Upper Arm": 105,
+        "Right Upper Arm": 105,
+        "Left Forearm": 100,
+        "Right Forearm": 100,
+        "Left Hand": 95,
+        "Right Hand": 95,
+        "Left Hip": 120,
+        "Right Hip": 120,
+        "Left Thigh": 125,
+        "Right Thigh": 125,
+        "Left Knee": 95,
+        "Right Knee": 95,
+        "Left Foot": 95,
+        "Right Foot": 95,
+        "Tail Base": 135,
+        "Tail": 110,
+        "Tail Flame": 75
+      },
+      "moves": [
+        {
+          "name": "Flamethrower",
+          "type": "Fire",
+          "power": 30,
+          "target": "spread",
+          "about": "a stream of fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Dragon Claw",
+          "type": "Dragon",
+          "power": 40,
+          "target": "targeted",
+          "about": "slashing dragon claws"
+        },
+        {
+          "name": "Fire Fang",
+          "type": "Fire",
+          "power": 32,
+          "target": "targeted",
+          "about": "a bite wreathed in flame",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            },
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Air Slash",
+          "type": "Flying",
+          "power": 25,
+          "target": "spread",
+          "about": "a blade of air",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Flare Blitz",
+          "type": "Fire",
+          "power": 60,
+          "target": "targeted",
+          "about": "a reckless charge wrapped in fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Seismic Toss",
+          "type": "Fighting",
+          "power": 30,
+          "target": "targeted",
+          "about": "grabs and hurls the target",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Thunder Punch",
+          "type": "Electric",
+          "power": 38,
+          "target": "targeted",
+          "about": "an electrified punch",
+          "effects": [
+            {
+              "status": "paralyzed",
+              "chance": 0.1,
+              "beats": 2
+            }
+          ]
+        },
+        {
+          "name": "Heat Wave",
+          "type": "Fire",
+          "power": 11,
+          "target": "whole_body",
+          "about": "a scorching wave of heat",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Tidecrest",
+      "bench": true,
+      "description": "A female Dragonite. Kind, gentle and enormously strong; a big, round dragon who doesn't like to hurt anyone, but once she is pushed, hits with terrifying force and outflies anything.",
+      "appearance": "Dragonite. A large, heavily built, upright dragon with smooth ORANGE skin and a cream-colored, ridged belly. A round, friendly head with large dark eyes, a small snout and two thin ANTENNAE curling from her forehead. Small, teal-green WINGS on her back that look far too small for her (she flies anyway). Thick, strong ARMS with three-clawed hands. Thick legs. A long, thick, tapering tail.",
+      "voice": "Warm, gentle and slow to anger; thinks in apologies and careful choices, until something makes her mad. A deep, rolling roar when she attacks; in pain a low, mournful bellow.",
+      "tells": "Her antennae droop when she's upset and stand up straight when she's alert; her small wings flutter when she's agitated; she huffs through her nose; she winces and pulls back after hitting too hard; her tail thumps the ground when she's angry.",
+      "types": [
+        "Dragon",
+        "Flying"
+      ],
+      "health": 2600,
+      "body": {
+        "Head": 113,
+        "Left Antenna": 54,
+        "Right Antenna": 54,
+        "Snout": 97,
+        "Left Eye": 59,
+        "Right Eye": 59,
+        "Jaw": 108,
+        "Neck": 103,
+        "Throat": 76,
+        "Chest": 135,
+        "Belly": 103,
+        "Upper Back": 140,
+        "Lower Back": 130,
+        "Left Shoulder": 124,
+        "Right Shoulder": 124,
+        "Left Wing": 108,
+        "Right Wing": 108,
+        "Left Wingtip": 86,
+        "Right Wingtip": 86,
+        "Left Upper Arm": 113,
+        "Right Upper Arm": 113,
+        "Left Forearm": 108,
+        "Right Forearm": 108,
+        "Left Hand": 103,
+        "Right Hand": 103,
+        "Left Hip": 130,
+        "Right Hip": 130,
+        "Left Thigh": 135,
+        "Right Thigh": 135,
+        "Left Knee": 103,
+        "Right Knee": 103,
+        "Left Foot": 103,
+        "Right Foot": 103,
+        "Tail Base": 162,
+        "Tail": 146
+      },
+      "moves": [
+        {
+          "name": "Dragon Rush",
+          "type": "Dragon",
+          "power": 50,
+          "target": "targeted",
+          "about": "a menacing full-body charge",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Extreme Speed",
+          "type": "Normal",
+          "power": 40,
+          "target": "targeted",
+          "about": "an attack too fast to follow",
+          "charge": true
+        },
+        {
+          "name": "Hurricane",
+          "type": "Flying",
+          "power": 12,
+          "target": "whole_body",
+          "about": "a wrapping, battering wind",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 0.3,
+              "beats": 2
+            },
+            {
+              "launch": "thrown",
+              "chance": 0.2
+            }
+          ]
+        },
+        {
+          "name": "Fire Punch",
+          "type": "Fire",
+          "power": 38,
+          "target": "targeted",
+          "about": "a burning punch",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Thunder Punch",
+          "type": "Electric",
+          "power": 38,
+          "target": "targeted",
+          "about": "an electrified punch",
+          "effects": [
+            {
+              "status": "paralyzed",
+              "chance": 0.1,
+              "beats": 2
+            }
+          ]
+        },
+        {
+          "name": "Ice Punch",
+          "type": "Ice",
+          "power": 38,
+          "target": "targeted",
+          "about": "a freezing punch",
+          "effects": [
+            {
+              "status": "frozen",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Dragon Tail",
+          "type": "Dragon",
+          "power": 30,
+          "target": "targeted",
+          "about": "a tail strike that hurls the target",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 1.0
+            }
+          ]
+        },
+        {
+          "name": "Outrage",
+          "ranged": false,
+          "type": "Dragon",
+          "power": 40,
+          "target": "spread",
+          "about": "a rampage that leaves the attacker confused",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 1.0,
+              "beats": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Gloam",
+      "bench": true,
+      "description": "A female Goodra. Affectionate, soft-hearted and much tougher than she looks; a big slimy dragon whose coat of slime turns blows aside. She smothers and grapples, lashes with her heavy tail and blasts dragon energy.",
+      "appearance": "Goodra. A large, upright, slug-like dragon with soft, smooth PURPLE skin covered in clear SLIME, and a pale green belly and throat. A round head with big green eyes and two long, drooping, curled ANTENNAE (horn-like feelers) that can stretch out. Short, thick ARMS with stubby fingers, no claws. Short, thick legs. A long, thick, heavy tail. Slime drips off her and smears whatever she touches.",
+      "voice": "Sweet, gentle and a little clingy; thinks in simple, earnest feelings. A wobbling, gurgling cry when she attacks; in pain a long, bubbling wail.",
+      "tells": "Her antennae curl up tight when she is scared or hurt and lash out straight when she attacks; she drips more slime when she is upset; she sways side to side; her big eyes go wide and wet; her tail thumps.",
+      "types": [
+        "Dragon"
+      ],
+      "health": 2500,
+      "body": {
+        "Head": 113,
+        "Left Antenna": 86,
+        "Right Antenna": 86,
+        "Left Eye": 59,
+        "Right Eye": 59,
+        "Jaw": 108,
+        "Neck": 103,
+        "Throat": 76,
+        "Chest": 135,
+        "Belly": 103,
+        "Upper Back": 140,
+        "Lower Back": 130,
+        "Left Shoulder": 124,
+        "Right Shoulder": 124,
+        "Left Upper Arm": 113,
+        "Right Upper Arm": 113,
+        "Left Forearm": 108,
+        "Right Forearm": 108,
+        "Left Hand": 103,
+        "Right Hand": 103,
+        "Left Hip": 130,
+        "Right Hip": 130,
+        "Left Thigh": 135,
+        "Right Thigh": 135,
+        "Left Knee": 103,
+        "Right Knee": 103,
+        "Left Foot": 103,
+        "Right Foot": 103,
+        "Tail Base": 151,
+        "Tail": 135
+      },
+      "moves": [
+        {
+          "name": "Dragon Pulse",
+          "type": "Dragon",
+          "power": 28,
+          "target": "spread",
+          "about": "a shockwave from the mouth",
+          "sustainable": true
+        },
+        {
+          "name": "Sludge Bomb",
+          "type": "Poison",
+          "power": 30,
+          "target": "spread",
+          "about": "a hurled lump of sludge",
+          "effects": [
+            {
+              "status": "poisoned",
+              "chance": 0.3,
+              "beats": 4
+            }
+          ]
+        },
+        {
+          "name": "Body Slam",
+          "type": "Normal",
+          "power": 42,
+          "target": "targeted",
+          "about": "slams the whole body down on the target",
+          "effects": [
+            {
+              "status": "paralyzed",
+              "chance": 0.3,
+              "beats": 2
+            },
+            {
+              "launch": "knocked down",
+              "chance": 0.4
+            }
+          ]
+        },
+        {
+          "name": "Power Whip",
+          "type": "Grass",
+          "power": 60,
+          "target": "targeted",
+          "about": "a violent vine lash",
+          "effects": [
+            {
+              "launch": "knocked down",
+              "chance": 0.3
+            }
+          ]
+        },
+        {
+          "name": "Aqua Tail",
+          "type": "Water",
+          "power": 45,
+          "target": "targeted",
+          "about": "a water-wrapped tail slam",
+          "effects": [
+            {
+              "launch": "knocked down",
+              "chance": 0.2
+            }
+          ]
+        },
+        {
+          "name": "Muddy Water",
+          "type": "Water",
+          "power": 10,
+          "target": "whole_body",
+          "about": "a wave of muddy water"
+        },
+        {
+          "name": "Wrap",
+          "type": "Normal",
+          "power": 10,
+          "target": "hold",
+          "about": "coils wrapped around the body, squeezing"
+        },
+        {
+          "name": "Thunderbolt",
+          "type": "Electric",
+          "power": 10,
+          "target": "whole_body",
+          "about": "a strong electric blast",
+          "effects": [
+            {
+              "status": "paralyzed",
+              "chance": 0.1,
+              "beats": 2
+            }
+          ],
+          "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Kitsune",
+      "bench": true,
+      "description": "A female Ninetales. Elegant, clever and vengeful; a graceful fox with nine long tails who fights with fire and illusions, toying with an opponent before she burns her.",
+      "appearance": "Ninetales. A slender, graceful fox with a long coat of pale GOLDEN-CREAM fur, a thick ruff of fur on her neck and a tuft of fur on her head. Pointed ears, a narrow muzzle and bright RED eyes. Slender legs with small paws. NINE long, flowing golden tails tipped in pale orange, which fan out behind her.",
+      "voice": "Silky, mocking and patient; thinks in schemes and grudges, and never forgets an insult. A ringing, vixen's scream when she attacks; in pain a high, broken yelp.",
+      "tells": "Her nine tails fan out wide and wave when she is confident, and bunch and lash when she is angry; her ears pin back; her red eyes glow before she casts something; her fur bristles; a wounded tail trails; she bares her teeth in a thin smile.",
+      "types": [
+        "Fire"
+      ],
+      "health": 1900,
+      "body": {
+        "Head": 95,
+        "Left Ear": 55,
+        "Right Ear": 55,
+        "Muzzle": 80,
+        "Nose": 50,
+        "Jaw": 90,
+        "Neck": 85,
+        "Throat": 60,
+        "Neck Ruff": 120,
+        "Chest": 110,
+        "Belly": 75,
+        "Back": 115,
+        "Left Shoulder": 105,
+        "Right Shoulder": 105,
+        "Left Ribs": 90,
+        "Right Ribs": 90,
+        "Left Upper Foreleg": 95,
+        "Right Upper Foreleg": 95,
+        "Left Lower Foreleg": 85,
+        "Right Lower Foreleg": 85,
+        "Left Forepaw": 78,
+        "Right Forepaw": 78,
+        "Left Hip": 105,
+        "Right Hip": 105,
+        "Left Thigh": 110,
+        "Right Thigh": 110,
+        "Left Hock": 82,
+        "Right Hock": 82,
+        "Left Hind Paw": 78,
+        "Right Hind Paw": 78,
+        "Tail Base": 110,
+        "Nine Tails": 120
+      },
+      "moves": [
+        {
+          "name": "Flamethrower",
+          "type": "Fire",
+          "power": 30,
+          "target": "spread",
+          "about": "a stream of fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Fire Blast",
+          "type": "Fire",
+          "power": 37,
+          "target": "spread",
+          "about": "a huge star-shaped blast of fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Extrasensory",
+          "type": "Psychic",
+          "power": 27,
+          "target": "spread",
+          "about": "an odd unseen power",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Will-O-Wisp",
+          "type": "Fire",
+          "power": 0,
+          "target": "status",
+          "about": "sinister ghostly flames that burn",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.85,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Confuse Ray",
+          "type": "Ghost",
+          "power": 0,
+          "target": "status",
+          "about": "a sinister ray that confuses",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 1.0,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Fire Spin",
+          "type": "Fire",
+          "power": 20,
+          "target": "hold",
+          "about": "a vortex of fire that traps the target",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.3,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Dark Pulse",
+          "type": "Dark",
+          "power": 27,
+          "target": "spread",
+          "about": "a horrible aura of malice",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ],
+          "sustainable": true
+        }
+      ]
+    },
+    {
+      "name": "Kindle",
+      "bench": true,
+      "description": "A female Vulpix. Small, brave and hot-tempered; a young fox with six curly tails who makes up for her size with speed and fire.",
+      "appearance": "Vulpix. A small fox with soft REDDISH-BROWN fur, a cream-colored chest and belly, and a curly tuft of orange fur on her head. Large pointed ears, a short muzzle and brown eyes. Short legs with small dark paws. SIX curled orange tails, curling at the tips.",
+      "voice": "Eager, stubborn and a little scared; thinks in short, determined bursts. A high, sharp bark when she attacks; in pain a thin, whining yelp.",
+      "tells": "Her six tails fluff up and curl tight when she's scared and fan out when she's bold; her ears flatten; she puffs embers from her mouth; she trembles but holds her ground; she whimpers when hurt.",
+      "types": [
+        "Fire"
+      ],
+      "health": 1300,
+      "body": {
+        "Head": 78,
+        "Left Ear": 49,
+        "Right Ear": 49,
+        "Muzzle": 66,
+        "Nose": 41,
+        "Jaw": 74,
+        "Neck": 70,
+        "Throat": 49,
+        "Head Tuft": 57,
+        "Chest": 90,
+        "Belly": 61,
+        "Back": 94,
+        "Left Shoulder": 86,
+        "Right Shoulder": 86,
+        "Left Ribs": 74,
+        "Right Ribs": 74,
+        "Left Upper Foreleg": 78,
+        "Right Upper Foreleg": 78,
+        "Left Lower Foreleg": 70,
+        "Right Lower Foreleg": 70,
+        "Left Forepaw": 64,
+        "Right Forepaw": 64,
+        "Left Hip": 86,
+        "Right Hip": 86,
+        "Left Thigh": 90,
+        "Right Thigh": 90,
+        "Left Hock": 67,
+        "Right Hock": 67,
+        "Left Hind Paw": 64,
+        "Right Hind Paw": 64,
+        "Tail Base": 82,
+        "Six Tails": 90
+      },
+      "moves": [
+        {
+          "name": "Ember",
+          "type": "Fire",
+          "power": 13,
+          "target": "spread",
+          "about": "small flames",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Flame Wheel",
+          "type": "Fire",
+          "power": 30,
+          "target": "targeted",
+          "about": "rolls in a wheel of fire",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Fire Fang",
+          "type": "Fire",
+          "power": 32,
+          "target": "targeted",
+          "about": "a bite wreathed in flame",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            },
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Bite",
+          "type": "Dark",
+          "power": 30,
+          "target": "targeted",
+          "about": "a hard bite",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Will-O-Wisp",
+          "type": "Fire",
+          "power": 0,
+          "target": "status",
+          "about": "sinister ghostly flames that burn",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.85,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Confuse Ray",
+          "type": "Ghost",
+          "power": 0,
+          "target": "status",
+          "about": "a sinister ray that confuses",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 1.0,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Extrasensory",
+          "type": "Psychic",
+          "power": 27,
+          "target": "spread",
+          "about": "an odd unseen power",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sable",
+      "bench": true,
+      "description": "A female Fennekin. Small, curious and quick-witted; a fox kit with huge ears who keeps her distance, flicking fire and psychic bursts, and darts in to bite when she sees an opening.",
+      "appearance": "Fennekin. A small fox kit with soft pale YELLOW fur, a white chest and muzzle and huge, pointed ears with tufts of ORANGE-RED fur sprouting from inside them. Large orange eyes. Short legs with small paws. A bushy, fluffy yellow tail with an orange tip. She often nibbles a twig.",
+      "voice": "Bright, curious and a bit prim; thinks in quick observations and clever plans. A yipping, high cry when she attacks; in pain a squealing, tearful yelp.",
+      "tells": "Her huge ears swivel toward every sound and pin flat when she's hurt; the fur tufts in her ears puff out hot air; her tail fluffs up; she wrinkles her nose and huffs; she trembles when frightened.",
+      "types": [
+        "Fire"
+      ],
+      "health": 1250,
+      "body": {
+        "Head": 76,
+        "Left Ear": 40,
+        "Right Ear": 40,
+        "Muzzle": 64,
+        "Nose": 40,
+        "Jaw": 72,
+        "Neck": 68,
+        "Throat": 48,
+        "Chest": 88,
+        "Belly": 60,
+        "Back": 92,
+        "Left Shoulder": 84,
+        "Right Shoulder": 84,
+        "Left Ribs": 72,
+        "Right Ribs": 72,
+        "Left Upper Foreleg": 76,
+        "Right Upper Foreleg": 76,
+        "Left Lower Foreleg": 68,
+        "Right Lower Foreleg": 68,
+        "Left Forepaw": 62,
+        "Right Forepaw": 62,
+        "Left Hip": 84,
+        "Right Hip": 84,
+        "Left Thigh": 88,
+        "Right Thigh": 88,
+        "Left Hock": 66,
+        "Right Hock": 66,
+        "Left Hind Paw": 62,
+        "Right Hind Paw": 62,
+        "Bushy Tail": 68
+      },
+      "moves": [
+        {
+          "name": "Ember",
+          "type": "Fire",
+          "power": 13,
+          "target": "spread",
+          "about": "small flames",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Flame Charge",
+          "type": "Fire",
+          "power": 25,
+          "target": "targeted",
+          "about": "a charge cloaked in flames",
+          "charge": true
+        },
+        {
+          "name": "Psybeam",
+          "type": "Psychic",
+          "power": 22,
+          "target": "spread",
+          "about": "a peculiar ray",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 0.1,
+              "beats": 2
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Scratch",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "raking claws"
+        },
+        {
+          "name": "Psyshock",
+          "type": "Psychic",
+          "power": 27,
+          "target": "spread",
+          "about": "an odd psychic wave"
+        },
+        {
+          "name": "Mystical Fire",
+          "type": "Fire",
+          "power": 25,
+          "target": "spread",
+          "about": "mystical flame"
+        },
+        {
+          "name": "Will-O-Wisp",
+          "type": "Fire",
+          "power": 0,
+          "target": "status",
+          "about": "sinister ghostly flames that burn",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.85,
+              "beats": 3
+            }
+          ]
+        },
+        {
+          "name": "Fire Spin",
+          "type": "Fire",
+          "power": 20,
+          "target": "hold",
+          "about": "a vortex of fire that traps the target",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.3,
+              "beats": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dusk",
+      "bench": true,
+      "description": "A female Lycanroc (Midday Form). Loyal, disciplined and ferociously fast; a wolf with a mane of stone who closes the distance in a blink, bites hard and hurls rocks.",
+      "appearance": "Lycanroc (Midday Form). A lean, wolf-like quadruped with TAN-BROWN fur and a cream underside. A thick, fluffy mane of cream fur around her neck with pointed ROCK spikes jutting from it. Pointed ears, a long muzzle, sharp fangs and pale blue-green eyes. Long, strong legs with dark paws. A long, bushy tail. She runs on all four legs.",
+      "voice": "Focused, loyal and quiet; thinks in short, disciplined commands to herself. A sharp, barking howl when she attacks; in pain a strangled snarl that breaks into a whine.",
+      "tells": "Her mane bristles and the rock spikes rattle when she's angry; her ears pin forward when she locks on and flat back when she's hurt; she lowers her head and stalks; her tail stiffens; she snarls with her lips curled back from her fangs.",
+      "types": [
+        "Rock"
+      ],
+      "health": 1800,
+      "body": {
+        "Head": 97,
+        "Left Ear": 61,
+        "Right Ear": 61,
+        "Muzzle": 82,
+        "Nose": 51,
+        "Jaw": 92,
+        "Neck": 87,
+        "Throat": 61,
+        "Rock Mane": 153,
+        "Chest": 112,
+        "Belly": 76,
+        "Back": 117,
+        "Left Shoulder": 107,
+        "Right Shoulder": 107,
+        "Left Ribs": 92,
+        "Right Ribs": 92,
+        "Left Upper Foreleg": 97,
+        "Right Upper Foreleg": 97,
+        "Left Lower Foreleg": 87,
+        "Right Lower Foreleg": 87,
+        "Left Forepaw": 80,
+        "Right Forepaw": 80,
+        "Left Hip": 107,
+        "Right Hip": 107,
+        "Left Thigh": 112,
+        "Right Thigh": 112,
+        "Left Hock": 84,
+        "Right Hock": 84,
+        "Left Hind Paw": 80,
+        "Right Hind Paw": 80,
+        "Tail": 92
+      },
+      "moves": [
+        {
+          "name": "Rock Slide",
+          "type": "Rock",
+          "power": 8,
+          "target": "whole_body",
+          "about": "a slide of boulders",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Crunch",
+          "type": "Dark",
+          "power": 40,
+          "target": "targeted",
+          "about": "a crushing bite",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Stone Edge",
+          "type": "Rock",
+          "power": 50,
+          "target": "targeted",
+          "about": "a stabbing stone spike"
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Thunder Fang",
+          "type": "Electric",
+          "power": 32,
+          "target": "targeted",
+          "about": "a bite crackling with electricity",
+          "effects": [
+            {
+              "status": "paralyzed",
+              "chance": 0.1,
+              "beats": 2
+            },
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Fire Fang",
+          "type": "Fire",
+          "power": 32,
+          "target": "targeted",
+          "about": "a bite wreathed in flame",
+          "effects": [
+            {
+              "status": "burned",
+              "chance": 0.1,
+              "beats": 3
+            },
+            {
+              "status": "flinched",
+              "chance": 0.1,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Rock Tomb",
+          "type": "Rock",
+          "power": 20,
+          "target": "spread",
+          "about": "boulders that pin and slow",
+          "effects": [
+            {
+              "status": "chilled",
+              "chance": 1.0,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Close Combat",
+          "type": "Fighting",
+          "power": 40,
+          "target": "spread",
+          "about": "an all-out, close-range flurry",
+          "ranged": false
+        }
+      ]
+    },
+    {
+      "name": "Vixen",
+      "bench": true,
+      "description": "A female Thievul. Sly, slick and dishonest; a fox who fights dirty, turning an opponent's own strength against her, striking from feints and snatching every opening.",
+      "appearance": "Thievul. A slender, sleek fox with REDDISH-BROWN fur on her back and a long, curling, fluffy tail. A white muzzle and chest, with a black 'mustache' marking curling from her muzzle, black around her eyes like a mask, and pointed ears. Narrow, sly yellow eyes. Long, thin legs with black paws. She often stands upright on her hind legs to sneak.",
+      "voice": "Smug, teasing and slippery; thinks in tricks and cheap shots, always looking for something to snatch. A sharp, cackling bark when she attacks; in pain a high, indignant yelp.",
+      "tells": "Her mustache markings twitch when she smirks; her long tail curls and sways; she creeps on tiptoe; her ears swivel back when she's caught out; she bares her teeth in a grin; she cringes and slinks when hurt.",
+      "types": [
+        "Dark"
+      ],
+      "health": 1650,
+      "body": {
+        "Head": 90,
+        "Left Ear": 52,
+        "Right Ear": 52,
+        "Muzzle": 76,
+        "Nose": 48,
+        "Jaw": 86,
+        "Neck": 81,
+        "Throat": 57,
+        "Chest": 104,
+        "Belly": 71,
+        "Back": 109,
+        "Left Shoulder": 100,
+        "Right Shoulder": 100,
+        "Left Ribs": 86,
+        "Right Ribs": 86,
+        "Left Upper Foreleg": 90,
+        "Right Upper Foreleg": 90,
+        "Left Lower Foreleg": 81,
+        "Right Lower Foreleg": 81,
+        "Left Forepaw": 74,
+        "Right Forepaw": 74,
+        "Left Hip": 100,
+        "Right Hip": 100,
+        "Left Thigh": 104,
+        "Right Thigh": 104,
+        "Left Hock": 78,
+        "Right Hock": 78,
+        "Left Hind Paw": 74,
+        "Right Hind Paw": 74,
+        "Long Tail": 81
+      },
+      "moves": [
+        {
+          "name": "Foul Play",
+          "type": "Dark",
+          "power": 48,
+          "target": "targeted",
+          "about": "turns the target's own strength against them",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.3
+            }
+          ]
+        },
+        {
+          "name": "Snarl",
+          "type": "Dark",
+          "power": 18,
+          "target": "spread",
+          "about": "a menacing snarl",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Night Slash",
+          "type": "Dark",
+          "power": 35,
+          "target": "targeted",
+          "about": "a dark-edged slash"
+        },
+        {
+          "name": "Sucker Punch",
+          "type": "Dark",
+          "power": 35,
+          "target": "targeted",
+          "about": "strikes first, before the target can act"
+        },
+        {
+          "name": "Thief",
+          "type": "Dark",
+          "power": 30,
+          "target": "targeted",
+          "about": "a sudden lunge"
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Crunch",
+          "type": "Dark",
+          "power": 40,
+          "target": "targeted",
+          "about": "a crushing bite",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.2,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Play Rough",
+          "ranged": false,
+          "type": "Fairy",
+          "power": 30,
+          "target": "spread",
+          "about": "a rough flurry"
+        }
+      ]
     }
   ]
 }
