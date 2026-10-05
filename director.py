@@ -63,7 +63,8 @@ BIG HITS MOVE BODIES. Pokemon moves are powerful: a solid hit rarely touches jus
   harder). A WINGED fighter may instead "take off" (she rises
   into the air before her action: only beams, blasts and streams reach her there, and her close moves become
   dives from above) or "land" (she comes down by choice). A fighter in the air can't be grabbed or pinned; a
-  wing hurt badly enough brings her down. Carry moves (Sky Drop) need her in the air first. Use one NOW AND THEN, rarely, when it serves the moment
+  wing hurt badly enough brings her down. Carry moves (Sky Drop) need her in the air first. Flying is a winged
+  fighter's strength: she takes to the air every few beats, not rarely. The other repositions: use one NOW AND THEN, rarely, when it serves the moment
   (rolling her to reach her throat or chest for a pin, flipping her face-down to press her back, sitting her up
   for a blow to the chest, lifting her for a slam): most beats leave her where she lies. A running pin's presses
   follow a roll. A fighter who is sitting up is knocked flat again by the next blow that lands on her.
@@ -1543,7 +1544,7 @@ class Director:
         move_her = reposition_hint(engine) if not direction else ""
         if move_her:
             rng_hint = (rng_hint + "\n" + move_her).strip()
-        for extra in ((grudge_hint(engine), drag_to_pin_hint(engine)) if not direction else ()):
+        for extra in ((grudge_hint(engine), drag_to_pin_hint(engine), flight_hint(engine)) if not direction else ()):
             if extra:
                 rng_hint = (rng_hint + "\n" + extra).strip()
         fresh = variety_hint(engine) if not direction else ""
@@ -2349,6 +2350,49 @@ def scene_block(engine, scene):
     return (scene + "\n\nWHAT THIS PLACE DOES (tracked by the program; use these exact names as a \"surface\" in "
             "\"landing\", or in \"charge_into\" / \"pinned_against\", and the effect in brackets is rolled):\n" + brief
             + "\nNow and then the place also does something by itself; you never choose that.")
+
+
+def flight_hint(engine, roll=None):
+    """Flying is a winged fighter's strength: now and then point the director at it (rules.json director:
+    flight_chance for one on the ground who could take off, more when the opponent has nothing that reaches the air;
+    air_attack_chance for one already up: dive in, or seize and drop her)."""
+    cfg = engine.rules.get("director", {})
+    roll = engine.rng.random() if roll is None else roll
+    if engine.pins:
+        return ""
+    lines = []
+    for f in engine.active():
+        if not any("wing" in p.lower() for p in f.parts) or f.name in engine.downed:
+            continue
+        foes = [x for x in engine.active() if x.team != f.team or not x.team]
+        foes = [x for x in foes if x.name != f.name and not x.eliminated]
+        if not foes:
+            continue
+        foe = min(foes, key=lambda x: x.health)
+        reach = [m["name"] for m in foe.moves if engine.is_ranged(m) and foe.move_uses.get(m["name"], 1) > 0]
+        if engine.has(f, "airborne"):
+            if roll >= float(cfg.get("air_attack_chance", 0.35)):
+                continue
+            carry = [m["name"] for m in f.moves if m.get("carry") and f.move_uses.get(m["name"], 1) > 0]
+            close = [m["name"] for m in f.moves if not engine.is_ranged(m) and not m.get("carry")
+                     and m.get("target") not in ("self", "status", "hold") and f.move_uses.get(m["name"], 1) > 0][:3]
+            lines.append(f"FLIGHT IDEA (optional): {f.name} is in the air ({f.status.get('airborne', 0)} beat(s) "
+                         f"left up there). From above, her close moves are DIVES that land harder"
+                         + (f" ({', '.join(close)})" if close else "")
+                         + (f", or {carry[0]} can seize {foe.name} and drop her from a height" if carry and
+                            foe.name not in engine.downed else "")
+                         + f". {foe.name} can only reach her with "
+                         + (", ".join(reach) if reach else "nothing she has (no beams, blasts or streams)") + ".")
+        elif engine.can_fly(f) and not engine.pinning(f.name) and not engine.pinned_by(f.name):
+            ch = float(cfg.get("flight_chance", 0.3)) * (1.5 if not reach else 1.0)
+            if roll >= ch:
+                continue
+            lines.append(f"FLIGHT IDEA (optional, a winged fighter's strength): {f.name} could take off this beat "
+                         f"(\"reposition\": \"take off\" on her own action, with her attack). Up there only beams, "
+                         f"blasts and streams reach her ({foe.name} has "
+                         + (", ".join(reach) if reach else "none: she would be out of reach") + "), and her close "
+                         f"moves become dives from above that land harder.")
+    return "\n".join(lines[:1])
 
 
 def sustain_hint(engine, prefer=None, roll=None):

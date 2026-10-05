@@ -54,7 +54,7 @@ def _pick_action(eng, rng, f, d):
             sev = ["crushing"] + ["firm"] * (len(contacts) - 1)
             return dict(a, action="pin", flavor=look[:80],
                         hits=[{"part": p, "severity": s, "with": w} for (p, w), s in zip(contacts, sev)])
-    if eng.body_plan(f) == "avian" and not eng.has(f, "airborne") and eng.can_fly(f) and rng.random() < 0.3:
+    if not eng.has(f, "airborne") and eng.can_fly(f) and rng.random() < 0.3:     # any winged fighter, dragons too
         a["reposition"] = "take off"
     moves = _usable(eng, f, d)
     if not moves:
