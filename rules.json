@@ -104,8 +104,8 @@
     },
     "_repeat_target_comment": "Where the next blow of a pummel, or the next link of a chain, lands when nobody said: stay_chance that it goes to the same spot as the one before, otherwise somewhere new (near_share of those times right next to it, the rest anywhere she can be reached). Parts you name (in a /command, or in a direction the director follows) are kept as you said. stay_chance 1 = always the same spot.",
     "repeat_target": {
-      "stay_chance": 0.5,
-      "near_share": 0.7
+      "stay_chance": 0.25,
+      "near_share": 0.5
     },
     "_clash_comment": "A CLASH: when a fighter fires a ranged move (a beam, blast, pulse or stream) at an opponent who is free to answer (on her feet, not held, pinned or stunned) and has a ranged move of her own and the breath for it, `chance` of the time she meets it head-on. The two powers, each with up to +/- `luck` in it, decide: one win_ratio or more stronger than the other and it wins; otherwise they CANCEL OUT. The attack pushing THROUGH lands at (1 - the weaker/the stronger) of its power, the defender's TURNING IT BACK hits the attacker the same way (between min_share and max_share). The defender spends the move's energy and a use. enabled false = off.",
     "clash": {
@@ -1296,7 +1296,7 @@
     "_target_share_comment": "target_share: with no /focus set, an area (the head and neck count as one) that already holds more than this share of all the damage a fighter has taken is treated like one just hit: blows aimed there are moved elsewhere at the target_variety chance. 0 = off.",
     "target_share": 0.4,
     "_weak_spot_comment": "weak_spot_chance: with no /focus set, the chance per beat that the director is pointed at one of the opponent's weak spots (a soft part like the throat, or one already worn down), so weak spots are gone for sometimes but not all the time. 0 = never; /focus vulnerable or /focus injured makes them the aim.",
-    "weak_spot_chance": 0.2,
+    "weak_spot_chance": 0.1,
     "_weak_spot_repeat_comment": "weak_spot_repeat: of those nudges, the share meant for a run of blows (a pummel, a combo, a chain, a grapple worked at): one weak spot hit again and again, a group of parts worked together (one side's foreleg top to bottom, the ribs), or a few weak spots in turn.",
     "weak_spot_repeat": 0.4,
     "grudge_chance": 0.15,
