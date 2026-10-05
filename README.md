@@ -2392,7 +2392,7 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **More present tense caught:** "Nocturne's weight presses down", "Her twin tails stutter" (a possessive subject) now count toward the present-tense check, so a passage that slips into the present is written again.
 - **Not done: one call for several flagged paragraphs.** Paragraph rewrites already reuse Ollama's cached prompt, so batching would save only about 2 seconds a paragraph, and it risks paragraphs coming back tangled. Not worth it.
 - **Build 132:**
-  - **Why they fight (`/reason`).** `fight_reasons.txt` holds 50 reasons two wild Pokémon end up fighting: a stolen catch, the last pool in a drought, a flooded den, an old scar, a clutch of eggs, a misread scent trail. One that fits the arena is picked for each one-on-one fight. One fighter becomes the holder (there first, or holding what is wanted) and the other the comer.
+  - **Why they fight (`/reason`).** `fight_reasons.txt` holds 50 reasons two wild Pokémon end up fighting: a stolen catch, the last pool in a drought, a flooded den, an old scar, a clutch of eggs, a misread scent trail. Off by default: `/reason on`, or choosing one, turns it on. Then one that fits the arena is picked for each one-on-one fight. One fighter becomes the holder (there first, or holding what is wanted) and the other the comer.
     - The opening is built on it.
     - Every beat's notes carry a short line. About a quarter of beats also offer one thought either fighter might have.
     - Interludes get the reason in full, and the aftermath gets its ending.

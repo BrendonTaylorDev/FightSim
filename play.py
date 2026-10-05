@@ -257,7 +257,7 @@ HELP = """
   /plan close [winner]   /plan dominate <name>   /plan comeback <name>
   /plan even             /plan winner <name>     /plan off
   /targeting one|few|many|all|auto          how many body parts attacks spread across
-  /reason [list|<n or id> [holder]|swap|new|"your own"|off|on]   why the two are fighting (fed to the story)
+  /reason [list|<n or id> [holder]|swap|new|"your own"|off|on]   why the two are fighting (off by default)
   /focus [fighter] <zones...|off>           where attacks aim: head, core, arms, legs, paws, tail,
                                             limbs, upper (combine: /focus core head). Saved to rules.json.
           /focus injured           go back to what's already hurt and the parts around it (and a badly hurt
@@ -966,7 +966,7 @@ class Session:
         """This fight's reason (filled in with the names), picked the first time it is needed: one that fits the
         arena, the holder and the comer chosen at random among the two sides. None when off or not a duel."""
         cfg = self.eng.rules.get("story", {}).get("reasons") or {}
-        if not cfg.get("enabled", True) or getattr(self, "reason_off", False):
+        if not cfg.get("enabled", False) or getattr(self, "reason_off", False):
             return None
         sides = [f for f in self.eng.fighters.values()]
         if len(sides) != 2:
@@ -2265,8 +2265,9 @@ def handle_command(s, line):
         if not a:
             r = s.fight_reason()
             if not r:
-                print("No reason for this fight (" + ("turned off: /reason on" if (s.reason_off if hasattr(s, "reason_off") else False)
-                      or not cfg.get("enabled", True) else "it's for one-on-one fights") + ")."); return
+                print("No reason for this fight (" + ("off: /reason on turns it on, /reason list shows them"
+                      if getattr(s, "reason_off", False) or not cfg.get("enabled", False)
+                      else "it's for one-on-one fights") + ")."); return
             print(f"Why they fight: {r.get('title', '')} [{r.get('id', '')}]\n  {r['setup']}\n  "
                   f"Holder: {r['holder_name']}. Comer: {r['comer_name']}."
                   + (f"\n  Stakes: {r['stakes']}" if r.get("stakes") else "")
@@ -2315,6 +2316,9 @@ def handle_command(s, line):
         else:
             raise ValueError(f"no reason called '{text}' (/reason list); a reason of your own needs a sentence or more")
         s.reason, s.reason_off = None, False
+        if not cfg.get("enabled", False):    # choosing one turns reasons on
+            cfg["enabled"] = True
+            _save_rules_key(["story", "reasons", "enabled"], True)
         r = s.fight_reason()
         print(f"This fight's reason: {r.get('title') or 'your own'}. Holder {r['holder_name']}, comer {r['comer_name']}."
               " The story picks it up from the next passage."); s.autosave(); return
