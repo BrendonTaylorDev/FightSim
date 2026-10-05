@@ -1,0 +1,454 @@
+# Why two wild Pokémon end up fighting: one reason is picked for each fight (fitting the arena) and fed to the
+# story. Format: "== id | places: words matching arena names (or any)", then title/setup/holder/comer/stakes/
+# thoughts/end lines. {holder} is the one who was there first (or has what is wanted), {comer} the one who came;
+# {place} is the arena. Thoughts are separated by " / ". Add your own freely; /reason lists them.
+
+== border-scent | places: any
+title: The Scent Line
+setup: For three nights {holder} had walked the same ring around {place}, marking stone and root until the air there smelled of nothing but her. At dawn she found her marks scuffed over and a stranger's scent laid on top of them, fresh and deliberate. She followed it to the middle of her ground and found {comer} standing there, not hiding, not leaving.
+holder: {holder} wants her boundary back exactly where she drew it, and she plants herself square across the stranger's path, refusing to give even a step of the marked ground.
+comer: {comer} wants to know whether this ground is really held or only claimed, and she circles wide and slow, testing how far she can push before the owner moves.
+stakes: If {holder} wins, her line holds and every passing creature will smell that it held; if {comer} wins, the ground is hers and the old marks become a story about someone who lost.
+thoughts: She rubbed her scent over mine. On purpose. / Smells strong. Doesn't mean she is. / Not one step past that stone. / Let's see where the line really is. / Every hour she stands there, it's less hers.
+end: The winner leaves her scent on the exact spot where the loser stood, and the loser, limping away, crosses the old line without looking back.
+
+== drought-pool | places: any
+title: The Last Pool
+setup: The dry weeks had shrunk every pool around {place} to cracked mud except one, a shaded hollow of water no wider than a few body-lengths, and {holder} had been drinking there alone for days. {comer} came in at midday with dust caked on her and her tongue dry, smelled the water from far off, and walked straight toward it. {holder} rose from the edge and stood between her and the water.
+holder: {holder} is guarding the only water she knows of, and she keeps glancing back at it as if checking it is still there, never letting her flank drift far from the edge.
+comer: {comer} is desperately thirsty, and her movements are a little clumsy with it, her eyes sliding past {holder} to the water every few heartbeats.
+stakes: For {holder}, losing means sharing or losing the water that has kept her alive; for {comer}, losing means walking back into the heat with nothing.
+thoughts: There isn't enough for two. / I can smell it. I can smell it from here. / Look at her. She'll drop before I do. / One drink. That's all. One. / Not mine to give.
+end: The winner drinks first and long, and the loser, if she stays near, waits at a distance for the moment the winner turns her back.
+
+== stolen-kill | places: any
+title: The Stolen Catch
+setup: {holder} had spent half the morning stalking a fat fish, a scuttling crab, a careless rodent, whatever {place} offered, and had just made the catch when a shadow fell over her. {comer} came at her sideways, snatched the prey out from under her paws, and backed off with it. {holder} went after her before she had even decided to.
+holder: {holder} caught it fairly and wants it back, and she presses in recklessly, all the patience of the hunt burned off into outrage.
+comer: {comer} has the prey now and wants to keep it, and she fights one-sided, guarding the side where she dropped it.
+stakes: The prize is a meal, but for {holder} it is also the insult of being robbed, and for {comer} it is proof she can take what she likes.
+thoughts: Mine. I caught it. I caught it. / Too slow to keep it, too slow to get it back. / She's guarding the left. That's where it is. / Should have eaten it in one bite.
+end: The winner eats in plain sight of the loser, slowly, and the loser's stomach growls through her pain.
+
+== berry-cache | places: forest, ruins, temple, lakeside, mountain, any
+title: The Berry Cache
+setup: {holder} had spent the autumn hiding berries in a dry crevice at {place}, a few at a time, until the cache was a dark, sweet-smelling heap that would carry her through the cold. {comer} found it by smell and was halfway through her third mouthful when {holder} came back. Juice was still on her muzzle when she turned around.
+holder: {holder} is defending the work of a whole season, and the waste of it makes her savage, she keeps placing herself between {comer} and the crevice even when it costs her.
+comer: {comer} is hungry and the berries are right there, and she fights with a thief's shiftiness, always trying to get back to the cache.
+stakes: If {holder} loses, the winter ahead becomes a hungry one; if {comer} loses, she leaves with only the taste in her mouth.
+thoughts: Every one of those I carried here. / Sweet. So sweet. Worth a bruise. / She ate the best ones first. / Just a few more mouthfuls. / Come near that crack again and see.
+end: The winner stands over the scattered, trampled berries and finds there are fewer left worth saving than she fought for.
+
+== egg-clutch | places: any
+title: The Clutch
+setup: Tucked behind {holder} in a sheltered hollow of {place} lay a clutch of eggs she had been warming and turning for days. {comer} had not known they were there; she was only cutting through, but she came too close, too fast, and {holder} met her before she could see what was being guarded. By the time {comer} understood, she had already been struck, and she was not the kind to walk away from that.
+holder: {holder} is protecting her eggs, and she fights with her back to the hollow, refusing to be drawn even a body-length from it however good the opening.
+comer: {comer} was attacked without warning and will not be driven off like prey, and she keeps pressing because backing down now feels like admitting she was in the wrong.
+stakes: For {holder}, nothing matters but keeping the fight away from the eggs; for {comer}, it is about not being bullied off by someone she never meant to threaten.
+thoughts: Not one step closer. Not one. / I didn't even see them. She didn't give me a chance. / Keep her in front of me. Keep her away. / She's never leaving that spot. I can use that. / Warm still. They're still warm.
+end: When it is over the eggs are untouched, and the winner, whoever she is, is the one who decides how far from the hollow the other must go.
+
+== den-flood | places: swamp, cave, lakeside, beach, waterfall, gorge, forest
+title: Washed Out
+setup: The rain had come down for two days straight, and in the night the water rose and filled the den {comer} had slept in all season. Soaked and shivering, she climbed to the nearest high, dry shelter at {place}, and found it already occupied by {holder}, who had watched the water rise from safety. There was room for one, and {comer} was not going back into the flood.
+holder: {holder} wants to keep her dry refuge, and she sets her weight at its mouth, unwilling to be pushed out into the wet even an inch.
+comer: {comer} is cold, tired, and homeless, and she fights with a raw desperation, every movement saying she has nowhere else to go.
+stakes: The winner sleeps dry tonight; the loser spends the night in the rain with the water still rising.
+thoughts: Not my fault your hole flooded. / Cold. So cold. I'm not going back out there. / She's shaking. Half of that isn't fear. / One of us sleeps wet tonight.
+end: The loser ends the fight standing in the rain, looking at the dry shelter she could not take or could not keep.
+
+== old-scar | places: any
+title: The Old Scar
+setup: A season ago, somewhere far from {place}, {comer} had lost a fight to {holder} and carried away a mark from it that still showed when she moved. She had not forgotten the smell. When it reached her today, she followed it until she found {holder} resting, and stepped into the open where she could be seen.
+holder: {holder} barely remembers the earlier fight, and she treats the challenge with a dismissive ease that slowly sharpens as she realises this one has been practising.
+comer: {comer} wants the defeat undone, and she fights deliberately, avoiding the exact mistake that cost her last time.
+stakes: For {comer}, winning would finally close the old wound; for {holder}, losing would mean the one she beat once now stands over her.
+thoughts: She doesn't even remember me. / I remember every second of it. / That mark. I gave her that. / Not the same as last time. Not this time. / Should've finished it properly then.
+end: If {comer} wins she touches the old scar once before leaving; if she loses, she memorises this fight too.
+
+== mistaken-thief | places: any
+title: Wrong Suspect
+setup: Something had raided {holder}'s food at {place} in the night, scattering it and leaving only a muddled trace of scent. At dawn {comer} wandered in, innocent of all of it but smelling faintly of the same mud, and {holder} decided at once who the thief was. {comer} could not explain and would not cower, so the first strike came from fury on one side and indignation on the other.
+holder: {holder} believes she has caught the thief, and she fights with righteous anger, hitting harder than she normally would.
+comer: {comer} knows she did nothing, and the unfairness makes her stubborn, she refuses to back away even when it would be wise.
+stakes: For {holder}, winning means justice served; for {comer}, losing means being punished for someone else's crime.
+thoughts: You thought I wouldn't find you? / I didn't touch anything. / She smells of it. She smells exactly of it. / Fine. If I'm guilty anyway, I might as well win. / Something's not right about this.
+end: Afterward, the true scent of the real thief drifts across {place}, and one of them catches it and goes very still.
+
+== sunning-rock | places: beach, mountain, ruins, desert, lakeside, temple, reef, wreck, frozen
+title: The Warm Stone
+setup: There was a flat rock at {place} that caught the first sun of the day and held its warmth long after, and {holder} had claimed it every morning for a week. Today she found {comer} sprawled across it, eyes half-closed, soaking up the heat. {holder} stood beside the rock and waited to be noticed; {comer} noticed, and did not move.
+holder: {holder} wants her warm place back, and she shows it with an irritable, ruffled impatience that keeps tipping into anger.
+comer: {comer} likes the stone and sees no reason to leave it, and she fights lazily at first, then with real heat once she realises the other is serious.
+stakes: It is only a rock, but whoever wins it gets every warm morning after, and whoever loses has to watch.
+thoughts: That's my rock. Everyone knows it's my rock. / Warm. Go away. / She didn't even open her eyes. / Fine. Let's warm up properly.
+end: The winner climbs back onto the rock and stretches out on it, deliberately, while the loser limps off into the shade.
+
+== warm-vent | places: caldera, vents, frozen, mountain, power plant
+title: The Warm Vent
+setup: Cold had settled hard over {place}, and the only real warmth for a long way was a crack in the ground that breathed out heat, enough to keep one body comfortable. {holder} had been curled over it for hours when {comer} came out of the cold, stiff and slow, and stood looking at the shimmer in the air above her. Neither of them wanted to move away from the heat to settle it.
+holder: {holder} wants to keep the only warmth she has, and she stays low and close to the vent, unwilling to rise any further from it than she must.
+comer: {comer} is chilled through and fights stiffly at first, gaining speed only as the fight itself warms her.
+stakes: The winner spends the night warm; the loser spends it shivering somewhere further out.
+thoughts: There's room for exactly one of us. / Can't feel my paws. / She's slow. The cold's in her. / Get warm first. Then win. / It took me all day to find this.
+end: The winner settles back over the vent and lets its heat soak into her bruises.
+
+== shiny-thing | places: wreck, reef, mine, clock tower, ruins, temple, power plant, desert, any
+title: The Bright Thing
+setup: In a corner of {place}, {holder} had found something that caught the light, a polished shard, a bright gear, a gleaming bit of metal, and had been turning it over with fascination ever since. {comer} saw the flash from across the open ground and came over to look closer. When {holder} pulled the treasure back, {comer} reached for it anyway.
+holder: {holder} is possessive of her find out of all proportion, and she keeps one eye on where it lies even mid-fight.
+comer: {comer} is captivated by the glitter, and she fights with an odd, greedy brightness, distracted every time it catches the light.
+stakes: Neither of them could say why it matters, but losing it would hurt more than any blow.
+thoughts: Shiny. So shiny. Mine. / She's looking at it, not me. / It catches the light just so. / Can't let her have it. Can't explain why.
+end: The winner picks up the bright thing at the end and holds it in the light a long time, as if checking it was worth it.
+
+== rare-crystal | places: mine, cave, caldera, mountain, ruins
+title: The Singing Crystal
+setup: Deep in {place}, {holder} had uncovered a vein of pale crystal that hummed faintly when touched and tasted, to her, like nothing else in the world. She had been chipping at it and gnawing on the fragments for days. {comer} heard the hum, followed it, and found {holder} hunched protectively over the glittering seam.
+holder: {holder} has found something rare and wants it all, and she fights close to the seam, guarding the glow with her body.
+comer: {comer} wants a share of the rare thing, and she watches the crystal's light reflect off {holder}'s eyes with growing envy.
+stakes: The crystal is unique in the mountain; whoever loses may never find another like it.
+thoughts: It's humming. Can you hear it humming? / There's enough for both — no. No, there isn't. / She'd guard it with her life. Good. / Never seen anything like it.
+end: After the fight, the winner presses close to the crystal and hears it hum again, and the loser hears it too, from further away.
+
+== storm-tree | places: forest, storm, lakeside, mountain
+title: Lightning Struck
+setup: A storm broke over {place} and a bolt split the old tree {comer} had been sheltering under, throwing her clear in a shower of bark and sparks. She ran blind through the rain, half-deafened, and burst straight into {holder}'s shelter at full speed, crashing into her. Neither had time to think before teeth and claws came out.
+holder: {holder} was attacked in her own shelter by something that came out of the storm, and she fights to drive it out without stopping to ask why.
+comer: {comer} is frightened, disoriented and aching from the blast, and she fights wildly, striking at anything that comes close.
+stakes: The winner keeps the only shelter in sight; the loser goes back out into the storm.
+thoughts: What — what was that? / Something came out of the dark. Get it off. / My ears are ringing. Everything's ringing. / She's not even looking where she hits. / Out. Get out.
+end: As the storm passes overhead, the winner hears the thunder roll away and realises the stranger was only running from it.
+
+== quake-shift | places: cave, mine, ruins, temple, mountain, clock tower
+title: After the Quake
+setup: In the night the ground under {place} heaved and rumbled, and when it stopped the passages had changed: the way out of {comer}'s home had collapsed, and the only open path led through {holder}'s. {comer} came through the dust looking for a way out and found {holder} on her guard, shaken and suspicious. The fear of the quake had not left either of them.
+holder: {holder} is rattled and furious at the intrusion, and she fights twitchily, flinching at every rumble in the stone.
+comer: {comer} wants only to get through and out into open air, and she fights to break past, not to win.
+stakes: For {comer}, losing means being trapped below; for {holder}, losing means giving up her home to a stranger in the dark.
+thoughts: The ground moved. The ground moved. / There's air. I can smell air past her. / Stay out of my tunnels. / If it shakes again, we are both buried here. / Let me through!
+end: When the dust settles, the loser feels the stone still trembling under her and wonders whether the next quake will decide it differently.
+
+== storm-surge | places: beach, wreck, reef, sea cave, cave, lakeside, waterfall
+title: The Surge
+setup: A storm had driven the sea high up the shore, and the surge had swept {comer} out of her usual water and into the narrow refuge at {place} where {holder} had already wedged herself in for safety. When the waves sank back, {comer} stayed. There was room for one to sit out the next surge, and the next storm cloud was already building on the horizon.
+holder: {holder} wants to keep her safe refuge from the storm, and she fights to push the other back out toward the open water.
+comer: {comer} wants shelter from the next storm, and she fights with grim stubbornness, refusing to be driven back out into the surf.
+stakes: The winner rides out the next surge in shelter; the loser takes her chances in the open.
+thoughts: There's no room. There was never room. / The water's coming back. I can feel it. / She's tired. The sea already took half of her. / Hold on. Just hold on.
+end: As the next wave rolls in, the winner braces in her shelter and the loser feels the water rising round her.
+
+== sick-packmate | places: any
+title: The Healing Herb
+setup: Somewhere far off, one of {comer}'s companions lay sick, and the only cure {comer} knew grew in one patch at {place}, a bitter herb with pale leaves. She came to gather it and found {holder} lying across the patch, chewing the same leaves for some ailment of her own. {comer} asked with every gesture she knew, and when {holder} did not move, she stopped asking.
+holder: {holder} needs the herb herself and will not give it up, and she fights stiffly, favouring some ache she has not yet shaken off.
+comer: {comer} is fighting for someone else, and she is relentless, her mind half on the long road back and the one waiting at the end of it.
+stakes: For {comer}, losing means returning empty-handed to someone who needs her; for {holder}, losing means going without the cure herself.
+thoughts: She's waiting for me. She's waiting. / I found it first. I'm sick too. / Just a mouthful. Just enough. / She fights like she has something to lose. / Hurry. Hurry.
+end: The winner gathers the leaves at the end, and if it is {comer}, she runs before her wounds have even stopped stinging.
+
+== cornered | places: cave, mine, wreck, clock tower, ruins, gorge, power plant, temple
+title: Cornered
+setup: {holder} had slipped into a dead-end corner of {place} to rest, and {comer}, curious, followed her in, blocking the only way out without meaning anything by it. {holder} looked at the walls on three sides and the stranger on the fourth, and something old and frightened rose in her. She struck first, before she could think.
+holder: {holder} is trapped and panicking, and she fights in bursts of frantic violence, always angling for the gap behind {comer}.
+comer: {comer} was only curious and is now under attack, and she stands her ground out of surprised anger, not realising she is blocking the exit.
+stakes: For {holder}, winning means getting out; for {comer}, winning means proving she does not run from a frightened creature's teeth.
+thoughts: Walls. Walls everywhere. Get out. / I only wanted to look. / She's not fighting me. She's fighting the corner. / Move. Move. MOVE.
+end: When it ends, the way out is open, and one of them takes it at a run without looking back.
+
+== misunderstanding | places: any
+title: A Bad Start
+setup: {comer} came around a rock at {place} and froze, startled, just as {holder} turned and saw her. Each flinched; each took the other's flinch for a threat. A warning sound became a snarl, a snarl became a lunge, and before either had understood the other meant no harm, the first blow had landed.
+holder: {holder} believes she is being attacked and fights to drive the stranger off, though part of her keeps waiting for a sign she was wrong.
+comer: {comer} believes the same of {holder}, and every blow she takes only confirms it, so she fights harder than she would have chosen to.
+stakes: Nothing was ever at stake, which is exactly why neither of them can find a way to stop.
+thoughts: She lunged. She lunged first. / Why did she do that? / Too late now. Too late. / I didn't mean — no. Doesn't matter now. / Hit her before she hits me.
+end: At the end, the two of them look at each other and both realise, too late, that neither ever wanted this.
+
+== leadership | places: any
+title: The Challenge
+setup: {holder} had led the small band of her kind that ranged across {place} for two seasons, and lately {comer} had been eating first, sleeping in the best spot, and holding {holder}'s gaze a moment too long. This morning, in front of the others watching from the edges, {comer} walked straight to where {holder} lay and stood over her. It was a challenge, and everyone knew it.
+holder: {holder} wants to keep her place at the head of the band, and she fights with the measured confidence of someone who has done this before.
+comer: {comer} wants to lead, and she fights with a younger creature's hunger, pressing hard to prove herself in front of the watchers.
+stakes: The winner leads; the loser either follows or leaves, and everyone watching will remember which.
+thoughts: They're all watching. Good. / She's been waiting for this a long time. / Not today. Not yet. / Look at her. She's getting old. / One of us walks away smaller.
+end: The others drift close once it is over, and the way they move around the winner tells her the matter is settled.
+
+== plain-hunger | places: any
+title: Hunger
+setup: It had been a long time since {comer} had eaten anything, and when she smelled {holder} at {place}, something in her head went very quiet and very focused. {holder} turned and saw her coming, low and intent, and knew at once what it meant. There was no posturing, no warning, only the long stare and the first rush.
+holder: {holder} is not prey and refuses to be treated like it, and she fights with an affronted savagery.
+comer: {comer} is starving and is barely thinking past the next mouthful, and she fights with a single-minded hunger that ignores pain.
+stakes: For {comer}, losing means going on starving; for {holder}, losing means being hunted, and that is unthinkable.
+thoughts: I'm not food. I'm NOT food. / So hungry. So hungry. / She's thin. Weak. She shouldn't be this fast. / Bite. Hold. Don't let go.
+end: Whoever wins, the hunger does not leave the loser, and she drags herself off still listening for something smaller.
+
+== old-rivals | places: any
+title: Old Rivals
+setup: {holder} and {comer} had crossed paths at {place} a dozen times over the years, and every time it ended the same way: a fight, a draw, a promise in the eyes for next time. Today {comer} came in with something different in her stride, and {holder} met her before she reached the middle of the ground. They both knew the old rhythm, and they both meant to break it.
+holder: {holder} wants to win at last, decisively, and she fights carefully, guarding the openings {comer} has found before.
+comer: {comer} wants the same, and she watches {holder}'s old habits for any sign of change.
+stakes: Years of draws will finally end, and one of them will have to live with being second.
+thoughts: Same old tricks. Let's see if she learned any new ones. / I know how she moves. Every step. / This time. This time for good. / She's slower. Or I'm faster.
+end: When it finally ends, the winner looks at the loser for a long moment, almost disappointed that there will be no next time.
+
+== debt-of-honour | places: any
+title: The Debt
+setup: Long ago {holder} had spared {comer} when she could have driven her off, and {comer} had never forgotten it. Now {comer} had come to {place} to pay the debt the only way she knew: by meeting {holder} in a fair fight, at full strength, so that neither owed the other anything. {holder} understood, and lowered herself into her stance.
+holder: {holder} accepts the challenge out of respect, and she fights cleanly, holding nothing back and taking no cheap openings.
+comer: {comer} wants to repay the old mercy by giving {holder} her very best, and she fights with fierce, almost joyful intensity.
+stakes: This is not about winning; it is about both of them knowing the debt is paid.
+thoughts: You spared me. Now I give you everything. / Fair. Keep it fair. / She's better than she was. / Good. Good. Again.
+end: At the end, the winner offers the loser the same mercy once offered to her, and the debt turns full circle.
+
+== testing-self | places: any
+title: The Test
+setup: {comer} had been growing stronger for a long time, and she had come to {place} to find out how strong. She had heard of {holder}, the one nobody in these parts dared challenge, and she walked straight up to her without hostility, only intent. {holder} studied her, saw what she was, and decided to oblige.
+holder: {holder} is curious and a little amused, and she fights as if measuring {comer}, holding back at first.
+comer: {comer} wants to know her limit, and she fights at full stretch from the first moment, testing every move she has.
+stakes: For {comer}, the fight is a measure of what she is; for {holder}, it is a reminder of what she was.
+thoughts: Show me everything. / She's holding back. Make her stop holding back. / Not bad. Not bad at all. / How far can I go? Further. Further.
+end: Whatever the result, the young one leaves knowing exactly where her edge is.
+
+== protecting-third | places: any
+title: The Weaker One
+setup: A small, weak Pokémon had crept into {place} to hide, and {holder} had found it there and, for reasons of her own, let it stay under her guard. When {comer} arrived on the scent of the little one, hungry and intent, {holder} stepped between them. {comer} snarled. {holder} did not move.
+holder: {holder} is protecting a creature that is not hers, and she fights grimly, always keeping herself between {comer} and the little one's hiding place.
+comer: {comer} wants the easy prey and resents the interference, and she keeps trying to slip past rather than fight head-on.
+stakes: For {holder}, winning keeps a promise she never had to make; for {comer}, losing means going hungry because of someone else's softness.
+thoughts: Not that one. Not while I'm here. / Why does she care? It's nothing to her. / It's shaking behind me. I can feel it. / Get past her. Just get past her.
+end: When it is over, the little one creeps out of hiding and looks at the winner, and the winner is the one who decides where it goes next.
+
+== ritual-challenge | places: temple, ruins, mountain, waterfall, any
+title: The Old Ritual
+setup: Among their kinds there was an old custom: when two strong females met on certain ground, at {place}, they fought, not out of hate, but because their ancestors always had. {holder} had come to the place first and waited, and {comer} arrived at dusk and bowed her head once. Neither needed to explain.
+holder: {holder} honours the custom and fights with formality, each strike deliberate and complete.
+comer: {comer} honours it too, but her pride is close to the surface, and she fights a little faster than the ritual asks.
+stakes: The winner's name will be remembered at this place; the loser's will be forgotten.
+thoughts: As it was. As it always was. / Remember this. Remember all of it. / She's fighting like it's real. Fine. / The stones are watching.
+end: When it ends, the winner bows her head to the loser exactly as the loser bowed to her at the start.
+
+== curiosity-wrong | places: any
+title: Too Close
+setup: {comer} had never seen anything quite like {holder}, and when she found her resting at {place}, she crept closer and closer to look, sniffing and staring. {holder} woke to find a stranger's face a hand's breadth from hers. She lashed out before she was fully awake.
+holder: {holder} was startled from sleep and fights to drive away the intruder, half-confused and wholly offended.
+comer: {comer} was only curious, but the blow stung her pride, and she fights back with a surprised, indignant anger.
+stakes: Nothing much, except that neither of them is willing to be the one who backs down.
+thoughts: What was it doing? What was it DOING? / I only wanted to look! / She smells strange. Strange and angry. / Well, now I'm looking.
+end: The winner stares at the loser a long time afterward, as curious now as the loser ever was.
+
+== jealousy | places: any
+title: Envy
+setup: For weeks {comer} had watched {holder} at {place}: the way the others of the area deferred to her, the way the best food and the best shelter seemed to find her without effort. Today, when {holder} passed close by her with a careless flick of her tail, the envy boiled over. {comer} struck first, and {holder} turned around surprised.
+holder: {holder} is baffled by the attack at first, then angry, and she fights as if putting an upstart in her place.
+comer: {comer} wants what {holder} has, all of it, and she fights with a bitter, focused intensity.
+stakes: For {comer}, winning would prove she deserves the same; for {holder}, losing would shake everything she takes for granted.
+thoughts: Why should she have everything? / What did I ever do to you? / Look at her. So sure of herself. / You want this? Come take it.
+end: The winner feels, for a moment, the other's envy turned back on herself.
+
+== injured-lashing | places: any
+title: The Wounded One
+setup: {holder} had been hurt the day before in some other fight, and she had crawled into a quiet corner of {place} to lick her wounds in peace. When {comer} wandered by, unaware, the hurt creature saw only a threat and lunged at her, snapping and snarling. {comer}, startled and stung, fought back.
+holder: {holder} is in pain and frightened, and she fights with the desperate ferocity of something that cannot run.
+comer: {comer} did not want this fight, but she will not be bitten for nothing, and she fights with a wary anger, half-puzzled by the other's fury.
+stakes: For {holder}, losing means being even more vulnerable; for {comer}, it means being driven off by someone already beaten.
+thoughts: Don't touch me. Don't come near me. / Why is she already hurt? / Hurts. Everything hurts. / She's half beaten. Why is she fighting so hard?
+end: At the end, the winner sees the old wounds on the other and understands, too late, why she fought the way she did.
+
+== migration-route | places: mountain, gorge, beach, desert, frozen, lakeside, waterfall
+title: The Old Road
+setup: Every year {comer}'s kind passed through {place} on their long journey, and every year the way had been clear. This year {holder} had settled across the narrowest point of the route, and when {comer} came through, leading the way for those behind her, {holder} stood up and blocked the path.
+holder: {holder} has made this place her home and resents the yearly tide of strangers, and she plants herself in the narrowest point, refusing to move.
+comer: {comer} must pass, and she fights with the weight of all those behind her, refusing to turn back.
+stakes: For {comer}, losing means finding a longer, harder way; for {holder}, losing means accepting that her home will always be someone else's road.
+thoughts: This is my home now. / We've always gone this way. Always. / Others behind me. Many others. / She's blocking the only way through.
+end: The winner watches the road beyond, and either sees the way open, or sees it closed.
+
+== sleeping-spot | places: any
+title: The Best Spot
+setup: There was one perfect sleeping spot at {place}: sheltered from the wind, dry underfoot, and just the right shape. {holder} had slept there every night for a month. Tonight she arrived to find {comer} curled up in it, fast asleep. She nudged her; {comer} opened one eye and closed it again.
+holder: {holder} wants her bed back, and she fights with grumpy, tired indignation.
+comer: {comer} likes the spot and is not in the mood to move, and she fights with sleepy reluctance that slowly turns into real stubbornness.
+stakes: It is only a bed, but whoever loses it sleeps cold and cramped tonight.
+thoughts: That's my bed. MY bed. / Comfortable. Go away. / She's half asleep. Easy. / Fine, I'm awake now.
+end: The winner curls back into the spot, sore and satisfied, and the loser finds the second-best spot with a grunt.
+
+== electric-water | places: power plant, swamp, lakeside, sea cave, cave, wreck, waterfall
+title: The Shock
+setup: {comer} had come to {place} carrying a charge of stored electricity, or had brushed against some old live thing there and crackled with it, and she waded into the water where {holder} was resting. The jolt that ran through the water hit {holder} like a slap. She surged up out of it spitting and furious, sure it was an attack.
+holder: {holder} was hurt in her own water and wants the source of it gone, and she fights with a stung fury, always trying to keep the fight dry.
+comer: {comer} did not mean it and is offended by the attack that follows, and she fights back crackling and indignant.
+stakes: For {holder}, losing means giving up her water to something that hurts it; for {comer}, losing means being chased off for an accident.
+thoughts: It burned. The water burned. / I didn't mean — I didn't know! / Stay out of my water! / She's afraid of the spark. Good.
+end: The water at {place} goes still and quiet again, and the winner is the one who gets to stand in it.
+
+== fire-forest | places: forest, storm, lakeside, mountain, ruins
+title: Smoke
+setup: {comer} had been careless, or angry, or both, and a few sparks from her had caught in the dry litter at {place}, setting a small patch of grass burning. {holder}, whose home was close by, smelled the smoke and came out to find the stranger beside the flames. To her, it looked like an attack on everything she had.
+holder: {holder} wants the fire-bringer gone before the whole place burns, and she fights with frantic urgency, glancing at the spreading smoke.
+comer: {comer} is defensive and ashamed, and she fights to avoid being blamed more than to win.
+stakes: For {holder}, losing might mean losing her home to the fire; for {comer}, it means being driven off like a criminal.
+thoughts: Smoke. Smoke. My home. / It was an accident. It was. / Get her away from it. Away. / The fire's spreading. Hurry.
+end: When the fight ends, the winner turns to stamp out the last smouldering grass, and the loser watches.
+
+== pride-rank | places: any
+title: Pride
+setup: {comer} had heard that {holder} was the strongest at {place}, and she had heard it one time too many. She came to settle the question once and for all, swaggering into the open and announcing herself loudly to the whole place. {holder}, who had no interest in fighting, sighed and stood up.
+holder: {holder} is weary of challengers but proud enough not to back down, and she fights with a contemptuous, efficient competence.
+comer: {comer} wants to be called the strongest, and she fights with showy flair, eager to impress anyone watching.
+stakes: Whoever wins will be the one others talk about; whoever loses will be the one they laugh about.
+thoughts: Another one. Always another one. / Watch this. Everyone watch this. / All noise. Let's see the teeth. / I'm stronger than they say.
+end: The winner shakes off the fight with a yawn, and the loser limps away with her pride bruised worse than her body.
+
+== revenge-defeat | places: any
+title: Payback
+setup: Not long ago, {holder} had beaten {comer} badly at {place}, in front of others, and left her crawling away. {comer} had spent every day since healing and training, and today she came back, at the same hour, to the same place. {holder} saw her coming and her ears went back.
+holder: {holder} won once and expects to win again, and she fights with a confidence that frays as {comer} proves different.
+comer: {comer} wants the shame of that defeat erased, and she fights with cold, focused purpose.
+stakes: For {comer}, winning is redemption; for {holder}, losing turns her old victory into a fluke.
+thoughts: Back for more? / I remember every blow. Every one. / She's different. Harder. / Not this time.
+end: If {comer} wins, she stands exactly where she once fell; if she loses again, she does not crawl.
+
+== winter-last | places: frozen, mountain, forest, lakeside, any
+title: The Last of Winter
+setup: Late winter had stripped {place} almost bare, and the only food left for miles was a few frozen scraps that {holder} had dug out of the snow. {comer} came stumbling out of the white, thin and hollow-eyed, and smelled them. She did not even pretend to be anything but desperate.
+holder: {holder} is hungry too, and fights to keep what little she has, with the grim weariness of someone who has been cold for months.
+comer: {comer} is starving and has nothing to lose, and she fights with a wild, reckless desperation.
+stakes: For both of them, losing could mean not lasting until spring.
+thoughts: There's nothing else. Nothing. / So cold. So hungry. / She's thinner than me. / Spring's too far away.
+end: The winner eats the last frozen scraps in silence, and the loser, if she can still move, keeps searching through the snow.
+
+== echo-voice | places: cave, sea cave, mine, gorge, clock tower, ruins
+title: The Echo
+setup: In the stone hollows of {place}, every sound came back twice, and when {comer} gave a call to test the space, the echo carried deep into {holder}'s home and sounded, to her, like a challenge. She answered it with one of her own. By the time they found each other in the half-dark, both were sure the other had started it.
+holder: {holder} wants the noisy intruder gone, and she fights with a jangled irritability, ears ringing.
+comer: {comer} heard a challenge answered and will not ignore it, and she fights with prickly pride.
+stakes: Nothing but pride, and the right to make noise in the dark.
+thoughts: That was a challenge. That was. / Just testing the space. / So loud. Everything here is so loud. / Whoever's shouting, I'll shut her up.
+end: When it is over the echoes die away, and the winner's breathing is the only sound left.
+
+== wreck-den | places: wreck, reef
+title: The Wreck
+setup: The old wreck at {place} had a dry pocket inside it that kept out the waves, and {holder} had made a home there among the timbers. When {comer} found the gap in the hull and slipped in to explore, {holder} met her among the rotting beams, puffed up and furious.
+holder: {holder} wants her home back, and she fights with fierce knowledge of every beam and gap.
+comer: {comer} wants the dry pocket for herself, and she fights cautiously, unsure of her footing on the slick timbers.
+stakes: The winner has a dry home among the waves; the loser is back in the open sea.
+thoughts: Know every plank. Every gap. / Slippery. Careful. / Get out of my ship. / It's dry in here. It's DRY in here.
+end: The winner settles back into the dry pocket and listens to the sea knock on the hull.
+
+== waterfall-ledge | places: waterfall, gorge
+title: The Ledge Behind the Falls
+setup: Behind the curtain of the falls at {place} there was a narrow, hidden ledge, cool and safe, where {holder} had slept every summer. {comer} found the gap in the water by accident, slipped through, and came face to face with her in the roaring dimness.
+holder: {holder} wants her hidden refuge kept secret and hers, and she fights fiercely, angry that it was found at all.
+comer: {comer} is enchanted by the find and does not want to give it up, and she fights with stubborn determination.
+stakes: The winner keeps the secret place; the loser has to leave it knowing it exists.
+thoughts: No one knows this place. No one. / It's beautiful. It's perfect. / The water hides everything. / Out. Out through the falls.
+end: The winner listens to the falls closing the gap again, and the loser stands outside the water, looking at where the secret is.
+
+== frozen-hole | places: frozen, lakeside
+title: The Breathing Hole
+setup: The lake at {place} had frozen almost solid, but {holder} had kept one hole open in the ice by breaking it every morning, and it was the only way to reach the water and the fish below. {comer} found the hole and began to fish through it. {holder} came across the ice at a run.
+holder: {holder} has kept this hole open for weeks and will not share it, and she fights with the possessiveness of hard labour.
+comer: {comer} needs the water as much as anyone, and she fights stubbornly near the hole, refusing to give it up.
+stakes: The winner eats tonight; the loser goes looking for another hole in the ice.
+thoughts: Broke that ice every day. Every day. / Fish under there. I can see them. / Careful on the ice. Careful. / She won't push me in.
+end: The winner stands over the dark hole in the ice, breathing hard, watching the fish below.
+
+== temple-altar | places: temple, ruins
+title: The Old Altar
+setup: At the heart of {place} stood a raised stone, older than anything around it, warm with the sun and strange with old scents, and {holder} had made a habit of lying on it, as if it were hers by right. {comer} came to the ruins drawn by something she could not name and found herself walking straight toward the stone. {holder} rose to meet her.
+holder: {holder} believes the stone belongs to her, and she fights with an odd, solemn fierceness, as if guarding something sacred.
+comer: {comer} feels drawn to the stone in a way she cannot explain, and she fights with a strange intensity.
+stakes: Neither knows why the stone matters, but both are sure it does.
+thoughts: It's mine. It has always been mine. / Something here is calling. / Old. Older than anything. / Feels like it's watching.
+end: The winner lies on the stone afterward and feels, for a moment, like something old approves.
+
+== clock-tower | places: clock tower
+title: The Bell
+setup: High in the gears of {place}, {holder} had found a quiet perch where the old mechanisms ticked and hummed in a soothing rhythm. {comer} came climbing up through the works, curious about the sound, and stumbled straight into her perch. The bell above them chose that moment to toll.
+holder: {holder} wants her rhythmic sanctuary left in peace, and she fights with sharp irritation, every strike timed to the ticking around her.
+comer: {comer} is startled by the bell and the attack, and she fights with jumpy, rattled energy.
+stakes: The winner keeps the perch among the gears; the loser climbs back down into silence.
+thoughts: Tick. Tick. Strike. / The noise. What is that noise? / Mine. Up here is mine. / Everything's moving. Everything's moving.
+end: The winner settles back into the rhythm of the gears, and the bell tolls again above her.
+
+== power-plant-hum | places: power plant
+title: The Hum
+setup: Deep in {place} there was a corner where the old machines still hummed faintly with leftover power, a tingle that felt good in the fur and warm in the bones, and {holder} slept there every night. {comer} felt the same tingle from outside and followed it in. They met among the rusted machines with the hum in their teeth.
+holder: {holder} wants to keep the comforting hum to herself, and she fights close to the machines, unwilling to stray.
+comer: {comer} is drawn to the hum like a moth to light, and she fights with greedy, crackling excitement.
+stakes: The winner sleeps in the hum; the loser sleeps in the cold.
+thoughts: It tingles. It tingles all over. / My hum. Mine. / So warm. So bright. / She'd better not touch the wires.
+end: The winner lies back down in the hum and feels it seep into her bruises.
+
+== desert-shade | places: desert, ruins, mountain
+title: The Shade
+setup: The sun had baked {place} until the stones were too hot to touch, and the only shade for a long way was under one broken arch where {holder} lay panting. {comer} came across the sand at noon, staggering, and saw the shade. She walked straight into it.
+holder: {holder} wants to keep the shade, and she fights sluggishly, every movement costing her in the heat.
+comer: {comer} is desperate for relief from the sun, and she fights with a heat-drunk recklessness.
+stakes: The winner spends the afternoon in shade; the loser spends it in the sun.
+thoughts: Hot. Too hot to fight. / Shade. Shade. Shade. / She's slower than me. / Don't let her push me into the sun.
+end: The winner lies back down in the shade, and the loser lies down where she fell, under the full sun.
+
+== mud-wallow | places: swamp, lakeside
+title: The Wallow
+setup: There was a deep, cool wallow of mud at {place} that soothed bites, kept off insects and cooled the body on hot days, and {holder} had made it hers. {comer} came in plastered with insect bites and itching all over, and slid into the mud without asking.
+holder: {holder} wants her wallow back, and she fights with sloppy, mud-slick indignation.
+comer: {comer} wants relief and will not give it up, and she fights stubbornly, half-submerged.
+stakes: The winner wallows in peace; the loser itches.
+thoughts: My mud. My mud! / It feels so good. Go away. / She's slippery. Hold on. / Itching. Everything itches.
+end: The winner sinks back into the cool mud, and the loser goes off scratching.
+
+== tidal-pool | places: beach, reef, sea cave, wreck
+title: The Tide Pool
+setup: When the tide went out at {place}, it left a deep rock pool full of trapped fish and shellfish, and {holder} had been feeding there undisturbed for days. {comer} came picking her way along the rocks, smelled the trapped food, and slipped into the pool beside her. The tide was turning; there was not much time.
+holder: {holder} wants to keep the pool's harvest to herself, and she fights with a quick, slippery possessiveness.
+comer: {comer} wants to feed before the tide comes back in, and she fights with impatient urgency.
+stakes: The winner feeds well before the sea returns; the loser goes hungry until the next low tide.
+thoughts: The tide's turning. Hurry. / My pool. Mine. / So many fish. So many. / Get her out before the sea comes back.
+end: As the tide rolls back in over the pool, the winner swims off full, and the loser watches the food scatter into open water.
+
+== mountain-shelf | places: mountain
+title: The High Ledge
+setup: The shelf at {place} was the highest point for miles, with a view over everything below, and {holder} had claimed it as her lookout. {comer} came climbing up the rocks, wanting to see the world from up there too, and pulled herself over the edge onto the shelf. {holder} met her there.
+holder: {holder} wants to keep her lookout, and she fights with confident ease, knowing every crack in the rock.
+comer: {comer} wants the view and the height, and she fights with careful determination, aware of the drop behind her.
+stakes: The winner rules the heights; the loser climbs back down.
+thoughts: The whole world is down there. / Mine to watch. / Careful. Careful of the drop. / She's never been up here before. I can tell.
+end: The winner stands at the edge of the shelf, looking down over everything, and the loser climbs down into the shadows.
+
+== lost-young | places: any
+title: The Lost One
+setup: A young Pokémon had wandered away from {comer}'s side and got lost, and {comer} had been searching frantically for hours when she found its trail leading straight into {place}, where {holder} lay. Unaware that the young one had passed through and was hiding nearby, {holder} saw only a frantic stranger charging toward her. Each assumed the worst of the other.
+holder: {holder} thinks she is under attack and fights to defend herself and her ground, confused by the other's desperation.
+comer: {comer} is terrified for the missing young one and convinced {holder} has done something to it, and she fights with frantic, reckless urgency.
+stakes: For {comer}, nothing matters but finding the young one; for {holder}, the fight is about not being accused and attacked for nothing.
+thoughts: Where is it? Where is it? / What does she want? / The trail leads here. Right here. / I haven't touched anything!
+end: When the fight ends, a small voice calls out nearby, and both turn to look.
+
+== moonlit-pool | places: lakeside, waterfall, frozen, temple
+title: Moonlight
+setup: On full-moon nights the still pool at {place} held the moon perfectly, and {holder} came every month to sit beside it and watch. Tonight {comer} came too, drawn by the same light, and the two of them met on opposite sides of the pool. Neither wanted to share the moment.
+holder: {holder} wants her ritual undisturbed, and she fights with a tense, sharp resentment.
+comer: {comer} wants the moonlight for herself, and she fights with fierce, wide-eyed intensity.
+stakes: The winner sits alone with the moon; the loser leaves it behind.
+thoughts: This is my night. My moon. / It's so bright. So bright. / She's spoiling it. Spoiling everything. / The moon doesn't care who wins.
+end: When the fight is over, the moon is still on the water, and the winner sits down alone to watch it.
+
+== scent-trail | places: any
+title: The Wrong Trail
+setup: {comer} had been following a scent trail for hours, sure it was the trail of an old enemy, and it led her straight to {place}, where {holder} lay resting. In her eagerness, she did not stop to sniff closer. She attacked before she realised the scent was not quite right.
+holder: {holder} was attacked for no reason by a stranger, and she fights back with outraged fury.
+comer: {comer} realises halfway through that she has made a mistake, but is too proud to back down now.
+stakes: For {holder}, winning means teaching a lesson; for {comer}, losing means admitting her mistake.
+thoughts: Who are you? What did I do? / Wrong scent. Wrong scent. Too late. / She attacked me for nothing. / Can't stop now.
+end: At the end, the winner sniffs the loser once, and the loser smells the true trail drifting away on the wind.
+
+== borrowed-den | places: cave, mine, ruins, forest, swamp, temple
+title: The Empty Den
+setup: {holder} had left her den at {place} for a few days to hunt farther out, and when she came back, it was occupied by {comer}, who had found it empty and moved in. {comer} had already rearranged the bedding and laid her own scent over everything. {holder} stood at the entrance, bristling.
+holder: {holder} wants her home back, and she fights with fierce, possessive anger.
+comer: {comer} believes an empty den is anyone's, and she fights with stubborn conviction.
+stakes: The winner has a home; the loser has the open sky.
+thoughts: My den. My bedding. My smell. / It was empty. Empty means free. / Get out of my home. / I made it mine.
+end: The winner settles back into the den and spends a long time scraping the other's scent out of the bedding.

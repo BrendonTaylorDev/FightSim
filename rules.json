@@ -641,6 +641,10 @@
       }
     ]
   },
+  "story": {
+    "_comment": "reasons: why the two wild fighters are fighting. One is picked from the file for each fight (fitting the arena); one fighter is the holder (there first, or holding what is wanted), the other the comer. The opening tells it, every beat carries a short note (thought_chance: now and then one thought either of them might have), interludes get it in full, and the aftermath gets its ending. Only for one-on-one fights. /reason to see, choose, write your own, or turn it off.",
+    "reasons": {"enabled": true, "file": "fight_reasons.txt", "thought_chance": 0.25}
+  },
   "narration": {
     "_comment": "story_prompt.txt holds your plain-English storytelling instructions. style_sample_file is writing for the narrator to imitate: a plain file is shown from its start, up to style_sample_chars characters; a file written in sections (lines starting with ==, like style_sample_scenes.txt) gives the narrator the passage that fits the part it is about to write. /sample lists the samples in the folder and switches between them; your earlier ones are style_sample.txt, style_sample_previous.txt and style_sample_intense.txt. sample_copy_check: a sentence copied word for word from the sample is cut. max_words caps each response. context_window is the model's working memory in tokens: raise it for longer stories if your GPU has room, lower it if responses get slow.",
     "story_prompt_file": "story_prompt.txt",

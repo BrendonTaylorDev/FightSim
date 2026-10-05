@@ -27,7 +27,7 @@ from engine import Engine, body_region as body_region_of
 from narrator import Narrator, strip_pov, _is_sound
 import llm
 
-VERSION = "2026-10-05 build 131 (every attack in a busy beat must be told; a bare /pin builds a real pin; more present tense caught. Build 130: /move takes parts in separate quotes, and several blows go round the named parts. Build 129: no instruction text in the story; no sentence left hanging on a possessive. Build 128: /help is a short menu: /help <topic>, /help <command>, /help all. Build 127: no second drafts: big moments get more from the engine instead; the same hurt told again and again is trimmed; leg counts and mouth blood checked. Build 126: pins rarer early and rising with wear; strong fighters often spring back up; sounds always marked and coloured; event order stated. Build 125: a pin needs three points of contact; wording-only rewrites capped at 2 a part; blood, forelegs and takedowns checked. Build 124: a library of 937 finished sentences: offered word for word, and swapped in for cut filler. Build 123: 41 more sample passages rotating, sized to the blow; 759 pain-level blocks. Build 122: filler cut or shown instead of told; reactions above the pain limit never offered; samples sized to the blow. Build 121: the engine sets how big each fighter's pain reactions may be, whether her fur is wet or dry, and which earlier moves she can remember; attack labels naming the wrong weapon are dropped. Build 120: a phrase said twice in a beat is rewritten with another wording; scenery she hits must be shown; the throw is not told again after the landing; eye colours checked; no lightning in a throw. Build 119: thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
+VERSION = "2026-10-05 build 132 (why they fight: /reason, from 50 reasons fitted to the arena; long interludes now and then: /interlude; no body part comes first unless /focus says so, with weak spots nudged now and then: /weakspots; /pins sets how often pins come; pins press from their first beat; a broken hold can't be re-grabbed at once; the escape blow must be told; a time budget per beat: /budget, and the ⏱ line says where the time went. Build 131: every attack in a busy beat must be told; a bare /pin builds a real pin; more present tense caught. Build 130: /move takes parts in separate quotes, and several blows go round the named parts. Build 129: no instruction text in the story; no sentence left hanging on a possessive. Build 128: /help is a short menu: /help <topic>, /help <command>, /help all. Build 127: no second drafts: big moments get more from the engine instead; the same hurt told again and again is trimmed; leg counts and mouth blood checked. Build 126: pins rarer early and rising with wear; strong fighters often spring back up; sounds always marked and coloured; event order stated. Build 125: a pin needs three points of contact; wording-only rewrites capped at 2 a part; blood, forelegs and takedowns checked. Build 124: a library of 937 finished sentences: offered word for word, and swapped in for cut filler. Build 123: 41 more sample passages rotating, sized to the blow; 759 pain-level blocks. Build 122: filler cut or shown instead of told; reactions above the pain limit never offered; samples sized to the blow. Build 121: the engine sets how big each fighter's pain reactions may be, whether her fur is wet or dry, and which earlier moves she can remember; attack labels naming the wrong weapon are dropped. Build 120: a phrase said twice in a beat is rewritten with another wording; scenery she hits must be shown; the throw is not told again after the landing; eye colours checked; no lightning in a throw. Build 119: thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
 
 HELP = """
 =============================================================================================
@@ -257,6 +257,7 @@ HELP = """
   /plan close [winner]   /plan dominate <name>   /plan comeback <name>
   /plan even             /plan winner <name>     /plan off
   /targeting one|few|many|all|auto          how many body parts attacks spread across
+  /reason [list|<n or id> [holder]|swap|new|"your own"|off|on]   why the two are fighting (fed to the story)
   /focus [fighter] <zones...|off>           where attacks aim: head, core, arms, legs, paws, tail,
                                             limbs, upper (combine: /focus core head). Saved to rules.json.
           /focus injured           go back to what's already hurt and the parts around it (and a badly hurt
@@ -693,9 +694,8 @@ class Session:
         self._posture_start = {f.name: self.eng.posture_text(f.name, short=True) for f in self.eng.active()}
         self.sync_narrator()
         try:
-            text = self.narrator.interlude(self.eng.narrator_condition(), self.notes(), self.eng.scene,
-                                           self.recent_story(), words, direction,
-                                           getattr(self, "reason_note", lambda: "")())
+            text = self.narrator.interlude(self.eng.narrator_condition(), self.notes(full_reason=True), self.eng.scene,
+                                           self.recent_story(), words, direction)
         except Exception:
             if not auto:
                 self.history.pop()
@@ -714,7 +714,8 @@ class Session:
         return {"story": self.story, "style": self.narrator.style, "over": self.over,
                 "transcript": self.transcript[-4000:], "attacks": self.attacks,
                 "recent_attacks": self.recent_attacks, "fight_no": self.fight_no, "results": self.results,
-                "story_before": self.story_before[-400:]}
+                "story_before": self.story_before[-400:], "reason": getattr(self, "reason", None),
+                "reason_pick": getattr(self, "reason_pick", None), "reason_off": getattr(self, "reason_off", False)}
 
     # ---------- more than one fight ----------
     def lineup(self):
@@ -756,6 +757,7 @@ class Session:
         # nothing has happened yet (no beat, no opening scene, no result): this replaces fight 1, it isn't fight 2
         fresh_start = not self.eng.turn and not self.story and not self.over and not self.results
         old = self.eng
+        self.reason = None      # a new fight, a new reason (unless /reason chose one)
         seed = None if self.args.seed is None else self.args.seed + self.fight_no
         eng = Engine(seed=seed, rules=old.rules, only=list(names) if names else self.lineup())
         eng.set_scene(old.scene if old.scene_name == "custom" else old.scene_name, fallback=old.scene)   # same arena
@@ -837,6 +839,8 @@ class Session:
         self.fight_no = extra.get("fight_no", self.fight_no)
         self.results = extra.get("results", self.results)
         self.story_before = extra.get("story_before", self.story_before)
+        self.reason, self.reason_pick = extra.get("reason"), extra.get("reason_pick")
+        self.reason_off = extra.get("reason_off", False)
         self.history, self.last_narration, self.pending = [], None, None
 
     def _write_prose(self, args):
@@ -957,7 +961,62 @@ class Session:
         self.autosave()
 
     # ---------- story ----------
-    def notes(self):
+    # ---------- why they fight (fight_reasons.txt, /reason) ----------
+    def fight_reason(self):
+        """This fight's reason (filled in with the names), picked the first time it is needed: one that fits the
+        arena, the holder and the comer chosen at random among the two sides. None when off or not a duel."""
+        cfg = self.eng.rules.get("story", {}).get("reasons") or {}
+        if not cfg.get("enabled", True) or getattr(self, "reason_off", False):
+            return None
+        sides = [f for f in self.eng.fighters.values()]
+        if len(sides) != 2:
+            return None
+        names = [f.name for f in sides]
+        r = getattr(self, "reason", None)
+        if r and {r.get("holder_name"), r.get("comer_name")} == set(names):
+            return r
+        import reasons as R
+        want = getattr(self, "reason_pick", None)
+        if want and want.get("custom"):
+            base = {"id": "custom", "title": "", "setup": want["custom"], "thoughts": []}
+        else:
+            rs = R.load(os.path.join(HERE, cfg.get("file", "fight_reasons.txt")))
+            base = next((x for x in rs if want and x["id"] == want.get("id")), None) or R.pick(
+                random, self.eng.scene_name or self.eng.scene_cfg.get("title", ""), rs,
+                avoid=getattr(self, "reasons_used", []))
+        if not base:
+            return None
+        holder = (want or {}).get("holder") if (want or {}).get("holder") in names else random.choice(names)
+        comer = next(n for n in names if n != holder)
+        place = self.eng.scene_cfg.get("place") or self.eng.scene_cfg.get("title") or "this place"
+        self.reason = R.fill(base, holder, comer, place)
+        self.reasons_used = (list(getattr(self, "reasons_used", [])) + [base["id"]])[-12:]
+        return self.reason
+
+    def reason_note(self, full=False):
+        """The reason for the story: in full for the opening and interludes; short every beat (with now and then one
+        thought either of them might have); and the ending once the fight is decided."""
+        r = self.fight_reason()
+        if not r:
+            return ""
+        h, c = r["holder_name"], r["comer_name"]
+        if full:
+            out = (f"WHY THEY ARE FIGHTING" + (f" ({r['title']})" if r.get("title") else "") + f": {r['setup']}"
+                   + (f" {r['holder']}" if r.get("holder") else "") + (f" {r['comer']}" if r.get("comer") else "")
+                   + (f" What is at stake: {r['stakes']}" if r.get("stakes") else ""))
+        else:
+            out = (f"WHY THEY ARE FIGHTING (background: let it show in what they want, how they fight and what they "
+                   f"think, now and then, never retold in full): " + (f"{r['title']}. " if r.get("title") else "")
+                   + (r.get("stakes") or r["setup"].split(". ")[0] + "."))
+            cfg = self.eng.rules.get("story", {}).get("reasons") or {}
+            if r.get("thoughts") and random.random() < float(cfg.get("thought_chance", 0.25)):
+                out += (f" A THOUGHT one of them might have this beat (only if it fits the moment; in her own words, "
+                        f"not copied): \"{random.choice(r['thoughts'])}\"")
+        if self.over and r.get("end"):
+            out += f" HOW IT ENDS (now the fight is decided, let the aftermath show it): {r['end']}"
+        return out
+
+    def notes(self, full_reason=False):
         multi_team = any(f.team != f.name for f in self.eng.fighters.values())
         lines = []
         for f in self.eng.fighters.values():
@@ -967,6 +1026,9 @@ class Session:
                              + (f.appearance.split(".")[0] + "." if f.appearance else ""))
                 continue
             lines.append(self._note(f, multi_team))
+        why = self.reason_note(full_reason)
+        if why:
+            lines.append("\n" + why)
         return "\n".join(lines)
 
     def _note(self, f, multi_team):
@@ -998,7 +1060,7 @@ class Session:
         self._sync_absent()
         self.push_history()
         try:
-            text = self.narrator.intro(self.eng.scene, self.notes())
+            text = self.narrator.intro(self.eng.scene, self.notes(full_reason=True))
         except llm.LLMError:
             self.history.pop()
             raise
@@ -1419,7 +1481,7 @@ HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the orde
     ("attacks", "attacks attack move charge sustain strike combo land pummel", "attacks you choose: /move (pummels), /charge, /sustain, /strike, /combo, /land"),
     ("moving", "moving move throw slam drag grapple roll situp chain tumble", "one fighter moving another: /throw, /slam, /drag, /grapple, chains, rolling her over"),
     ("pins", "pins pin holds hold release struggle pinrate frequency", "holds and pins: /pin, /hold, /release, /struggle, /pins (how often), the pin clock"),
-    ("story", "story plan focus targeting steering weakspots weak", "steering the story: /plan, /focus, /weakspots, /targeting"),
+    ("story", "story plan focus targeting steering weakspots weak reason reasons why", "steering the story: /reason, /plan, /focus, /weakspots, /targeting"),
     ("moves", "moves moveinfo learn forget", "moves: /moves, /moveinfo, /learn, /forget"),
     ("healing", "healing heal restore recover aftermath", "healing and after the match: /heal, /restore, /recover"),
     ("rules", "rules settings set get scale model sounds words style sample reader budget time slow timing", "rules and fighters: /set, /scale, /model, /sounds, /words, /sample..."),
@@ -2195,6 +2257,67 @@ def handle_command(s, line):
         print(f"{f.name} is now {s.eng.facing[f.name]} (pins and the story will follow)"
               + (f"; presses moved: {', '.join(moved)}" if moved else ""))
         s.autosave(); return
+    if cmd in ("reason", "reasons", "why"):
+        import reasons as R
+        cfg = s.eng.rules.setdefault("story", {}).setdefault("reasons", {})
+        rs = R.load(os.path.join(HERE, cfg.get("file", "fight_reasons.txt")))
+        w = a[0].lower() if a else ""
+        if not a:
+            r = s.fight_reason()
+            if not r:
+                print("No reason for this fight (" + ("turned off: /reason on" if (s.reason_off if hasattr(s, "reason_off") else False)
+                      or not cfg.get("enabled", True) else "it's for one-on-one fights") + ")."); return
+            print(f"Why they fight: {r.get('title', '')} [{r.get('id', '')}]\n  {r['setup']}\n  "
+                  f"Holder: {r['holder_name']}. Comer: {r['comer_name']}."
+                  + (f"\n  Stakes: {r['stakes']}" if r.get("stakes") else "")
+                  + "\nUse: /reason list   /reason <number or id> [holder name]   /reason swap   /reason new   "
+                    "/reason \"your own reason\"   /reason off|on"); return
+        if w == "list":
+            here = s.eng.scene_name or ""
+            for k, x in enumerate(rs, 1):
+                print(f"  {k:>2}. {x.get('title', x['id'])} [{x['id']}]" + ("" if R.fits(x, here) else "  (not for this arena)"))
+            print("Choose with /reason <number> (it takes effect now, for this fight's story)."); return
+        if w in ("off", "on"):
+            s.reason_off = w == "off"
+            cfg["enabled"] = w == "on"
+            _save_rules_key(["story", "reasons", "enabled"], w == "on")
+            print(f"Fight reasons {w} (saved)."); return
+        if w == "swap":
+            r = s.fight_reason()
+            if not r:
+                raise ValueError("no reason to swap")
+            s.reason_pick = {"id": r["id"], "holder": r["comer_name"]} if r["id"] != "custom" else \
+                dict(s.reason_pick or {}, holder=r["comer_name"])
+            s.reason = None
+            r = s.fight_reason()
+            print(f"Swapped: {r['holder_name']} is now the holder, {r['comer_name']} the comer."); return
+        if w in ("new", "random", "reroll"):
+            s.reason_pick, s.reason = None, None
+            r = s.fight_reason()
+            print(f"New reason: {r.get('title', '')}" if r else "No reason fits."); return
+        hold = None
+        if len(a) > 1:
+            try:
+                hold = s.eng.get(a[-1]).name
+                a = a[:-1]
+            except ValueError:
+                pass
+        text = " ".join(a).strip().strip('"')
+        x = None
+        if text.isdigit() and 1 <= int(text) <= len(rs):
+            x = rs[int(text) - 1]
+        else:
+            x = next((y for y in rs if y["id"] == text.lower() or y.get("title", "").lower() == text.lower()), None)
+        if x is not None:
+            s.reason_pick = {"id": x["id"], "holder": hold}
+        elif len(text.split()) >= 4:
+            s.reason_pick = {"custom": text, "holder": hold}
+        else:
+            raise ValueError(f"no reason called '{text}' (/reason list); a reason of your own needs a sentence or more")
+        s.reason, s.reason_off = None, False
+        r = s.fight_reason()
+        print(f"This fight's reason: {r.get('title') or 'your own'}. Holder {r['holder_name']}, comer {r['comer_name']}."
+              " The story picks it up from the next passage."); s.autosave(); return
     if cmd in ("interlude", "lull"):
         cfg = s.eng.rules.setdefault("narration", {}).setdefault("interlude", {})
         if not a:

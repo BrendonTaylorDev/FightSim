@@ -7879,7 +7879,11 @@ class Narrator:
                f"Write the OPENING of the battle in about {words} words: describe the arena vividly (sound, light, "
                f"smell, what the ground is), then each fighter arriving or taking position, one at a time, showing their "
                f"body, personality, and how they size up the others. End on the tense moment just before the first "
-               f"move. NO attacks happen yet and nobody is hurt.")
+               f"move. NO attacks happen yet and nobody is hurt."
+               + (" WHY THEY ARE FIGHTING is given above: build the opening on it. Show how the one who was there first "
+                  "(or holds what is wanted) and the one who comes meet, what each wants, and why neither backs down, in "
+                  "what they do, see and think, not as a summary. These are wild creatures, no trainers anywhere."
+                  if "WHY THEY ARE FIGHTING" in (fighter_notes or "") else ""))
         B = self._blocks()
         if B.enabled and B.entries:
             B.next_turn()
@@ -8537,8 +8541,11 @@ class Narrator:
         # a turning point, or the end of the fight, is given more room; nothing is ever given less
         if n.get("story_state", True) and self._beat_weight(bundle)[0] in ("turning", "ends"):
             words = int(words * float(n.get("turning_point_length", 1.3)))
+        why = re.search(r"WHY THEY ARE FIGHTING[^\n]*", fighter_notes or "")
         self._facts = ("WHAT HAPPENS IN THIS BEAT (nothing else happens):\n" + self.describe(bundle)
-                       + "\n\nCURRENT CONDITION (after this beat):\n" + condition_summary)
+                       + "\n\nCURRENT CONDITION (after this beat):\n" + condition_summary
+                       # the story behind the fight is true too: thinking of it is not an invented past
+                       + ("\n\nBACKGROUND (true, from before the fight): " + why.group(0) if why else ""))
         context += self._sound_note() + self._fading_thoughts_note() + self._checked_note() + self._order_note(acts)
         if any(a.get("devastating") for a in acts):
             words += int(((n.get("devastating") or {}).get("extra_words", 150)))

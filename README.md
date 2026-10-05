@@ -2391,3 +2391,35 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **A bare /pin builds a real pin.** `/pin Nocturne Ripples` with no parts now picks one of the pin shapes her body allows (jaws on a paw, a forepaw on the neck, her full weight on the chest, her hind paws on a hip), the same way the director does, with that as the label. Before, it was three parts with nothing saying what pressed them.
   - **More present tense caught:** "Nocturne's weight presses down", "Her twin tails stutter" (a possessive subject) now count toward the present-tense check, so a passage that slips into the present is written again.
 - **Not done: one call for several flagged paragraphs.** Paragraph rewrites already reuse Ollama's cached prompt, so batching would save only about 2 seconds a paragraph, and it risks paragraphs coming back tangled. Not worth it.
+- **Build 132:**
+  - **Why they fight (`/reason`).** `fight_reasons.txt` holds 50 reasons two wild Pokémon end up fighting: a stolen catch, the last pool in a drought, a flooded den, an old scar, a clutch of eggs, a misread scent trail. One that fits the arena is picked for each one-on-one fight. One fighter becomes the holder (there first, or holding what is wanted) and the other the comer.
+    - The opening is built on it.
+    - Every beat's notes carry a short line. About a quarter of beats also offer one thought either fighter might have.
+    - Interludes get the reason in full, and the aftermath gets its ending.
+    - The second reader treats the reason as true background, so it isn't flagged as an invented past.
+    - Commands:
+      - `/reason` shows the reason; `/reason list` lists them all.
+      - `/reason 12 Ripples` picks number 12 with Ripples as holder.
+      - `/reason swap` swaps the roles; `/reason new` rerolls.
+      - `/reason "your own sentence"` uses your own reason; `/reason off` turns it off.
+    - Add your own reasons to the file in the same format.
+  - **Interludes (`/interlude`).** Now and then (`narration.interlude`: 10% a beat, at least 4 beats apart, not before beat 3) a beat is followed by a long passage of about 900 words where nobody attacks. It holds thoughts, the body taking stock, what each makes of the other, the place in detail, and the reason they fight. A running pin holds throughout.
+    - `/interlude now [words] ["what to dwell on"]` writes one at once.
+    - `/interlude next` writes one after the next beat.
+    - `/interlude chance|words|gap <n>` changes the settings; `/interlude off` turns it off.
+  - **Targeting.**
+    - **No body part comes first** unless `/focus` says so. The director had been told to go back to weak, low-resistance parts "again and again", and the throat is soft from the start, so blows and jaw clamps kept landing there. Now soft parts are described as just how the body is built, and the director is told to range over the whole body, including parts fights forget: tails, hocks, ears, hips, the base of a fin.
+    - **Weak spots are still nudged sometimes** (`director.weak_spot_chance` 0.2 a beat): one soft or worn-down part, just that once. 40% of those nudges (`weak_spot_repeat`) are for a run of blows, such as a pummel, combo, chain or grapple worked at: one weak spot hit again and again, a group of parts worked together, or a few weak spots in turn. Change them with `/weakspots <0-1>` and `/weakspots worked <0-1>`.
+    - **To aim on purpose:** `/focus neck`, `/focus vulnerable` (throat, eyes, nose, ears, belly, knees, hocks), or `/focus weakened` (the same as injured).
+    - **Throat-bite ideas are rarer:** 6% a beat in open fighting (was 12%) and 15% in a pin (was 25%). They come three times as often with a neck, head or vulnerable focus.
+  - **How often pins come (`/pins`).** `/pins 0.5` halves every pin-opening chance and `/pins 2` doubles them. `/pins off` means the director never starts one, though your `/pin` still does. In 100 simulated fights, `/pins 0.5` gave 6.4 pins a fight instead of 8.8, with the win rate unchanged.
+  - **Pins press from their first beat.** `pin.first_beat_damage` is now 1 (was 0), so the presses land the beat the pin closes. Change it with `/pinstart`. In 400 simulated fights Nocturne still wins 59.8%, with 8.1 pins and 0.94 submissions a fight.
+  - **A broken hold can't be re-grabbed at once.** `holds.break.regrab_after` is 2 beats. The screen said Ripples broke free, and the same grip was back on the next beat.
+  - **The escape blow must be told.** When a pinned fighter breaks out with a blow, the passage has to show it landing (where, with what, and the reaction). If it doesn't, the passage is written again.
+  - **Beat time.**
+    - **Why later beats get slower:**
+      - Damage piles up, so more parts of the beat are added to stay with the damage (her side, the watcher).
+      - The notes get longer with every injury: about 35k characters, read at about 600–1,000 tokens a second.
+      - More checks fire, and each can mean a paragraph rewrite or a second reading.
+    - **The fix:** `narration.beat_budget_minutes` (6) is a time budget per beat. Past it, the optional extra passes stop: a second whole rewrite, wording-only fixes and the second reading. Past 1.5 times the budget, no whole part is written again; only the paragraphs that need it are fixed. Every part is still written in full, and the program's own checks and cleanup still run.
+    - **Settings:** `/budget <minutes|off>` sets the budget. The ⏱ line now has a second line saying where the time went (drafts, rewrites, paragraph fixes, second reading, interlude), and `/budget timing off` hides it.
