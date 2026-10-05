@@ -2435,3 +2435,4 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
     - Surface details like grit or a scuff last 6 beats.
     - The "barely touched" list shows 6 parts and the movement list 3.
     - Pain levels, injuries, posture and everything that happens are never trimmed.
+- **The wounds that matter most** (`narration.big_wounds`): each fighter's notes name her few hardest single hits (150%+ part damage at once, biggest first, up to 3), for example "Left Hock (Ripples' Brick Break)". The story gives these more weight than the rest, in how she moves, what she guards and what she thinks about. It is one short line, with no extra model calls and no new checks.
