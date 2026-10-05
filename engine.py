@@ -1220,10 +1220,17 @@ class Engine:
                                                                        "high over the arena": "brutal"}).items()))
                 res["carried"] = {"height": h[0]}
                 res["auto_launch"], res["drop_severity"] = "launched", h[1]
-            if self.has(d, "airborne") and self.wing_damage(d) >= float(fcfg.get("ground_at", 150)) and not d.eliminated:
-                # a wing that can no longer hold her: she falls out of the air
+            kfa = fcfg.get("knock_from_air") or {}
+            fall = (min(float(kfa.get("max", 0.9)), float(kfa.get("base", 0.25))
+                        + float(kfa.get("per_damage", 0.004)) * sum(h.get("damage_taken", 0) for h in hits)
+                        + float(kfa.get("per_wing_damage", 0.0025)) * self.wing_damage(d))
+                    if self.has(d, "airborne") and not res.get("carried") and not d.eliminated else 0.0)
+            if fall > 0 and self._chance(fall, f"{d.name} knocked out of the air", "she falls", "she stays up"):
+                # hit in the air with nothing under her: the blow knocks her out of the sky (harder, the more it hurt
+                # and the worse her wings are: flight.knock_from_air)
                 d.status.pop("airborne", None)
                 res["grounded"] = True
+                res["grounded_wing"] = self.wing_damage(d) >= float((fcfg.get("strain") or {}).get("from", 100))
                 res["auto_launch"], res["drop_severity"] = res.get("auto_launch") or "thrown", res.get("drop_severity") or "solid"
         if hits and not d.eliminated:
             jolt = self._jolts(d, hits)
@@ -4695,22 +4702,52 @@ class Engine:
         return max(wings) if wings else 0.0
 
     def can_fly(self, f, why=False):
-        """A fighter with wings that still work, free to take off (flight.ground_at: a wing hurt that badly grounds her)."""
+        """A fighter with wings, free to take off. A hurt wing still lifts her, at a cost (flight.strain); only a shredded
+        one (strain.max_wing) can't."""
         cfg = self.rules.get("flight") or {}
         reason = None
         if not any("wing" in p.lower() for p in f.parts):     # a bird, or a winged dragon with arms too
             reason = f"{f.name} has no wings"
-        elif self.wing_damage(f) >= float(cfg.get("ground_at", 150)):
-            reason = f"{poss_word(f.name)} wings are too badly hurt to lift her"
+        elif self.wing_damage(f) >= float((cfg.get("strain") or {}).get("max_wing", 600)):
+            reason = f"{poss_word(f.name)} wings are shredded: they can't lift her at all"
         elif f.name in self.downed or self.pinned_by(f.name) or self.pinning(f.name):
             reason = f"{f.name} has to be up and free to take off"
         elif any(h.defender == f.name for h in self.holds.values()):
             reason = f"{f.name} is being held"
         elif any(self.has(f, st) for st in ("asleep", "frozen", "paralyzed", "constricted")):
             reason = f"{f.name} can't take off like this"
-        elif f.energy < float(cfg.get("takeoff_energy", 8)):
+        elif f.energy < self.takeoff_cost(f):
             reason = f"{f.name} is too winded to take off"
         return reason if why else reason is None
+
+    def takeoff_cost(self, f):
+        """Energy to take off: flight.takeoff_energy, more with a hurt wing (flight.strain: energy_per_100 more for
+        every 100% of damage on her worse wing past `from`)."""
+        cfg = self.rules.get("flight") or {}
+        st = cfg.get("strain") or {}
+        over = max(0.0, self.wing_damage(f) - float(st.get("from", 100)))
+        return float(cfg.get("takeoff_energy", 8)) * (1 + float(st.get("energy_per_100", 1.0)) * over / 100)
+
+    def _wing_strain_tick(self):
+        """Flying on a badly hurt wing tears it further: each beat in the air with her worse wing past flight.strain
+        `from`, that wing takes damage (more, the worse it is). Her choice to stay up costs her."""
+        st = (self.rules.get("flight") or {}).get("strain") or {}
+        events = []
+        for f in self.active():
+            if not self.has(f, "airborne"):
+                continue
+            wings = [p for p in f.parts.values() if "wing" in p.name.lower()]
+            if not wings:
+                continue
+            worst = max(wings, key=lambda p: p.damage)
+            if worst.damage < float(st.get("from", 100)):
+                continue
+            self._source = f"{poss_word(f.name)} straining her hurt wing to stay up"
+            power = round(float(st.get("power", 6)) * worst.damage / 100, 2)
+            hit = self._apply_damage(f, worst.name, power)
+            events.append({"type": "wing_strain", "fighter": f.name, "part": worst.name, "power": power,
+                           "hits": [hit], "tags": self._tags([hit])})
+        return events
 
     def take_off(self, name, enforce=True):
         """She takes to the air (flight.airborne_beats beats, then she has to come down to rest her wings). Every grip
@@ -4720,12 +4757,14 @@ class Engine:
         if why and enforce:
             raise ValueError(why + " (only a winged fighter who is up and free can 'take off')")
         cfg = self.rules.get("flight") or {}
-        f.energy = max(0.0, f.energy - float(cfg.get("takeoff_energy", 8)))
+        cost = self.takeoff_cost(f)
+        f.energy = max(0.0, f.energy - cost)
         for h in [h for h in self.holds.values() if h.attacker == f.name]:
             self.holds.pop(h.id, None)
         self.set_status(f, "airborne", int(cfg.get("airborne_beats", 3)))
         self.involved.add(f.name)
-        return {"type": "take_off", "fighter": f.name, "beats": int(cfg.get("airborne_beats", 3))}
+        return {"type": "take_off", "fighter": f.name, "beats": int(cfg.get("airborne_beats", 3)), "energy": round(cost, 1),
+                "hurt_wing": self.wing_damage(f) >= float((cfg.get("strain") or {}).get("from", 100))}
 
     def _after_dive(self, a, d, res, landed):
         """A dive is done: the defender may catch her as she comes in and drag her out of the air
@@ -5409,6 +5448,7 @@ class Engine:
         events += self._hold_break_tick(skip_hold_ids)
         events += self._submission_tick()
         events += self._free_blow_tick(skip_hold_ids)
+        events += self._wing_strain_tick()
         events += self._crumple_tick()
         events += self.get_up_tick()
         events += self._scene_event_tick(busy=had_grip)
@@ -6837,7 +6877,11 @@ class Engine:
             if any("wing" in p.lower() for p in f.parts):
                 lines.append("   IN THE AIR (only ranged moves reach her; her close moves are dives; she can't be held "
                              "or pinned)" if self.has(f, "airborne") else
-                             "   can take off ('reposition': 'take off' on her own action)" if self.can_fly(f) else
+                             ("   can take off ('reposition': 'take off' on her own action)"
+                              + (f", but her wing is badly hurt: it costs {self.takeoff_cost(f):.0f} energy and tears "
+                                 f"worse every beat she stays up" if self.wing_damage(f) >= float(
+                                     ((self.rules.get('flight') or {}).get('strain') or {}).get('from', 100)) else "")
+                              ) if self.can_fly(f) else
                              f"   grounded: {self.can_fly(f, why=True)}")
             sec, why_not = self.pin_securable(f)
             if not sec:

@@ -2631,6 +2631,10 @@ class Narrator:
                                  + (f", ending up {Engine.FACING_LOOK[fc]}" if fc in Engine.FACING_LOOK else "")
                                  + ". Show her going down; it does no new damage.")
                 lines += self._knock_on_lines(e.get("knock_on"))
+            elif e["type"] == "wing_strain":
+                lines.append(f"WING STRAIN: {e['fighter']} stays in the air on her badly hurt {e['part']}: every beat "
+                             f"up there it tears and burns worse (more damage to it this beat). Show the effort and the "
+                             f"pain of each wingbeat.")
             elif e["type"] == "free_blow":
                 lines.append(f"A FREE BLOW during the {e['during']}: without letting go, {e['attacker']} gets one quick, "
                              f"short extra blow in on {poss(e['defender'])} {e['part']} with what she has free "
@@ -3237,8 +3241,9 @@ class Narrator:
                              f"{a['carried']['height']}, wings labouring, then LETS GO. {a['defender']} falls and hits "
                              f"the ground (the landing below).")
             if a.get("grounded"):
-                lines.append(f"  - {poss(a['defender'])} wing gives out under the blow: she can't hold herself up any "
-                             f"more and FALLS out of the air (the landing below).")
+                lines.append(f"  - the blow KNOCKS {a['defender']} OUT OF THE AIR"
+                             + (": her hurt wing can't catch her" if a.get("grounded_wing") else ": it throws her off her "
+                                "wingbeat and she can't recover in time") + f". She FALLS (the landing below).")
             cl = a.get("clash")
             if cl:
                 self._clash = (a["defender"], str(cl.get("move", "")), str(cl.get("move_type", "")))

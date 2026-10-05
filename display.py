@@ -735,7 +735,8 @@ class Display:
             if a.get("carried"):
                 out.append(f"🦅 **{a['attacker']} carries {a['defender']} up** ({a['carried']['height']}) and drops her")
             if a.get("grounded"):
-                out.append(f"🪶 **{a['defender']}'s wing gives out**: she falls out of the air")
+                out.append(f"🪶 **{a['defender']} is knocked out of the air**"
+                           + (": her hurt wing can't catch her" if a.get("grounded_wing") else "") + ": she falls")
             if a.get("pummel"):
                 pm = a["pummel"]
                 where = {"grab": "in the grab", "pin": "from on top, in the pin", "down": "on her where she is down",
@@ -1072,6 +1073,10 @@ class Display:
             elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
                 out.append(f"🔓 **{e['attacker']} lets the {e['submission'].upper()} go** after {e['beats_held']} "
                            f"beat{'s' if e['beats_held'] != 1 else ''}: she can't keep it on any longer")
+            elif e["type"] == "wing_strain":
+                h = (e.get("hits") or [{}])[0]
+                out.append(f"🪶 **{e['fighter']} strains her hurt {e['part']}** to stay in the air → +{num(h.get('damage_taken', 0))}% "
+                           f"damage, ❤️ -{num(h.get('health_loss', 0))}")
             elif e["type"] == "free_blow":
                 h = (e.get("hits") or [{}])[0]
                 if not self.tight():

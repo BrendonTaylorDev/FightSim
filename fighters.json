@@ -2224,7 +2224,7 @@
         {
           "name": "Flamethrower",
           "type": "Fire",
-          "power": 21,
+          "power": 25,
           "target": "spread",
           "about": "a stream of fire",
           "effects": [
@@ -2239,14 +2239,14 @@
         {
           "name": "Dragon Claw",
           "type": "Dragon",
-          "power": 28,
+          "power": 34,
           "target": "targeted",
           "about": "slashing dragon claws"
         },
         {
           "name": "Fire Fang",
           "type": "Fire",
-          "power": 22,
+          "power": 26,
           "target": "targeted",
           "about": "a bite wreathed in flame",
           "effects": [
@@ -2265,7 +2265,7 @@
         {
           "name": "Air Slash",
           "type": "Flying",
-          "power": 17,
+          "power": 20,
           "target": "spread",
           "about": "a blade of air",
           "effects": [
@@ -2279,7 +2279,7 @@
         {
           "name": "Flare Blitz",
           "type": "Fire",
-          "power": 40,
+          "power": 48,
           "target": "targeted",
           "about": "a reckless charge wrapped in fire",
           "effects": [
@@ -2298,7 +2298,7 @@
         {
           "name": "Seismic Toss",
           "type": "Fighting",
-          "power": 21,
+          "power": 25,
           "target": "targeted",
           "about": "grabs and hurls the target",
           "effects": [
@@ -2311,7 +2311,7 @@
         {
           "name": "Thunder Punch",
           "type": "Electric",
-          "power": 26,
+          "power": 31,
           "target": "targeted",
           "about": "an electrified punch",
           "effects": [
@@ -2325,7 +2325,7 @@
         {
           "name": "Heat Wave",
           "type": "Fire",
-          "power": 8,
+          "power": 10,
           "target": "whole_body",
           "about": "a scorching wave of heat",
           "effects": [

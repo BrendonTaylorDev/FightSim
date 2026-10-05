@@ -2391,7 +2391,10 @@ def flight_hint(engine, roll=None):
                          f"(\"reposition\": \"take off\" on her own action, with her attack). Up there only beams, "
                          f"blasts and streams reach her ({foe.name} has "
                          + (", ".join(reach) if reach else "none: she would be out of reach") + "), and her close "
-                         f"moves become dives from above that land harder.")
+                         f"moves become dives from above that land harder."
+                         + (f" Her wing is badly hurt, though: flying costs her {engine.takeoff_cost(f):.0f} energy and "
+                            f"tears it worse every beat she stays up, so it's a gamble." if engine.wing_damage(f) >= float(
+                                ((engine.rules.get("flight") or {}).get("strain") or {}).get("from", 100)) else ""))
     return "\n".join(lines[:1])
 
 
