@@ -26,7 +26,7 @@ from engine import Engine, body_region as body_region_of
 from narrator import Narrator, strip_pov, _is_sound
 import llm
 
-VERSION = "2026-10-05 build 127 (no second drafts: big moments get more from the engine instead; the same hurt told again and again is trimmed; leg counts and mouth blood checked. Build 126: pins rarer early and rising with wear; strong fighters often spring back up; sounds always marked and coloured; event order stated. Build 125: a pin needs three points of contact; wording-only rewrites capped at 2 a part; blood, forelegs and takedowns checked. Build 124: a library of 937 finished sentences: offered word for word, and swapped in for cut filler. Build 123: 41 more sample passages rotating, sized to the blow; 759 pain-level blocks. Build 122: filler cut or shown instead of told; reactions above the pain limit never offered; samples sized to the blow. Build 121: the engine sets how big each fighter's pain reactions may be, whether her fur is wet or dry, and which earlier moves she can remember; attack labels naming the wrong weapon are dropped. Build 120: a phrase said twice in a beat is rewritten with another wording; scenery she hits must be shown; the throw is not told again after the landing; eye colours checked; no lightning in a throw. Build 119: thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
+VERSION = "2026-10-05 build 128 (/help is a short menu: /help <topic>, /help <command>, /help all. Build 127: no second drafts: big moments get more from the engine instead; the same hurt told again and again is trimmed; leg counts and mouth blood checked. Build 126: pins rarer early and rising with wear; strong fighters often spring back up; sounds always marked and coloured; event order stated. Build 125: a pin needs three points of contact; wording-only rewrites capped at 2 a part; blood, forelegs and takedowns checked. Build 124: a library of 937 finished sentences: offered word for word, and swapped in for cut filler. Build 123: 41 more sample passages rotating, sized to the blow; 759 pain-level blocks. Build 122: filler cut or shown instead of told; reactions above the pain limit never offered; samples sized to the blow. Build 121: the engine sets how big each fighter's pain reactions may be, whether her fur is wet or dry, and which earlier moves she can remember; attack labels naming the wrong weapon are dropped. Build 120: a phrase said twice in a beat is rewritten with another wording; scenery she hits must be shown; the throw is not told again after the landing; eye colours checked; no lightning in a throw. Build 119: thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
 
 HELP = """
 =============================================================================================
@@ -1345,6 +1345,70 @@ def ask_scene(s, read=input):
             print(f"Error: {e}")
 
 
+HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the order of HELP's sections
+    ("play", "playing play enter direction auto wait more", "playing: Enter, typed directions, /play as a fighter, /auto, /more"),
+    ("fights", "fights fight newfight autofight simulate team ally results", "fights: who is in them, /newfight, /autofight, /simulate, teams"),
+    ("attacks", "attacks attack move charge sustain strike combo land pummel", "attacks you choose: /move (pummels), /charge, /sustain, /strike, /combo, /land"),
+    ("moving", "moving move throw slam drag grapple roll situp chain tumble", "one fighter moving another: /throw, /slam, /drag, /grapple, chains, rolling her over"),
+    ("pins", "pins pin holds hold release struggle", "holds and pins: /pin, /hold, /release, /struggle, the pin clock"),
+    ("story", "story plan focus targeting steering", "steering the story: /plan, /focus, /targeting"),
+    ("moves", "moves moveinfo learn forget", "moves: /moves, /moveinfo, /learn, /forget"),
+    ("healing", "healing heal restore recover aftermath", "healing and after the match: /heal, /restore, /recover"),
+    ("rules", "rules settings set get scale model sounds words style sample reader", "rules and fighters: /set, /scale, /model, /sounds, /words, /sample..."),
+    ("looking", "looking status health look", "looking around: /status, /health, /look"),
+    ("files", "files undo reroll save load export quit", "undo, files, quit: /undo, /reroll, /save, /load, /export"),
+]
+
+HELP_QUICK = """
+QUICK START
+  [Enter]                    the next beat (the director chooses)
+  Ripples goes for the throat   type what you want to happen next; the director makes it so if it can
+  /autofight 1 3 Nocturne Ripples   a whole fight on its own (then 3 beats of aftermath)
+  /move Nocturne Ripples "Slash" "Chest" 4      an attack you choose (4 = a pummel of 4 blows)
+  /charge Ripples Nocturne "Aqua Jet" "an old oak"     a charge into the scenery
+  /throw Ripples "an old oak=Chest:heavy; the grass:solid"   thrown into the arena, surface by surface
+  /pin Nocturne Ripples      a pin (the engine fills in the grips)
+  a + b                      join up to three commands into one beat
+  /undo   /reroll   /status  take a beat back, rewrite its narration, see where everyone stands
+
+TOPICS   type /help <topic> (or a command name: /help charge)   ·   /help all = everything
+"""
+
+
+def help_text(arg=""):
+    """/help: a short menu; /help <topic>: that section; /help <command>: the lines about it; /help all: everything."""
+    arg = arg.strip().lower().lstrip("/")
+    bar = "=" * 20
+    secs = [s for s in re.split(r"\n=+\n", HELP) if s.strip()]
+    # pair each title with its body: the text alternates title, body, title, body
+    sections = []
+    for i in range(0, len(secs) - 1, 2):
+        sections.append((secs[i].strip(), secs[i + 1]))
+    if not arg:
+        return HELP_QUICK + "\n".join(f"  {k:<9} {line}" for k, _, line in HELP_TOPICS)
+    if arg == "all":
+        return HELP
+    for idx, (key, words, _) in enumerate(HELP_TOPICS):
+        if arg == key or arg in words.split()[:1]:
+            if idx < len(sections):
+                title, body = sections[idx]
+                return f"{bar}\n {title}\n{bar}\n{body.rstrip()}\n\n(/help for the menu, /help all for everything)"
+    # a command: every block of help that mentions it
+    hits = []
+    for title, body in sections:
+        blocks = re.split(r"\n(?=  /)", body)
+        for b in blocks:
+            if re.search(r"(?<![\w-])/" + re.escape(arg) + r"\b", b):
+                hits.append(b.rstrip())
+    if hits:
+        return "\n\n".join(hits) + "\n\n(/help for the menu)"
+    for idx, (key, words, _) in enumerate(HELP_TOPICS):
+        if arg in words.split() and idx < len(sections):
+            title, body = sections[idx]
+            return f"{bar}\n {title}\n{bar}\n{body.rstrip()}"
+    return f"Nothing in the help about '{arg}'. /help for the menu, /help all for everything."
+
+
 def _clean_name(x):
     return str(x).strip().strip("<>[]").strip()
 
@@ -1886,7 +1950,7 @@ def handle_command(s, line):
     if cmd in ("quit", "exit"):
         return "quit"
     if cmd == "help":
-        print(HELP); return
+        print(help_text(" ".join(a))); return
     if cmd == "play":
         names = [f.name for f in s.eng.fighters.values()]
         if not a:

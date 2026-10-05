@@ -2381,4 +2381,5 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
 - **Anatomy and blood:**
   - A two-legged fighter with arms "fighting on three legs", or given a hind leg or all fours, is flagged.
   - Blood in her mouth ("copper and grit filled her mouth") now needs a hurt head, jaw, muzzle, cheek, nose or throat, not just any wound.
+- **/help is a menu now (build 128).** `/help` shows a quick start (the dozen commands used most, with examples) and a list of topics. `/help attacks`, `/help pins`, `/help moving` and so on show one section. `/help charge` (any command name) shows just the help for that command. `/help all` is the old full list.
 - **Not done: one call for several flagged paragraphs.** Paragraph rewrites already reuse Ollama's cached prompt, so batching would save only about 2 seconds a paragraph, and it risks paragraphs coming back tangled. Not worth it.
