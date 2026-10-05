@@ -1572,6 +1572,20 @@ INTENSE = (
                     r"explod\w+|searing|wave of (?:pain|agony)|tore through|ripped through)\b", re.I)),
 )
 
+# filler: resolve or drama TOLD instead of shown ("She would not be defeated.", "a steely resolve", "every muscle
+# screamed"). A short sentence that is nothing else is cut; a longer one is written again with ideas to show it.
+FILLER = re.compile(
+    r"\b(?:(?:she|he|[A-Z][a-z]+) (?:would|will|could) not (?:be (?:defeated|beaten|broken|bested|stopped)|lose|give (?:up|in)|"
+    r"break|back down|yield|fall here)|refused to (?:give (?:up|in)|back down|be (?:beaten|defeated|broken)|lose|yield|"
+    r"break|let (?:it|this|her|\w+) (?:break|beat|end|win))|(?:would not|wouldn't|refused to|did not want to) give "
+    r"(?:\w+ )?(?:\w+ )?the satisfaction|"
+    r"(?:steely|grim|fierce|cold|quiet|iron|unwavering|renewed) (?:resolve|determination)|a testament to|"
+    r"every (?:muscle|fiber|fibre|nerve|cell)(?: in her body)? (?:screamed|burned|cried)|nothing else mattered|"
+    r"(?:her|the) world (?:narrowed|shrank) (?:down )?to|a battle of wills|she knew (?:she had to|that she (?:had|must))|"
+    r"(?:this|it|the fight) (?:was|wasn't|was not) (?:far )?(?:from )?over|she had to win|"
+    r"she was (?:ready|determined|resolute)(?: for (?:whatever|anything)[^.!?]*)?(?=[.!?])|"
+    r"(?:with|in) (?:a )?(?:newfound|renewed|grim|fierce) (?:determination|resolve|purpose))", re.I)
+
 # the plain ground under them: landing on it needs no naming
 PLAIN_GROUND = {"ground", "grass", "earth", "floor", "dirt", "sand", "rock", "stone", "mud", "ice", "snow", "deck",
                 "soil", "turf", "clearing", "shallows", "water", "beach", "ledge", "shore"}
@@ -6641,6 +6655,16 @@ class Narrator:
         return worst, part, f"how much {who} hurts: at worst {label.upper()}{where}, so {allowed}", allowed, \
             f"{label.upper()}{where}"
 
+    @staticmethod
+    def _pure_filler(sent):
+        """A short sentence that is nothing but told resolve ("She was ready. She would not be defeated."): it adds
+        no detail, so it is cut rather than written again."""
+        s = str(sent or "").strip()
+        if not s or s.startswith("*") or len(s.split()) > 12:
+            return False
+        m = FILLER.search(s)
+        return bool(m) and len(re.sub(re.escape(m.group(0)), "", s, flags=re.I).split()) <= 5
+
     def _too_intense(self, text):
         """Sentences whose reaction is bigger than the fighter's worst injury allows: [(sentence, why)]."""
         out = []
@@ -6891,7 +6915,8 @@ class Narrator:
                  | {x[4] for x in self._grip_released_lines(text)} | {x[4] for x in self._grip_gone_lines(text)}
                  | {x[4] for x in self._grip_place_lines(text)} | {x[2] for x in self._phantom_release_lines(text)}
                  | {x[1] for x in self._foreign_mentions(text)} | {x[0] for x in self._log_slips(text)}
-                 | {x for para in text.split("\n") for x in _SENT.split(para.strip()) if x and self._label_slip(x)})
+                 | {x for para in text.split("\n") for x in _SENT.split(para.strip()) if x and self._label_slip(x)}
+                 | {x for para in text.split("\n") for x in _SENT.split(para.strip()) if x and self._pure_filler(x)})
         for rx in ([PROMPT_ECHO, _BARE_MORE, BARE_IMPACT] + ([NUMB] if self.rules.get("narration", {}).get("numb_tier", True) is False
                                                   else [])):
             if rx.search(text):
@@ -7095,6 +7120,21 @@ class Narrator:
             for x in sents:
                 if rx.search(x):
                     add(x, f"it remembers an earlier {mv}, but this is the first {mv} of the fight: nothing to remember")
+        for x in sents:
+            if x.lstrip().startswith("*") or self._pure_filler(x):
+                continue      # a thought may say it; a bare line of filler is simply cut at the end
+            m = FILLER.search(x)
+            if m:
+                who = next(iter(self._said(x)[0][1]), None) if self._said(x) else None
+                ideas = []
+                if who:
+                    B = self._blocks()
+                    st = story_blocks.state_of((self.strengths or {}).get(who, 100))
+                    feats_w = story_blocks.features(list((getattr(self, "damage_by", None) or {}).get(who, {}) or [])
+                                                    or [p for p in (getattr(self, "part_names", None) or [])])
+                    ideas = B.pick("resolve_shown", 2, has=feats_w, state=st)
+                add(x, f"\"{m.group(0)}\" tells it instead of showing it: show it in her body and what she does"
+                       + (" (for example: " + "; ".join(ideas) + ")" if ideas else "") + ", or leave it out")
         for sent, why in self._too_intense(text):
             add(sent, why)
         for sent, phrase in self._repeated_phrases(text, prior):

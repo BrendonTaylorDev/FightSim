@@ -2168,3 +2168,55 @@ she feels the strength going out of the held limb
 she goes straight into the gap the flinch left
 she doesn't aim; she just goes where the guard isn't
 the blow is already moving before the opening has finished appearing
+
+# ---------------------------------------------------------------------------------------------------------------
+# RESOLVE SHOWN: what a fighter DOES when the story wants to say "she would not be defeated". The program offers
+# two of these when a draft tells resolve instead of showing it.
+# ---------------------------------------------------------------------------------------------------------------
+== resolve_shown
+she sets her feet again, wider than before
+her eyes come back to her opponent and stay there
+she lowers her head and squares up
+she takes one long breath through her nose and lets it out slowly
+she shakes herself once, hard, and steps forward instead of back
+she takes back the ground she just lost, one deliberate step
+her weight settles low and even
+the trembling stops because she makes it stop
+she rolls the stiff shoulder once and stops paying it any attention
+she wipes her muzzle with the back of a paw and doesn't look at what comes away
+her chin comes up a fraction
+she picks her line across the ground and starts along it
+she flexes her claws into the ground and lets them go
+she doesn't glance at the hurt place, not once
+she breathes out slowly so the breath won't show
+the hitch in her stance is gone the next time she moves
+she circles toward the side her opponent is favouring
+she spits to one side and resets
+she waits, perfectly still, letting the other one decide when
+she lets her opponent see her stand up straight
+she tests the hurt limb with her full weight, deliberately, where her opponent can see
+she steps over the scuffed ground where she went down without looking at it
+her breathing evens out, one count at a time
+she moves first, before she can think better of it
+she plants herself between her opponent and the ground she wants
+her lips peel back from her teeth and stay there | has: forelegs
+the hackles along her ruff rise and do not go down | has: ruff
+her ears come forward, both of them, and stay up | has: ears
+her tail goes rigid, then lifts | has: tail
+the twin tails pick up their rhythm again, steady and even | has: tails
+the fins on her forearms open and stay open | has: fins
+she curls her webbed paws into fists and opens them again | has: arms
+she plants both forepaws and leans into them | has: forelegs
+she turns her head so the horn faces her opponent squarely | has: horn
+she lowers the horn, slowly, into line | has: horn
+she tucks her chin to cover her throat and comes on anyway
+she shortens her stride and keeps coming
+she lets the sting sit where it is and watches for the next opening
+she draws a breath deep enough to lift her shoulders and holds the ground
+she stamps once, softly, finding her footing
+a low growl starts in her chest and keeps going | has: forelegs
+she chitters once under her breath, sharp and quick | has: arms
+she licks the split in her lip and keeps her eyes up
+she shakes the water out of her ears and doesn't take her eyes off the other one | has: ears
+she resettles her weight off the sore side, then, deliberately, back onto it
+she stares across the gap until the other one has to move
