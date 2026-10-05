@@ -53,7 +53,7 @@ Tool: `sim/harness.py`. `H.session(seed, scene=..., settings=[...])` and `H.beat
 - [ ] Coverage cross-check against the inventories; anything not exercised goes to a second round.
 - [ ] Fix every confirmed bug, rerun the regression checks and balance, commit and push.
 
-Balance targets: Nocturne wins about 60% against Ripples (never change Ripples' stats); about 8 pins and 1 submission a fight. Check with 400 simulated fights (simulate.one_fight, lakeside forest).
+Balance is checked once, after ALL groups' bugs are fixed (user's call), not after each group. Balance targets: Nocturne wins about 60% against Ripples (never change Ripples' stats); about 8 pins and 1 submission a fight. Check with 400 simulated fights (simulate.one_fight, lakeside forest).
 
 ## Requests added during the audit
 - **Twisting, worrying and wrenching** in pins and submissions: jaws on the neck twisting, a limb twisted further, a grip worried at. The damage ramp already exists, so this is mostly about showing the tightening in more ways (screen and narrator notes), plus any small damage it should add.

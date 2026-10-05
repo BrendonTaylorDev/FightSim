@@ -2453,7 +2453,7 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **Tuning:** after the damage roll, Nocturne's win rate had slipped to about 57.6%. Her health went from 1800 to 1860, which brings her back to 60.4% over 800 simulated fights, with 8.2 pins and 0.97 submissions a fight. Ripples is unchanged.
 - **Audit, group B (pins):** 16 bugs fixed. See `audit/report_B.md`.
   - **The jaws after a breakout (from your log):**
-    - When a pinned fighter breaks out, the pinner's jaws now hang on 25% of the time (`pin.struggle.keep_jaws`), never when the pinner is thrown down. The bite goes on as an ordinary hold, shown on screen ("🦷 Ripples hangs on") and told to the story. Otherwise every grip comes off.
+    - When a pinned fighter breaks out, the pinner's jaws now hang on 8% of the time (`pin.struggle.keep_jaws`), never when the pinner is thrown down. The bite goes on as an ordinary hold, shown on screen ("🦷 Ripples hangs on") and told to the story. Otherwise every grip comes off.
     - A new check catches the story keeping her jaws on when they came off.
   - **Pins against scenery:** "an old oak", "the log" and "a boulder" now match the arena's scenery. Broken scenery can't be pinned against.
   - **Dunks:** a dunk in the shallows really soaks her and leaves her sputtering.

@@ -6074,7 +6074,7 @@ class Engine:
                     bite = next((h for h in holds if re.search(r"\b(jaws?|teeth|fangs?|bite)\b", str(h.with_part or "").lower())),
                                 None)
                     keep = None
-                    if bite is not None and self._chance(float(s.get("keep_jaws", 0.25)),
+                    if bite is not None and self._chance(float(s.get("keep_jaws", 0.08)),
                                                          f"{bite.attacker} keeping her jaws on {poss_word(dfn.name)} "
                                                          f"{bite.part.lower()} through the escape", "she hangs on",
                                                          "they come off too"):

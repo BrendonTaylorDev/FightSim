@@ -1031,7 +1031,7 @@
       "counter_severity": "solid",
       "pinner_down_chance": 0.25,
       "_keep_jaws_comment": "keep_jaws: when she breaks out of a pin that had the pinner's jaws in it, the chance those jaws hang on: the rest of the pin is gone, but the bite goes on as an ordinary hold (shown on screen and told to the story; she can wrench out of it like any hold). Not if the pinner is thrown down. 0 = every grip always comes off.",
-      "keep_jaws": 0.25,
+      "keep_jaws": 0.08,
       "_pinner_down_comment": "pinner_down_chance: when the pinned fighter breaks out, the chance the pinner is thrown down beside her instead of being shoved off on her feet. She then rolls to get up from the next beat like anyone else. 0 = the pinner always keeps her feet."
     },
     "_takedown_comment": "takedown: a standing fighter is taken down into a pin in one of several ways (the mix is under variety -> takedown). hard_landing_chance: how often the landing itself hurts: landing_parts parts on the side she lands on take a landing_severity blow from the ground before the pin closes. 0 = takedowns never hurt (the old rule).",
