@@ -5549,6 +5549,8 @@ class Narrator:
         hard = any(self._pain(h.get("damage_after", 0))["label"] in ("excruciating", "devastated", "numb with shock")
                    or self._strength_key(h.get("damage_taken", 0)) == "tremendous"
                    for a in acts for h in (a.get("hits") or []))
+        if any(a.get("environment") and a.get("launch") and not a.get("manhandle") for a in acts):
+            add(None, "knockdown take")      # the blow puts her down: a passage where a hit really does floor her
         if hard:
             add(None, "strike take hard")
         elif hits and any(h for a in hits for h in (a.get("hits") or [])):

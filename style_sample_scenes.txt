@@ -8,7 +8,7 @@
 # Edit freely, add sections, or give a section more tags (comma-separated). Lines starting with # are notes.
 # SEVERAL sections may answer to the same tag: the program takes turns among them, so the narrator is not shown
 # the same passage every time. A passage that names a fighter who is not in the current fight is skipped.
-# Tags the program asks for: opening; strike act, strike take, strike take hard (a blow that leaves a part excruciating or worse); chain; breaking point; sustain take; grab, grab take;
+# Tags the program asks for: opening; strike act, strike take, strike take light (the part ends minor or sore), strike take mid (hurting or very painful), strike take hard (a blow that leaves a part excruciating or worse), knockdown take (the blow puts her down); chain; breaking point; sustain take; grab, grab take;
 # pummel; throw, throw take; getup; dodge; pin start, pin start take; pin hold, pin struggle; escape; faint;
 # aftermath, aftermath take; clash, clash take; dive, dive take; sputter take; coil, coil take; escape aftermath.
 # A tag nothing answers to falls back to the next one asked for, then to the first section.
@@ -681,3 +681,708 @@ Her legs went. She did not decide to fold; her body simply stopped holding her u
 *Something's wrong. Something's really wrong.*
 
 The colour had gone out of the cave. There was the pain, and a high thin ringing, and the white shape of the Absol above her, and nothing else at all.
+
+# ---- build 123: more passages to rotate through (light, mid and knockdown takes; attacks, dodges, throws, pins, get-ups) ----
+
+== strike act
+The sand was the trouble, and Nocturne had known it from the moment the clearing opened onto the beach.
+
+It was pale and soft and dry on top, and it gave under a broad paw like flour. She did not go onto it. She kept to the edge of the grass, where the roots of the old oak broke the surface and the ground held, and paced along it with her head low and her horn turned toward the water.
+
+The Buizel stood ankle-deep in the warm shallows, a stride out from the sand, her twin tails turning slowly behind her for balance. The fins on her forearms were up. Her small black eyes went from Nocturne's face to her paws and back, and once, quickly, over her own shoulder to the deeper water behind her.
+
+*Thinking about leaving.*
+
+That glance was the opening. For the length of it, the Buizel's weight had shifted onto her back foot and her near arm had drifted down from her chest.
+
+Nocturne went. A bound across the sand, low, the dry grains spraying out behind her, then another, and with that one she was already rising onto her hind legs, the heel spikes digging into the wet margin where beach met lake. Her right forepaw came up and back past her ear. The claws spread, pale and curved, and the paw came down and across in one long rake aimed at the orange shoulder and the cream of the chest below it.
+
+The Buizel's head came round. Too slow. Nocturne saw the black eyes widen and the arm start up to cover, and then she was there, close enough to feel the warmth off the wet fur, and her claws met it.
+
+== strike act
+Rain came across the clearing in slanting grey sheets, and Nocturne stood in it as if it were not there.
+
+It was there. It ran off her horn and dripped from her chin and soaked her ruff into a cold, heavy collar, and every part of her that was not fighting wanted to be under the pines at the clearing's edge. She put that part away.
+
+The Buizel loved it. That much was plain. She stood in the middle of the flattened grass with her face tipped up, her orange fur dark and sleek, rain beading on the cream spots above her eyes, her twin tails flicking water as they turned. She was waiting for the thunder. Each time it came, she flinched a little toward it, and her guard opened a hair.
+
+*Then let the sky choose the moment.*
+
+Nocturne lowered her head and waited. She felt the dark come up into her forepaws the way cold comes up through stone, slow at first, then all at once, and when she looked down, the claws of her right paw were edged in it, longer than they were, a faint smoke of shadow that the rain fell straight through.
+
+Lightning lit the clearing. The Buizel's chin lifted.
+
+Nocturne was moving before the thunder arrived. She crossed the wet grass in a low, rolling rush, keeping her paws flat so they would not slide, and the boom broke over them both as she came in under the raised arms. Her right forepaw swept up from below, shadow-claws wide, aimed at the left side of the cream belly where the ribs ended.
+
+The Buizel twisted. Too late to go anywhere. The dark edges touched wet fur.
+
+== strike act
+Mud was not water, Nocturne told herself, and that was the only reason she had come this far into it.
+
+It took her to the wrists at every step, warm and brown and sucking, and let go of each paw with a wet clap. Reeds stood up in clumps. A drowned log lay half sunk on her left, its bark gone soft and black. The air hummed with insects and smelled of rot.
+
+The Buizel had chosen this place. She was quicker in it than Nocturne, light enough to skim where the white body sank, and she had been darting in and out since the fight began, clawing, then backing off into the reeds.
+
+Now she was backing again, and the mud had her.
+
+Nocturne saw it happen. The left foot went down into a soft place and did not come up when it was asked. The Buizel's arms flew out. Her twin tails whirled behind her, trying to hold her upright, and for that moment all of her attention was on her own feet.
+
+*Stuck. Stay stuck.*
+
+Nocturne did not run; nothing could run here. She lunged. Every paw drove down at once and she threw herself forward along the top of the mud, body flat, forelegs reaching, the drowned log sliding by at her shoulder. Her jaws opened wide. The orange arm nearest her, the right one, with its blue fin flared and dripping, swung up toward her face as the Buizel caught her balance and saw her coming.
+
+That was what Nocturne wanted. She turned her head a little to the side so the horn would clear, and her teeth closed over the meat of the upper arm, above the fin.
+
+== strike act
+The ice boomed somewhere far out under the snow, a long low note that Nocturne felt in the pads of every paw.
+
+She did not like it. She liked the Buizel less. The little animal had found her feet out here faster than she had any right to, skating where she should have walked, and more than once she had come in low across the ice, nipped, and slid away before Nocturne could turn.
+
+Nocturne had stopped trying to turn quickly. She stood with her legs spread and the spikes of her hind heels driven down into the grey ice until they bit, and she let the Buizel come round her.
+
+*Come closer. Behind me, where you think I'm blind.*
+
+The scrape of claws went past her left flank and on round toward her hindquarters. Nocturne did not look. She heard the twin tails whirr as the Buizel checked her slide, heard the soft grunt of a small body gathering itself.
+
+Her tail went heavy.
+
+It began at the root and ran out to the tip, a weight and a hardness that turned the sickle into something forged. The white fur along it lay flat and took on a dull grey sheen, like a blade left out in the frost. She held it low and still, curled a little to the right.
+
+The Buizel came in.
+
+Nocturne pivoted on her heel spikes. They held in the ice, and her whole hindquarters swung round on them like a gate, and the steel-hard tail came with the swing, low and flat over the ice, the curved edge leading. It met the Buizel at the hip just as her feet left the ground.
+
+== strike act
+Spray hung in the gorge so thick that Nocturne could taste it on her teeth.
+
+The falls came down behind the Buizel in a white wall and broke into the plunge pool with a roar that took every other sound away. The Buizel stood in the shallows at the pool's edge, up to her knees, soaked through, water running in sheets off her fins. She was resting. Her twin tails hung slack in the current. She thought she was safe there, with water all round her.
+
+Nocturne had been saving it for this.
+
+She could feel the charge where it always lived, a dry, tight crawl under the skin of her chest and along the roots of her ruff. It had been building since she woke, and it would not build again quickly. Spend it badly and it was gone.
+
+*All of it. Once.*
+
+She planted herself on the flat dry slab above the pool and let it rise. Her ruff lifted. Every hair on her neck and chest stood out stiff, and a faint blue tick ran along them, snapping. Her horn hummed. The fur along her spine rose in a ridge to the root of her sickle tail, and the ache of holding it all in grew sharp behind her teeth.
+
+The Buizel looked up. Her black eyes found the bristling ruff and understood it, and she started to back toward the deep water.
+
+Wrong direction.
+
+Nocturne lowered her horn at the wet orange body and let the charge go. It left her in a single crooked line of light that cracked off the tip of the horn and jumped the gap to the pool, and the gorge went bright, and the stroke found the Buizel's chest.
+
+== strike act
+Ripples went under the falls and let the weight of them press her to the bottom of the pool.
+
+It was dark and loud down there, a drumming she felt in her teeth, and cold enough to clear her head. She sat on the gravel with her cheeks puffed and her eyes open and looked up through the churning white at the shape on the rock shelf above. White. Pacing. Waiting for her to come up where she had gone down.
+
+*Not there. Never there.*
+
+She turned on the bottom, put her feet to a sunken stone and pushed off sideways, and let her twin tails take her. They spun up behind her until they hummed, and the pool slid by her like wind, and she swung round under the shelf in a wide arc, out of sight of the white shape, toward the far side where the rock came down low and flat into the water.
+
+There she called the water to her. It came out of the pool in a skin, cold and tight, wrapping her from the crown of her head to the cream tips of her tails, and her fins folded flat to her forearms.
+
+She broke the surface without slowing.
+
+The Absol's head was turned the wrong way, toward the falls. Ripples saw the ruff, wet in spite of everything, the dark face in profile, the sickle tail held stiff for balance on the slick rock. She saw the near shoulder, the right one, and the gap beneath it where the foreleg met the chest.
+
+She tucked her chin, put her own shoulder forward, and shot up out of the pool at it, water tearing off her in a hissing veil, and struck.
+
+== strike act
+The boulder was taller than she was, and Ripples climbed it quietly, claws and the flats of her feet, while the Absol was still watching the channel for her.
+
+It had been a good dive. She had gone in loud, with a splash, and come out a long way down the cave in a shallow pool behind the stalagmites, and the white head was still turned toward the deep water, ears forward, horn ready for something that was not coming from there.
+
+From the top of the boulder Ripples could see the whole ledge. The stripe of grey daylight. The algae shining on the low stone. The Absol on the dry grit in the middle of it all, broad paws set, sickle tail lifted a little off the ground.
+
+*Look round. Go on.*
+
+She wanted the face. A jet to the flank would only make that ruff bristle. In the face, in the eyes and the nose, it would buy her the moment she needed to get down off this rock and close.
+
+She crouched, both feet gripping the cold stone, and drew the breath down deep. The cold gathered in her throat, a pressure behind her tongue, and she held it there and waited, cheeks tight.
+
+The Absol's ear twitched. Her head began to come round, slowly, following some small sound, the scrape of a claw on the boulder perhaps, perhaps nothing.
+
+Ripples let her see. She let her see all of it, the orange shape on the boulder top, the open mouth. Then she sent the jet down through the grey light, hard and narrow, straight at the dark face, and it struck squarely between the red eyes.
+
+== strike act
+Cold came easily out here. Ripples had only to open her mouth.
+
+She stood on bare grey ice where the wind had scoured the snow away, her feet spread, her twin tails held out stiff behind her to keep her upright, and breathed in through her teeth. The air bit. She let it. She let the chill settle at the back of her jaw and gather there, and felt frost begin to prickle along her lips and coat her small fangs until they ached.
+
+The Absol was a long stride off, crouched, horn low. Her breath smoked. She was not happy on the ice; Ripples had watched her place every paw as if the lake were made of eggshells, the heel spikes scratching at each step for something to hold.
+
+*Can't jump on this. Can't turn on it either.*
+
+So Ripples would make her try.
+
+She feinted left. Just her shoulders and her head, a jerk, a hiss. The Absol shifted to meet it, and the near forepaw, the right, slid on the ice, and the white body tipped toward it to catch itself.
+
+Ripples went right and low. She kicked off with both feet and let the ice do the rest, sliding on her belly under the swing of the horn, arms tucked, tails trailing. The white foreleg came at her, braced and planted, close enough to see the spike standing out at the elbow.
+
+She came up onto her knees at the end of the slide and opened her jaws wide. Frost smoked off her fangs. She bit down into the foreleg just below that elbow spike.
+
+== strike act
+Ripples had stopped trying to go through the Absol. She went round the oak instead.
+
+The trunk was broad and old, the bark deep-cut, and its roots stood up out of the grass like the backs of half-buried animals. She slipped between them on quick feet, ducking low, the shade cool on her back after the sun of the beach. On the far side the white body turned to follow her, and the scythe of the horn caught on a low branch and dragged leaves down.
+
+*Big. Big is slow round corners.*
+
+She came out on the side the Absol was not facing. There it was, broad and white and close: the haunch, the hind leg with its heel spike set in the grass, and behind it the sickle tail lashing, half raised. Too dangerous, the tail. She wanted the leg.
+
+The Absol knew it a moment late. Her head swung round over her own shoulder, red eyes finding the orange shape at her flank, and the haunch began to turn away.
+
+Ripples ducked under the turn, bent nearly double, and her twin tails flung out sideways to keep her from tipping over in the long grass. It brought her in close, closer than the Absol could reach with horn or claw. She opened her jaws as wide as they would go, lips pulled back from her sharp little teeth, and drove her head forward at the back of the thigh, just above the heel spike, where the fur was thinner and the muscle bunched to push.
+
+Her teeth sank into the white fur.
+
+== strike act
+The storm was on her side, and Ripples meant to use it.
+
+The clearing had gone to puddles. Rain hammered the grass flat, the pines at its edge roared and bowed in the wind, and every so often the sky lit up and the whole place stood out pale and shadowless. Ripples did not mind any of it. Rain was only water falling. She stood in it with her fur slicked dark and her black eyes half shut against the drops, and watched the Absol hate it.
+
+The white fur was soaked through. The ruff hung in heavy ropes. Every time a gust drove rain into the dark face, the Absol shut her eyes for an instant, and her ears went back.
+
+*Blink, then. Blink again.*
+
+Ripples began to circle toward the wind, so that it was at her back and in the Absol's face. She kept low. Her feet found the wet ground carefully, and her twin tails swung behind her, balancing her on the slick grass.
+
+The next gust came. It ripped water off the pines and flung it across the clearing in a sheet, and the red eyes closed.
+
+Ripples went in under it. A few quick steps, splashing, and a jump at the end of them, and her right arm went back with the webbed paw open and the small claws spread. She aimed at the face, at the dark blue-gray muzzle just below the eyes, where she had seen the Absol wince before.
+
+The red eyes opened. They saw her in the air, already arriving. Her claws raked across the dark muzzle.
+
+== strike take light
+The jet caught Nocturne on the left shoulder and burst into spray across her ruff.
+
+It was not much of a blow. It shoved her a half-step sideways on the grass and stung, a cold slap that soaked through to the skin and spread there. What she minded was the wet. Water ran down inside her ruff and along her chest and dripped off her elbows, warm from the lake and smelling of weed, and her lip came up off her teeth in a long, silent hiss.
+
+She shook the shoulder once, hard. Droplets flew off her in a fan and pattered on the fallen trunk beside her. The muscle under the fur ached a little, a dull bruised throb, and she rolled it as she stepped forward and it moved as it should.
+
+*Cheap. She has nothing heavier, or she would have used it.*
+
+The Buizel was already moving, scuttling sideways along the edge of the sand toward the shallows, cheeks still puffed from the shot. Her twin tails flicked behind her.
+
+Nocturne did not chase her into the water. She went the other way, up onto the mossy trunk, and walked along it with her claws hooked into the soft green, where she could look down. The wood gave a little under her and held. From up there she could see the whole strip of beach and where it narrowed against the reeds, and she could see that the Buizel would have to come out of the shallows there, or not at all.
+
+She stood and dripped and watched, and let the sting in her shoulder fade to nothing.
+
+== strike take light
+The small claws went across the back of her right foreleg, quick as a flick, and were gone.
+
+Nocturne felt it as a thin line of heat just above the paw, bright and shallow, the way a bramble feels. She drew the leg in under her with a short huff through her nose and set it down again on the grit. It held her. The sting was already settling into an itch.
+
+The Buizel had not stayed to see. She was off across the ledge on her quick feet, twin tails whirling behind her for balance, heading for the algae-slick stone and the pools beyond. Running to the water, as always.
+
+*Claws and runs. She can't stay and fight on dry rock.*
+
+Nocturne licked once at the scratch, tasted a little salt and a little blood, and let it be. Then she went after her, not fast, keeping to the dry. She did not need to be fast. The Buizel had to cross the green stone to reach the channel, and the green stone was treacherous even for feet made for it.
+
+Halfway across, the orange body skidded. A foot went out. The Buizel caught herself on a stalagmite with both webbed paws and hung there an instant, scrabbling.
+
+Nocturne stopped at the very edge of the dry grit, as close as she would go, and lowered her horn. The foreleg hardly troubled her. She put her weight on it to be sure and it said nothing at all.
+
+The Buizel looked back over her shoulder, saw where she was, and her cheek marks twitched.
+
+== strike take light
+The charge came in low and took her across the front of the ruff, and on ice that was enough to move her.
+
+Nocturne went back. She did not fall; her paws simply slid, all of them together, and she skated backward across the grey ice with the water from the jet streaming off her chest and stiffening in her fur. A grunt left her, more surprise than hurt. The thick white ruff had taken most of it. Under it her breastbone ached, flat and dull, as if she had walked into a branch in the dark.
+
+Her heel spikes caught. She felt them scrape, catch, and bite, and the slide stopped with a jerk that she took in her hips.
+
+*That is what the ruff is for.*
+
+The Buizel had shot on past where she had been standing and was struggling to stop. Out of the water, the jet had nothing left to carry it; it broke into spray and ice around her, and she spun on her belly in a slow circle, arms out, twin tails slapping the ice as she tried to get her feet back under her.
+
+Nocturne shook her ruff. Crusted droplets clicked together in it and broke loose. The ache under her chest was already shrinking, and she breathed into it once, deep, to measure it, and found nothing that would slow her.
+
+She took a step. The ice held under her paws; she dug in the spikes and took another. The Buizel was getting up, slipping, getting up again, a long stride off, her back still half turned.
+
+Nocturne lowered her head and went to meet her before she finished.
+
+== strike take light
+Small teeth closed on the back of Nocturne's left hind leg and held.
+
+It was a pinch more than a bite, sharp and sudden, and it made her kick. The leg jerked out of the mud with a wet suck and the Buizel came with it, still hanging on, her twin tails thrashing at the reeds. Nocturne growled, low, through her shut teeth, and kicked again.
+
+The teeth let go. The Buizel landed on her back in the shallow brown water with a slap and rolled clear.
+
+*Like a rat in a ditch.*
+
+Nocturne put the foot down. The bite throbbed, a small hot ache in the meat above the heel spike, and she could feel each little tooth-mark as its own spot of warmth. She leaned onto it. It took her weight without complaint. There would be a stiffness there later. There was none now worth the name.
+
+She turned, slowly, because nothing in this place could be done quickly. The mud clung to her belly fur and weighed down the tip of her sickle tail. The Buizel was on her feet again among the reeds, a stride away, mud plastered up her orange sides and over the cream of her stomach, her black eyes bright and her mouth still open.
+
+Pleased with herself. Nocturne could see it in the set of the small shoulders, in the quick turn of the tails.
+
+She lowered her horn and did not give her the satisfaction of a limp. A step. Another. The mud sucked at each paw and let it go, and the bitten leg went down and came up with the others, steady.
+
+== strike take light
+Claws scraped down her raised forearm, across the blue fin, and Ripples snatched the arm back with a hiss.
+
+It stung like a slapped nose. The fin folded flat on its own and stayed flat, smarting along its edge, and the orange fur below it was ruffled the wrong way in a row of lines. No more than that. She shook the arm out hard, flicking water off the webbed paw, and felt the smart draw down to a thin, bright ache that she could carry.
+
+*Got the fin. Only the fin.*
+
+She was backing already, feet light on the wet stone. The Absol had overreached to land that blow. The white body was stretched long on the grit, a forepaw still out, and for the space of a breath she was off balance, weight too far forward.
+
+Ripples saw it and could do nothing with it; she was too far back. She filed it away. Overreaches on the swing. Comes forward behind it.
+
+Her heel found the edge of a shallow pool and she stopped there, ankle-deep, the cold soaking up into her feet. Better. Her twin tails swayed behind her. The fin had begun to lift again, slowly, as the hurt went out of it.
+
+The Absol drew herself back together, paws under her, horn held straight out at her. The red eyes flicked to the pool around Ripples' feet and narrowed.
+
+Ripples chittered at her, short and sharp, and spread her arms.
+
+== strike take light
+The steel tail only clipped her, and that was luck, not skill.
+
+Ripples had been halfway into a sidestep when it came round, and the blade edge went past her stomach by a whisker while the flat of the hard sickle smacked against the point of her left hip. It shoved her sideways. Her feet skidded on the wet rock of the shelf, and her twin tails flew out wide and whirled to catch her, and she got a paw on a mossy boulder and held.
+
+A grunt came out of her, short. Her hip throbbed. It was the deep, blunt kind of hurt that comes from knocking into a doorframe, and she knew it would be a bruise by evening and not much more.
+
+*Heavy, though. Like being hit with a rock on a rope.*
+
+Spray drifted over them both from the falls. She blinked it out of her eyes and pushed off the boulder, testing the leg: weight on it, weight off, weight on. It held. It complained a little. She told it to be quiet.
+
+The Absol was still turning out of the swing, the grey sheen fading from her tail as it slowed. All that weight had to go somewhere when it missed, and it had carried her round, and her hindquarters were toward Ripples now, and her head was coming back too late.
+
+Ripples did not waste time rubbing the hip. She bared her small teeth and went straight back in, low, before the horn could find her.
+
+== strike take light
+The jaws closed on one of her tails, near the cream tip, and Ripples yelped more from outrage than from pain.
+
+The Absol did not bite down hard. It was a grab, a snatch at whatever trailed, and for a moment Ripples was held by it, her feet scrabbling in the soft pale sand, her whole rear end jerked back. The tail pinched and burned where the teeth sat. She twisted round on herself, chittering furiously, and swung her free tail at the dark face as hard as it would go.
+
+It slapped across the Absol's eye. The jaws opened. Ripples tumbled forward onto her paws and knees and was up again in the same motion.
+
+*She bit my tail. My tail.*
+
+She whipped it round in front of her and looked at it. The cream tip was wet and ruffled, the fur pressed into a row of little dents, and it smarted when she flexed it. That was all. It still turned. Both of them still turned. She spun them behind her, just to be sure, and they whirred together as they should.
+
+The Absol was blinking the slapped eye, head tilted, a low growl rolling in her chest. She did not look sorry.
+
+Ripples backed toward the warm shallows, feet sinking in the sand with every step, and kept her tails tight behind her now, out of reach, close against the backs of her legs. Lesson learned. She showed the Absol her teeth and wondered what else on that white body was trailing.
+
+== strike take light
+Most of it went into the puddle.
+
+The line of light jumped from the Absol's horn, crooked as a root, and Ripples was already throwing herself aside. It struck the ground where her feet had been, and the water there flashed and hissed, and the edge of it caught her trailing foot and ran up her leg into her body.
+
+Her fur stood on end. All of it, from her ears to the tips of her tails, a whole-body bristle that made her look as round as a thistle head. A tingle raced through her, sharp in her teeth and the pads of her paws, and every muscle twitched at once. She landed in the wet grass in a heap and lay there for a heartbeat with her fins jerking.
+
+Then it was over. Her leg buzzed like a foot that has fallen asleep. Her jaw ached where it had clenched.
+
+*Missed. Mostly missed.*
+
+She rolled onto her feet and shook herself, hard, and the fur lay down again, more or less, in a sodden, spiky mess. Rain hammered on her. Thunder rolled away over the pines.
+
+The Absol had not followed. She stood across the clearing with her ruff still lifted and crackling faintly, her sides heaving, and Ripples saw her shut her mouth on a breath the way a creature does after lifting something too heavy.
+
+Spent, maybe. Some of it.
+
+Ripples flexed her buzzing foot, put it down in a puddle on purpose, and lifted her chin at the Absol through the rain.
+
+== strike take mid
+The dark claws went across her right side, over the ribs, and the cold of the lake was nothing to the cold they left behind.
+
+Ripples felt them as a pull first, a drag through her fur, and then as lines of heat that sank straight in and spread under the skin. Her breath stopped. A short, sharp *ah* jumped out of her before she could shut her teeth on it, and she skidded sideways on the ice with her right arm clamped down over the place.
+
+She stayed up. Just. Her feet went in different directions and her twin tails thrashed out behind her and caught her, and she came to a stop crouched and lopsided, side pulled in.
+
+*Ribs. Of course the ribs.*
+
+Breathing in was the problem. A shallow breath was bearable. A deep one dragged at the cuts and the bruise under them and made her whole right side clench, so she took shallow ones, quick, and felt how little air they brought.
+
+She straightened, slowly. It pulled. She did it anyway, because the Absol was watching her from a long stride away with her claws still smoking faintly dark, and Ripples was not going to stand there bent over like something old.
+
+The right arm stayed close to her ribs. She could lift it; she found that out when she tried, and found out also that she did not want to try again soon. She let it hang there, guarding, and put her weight on the left foot.
+
+Slower now. She could feel it in herself. She would have to be clever instead.
+
+Her black eyes went past the Absol to the dark crack in the ice, where open water showed.
+
+== strike take mid
+The teeth went into her left shoulder from behind and stayed there long enough for her to feel every one.
+
+Ripples had not heard the Absol come through the reeds. She heard her now, a deep growl right against her back, and felt the jaws clamp and the weight behind them drive her down to her knees in the mud. A thin *yip* broke out of her. Her left arm jerked and then would not do as it was told.
+
+The jaws let go. She was free, and the shoulder began to throb in earnest, deep and pulsing, as though the teeth were still in it. She scrambled away on her knees and her good paw, mud to the elbows, and turned with her back to a half-sunk stump.
+
+*Stupid. Watched the front.*
+
+The arm hung at her side. When she tried to raise it, the shoulder answered with a hard, bright stab that made her suck air through her teeth, and the fin on that forearm folded down flat and trembling. She stopped trying. She held the arm against her ribs with the other one and breathed.
+
+The Absol stood a stride off, mud to her belly, lips peeled back, a few orange hairs caught between her teeth.
+
+Ripples got her feet under her. She had to lean on the stump to do it, and the stump was slick, and the shoulder knocked at every jolt. She stood anyway. Her twin tails swept behind her, low, steadying her in the mud.
+
+One arm, then. She still had teeth.
+
+== knockdown take
+It found her standing in the water, and the water carried it everywhere.
+
+Ripples felt the crack before she heard it. The light struck her chest and went through her, out along her arms and down her legs into the pool around her knees, and then the pool gave it back from below. Every muscle she had locked at once. Her back arched. Her fins snapped wide and stiff. A short, strangled cry got out between her clenched teeth and was lost in the roar of the falls.
+
+Then it let go of her, and she fell forward into the shallows on her webbed paws.
+
+The water was cold on her face. She stayed there a moment on her paws and knees, head hanging, and could not make her arms stop trembling. They shook in fine, fast jerks, all on their own, and her jaw ached from the clench, and her chest where the stroke had landed felt scorched under the fur, tight and tender, as if she had lain too long on a sun-baked stone.
+
+*Out of the water. It goes through the water.*
+
+She got up. It took longer than it should. Her legs did what she asked, but late and stiffly, like legs that had been cold a long time, and on the first step toward the rocks she nearly fell.
+
+She made the dry shelf and stood on it, swaying a little, arms held out from her sides because her fingers still twitched. The smell of singed fur hung in the spray.
+
+Across the pool the Absol's ruff was lying down again, flat and spent. Ripples watched it and counted her own breaths and waited for her paws to come back to her.
+
+== knockdown take
+The sickle tail came down across the front of her right thigh like a branch falling, and the leg went out from under her.
+
+Ripples hit the gritty stone on her side. The thigh had gone hot and heavy all at once, a deep, swelling ache that started where the steel edge had struck and spread up into her hip and down to the knee. She curled her toes and the whole leg answered with a throb. Her breath came out through her nose in a hard huff, and she bit down on the noise that wanted to follow.
+
+*Up, before she comes round again.*
+
+She rolled onto her good side and pushed. Arms first. Then the left leg under her. Then, carefully, the right, and when she put weight on it the thigh bunched and shook and a short squeak got out of her before she could stop it. She stood. She stood mostly on the left, the right foot set down light on its toes, like a bird with a sore claw.
+
+The Absol had come round on the dry grit, tail grey and hard and swinging low, the sheen just beginning to go out of it.
+
+Ripples took a step backward toward the pools. It was a bad step, a hitch and a hop, and she felt her twin tails jerk out sideways to keep her upright. She would not be quick on this leg. Not for a while.
+
+So she would not go to the Absol. She would make the Absol come into the water, where a leg mattered less.
+
+She backed another hitching step, and another, until the cold came up over her ankles.
+
+== strike take mid
+The teeth went in below her right elbow, and with the teeth came the cold.
+
+Nocturne had braced for a bite. She had not braced for this. The small fangs sank into the meat of her foreleg and the cold went in after them, sharp and spreading, a deep aching chill that ran down to her paw and up into her shoulder and locked the muscle around it. She jerked her head down and hissed, a long rasp through her teeth, and swung the leg.
+
+The Buizel let go and skidded away on her belly across the ice.
+
+Nocturne set the paw down. It did not want to be set down. The leg below the elbow had gone stiff and dull and tight, frost glittering in the white fur where the teeth had been, and when she put weight on it the chill inside turned into a hard, gnawing ache that made her lip lift off her fangs.
+
+*Her teeth. Watch her teeth, not her claws.*
+
+She took her weight back onto the other legs. The bitten paw she rested on the ice with only its pads touching, and even so the cold of the lake came up through it and made the ache worse.
+
+She could still fight on it. Not well. Swinging with that paw would cost her; landing on it after a lunge would cost more.
+
+The Buizel was up again, a long stride away, spitting flecks of frost and grinning. Nocturne turned so the hurt leg was away from her, horn forward, and growled low enough that the ice seemed to carry it.
+
+== knockdown take
+The water took her in the ribs and lifted her clean off her paws.
+
+Nocturne had seen the Buizel's cheeks fill and had thought it would be another little jet. It was not. It hit her left side like the whole lake leaning on her at once, a thick, roaring column that knocked the breath out of her and threw her across the grass. She landed on her right side among the roots of the old oak, a root catching her under the shoulder, and the water kept pouring over her for a breath longer before it broke.
+
+She lay there gasping. A hiss came out of her, then a low, broken growl.
+
+Her ribs on the left had gone tight and hot under the soaked fur, one broad bruised ache from her elbow to her hip. When she breathed in deeply, it bit. She learned that at once and stopped breathing deeply.
+
+*Not a jet. She's been saving that.*
+
+She got her paws under her, then her haunches, then her head, water streaming out of her ruff and off her horn and down her face, and the ache in her side pulled at every movement. She stood with her left side turned a little away and her elbow tucked in to guard it.
+
+Wet. Wet through, to the skin, the warm weedy smell of the lake in her nose. Her lip curled. That, more than the ribs, made her want to tear something.
+
+The Buizel stood at the edge of the sand with her mouth still open and her chest heaving, spent from the effort. Nocturne could see the cost of it in her.
+
+She walked toward her, slower than she wanted to, favouring the side.
+
+== strike take mid
+The rush came up out of the pool and took her under the jaw.
+
+Nocturne's head snapped back. Her teeth clacked together on the tip of her tongue, and the small, hard body in its skin of water drove on through, into her throat and the front of her ruff, and shoved her backward along the wet rock shelf until her hindquarters met the cliff.
+
+She tasted blood. A short, choked growl came out of her, and her jaw hung open a moment while the ache in it gathered.
+
+It gathered quickly. The whole underside of her face throbbed, from the chin back to the hinge below each ear, and when she closed her mouth the teeth met wrong for an instant and the hinge sent a hard jolt up into her skull. She shut her eyes against it. Opened them.
+
+*Under the chin. She came from below.*
+
+The Buizel had bounced off her and landed in the shallows, splashing, and was already scrambling round to face her.
+
+Nocturne swallowed. It hurt. She worked her jaw once, slowly, side to side, and it moved, stiff and sore and swollen-feeling, but it moved. Biting would be hard for a while. Holding anything in her teeth would be worse.
+
+She pushed off the cliff and stood square on the shelf with the spray drifting round her and her mouth a little open, breathing through it. She kept her chin tucked in against her ruff now, low, and her horn forward.
+
+The Buizel's black eyes went to her jaw. Nocturne saw her notice, and her ears went flat.
+
+== strike take mid
+The claws caught her across the nose, and for a moment there was nothing in the swamp but that.
+
+It was a small cut. Nocturne knew it even as her eyes filled. But the nose was the one soft place on her face, and the Buizel's claws had dragged right across the tender grey skin, and the sting went straight up behind her eyes and made them stream. A sharp *hss* burst out of her. She shook her head hard, horn swinging, and mud flew off her ruff.
+
+Her nose throbbed. It went hot and full, beating with her heart, and the smell of the swamp was suddenly very far away behind it. She could taste a little blood at the back of her mouth.
+
+*Little clawing beast.*
+
+She backed a step to clear her eyes, and the mud sucked at her hind paws and held them, and she had to wrench them free. Her eyes watered. Through it she could see an orange smear dancing at the edge of the reeds, quick and low.
+
+She blinked hard. The world came back, mostly. Her nose did not stop. Every breath she pulled through it rasped on the way in and made the throb jump, so she opened her mouth and breathed through that instead, panting a little, and hated the sound.
+
+The Buizel was coming again. Nocturne lowered her head to meet her, and lowering it sent the blood pounding into her nose and made her eyes sting afresh, and she did it anyway and held it there.
+
+== dodge
+Ripples saw the tail go grey and knew what was coming.
+
+She had seen that sheen before. The white fur along the sickle flattened and hardened and took on the dull shine of cold metal, and the Absol's hindquarters bunched and began to swing, and there was nowhere on this bare ice to step that the tail would not reach.
+
+So she did not step. She fell.
+
+She threw her feet out from under her and went down flat on her back, arms tucked to her chest, chin in, and slid. The lake was glass under her. It carried her the way water would, and she went skating along beneath the swing with the steel tail passing over her face close enough that its wind lifted the fur on her cheeks. She heard it whistle. She heard it hit nothing.
+
+*Ha. Too high.*
+
+The ice spun her slowly. She saw sky, then the white flank, then the far shore with its frozen reeds. She let her twin tails drag behind her as a brake, and they scraped and caught and turned her, and she came to a stop on her belly a long stride beyond the Absol's hind legs.
+
+The Absol had gone round with her own swing. All that weight in the tail had nowhere to stop, and it carried her half about, claws scratching, heel spikes skidding as she fought to plant them.
+
+Ripples got her knees under her. Her back was cold and wet where the ice had been. She stayed low, crouched, watching the tail lose its sheen, and waited for the Absol to find her.
+
+== dodge
+Nocturne heard the Buizel draw breath before she saw her do it.
+
+It was a big breath, deep and long, louder than the rain, and the small orange chest swelled with it. Nocturne knew that sound now. She had been hit by what came after it once already.
+
+*Not again. Not straight on.*
+
+She did not run from it. Running in a straight line on this wet grass would only give the water something to follow. She went sideways instead, a long bounding step to her left, toward the nearest pine, and her paws skidded on the flattened grass as she landed, and she let them skid, let the slide carry her round behind the trunk.
+
+The water came. It crossed the clearing in a thick white roar and struck the pine where her flank had been, and the whole tree shook. Bark burst off it. Needles came down on her in a shower of cold drops, and the spray from the column swept round both sides of the trunk and soaked what little of her was still dry.
+
+She stood flat against the bark with her ears back and her teeth bared, wet to the skin and untouched.
+
+The roar stopped. Behind it there was only rain again, and somewhere out in the clearing, a small sound of ragged breathing.
+
+Nocturne put her head round the trunk. The Buizel stood in the open grass with her mouth still open and her shoulders heaving, her twin tails slack behind her, emptied out.
+
+Nocturne came out from behind the pine at a run.
+
+== dodge
+The dark claws came down where Ripples' head had been, and Ripples was already in the air.
+
+She had read them in the Absol's shoulders. The weight had gone onto the hind legs and the white chest had risen and the right forepaw had drawn back, its claws smoking with shadow, and the wet rock under Ripples' feet had told her there was only one way out. Back. Off the shelf.
+
+She jumped backward with her arms thrown wide. The claws passed through the spray in front of her face. A shadowed tip snagged a few hairs off the cream spot above her eye, and that was all.
+
+Then she was falling, and then the pool had her.
+
+It closed over her with a deep, cold boom. She went down in a cloud of bubbles, and the noise of the falls became a drum, and her twin tails began to spin without being asked, and the water held her up and turned her and gave her all her speed back at once. She surfaced in the middle of the pool, a long way from the shelf, blinking.
+
+*Mine now. Come in and get me.*
+
+The Absol stood on the lip of the rock where she had been. The dark had gone out of her claws. She looked down at the green water swirling below, then at Ripples, and her lip lifted, and she did not move a single paw nearer the edge.
+
+Ripples floated with only her eyes and the top of her head above the surface and let her tails turn lazily beneath her, waiting.
+
+== throw
+The Buizel had come in too close, and Nocturne let her.
+
+She had been clinging to Nocturne's ruff with both paws, trying to get her teeth into the side of the white neck, her feet kicking at the chest, her twin tails lashing for balance. It was a nuisance. It was also, Nocturne decided, an opportunity: everything that small body weighed was hanging off the front of her.
+
+*Hold on, then. Hold on tight.*
+
+She dropped her head and shoved it in under the Buizel's arms, the flat of her skull against the cream stomach, the horn turned well aside so its edge would not catch. The small paws clawed at her ruff. The teeth snapped at her ear and missed.
+
+Nocturne set her hind legs in the soft earth at the edge of the grass, heel spikes biting, and straightened her whole body at once.
+
+She threw from the haunches. The power went up through her back and her neck and into the lift of her head, and the Buizel came off her ruff with a squeak, tearing out a few white hairs, and went up and over. Nocturne turned her head as she lifted, aiming. Behind her, across the strip of grass, the fallen trunk lay along the edge of the pines, furred with moss, rotting soft at one end and hard as stone at the other.
+
+She aimed for the hard end.
+
+The weight left her at the top of the heave. She watched the orange shape turn over in the sunlight, tails whirling uselessly, against the blue of the sky.
+
+== throw
+Ripples could not lift the Absol. She had known that from the start. She did not need to.
+
+The white body was coming at her in a lunge, low and fast, horn first, every paw pushing at the ice. Too fast for the ice. Ripples could see the paws skating under it, the heel spikes scratching for a grip they were not finding. The Absol was committed. All her weight was going forward, and none of it could stop.
+
+*Then I'll help her keep going.*
+
+Ripples stepped aside at the last moment, a quick half-turn on her heel, and as the horn passed her chest she whipped both tails round the nearer foreleg, just above the paw. They wound round and round, cream tips crossing. She leaned back against them and planted her feet.
+
+She did not pull the Absol toward her. She pulled the leg sideways, out from under its owner, at the instant it reached for the ice.
+
+The leg went. The Absol went after it. Her own lunge carried her on and over, the bound foreleg yanked away to the side, and the big white body pivoted round Ripples like a door on its hinge, sliding, turning, legs flailing, ruff flying out.
+
+Ripples let go at the end of the turn. Her tails uncoiled with a snap and the whole weight of the Absol went skidding away across the ice on its side, faster than it had come, toward the place where the lake had buckled in the cold and thrown up a jagged ridge of grey slabs.
+
+She had a moment to watch it go. Her tails ached at the roots from the strain. She grinned anyway.
+
+== throw take
+Ripples was in the air for longer than she liked.
+
+The gorge went round her, wet black cliff and white water and grey sky, and her twin tails spun wildly behind her and found nothing to push against. She tucked. It was all she had time to do.
+
+The mossy boulder at the edge of the pool took her across the back.
+
+The moss was thin, and the rock under it was not. The blow knocked the air out of her in a hard squeak and drove her shoulders forward round her chest, and the back of her head knocked the stone in the same instant, a dull clop that made her teeth click and lit small sparks behind her eyes.
+
+Then she slid off it. The rough face of the boulder dragged down her spine and her tails, and she dropped the last little way into the shallows at its foot, landing on her rump in the cold water with a splash that went up over her ears.
+
+She sat there. Water ran out of her fur. Her back ached from the shoulder blades to the root of her tails in one broad, deep bruise, and the bump on her skull throbbed in time with it.
+
+*Up, before the white thing comes down off the rock.*
+
+Her arms worked. She leaned on them and pushed, and her back complained at the bend, and she stopped halfway and stayed hunched there in the shallows, breathing, letting the water cool her.
+
+The Absol was picking her way down the wet rock toward her, slow and careful on the slick stone, hating every step that brought her nearer the pool.
+
+Ripples watched her come and spat out a mouthful of the pool.
+
+== throw take
+Nocturne went across the ice on her side, legs scrabbling, and could not stop.
+
+There was nothing to stop with. Her claws scored pale lines in the grey and found no purchase. Her heel spikes caught and skipped and caught again, jarring her hips with every bite, and the lake turned slowly round her as she slid: the shore, the sky, the small orange shape standing in the middle of the ice with its tails uncoiling, the shore once more.
+
+Then the pressure ridge.
+
+It was a wall of broken slabs where the ice had heaved up on itself in the cold, knee-high and jagged, edged like flint. She hit it with her back. The flat of the biggest slab took her across the spine between the shoulder blades, and a jagged edge beside it raked the back of her right hind leg in the same instant, and she stopped dead with a grunt that came out of her like a cough.
+
+Fragments of ice rained down on her. They pattered off her ruff and slid into her fur, cold and wet against the skin.
+
+*On my back. On the ice. In front of her.*
+
+She lay there a breath with her legs in the air, the slabs pressing into her shoulders, her spine aching in a hard bar across the top of her back. The scraped leg stung along its whole length.
+
+She hated it more than the hurt: lying belly-up in the cold with the Buizel watching. Her lip lifted. A low growl came out of her, not at the pain, at the sky.
+
+She rolled, got her paws against the ridge, and began to push herself upright.
+
+== pin hold
+Ripples had never been on top of anything this big, and it was very hard to stay there.
+
+The Absol lay on her side in the mud with her head half sunk in it, and Ripples knelt on the white neck just behind the horn, both knees in the wet ruff, her whole small weight pressing down. Her twin tails were wound tight round the forelegs, binding them together above the elbow spikes, cinched as hard as she could make them. Her webbed paws were spread on the dark face, one on the cheek and one at the base of the horn, holding the head down into the brown.
+
+*Don't let the head up. If the head comes up, everything comes up.*
+
+Under her knees she could feel the Absol breathe. Big slow breaths, much bigger than her own, and each one lifted her a little and set her down again. The muscles under the fur were not slack. They hummed. Every so often something in the long white body tested her, a shift of the haunches, a pull against the tails, and each time she leaned harder and felt it settle.
+
+Her tails ached. They were not made for this, for holding; they burned at the roots and trembled along their length, and she knew they would not hold forever.
+
+The red eye nearest her rolled up and found her face. It did not blink. Mud had splashed across the dark cheek beneath it.
+
+Ripples looked back down into it and pressed the horn deeper into the mud, and set her teeth, and did not let go.
+
+== pin hold
+The ice was doing half the work, and Nocturne let it.
+
+The Buizel lay on her back on the bare grey lake, and the cold was coming up through her fur into the small orange body, making it slow. Nocturne stood over her. Both forepaws were planted on the narrow shoulders, pads spread, claws curled in so they pressed without cutting. Her hind legs were braced wide behind, heel spikes driven into the ice so that nothing under her could make her slide.
+
+*Let her get cold. Cold things are slow.*
+
+She kept her chest up, off the body. She did not need to lie on it. The shoulders were enough; with them held down, the arms could only paw at her elbows, and they did, now and then, the webbed paws scratching weakly at the fur of her forelegs and sliding off.
+
+Her own forelegs ached from holding stiff. The left one, bitten earlier, throbbed dully at every push from below. She did not shift off it. She put her weight a little more onto it instead, so that the Buizel would feel no difference between one side and the other.
+
+Below her the small face was turned up. Frost had begun to form on the whiskers and along the black marks of the cheeks. The breath came out in quick white puffs, each one smaller than the last.
+
+The twin tails were what she watched. They lay out on the ice beyond the Buizel's head, twitching. More than once they had curled as if to whip round her. Each time she had pressed down on the shoulders, and they had uncurled.
+
+They twitched again. Nocturne leaned, and they lay still.
+
+== pin hold
+The sand took the Buizel's shape as Nocturne pressed her into it.
+
+It was soft here at the water's edge, pale and fine, and the small body sank into it under her weight: the shoulders, the hips, the twin tails buried to the tips somewhere underneath. Warm shallows lapped at Nocturne's hind paws. She hated that. She kept her hindquarters as far up the beach as she could and leaned forward to make up for it.
+
+Her chest lay across the Buizel's stomach. Her right forepaw held the left arm flat to the sand by the wrist, just above the webbed paw, and her left forepaw lay on the cream throat, not pressing, only resting there, a reminder.
+
+*Struggle and the sand fills in round you. Lie still and it holds you anyway.*
+
+Under her chest the stomach moved fast. She could feel the Buizel's heart going like a bird's against her ruff. The free arm, the right one, pushed at her shoulder with the heel of its paw, steady, stubborn, getting nowhere.
+
+The sun lay hot on her back. Flies hummed over the reeds. A small wave came in, wetted her heels, and went out again, taking a little of the sand from under the Buizel's head with it.
+
+Nocturne noticed that. She shifted her forepaw a little higher on the throat, toward the chin, so that if the next wave took more, the head would not be able to turn.
+
+The black eyes watched her do it. They did not look afraid. They looked as though they were thinking.
+
+== pin struggle
+Ripples could not move her hips, so she went for the leg.
+
+The Absol had her flat in the wet grass, white chest crushed down on her ribs, a forepaw planted across her upper arm and the other on her hip. Rain beat on both of them. It ran into Ripples' eyes and her open mouth and she blinked it away, and above her the dark face was turned aside, out of the weather, watching her free arm.
+
+The foreleg on her arm was close. Close enough. The white fur of it was right beside her cheek.
+
+*Teeth, then. She forgot I have teeth.*
+
+She twisted her neck as far as it would go and snapped at the foreleg just above the paw.
+
+She got fur. Only fur. The Absol had felt the twist coming through the body beneath her and lifted the paw a hair, and the small teeth closed on a mouthful of wet white hair and nothing behind it. Before she could let go and try again, the paw came down. It came down on her shoulder this time, heavier, with the Absol's weight rocking forward behind it, and pressed her arm and shoulder into the mud under the grass.
+
+The bruise in her shoulder flared. A thin squeak got out of her.
+
+She spat the white hair out. She bucked, hard, and the chest on her ribs did not even rock. She tried to get a foot under her and found there was no room. Her twin tails thrashed in the grass beneath her and got nothing.
+
+Rain hammered down. Ripples lay with her arm pinned and her ribs squeezed and stared up through it at the narrowed red eyes, breathing hard, and could think of nothing else to do yet.
+
+== pin struggle
+The tails would not give.
+
+Nocturne lay on her side on the wet rock of the shelf, with spray drifting over her and the falls roaring, and the Buizel's twin tails were cinched round both her forelegs above the elbow spikes, binding them together. The small body crouched on her neck behind the horn. Webbed paws pressed down on her cheek.
+
+*She weighs nothing. Nothing. Move.*
+
+She gathered herself. Hindquarters first: she dug her heel spikes into the slick rock and shoved, trying to roll onto her belly and get her bound legs under her. The spikes skidded on the wet stone. Her hips came round a hand's width and slid back.
+
+She tried the forelegs instead. She pulled them apart against the tails, hard, every muscle in her shoulders standing out under the fur. The tails stretched. They trembled. They held, and the pull of them bit into her legs just above the spikes, and the Buizel on her neck chittered and leaned harder.
+
+Nocturne snapped her head up. The horn swung. But the small body was behind it, not in front, and the swing only threw the Buizel a little to the side before she clung on again with every limb she had, and the head went back down onto the rock, cheek first, with a knock that made her ear ring.
+
+She lay still a moment, breathing hard through her teeth. Water ran across the rock under her face. Her shoulders ached from the pull.
+
+The spray kept coming. The tails stayed tight. Above her she could hear the Buizel panting, fast and high, and that was the only comfort she had: it was costing her something too.
+
+== pin struggle
+The channel was right there. Ripples could hear it.
+
+It lapped against the stone a long stride behind her head, deep and dark and cold, and if she could get to it she would be gone. Between her and it was the Absol. The white body lay heavy across her hips and stomach, pressing her into the shallow pool, and a broad forepaw was flat on her chest.
+
+She wriggled. She did it slowly at first, a shift of the shoulders, a push of the heels against the slick stone under the water, inching herself upward, toward the channel, out from under. The algae helped. It was slippery as soap, and her back slid on it.
+
+She moved a whisker. Another.
+
+*Keep going. She hasn't noticed.*
+
+The Absol had noticed. Ripples felt the weight on her hips shift, and the hind paws find the stone beyond her feet, and the whole white body came forward with her, smoothly, as if they had planned it together. The paw on her chest slid up to her collarbone and pressed. The chest followed it down onto her stomach.
+
+She had gained nothing. Worse: she had lost the room she had had at her hips, and her breath was shorter now under the heavier weight.
+
+She tried again, hard, all at once, heels and shoulders and both tails slapping the water under her. The algae let her slip a finger's width. The Absol's weight came after her and pinned her there.
+
+Ripples lay back in the shallow pool, panting, and listened to the channel lap against the stone.
+
+== getup
+Nocturne's first try at standing put her straight back down on her chin.
+
+The ice was the trouble. She had got her forepaws under her and pushed, and both of them had slid apart on the glassy grey surface, and her chest had dropped back onto the lake with a thump that knocked a cough out of her. Her back ached where she had landed. Her horn scraped the ice.
+
+*Not like that. Not like a fool.*
+
+She lay still and thought. Then she drew her hind legs up under her, slowly, and drove the spikes on her heels down into the ice until she felt them bite. They held. She rocked her weight back onto them and let her haunches come up first, the way she would rise from deep snow, with her forelegs still flat on the ice in front of her, taking nothing.
+
+Only then did she bring the forepaws in, close together beneath her chest, claws spread. She pushed up with her hind legs doing most of it. Her front came off the ice. Her elbows locked. The ache in her back flared at the change and she let it, and stood.
+
+She stood with her legs braced wide and her head low, a little unsteady, the heel spikes still dug in. Her ruff was full of ice crumbs. Her breath came out in short white bursts.
+
+The Buizel was watching from across the ice. She had not come closer. Nocturne lifted her head, slowly, and shook the ice out of her ruff, and pointed her horn at her.
+
+== getup
+The mud did not want to let her go.
+
+Ripples had come down on her back in it, deep, and when she tried to sit up it held her shoulders with a long, wet suck and pulled her straight back down. She lay there, blinking brown water out of her eyes. Her hip ached from the fall. Her tails were somewhere underneath her, stuck fast.
+
+*Don't fight it. Fighting it is how you sink.*
+
+She rolled instead. It was slow; the mud came with her in a great sticky sheet and fell off her side in clumps. She got onto her stomach, then onto her knees, mud to her elbows and dripping from her chin. Her twin tails came up out of it last, heavy, plastered to her legs, and she swung them hard to shake them free, and a spatter of brown flew off them across the reeds.
+
+A drowned log lay within reach. She hooked her webbed paws over it, and its bark was slimy and soft, but under the slime the wood was solid. She pulled. Her hip complained. Her knees came up out of the muck with a slurp, and she got a foot flat on the log's edge and pushed herself the rest of the way upright.
+
+She stood on the log, swaying, orange fur gone brown to the chest, cream stomach hidden under a crust of it. It was not dignified. It was standing.
+
+The Absol was wading toward her through the reeds, slow and filthy and furious. Ripples flicked the mud from her fins and showed her teeth.
