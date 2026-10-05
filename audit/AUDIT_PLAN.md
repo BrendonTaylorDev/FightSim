@@ -49,7 +49,7 @@ Tool: `sim/harness.py`. `H.session(seed, scene=..., settings=[...])` and `H.beat
 - **Afterwards:** a pass over the narrator's own checks (tense, missing hits, anatomy...), same approach.
 
 ## Status
-- [x] A (report_A.md; fixed)  [x] B (report_B.md; fixed)  [ ] C  [ ] D  [ ] E: reports go in `audit/report_X.md` as they come in. (First run: all five were stopped by a usage limit before reporting. Now run ONE group at a time to limit usage, in order A, B, C, D, E; each saves findings to scratchpad audit_X/report.md as it goes, copied here as audit/report_X.md.)
+- [x] A (report_A.md; fixed)  [x] B (report_B.md; fixed)  [~] C (paused: partial findings in report_C_partial.md, continue from C7)  [ ] D  [ ] E: reports go in `audit/report_X.md` as they come in. (First run: all five were stopped by a usage limit before reporting. Now run ONE group at a time to limit usage, in order A, B, C, D, E; each saves findings to scratchpad audit_X/report.md as it goes, copied here as audit/report_X.md.)
 - [ ] Coverage cross-check against the inventories; anything not exercised goes to a second round.
 - [ ] Fix every confirmed bug, rerun the regression checks and balance, commit and push.
 
@@ -65,3 +65,6 @@ Balance is checked once, after ALL groups' bugs are fixed (user's call), not aft
 
 ## Later
 Speed mechanics: a faster fighter attacks or dodges more, and a stronger one hits harder. Do this after the audit.
+
+## Resuming
+The audit is paused. To continue, rerun the group C auditor from audit/audit_brief.md (the paths there point to the old session's scratchpad: use a new scratch folder). It should start from report_C_partial.md, then fix C, then do D and E, one at a time. Balance is checked only at the very end.
