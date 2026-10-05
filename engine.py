@@ -1090,6 +1090,7 @@ class Engine:
             charged = self._charge(a, d, move, plan, powers, charge_into)
             hits = hits + charged["hits"]
         self._attacked(a.name, [d.name], landed=bool(hits))
+        flavor = self._flavor_fits_move(flavor, move)
         res = {"type": "instant", "attacker": a.name, "defender": d.name, "defenders": [d.name],
                "uses_left": a.move_uses.get(move["name"]), "energy": [round(energy_before), round(a.energy)],
                "flavor": flavor, "move": math, "hit_count": len(hits), "hits": hits,
@@ -4575,6 +4576,23 @@ class Engine:
         if got < need:
             why.append(f"{d.name} has taken only {got} of the {need} attacks needed since the last pin attempt")
         return (not why), "; ".join(why)
+
+    _WEAPON_RX = {"claws": r"\bclaws?\b|\btalons?\b|\bscratch|\brak(?:e|es|ed|ing)\b|\bswipe",
+                  "teeth": r"\bbit(?:e|es|ing)?\b|\bfangs?\b|\bteeth\b|\bjaws?\b|\bcrunch",
+                  "tail": r"\btails?\b", "horn": r"\bhorn|\bgore"}
+
+    @classmethod
+    def _flavor_fits_move(cls, flavor, move):
+        """The director's one-line label for an attack ("claws raking down the side") is dropped when it names a
+        different natural weapon from the move's own (Iron Tail is the tail): the screen and the story then use
+        the move's name, and the narrator isn't told two different weapons."""
+        text = str(flavor or "")
+        if not text or not move:
+            return text
+        own = " ".join(str(move.get(k) or "") for k in ("name", "description", "about", "flavor"))
+        mine = {w for w, rx in cls._WEAPON_RX.items() if re.search(rx, own, re.I)}
+        said = {w for w, rx in cls._WEAPON_RX.items() if re.search(rx, text, re.I)}
+        return "" if mine and said and not (said & mine) else text
 
     @staticmethod
     def _grip_flavor_fix(flavor, d, started):

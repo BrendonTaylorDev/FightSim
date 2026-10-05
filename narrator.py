@@ -1563,6 +1563,15 @@ LANDED = re.compile(r"\b(?:landed|landing (?:hard|badly|heavily)|hit the (?:grou
 AIRBORNE = re.compile(r"\b(?:mid-?air|in the air|through the air|airborne|in flight|sail\w* through|arc\w* through)\b",
                       re.I)
 
+# how big a reaction is: the words that need a part at least this badly hurt (part damage %)
+INTENSE = (
+    (150, re.compile(r"\b(?:scream\w*|shriek\w*|howl\w*|agon\w+|unbearable|excruciating|white-hot|blinding|writh\w+|"
+                     r"unfiltered|pure (?:pain|agony)|(?:world|clearing|everything|vision) (?:blurred|spun|swam|tilted|"
+                     r"wavered|went (?:white|grey|gray|black|dark)))\b", re.I)),
+    (90, re.compile(r"\b(?:cr(?:y|ied|ies) out|(?:a|the) (?:raw |sharp |desperate )?cry (?:tore|ripped|burst|broke)|"
+                    r"explod\w+|searing|wave of (?:pain|agony)|tore through|ripped through)\b", re.I)),
+)
+
 # the plain ground under them: landing on it needs no naming
 PLAIN_GROUND = {"ground", "grass", "earth", "floor", "dirt", "sand", "rock", "stone", "mud", "ice", "snow", "deck",
                 "soil", "turf", "clearing", "shallows", "water", "beach", "ledge", "shore"}
@@ -2400,6 +2409,9 @@ class Narrator:
         clash_types = {str((a.get("clash") or {}).get("move_type", "")).lower() for a in actions if a.get("clash")}
         # every move name seen in the fight: one dropped into a sentence as a bare label ("her throat swelled—Hydro
         # Pump—with the force") is the notes leaking into the prose
+        if getattr(self, "_moves_before_beat", None) != getattr(self, "_beat_no", 0):
+            self._moves_before_beat = getattr(self, "_beat_no", 0)
+            self._moves_before = set(getattr(self, "_move_names", set()))
         self._move_names = set(getattr(self, "_move_names", set())) | {
             str(m.get("name")) for m in moves if m.get("name")} | {
             str((a.get("clash") or {}).get("move")) for a in actions if (a.get("clash") or {}).get("move")}
@@ -6565,6 +6577,25 @@ class Narrator:
             rows.append("no bone breaks, cracks, snaps or gives way" + (
                 f" except in {', '.join(p.title() for p in ok)}, which can now break" if ok else
                 ": bones bruise and ache only"))
+        groups = {}
+        for w in (self.strengths or {}):
+            ceil = self._pain_ceiling(w)
+            if ceil:
+                groups.setdefault(ceil[3], []).append(f"{w} {ceil[4]}")
+        for allowed, who in groups.items():
+            rows.append("how much it hurts: " + ", ".join(who) + f" at worst, so {allowed}")
+        coats = []
+        for w in (self.strengths or {}):
+            if w in (getattr(self, "soaked_now", None) or set()) and w not in (getattr(self, "soaked_before", None) or set()):
+                coats.append(f"{w} DRY until this beat's water soaks her")
+            elif w in (getattr(self, "soaked_now", None) or set()):
+                coats.append(f"{w} soaked")
+            elif w in (getattr(self, "soaked_before", None) or set()):
+                coats.append(f"{w} damp, drying")
+            elif w not in (getattr(self, "water_types", None) or set()):
+                coats.append(f"{w} DRY (nothing has wet her yet)")
+        if coats and not getattr(self, "_wet_beat", False):
+            rows.append("fur: " + ", ".join(coats))
         eyes = {w: c for w, c in (getattr(self, "eye_colors", None) or {}).items() if w in (self.strengths or {})}
         if len(set(eyes.values())) > 1:
             rows.append("eyes: " + ", ".join(f"{w} {c}" for w, c in eyes.items()))
@@ -6573,6 +6604,43 @@ class Narrator:
         if mode == "rare" and since <= int(self.rules.get("narration", {}).get("swearing_gap", 5)):
             rows.append("no swearing (there was a curse just recently)")
         return ("CHECKED IN THIS BEAT: " + "; ".join(rows) + ".\n\n") if rows else ""
+
+    def _pain_ceiling(self, who):
+        """How big her reactions can be, from the engine's numbers: (worst damage, worst part, note) or None when
+        nothing limits it (a part is already excruciating, she is fading, held or choking, or worn out overall)."""
+        parts = (getattr(self, "damage_by", None) or {}).get(who) or {}
+        if not parts or getattr(self, "_pin_beat", False) or getattr(self, "_faint", None) \
+                or (self.strengths or {}).get(who, 100) < 40:
+            return None
+        part, worst = max(parts.items(), key=lambda kv: kv[1])
+        if worst >= 150:
+            return None
+        label = self._pain(worst)["label"] if worst > 0 else "unhurt"
+        allowed = ("she may cry out, but no screaming, no 'agony', no writhing, and the world doesn't blur or spin"
+                   if worst >= 90 else
+                   "no crying out, no screams, no 'agony' or 'waves of pain', nothing 'explodes', and the world doesn't "
+                   "blur or spin: a grunt, a hiss, a wince, and she fights on")
+        where = f" ({part})" if worst > 0 else ""
+        return worst, part, f"how much {who} hurts: at worst {label.upper()}{where}, so {allowed}", allowed, \
+            f"{label.upper()}{where}"
+
+    def _too_intense(self, text):
+        """Sentences whose reaction is bigger than the fighter's worst injury allows: [(sentence, why)]."""
+        out = []
+        if not self.rules.get("narration", {}).get("accuracy_check", True):
+            return out
+        for sent, whos, named in self._said(text):
+            if len(whos) != 1 or sent.lstrip().startswith("*"):
+                continue
+            ceil = self._pain_ceiling(whos[0])
+            if not ceil:
+                continue
+            for need, rx in INTENSE:
+                m = rx.search(sent)
+                if m and ceil[0] < need:
+                    out.append((sent, f"\"{m.group(0)}\" is too much: {ceil[2]}"))
+                    break
+        return out
 
     def _talk_problem(self, text, prior=""):
         spoken_left, thoughts = self._talk_allowance(prior)
@@ -7005,6 +7073,13 @@ class Narrator:
                         r"\b(bounc\w*|tumbl\w*|skid\w*|roll\w*|again|second)\b", s, re.I):
                     add(s, "she has already landed: this goes back to the throw and tells it again. Go on from the "
                            "landing instead")
+        for mv in (getattr(self, "_move_names", None) or set()) - (getattr(self, "_moves_before", None) or set()):
+            rx = re.compile(r"\b(?:last|that|earlier|previous|other|the first)\s+" + re.escape(mv) + r"\b", re.I)
+            for x in sents:
+                if rx.search(x):
+                    add(x, f"it remembers an earlier {mv}, but this is the first {mv} of the fight: nothing to remember")
+        for sent, why in self._too_intense(text):
+            add(sent, why)
         for sent, phrase in self._repeated_phrases(text, prior):
             alt = self._other_wording(phrase)
             add(sent, f"it repeats \"{phrase}\", already used in this beat: say it a different way"
