@@ -353,6 +353,9 @@ class Engine:
     def match_roster(self, want):
         """The fighter in fighters.json that a typed name means: exact, then by how it starts, then anywhere in it."""
         w = str(want).strip().strip(",").lower()
+        sp = [n for n in self.roster if w and (self.roster_species.get(n) or "").lower() == w]
+        if len(sp) == 1:
+            return sp[0]      # by species: "Charizard" -> Cinder
         for test in (lambda n: n.lower() == w, lambda n: n.lower().startswith(w), lambda n: w in n.lower()):
             hits = [n for n in self.roster if w and test(n)]
             if len(hits) == 1:
@@ -381,6 +384,11 @@ class Engine:
 
     def get(self, name):
         key = str(name).strip().strip("<>[]\"'").strip().lower()
+        if key not in self.fighters and key:
+            sp = [k for k, f in self.fighters.items()
+                  if species_of(f.description, getattr(f, "appearance", "")).lower() == key]
+            if len(sp) == 1:
+                key = sp[0]   # by species: "Charizard" -> Cinder
         if key not in self.fighters and key:
             close = difflib.get_close_matches(key, list(self.fighters), n=2, cutoff=0.75)
             if len(close) == 1:

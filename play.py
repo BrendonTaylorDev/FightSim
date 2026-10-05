@@ -3413,7 +3413,9 @@ def handle_command(s, line):
         s.play_beat(manual=b); return
     if cmd in ("fighters", "roster"):
         inn = s.lineup()
-        print("In fighters.json: " + ", ".join(f"{n}{' (in this fight)' if n in inn else ''}" for n in s.eng.roster)
+        sp = getattr(s.eng, "roster_species", {}) or {}
+        print("In fighters.json: " + ", ".join(f"{n}{f' ({sp[n]})' if sp.get(n) else ''}{' [in this fight]' if n in inn else ''}"
+                                               for n in s.eng.roster)
               + f"\nThis is fight {s.fight_no}. /newfight <names> starts a fresh one with the fighters you name "
                 "(two or more); /newfight all brings everyone in."); return
     if cmd in ("newfight", "rematch", "restart"):
