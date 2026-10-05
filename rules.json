@@ -136,7 +136,7 @@
     "_auto_spill_comment": "A targeted strike that names only one body part also jars the parts right next to it (a jaw strike catches the muzzle and neck). parts = how many neighbors; factor = their power as a share of the move's base power. Set parts to 0 to turn it off.",
     "auto_spill": {
       "_comment": "A single solid blow jars what's around it (half power by default). chance: how often it jars anything at all (a roll each blow); parts: at most this many neighbours, the dice pick 1 to parts.",
-      "chance": 0.75,
+      "chance": 0.9,
       "parts": 2,
       "factor": 0.5
     },
