@@ -114,6 +114,7 @@
    "events": [
     {
      "name": "a stalactite falls",
+     "mark": "the broken stalactite lies in shards on the cave floor",
      "text": "With a crack, a stalactite lets go of the ceiling and comes down point-first",
      "who": "anyone",
      "weight": 1,
@@ -289,6 +290,7 @@
    "events": [
     {
      "name": "a log comes over the fall",
+     "mark": "the log the fall threw up lies wedged across the shelf",
      "text": "A drifting log tips over the lip of the fall, crashes into the pool and is flung end over end across the shelf",
      "who": "standing",
      "weight": 1,
@@ -853,6 +855,7 @@
    "events": [
     {
      "name": "an icicle drops",
+     "mark": "a shattered icicle lies in splinters under the overhang",
      "text": "Something cracks under the overhang, and an icicle as long as a foreleg comes down like a spear",
      "who": "anyone",
      "weight": 1,
@@ -1039,6 +1042,7 @@
    "events": [
     {
      "name": "a branch comes down",
+     "mark": "the torn-down branch lies across the clearing in the rain",
      "text": "The wind tears a dead branch out of the canopy and it comes down through the rain, turning",
      "who": "anyone",
      "weight": 1,
@@ -1241,6 +1245,7 @@
     },
     {
      "name": "the cargo hook swings across",
+     "mark": "the cargo hook still sways on its chain over the deck",
      "text": "The hull rolls, and the derrick's iron hook swings across the deck on its chain at head height",
      "who": "standing",
      "weight": 1,
@@ -1405,6 +1410,7 @@
     },
     {
      "name": "a pillar sheds a block",
+     "mark": "the fallen block lies cracked in the sand at the pillar's foot",
      "text": "A leaning pillar shifts in the wind, and its top block slides off and comes down",
      "who": "anyone",
      "weight": 1,
@@ -1535,6 +1541,7 @@
    "events": [
     {
      "name": "the roof sheds stones",
+     "mark": "a scatter of fallen stones and grit covers the gallery floor",
      "text": "The roof ticks, cracks, and lets go of a shower of stones and dust",
      "who": "anyone",
      "weight": 1,
@@ -1554,6 +1561,7 @@
     },
     {
      "name": "the ore cart rolls",
+     "mark": "the ore cart sits a few lengths further down the rails, tipped on one wheel",
      "text": "The derailed cart, jarred loose, grinds off its side onto one wheel and rolls a few lengths down the rails",
      "who": "standing",
      "weight": 1,
@@ -1570,6 +1578,7 @@
     },
     {
      "name": "a prop gives way",
+     "mark": "a folded timber prop and the slab it held lie in pieces on the gallery floor",
      "text": "One of the bowed timber props folds with a groan, and a slab of the roof behind it comes down in pieces",
      "who": "anyone",
      "weight": 1,
@@ -1709,6 +1718,7 @@
    "events": [
     {
      "name": "the pendulum sweeps through",
+     "mark": "the pendulum swings on, the air still stirring in its path",
      "text": "The pendulum comes back across the room on its slow sweep, and this time she is in its path",
      "who": "standing",
      "weight": 1,
@@ -2218,6 +2228,7 @@
    "events": [
     {
      "name": "a pillar topples",
+     "mark": "a fallen pillar lies broken across the floor in a fan of stone",
      "text": "A cracked pillar groans, leans, and comes down in a roar of breaking stone",
      "who": "anyone",
      "weight": 2,
@@ -2237,6 +2248,7 @@
     },
     {
      "name": "masonry falls",
+     "mark": "a chunk of carved masonry lies cracked at the foot of the wall",
      "text": "A chunk of carved masonry breaks off the top of the wall and drops",
      "who": "anyone",
      "weight": 1,

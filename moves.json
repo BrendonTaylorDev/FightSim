@@ -340,6 +340,7 @@
   },
   {
    "name": "Thrash",
+   "ranged": false,
    "type": "Normal",
    "power": 40,
    "target": "spread",
@@ -354,6 +355,7 @@
   },
   {
    "name": "Spin Attack",
+   "ranged": false,
    "type": "Normal",
    "power": 17,
    "target": "spread",
@@ -1156,6 +1158,7 @@
   },
   {
    "name": "Petal Dance",
+   "ranged": false,
    "type": "Grass",
    "power": 40,
    "target": "spread",
@@ -1821,6 +1824,7 @@
   },
   {
    "name": "Bulldoze",
+   "ranged": false,
    "type": "Ground",
    "power": 7,
    "target": "whole_body",
@@ -1834,6 +1838,7 @@
   },
   {
    "name": "Earthquake",
+   "ranged": false,
    "type": "Ground",
    "power": 11,
    "target": "whole_body",
@@ -2542,6 +2547,7 @@
   },
   {
    "name": "Outrage",
+   "ranged": false,
    "type": "Dragon",
    "power": 40,
    "target": "spread",
@@ -2716,6 +2722,7 @@
   },
   {
    "name": "Brutal Swing",
+   "ranged": false,
    "type": "Dark",
    "power": 7,
    "target": "whole_body",
@@ -2828,6 +2835,7 @@
   },
   {
    "name": "Play Rough",
+   "ranged": false,
    "type": "Fairy",
    "power": 30,
    "target": "spread",

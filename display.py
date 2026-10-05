@@ -1123,7 +1123,7 @@ class Display:
                 if not self.tight():
                     out.append("")
                 out.append(f"🌋 **{e.get('place', 'the arena').capitalize()} acts: {e['name']}** — on {' and '.join(e['fighters'])}"
-                           + (" (your /hazard)" if e.get("forced") else f" (chance {e.get('chance', 0) * 100:.0f}% a beat)"))
+                           + (" (your /hazard)" if e.get("forced") else " (shaken loose by the impact)" if e.get("shaken") else f" (chance {e.get('chance', 0) * 100:.0f}% a beat)"))
                 by = {}
                 for h in e.get("hits") or []:
                     by.setdefault(h["defender"], []).append(h)

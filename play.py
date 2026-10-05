@@ -2429,7 +2429,12 @@ def handle_command(s, line):
         if not a:
             raise ValueError("name the zones: " + ", ".join(sorted(zones_cfg)) + "  (or off)")
         if a[0].lower() in ("off", "none", "any", "anywhere"):
-            focus.pop(who, None)
+            if who == "*":
+                focus.clear()          # off for everyone: every fighter's own focus too
+            elif "*" in focus:
+                focus[who] = []        # her own "off" outranks the focus set for everyone
+            else:
+                focus.pop(who, None)
             msg = "off"
         else:
             zones = [z.lower() for z in " ".join(a).replace("+", " ").replace(",", " ").split()]

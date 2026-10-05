@@ -1547,6 +1547,7 @@ class Director:
             if extra:
                 rng_hint = (rng_hint + "\n" + extra).strip()
         fresh = variety_hint(engine) if not direction else ""
+        engine.weak_aim = set()    # last beat's weak-spot aim never carries over (the hint sets it again if it runs)
         weak = weak_spot_hint(engine) if not direction and not fresh else ""
         if weak:
             rng_hint = (rng_hint + "\n" + weak).strip()
@@ -2396,7 +2397,9 @@ def charge_hint(engine, prefer=None, roll=None):
         if (f.name in engine.downed or engine.pinned_by(f.name)
                 or any(engine.has(f, st) for st in ("flinched", "asleep", "frozen"))):
             continue
-        foes = [x for x in engine.active() if x.team != f.team and x.name not in engine.downed]
+        # a charge on the ground can't reach a fighter in the air (one in the air can dive-charge anyone)
+        foes = [x for x in engine.active() if x.team != f.team and x.name not in engine.downed
+                and (engine.has(f, "airborne") or not engine.has(x, "airborne"))]
         if foes and f.energy >= 25:
             options.append((f, foes))
     if not options:
@@ -2428,9 +2431,10 @@ def grapple_hint(engine, prefer=None, roll=None):
         last = getattr(engine, "_last_manhandle", {}).get(f.name)
         if (f.name in engine.downed or engine.pinned_by(f.name) or f.name in engine.pressed or f.energy < 20
                 or (last is not None and engine.turn - last < cool)
-                or any(engine.has(f, st) for st in ("flinched", "asleep", "frozen"))):
+                or any(engine.has(f, st) for st in ("flinched", "asleep", "frozen", "airborne"))):
             continue
-        foes = [x for x in engine.active() if x.team != f.team and x.name not in engine.downed]
+        foes = [x for x in engine.active() if x.team != f.team and x.name not in engine.downed
+                and not engine.has(x, "airborne")]
         if foes:
             options.append((f, foes))
     if not options:
@@ -2459,10 +2463,10 @@ def clinch_hint(engine, prefer=None, roll=None):
     options = []
     for f in engine.active():
         if (f.name in engine.downed or engine.pinned_by(f.name) or f.name in engine.pressed or f.energy < 25
-                or any(engine.has(f, st) for st in ("flinched", "asleep", "frozen"))):
+                or any(engine.has(f, st) for st in ("flinched", "asleep", "frozen", "airborne"))):
             continue
         foes = [x for x in engine.active() if x.team != f.team and x.name not in engine.downed
-                and not engine.grab_between(f.name, x.name)]
+                and not engine.grab_between(f.name, x.name) and not engine.has(x, "airborne")]
         if foes:
             options.append((f, foes))
     if not options:

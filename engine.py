@@ -845,6 +845,8 @@ class Engine:
         if self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
                 and move.get("target") not in ("status", "hold", "self") and not move.get("carry"):
             extras = extras + [("diving from above", float((self.rules.get("flight") or {}).get("dive_mult", 1.3)))]
+        if move.get("improvised"):
+            stab = 1.0    # a technique she makes up on the spot isn't one of her own type's moves: no same-type bonus
         xm = 1.0
         for _, m in extras:
             xm *= m
@@ -854,8 +856,6 @@ class Engine:
             effective = round(move["power"] * aim * stab * xm, 2)
         word = ("no effect" if tmult == 0 else "super effective" if tmult > 1
                 else "not very effective" if tmult < 1 else "normal")
-        if move.get("improvised"):
-            stab = 1.0
         return {"name": move["name"], "type": move["type"], "base": move["power"],
                 "vs": f"{move['type']} vs {'/'.join(d.types) or 'typeless'}", "type_mult": tmult,
                 "target": target, "target_mult": aim, "stab": stab, "effective": effective,
@@ -1124,6 +1124,8 @@ class Engine:
         if hits and int(sustain or 0) > 1 and move.get("sustainable"):
             sustained = self._sustain(a, d, move, plan, powers, int(sustain), against, enforce)
             hits = hits + [h for pulse in sustained["pulses"] for h in pulse["hits"]]
+            if not sustained["pulses"] and not sustained.get("broke"):
+                sustained = None     # out of breath after the first blast: a plain hit, nothing held
         charged = None
         if hits and charge_into and not sustained:
             charged = self._charge(a, d, move, plan, powers, charge_into)
@@ -1341,7 +1343,7 @@ class Engine:
         if falls and shake > 0 and not getattr(self, "_forced_event", None) and re.search(
                 r"wall|stalagmite|pillar|column|boulder|tree|trunk|rock|cliff|pylon|beam|mast", out.get("last") or into, re.I) \
                 and self._chance(shake, f"the slam into {out.get('last') or into} shaking something loose", "something comes down", "no"):
-            self._forced_event = (self.rng.choice(falls), d.name)
+            self._forced_event = (self.rng.choice(falls), d.name, "shaken loose")
             out["shook_loose"] = True
         self.involved.update({a.name, d.name})
         self._count("charged", d.name)
@@ -1436,21 +1438,70 @@ class Engine:
         live = [p for p in props if not self.is_broken(p)]
         return live or (props and [self.scene_word("ground")]) or [self.scene_word("ground")]
 
+    _TRAIL = re.compile(r"\s+(?:at|by|near|beside|on|in|along|under|below|above) (?:the |a |an )?.*$")
+
+    def feature_for(self, surface):
+        """The tracked feature (hazard) some words mean, read from the thing itself: "a boulder at the edge of the
+        beach" is the boulder, not the beach. None if the arena tracks no such feature."""
+        s = " ".join(str(surface or "").lower().replace("’", "'").split())
+        if not s:
+            return None
+        for h in self.scene_cfg.get("hazards") or []:        # its own name, said exactly
+            if s == str(h.get("name", "")).lower():
+                return h
+        if self._EDGE_OF.match(s) or s.split()[-1] in self._EDGE_WORDS:
+            return None        # "the rim of the well", "the rock pool's edge": a thing of its own, not the well
+        head = self._TRAIL.sub("", s)    # "a boulder at the edge" is a boulder or nothing tracked, never the edge
+        # the thing itself is the last word: "the bell frame" is a frame, not the great bell
+        return next((h for h in self.scene_cfg.get("hazards") or [] if any(
+            head.endswith(str(w).lower()) or head.endswith(str(w).lower() + "s") for w in h.get("words") or [])), None)
+
+    def feature_key(self, surface):
+        """One name per feature, for remembering what has broken: the feature's own name, else the words given."""
+        h = self.feature_for(surface)
+        return str(h["name"]).lower() if h else short_phrase(str(surface or "")).lower().strip()
+
+    @staticmethod
+    def _is_solid(h):
+        """Something to be driven into, pinned against or broken: upright, or with a break chance of its own, and
+        not water, sand or snow that gives under her."""
+        return bool(h) and not h.get("cushion") and bool(h.get("upright") or h.get("break") is not None)
+
     def is_broken(self, surface):
-        """Has this thing in the arena already broken in this fight?"""
-        s = short_phrase(str(surface or "")).lower()
-        gone = list(getattr(self, "broken_props", []) or []) + [m.split(" lies broken")[0].lower()
-                                                                  for m in getattr(self, "arena_marks", []) or [] if " lies broken" in m]
-        key = (re.findall(r"[a-z]{3,}", s) or [""])[-1]     # what the thing is: "the oak" and "an old oak" match
-        return bool(key) and any(key in re.findall(r"[a-z]{3,}", g) for g in gone)
+        """Has this thing in the arena already broken in this fight? Compared feature by feature, so breaking an
+        ice pillar leaves the thin ice whole."""
+        key = self.feature_key(surface)
+        gone = {self.feature_key(g) for g in list(getattr(self, "broken_props", []) or [])
+                + [m.split(" lies broken")[0] for m in getattr(self, "arena_marks", []) or [] if " lies broken" in m]}
+        return bool(key) and key in gone
 
     def scene_prop_for(self, surface):
-        """The arena's own prop that some words mean ("the oak" -> "an old oak"), or None if the arena has no such
-        thing standing (it isn't in this arena, or it has already broken)."""
+        """The arena's own solid thing that some words mean ("the oak" -> "an old oak", "the icicles"), or None if
+        the arena has no such thing standing (it isn't here, it has broken, or it is water or sand, not a solid)."""
+        h = self.feature_for(surface)
+        said = " ".join(str(surface or "").lower().replace("’", "'").split())
+        for p in self.scene_cfg.get("props") or []:     # one of the arena's props, named as the arena names it
+            if said == str(p).lower():
+                return None if self.is_broken(p) else p
+        if h and not self._is_solid(h):
+            # water, sand, roots: only an edge or rim of it the arena lists as a prop ("the rim of the well")
+            last = (re.findall(r"[a-z]{3,}", said) or [""])[-1]
+            return next((p for p in self.scene_cfg.get("props") or [] if self.feature_for(p) is h
+                         and last in re.findall(r"[a-z]{3,}", str(p).lower()) and last in self._EDGE_WORDS
+                         and not self.is_broken(p)), None)
+        if h:
+            if self.is_broken(h["name"]):
+                return None
+            for p in self.scene_cfg.get("props") or []:     # the arena's own wording for it
+                if self.feature_for(p) is h:
+                    return p
+            return h["name"]
         s = str(surface or "").lower()
         for p in self.scene_cfg.get("props") or []:
+            if self.feature_for(p):
+                continue          # a tracked feature: only matched through its own words above
             words = re.findall(r"[a-z]{3,}", str(p).lower())
-            if words and words[-1] in s and not self.is_broken(p):
+            if words and re.search(rf"\b{re.escape(words[-1])}s?\b", s) and not self.is_broken(p):
                 return p
         return None
 
@@ -1484,9 +1535,11 @@ class Engine:
     def break_chance(self, surface, table):
         """How likely something is to break when a fighter is driven or pressed into it: the arena's own number for
         that feature, else the rules' table by keyword."""
-        h = self.hazard_for(surface)
+        h = self.feature_for(surface)
         if h and h.get("break") is not None:
             return float(h["break"])
+        if h and not self._is_solid(h):
+            return 0.0            # water, sand, roots: nothing there to break
         s = str(surface or "").lower()
         return next((float(v) for k, v in (table or {}).items() if k != "default" and k in s),
                     float((table or {}).get("default", 0.15)))
@@ -1523,6 +1576,11 @@ class Engine:
         lines = []
         for h in self.scene_cfg.get("hazards") or []:
             does = [f"{round(100 * float(e.get('chance', 1)))}% {e['status']}" for e in h.get("effects") or []]
+            if self.is_broken(h["name"]):   # it has given way in this fight: nothing standing to drive her into
+                lines.append(f"- {h['name']}: BROKEN in this fight, lying in pieces: it can't be driven, pressed or "
+                             f"pinned into any more" + (f" [landing in the wreckage still rolls: {'; '.join(does)}]"
+                                                        if does else ""))
+                continue
             if h.get("break"):
                 does.append(f"breaks {round(100 * float(h['break']))}% of the time when someone is driven or pressed into it")
             if h.get("cushion"):
@@ -1557,11 +1615,13 @@ class Engine:
             ev = rng.choices(evs, [float(e.get("weight", 1)) for e in evs])[0]
             want = None
         else:
-            ev, want = forced
+            ev, want = forced[0], forced[1]
         pinned = {p["defender"] for p in self.pins.values()}
         who = ev.get("who", "anyone")
         pool = ([f for f in live if f.name in self.downed and f.name not in pinned] if who == "down" else
                 [f for f in live if f.name not in self.downed] if who == "standing" else live)
+        if not pool and forced:
+            pool = live      # your /hazard happens whoever it finds: it isn't lost because nobody is down
         if want:
             victims = [self.get_active(want)]
         elif who == "all":
@@ -1594,11 +1654,12 @@ class Engine:
                     status.append({"fighter": f.name, "status": eff["status"], "beats": int(eff.get("beats", 2))})
             self.involved.add(f.name)
         if ev.get("severity") in ("solid", "heavy", "brutal") or ev.get("mark"):
-            self.mark_arena(str(ev.get("mark") or f"{ev.get('name', 'something')} has left its mark on {self.scene_word('place')}"))
+            self.mark_arena(str(ev.get("mark") or f"{self.scene_word('place')} still shows where {ev.get('name', 'something happened')}"))
         return [{"type": "scene_event", "name": ev.get("name", "something happens"), "text": ev.get("text", ""),
                  "who": who, "fighters": [f.name for f in victims], "hits": hits, "status_applied": status,
                  "severity": ev.get("severity"), "words": list(ev.get("words") or []), "chance": chance,
-                 "forced": bool(forced), "place": self.scene_word("place")}]
+                 "forced": bool(forced) and len(forced) < 3,         # your /hazard (not one a charge shook loose)
+                 "shaken": bool(forced) and len(forced) >= 3, "place": self.scene_word("place")}]
 
     def force_event(self, which, fighter=None):
         """Make one of this arena's events happen at the end of the next beat (your /hazard command)."""
@@ -1721,8 +1782,8 @@ class Engine:
                     break
             out["pulses"].append(pulse)
         out["held"] = 1 + len(out["pulses"])
-        if back and not out["broke"]:
-            # she slides down whatever she was pressed against
+        if back and not out["broke"] and out["pulses"]:
+            # she slides down whatever she was pressed against (only if the stream really held her there)
             self.knock_down(d.name, parts=back, why=f"{d.name} was driven down against {against}")
             out["knock_on"], self._knock_on = self._knock_on, []
         out["facing"] = self.facing_of(d.name)
@@ -5577,7 +5638,8 @@ class Engine:
     def focus_for(self, attacker):
         """The zones this attacker should aim at (/focus), or []."""
         focus = self.rules.get("director", {}).get("focus", {}) or {}
-        return focus.get(self.get(attacker).name) or focus.get("*") or []
+        name = self.get(attacker).name
+        return list(focus[name]) if name in focus else (focus.get("*") or [])   # [] of her own = off for her
 
     def force_recover(self, name, to=None):
         """Your command, after the match: move a knocked-out fighter up to a recovery stage now (default: one
