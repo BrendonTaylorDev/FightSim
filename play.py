@@ -3137,7 +3137,7 @@ def _run(s, args):
     if getattr(s.eng, "settings_applied", 0):
         print(f"Your saved settings: {s.eng.settings_applied} value(s) from my_settings.json applied over rules.json "
               f"(/settings lists them)")
-    dm, nm = args.director_model or args.model, args.narrator_model or args.model
+    dm, nm = s.director.model, s.narrator.model   # what this run really uses (a /model choice is kept)
     print(f"Model: {nm}" + (f"  (director: {dm})" if dm != nm else "")
           + f"{'  (models off: --no-llm)' if args.no_llm else ''}\n")
     if getattr(args, "scene", ""):
