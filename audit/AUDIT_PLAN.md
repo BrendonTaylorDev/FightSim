@@ -49,11 +49,19 @@ Tool: `sim/harness.py`. `H.session(seed, scene=..., settings=[...])` and `H.beat
 - **Afterwards:** a pass over the narrator's own checks (tense, missing hits, anatomy...), same approach.
 
 ## Status
-- [ ] A  [ ] B  [ ] C  [ ] D  [ ] E: reports go in `audit/report_X.md` as they come in.
+- [ ] A  [ ] B  [ ] C  [ ] D  [ ] E: reports go in `audit/report_X.md` as they come in. (First run: all five were stopped by a usage limit before reporting; they were restarted.)
 - [ ] Coverage cross-check against the inventories; anything not exercised goes to a second round.
 - [ ] Fix every confirmed bug, rerun the regression checks and balance, commit and push.
 
 Balance targets: Nocturne wins about 60% against Ripples (never change Ripples' stats); about 8 pins and 1 submission a fight. Check with 400 simulated fights (simulate.one_fight, lakeside forest).
+
+## Requests added during the audit
+- **Twisting, worrying and wrenching** in pins and submissions: jaws on the neck twisting, a limb twisted further, a grip worried at. The damage ramp already exists, so this is mostly about showing the tightening in more ways (screen and narrator notes), plus any small damage it should add.
+- **Grip continuity after a pin breakout** (from a live log): Ripples' jaws stayed on Nocturne's throat in the story after Nocturne broke out, but the engine had ended every grip. Next beat Ripples had to bite again for a second pin. Either the engine keeps a grip that survives the breakout (and tracks it), or the narrator is told plainly that every grip, jaws included, is off.
+- From the same log, checked against the build in use:
+  - A pin said "Pressure starts next beat" (first-beat damage is now on).
+  - Beats ran 12–15 minutes and the ⏱ line had no breakdown. That log came from a build before the time budget. Confirm the user is on the latest build.
+  - Nocturne went far below 0% health (-106%) and the fight went on into a new pin. Is that intended (the fight ends only by pin or pass-out)? Check how health below 0 is handled.
 
 ## Later
 Speed mechanics: a faster fighter attacks or dodges more, and a stronger one hits harder. Do this after the audit.
