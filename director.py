@@ -777,6 +777,18 @@ def resolve(engine, b):
             # land as a generic hit under that name. A bite, a punch, a scratch she can always throw
             raise ValueError(f"{engine.get(att).name} doesn't know {b.get('move')}. Her moves: "
                              f"{', '.join(m['name'] for m in engine.get(att).moves)} (or an improvised technique)")
+        if move is None and not manual and act in ("strike", "combo") and mv_name not in ("", "attack", "strike", "blow"):
+            # a plain blow the director named in its own words ("a claw rake", "a kick to the hip"): it lands as an
+            # improvised technique, so every rule applies to it (a dive from the air, feints, guards, the scenery)
+            # instead of a bare hit that skips them
+            target = ("spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1
+                      else "targeted")
+            move = engine.improvised_move(b.get("move"), "Normal", b.get("severity"), target, b.get("flavor", ""))
+        elif move is None and not manual and act in ("strike", "combo") and mv_name in ("attack", "strike", "blow"):
+            target = ("spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1
+                      else "targeted")
+            move = engine.improvised_move("a plain blow", "Normal", b.get("severity"), target,
+                                          b.get("flavor") or "a plain blow")
         if move is None and manual and act in ("strike", "combo"):
             # a typed /move the fighter doesn't know: use it from moves.json for this one attack (not learned)
             dex = engine.dex_move(b.get("move"))
