@@ -738,6 +738,9 @@ THOUGHT_ANGLES = ["a quick tactical plan", "a sharp read on the opponent's weakn
 # stat leakage: percentages, and colors used as pain levels
 GAME_TERMS = re.compile(
     r"\b(?:a|an) (?:real|heavy|tremendous|solid|DEVASTATING) blow on a part that was already\b|"
+    # the notes' own instructions copied into the story
+    r"\b(?:is|are|as) listed\b|\blisted (?:further|below|above|next)\b|\bit hurts (?-i:NOW)\b|\bnot a separate strike\b|"
+    r"\b(?:the|this) beat ends\b|\bevery beat (?:it|she|the grip) stays\b|\b(?:as|is) shown (?:below|above)\b|"
     r"\b(?:one|two|three|four|five|six|\d+) (?:more )?beats?\b|\b(?:minor|sore|hurting|very painful|excruciating|devastated),? (?:but )?not (?:minor|sore|hurting|very painful|"
     r"excruciating|devastated)\b|\bnumb with shock\b|(?:^|(?<=[\n*.!?]\s)|(?<=[\n*]))(?:devastated|excruciating|very painful|adrenaline surge|"
     r"super effective|critical hit|flinched|paralyzed|confused|restrained)[.!]|\b(?:can(?:'|’)?t|cannot|couldn(?:'|’)?t) attack\b|—(?:devastated|excruciating|very painful)\b|\bpin clock\b|\b\d+ (?:of|out of) \d+ seconds\b|\b(?:started|starts|began) (?:its|the) count(?:down)?\b|\d+(?:\.\d+)?\s*%|\bpercent\b|\b(?:orange|yellow|green|black|purple|violet)\s+(?:pain|ache|agony|fire|"
@@ -5391,12 +5394,28 @@ class Narrator:
                                  fmt={"foe": target or ""}, kind=kinds, has=feats(who), state=state(who), role="attacker")
             return kinds
 
-        if key in ("dwell", "watch"):
+        if key in ("dwell", "watch", "read"):
             m = next((x for x in getattr(self, "_moments", []) if x["key"] == key), None)
             if not m:
                 return ""
             who = m["who"]
             other = next((x["who"] for x in self._moments if x["key"] != key), None)
+            if key == "read":
+                side[0] = "take"
+                by_ = m.get("by")
+                if by_:
+                    add(f"what {who} can see of {by_}", B.pick("read", 2, fighter=who.lower(), has=feats(by_),
+                                                                state=state(by_)))
+                    add(f"what {who} can see of {by_}", B.pick("tell", 1, has=feats(by_), state=state(by_)))
+                add(f"{poss(who)} thought", B.pick("read_thought", 1, state=state(who), fighter=who.lower()))
+                add(f"{who} checking her own body", B.pick("self_look", 1, fmt={"part": m.get("part") or "wound"},
+                                                           has=feats(who), state=state(who)))
+                add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
+                for p, lv, z in self._worst_parts(who, 1, "very painful"):
+                    add(f"how the hurt in {poss(who)} {p} feels as she watches", B.pick(
+                        "sensation", 1, fmt={"part": p}, level=lv, zone=z, has=feats(who),
+                        part=set(re.findall(r"[a-z]+", p))))
+                return self._blocks_plan(lines, "take", False, last, who, by_)
             if key == "dwell":
                 side[0] = "take"
                 for p, lv, z in self._worst_parts(who, 2, "very painful"):
@@ -5412,6 +5431,9 @@ class Narrator:
                                                                    raw={self.RAW_LEVELS[raw][0]} if raw is not None else None))
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who))
                     + B.pick("dwell_breath", 1, state=state(who)))
+                p0 = m.get("part") or "wound"
+                add(f"{who} looking at her own {p0}", B.pick("self_look", 1, fmt={"part": p0}, has=feats(who),
+                                                              state=state(who)))
                 mind(who, "receiver", other)
                 return self._blocks_plan(lines, "take", False, last, who, other)
             side[0] = "act"
@@ -5695,6 +5717,13 @@ class Narrator:
                 if take_blocks(who, (doers or [who])[0]):
                     if any(a.get("environment") or a.get("manhandle") in ("throw", "slam") for a in acts):
                         add(f"how {who} lands", B.pick("landing", 1, has=feats(who)))
+                    worst = self._worst_parts(who, 1, "very painful")
+                    if worst and random.random() < float(((self.rules.get("narration") or {}).get("self_look") or {})
+                                                         .get("chance", 0.5)):
+                        # she looks at her own body: the wound, the shaking, whether the limb still answers
+                        p, lv, z = worst[0]
+                        add(f"{who} looking at her own {p}", B.pick("self_look", 1, fmt={"part": p}, zone=z,
+                                                                     has=feats(who), state=state(who)))
                 elif any(a.get("defender") == who for a in dodged):
                     add(f"how {who} gets out of the way", B.pick("dodge", 2, has=feats(who)))
         memory = self._memory_line([w for w in targets if hits.get(w)], hits) if take else None
@@ -5842,6 +5871,8 @@ class Narrator:
             return ["dwell", "strike take hard", "strike take"]
         if key == "watch":
             return ["watch", "pin hold", "strike act"]
+        if key == "read":
+            return ["read", "watch", "strike take"]
         take = key == "take"
         both = key in ("all", "after", "setup")
         tags = []
@@ -7956,6 +7987,7 @@ class Narrator:
             shown.append(f"[{kind or 'contradiction'}] \"{quoted[:90]}\" → {says}")
         if self.progress:
             if aside:
+                aside = list(dict.fromkeys(aside))   # (the same sentence flagged for several facts: shown once)
                 self.progress("second reading, set aside (left as written): " + " | ".join(aside[:4]))
             self.progress("second reading: nothing wrong" if not found else
                           "second reading found: " + " | ".join(shown[:cap]))
@@ -8543,7 +8575,7 @@ class Narrator:
         cfg = (self.rules.get("narration") or {}).get("camera") or {}
         if not cfg.get("enabled", True):
             return ""
-        if key in ("dwell", "watch"):
+        if key in ("dwell", "watch", "read"):
             close = True
         else:
             close = random.random() >= float(cfg.get("wide_chance", 0.35))
@@ -8634,6 +8666,9 @@ class Narrator:
                 f"to keep in (a whine through her teeth, a hiss, a cry she bites off) and whether she manages to"
                 + (" (by now she mostly can't)" if raw is not None and raw >= 2 else "")
                 + self._callback_clause(v, part)
+                + f"; she LOOKS at her own body too: down at the {part.lower()} (the fur or scales there, any swelling "
+                f"or mark), her own paw or limb shaking, testing whether it still answers and watching it obey or not, "
+                f"what she makes of what she sees"
                 + f"; her thoughts, short and in her own voice; how she looks at {by or 'her opponent'} now. TRUE TO "
                 f"SIZE: her {part.lower()} is now {label} and she has about {strength:.0f}% of her strength left; the "
                 f"length comes from attention and detail, not from making it worse. No sobbing or weeping. "
@@ -8641,8 +8676,10 @@ class Narrator:
                    f"down (the trembling, the breath, the old hurts flaring with the jolt), but the {part.lower()} "
                    f"itself only stings; keep its own reaction modest. " if label in ("minor", "sore", "hurting") else "")
                 + stays)})
-        watch_ok = bool(by) and (badly or (holding and down and (strength <= float(wcfg.get("hold_max_strength", 80))
-                                                                or label in self.BAD_LEVELS)))
+        watch_ok = bool(by) and (badly or label in tuple(wcfg.get("part_levels") or ("very painful",))
+                                 or strength <= float(wcfg.get("max_strength", 75))
+                                 or (holding and down and (strength <= float(wcfg.get("hold_max_strength", 80))
+                                                           or label in self.BAD_LEVELS)))
         if watch_ok and ready("watch", wcfg, True):
             last["watch"] = beat_no
             grip = (f" Her grip and her weight stay exactly as they are: she watches from where she holds her."
@@ -8656,6 +8693,29 @@ class Narrator:
                 f"breathing and her own injuries as she watches; what she thinks and what she plans (no attack "
                 f"begins). The damage is what it is: {poss(v)} {part.lower()} is {label}, and she has about "
                 f"{strength:.0f}% of her strength left. " + stays.replace("She stays", f"{v} stays"))})
+        rcfg = n.get("read") or {}
+        read_ok = (bool(by) and not moments and label not in ("minor",)
+                   and (badly or label in self.BAD_LEVELS or label == "very painful"
+                        or strength <= float(rcfg.get("max_strength", 85))))
+        if read_ok and ready("read", rcfg, True):
+            # the other way round: the one who was hurt studies the one who did it (narration.read)
+            last["read"] = beat_no
+            hurt_by = [p_ for p_, lv_, _ in self._worst_parts(by, 2, "hurting")] if hasattr(self, "_worst_parts") else []
+            moments.append({"key": "read", "who": v, "by": by, "part": part.lower(), "words": int(rcfg.get("words", 200)),
+                            "focus": (
+                f"{poss(v)} side, AFTER the {what} (it has been told above: do not tell it landing again). Hurt, she "
+                f"WATCHES {by}, the one who did it, from where she is. She studies {by} closely: how she stands or "
+                f"hovers or holds her, her breathing (heavy or easy), "
+                + (f"her own injuries ({', '.join(hurt_by)}) and how she carries them, " if hurt_by else
+                   "how fresh she still is, ")
+                + f"her face and what is in it (satisfaction, cold attention, eagerness, wariness, tiredness), where "
+                f"{poss(by)} eyes go on {poss(v)} body and what that says she means to do next; and what each sign "
+                f"tells {v}: what still hurts {by}, where she is open, how much {by} has left, whether she can be "
+                f"beaten. Between looks she checks her OWN body: a glance down at her {part.lower()}, the tremor in "
+                f"her limbs, whether what hurts will still carry her, comparing what she has left with what {by} has. "
+                f"{poss(v)} own hurt stays with her as she watches (her {part.lower()} is {label}, about "
+                f"{strength:.0f}% of her strength left; TRUE TO SIZE). Her thoughts, short and in her own voice "
+                f"(fear, fury, calculation, stubbornness, grudging respect). No attack begins. " + stays)})
         return moments
 
     def _linger(self):
@@ -8878,7 +8938,8 @@ class Narrator:
             plan = list(plan) + [(m["key"], m["focus"], m["words"]) for m in self._moments]
             if self.progress:
                 self.progress("staying with the damage: " + ", ".join(
-                    {"dwell": f"{poss(m['who'])} side", "watch": f"{m['who']} watching"}[m["key"]] for m in self._moments))
+                    {"dwell": f"{poss(m['who'])} side", "watch": f"{m['who']} watching",
+                     "read": f"{m['who']} watching {m.get('by')}"}[m["key"]] for m in self._moments))
         if len(plan) == 1:
             if self.progress:
                 self.progress("narrator is writing")
@@ -8901,7 +8962,7 @@ class Narrator:
             self._lead_now = (actor if key == "act" else receivers[0] if key == "take" and len(receivers) == 1 else None)
             if pin_plan and going:
                 self._lead_now = going[0]["attacker"] if key == "act" else going[0]["defender"] if key == "take" else None
-            if key in ("dwell", "watch"):
+            if key in ("dwell", "watch", "read"):
                 self._lead_now = next((m["who"] for m in self._moments if m["key"] == key), None)
             self._prior_now = so_far
             prior = (f"The beat so far (already written; continue directly from where it stops, never repeat or "

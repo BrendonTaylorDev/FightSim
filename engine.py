@@ -2246,8 +2246,13 @@ class Engine:
         if not self._cfg("energy").get("enabled", True):
             return
         if enforce and f.energy < cost:
-            raise ValueError(f"{f.name} is too worn out for {what} (energy {f.energy:.0f}, needs {cost:.0f}). Pick a "
-                             f"cheaper move, or let her catch her breath")
+            can = [m["name"] for m in f.moves if self.energy_cost(m) <= f.energy and f.move_uses.get(m["name"], 1) > 0
+                   and m.get("target") not in ("self",)]
+            raise ValueError(f"{f.name} is too worn out for {what} (energy {f.energy:.0f}, needs {cost:.0f}). "
+                             + (f"Moves she can still afford: {', '.join(can)}; or an improvised blow (costs "
+                                f"{self.energy_cost(kind='improvised'):.0f}), or let her catch her breath"
+                                if can else "Let her catch her breath ('breather'), or an improvised blow if she "
+                                f"has {self.energy_cost(kind='improvised'):.0f} energy"))
         f.energy = max(0.0, f.energy - cost)
 
     def dodge_chance(self, a, d, target="targeted"):
@@ -3514,7 +3519,11 @@ class Engine:
                 for g in foes:
                     volt = self._usable_moves(g, "Electric")
                     if volt:
-                        by = next((r.get("attacker") for r in acts if r.get("attacker") == g.name), None)
+                        # on purpose only if it was HER action that soaked her (a water blow, a throw into the
+                        # water), not just any action of hers in a beat where the other got wet some other way
+                        by = next((r.get("attacker") for r in acts if r.get("attacker") == g.name and any(
+                            x.get("fighter") == f.name and x.get("status") == "soaked"
+                            for x in (r.get("status_applied") or []))), None)
                         setup = (f"{g.name} soaked {f.name} on purpose" if by else f"{f.name} got soaked through")
                         notes.append({"stage": "setup", "who": g.name, "on": f.name, "kind": "wet_shock",
                                       "text": f"{setup}: {g.name} has lightning ({volt[0]['name']}), and it goes through "
@@ -4733,7 +4742,9 @@ class Engine:
         share = move.get("recoil", (cfg.get("moves") or {}).get(move["name"]))
         if not cfg.get("enabled", True) or not share:
             return None
-        front = [p for p in a.parts if body_region(p) in ("head", "shoulder", "chest", "neck")] or list(a.parts)
+        # the jolt runs through the skull, neck, shoulders and chest: not into an eye, an ear or the nose
+        front = [p for p in a.parts if body_region(p) in ("head", "shoulder", "chest", "neck")
+                 and not re.search(r"\b(?:eye|ear|nose)s?\b", p, re.I)] or list(a.parts)
         self.rng.shuffle(front)
         power = round(math["effective"] * float(share), 2)
         keep, self._source = self._source, f"the recoil of her own {move['name']}"
@@ -6901,6 +6912,8 @@ class Engine:
                 def _m(m, f=f):
                     left = f.move_uses.get(m["name"])
                     tag = "" if left is None else (", USED UP" if left <= 0 else f", {left} left")
+                    if m.get("target") not in ("self",) and self.energy_cost(m) > f.energy:
+                        tag += f", TOO TIRED for it now (costs {self.energy_cost(m):.0f} energy, she has {f.energy:.0f})"
                     fx = []
                     for x in m.get("effects", []):
                         fx.append(f"{x['status'] if x.get('status') else x.get('launch')} {x.get('chance', 1) * 100:.0f}%")

@@ -134,8 +134,9 @@ class Display:
             groups.setdefault((tags or {}).get(id(h), ""), []).append(h)
         lpp0 = float(self.rules["resistance"]["loss_per_power"])
         hpd = float(self.rules["health"].get("loss_per_damage_point", 1.0))
-        cells = []   # (before → after) texts, to line the working up in one column
+        cells, cell_of = [], {}   # (before → after) texts, to line the working up in one column
         for h in hits:
+            cell_of[id(h)] = len(cells)
             cells += [f"{self.dmg_icon(h['damage_before'])} {num(h['damage_before'])}% → "
                       f"{self.dmg_icon(h['damage_after'])} {num(h['damage_after'])}%",
                       f"{self.res_icon(h['res_before'], h.get('res_start'))} {num(h['res_before'])}% → {self.res_icon(h['res_after'], h.get('res_start'))} "
@@ -168,8 +169,8 @@ class Display:
                            + ("" if rs == 1 else f" × {num(rs)} resistance scale")
                            + (f" + {num(ro)} from the softened health" if ro > 0.005 else "")
                            if abs(full - loss) < 0.03 else "(it can't go lower)")
+                k = cell_of[id(h)]     # (grouping can reorder the hits: each row keeps its own numbers)
                 dmg, res, hp = cells[k:k + 3]
-                k += 3
                 out.append(f"    {label}")
                 added = h.get("damage_added", h["damage_taken"])
                 rl = h.get("roll", 1.0)

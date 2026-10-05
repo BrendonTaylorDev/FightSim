@@ -1672,6 +1672,74 @@ she notices the fur standing up along the other's spine and the way it does not 
 she sees the tail stop moving entirely and knows what that means | has: tail
 she watches the ears pin flat and stay there | has: ears
 
+# SELF_LOOK: the one who is hurt looking at her own body (narration.self_look.chance in ordinary hit passages;
+# always offered in dwell and read). {part} is the hurt part.
+# ---------------------------------------------------------------------------------------------------------------
+== self_look
+she looks down at her {part} as if it belonged to someone else, and watches it tremble
+she makes herself look at the {part}: the fur there flattened and wrong, already swelling under it
+she tests the {part} with a small careful movement and watches to see whether it obeys; it does, late
+she sees her own paw shaking and cannot make it stop by looking at it | has: paws
+she glances down at the {part} and away again quickly, as if not looking might help
+she watches the muscle in her {part} jump on its own, a small animal under her skin
+she takes stock the way she would of someone else: the {part} first, then everything it is dragging with it
+she flexes the {part} once to see what is left, and the answer is less than she hoped
+she notices her own breathing before she notices anything else: too fast, too high, and she cannot slow it
+she looks at the {part} and understands, with a cold little drop, that it is going to be a problem
+she watches a tremor start at the {part} and climb, and braces against it as if it were a blow
+
+== self_look | state: spent, tired, hurt
+her own limbs look far away, and she has to think about each one before it moves
+she looks down at herself and barely recognizes the shape she is holding
+she counts what still works, and it is a short count
+
+== self_look | zone: leg
+she puts weight on the leg as a question, and it answers with a jolt that runs to her hip
+she looks at the leg and sees it already held off the ground, before she decided to lift it
+
+== self_look | zone: arm
+she lifts the arm a little to see if it will come, and watches it shake all the way up
+she looks at her paw curled in against her chest and cannot remember curling it
+
+== self_look | zone: chest, belly
+she looks down and sees her own sides heaving, faster than she feels them
+she sees her middle drawn in tight on its own, guarding, and she lets it
+
+== self_look | zone: head
+she blinks and watches the world slide and come back, and checks it again, and again
+
+# READ: the other way round: the one who was hurt studies the one who did it (narration.read).
+# ---------------------------------------------------------------------------------------------------------------
+== read
+she watches the other breathe and counts: easy, easy, then one that catches
+she sees the eyes go to her hurt side and rest there, and knows exactly where the next one is meant to land
+she marks the way the other stands, a little too square, as if one leg had begun to argue
+there is satisfaction in that face, and she makes herself look at it and remember it
+she reads the stillness up there: patient, unhurried, a hunter who has stopped needing to hurry
+she sees a tremor in the other's own limbs, small, quickly hidden, and holds onto it like a stone in her paw
+the other is breathing harder than she was a minute ago; not much, but she hears it
+she studies the wound she gave earlier, and sees it has not stopped bothering its owner
+she notes where the weight goes before every shift, the way you learn a dance by watching the feet
+the other's gaze moves over her like hands checking something bought, and she hates it, and watches anyway
+she sees the tail twitch once, eager, and understands that the other is enjoying this | has: tail
+the wingbeats above her are steady, unhurried; she listens for the first one that isn't | has: wings
+she sees the claws flex and settle, flex and settle, and knows what they are thinking about | has: claws
+
+== read | state: spent, tired, hurt
+it takes her too long to bring the other into focus, and that frightens her more than the pain
+she watches the other's feet because lifting her eyes to the face costs more than she has
+she can see the other is fresh still, and the arithmetic of that settles cold in her stomach
+
+== read_thought
+*She's favouring it. She thinks I didn't see.*
+*Look at her. She thinks it's over.*
+*She's breathing harder too. Good.*
+*She's going to go for the same place again. Let her try.*
+*Not like this. Not to you.*
+*Remember that face.*
+*She's tired too. She's hiding it better, that's all.*
+*Every time she does that, she drops her left side.*
+
 == watch_thought
 *That one went in. Look at her.*
 *Not getting up from that quickly.*

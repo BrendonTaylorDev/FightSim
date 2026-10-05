@@ -401,6 +401,11 @@ NOT_AN_ATTACK = re.compile(r"\b(push[- ]?up|get(?:ting)? up|stand(?:ing)? up|ris
                            r"retreat\w*|back(?:ing)? away|crawl\w*|rest\w*|breath\w*|struggl\w* to (?:stand|rise)|"
                            r"attempt(?:ed)? to (?:stand|rise|get up))\b", re.I)
 
+# a "move" that is only somebody landing ("hard landing", "the landing", "crash landing"): how a throw ends, not an
+# attack. Filed as a strike it would hit the OTHER fighter for it
+LANDING_NAME = re.compile(r"^\s*(?:a |an |the |her )?(?:hard |rough |heavy |bad |crash |crash-|splash |awkward )?"
+                          r"(?:landing|lands?|fall|falls|touchdown|splashdown)\s*$", re.I)
+
 
 def _multi_hit(engine, move):
     """Moves that strike several times in one go (rules.json moves.multi_hit, or 'repeatedly' in their description)."""
@@ -700,6 +705,11 @@ def resolve(engine, b):
             raise ValueError("'eliminate' needs the fighter who is out in 'defender'")
     else:
         dfn = _fill_defender(engine, att, b.get("defender"))
+    if act == "struggle" and not manual and not any(p["defender"] == engine.get(att).name for p in engine.pins.values()):
+        # nobody is pinning her: there is nothing to struggle out of. She gathers herself instead (a hold on her is
+        # fought by the dice every beat anyway), rather than throwing the whole beat away as invalid
+        act = "breather"
+        b = dict(b, action="breather")
     if act == "struggle":
         dfn = dfn or att
     elif act in ("strike", "combo", "hold_start", "pin", "eliminate", "quickpin", "pin_success", "pin_escape",
@@ -759,6 +769,11 @@ def resolve(engine, b):
         res["intent"] = intent
         return res, tuple(res.get("hold_ids") or ())
     mv_name = str(b.get("move", "none")).lower()
+    if not manual and act in ("strike", "combo") and (LANDING_NAME.match(mv_name) or (
+            mv_name == "improvised" and LANDING_NAME.match(str(b.get("improvised_name") or "")))):
+        # the director wrote someone's landing as an attack: the landing comes from the throw itself, so this
+        # action is only a moment's pause (dropped when the beat has a real action)
+        act, b = "breather", dict(b, action="breather", flavor="")
     move = None
     if mv_name == "improvised":
         if not manual and NOT_AN_ATTACK.search(str(b.get("improvised_name") or "")):
@@ -1206,7 +1221,7 @@ def _landing(engine, b, res):
 
 
 _WHERE = re.compile(r"\s*[,;:]?\s+(?:at|to|on|onto|across|into|against|over|along|under|through|toward|towards|in|for)\s+"
-                    r"(?:her|his|its|the|[A-Z][\w-]+(?:'s|’s|'|’)?)\s+[^,;]*$")
+                    r"(?:her|his|its|the|[A-Z][\w-]+(?:'s|’s|'|’)?)\s+[^,;]*(?=[,;]|$)")
 
 
 def true_label(engine, label, hits):
@@ -1235,7 +1250,7 @@ def true_label(engine, label, hits):
                 break
     if not wrong:
         return label
-    cut = _WHERE.sub("", label).strip()
+    cut = re.sub(r"^[\s,;]+|[\s,;]+$", "", _WHERE.sub("", label)).strip()
     return cut if cut and cut != label and len(cut.split()) >= 1 else ""
 
 
@@ -1256,6 +1271,12 @@ def resolve_many(engine, actions):
             continue
         merged.append(b)
     actions = merged
+    # someone's landing written as an attack ("hard landing"): it comes from the throw, not from a blow
+    landings = [b for b in actions if not b.get("_manual") and b.get("action") in ("strike", "combo")
+                and (LANDING_NAME.match(str(b.get("move") or "")) or (str(b.get("move") or "").lower() == "improvised"
+                                                                     and LANDING_NAME.match(str(b.get("improvised_name") or ""))))]
+    if landings and len(landings) < len(actions):
+        actions = [b for b in actions if b not in landings]
     # a pause tacked onto a beat that has a real action adds nothing but a line: the action is the beat
     real = [b for b in actions if b.get("action") != "breather" or b.get("_manual")
             or str(b.get("reposition") or "none").lower() != "none"]
@@ -1357,7 +1378,10 @@ def resolve_many(engine, actions):
                             want = _fit_part(engine, who, b["part"])
                             got = engine.next_target(who, last, f"chain link {link[0]}")
                             if got == last or want == last:
-                                b = dict(b, part=got, _aimed=True)
+                                hl = [dict(h) for h in (b.get("hits") or []) if isinstance(h, dict)]
+                                if hl and hl[0].get("part"):
+                                    hl[0]["part"] = got     # (a spread move lands where its hit list says)
+                                b = dict(b, part=got, _aimed=True, **({"hits": hl} if hl else {}))
                             else:
                                 b = dict(b, _aimed=True)      # somewhere new: where the director aimed it
                     except (ValueError, KeyError):
@@ -1688,12 +1712,21 @@ class Director:
         messages = [{"role": "system", "content": system},
                     {"role": "user", "content": user}]
         last_err = None
+        bump = 0.0
         for _ in range(self.retries):
-            raw = llm.chat(self.model, messages, host=self.host, temperature=self.temperature,
+            raw = llm.chat(self.model, messages, host=self.host, temperature=min(1.2, self.temperature + bump),
                            fmt=schema(engine), num_predict=1500,
                            num_ctx=engine.rules.get("narration", {}).get("context_window", 8192))
             try:
-                beat = json.loads(raw)
+                try:
+                    beat = json.loads(raw)
+                except json.JSONDecodeError as je:
+                    beat = repair_json(raw)
+                    if beat is None:
+                        # cut off mid-reply (often a run of blank output): ask again from scratch, a little warmer,
+                        # without showing it the broken reply (that only primes the same failure)
+                        last_err, bump = je, bump + 0.15
+                        continue
                 actions = beat.get("actions") if isinstance(beat, dict) and "actions" in beat else [beat]
                 if direction and re.search(r"\b(sustain\w*|held (?:stream|beam|blast|attack)|keeps? (?:it|the \w+) (?:on|going))\b",
                                            direction, re.I):
@@ -1731,6 +1764,37 @@ class Director:
                     "flavor": "the fighters reset, circling and catching their breath", "intent": "reset"}
         results, started = resolve_many(engine, [fallback])
         return [fallback], results, started
+
+
+def repair_json(raw):
+    """A reply cut off before its end (an unterminated string, unclosed brackets): close what is open and parse it.
+    None if it still can't be read."""
+    t = str(raw or "").rstrip()
+    if not t.startswith(("{", "[")):
+        return None
+    stack, in_str, esc = [], False, False
+    for ch in t:
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+        elif ch == '"':
+            in_str = True
+        elif ch in "{[":
+            stack.append("}" if ch == "{" else "]")
+        elif ch in "}]" and stack:
+            stack.pop()
+    fixed = t + ('"' if in_str else "")
+    fixed = re.sub(r'(?<=[{,])\s*"[^"]*"\s*:?\s*$', "", fixed)    # a key left hanging with no value
+    fixed = re.sub(r",\s*$", "", fixed)
+    fixed += "".join(reversed(stack))
+    try:
+        return json.loads(fixed)
+    except json.JSONDecodeError:
+        return None
 
 
 def move_variety_hint(engine, skip=()):

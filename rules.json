@@ -812,9 +812,20 @@
     },
     "watch": {
       "enabled": true,
-      "chance": 0.5,
+      "chance": 0.65,
       "words": 220,
+      "max_strength": 75,
+      "part_levels": ["very painful"],
       "hold_max_strength": 80
+    },
+    "_self_look_comment": "self_look: chance that a fighter who is hit gets a cue to LOOK at her own hurt body (the wound, the shaking, whether the limb still answers) when one of her parts is very painful or worse. Always offered in the dwell and read parts.",
+    "self_look": {"chance": 0.5},
+    "_read_comment": "read: the other way round from watch. After a blow, when neither dwell nor watch is told, the one who was hurt may get an extra part studying the one who did it (her stance, breath, injuries, face, where her eyes go, what she plans), and what each sign tells her. Needs the blow to leave the part very painful or worse, or her strength at max_strength % or less.",
+    "read": {
+      "enabled": true,
+      "chance": 0.4,
+      "words": 200,
+      "max_strength": 85
     },
     "moment_cooldown_beats": 1,
     "fading_thoughts": {
