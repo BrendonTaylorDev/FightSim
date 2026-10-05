@@ -4634,6 +4634,11 @@ class Engine:
         a, d = self.get_active(attacker), self.get_active(defender)
         if not contacts:
             raise ValueError("needs at least one body part to press")
+        wait = int((self.rules.get("holds", {}).get("break", {}) or {}).get("regrab_after", 2))
+        broke = (getattr(self, "broke_free_at", {}) or {}).get((a.name, d.name))
+        if enforce and not pin and broke is not None and self.turn - broke < wait:
+            raise ValueError(f"{d.name} only just tore free of {poss_word(a.name)} grip: {a.name} can't simply take "
+                             f"hold of her again so soon. Strike, move, or set something up instead")
         if a is d:
             raise ValueError(f"{a.name} can't hold or pin herself")
         key = f"{a.name}>{d.name}"
@@ -4947,6 +4952,8 @@ class Engine:
             if ok:
                 for h in hs:
                     self.holds.pop(h.id, None)
+                # she just tore loose: the same grip can't simply close on her again next beat
+                self.__dict__.setdefault("broke_free_at", {})[(a, d)] = self.turn
                 events.append({"type": "hold_end", "broke_free": True, "attacker": a, "defender": d,
                                "submission": next((h.sub for h in hs if h.sub), ""),
                                "hold_ids": [h.id for h in hs], "parts": [h.part for h in hs],
@@ -5305,7 +5312,7 @@ class Engine:
         return [p for p in f.parts if p in hurt or body_region(p) in regions
                 or any(re.search(r"\b" + re.escape(w) + r"(?:s|es)?\b", p.lower()) for w in words)]
 
-    INJURED_WORDS = ("injured", "hurt", "wounded")
+    INJURED_WORDS = ("injured", "hurt", "wounded", "weakened", "weak")
 
     def injured_targets(self, name):
         """For the 'injured' focus: the parts of this fighter worth going back to, with a weight each. Parts that
@@ -5695,6 +5702,9 @@ class Engine:
         if any(h.coil and h.defender == target.name and self.coil_scope(h.part) != "limb" for h in self.holds.values()):
             # wrapped in coils already: the coiler only has to bear her down inside them (holds.coil.pin_opening)
             base = max(base, float((self.rules.get("holds", {}).get("coil") or {}).get("pin_opening", 0.5)))
+        # your own dial on how often pins come (/pins): 0.5 = half as many openings, 2 = twice, 0 = the director
+        # never starts one (your /pin and typed directions still can)
+        base *= float(cfg.get("scale", 1.0) if cfg.get("scale") is not None else 1.0)
         return max(0.0, min(1.0, base))
 
     def roll_pin_windows(self, open_all=False):

@@ -907,7 +907,8 @@
       "loosen_band": 0.6,
       "loosen_mult": 0.75,
       "strain_band": 1.4,
-      "grab_mult": 1.6
+      "grab_mult": 1.6,
+      "regrab_after": 2
     },
     "_shaken_comment": "A fighter who is holding someone (a plain hold, not a pin) and is hit hard may lose her grip. One roll per attack that lands on her: chance = the share of her full health that attack cost x per_health_share, never above max. Attacks costing less than min_share of her health don't roll. So at the default damage scale grips are rarely shaken, and at /scale 5 a big hit usually tears one loose. per_health_share 0 = never. Change live with /holdshake.",
     "shaken": {
@@ -1185,7 +1186,8 @@
       "hurt_at": 90,
       "hurt_bonus": 0.025,
       "hurt_cap": 0.3,
-      "_comment": "The chance of a pin opening on a fighter each beat. It follows how hurt she is: standing / downed_fresh at full strength (knocked down while still strong barely raises it: she is up again in a moment), rising along a curve to weak_standing / weak_downed at weak_below % strength, then toward max as she nears nothing. Each part at hurt_at %+ damage adds hurt_bonus (up to hurt_cap): her opponent knows where she is hurt. No time factor: pins come more often late in a fight only because she is more hurt by then. helpless: asleep or frozen."
+      "scale": 1.0,
+      "_comment": "scale (set with /pins): every chance below is multiplied by it, so 0.5 = about half as many pins and 2 = more; 0 = the director never starts a pin. The chance of a pin opening on a fighter each beat. It follows how hurt she is: standing / downed_fresh at full strength (knocked down while still strong barely raises it: she is up again in a moment), rising along a curve to weak_standing / weak_downed at weak_below % strength, then toward max as she nears nothing. Each part at hurt_at %+ damage adds hurt_bonus (up to hurt_cap): her opponent knows where she is hurt. No time factor: pins come more often late in a fight only because she is more hurt by then. helpless: asleep or frozen."
     },
     "_focus_comment": "Where attacks aim (set with /focus). '*' = everyone; a fighter's name = that attacker only. focus_strength (0-1) = how often an off-target pick gets moved onto the focus zone; 0 = a prompt nudge only.",
     "focus": {},
@@ -1216,8 +1218,8 @@
       "side_ratio": 1.5,
       "side_weight": 35
     },
-    "throat_bite_chance": 0.12,
-    "throat_bite_pin_chance": 0.25,
+    "throat_bite_chance": 0.06,
+    "throat_bite_pin_chance": 0.15,
     "_pin_shape_comment": "pin_shape_weights: when there is an opening for a pin, the director is handed one way to build it, so pins don't all look alike (never the same shape twice running). The numbers say how often each is suggested compared with the others; 0 = never. throat_bite = jaws on the throat, weight on the chest. trapped_arm = jaws pinning a paw or forearm to the stone while a forepaw or forearm bars the throat. tail_choke = tails or coils looped round the neck, paws on the shoulders (only fighters whose tail can coil). twisted_arm = an arm wrenched out straight and pinned. leg_tangle = both legs trapped. lifted_leg = one leg hooked and hauled up off the ground, folded back (kept rare). coil_crush = constriction as a pin: tails or coils wound round her chest and arms, bearing her down inside them (only fighters whose tail or body can coil; she goes out from the constriction). dunk = held face-down in the shallows, her head pushed under and let up again (only in an arena with shallow water; a choke by water, never drowning). The throat-bite ideas above now also offer chokes with other limbs and jaws clamped on a limb. Change live with /pinshape.",
     "pin_shape_weights": {
       "throat_bite": 3,
@@ -1249,6 +1251,10 @@
     },
     "_target_variety_comment": "target_variety: with no /focus set, the chance that a blow aimed at a region this attacker has just been hitting is moved to a part she has left alone (the less hurt, the likelier), and the chance per beat that the director is reminded what has not been touched yet. 0 = off.",
     "target_variety": 0.35,
+    "_weak_spot_comment": "weak_spot_chance: with no /focus set, the chance per beat that the director is pointed at one of the opponent's weak spots (a soft part like the throat, or one already worn down), so weak spots are gone for sometimes but not all the time. 0 = never; /focus vulnerable or /focus injured makes them the aim.",
+    "weak_spot_chance": 0.2,
+    "_weak_spot_repeat_comment": "weak_spot_repeat: of those nudges, the share meant for a run of blows (a pummel, a combo, a chain, a grapple worked at): one weak spot hit again and again, a group of parts worked together (one side's foreleg top to bottom, the ribs), or a few weak spots in turn.",
+    "weak_spot_repeat": 0.4,
     "grudge_chance": 0.15,
     "drag_to_pin_chance": 0.12,
     "_grudge_comment": "grudge_chance: per beat, a PAYBACK idea for a fighter with a wrecked part (go for the same place on the one who did it). drag_to_pin_chance: per beat, when someone is down and not pinned, the idea to drag her to a wall or the water and pin her there next.",
@@ -1278,7 +1284,7 @@
     ]
   },
   "body_zones": {
-    "_comment": "Groups of body parts for /focus. Each zone lists body regions (head, neck, shoulder, chest, belly, back_up, back_low, fore_up, fore_low, hind_up, hind_low, tail) and/or words found in part names. A fighter without a zone (a serpent has no legs) is simply open everywhere.",
+    "_comment": "Groups of body parts for /focus (also: injured or weakened = what is already hurt). Each zone lists body regions (head, neck, shoulder, chest, belly, back_up, back_low, fore_up, fore_low, hind_up, hind_low, tail) and/or words found in part names. A fighter without a zone (a serpent has no legs) is simply open everywhere.",
     "head": {
       "regions": [
         "head",
@@ -1339,6 +1345,14 @@
         "legs",
         "paws"
       ]
+    },
+    "neck": {
+      "regions": ["neck"]
+    },
+    "vulnerable": {
+      "_comment": "the soft, weak places: throat and neck, eyes and nose, belly, the joints",
+      "regions": ["neck", "belly"],
+      "words": ["eye", "nose", "muzzle", "ear", "knee", "hock", "elbow", "groin"]
     },
     "upper": {
       "zones": [

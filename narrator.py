@@ -1635,6 +1635,11 @@ BLOOD_SAID = re.compile(r"\b(?:taste of (?:her own )?blood|blood (?:in|filled|fi
                         r"blood (?:ran|dripp\w*|trickl\w*|welled|seeped|beaded|oozed)|bled|bleeding|copper(?:y)?|metallic "
                         r"(?:tang|taste))\b", re.I)
 
+# a blow landing (for "the escape blow has to be told")
+HIT_VERB = re.compile(r"\b(?:struck|strikes?|hit|hits|slamm\w+|slams?|drove|driv\w+|kick\w*|bit|bites?|biting|claw\w*|"
+                      r"rak\w+|caught|catch\w*|smash\w*|crash\w*|land\w*|butt\w*|rammed|whip\w*|lash\w*|cracked|"
+                      r"snapp\w+|sank|sunk|tore|swip\w+|punch\w*|jabb\w+|elbow\w*|knee\w*)\b", re.I)
+
 # the plain ground under them: landing on it needs no naming
 PLAIN_GROUND = {"ground", "grass", "earth", "floor", "dirt", "sand", "rock", "stone", "mud", "ice", "snow", "deck",
                 "soil", "turf", "clearing", "shallows", "water", "beach", "ledge", "shore"}
@@ -2421,6 +2426,7 @@ class Narrator:
         self._takedown = None       # (pinner, pinned): she was on her feet and is taken down into the pin this beat
         self._clash = None          # (defender, her move, its type): she met the attack with a move of her own
         self._must_surfaces = []    # (fighter, surface): scenery she is thrown, knocked or dragged into this beat
+        self._escape_blows = []     # (pinned, pinner, parts): the blow she breaks a pin with, which has to be told
         self._chain_beat = False    # several attacks by one fighter this beat (a chain, a pummel): "again" is right
         self._must_tumble = None    # thrown and tumbling on: the passage has to show her going on across the ground
         actions = bundle.get("actions") or [bundle["action"]]
@@ -4021,6 +4027,9 @@ class Narrator:
         a, d = e["attacker"], e["defender"]
         out = []
         if e.get("hits_on_pinner"):
+            # checked afterwards: the blow itself has to be in the story, not only the pain it leaves
+            self._escape_blows = list(getattr(self, "_escape_blows", None) or []) + [
+                (d, a, sorted({h["part"].lower() for h in e["hits_on_pinner"]}))]
             out.append(f"  - The blow that frees her lands on {a} (a kick, a bite, a swung limb, a blast at point-blank: "
                        f"whatever fits {poss(d)} body), and it hurts {a}:")
             out += [self._hit_line(h) for h in e["hits_on_pinner"]]
@@ -6120,6 +6129,12 @@ class Narrator:
             if m:
                 issues.append(f"it showed extra failed tries at getting up (\"{m.group(0)}\"), but she gets up on the "
                               f"FIRST try: one attempt, and she ends on her feet")
+        for d_, a_, parts_ in (getattr(self, "_escape_blows", None) or []) if coverage else []:
+            seen_ = [s for para in ((prior or "") + "\n" + text).split("\n") for s in _SENT.split(para.strip()) if s]
+            if not any(HIT_VERB.search(s) and any(_mentions_exact(s.lower(), p) for p in parts_) for s in seen_):
+                issues.append(f"it never showed the blow {d_} breaks free with: it lands on {poss(a_)} "
+                              f"{' and '.join(parts_)}. Show the blow itself landing there (what she hits with, and "
+                              f"{poss(a_)} reaction), not only the pain afterwards")
         missing_surf = []
         for who, surf in (getattr(self, "_must_surfaces", None) or []) if coverage else []:
             words = re.findall(r"[a-z]+", surf.lower())
@@ -6946,7 +6961,7 @@ class Narrator:
                 labels = [_slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
                            else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
                            else "missing escape" if "ESCAPE" in i
-                           else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
+                           else "missing escape blow" if "breaks free with" in i else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
                            else "parts called useless too early" if "as useless" in i
                            else "wrong strike count" if "ONE strike" in i
                            else "invented bite" if "a bite that isn't" in i

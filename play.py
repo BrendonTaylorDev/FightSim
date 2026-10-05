@@ -214,6 +214,7 @@ HELP = """
   /release <hold_id> ["how"]                end one hold
   /release <att> <def> ["how"]              end every hold att has on def (breaks a whole pin)
   /struggle <pinned>                        she tries to break free this beat (result rolled)
+  /pins [number|off|default]                how often pins come: 0.5 = about half as many, 2 = more (default 1)
   /pinsuccess <att> <def> ["Part:sev=with,..."]   the pin wins now (starts one if none is running)
   /pinescape <att> <def>                    the pinned fighter breaks free right now (her blow lands on the pinner)
   /quickpin <att> <def>                     old-style three count, rolled by the engine
@@ -258,6 +259,13 @@ HELP = """
           /focus injured           go back to what's already hurt and the parts around it (and a badly hurt
                                    side as a whole); the worse a part is, the more often. Combines: /focus injured legs
           /focus core              everyone aims at the body
+          /focus neck              the throat and neck (with no /focus, no part of the body comes first)
+          /focus vulnerable        the soft places: throat, eyes, nose, ears, belly, knees and hocks
+          /focus weakened          the same as injured
+  /weakspots [0-1|off]                      how often the director is nudged at one weak spot (default 0.2);
+                                            with no /focus, nothing else is aimed at first
+  /weakspots worked [0-1]                   how many of those nudges are for a run of blows (pummel, combo, chain,
+                                            grapple): one weak spot again and again, a group of parts, or several
           /focus Nocturne limbs    only Nocturne's attacks go for arms, legs and paws
           /focus strength 0.8      how firmly off-target picks get moved onto the zone (0 = nudge only)
 
@@ -1350,8 +1358,8 @@ HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the orde
     ("fights", "fights fight newfight autofight simulate team ally results", "fights: who is in them, /newfight, /autofight, /simulate, teams"),
     ("attacks", "attacks attack move charge sustain strike combo land pummel", "attacks you choose: /move (pummels), /charge, /sustain, /strike, /combo, /land"),
     ("moving", "moving move throw slam drag grapple roll situp chain tumble", "one fighter moving another: /throw, /slam, /drag, /grapple, chains, rolling her over"),
-    ("pins", "pins pin holds hold release struggle", "holds and pins: /pin, /hold, /release, /struggle, the pin clock"),
-    ("story", "story plan focus targeting steering", "steering the story: /plan, /focus, /targeting"),
+    ("pins", "pins pin holds hold release struggle pinrate frequency", "holds and pins: /pin, /hold, /release, /struggle, /pins (how often), the pin clock"),
+    ("story", "story plan focus targeting steering weakspots weak", "steering the story: /plan, /focus, /weakspots, /targeting"),
     ("moves", "moves moveinfo learn forget", "moves: /moves, /moveinfo, /learn, /forget"),
     ("healing", "healing heal restore recover aftermath", "healing and after the match: /heal, /restore, /recover"),
     ("rules", "rules settings set get scale model sounds words style sample reader", "rules and fighters: /set, /scale, /model, /sounds, /words, /sample..."),
@@ -2127,6 +2135,36 @@ def handle_command(s, line):
         print(f"{f.name} is now {s.eng.facing[f.name]} (pins and the story will follow)"
               + (f"; presses moved: {', '.join(moved)}" if moved else ""))
         s.autosave(); return
+    if cmd in ("pins", "pinrate"):
+        pu = s.eng.rules.setdefault("director", {}).setdefault("pin_urge", {})
+        if not a:
+            print(f"Pin frequency: x{pu.get('scale', 1.0)} (1 = the tuned rate, about 8 pins a fight; 0.5 = about half "
+                  "as many openings; 0 = the director never starts a pin, your /pin still does).\n"
+                  "Use: /pins <number|off|default>   e.g. /pins 0.5"); return
+        w = a[0].lower().lstrip("x")
+        val = 1.0 if w in ("default", "normal", "reset") else 0.0 if w in ("off", "none", "never") else \
+            float(w.rstrip("%")) / (100 if w.endswith("%") else 1)
+        if not 0 <= val <= 5:
+            raise ValueError("a multiplier between 0 and 5 (1 = the tuned rate)")
+        pu["scale"] = val
+        _save_rules_key(["director", "pin_urge", "scale"], val)
+        print(f"Pin frequency x{val} (saved). Pin openings and pile-ons come {'as tuned' if val == 1 else f'{val} times as often'}."); return
+    if cmd in ("weakspots", "weakspot"):
+        cfg = s.eng.rules.setdefault("director", {})
+        if not a:
+            print(f"Weak-spot nudge: {cfg.get('weak_spot_chance', 0.2)} per beat (the chance the director is pointed at "
+                  f"one soft or worn-down part, just that once).\nWorked (a run of blows on one weak spot, a group of parts, or a few weak spots): {cfg.get('weak_spot_repeat', 0.4)} of those nudges; /weakspots worked <0-1>.\nUse: /weakspots <0-1|off>   For weak spots ALL the "
+                  "time: /focus vulnerable (soft places) or /focus injured (what is already hurt)."); return
+        key = "weak_spot_chance"
+        if a[0].lower() in ("worked", "repeat", "runs") and len(a) > 1:
+            key, a = "weak_spot_repeat", a[1:]
+        val = 0.0 if a[0].lower() in ("off", "none", "never") else float(a[0].rstrip("%")) / (100 if a[0].endswith("%") else 1)
+        if not 0 <= val <= 1:
+            raise ValueError("a chance between 0 and 1 (or a percent, like 30%)")
+        cfg[key] = val
+        _save_rules_key(["director", key], val)
+        print(f"Weak-spot nudge {val} per beat (saved)" if key == "weak_spot_chance" else
+              f"Worked weak spots: {val} of the nudges are for a run of blows (saved)"); return
     if cmd == "focus":
         cfg = s.eng.rules.setdefault("director", {})
         focus = cfg.setdefault("focus", {})
@@ -2159,7 +2197,9 @@ def handle_command(s, line):
             msg = "off"
         else:
             zones = [z.lower() for z in " ".join(a).replace("+", " ").replace(",", " ").split()]
-            zones = ["injured" if z in ("hurt", "wounded", "injuries") else z for z in zones]
+            zones = ["injured" if z in ("hurt", "wounded", "injuries", "weakened", "weak") else
+                     "neck" if z in ("throat", "throats", "necks") else "vulnerable" if z in ("weak-spots", "soft") else z
+                     for z in zones]
             bad = [z for z in zones if z not in zones_cfg]
             if bad:
                 raise ValueError(f"unknown zone(s) {', '.join(bad)}. Zones: {', '.join(sorted(zones_cfg))} "

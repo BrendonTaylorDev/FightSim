@@ -125,6 +125,11 @@ Beat types:
 - NECK AND THROAT BITES are fair game, standing or in a pin: a bite that clamps the neck or throat and twists or
   wrenches (head shaking side to side) is a strike on Neck/Throat (with the jarred parts around it), or a hold on
   those parts when the jaws stay locked on. Use them now and then, like any other technique.
+- WHERE BLOWS LAND: unless a TARGET FOCUS line tells you where to aim, no part of the body comes first. Choose each
+  target from the moment (what is in reach, what is turned toward her, what the move suits) and let the fight
+  range over the whole body, the parts fights tend to forget included: a tail, a hock or an ankle, an ear, a hip,
+  the base of a fin or a wing, the small of the back, a forepaw stamped on, the ribs from the side. Vary the MOVES
+  as well: a fighter with four moves and a body full of weapons has more to use than one bite.
 - EVERY OTHER ATTACK CAN BE AS BRUTAL AS THAT, AND NO MORE: a limb seized and wrenched or twisted, a hurt part
   ground into the floor or stamped on, a body slammed and held down, a grip worried at and tightened, a blow
   driven into a spot that is already swollen. Say it in "flavor" and give it the severity it deserves (heavy,
@@ -231,8 +236,10 @@ Beat types:
 
 Guidance:
 - You can see every body part's exact resistance and damage. Lower resistance means a part takes much more
-  damage per hit. Smart fighters notice and target worn-down or injured parts; hurt or tired fighters are
-  slower and more vulnerable. You never calculate anything yourself: the engine does all math.
+  damage per hit. Some parts (a throat, a thin fin) are soft from the start; that is how the body is built,
+  and fighters go for a weak spot SOMETIMES (a WEAK SPOT line will now and then point one out), not every time.
+  Hurt or tired fighters are slower and
+  more vulnerable. You never calculate anything yourself: the engine does all math.
 - Each species has DIFFERENT body parts. Only target parts listed under the DEFENDER's own name: a Buizel
   has paws and knees, not forepaws or hocks; a Milotic has no legs at all.
 - Match severity to the move: a jab is light, a chair shot is heavy or brutal. Do not default to the strongest option.
@@ -271,9 +278,11 @@ Guidance:
   with high overall strength recovers fast from big hits, gets up, and hits back, even with a badly hurt part.
   Check MOMENTUM: if one side has made most of the recent attacks, the other side should get openings,
   counters, reversals and escapes.
-- Press advantages: worn-down parts (low resistance) take far more damage, so a smart fighter goes back to an
-  injured spot again and again, the way a real fighter works a hurt leg or ribs. Vary the MOVES and how they
-  land, but returning to an opponent's weak points is good strategy, not repetition.
+- Worn-down parts take far more damage, and a fighter may go back to a hurt spot now and then, the way a real
+  fighter tests a hurt leg or ribs, and a WEAK SPOT line will sometimes suggest one. But nothing is a constant
+  priority unless a TARGET FOCUS line says so: with no order, the attacks range over the whole body and the moves
+  vary. Working one spot again and again (the injured parts,
+  the soft places, the throat) is for when a TARGET FOCUS line asks for it.
 - With more than two fighters, spread the action around: anyone can attack anyone still in the fight.
   Fighters on the same team are allies: they do not attack each other and can double-team an opponent
   over consecutive beats. Eliminated fighters cannot act or be targeted.
@@ -442,7 +451,8 @@ def _apply_variety(engine, att, dfn, b):
     v = float(engine.rules.get("director", {}).get("target_variety", 0.35) or 0)
     recent = [p for who, p in log[-3:] if who == d.name]
     lately = {body_region(p) for p in recent}
-    if (v > 0 and not engine.focus_for(att) and body_region(name) in lately and not engine.pinned_by(a.name)
+    if (v > 0 and not engine.focus_for(att) and name not in (getattr(engine, "weak_aim", None) or ())
+            and body_region(name) in lately and not engine.pinned_by(a.name)
             and a.name not in engine.downed and not engine.grab_between(a.name, d.name)
             and engine.rng.random() < v):
         fresh = [p for p in d.parts if body_region(p) not in lately]
@@ -493,6 +503,64 @@ def variety_hint(engine):
         return ""
     return ("TARGETS (an idea, not an order): " + "; ".join(out) + ". A blow that goes somewhere new now and then "
             "keeps a fight from being about one spot: the same move can land on a different part.")
+
+
+def weak_spot_hint(engine):
+    """Now and then, with no /focus set: point one fighter at her opponent's weak spots (soft parts, or ones already
+    worn down), so weak spots are gone for sometimes, never constantly (director.weak_spot_chance). Some of these
+    nudges (director.weak_spot_repeat) are for a run of blows (a pummel, a combo, a chain, a grapple worked at):
+    one weak spot hit again and again, a group of parts worked together, or a few weak spots in turn."""
+    from engine import body_region
+    cfg = engine.rules.get("director", {})
+    c = float(cfg.get("weak_spot_chance", 0.2) or 0)
+    engine.weak_aim = set()
+    if c <= 0 or engine.rng.random() >= c:
+        return ""
+    out = []
+    for f in engine.active():
+        if engine.focus_for(f.name) or engine.pinned_by(f.name) or f.name in engine.downed:
+            continue
+        for foe in [x for x in engine.active() if x.team != f.team]:
+            out.append((f, foe))
+    if not out:
+        return ""
+    f, foe = engine.rng.choice(out)
+    soft = sorted(foe.parts.values(), key=lambda p: p.resistance)[:4]
+    why = lambda p: "already worn down" if p.damage >= 30 else "soft and badly protected"
+    if engine.rng.random() >= float(cfg.get("weak_spot_repeat", 0.4) or 0):
+        p = engine.rng.choice(soft[:3])
+        engine.weak_aim = {p.name}
+        return (f"WEAK SPOT (an idea, not an order): {f.name} could go for {poss_word(foe.name)} {p.name} this time "
+                f"({why(p)}). Just this once; the next blow can land anywhere.")
+    kind = engine.rng.choice(["same", "group", "several"])
+    run = ("if she lands a run of blows this beat (a pummel with a count, a combo, a chain, a grapple she keeps "
+           "working at)")
+    if kind == "same":
+        p = engine.rng.choice(soft[:3])
+        engine.weak_aim = {p.name}
+        return (f"WEAK SPOT, WORKED (an idea, not an order): {run}, {f.name} could bring it back to {poss_word(foe.name)} "
+                f"{p.name} ({why(p)}) again and again, every blow on the same place. Just this beat.")
+    if kind == "group":
+        # a group of parts that belong together: one region, or one side's limb top to bottom
+        seed = engine.rng.choice(soft[:3]).name
+        reg = body_region(seed)
+        side = "left" if "left" in seed.lower().split() else "right" if "right" in seed.lower().split() else None
+        grp = [n for n in foe.parts if body_region(n) == reg and (side is None or side in n.lower().split())]
+        if len(grp) < 2 and side:
+            grp = [n for n in foe.parts if side in n.lower().split()
+                   and body_region(n)[:4] == reg[:4]] or grp
+        if len(grp) < 2:
+            from engine import neighbor_parts
+            same, near = neighbor_parts(list(foe.parts), seed)
+            grp = [seed] + (same + near)[:2]
+        grp = list(dict.fromkeys(grp))[:4]
+        engine.weak_aim = set(grp)
+        return (f"WEAK SPOT, WORKED (an idea, not an order): {run}, {f.name} could work one area of {foe.name}: "
+                f"{', '.join(grp)}, the blows landing up and down it in turn. Just this beat.")
+    pick = soft[:3]
+    engine.weak_aim = {p.name for p in pick}
+    return (f"WEAK SPOTS, WORKED (an idea, not an order): {run}, {f.name} could go from weak spot to weak spot on "
+            f"{foe.name}: " + ", ".join(f"{p.name} ({why(p)})" for p in pick) + ", each hit more than once. Just this beat.")
 
 
 def _held_not_holder(engine, att, hold_id, dfn):
@@ -1415,6 +1483,9 @@ class Director:
             if extra:
                 rng_hint = (rng_hint + "\n" + extra).strip()
         fresh = variety_hint(engine) if not direction else ""
+        weak = weak_spot_hint(engine) if not direction and not fresh else ""
+        if weak:
+            rng_hint = (rng_hint + "\n" + weak).strip()
         if fresh:
             rng_hint = (rng_hint + "\n" + fresh).strip()
         if not direction and "PIN " not in hint:
@@ -2015,6 +2086,11 @@ def throat_hint(engine, roll=None):
     throat_bite_pin_chance (while pinning)."""
     cfg = engine.rules.get("director", {})
     roll = engine.rng.random() if roll is None else roll
+    # with a /focus on the throat (neck, vulnerable, head) the idea comes three times as often; otherwise the
+    # throat is just one target among many and the idea is rare
+    zs = {z for v in (cfg.get("focus") or {}).values() for z in (v or [])}
+    if zs & {"neck", "vulnerable", "head"}:
+        roll /= 3.0
     for key, pin in engine.pins.items():
         if roll < float(cfg.get("throat_bite_pin_chance", 0.25)):
             a, d = pin["attacker"], pin["defender"]
@@ -2437,7 +2513,7 @@ def pin_urge(engine, roll=None):
             if free and roll is None:
                 engine.note_roll(f"director nudge: {free[0]} joins the pin", float(cfg.get("double_pin_chance", 0.35)), r,
                                  "suggested" if r < float(cfg.get("double_pin_chance", 0.35)) else "none")
-            if free and r < float(cfg.get("double_pin_chance", 0.35)):
+            if free and r < float(cfg.get("double_pin_chance", 0.35)) * float((cfg.get("pin_urge") or {}).get("scale", 1.0)):
                 return (f"DOUBLE PIN IDEA (take it unless the story clearly calls for something else): {free[0]} piles "
                         f"onto {pinned.name} as well, joining {' and '.join(crew)}: action 'pin' with {free[0]} as "
                         f"attacker and {pinned.name} as defender, pressing parts that are still free. Both hold her "
