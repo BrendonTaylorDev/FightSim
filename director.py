@@ -451,31 +451,17 @@ def _apply_variety(engine, att, dfn, b):
     if not name:
         return b
     log = engine.__dict__.setdefault("aim_log", {}).setdefault(a.name, [])
-    v = float(engine.rules.get("director", {}).get("target_variety", 0.6) or 0)
-    # the head and the neck (throat included) are one area here: head, neck, throat, eye in turn is ONE spot worked on
-    area = lambda p: "head_neck" if body_region(p) in ("head", "neck") else body_region(p)
+    v = float(engine.rules.get("director", {}).get("target_variety", 0.35) or 0)
     recent = [p for who, p in log[-3:] if who == d.name]
-    lately = {area(p) for p in recent}
-    # and an area that already holds a big share of all the damage she has taken counts as "lately" too
-    by_area = {}
-    for p in d.parts.values():
-        by_area[area(p.name)] = by_area.get(area(p.name), 0.0) + p.damage
-    total = sum(by_area.values())
-    share = float(engine.rules.get("director", {}).get("target_share", 0.4) or 0)
-    if share > 0 and total >= 100:
-        lately |= {r for r, dmg in by_area.items() if dmg / total > share}
-        # the more lopsided it already is, the harder the pull away from it (up to always, when it has all of it)
-        over = by_area.get(area(name), 0.0) / total
-        if over > share:
-            v = v + (1 - v) * min(1.0, (over - share) / max(0.01, 1 - share)) * 1.5
+    lately = {body_region(p) for p in recent}
     if (v > 0 and not engine.focus_for(att) and name not in (getattr(engine, "weak_aim", None) or ())
-            and area(name) in lately and not engine.pinned_by(a.name)
+            and body_region(name) in lately and not engine.pinned_by(a.name)
             and a.name not in engine.downed and not engine.grab_between(a.name, d.name)
             and engine.rng.random() < v):
-        fresh = [p for p in d.parts if area(p) not in lately]
+        fresh = [p for p in d.parts if body_region(p) not in lately]
         if d.name in engine.downed and fresh:     # only what is turned toward her attacker
             fitted, _ = engine.fit_to_facing(d.name, fresh)
-            fresh = [p for p in dict.fromkeys(fitted) if area(p) not in lately]
+            fresh = [p for p in dict.fromkeys(fitted) if body_region(p) not in lately]
         if fresh:
             # the less a part has been hurt so far, the likelier she goes for it
             new = engine.rng.choices(fresh, [1.0 / (1.0 + d.parts[p].damage / 60.0) for p in fresh])[0]
