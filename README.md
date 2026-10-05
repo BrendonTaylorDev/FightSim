@@ -714,7 +714,7 @@ After each beat's prose, the program prints the exact numbers in this format:
 - **Flight.** A fighter with wings (Talon) can "take off" (a reposition on her own action): in the air only ranged
   moves reach her, her close moves become **dives** (×1.3), after which she climbs back up or lands, and the one she
   dove at may catch her and drag her down. Nobody can hold or pin her in the air. A wing hurt to 150% grounds her,
-  and if it happens in the air she falls. **Sky Drop** carries the other up and drops her from a height (the higher,
+  and if it happens in the air she falls. In the air she dodges on her wings, not her legs: a hurt wing (the worse one counts most), hurt flight muscles (shoulders, chest, back) and, a little, a hurt head all make her swerve late, and the edge the air gives her fades as her wings fail (`flight.dodge`). **Sky Drop** carries the other up and drops her from a height (the higher,
   the harder she lands). `flight`.
 - **New moves** (moves.json, lend them with /learn): **Protect / Detect** (the next attack stops against it; less
   reliable used twice running), **Counter** (the next close blow is sent back harder) and **Mirror Coat** (the same

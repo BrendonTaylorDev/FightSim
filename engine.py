@@ -2137,6 +2137,19 @@ class Engine:
         feet = ("hind_up", "hind_low", "tail") + (("fore_low",) if self.body_plan(d) == "quadruped" else ())
         legs = [p.damage for p in d.parts.values() if body_region(p.name) in feet]
         leg = 1.0 / (1.0 + (sum(legs) / len(legs) if legs else 0) / 150.0)
+        flying = self.has(d, "airborne")
+        if flying:
+            # in the air she dodges on her wings, not her legs: a hurt wing beats unevenly and slow, hurt flight
+            # muscles (shoulders, chest, back) and a ringing head make every swerve late (flight.dodge)
+            fd = (self.rules.get("flight") or {}).get("dodge") or {}
+            def avg(regions):
+                xs = [p.damage for p in d.parts.values() if body_region(p.name) in regions]
+                return sum(xs) / len(xs) if xs else 0.0
+            wings = [p.damage for p in d.parts.values() if "wing" in p.name.lower()]
+            w = (max(wings) + sum(wings) / len(wings)) / 2 if wings else 0.0   # the worse wing counts double
+            leg = (1.0 / (1.0 + w / float(fd.get("wing_per", 100)))
+                   / (1.0 + avg(("shoulder", "chest", "belly", "back_up", "back_low")) / float(fd.get("body_per", 250)))
+                   / (1.0 + avg(("head", "neck")) / float(fd.get("head_per", 400))))
         ch = float(cfg.get("base", 0.18)) * (0.4 + 0.6 * s) * leg * slow
         if self.has(d, "chilled"):
             ch *= 0.5
@@ -2146,8 +2159,11 @@ class Engine:
             ch *= 1.3
         if self.has(a, "paralyzed"):
             ch *= 1.3
-        if self.has(d, "airborne") and not self.has(a, "airborne"):
-            ch *= float((self.rules.get("flight") or {}).get("airborne_dodge_mult", 1.3))
+        if flying and not self.has(a, "airborne"):
+            # the edge the air gives her fades as her wings fail: gone by the time a wing would ground her
+            fcfg = self.rules.get("flight") or {}
+            left = max(0.0, 1.0 - self.wing_damage(d) / max(1.0, float(fcfg.get("ground_at", 150))))
+            ch *= 1.0 + (float(fcfg.get("airborne_dodge_mult", 1.3)) - 1.0) * left
         wet = self.in_water(d.name)
         if wet:   # in the water a Water type is at home and everyone else is wading (arena.water_dodge)
             wcfg = (self.rules.get("arena") or {}).get("water_dodge") or {}

@@ -1541,6 +1541,8 @@
     "climb_chance": 0.55,
     "counter_grab": 0.15,
     "airborne_dodge_mult": 1.3,
+    "_dodge_comment": "In the air her dodge rests on her wings, not her legs: chance x 1/(1 + wing damage/wing_per) (the worse wing counts double) x 1/(1 + flight-muscle damage/body_per) (shoulders, chest, belly, back) x 1/(1 + head and neck damage/head_per). The airborne_dodge_mult edge fades with the worse wing's damage and is gone at ground_at.",
+    "dodge": {"wing_per": 100, "body_per": 250, "head_per": 400},
     "drop_heights": {
       "a body's length up": "solid",
       "twice her height": "heavy",
