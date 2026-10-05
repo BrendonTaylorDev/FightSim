@@ -18,6 +18,7 @@ import sys as _sys
 import time as _time
 
 CALL_LOG = []   # (what wrote it, seconds, prompt characters) for every model call in the current beat
+_PREFIX = [""]  # "interlude " while an interlude is being written
 _STAGE = [""]   # which step of a part's writing is calling (draft, rewrite...), set by Narrator._call
 
 
@@ -28,6 +29,7 @@ def _chat(*args, **kw):
         who = _sys._getframe(2).f_code.co_name
     if who == "_call" and _STAGE[0]:
         who = _STAGE[0]
+    who = _PREFIX[0] + who
     size = sum(len(str(m.get("content", ""))) for m in (args[1] if len(args) > 1 else kw.get("messages") or []))
     t = _time.time()
     try:
@@ -3402,7 +3404,7 @@ class Narrator:
             parts = ", ".join(f"{p['part']} ({self._hold_word(p['power'])} pressure"
                               + (f", with {p['with']})" if p.get("with") else ")") for p in a["parts"])
             cfg_first = float((self.rules.get("pin" if t == "pin_start" else "holds", {}) or {}).get(
-                "first_beat_damage", 0.0 if t == "pin_start" else 1.0))
+                "first_beat_damage", 1.0))
             mv = f" with {a['move']['name'].upper()} ({a['move']['about']})" if a.get("move") else ""
             lines.append(f"{a['attacker']} {kind} {a['defender']}{mv}: {a.get('flavor', '')}{intent}")
             sub = a.get("submission")
@@ -4013,9 +4015,12 @@ class Narrator:
         self._facts = ("NOTHING NEW HAPPENS in this passage: no attack, no new hit or wound, nobody falls, gets up, "
                        "escapes, or changes position.\n" + "\n".join(self._posture_lines())
                        + "\n\nCURRENT CONDITION (right now):\n" + condition)
-        self._beat_t0 = _time.time()
-        del CALL_LOG[:]
-        text = self._call(msg, words)
+        t0, self._beat_t0 = getattr(self, "_beat_t0", None), _time.time()   # its own time budget
+        _PREFIX[0] = "interlude "
+        try:
+            text = self._call(msg, words)
+        finally:
+            _PREFIX[0], self._beat_t0 = "", t0
         text = _balance_marks(self._drop_said_repeats(self._drop_seen(self._drop_sample_copies(
             self._drop_repeats(text, story_so_far)))))
         text = _italic_sounds(text)
@@ -8015,21 +8020,23 @@ class Narrator:
         return bool(mins > 0 and t0 and _time.time() - t0 > mins * 60 * factor)
 
     def beat_timing(self):
-        """Where this beat's time went: a short line for the screen (narration.show_timing)."""
+        """Where this beat's narration time went, by step: drafts, rewrites, paragraph fixes, the second reading...
+        (added to the ⏱ line; narration.show_timing)."""
         if not CALL_LOG:
             return ""
-        total = _time.time() - (getattr(self, "_beat_t0", None) or _time.time())
         groups = {}
         names = {"draft": "drafts", "second draft": "second drafts", "rewrite": "rewrites", "rewrite 2": "second rewrites",
                  "_repair_paragraphs": "paragraph fixes", "_rewrite_paragraph": "paragraph fixes",
                  "_second_reading": "second reading", "_reader_confirm": "reader confirms", "_top_up": "top-up"}
         for who, secs, size in CALL_LOG:
-            g = groups.setdefault(names.get(who, "other"), [0, 0.0, 0])
+            pre = "interlude " if who.startswith("interlude ") else ""
+            who = who[len(pre):]
+            g = groups.setdefault(pre + names.get(who, "other"), [0, 0.0, 0])
             g[0] += 1; g[1] += secs; g[2] += size
-        bits = [f"{k} {v[0]}× {v[1] / 60:.1f}m" for k, v in sorted(groups.items(), key=lambda kv: -kv[1][1])]
+        span = lambda s: f"{int(s)} s" if s < 60 else f"{int(s) // 60} min {int(s) % 60:02d} s"
+        bits = [f"{k} {v[0]}× {span(v[1])}" for k, v in sorted(groups.items(), key=lambda kv: -kv[1][1])]
         avg = sum(s for _, _, s in CALL_LOG) // max(1, len(CALL_LOG))
-        return (f"beat written in {total / 60:.1f} min: " + ", ".join(bits)
-                + f" (prompts average {avg // 1000}k characters)")
+        return "time went to: " + ", ".join(bits) + f" (notes average {avg // 1000}k characters)"
 
     def narrate(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
         self._beat_t0 = _time.time()

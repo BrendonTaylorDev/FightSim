@@ -981,7 +981,7 @@
     },
     "damage_mult": 0.5,
     "_first_beat_comment": "first_beat_damage: how much of one beat's pressure a pin's presses deal on the beat the pin starts (0 = none: the pin starts hurting on its next beat; 1 = a full beat, still times damage_mult). Change live with /pinstart.",
-    "first_beat_damage": 0.0,
+    "first_beat_damage": 1.0,
     "_restrain_comment": "restrain: when the pinner lands an attack on the fighter she's pinning (a claw in a nerve cluster, a trapped paw, a ground-down joint), there's a chance it also leaves her RESTRAINED for beats beats: her escape chance is multiplied by escape_mult, but only fully once her strength is at or below full_effect_below %; a healthy fighter barely notices it (it scales in between).",
     "restrain": {
       "enabled": true,

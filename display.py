@@ -867,9 +867,10 @@ class Display:
                 out.append((f"- Same pin, {num(a.get('seconds') or 0)} s in (two on her: she goes under faster). Her presses start "
                             if self.rules.get("pin", {}).get("fade", {}).get("enabled", True) else
                             f"- Same clock: {num(a.get('seconds') or 0)} / {a.get('duration', 60)} s. Her presses start ")
-                           + f"next beat; {a['defender']}'s escape odds are halved while both hold her.")
+                           + ("next beat" if float(self.rules.get("pin", {}).get("first_beat_damage", 1.0)) <= 0 else "now")
+                           + f"; {a['defender']}'s escape odds are halved while both hold her.")
             elif t == "pin_start" and not a.get("continuing"):
-                pf = float(self.rules.get("pin", {}).get("first_beat_damage", 0.0))
+                pf = float(self.rules.get("pin", {}).get("first_beat_damage", 1.0))
                 fcfg = self.rules.get("pin", {}).get("fade", {})
                 out.append((f"- The pin is on. No fixed length: each beat brings her closer to passing out (about "
                             f"{num(fcfg.get('typical_beats', 6))} beats, sometimes more, sometimes fewer). "

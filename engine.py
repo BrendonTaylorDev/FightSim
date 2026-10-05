@@ -4992,9 +4992,9 @@ class Engine:
         pinned_pairs = {(m, p["defender"]) for p in self.pins.values() for m in self.pin_members(p)}
         time_factor = self.pin_time_factor()
         # a grip that closes this beat already hurts: the clamp itself is its first beat of pressure
-        # (holds.first_beat_damage; a pin's presses have their own setting, pin.first_beat_damage, off by default)
+        # (holds.first_beat_damage; a pin's presses have their own setting, pin.first_beat_damage)
         first_hold = max(0.0, float(self.rules.get("holds", {}).get("first_beat_damage", 1.0)))
-        first_pin = max(0.0, float(self.rules.get("pin", {}).get("first_beat_damage", 0.0)))
+        first_pin = max(0.0, float(self.rules.get("pin", {}).get("first_beat_damage", 1.0)))
         for h in list(self.holds.values()):
             in_pin = (h.attacker, h.defender) in pinned_pairs
             fresh = h.id in skip_hold_ids

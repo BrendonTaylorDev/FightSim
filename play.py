@@ -244,7 +244,7 @@ HELP = """
                                             never above max (0.6).   /holdbreak 0.08 0.01   /holdbreak 0 = no roll
   /holdshake [number]                       a hard hit can shake loose what the fighter it lands on is holding:
                                             chance = share of her health lost at once × number (2.5)   /holdshake 0
-  /pinstart [mult]                          the same for a pin's presses (0 by default: a pin starts hurting next beat)
+  /pinstart [mult]                          the same for a pin's presses (1 by default: the presses land the beat the pin starts)
   /pinshape [name number]                   how often each way of building a pin is suggested (jaws on the throat, jaws
                                             pinning a paw, a tail choke, a twisted arm, tangled legs, a lifted leg)
   /secure on [parts] [part%] [strength%] | off
@@ -403,7 +403,8 @@ def timing_line(row):
         bits.append(f"{_span(row['load_seconds'])} loading models")
     return (f"⏱ This beat took {_span(row['seconds'])}: " + ", ".join(bits)
             + " · written again: " + (", ".join(again) if again else "nothing")
-            + f" · narrator: {row['narrator']}")
+            + f" · narrator: {row['narrator']}"
+            + (f"\n   {row['where']}" if row.get("where") else ""))
 
 
 def timing_summary(rows):
@@ -488,6 +489,8 @@ class Session:
             if d["calls"] > 0:
                 row = {"seconds": time.time() - t0, "narrator": self.narrator.model, "director": self.director.model,
                        **d, **{k: BEAT_TALLY.get(k, 0) for k in ("paragraphs", "whole parts", "second drafts", "top-ups")}}
+                if self.eng.rules.get("narration", {}).get("show_timing", True) and hasattr(self.narrator, "beat_timing"):
+                    row["where"] = self.narrator.beat_timing()
                 self.timings.append(row)
                 if self.eng.rules.get("console", {}).get("timing", True):
                     print(timing_line(row))
@@ -704,10 +707,6 @@ class Session:
             return
         self.story[-1] = self.story[-1].rstrip() + "\n\n" + text
         self.out("\n~ ~ ~\n\n" + text + "\n")
-        if self.eng.rules.get("narration", {}).get("show_timing", True):
-            t = self.narrator.beat_timing()
-            if t:
-                print(f"  [interlude {t.replace('beat written', 'written')}]")
         if not auto:
             self.autosave()
 
@@ -843,12 +842,7 @@ class Session:
     def _write_prose(self, args):
         """Run the narrator. On a model failure the beat's stats still stand; /reroll can narrate it later."""
         try:
-            text = self.narrator.narrate(*args)
-            if self.eng.rules.get("narration", {}).get("show_timing", True) and hasattr(self.narrator, "beat_timing"):
-                t = self.narrator.beat_timing()
-                if t:
-                    print(f"  [{t}]")
-            return text
+            return self.narrator.narrate(*args)
         except llm.LLMError as e:
             self.pending = {"args": args}
             self.out(f"\n[narration failed: {e}]\n[The stats below are already applied. Type /reroll to narrate "
