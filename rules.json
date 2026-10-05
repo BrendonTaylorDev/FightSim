@@ -665,6 +665,14 @@
       "plan": true,
       "open_and_end": true
     },
+    "_lines_comment": "lines: the library of finished sentences (story_lines.txt, same format as the blocks). One that fits is offered to the narrator per part, to use word for word if it fits; a bare line of told resolve the program cuts (\"She would not be defeated.\") is replaced by one that shows it. cooldown_beats: how long before the same line can come back. Used lines are remembered in lines_memory.json.",
+    "lines": {
+      "enabled": true,
+      "file": "story_lines.txt",
+      "memory_file": "lines_memory.json",
+      "cooldown_beats": 40,
+      "remember": true
+    },
     "_plan_comment": "blocks.plan: the blocks are laid out as numbered steps whose order changes from beat to beat (false: a plain list). blocks.open_and_end: the plan gives an image to open a beat on and one to end it on. arena_detail: one detail of the place the story has not used lately, as background (from the scene's details list in scenes.json). callback_memory: when a part that an earlier blow hurt is hurt again, the narrator is pointed at that earlier blow, once per part in a long while. leaned_words: describing words the last few beats used min_count times or more are named, so the narrator reaches for others.",
     "arena_detail": true,
     "callback_memory": true,

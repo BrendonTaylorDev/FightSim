@@ -4916,6 +4916,24 @@ class Narrator:
         b.enabled = bool(b.cfg.get("enabled", True))
         return b
 
+    def _lines(self):
+        """The library of finished sentences (story_lines.txt): the same format and conditions as the blocks, but
+        each entry is a whole sentence the narrator may use word for word, or the program drops in itself."""
+        b = getattr(self, "_line_store", None)
+        cfg = (self.rules.get("narration", {}) or {}).get("lines", {}) or {}
+        if b is None:
+            b = self._line_store = story_blocks.Blocks(
+                {"narration": {"blocks": {"file": cfg.get("file", "story_lines.txt"),
+                                          "memory_file": cfg.get("memory_file", "lines_memory.json")}}})
+        b.cfg = {"cooldown_beats": int(cfg.get("cooldown_beats", 40)), "remember": bool(cfg.get("remember", True)),
+                 "fighter_boost": 2.5}
+        b.enabled = bool(cfg.get("enabled", True))
+        return b
+
+    def _feats_of(self, who):
+        """What a fighter's body has (tails, fins, horn, arms...), from her own part names."""
+        return story_blocks.features(list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()))
+
     def _worst_parts(self, who, n=2, floor="hurting", skip=(), before=None):
         """Her n worst-hurt parts at `floor` or worse: [(part name in lower case, level, zone)]. before: {part:
         damage before this beat} for parts hit this beat (what an opponent could see BEFORE striking)."""
@@ -4957,6 +4975,7 @@ class Narrator:
 
     def _blocks_for(self, key, acts, pin_events, also=(), actor=None, receivers=(), first=True, last=True):
         """The BUILDING BLOCKS note for one part of a beat ("" when the blocks are off or nothing fits)."""
+        self._line_offers = 0      # at most one finished line offered per part
         B = self._blocks()
         if not B.enabled or not B.entries:
             return ""
@@ -5042,6 +5061,15 @@ class Narrator:
             shows += B.pick("pain_show", 2 - len(shows), fmt={"part": worst_hit[1].lower()}, exclude=too_big,
                             level=lv_w, zone=zone_w, has=feats(who), state=state(who))
             add(f"how the pain in {poss(who)} {worst_hit[1].lower()} shows ({lv_w}: no bigger than that)", shows)
+            foe = next((w for w in (self.strengths or {}) if w != who), "")
+            L = self._lines()
+            if L.enabled and getattr(self, "_line_offers", 0) < 1:
+                fin = L.pick("after_hit", 1, fmt={"part": worst_hit[1].lower(), "foe": foe}, exclude=too_big,
+                             level=lv_w, zone=zone_w, has=feats(who), state=state(who), role="receiver")
+                if fin:
+                    self._line_offers = getattr(self, "_line_offers", 0) + 1
+                    add(f"a finished line for {who} after the blow (use it word for word if it fits, or leave it)",
+                        fin)
             raw = (getattr(self, "_raw_done", None) or {}).get(who)
             if raw is not None:
                 # a blow on a part that was already badly hurt: a reaction as raw as she can no longer keep in
@@ -5076,6 +5104,14 @@ class Narrator:
             else:
                 add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, has=feats(who)) if kinds
                     else B.pick("movement", 1, has=feats(who)))
+            L = self._lines()
+            if L.enabled and kinds and getattr(self, "_line_offers", 0) < 1:
+                fin = L.pick("before_strike", 1, fmt={"foe": target or ""}, kind=kinds, has=feats(who),
+                             state=state(who), role="attacker")
+                if fin:
+                    self._line_offers = getattr(self, "_line_offers", 0) + 1
+                    add(f"a finished line for {who} as she commits (use it word for word if it fits, or leave it)",
+                        fin)
             return kinds
 
         if key in ("dwell", "watch"):
@@ -5366,7 +5402,8 @@ class Narrator:
     _SLOTS = [("see", r"can see of"), ("mind", r"thought$|^what \S+ feels$"),
               ("body", r"holding the pin|holding it costs|own .* (?:shows|takes the strain)"),
               ("feel", r"how the hurt|what the press|how it spreads|feels now"),
-              ("react", r"reaction of that size|under the pin|how the pain in"), ("breath", r"breath$"),
+              ("react", r"reaction of that size|under the pin|how the pain in|after the blow \(use"),
+              ("breath", r"breath$"),
               ("after", r"afterwards|lying there"), ("move", r".")]
     # the order the steps of a part come in changes from beat to beat ("see" always before "move": she looks, then goes)
     _ACT_ORDERS = [("after", "see", "mind", "move", "body"), ("after", "body", "see", "move", "mind"),
@@ -6657,6 +6694,29 @@ class Narrator:
         return worst, part, f"how much {who} hurts: at worst {label.upper()}{where}, so {allowed}", allowed, \
             f"{label.upper()}{where}"
 
+    def _replace_filler(self, text):
+        """Each bare line of told resolve ("She would not be defeated.") is swapped for a finished line from the
+        library that SHOWS it (story_lines.txt, resolve), fitted to that fighter's body; with none to hand it is cut
+        afterwards as before."""
+        L = self._lines()
+        if not L.enabled or not text:
+            return text
+        for para in text.split("\n"):
+            for x in _SENT.split(para.strip()):
+                if not x or not self._pure_filler(x):
+                    continue
+                rows = self._said(x)
+                who = next(iter(rows[0][1]), None) if rows and rows[0][1] else None
+                foe = next((w for w in (self.strengths or {}) if w != who), "") if who else ""
+                st = story_blocks.state_of((self.strengths or {}).get(who, 100)) if who else None
+                line = L.pick("resolve", 1, fmt={"foe": foe} if foe else {}, has=self._feats_of(who) if who else None,
+                              state=st)
+                if line:
+                    text = text.replace(x, line[0], 1)
+                    if self.progress:
+                        self.progress(f"swapped a told line for a shown one: \"{line[0][:60]}\"")
+        return text
+
     @staticmethod
     def _pure_filler(sent):
         """A short sentence that is nothing but told resolve ("She was ready. She would not be defeated."): it adds
@@ -6910,6 +6970,7 @@ class Narrator:
             text = re.sub(r"\n{3,}", "\n\n", "\n".join(keep)).strip()
         if window:
             text = _strip_clock_at(text, *window)  # "at thirty seconds" in a beat that ends at second ten
+        text = self._replace_filler(text)
         still = ({x[1] for x in self._disabled_lines(text, sure=True)} | {x[2] for x in self._hand_weight_lines(text)}
                  | {x[3] for x in self._healthy_lines(text)} | {x[2] for x in self._getup_lines_invented(text)}
                  | {x[3] for x in self._overblown_lines(text)}
@@ -7664,8 +7725,10 @@ class Narrator:
 
     def narrate(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
         self._blocks().next_turn()
+        self._lines().next_turn()
         raw = self._narrate(bundle, condition_summary, fighter_notes, scene, story_so_far)
         self._blocks().save()
+        self._lines().save()
         self._injury_prev = {k: list(v) for k, v in (getattr(self, "injury_log", None) or {}).items()}
         text = self._drop_repeats(raw, story_so_far)
         text = self._drop_inner_repeats(text, aliases=getattr(self, "aliases", None))

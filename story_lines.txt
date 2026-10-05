@@ -1,0 +1,7 @@
+# test stub (replaced by the full library)
+== resolve
+She set her feet again, wider than before, and waited.
+== after_hit | level: hurting
+She let the ache in her {part} settle where it was and did not look at it again.
+== before_strike | kind: claw
+Her weight went onto her hind legs as the claws came up. | has: forelegs
