@@ -930,14 +930,17 @@ class Engine:
         self._source = f"{poss_word(a.name)} {move['name']}"
         self._feint_open = None
         self._pummel_now = bool(pummel)
-        fe = self._feint(a, d, move) if feint and enforce else None
+        # confusion first: a fighter who hurts herself throws no feint and spends no last stand on it
+        confused = self._confusion(a, move, enforce, energy_before)
+        if confused:
+            return confused
+        # a chain that ends here in a dodge (chain_break) ends it: no feint or clash gets the link through
+        ending = bool(getattr(self, "_force_dodge", False))
+        fe = self._feint(a, d, move) if feint and enforce and not ending else None
         self._last_stand_now = self._last_stand(a, move) if enforce else None
         self._overcommit_now = self._overcommit(a, move) if enforce and not self._last_stand_now else None
         math = self.move_math(a.name, d.name, move)
         target = math["target"]
-        confused = self._confusion(a, move, enforce, energy_before)
-        if confused:
-            return confused
         if target == "self":   # a stance or a weather move: on herself or the whole arena, not on the opponent
             return self._self_move(a, d, move, flavor, energy_before)
         guard = self._guarded(a, d, move)
@@ -1068,7 +1071,7 @@ class Engine:
             math["spillover_parts"] = names[1:]
             math["spillover_effective"] = spill
         fed = bool(fe and fe["bit"])
-        clash = self._clash(a, d, move, math) if enforce and not pum and not fed else None
+        clash = self._clash(a, d, move, math) if enforce and not pum and not fed and not ending else None
         if clash and clash["outcome"] == "through":
             powers = [round(pw * clash["share"], 2) for pw in powers]
         dodge = None if (clash or fed) else (self.dodge_roll(a, d, target, move["name"]) if enforce else None)

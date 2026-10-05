@@ -1082,6 +1082,7 @@ def _landing(engine, b, res):
     """A strike that knocks down, throws, or launches: the defender crashes into the arena (environmental hits)."""
     if (res.get("type") != "instant" or res.get("environment") or not res.get("hits") or res.get("confused_self_hit")
             or (res.get("sustain") and res["sustain"].get("against"))  # already slammed into the scenery
+            or res.get("ground_into")  # held against the scenery with nowhere to give: she isn't sent flying
             or (res.get("charge") and not res["charge"].get("skipped"))):  # driven into it by the charge itself
         return None  # nothing landed (dodged, or no effect): nobody goes flying
     launch = str(b.get("launch") or "none").lower()
@@ -1221,7 +1222,8 @@ def resolve_many(engine, actions):
             link = links.get(i - 1)
             if link and link[0] > 1:
                 prev = next((r for r in reversed(results) if isinstance(r, dict) and r.get("chain")), None)
-                if prev is not None and (prev.get("hits") or prev.get("type") == "grapple_start"):
+                if prev is not None and ((prev.get("hits") and not prev.get("confused_self_hit"))
+                                         or prev.get("type") == "grapple_start"):
                     try:
                         engine._chain_on = (engine.get(b.get("attacker")).name,
                                             engine.get(_fill_defender(engine, b.get("attacker"), b.get("defender"))).name)
