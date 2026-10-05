@@ -513,7 +513,7 @@
         "health_mult": 2.2
       }
     ],
-    "loss_per_power": 0.25,
+    "loss_per_power": 0.4,
     "_loss_per_damage_comment": "loss_per_damage: resistance ALSO lost per 1% of damage the hit really did (times resistance_scale), on top of loss_per_power. 0 = off (the old rule: wear depends on the blow's power only). With it on, a part that takes a great deal of damage softens faster, so heavy hits change how the next ones land. /wear shows and changes it.",
     "loss_per_damage": 0,
     "loss_per_beat": 0,
@@ -544,28 +544,33 @@
       "points": [
         [
           15,
-          2.0,
-          2.8
+          2.8,
+          3.4
         ],
         [
           40,
-          1.35,
-          1.9
+          1.6,
+          2.1
         ],
         [
           60,
-          0.75,
+          0.7,
           1.15
         ],
         [
-          85,
-          0.3,
-          0.7
+          80,
+          0.25,
+          0.75
+        ],
+        [
+          95,
+          0.14,
+          0.6
         ],
         [
           120,
-          0.12,
-          0.5
+          0.08,
+          0.45
         ]
       ]
     },
@@ -585,7 +590,7 @@
     "minimum": null,
     "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
     "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
-    "loss_per_damage_point": 0.2,
+    "loss_per_damage_point": 0.155,
     "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. Health one HIT costs past per_hit (a share of the fighter's own full health: 0.05 = 5%), and health everything that lands on her in one BEAT costs past per_beat (0.12 = 12%), counts only at `above` (0.3 = 30%). Below those limits nothing changes. The stat block shows 'softened from' when it applies. enabled false = the old rule (a pummel on a ruined part could cost half her health in a beat).",
     "soft_cap": {
       "enabled": true,
@@ -601,7 +606,7 @@
       "regions": {
         "neck": 1.6,
         "chest": 1.4,
-        "belly": 1.3,
+        "belly": 1.5,
         "head": 1.2,
         "back_up": 1.0,
         "back_low": 1.0,
@@ -630,7 +635,18 @@
         "tail base": 0.6,
         "rib": 1.2,
         "knee": 0.5,
-        "hock": 0.5
+        "hock": 0.5,
+        "crest": 0.2,
+        "plume": 0.2,
+        "mane": 0.6,
+        "beak": 0.6,
+        "eye": 0.7,
+        "wingtip": 0.4,
+        "feather": 0.3,
+        "flame": 0.3,
+        "snout": 0.6,
+        "hand": 0.4,
+        "tuft": 0.2
       }
     },
     "exhaustion_per_beat": 0.5,
@@ -1210,7 +1226,7 @@
       "hurt_at": 90,
       "hurt_bonus": 0.025,
       "hurt_cap": 0.3,
-      "scale": 1.0,
+      "scale": 0.5,
       "_comment": "scale (set with /pins): every chance below is multiplied by it, so 0.5 = about half as many pins and 2 = more; 0 = the director never starts a pin. The chance of a pin opening on a fighter each beat. It follows how hurt she is: standing / downed_fresh at full strength (knocked down while still strong barely raises it: she is up again in a moment), rising along a curve to weak_standing / weak_downed at weak_below % strength, then toward max as she nears nothing. Each part at hurt_at %+ damage adds hurt_bonus (up to hurt_cap): her opponent knows where she is hurt. No time factor: pins come more often late in a fight only because she is more hurt by then. helpless: asleep or frozen."
     },
     "_focus_comment": "Where attacks aim (set with /focus). '*' = everyone; a fighter's name = that attacker only. focus_strength (0-1) = how often an off-target pick gets moved onto the focus zone; 0 = a prompt nudge only.",

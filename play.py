@@ -217,7 +217,7 @@ HELP = """
   /release <hold_id> ["how"]                end one hold
   /release <att> <def> ["how"]              end every hold att has on def (breaks a whole pin)
   /struggle <pinned>                        she tries to break free this beat (result rolled)
-  /pins [number|off|default]                how often pins come: 0.5 = about half as many, 2 = more (default 1)
+  /pins [number|off|default]                how often pins come: 1 = twice as many, 0.25 = half (default 0.5)
   /pinsuccess <att> <def> ["Part:sev=with,..."]   the pin wins now (starts one if none is running)
   /pinescape <att> <def>                    the pinned fighter breaks free right now (her blow lands on the pinner)
   /quickpin <att> <def>                     old-style three count, rolled by the engine
@@ -2374,17 +2374,17 @@ def handle_command(s, line):
     if cmd in ("pins", "pinrate"):
         pu = s.eng.rules.setdefault("director", {}).setdefault("pin_urge", {})
         if not a:
-            print(f"Pin frequency: x{pu.get('scale', 1.0)} (1 = the tuned rate, about 8 pins a fight; 0.5 = about half "
-                  "as many openings; 0 = the director never starts a pin, your /pin still does).\n"
+            print(f"Pin frequency: x{pu.get('scale', 1.0)} (0.5 = the default, about 5 pins a fight; 1 = twice as many "
+                  "openings, about 8 a fight; 0 = the director never starts a pin, your /pin still does).\n"
                   "Use: /pins <number|off|default>   e.g. /pins 0.5"); return
         w = a[0].lower().lstrip("x")
-        val = 1.0 if w in ("default", "normal", "reset") else 0.0 if w in ("off", "none", "never") else \
+        val = 0.5 if w in ("default", "normal", "reset") else 0.0 if w in ("off", "none", "never") else \
             float(w.rstrip("%")) / (100 if w.endswith("%") else 1)
         if not 0 <= val <= 5:
-            raise ValueError("a multiplier between 0 and 5 (1 = the tuned rate)")
+            raise ValueError("a multiplier between 0 and 5 (0.5 = the default)")
         pu["scale"] = val
         _save_rules_key(["director", "pin_urge", "scale"], val)
-        print(f"Pin frequency x{val} (saved). Pin openings and pile-ons come {'as tuned' if val == 1 else f'{val} times as often'}."); return
+        print(f"Pin frequency x{val} (saved). Pin openings and pile-ons come {'at the default rate' if val == 0.5 else f'{val / 0.5:g} times as often as the default'}."); return
     if cmd in ("weakspots", "weakspot"):
         cfg = s.eng.rules.setdefault("director", {})
         if not a:

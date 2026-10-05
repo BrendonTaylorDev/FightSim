@@ -725,6 +725,7 @@ After each beat's prose, the program prints the exact numbers in this format:
 - **New fighters** (on the bench: `"bench": true` keeps them out of the default fight; `/newfight Talon Nocturne`
   brings them in): **Talon** (Staraptor, flyer), **Vesper** (Arbok, coils and venom), **Blaze** (Arcanine), **Aura**
   (Lucario), **Undertow** (Floatzel). Ripples, Nocturne and Seraphina are unchanged.
+- **Fewer pins, faster wear** (build 133). Pin openings now come at half the old rate by default (`/pins`: 0.5, about 5 pins a fight instead of 8; `/pins 1` brings back the old rate). Body parts lose resistance faster (`resistance.loss_per_power` 0.25 -> 0.4) and the damage curve is steeper both ways: a solid blow on a fresh, sturdy part does little (an Iron Tail on Ripples' chest: about 25%), but each blow wears the part and the next lands harder (40, 90, 185, 330%...). No single blow takes a part from sturdy to red (`max_loss_per_hit` 35). To keep fights about as long as before, each point of damage costs a little less health (`health.loss_per_damage_point` 0.2 -> 0.155). The stomach and belly weigh more on overall health (1.3 -> 1.5); crests, plumes, beaks, wingtips, tail feathers and flames weigh little.
 - **More fighters** (also on the bench). Flyers: **Cygnet** (Swanna), **Duchess** (Unfezant), **Valor** (Braviary,
   Sky Drop), **Swift** (Swellow), **Zephyr** (Pidgeot), **Pyra** (Moltres), **Glacia** (Articuno), **Ember**
   (Talonflame), and the winged dragons **Cinder** (Charizard) and **Tidecrest** (Dragonite), who have arms as well
