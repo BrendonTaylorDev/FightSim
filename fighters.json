@@ -11,7 +11,7 @@
       "types": [
         "Dark"
       ],
-      "health": 1860,
+      "health": 1680,
       "body": {
         "Head": 92,
         "Horn": 222,
@@ -358,30 +358,30 @@
       ],
       "health": 2800,
       "body": {
-        "Head": 100,
-        "Head Spike": 130,
-        "Left Antenna": 50,
-        "Right Antenna": 50,
-        "Left Head Fin": 70,
-        "Right Head Fin": 70,
-        "Jaw": 95,
-        "Throat": 80,
-        "Upper Neck": 105,
-        "Lower Neck": 110,
-        "Chest": 130,
-        "Belly Scales": 110,
-        "Upper Back": 150,
-        "Midsection": 125,
-        "Lower Back": 140,
-        "Upper Tail": 140,
-        "Lower Tail": 125,
-        "Tail Fan": 75
+        "Head": 97,
+        "Head Spike": 126,
+        "Left Antenna": 49,
+        "Right Antenna": 49,
+        "Left Head Fin": 68,
+        "Right Head Fin": 68,
+        "Jaw": 92,
+        "Throat": 78,
+        "Upper Neck": 102,
+        "Lower Neck": 107,
+        "Chest": 126,
+        "Belly Scales": 107,
+        "Upper Back": 146,
+        "Midsection": 121,
+        "Lower Back": 136,
+        "Upper Tail": 136,
+        "Lower Tail": 121,
+        "Tail Fan": 73
       },
       "moves": [
         {
           "name": "Hydro Pump",
           "type": "Water",
-          "power": 40,
+          "power": 25,
           "target": "spread",
           "about": "massive high-pressure water blast to the front of the body",
           "uses": 4,
@@ -390,14 +390,14 @@
         {
           "name": "Dragon Tail",
           "type": "Dragon",
-          "power": 35,
+          "power": 22,
           "target": "targeted",
           "about": "sweeping tail strike charged with draconic force that can throw the target"
         },
         {
           "name": "Dragon Rush",
           "type": "Dragon",
-          "power": 40,
+          "power": 25,
           "target": "targeted",
           "about": "a menacing full-body charge, the whole length of her behind it",
           "charge": true
@@ -405,21 +405,21 @@
         {
           "name": "Aqua Tail",
           "type": "Water",
-          "power": 40,
+          "power": 25,
           "target": "targeted",
           "about": "water-wrapped tail slam"
         },
         {
           "name": "Iron Tail",
           "type": "Steel",
-          "power": 40,
+          "power": 25,
           "target": "targeted",
           "about": "steel-hard tail strike"
         },
         {
           "name": "Ice Beam",
           "type": "Ice",
-          "power": 30,
+          "power": 19,
           "target": "spread",
           "about": "freezing beam across the body",
           "sustainable": true
@@ -427,14 +427,14 @@
         {
           "name": "Wrap",
           "type": "Normal",
-          "power": 12,
+          "power": 8,
           "target": "hold",
           "about": "coils around the body and constricts, squeezing on the exhale"
         },
         {
           "name": "Twister",
           "type": "Dragon",
-          "power": 4,
+          "power": 3,
           "target": "whole_body",
           "about": "a vicious twister",
           "effects": [
@@ -449,7 +449,7 @@
         {
           "name": "Dragon Pulse",
           "type": "Dragon",
-          "power": 28,
+          "power": 18,
           "target": "spread",
           "about": "a shockwave from the mouth",
           "sustainable": true
@@ -496,7 +496,7 @@
         {
           "name": "Brave Bird",
           "type": "Flying",
-          "power": 60,
+          "power": 93,
           "target": "targeted",
           "about": "a reckless dive",
           "effects": [
@@ -510,21 +510,21 @@
         {
           "name": "Aerial Ace",
           "type": "Flying",
-          "power": 30,
+          "power": 46,
           "target": "targeted",
           "about": "an unavoidable slash"
         },
         {
           "name": "Wing Attack",
           "type": "Flying",
-          "power": 30,
+          "power": 46,
           "target": "targeted",
           "about": "strikes with spread wings"
         },
         {
           "name": "Close Combat",
           "type": "Fighting",
-          "power": 40,
+          "power": 62,
           "target": "spread",
           "about": "an all-out, close-range flurry",
           "ranged": false
@@ -532,7 +532,7 @@
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 31,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -540,7 +540,7 @@
         {
           "name": "Sky Drop",
           "type": "Flying",
-          "power": 30,
+          "power": 46,
           "target": "targeted",
           "about": "seizes the opponent in her talons, carries her up into the air and drops her (she has to be in the air first)",
           "carry": true,
@@ -549,7 +549,7 @@
         {
           "name": "Gust",
           "type": "Flying",
-          "power": 13,
+          "power": 20,
           "target": "spread",
           "about": "a gust of wind"
         },
@@ -597,7 +597,7 @@
         {
           "name": "Poison Fang",
           "type": "Poison",
-          "power": 25,
+          "power": 26,
           "target": "targeted",
           "about": "a bite with toxic fangs",
           "effects": [
@@ -611,7 +611,7 @@
         {
           "name": "Crunch",
           "type": "Dark",
-          "power": 40,
+          "power": 42,
           "target": "targeted",
           "about": "a crushing bite",
           "effects": [
@@ -632,7 +632,7 @@
         {
           "name": "Gunk Shot",
           "type": "Poison",
-          "power": 40,
+          "power": 42,
           "target": "spread",
           "about": "a huge mass of filth",
           "effects": [
@@ -660,7 +660,7 @@
         {
           "name": "Iron Tail",
           "type": "Steel",
-          "power": 50,
+          "power": 52,
           "target": "targeted",
           "about": "a steel-hard tail strike",
           "effects": [
@@ -673,7 +673,7 @@
         {
           "name": "Sludge Bomb",
           "type": "Poison",
-          "power": 30,
+          "power": 31,
           "target": "spread",
           "about": "a hurled lump of sludge",
           "effects": [
@@ -687,7 +687,7 @@
         {
           "name": "Dragon Tail",
           "type": "Dragon",
-          "power": 30,
+          "power": 31,
           "target": "targeted",
           "about": "a tail strike that hurls the target",
           "effects": [
@@ -719,10 +719,10 @@
         "Jaw": 90,
         "Neck": 85,
         "Throat": 60,
-        "Mane": 140,
+        "Mane": 141,
         "Chest": 115,
         "Belly": 75,
-        "Back": 120,
+        "Back": 121,
         "Left Shoulder": 110,
         "Right Shoulder": 110,
         "Left Ribs": 95,
@@ -747,7 +747,7 @@
         {
           "name": "Flare Blitz",
           "type": "Fire",
-          "power": 60,
+          "power": 55,
           "target": "targeted",
           "about": "a reckless charge wrapped in fire",
           "effects": [
@@ -766,7 +766,7 @@
         {
           "name": "Extreme Speed",
           "type": "Normal",
-          "power": 40,
+          "power": 36,
           "target": "targeted",
           "about": "an attack too fast to follow",
           "charge": true
@@ -774,7 +774,7 @@
         {
           "name": "Fire Fang",
           "type": "Fire",
-          "power": 32,
+          "power": 29,
           "target": "targeted",
           "about": "a bite wreathed in flame",
           "effects": [
@@ -793,7 +793,7 @@
         {
           "name": "Crunch",
           "type": "Dark",
-          "power": 40,
+          "power": 36,
           "target": "targeted",
           "about": "a crushing bite",
           "effects": [
@@ -807,7 +807,7 @@
         {
           "name": "Flamethrower",
           "type": "Fire",
-          "power": 30,
+          "power": 27,
           "target": "spread",
           "about": "a stream of fire",
           "effects": [
@@ -822,7 +822,7 @@
         {
           "name": "Thunder Fang",
           "type": "Electric",
-          "power": 32,
+          "power": 29,
           "target": "targeted",
           "about": "a bite crackling with electricity",
           "effects": [
@@ -871,41 +871,41 @@
       ],
       "health": 1700,
       "body": {
-        "Head": 90,
-        "Left Ear": 55,
-        "Right Ear": 55,
-        "Muzzle": 75,
-        "Jaw": 85,
-        "Neck": 80,
-        "Throat": 60,
-        "Chest Spur": 160,
-        "Chest": 105,
-        "Stomach": 80,
-        "Upper Back": 110,
-        "Lower Back": 100,
-        "Left Shoulder": 100,
-        "Right Shoulder": 100,
-        "Left Upper Arm": 95,
-        "Right Upper Arm": 95,
-        "Left Forearm": 95,
-        "Right Forearm": 95,
-        "Left Paw": 85,
-        "Right Paw": 85,
-        "Left Hip": 105,
-        "Right Hip": 105,
-        "Left Thigh": 110,
-        "Right Thigh": 110,
-        "Left Knee": 85,
-        "Right Knee": 85,
-        "Left Foot": 80,
-        "Right Foot": 80,
-        "Tail": 75
+        "Head": 91,
+        "Left Ear": 56,
+        "Right Ear": 56,
+        "Muzzle": 76,
+        "Jaw": 86,
+        "Neck": 81,
+        "Throat": 61,
+        "Chest Spur": 162,
+        "Chest": 106,
+        "Stomach": 81,
+        "Upper Back": 111,
+        "Lower Back": 101,
+        "Left Shoulder": 101,
+        "Right Shoulder": 101,
+        "Left Upper Arm": 96,
+        "Right Upper Arm": 96,
+        "Left Forearm": 96,
+        "Right Forearm": 96,
+        "Left Paw": 86,
+        "Right Paw": 86,
+        "Left Hip": 106,
+        "Right Hip": 106,
+        "Left Thigh": 111,
+        "Right Thigh": 111,
+        "Left Knee": 86,
+        "Right Knee": 86,
+        "Left Foot": 81,
+        "Right Foot": 81,
+        "Tail": 76
       },
       "moves": [
         {
           "name": "Aura Sphere",
           "type": "Fighting",
-          "power": 27,
+          "power": 20,
           "target": "spread",
           "about": "a sphere of aura energy",
           "sustainable": true
@@ -913,7 +913,7 @@
         {
           "name": "Close Combat",
           "type": "Fighting",
-          "power": 40,
+          "power": 29,
           "target": "spread",
           "about": "an all-out, close-range flurry",
           "ranged": false
@@ -921,14 +921,14 @@
         {
           "name": "Meteor Mash",
           "type": "Steel",
-          "power": 45,
+          "power": 33,
           "target": "targeted",
           "about": "a meteor-like punch"
         },
         {
           "name": "Extreme Speed",
           "type": "Normal",
-          "power": 40,
+          "power": 29,
           "target": "targeted",
           "about": "an attack too fast to follow",
           "charge": true
@@ -936,7 +936,7 @@
         {
           "name": "Brick Break",
           "type": "Fighting",
-          "power": 38,
+          "power": 28,
           "target": "targeted",
           "about": "a hard chopping strike"
         },
@@ -961,7 +961,7 @@
         {
           "name": "Swift",
           "type": "Normal",
-          "power": 20,
+          "power": 15,
           "target": "spread",
           "about": "star-shaped rays that never miss"
         }
@@ -1014,7 +1014,7 @@
         {
           "name": "Aqua Jet",
           "type": "Water",
-          "power": 20,
+          "power": 15,
           "target": "targeted",
           "about": "a water-sheathed body charge",
           "charge": true,
@@ -1023,7 +1023,7 @@
         {
           "name": "Waterfall",
           "type": "Water",
-          "power": 40,
+          "power": 31,
           "target": "targeted",
           "about": "charges up like a waterfall, driving the target upward",
           "effects": [
@@ -1042,7 +1042,7 @@
         {
           "name": "Crunch",
           "type": "Dark",
-          "power": 40,
+          "power": 31,
           "target": "targeted",
           "about": "a crushing bite",
           "effects": [
@@ -1056,7 +1056,7 @@
         {
           "name": "Ice Fang",
           "type": "Ice",
-          "power": 32,
+          "power": 25,
           "target": "targeted",
           "about": "a freezing bite",
           "effects": [
@@ -1075,7 +1075,7 @@
         {
           "name": "Hydro Pump",
           "type": "Water",
-          "power": 37,
+          "power": 28,
           "target": "spread",
           "about": "a massive high-pressure water blast",
           "effects": [
@@ -1089,7 +1089,7 @@
         {
           "name": "Brick Break",
           "type": "Fighting",
-          "power": 38,
+          "power": 29,
           "target": "targeted",
           "about": "a hard chopping strike"
         },
@@ -1126,35 +1126,35 @@
       ],
       "health": 1850,
       "body": {
-        "Head": 100,
-        "Crest": 70,
-        "Beak": 120,
+        "Head": 99,
+        "Crest": 69,
+        "Beak": 119,
         "Left Eye": 55,
         "Right Eye": 55,
-        "Neck": 80,
-        "Throat": 70,
-        "Chest": 115,
-        "Belly": 90,
-        "Upper Back": 120,
-        "Lower Back": 110,
-        "Left Shoulder": 110,
-        "Right Shoulder": 110,
-        "Left Wing": 105,
-        "Right Wing": 105,
-        "Left Wingtip": 85,
-        "Right Wingtip": 85,
-        "Left Thigh": 110,
-        "Right Thigh": 110,
-        "Left Webbed Foot": 95,
-        "Right Webbed Foot": 95,
-        "Tail Feathers": 90,
-        "Chest Ruff": 120
+        "Neck": 79,
+        "Throat": 69,
+        "Chest": 114,
+        "Belly": 89,
+        "Upper Back": 119,
+        "Lower Back": 109,
+        "Left Shoulder": 109,
+        "Right Shoulder": 109,
+        "Left Wing": 104,
+        "Right Wing": 104,
+        "Left Wingtip": 84,
+        "Right Wingtip": 84,
+        "Left Thigh": 109,
+        "Right Thigh": 109,
+        "Left Webbed Foot": 94,
+        "Right Webbed Foot": 94,
+        "Tail Feathers": 89,
+        "Chest Ruff": 119
       },
       "moves": [
         {
           "name": "Brave Bird",
           "type": "Flying",
-          "power": 60,
+          "power": 65,
           "target": "targeted",
           "about": "a reckless dive",
           "effects": [
@@ -1168,7 +1168,7 @@
         {
           "name": "Air Slash",
           "type": "Flying",
-          "power": 25,
+          "power": 27,
           "target": "spread",
           "about": "a blade of air",
           "effects": [
@@ -1182,7 +1182,7 @@
         {
           "name": "Hurricane",
           "type": "Flying",
-          "power": 12,
+          "power": 13,
           "target": "whole_body",
           "about": "a wrapping, battering wind",
           "effects": [
@@ -1200,7 +1200,7 @@
         {
           "name": "Scald",
           "type": "Water",
-          "power": 27,
+          "power": 29,
           "target": "spread",
           "about": "boiling water",
           "effects": [
@@ -1215,14 +1215,14 @@
         {
           "name": "Wing Attack",
           "type": "Flying",
-          "power": 30,
+          "power": 32,
           "target": "targeted",
           "about": "strikes with spread wings"
         },
         {
           "name": "Hydro Pump",
           "type": "Water",
-          "power": 37,
+          "power": 40,
           "target": "spread",
           "about": "a massive high-pressure water blast",
           "effects": [
@@ -1236,7 +1236,7 @@
         {
           "name": "Bubble Beam",
           "type": "Water",
-          "power": 22,
+          "power": 24,
           "target": "spread",
           "about": "a forceful spray of bubbles",
           "sustainable": true
@@ -1244,7 +1244,7 @@
         {
           "name": "Ice Beam",
           "type": "Ice",
-          "power": 30,
+          "power": 32,
           "target": "spread",
           "about": "a freezing beam",
           "effects": [
@@ -1271,34 +1271,34 @@
       ],
       "health": 1800,
       "body": {
-        "Head": 100,
-        "Beak": 130,
-        "Left Eye": 55,
-        "Right Eye": 55,
-        "Neck": 85,
-        "Throat": 70,
-        "Chest": 115,
-        "Belly": 90,
-        "Upper Back": 120,
-        "Lower Back": 110,
-        "Left Shoulder": 110,
-        "Right Shoulder": 110,
-        "Left Wing": 105,
-        "Right Wing": 105,
-        "Left Wingtip": 85,
-        "Right Wingtip": 85,
-        "Left Thigh": 110,
-        "Right Thigh": 110,
-        "Left Talon": 125,
-        "Right Talon": 125,
-        "Tail Feathers": 90,
-        "Long Tail": 85
+        "Head": 96,
+        "Beak": 125,
+        "Left Eye": 53,
+        "Right Eye": 53,
+        "Neck": 82,
+        "Throat": 67,
+        "Chest": 111,
+        "Belly": 86,
+        "Upper Back": 115,
+        "Lower Back": 106,
+        "Left Shoulder": 106,
+        "Right Shoulder": 106,
+        "Left Wing": 101,
+        "Right Wing": 101,
+        "Left Wingtip": 82,
+        "Right Wingtip": 82,
+        "Left Thigh": 106,
+        "Right Thigh": 106,
+        "Left Talon": 120,
+        "Right Talon": 120,
+        "Tail Feathers": 86,
+        "Long Tail": 82
       },
       "moves": [
         {
           "name": "Sky Attack",
           "type": "Flying",
-          "power": 70,
+          "power": 104,
           "target": "targeted",
           "about": "a glowing, crushing dive",
           "effects": [
@@ -1316,7 +1316,7 @@
         {
           "name": "Air Slash",
           "type": "Flying",
-          "power": 25,
+          "power": 37,
           "target": "spread",
           "about": "a blade of air",
           "effects": [
@@ -1330,21 +1330,21 @@
         {
           "name": "Aerial Ace",
           "type": "Flying",
-          "power": 30,
+          "power": 45,
           "target": "targeted",
           "about": "an unavoidable slash"
         },
         {
           "name": "Steel Wing",
           "type": "Steel",
-          "power": 35,
+          "power": 52,
           "target": "targeted",
           "about": "steel-hard wings"
         },
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 30,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -1352,7 +1352,7 @@
         {
           "name": "Night Slash",
           "type": "Dark",
-          "power": 35,
+          "power": 52,
           "target": "targeted",
           "about": "a dark-edged slash"
         },
@@ -1394,35 +1394,35 @@
       ],
       "health": 2150,
       "body": {
-        "Head": 100,
-        "Crest": 85,
-        "Beak": 155,
-        "Left Eye": 55,
-        "Right Eye": 55,
-        "Neck": 85,
-        "Throat": 70,
-        "Chest": 125,
-        "Belly": 90,
-        "Upper Back": 120,
-        "Lower Back": 110,
-        "Left Shoulder": 110,
-        "Right Shoulder": 110,
-        "Left Wing": 115,
-        "Right Wing": 115,
-        "Left Wingtip": 90,
-        "Right Wingtip": 90,
-        "Left Thigh": 120,
-        "Right Thigh": 120,
-        "Left Talon": 135,
-        "Right Talon": 135,
-        "Tail Feathers": 100,
-        "Neck Ruff": 125
+        "Head": 93,
+        "Crest": 79,
+        "Beak": 145,
+        "Left Eye": 51,
+        "Right Eye": 51,
+        "Neck": 79,
+        "Throat": 65,
+        "Chest": 117,
+        "Belly": 84,
+        "Upper Back": 112,
+        "Lower Back": 103,
+        "Left Shoulder": 103,
+        "Right Shoulder": 103,
+        "Left Wing": 107,
+        "Right Wing": 107,
+        "Left Wingtip": 84,
+        "Right Wingtip": 84,
+        "Left Thigh": 112,
+        "Right Thigh": 112,
+        "Left Talon": 126,
+        "Right Talon": 126,
+        "Tail Feathers": 93,
+        "Neck Ruff": 117
       },
       "moves": [
         {
           "name": "Brave Bird",
           "type": "Flying",
-          "power": 60,
+          "power": 56,
           "target": "targeted",
           "about": "a reckless dive",
           "effects": [
@@ -1436,14 +1436,14 @@
         {
           "name": "Crush Claw",
           "type": "Normal",
-          "power": 38,
+          "power": 36,
           "target": "targeted",
           "about": "crushing, raking claws"
         },
         {
           "name": "Sky Drop",
           "type": "Flying",
-          "power": 30,
+          "power": 28,
           "target": "targeted",
           "about": "seizes the opponent in her talons, carries her up into the air and drops her (she has to be in the air first)",
           "carry": true,
@@ -1452,7 +1452,7 @@
         {
           "name": "Close Combat",
           "type": "Fighting",
-          "power": 40,
+          "power": 38,
           "target": "spread",
           "about": "an all-out, close-range flurry",
           "ranged": false
@@ -1460,14 +1460,14 @@
         {
           "name": "Aerial Ace",
           "type": "Flying",
-          "power": 30,
+          "power": 28,
           "target": "targeted",
           "about": "an unavoidable slash"
         },
         {
           "name": "Wing Attack",
           "type": "Flying",
-          "power": 30,
+          "power": 28,
           "target": "targeted",
           "about": "strikes with spread wings"
         },
@@ -1488,7 +1488,7 @@
         {
           "name": "Air Slash",
           "type": "Flying",
-          "power": 25,
+          "power": 24,
           "target": "spread",
           "about": "a blade of air",
           "effects": [
@@ -1514,34 +1514,34 @@
       ],
       "health": 1550,
       "body": {
-        "Head": 95,
-        "Beak": 104,
-        "Left Eye": 52,
-        "Right Eye": 52,
-        "Neck": 71,
-        "Throat": 66,
-        "Chest": 95,
-        "Belly": 86,
-        "Upper Back": 114,
-        "Lower Back": 104,
-        "Left Shoulder": 104,
-        "Right Shoulder": 104,
-        "Left Wing": 90,
-        "Right Wing": 90,
-        "Left Wingtip": 71,
-        "Right Wingtip": 71,
-        "Left Thigh": 90,
-        "Right Thigh": 90,
-        "Left Talon": 95,
-        "Right Talon": 95,
-        "Forked Tail": 76,
-        "Head Plumes": 57
+        "Head": 103,
+        "Beak": 112,
+        "Left Eye": 56,
+        "Right Eye": 56,
+        "Neck": 77,
+        "Throat": 71,
+        "Chest": 103,
+        "Belly": 93,
+        "Upper Back": 123,
+        "Lower Back": 112,
+        "Left Shoulder": 112,
+        "Right Shoulder": 112,
+        "Left Wing": 97,
+        "Right Wing": 97,
+        "Left Wingtip": 77,
+        "Right Wingtip": 77,
+        "Left Thigh": 97,
+        "Right Thigh": 97,
+        "Left Talon": 103,
+        "Right Talon": 103,
+        "Forked Tail": 82,
+        "Head Plumes": 62
       },
       "moves": [
         {
           "name": "Brave Bird",
           "type": "Flying",
-          "power": 60,
+          "power": 96,
           "target": "targeted",
           "about": "a reckless dive",
           "effects": [
@@ -1555,14 +1555,14 @@
         {
           "name": "Aerial Ace",
           "type": "Flying",
-          "power": 30,
+          "power": 48,
           "target": "targeted",
           "about": "an unavoidable slash"
         },
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 32,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -1570,28 +1570,28 @@
         {
           "name": "Facade",
           "type": "Normal",
-          "power": 35,
+          "power": 56,
           "target": "targeted",
           "about": "a reckless strike, harder when hurt"
         },
         {
           "name": "Wing Attack",
           "type": "Flying",
-          "power": 30,
+          "power": 48,
           "target": "targeted",
           "about": "strikes with spread wings"
         },
         {
           "name": "Steel Wing",
           "type": "Steel",
-          "power": 35,
+          "power": 56,
           "target": "targeted",
           "about": "steel-hard wings"
         },
         {
           "name": "Air Slash",
           "type": "Flying",
-          "power": 25,
+          "power": 40,
           "target": "spread",
           "about": "a blade of air",
           "effects": [
@@ -1605,7 +1605,7 @@
         {
           "name": "Peck",
           "type": "Flying",
-          "power": 18,
+          "power": 29,
           "target": "targeted",
           "about": "a sharp jab"
         }
@@ -1624,34 +1624,34 @@
       ],
       "health": 1900,
       "body": {
-        "Head": 100,
-        "Head Plume": 70,
-        "Beak": 125,
-        "Left Eye": 55,
-        "Right Eye": 55,
-        "Neck": 85,
-        "Throat": 70,
-        "Chest": 115,
-        "Belly": 90,
-        "Upper Back": 120,
-        "Lower Back": 110,
-        "Left Shoulder": 110,
-        "Right Shoulder": 110,
-        "Left Wing": 110,
-        "Right Wing": 110,
-        "Left Wingtip": 90,
-        "Right Wingtip": 90,
-        "Left Thigh": 110,
-        "Right Thigh": 110,
-        "Left Talon": 125,
-        "Right Talon": 125,
-        "Tail Feathers": 95
+        "Head": 96,
+        "Head Plume": 67,
+        "Beak": 120,
+        "Left Eye": 53,
+        "Right Eye": 53,
+        "Neck": 81,
+        "Throat": 67,
+        "Chest": 110,
+        "Belly": 86,
+        "Upper Back": 115,
+        "Lower Back": 105,
+        "Left Shoulder": 105,
+        "Right Shoulder": 105,
+        "Left Wing": 105,
+        "Right Wing": 105,
+        "Left Wingtip": 86,
+        "Right Wingtip": 86,
+        "Left Thigh": 105,
+        "Right Thigh": 105,
+        "Left Talon": 120,
+        "Right Talon": 120,
+        "Tail Feathers": 91
       },
       "moves": [
         {
           "name": "Hurricane",
           "type": "Flying",
-          "power": 12,
+          "power": 19,
           "target": "whole_body",
           "about": "a wrapping, battering wind",
           "effects": [
@@ -1669,7 +1669,7 @@
         {
           "name": "Air Slash",
           "type": "Flying",
-          "power": 25,
+          "power": 40,
           "target": "spread",
           "about": "a blade of air",
           "effects": [
@@ -1683,21 +1683,21 @@
         {
           "name": "Gust",
           "type": "Flying",
-          "power": 13,
+          "power": 21,
           "target": "spread",
           "about": "a gust of wind"
         },
         {
           "name": "Wing Attack",
           "type": "Flying",
-          "power": 30,
+          "power": 47,
           "target": "targeted",
           "about": "strikes with spread wings"
         },
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 32,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -1705,7 +1705,7 @@
         {
           "name": "Twister",
           "type": "Dragon",
-          "power": 4,
+          "power": 6,
           "target": "whole_body",
           "about": "a vicious twister",
           "effects": [
@@ -1720,14 +1720,14 @@
         {
           "name": "Steel Wing",
           "type": "Steel",
-          "power": 35,
+          "power": 55,
           "target": "targeted",
           "about": "steel-hard wings"
         },
         {
           "name": "Heat Wave",
           "type": "Fire",
-          "power": 11,
+          "power": 17,
           "target": "whole_body",
           "about": "a scorching wave of heat",
           "effects": [
@@ -1754,34 +1754,34 @@
       ],
       "health": 2300,
       "body": {
-        "Head": 105,
-        "Flame Crest": 94,
-        "Beak": 131,
-        "Left Eye": 58,
-        "Right Eye": 58,
-        "Neck": 89,
-        "Throat": 74,
-        "Chest": 126,
-        "Belly": 94,
-        "Upper Back": 126,
-        "Lower Back": 116,
-        "Left Shoulder": 116,
-        "Right Shoulder": 116,
-        "Left Wing": 116,
-        "Right Wing": 116,
-        "Left Wingtip": 94,
-        "Right Wingtip": 94,
-        "Left Thigh": 116,
-        "Right Thigh": 116,
-        "Left Talon": 121,
-        "Right Talon": 121,
-        "Flame Tail": 105
+        "Head": 97,
+        "Flame Crest": 87,
+        "Beak": 121,
+        "Left Eye": 54,
+        "Right Eye": 54,
+        "Neck": 83,
+        "Throat": 69,
+        "Chest": 117,
+        "Belly": 87,
+        "Upper Back": 117,
+        "Lower Back": 108,
+        "Left Shoulder": 108,
+        "Right Shoulder": 108,
+        "Left Wing": 108,
+        "Right Wing": 108,
+        "Left Wingtip": 87,
+        "Right Wingtip": 87,
+        "Left Thigh": 108,
+        "Right Thigh": 108,
+        "Left Talon": 112,
+        "Right Talon": 112,
+        "Flame Tail": 97
       },
       "moves": [
         {
           "name": "Flamethrower",
           "type": "Fire",
-          "power": 30,
+          "power": 34,
           "target": "spread",
           "about": "a stream of fire",
           "effects": [
@@ -1796,7 +1796,7 @@
         {
           "name": "Fire Blast",
           "type": "Fire",
-          "power": 37,
+          "power": 42,
           "target": "spread",
           "about": "a huge star-shaped blast of fire",
           "effects": [
@@ -1811,7 +1811,7 @@
         {
           "name": "Heat Wave",
           "type": "Fire",
-          "power": 11,
+          "power": 13,
           "target": "whole_body",
           "about": "a scorching wave of heat",
           "effects": [
@@ -1826,7 +1826,7 @@
         {
           "name": "Hurricane",
           "type": "Flying",
-          "power": 12,
+          "power": 14,
           "target": "whole_body",
           "about": "a wrapping, battering wind",
           "effects": [
@@ -1844,7 +1844,7 @@
         {
           "name": "Sky Attack",
           "type": "Flying",
-          "power": 70,
+          "power": 80,
           "target": "targeted",
           "about": "a glowing, crushing dive",
           "effects": [
@@ -1862,14 +1862,14 @@
         {
           "name": "Wing Attack",
           "type": "Flying",
-          "power": 30,
+          "power": 34,
           "target": "targeted",
           "about": "strikes with spread wings"
         },
         {
           "name": "Fire Spin",
           "type": "Fire",
-          "power": 20,
+          "power": 23,
           "target": "hold",
           "about": "a vortex of fire that traps the target",
           "effects": [
@@ -1904,34 +1904,34 @@
       ],
       "health": 2300,
       "body": {
-        "Head": 105,
-        "Crest": 74,
-        "Beak": 121,
-        "Left Eye": 58,
-        "Right Eye": 58,
-        "Neck": 84,
-        "Throat": 74,
-        "Chest": 121,
-        "Belly": 94,
-        "Upper Back": 126,
-        "Lower Back": 116,
-        "Left Shoulder": 116,
-        "Right Shoulder": 116,
-        "Left Wing": 110,
-        "Right Wing": 110,
-        "Left Wingtip": 89,
-        "Right Wingtip": 89,
-        "Left Thigh": 116,
-        "Right Thigh": 116,
-        "Left Talon": 110,
-        "Right Talon": 110,
-        "Long Tail": 89
+        "Head": 102,
+        "Crest": 72,
+        "Beak": 117,
+        "Left Eye": 56,
+        "Right Eye": 56,
+        "Neck": 81,
+        "Throat": 72,
+        "Chest": 117,
+        "Belly": 91,
+        "Upper Back": 122,
+        "Lower Back": 112,
+        "Left Shoulder": 112,
+        "Right Shoulder": 112,
+        "Left Wing": 107,
+        "Right Wing": 107,
+        "Left Wingtip": 86,
+        "Right Wingtip": 86,
+        "Left Thigh": 112,
+        "Right Thigh": 112,
+        "Left Talon": 107,
+        "Right Talon": 107,
+        "Long Tail": 86
       },
       "moves": [
         {
           "name": "Ice Beam",
           "type": "Ice",
-          "power": 30,
+          "power": 37,
           "target": "spread",
           "about": "a freezing beam",
           "effects": [
@@ -1946,7 +1946,7 @@
         {
           "name": "Blizzard",
           "type": "Ice",
-          "power": 12,
+          "power": 15,
           "target": "whole_body",
           "about": "a howling blizzard",
           "effects": [
@@ -1961,7 +1961,7 @@
         {
           "name": "Freeze-Dry",
           "type": "Ice",
-          "power": 23,
+          "power": 28,
           "target": "spread",
           "about": "flash-freezes the target, even through water",
           "effects": [
@@ -1976,7 +1976,7 @@
         {
           "name": "Hurricane",
           "type": "Flying",
-          "power": 12,
+          "power": 15,
           "target": "whole_body",
           "about": "a wrapping, battering wind",
           "effects": [
@@ -1994,7 +1994,7 @@
         {
           "name": "Air Slash",
           "type": "Flying",
-          "power": 25,
+          "power": 30,
           "target": "spread",
           "about": "a blade of air",
           "effects": [
@@ -2008,14 +2008,14 @@
         {
           "name": "Ice Shard",
           "type": "Ice",
-          "power": 20,
+          "power": 24,
           "target": "targeted",
           "about": "a fast-flung chunk of ice"
         },
         {
           "name": "Icy Wind",
           "type": "Ice",
-          "power": 6,
+          "power": 7,
           "target": "whole_body",
           "about": "a chilling wind that slows",
           "effects": [
@@ -2029,7 +2029,7 @@
         {
           "name": "Wing Attack",
           "type": "Flying",
-          "power": 30,
+          "power": 37,
           "target": "targeted",
           "about": "strikes with spread wings"
         }
@@ -2048,33 +2048,33 @@
       ],
       "health": 1800,
       "body": {
-        "Head": 100,
-        "Beak": 125,
-        "Left Eye": 55,
-        "Right Eye": 55,
-        "Neck": 85,
-        "Throat": 70,
-        "Chest": 110,
-        "Belly": 90,
-        "Upper Back": 120,
-        "Lower Back": 110,
-        "Left Shoulder": 110,
-        "Right Shoulder": 110,
-        "Left Wing": 100,
-        "Right Wing": 100,
-        "Left Wingtip": 80,
-        "Right Wingtip": 80,
-        "Left Thigh": 105,
-        "Right Thigh": 105,
-        "Left Talon": 115,
-        "Right Talon": 115,
-        "Tail Feathers": 90
+        "Head": 98,
+        "Beak": 123,
+        "Left Eye": 54,
+        "Right Eye": 54,
+        "Neck": 84,
+        "Throat": 69,
+        "Chest": 108,
+        "Belly": 88,
+        "Upper Back": 118,
+        "Lower Back": 108,
+        "Left Shoulder": 108,
+        "Right Shoulder": 108,
+        "Left Wing": 98,
+        "Right Wing": 98,
+        "Left Wingtip": 79,
+        "Right Wingtip": 79,
+        "Left Thigh": 103,
+        "Right Thigh": 103,
+        "Left Talon": 113,
+        "Right Talon": 113,
+        "Tail Feathers": 88
       },
       "moves": [
         {
           "name": "Flare Blitz",
           "type": "Fire",
-          "power": 60,
+          "power": 84,
           "target": "targeted",
           "about": "a reckless charge wrapped in fire",
           "effects": [
@@ -2093,7 +2093,7 @@
         {
           "name": "Brave Bird",
           "type": "Flying",
-          "power": 60,
+          "power": 84,
           "target": "targeted",
           "about": "a reckless dive",
           "effects": [
@@ -2107,21 +2107,21 @@
         {
           "name": "Acrobatics",
           "type": "Flying",
-          "power": 28,
+          "power": 39,
           "target": "targeted",
           "about": "a nimble flurry"
         },
         {
           "name": "Steel Wing",
           "type": "Steel",
-          "power": 35,
+          "power": 49,
           "target": "targeted",
           "about": "steel-hard wings"
         },
         {
           "name": "Flame Charge",
           "type": "Fire",
-          "power": 25,
+          "power": 35,
           "target": "targeted",
           "about": "a charge cloaked in flames",
           "charge": true
@@ -2129,7 +2129,7 @@
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 28,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -2137,7 +2137,7 @@
         {
           "name": "Fire Fang",
           "type": "Fire",
-          "power": 32,
+          "power": 45,
           "target": "targeted",
           "about": "a bite wreathed in flame",
           "effects": [
@@ -2156,7 +2156,7 @@
         {
           "name": "Heat Wave",
           "type": "Fire",
-          "power": 11,
+          "power": 15,
           "target": "whole_body",
           "about": "a scorching wave of heat",
           "effects": [
@@ -2183,48 +2183,48 @@
       ],
       "health": 2200,
       "body": {
-        "Head": 105,
-        "Left Horn": 110,
-        "Right Horn": 110,
-        "Muzzle": 90,
-        "Left Eye": 55,
-        "Right Eye": 55,
-        "Jaw": 100,
-        "Neck": 95,
-        "Throat": 70,
-        "Chest": 125,
-        "Belly": 95,
-        "Upper Back": 130,
-        "Lower Back": 120,
-        "Left Shoulder": 115,
-        "Right Shoulder": 115,
-        "Left Wing": 100,
-        "Right Wing": 100,
-        "Left Wingtip": 80,
-        "Right Wingtip": 80,
-        "Left Upper Arm": 105,
-        "Right Upper Arm": 105,
-        "Left Forearm": 100,
-        "Right Forearm": 100,
-        "Left Hand": 95,
-        "Right Hand": 95,
-        "Left Hip": 120,
-        "Right Hip": 120,
-        "Left Thigh": 125,
-        "Right Thigh": 125,
-        "Left Knee": 95,
-        "Right Knee": 95,
-        "Left Foot": 95,
-        "Right Foot": 95,
-        "Tail Base": 135,
-        "Tail": 110,
-        "Tail Flame": 75
+        "Head": 102,
+        "Left Horn": 107,
+        "Right Horn": 107,
+        "Muzzle": 87,
+        "Left Eye": 53,
+        "Right Eye": 53,
+        "Jaw": 97,
+        "Neck": 92,
+        "Throat": 68,
+        "Chest": 121,
+        "Belly": 92,
+        "Upper Back": 126,
+        "Lower Back": 116,
+        "Left Shoulder": 111,
+        "Right Shoulder": 111,
+        "Left Wing": 97,
+        "Right Wing": 97,
+        "Left Wingtip": 78,
+        "Right Wingtip": 78,
+        "Left Upper Arm": 102,
+        "Right Upper Arm": 102,
+        "Left Forearm": 97,
+        "Right Forearm": 97,
+        "Left Hand": 92,
+        "Right Hand": 92,
+        "Left Hip": 116,
+        "Right Hip": 116,
+        "Left Thigh": 121,
+        "Right Thigh": 121,
+        "Left Knee": 92,
+        "Right Knee": 92,
+        "Left Foot": 92,
+        "Right Foot": 92,
+        "Tail Base": 131,
+        "Tail": 107,
+        "Tail Flame": 73
       },
       "moves": [
         {
           "name": "Flamethrower",
           "type": "Fire",
-          "power": 30,
+          "power": 21,
           "target": "spread",
           "about": "a stream of fire",
           "effects": [
@@ -2239,14 +2239,14 @@
         {
           "name": "Dragon Claw",
           "type": "Dragon",
-          "power": 40,
+          "power": 28,
           "target": "targeted",
           "about": "slashing dragon claws"
         },
         {
           "name": "Fire Fang",
           "type": "Fire",
-          "power": 32,
+          "power": 22,
           "target": "targeted",
           "about": "a bite wreathed in flame",
           "effects": [
@@ -2265,7 +2265,7 @@
         {
           "name": "Air Slash",
           "type": "Flying",
-          "power": 25,
+          "power": 17,
           "target": "spread",
           "about": "a blade of air",
           "effects": [
@@ -2279,7 +2279,7 @@
         {
           "name": "Flare Blitz",
           "type": "Fire",
-          "power": 60,
+          "power": 40,
           "target": "targeted",
           "about": "a reckless charge wrapped in fire",
           "effects": [
@@ -2298,7 +2298,7 @@
         {
           "name": "Seismic Toss",
           "type": "Fighting",
-          "power": 30,
+          "power": 21,
           "target": "targeted",
           "about": "grabs and hurls the target",
           "effects": [
@@ -2311,7 +2311,7 @@
         {
           "name": "Thunder Punch",
           "type": "Electric",
-          "power": 38,
+          "power": 26,
           "target": "targeted",
           "about": "an electrified punch",
           "effects": [
@@ -2325,7 +2325,7 @@
         {
           "name": "Heat Wave",
           "type": "Fire",
-          "power": 11,
+          "power": 8,
           "target": "whole_body",
           "about": "a scorching wave of heat",
           "effects": [
@@ -2350,49 +2350,49 @@
         "Dragon",
         "Flying"
       ],
-      "health": 2600,
+      "health": 2100,
       "body": {
-        "Head": 113,
-        "Left Antenna": 54,
-        "Right Antenna": 54,
-        "Snout": 97,
-        "Left Eye": 59,
-        "Right Eye": 59,
-        "Jaw": 108,
-        "Neck": 103,
-        "Throat": 76,
-        "Chest": 135,
-        "Belly": 103,
-        "Upper Back": 140,
-        "Lower Back": 130,
-        "Left Shoulder": 124,
-        "Right Shoulder": 124,
-        "Left Wing": 108,
-        "Right Wing": 108,
-        "Left Wingtip": 86,
-        "Right Wingtip": 86,
-        "Left Upper Arm": 113,
-        "Right Upper Arm": 113,
-        "Left Forearm": 108,
-        "Right Forearm": 108,
-        "Left Hand": 103,
-        "Right Hand": 103,
-        "Left Hip": 130,
-        "Right Hip": 130,
-        "Left Thigh": 135,
-        "Right Thigh": 135,
-        "Left Knee": 103,
-        "Right Knee": 103,
-        "Left Foot": 103,
-        "Right Foot": 103,
-        "Tail Base": 162,
-        "Tail": 146
+        "Head": 101,
+        "Left Antenna": 48,
+        "Right Antenna": 48,
+        "Snout": 86,
+        "Left Eye": 53,
+        "Right Eye": 53,
+        "Jaw": 96,
+        "Neck": 92,
+        "Throat": 68,
+        "Chest": 120,
+        "Belly": 92,
+        "Upper Back": 125,
+        "Lower Back": 116,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Wing": 96,
+        "Right Wing": 96,
+        "Left Wingtip": 77,
+        "Right Wingtip": 77,
+        "Left Upper Arm": 101,
+        "Right Upper Arm": 101,
+        "Left Forearm": 96,
+        "Right Forearm": 96,
+        "Left Hand": 92,
+        "Right Hand": 92,
+        "Left Hip": 116,
+        "Right Hip": 116,
+        "Left Thigh": 120,
+        "Right Thigh": 120,
+        "Left Knee": 92,
+        "Right Knee": 92,
+        "Left Foot": 92,
+        "Right Foot": 92,
+        "Tail Base": 145,
+        "Tail": 131
       },
       "moves": [
         {
           "name": "Dragon Rush",
           "type": "Dragon",
-          "power": 50,
+          "power": 25,
           "target": "targeted",
           "about": "a menacing full-body charge",
           "effects": [
@@ -2411,7 +2411,7 @@
         {
           "name": "Extreme Speed",
           "type": "Normal",
-          "power": 40,
+          "power": 20,
           "target": "targeted",
           "about": "an attack too fast to follow",
           "charge": true
@@ -2419,7 +2419,7 @@
         {
           "name": "Hurricane",
           "type": "Flying",
-          "power": 12,
+          "power": 6,
           "target": "whole_body",
           "about": "a wrapping, battering wind",
           "effects": [
@@ -2437,7 +2437,7 @@
         {
           "name": "Fire Punch",
           "type": "Fire",
-          "power": 38,
+          "power": 19,
           "target": "targeted",
           "about": "a burning punch",
           "effects": [
@@ -2451,7 +2451,7 @@
         {
           "name": "Thunder Punch",
           "type": "Electric",
-          "power": 38,
+          "power": 19,
           "target": "targeted",
           "about": "an electrified punch",
           "effects": [
@@ -2465,7 +2465,7 @@
         {
           "name": "Ice Punch",
           "type": "Ice",
-          "power": 38,
+          "power": 19,
           "target": "targeted",
           "about": "a freezing punch",
           "effects": [
@@ -2479,7 +2479,7 @@
         {
           "name": "Dragon Tail",
           "type": "Dragon",
-          "power": 30,
+          "power": 15,
           "target": "targeted",
           "about": "a tail strike that hurls the target",
           "effects": [
@@ -2493,7 +2493,7 @@
           "name": "Outrage",
           "ranged": false,
           "type": "Dragon",
-          "power": 40,
+          "power": 20,
           "target": "spread",
           "about": "a rampage that leaves the attacker confused",
           "effects": [
@@ -2516,44 +2516,44 @@
       "types": [
         "Dragon"
       ],
-      "health": 2500,
+      "health": 2100,
       "body": {
-        "Head": 113,
-        "Left Antenna": 86,
-        "Right Antenna": 86,
-        "Left Eye": 59,
-        "Right Eye": 59,
-        "Jaw": 108,
-        "Neck": 103,
-        "Throat": 76,
-        "Chest": 135,
-        "Belly": 103,
-        "Upper Back": 140,
-        "Lower Back": 130,
-        "Left Shoulder": 124,
-        "Right Shoulder": 124,
-        "Left Upper Arm": 113,
-        "Right Upper Arm": 113,
-        "Left Forearm": 108,
-        "Right Forearm": 108,
-        "Left Hand": 103,
-        "Right Hand": 103,
-        "Left Hip": 130,
-        "Right Hip": 130,
-        "Left Thigh": 135,
-        "Right Thigh": 135,
-        "Left Knee": 103,
-        "Right Knee": 103,
-        "Left Foot": 103,
-        "Right Foot": 103,
-        "Tail Base": 151,
-        "Tail": 135
+        "Head": 102,
+        "Left Antenna": 78,
+        "Right Antenna": 78,
+        "Left Eye": 53,
+        "Right Eye": 53,
+        "Jaw": 98,
+        "Neck": 93,
+        "Throat": 69,
+        "Chest": 122,
+        "Belly": 93,
+        "Upper Back": 126,
+        "Lower Back": 117,
+        "Left Shoulder": 112,
+        "Right Shoulder": 112,
+        "Left Upper Arm": 102,
+        "Right Upper Arm": 102,
+        "Left Forearm": 98,
+        "Right Forearm": 98,
+        "Left Hand": 93,
+        "Right Hand": 93,
+        "Left Hip": 117,
+        "Right Hip": 117,
+        "Left Thigh": 122,
+        "Right Thigh": 122,
+        "Left Knee": 93,
+        "Right Knee": 93,
+        "Left Foot": 93,
+        "Right Foot": 93,
+        "Tail Base": 136,
+        "Tail": 122
       },
       "moves": [
         {
           "name": "Dragon Pulse",
           "type": "Dragon",
-          "power": 28,
+          "power": 14,
           "target": "spread",
           "about": "a shockwave from the mouth",
           "sustainable": true
@@ -2561,7 +2561,7 @@
         {
           "name": "Sludge Bomb",
           "type": "Poison",
-          "power": 30,
+          "power": 15,
           "target": "spread",
           "about": "a hurled lump of sludge",
           "effects": [
@@ -2575,7 +2575,7 @@
         {
           "name": "Body Slam",
           "type": "Normal",
-          "power": 42,
+          "power": 21,
           "target": "targeted",
           "about": "slams the whole body down on the target",
           "effects": [
@@ -2593,7 +2593,7 @@
         {
           "name": "Power Whip",
           "type": "Grass",
-          "power": 60,
+          "power": 30,
           "target": "targeted",
           "about": "a violent vine lash",
           "effects": [
@@ -2606,7 +2606,7 @@
         {
           "name": "Aqua Tail",
           "type": "Water",
-          "power": 45,
+          "power": 22,
           "target": "targeted",
           "about": "a water-wrapped tail slam",
           "effects": [
@@ -2619,21 +2619,21 @@
         {
           "name": "Muddy Water",
           "type": "Water",
-          "power": 10,
+          "power": 5,
           "target": "whole_body",
           "about": "a wave of muddy water"
         },
         {
           "name": "Wrap",
           "type": "Normal",
-          "power": 10,
+          "power": 5,
           "target": "hold",
           "about": "coils wrapped around the body, squeezing"
         },
         {
           "name": "Thunderbolt",
           "type": "Electric",
-          "power": 10,
+          "power": 5,
           "target": "whole_body",
           "about": "a strong electric blast",
           "effects": [
@@ -2659,44 +2659,44 @@
       ],
       "health": 1900,
       "body": {
-        "Head": 95,
-        "Left Ear": 55,
-        "Right Ear": 55,
-        "Muzzle": 80,
-        "Nose": 50,
-        "Jaw": 90,
-        "Neck": 85,
-        "Throat": 60,
-        "Neck Ruff": 120,
-        "Chest": 110,
-        "Belly": 75,
-        "Back": 115,
-        "Left Shoulder": 105,
-        "Right Shoulder": 105,
-        "Left Ribs": 90,
-        "Right Ribs": 90,
-        "Left Upper Foreleg": 95,
-        "Right Upper Foreleg": 95,
-        "Left Lower Foreleg": 85,
-        "Right Lower Foreleg": 85,
-        "Left Forepaw": 78,
-        "Right Forepaw": 78,
-        "Left Hip": 105,
-        "Right Hip": 105,
-        "Left Thigh": 110,
-        "Right Thigh": 110,
-        "Left Hock": 82,
-        "Right Hock": 82,
-        "Left Hind Paw": 78,
-        "Right Hind Paw": 78,
-        "Tail Base": 110,
-        "Nine Tails": 120
+        "Head": 99,
+        "Left Ear": 58,
+        "Right Ear": 58,
+        "Muzzle": 84,
+        "Nose": 52,
+        "Jaw": 94,
+        "Neck": 89,
+        "Throat": 63,
+        "Neck Ruff": 126,
+        "Chest": 115,
+        "Belly": 78,
+        "Back": 120,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Ribs": 94,
+        "Right Ribs": 94,
+        "Left Upper Foreleg": 99,
+        "Right Upper Foreleg": 99,
+        "Left Lower Foreleg": 89,
+        "Right Lower Foreleg": 89,
+        "Left Forepaw": 82,
+        "Right Forepaw": 82,
+        "Left Hip": 110,
+        "Right Hip": 110,
+        "Left Thigh": 115,
+        "Right Thigh": 115,
+        "Left Hock": 86,
+        "Right Hock": 86,
+        "Left Hind Paw": 82,
+        "Right Hind Paw": 82,
+        "Tail Base": 115,
+        "Nine Tails": 126
       },
       "moves": [
         {
           "name": "Flamethrower",
           "type": "Fire",
-          "power": 30,
+          "power": 58,
           "target": "spread",
           "about": "a stream of fire",
           "effects": [
@@ -2711,7 +2711,7 @@
         {
           "name": "Fire Blast",
           "type": "Fire",
-          "power": 37,
+          "power": 71,
           "target": "spread",
           "about": "a huge star-shaped blast of fire",
           "effects": [
@@ -2726,7 +2726,7 @@
         {
           "name": "Extrasensory",
           "type": "Psychic",
-          "power": 27,
+          "power": 52,
           "target": "spread",
           "about": "an odd unseen power",
           "effects": [
@@ -2768,7 +2768,7 @@
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 38,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -2776,7 +2776,7 @@
         {
           "name": "Fire Spin",
           "type": "Fire",
-          "power": 20,
+          "power": 38,
           "target": "hold",
           "about": "a vortex of fire that traps the target",
           "effects": [
@@ -2790,7 +2790,7 @@
         {
           "name": "Dark Pulse",
           "type": "Dark",
-          "power": 27,
+          "power": 52,
           "target": "spread",
           "about": "a horrible aura of malice",
           "effects": [
@@ -2814,46 +2814,46 @@
       "types": [
         "Fire"
       ],
-      "health": 1300,
+      "health": 1450,
       "body": {
-        "Head": 78,
-        "Left Ear": 49,
-        "Right Ear": 49,
-        "Muzzle": 66,
-        "Nose": 41,
-        "Jaw": 74,
-        "Neck": 70,
-        "Throat": 49,
-        "Head Tuft": 57,
-        "Chest": 90,
-        "Belly": 61,
-        "Back": 94,
-        "Left Shoulder": 86,
-        "Right Shoulder": 86,
-        "Left Ribs": 74,
-        "Right Ribs": 74,
-        "Left Upper Foreleg": 78,
-        "Right Upper Foreleg": 78,
-        "Left Lower Foreleg": 70,
-        "Right Lower Foreleg": 70,
-        "Left Forepaw": 64,
-        "Right Forepaw": 64,
-        "Left Hip": 86,
-        "Right Hip": 86,
-        "Left Thigh": 90,
-        "Right Thigh": 90,
-        "Left Hock": 67,
-        "Right Hock": 67,
-        "Left Hind Paw": 64,
-        "Right Hind Paw": 64,
-        "Tail Base": 82,
-        "Six Tails": 90
+        "Head": 99,
+        "Left Ear": 63,
+        "Right Ear": 63,
+        "Muzzle": 84,
+        "Nose": 52,
+        "Jaw": 94,
+        "Neck": 89,
+        "Throat": 63,
+        "Head Tuft": 73,
+        "Chest": 115,
+        "Belly": 78,
+        "Back": 120,
+        "Left Shoulder": 110,
+        "Right Shoulder": 110,
+        "Left Ribs": 94,
+        "Right Ribs": 94,
+        "Left Upper Foreleg": 99,
+        "Right Upper Foreleg": 99,
+        "Left Lower Foreleg": 89,
+        "Right Lower Foreleg": 89,
+        "Left Forepaw": 82,
+        "Right Forepaw": 82,
+        "Left Hip": 110,
+        "Right Hip": 110,
+        "Left Thigh": 115,
+        "Right Thigh": 115,
+        "Left Hock": 85,
+        "Right Hock": 85,
+        "Left Hind Paw": 82,
+        "Right Hind Paw": 82,
+        "Tail Base": 105,
+        "Six Tails": 115
       },
       "moves": [
         {
           "name": "Ember",
           "type": "Fire",
-          "power": 13,
+          "power": 24,
           "target": "spread",
           "about": "small flames",
           "effects": [
@@ -2867,7 +2867,7 @@
         {
           "name": "Flame Wheel",
           "type": "Fire",
-          "power": 30,
+          "power": 55,
           "target": "targeted",
           "about": "rolls in a wheel of fire",
           "effects": [
@@ -2882,7 +2882,7 @@
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 37,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -2890,7 +2890,7 @@
         {
           "name": "Fire Fang",
           "type": "Fire",
-          "power": 32,
+          "power": 59,
           "target": "targeted",
           "about": "a bite wreathed in flame",
           "effects": [
@@ -2909,7 +2909,7 @@
         {
           "name": "Bite",
           "type": "Dark",
-          "power": 30,
+          "power": 55,
           "target": "targeted",
           "about": "a hard bite",
           "effects": [
@@ -2951,7 +2951,7 @@
         {
           "name": "Extrasensory",
           "type": "Psychic",
-          "power": 27,
+          "power": 50,
           "target": "spread",
           "about": "an odd unseen power",
           "effects": [
@@ -2974,44 +2974,44 @@
       "types": [
         "Fire"
       ],
-      "health": 1250,
+      "health": 1450,
       "body": {
-        "Head": 76,
-        "Left Ear": 40,
-        "Right Ear": 40,
-        "Muzzle": 64,
-        "Nose": 40,
-        "Jaw": 72,
-        "Neck": 68,
-        "Throat": 48,
-        "Chest": 88,
-        "Belly": 60,
-        "Back": 92,
-        "Left Shoulder": 84,
-        "Right Shoulder": 84,
-        "Left Ribs": 72,
-        "Right Ribs": 72,
-        "Left Upper Foreleg": 76,
-        "Right Upper Foreleg": 76,
-        "Left Lower Foreleg": 68,
-        "Right Lower Foreleg": 68,
-        "Left Forepaw": 62,
-        "Right Forepaw": 62,
-        "Left Hip": 84,
-        "Right Hip": 84,
-        "Left Thigh": 88,
-        "Right Thigh": 88,
-        "Left Hock": 66,
-        "Right Hock": 66,
-        "Left Hind Paw": 62,
-        "Right Hind Paw": 62,
-        "Bushy Tail": 68
+        "Head": 101,
+        "Left Ear": 53,
+        "Right Ear": 53,
+        "Muzzle": 85,
+        "Nose": 53,
+        "Jaw": 96,
+        "Neck": 90,
+        "Throat": 64,
+        "Chest": 117,
+        "Belly": 80,
+        "Back": 122,
+        "Left Shoulder": 111,
+        "Right Shoulder": 111,
+        "Left Ribs": 96,
+        "Right Ribs": 96,
+        "Left Upper Foreleg": 101,
+        "Right Upper Foreleg": 101,
+        "Left Lower Foreleg": 90,
+        "Right Lower Foreleg": 90,
+        "Left Forepaw": 82,
+        "Right Forepaw": 82,
+        "Left Hip": 111,
+        "Right Hip": 111,
+        "Left Thigh": 117,
+        "Right Thigh": 117,
+        "Left Hock": 88,
+        "Right Hock": 88,
+        "Left Hind Paw": 82,
+        "Right Hind Paw": 82,
+        "Bushy Tail": 90
       },
       "moves": [
         {
           "name": "Ember",
           "type": "Fire",
-          "power": 13,
+          "power": 29,
           "target": "spread",
           "about": "small flames",
           "effects": [
@@ -3025,7 +3025,7 @@
         {
           "name": "Flame Charge",
           "type": "Fire",
-          "power": 25,
+          "power": 55,
           "target": "targeted",
           "about": "a charge cloaked in flames",
           "charge": true
@@ -3033,7 +3033,7 @@
         {
           "name": "Psybeam",
           "type": "Psychic",
-          "power": 22,
+          "power": 48,
           "target": "spread",
           "about": "a peculiar ray",
           "effects": [
@@ -3048,21 +3048,21 @@
         {
           "name": "Scratch",
           "type": "Normal",
-          "power": 20,
+          "power": 44,
           "target": "targeted",
           "about": "raking claws"
         },
         {
           "name": "Psyshock",
           "type": "Psychic",
-          "power": 27,
+          "power": 59,
           "target": "spread",
           "about": "an odd psychic wave"
         },
         {
           "name": "Mystical Fire",
           "type": "Fire",
-          "power": 25,
+          "power": 55,
           "target": "spread",
           "about": "mystical flame"
         },
@@ -3083,7 +3083,7 @@
         {
           "name": "Fire Spin",
           "type": "Fire",
-          "power": 20,
+          "power": 44,
           "target": "hold",
           "about": "a vortex of fire that traps the target",
           "effects": [
@@ -3108,37 +3108,37 @@
       ],
       "health": 1800,
       "body": {
-        "Head": 97,
-        "Left Ear": 61,
-        "Right Ear": 61,
-        "Muzzle": 82,
-        "Nose": 51,
-        "Jaw": 92,
-        "Neck": 87,
-        "Throat": 61,
-        "Rock Mane": 153,
-        "Chest": 112,
-        "Belly": 76,
-        "Back": 117,
-        "Left Shoulder": 107,
-        "Right Shoulder": 107,
-        "Left Ribs": 92,
-        "Right Ribs": 92,
-        "Left Upper Foreleg": 97,
-        "Right Upper Foreleg": 97,
-        "Left Lower Foreleg": 87,
-        "Right Lower Foreleg": 87,
-        "Left Forepaw": 80,
-        "Right Forepaw": 80,
-        "Left Hip": 107,
-        "Right Hip": 107,
-        "Left Thigh": 112,
-        "Right Thigh": 112,
-        "Left Hock": 84,
-        "Right Hock": 84,
-        "Left Hind Paw": 80,
-        "Right Hind Paw": 80,
-        "Tail": 92
+        "Head": 102,
+        "Left Ear": 64,
+        "Right Ear": 64,
+        "Muzzle": 86,
+        "Nose": 54,
+        "Jaw": 97,
+        "Neck": 91,
+        "Throat": 64,
+        "Rock Mane": 161,
+        "Chest": 118,
+        "Belly": 80,
+        "Back": 123,
+        "Left Shoulder": 112,
+        "Right Shoulder": 112,
+        "Left Ribs": 97,
+        "Right Ribs": 97,
+        "Left Upper Foreleg": 102,
+        "Right Upper Foreleg": 102,
+        "Left Lower Foreleg": 91,
+        "Right Lower Foreleg": 91,
+        "Left Forepaw": 84,
+        "Right Forepaw": 84,
+        "Left Hip": 112,
+        "Right Hip": 112,
+        "Left Thigh": 118,
+        "Right Thigh": 118,
+        "Left Hock": 88,
+        "Right Hock": 88,
+        "Left Hind Paw": 84,
+        "Right Hind Paw": 84,
+        "Tail": 97
       },
       "moves": [
         {
@@ -3158,7 +3158,7 @@
         {
           "name": "Crunch",
           "type": "Dark",
-          "power": 40,
+          "power": 38,
           "target": "targeted",
           "about": "a crushing bite",
           "effects": [
@@ -3172,14 +3172,14 @@
         {
           "name": "Stone Edge",
           "type": "Rock",
-          "power": 50,
+          "power": 48,
           "target": "targeted",
           "about": "a stabbing stone spike"
         },
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 19,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -3187,7 +3187,7 @@
         {
           "name": "Thunder Fang",
           "type": "Electric",
-          "power": 32,
+          "power": 30,
           "target": "targeted",
           "about": "a bite crackling with electricity",
           "effects": [
@@ -3206,7 +3206,7 @@
         {
           "name": "Fire Fang",
           "type": "Fire",
-          "power": 32,
+          "power": 30,
           "target": "targeted",
           "about": "a bite wreathed in flame",
           "effects": [
@@ -3225,7 +3225,7 @@
         {
           "name": "Rock Tomb",
           "type": "Rock",
-          "power": 20,
+          "power": 19,
           "target": "spread",
           "about": "boulders that pin and slow",
           "effects": [
@@ -3239,7 +3239,7 @@
         {
           "name": "Close Combat",
           "type": "Fighting",
-          "power": 40,
+          "power": 38,
           "target": "spread",
           "about": "an all-out, close-range flurry",
           "ranged": false
@@ -3258,42 +3258,42 @@
       ],
       "health": 1650,
       "body": {
-        "Head": 90,
-        "Left Ear": 52,
-        "Right Ear": 52,
-        "Muzzle": 76,
-        "Nose": 48,
-        "Jaw": 86,
-        "Neck": 81,
-        "Throat": 57,
-        "Chest": 104,
-        "Belly": 71,
-        "Back": 109,
-        "Left Shoulder": 100,
-        "Right Shoulder": 100,
-        "Left Ribs": 86,
-        "Right Ribs": 86,
-        "Left Upper Foreleg": 90,
-        "Right Upper Foreleg": 90,
-        "Left Lower Foreleg": 81,
-        "Right Lower Foreleg": 81,
-        "Left Forepaw": 74,
-        "Right Forepaw": 74,
-        "Left Hip": 100,
-        "Right Hip": 100,
-        "Left Thigh": 104,
-        "Right Thigh": 104,
-        "Left Hock": 78,
-        "Right Hock": 78,
-        "Left Hind Paw": 74,
-        "Right Hind Paw": 74,
-        "Long Tail": 81
+        "Head": 101,
+        "Left Ear": 58,
+        "Right Ear": 58,
+        "Muzzle": 85,
+        "Nose": 54,
+        "Jaw": 97,
+        "Neck": 91,
+        "Throat": 64,
+        "Chest": 117,
+        "Belly": 80,
+        "Back": 123,
+        "Left Shoulder": 112,
+        "Right Shoulder": 112,
+        "Left Ribs": 97,
+        "Right Ribs": 97,
+        "Left Upper Foreleg": 101,
+        "Right Upper Foreleg": 101,
+        "Left Lower Foreleg": 91,
+        "Right Lower Foreleg": 91,
+        "Left Forepaw": 83,
+        "Right Forepaw": 83,
+        "Left Hip": 112,
+        "Right Hip": 112,
+        "Left Thigh": 117,
+        "Right Thigh": 117,
+        "Left Hock": 88,
+        "Right Hock": 88,
+        "Left Hind Paw": 83,
+        "Right Hind Paw": 83,
+        "Long Tail": 91
       },
       "moves": [
         {
           "name": "Foul Play",
           "type": "Dark",
-          "power": 48,
+          "power": 42,
           "target": "targeted",
           "about": "turns the target's own strength against them",
           "effects": [
@@ -3306,7 +3306,7 @@
         {
           "name": "Snarl",
           "type": "Dark",
-          "power": 18,
+          "power": 16,
           "target": "spread",
           "about": "a menacing snarl",
           "effects": [
@@ -3320,28 +3320,28 @@
         {
           "name": "Night Slash",
           "type": "Dark",
-          "power": 35,
+          "power": 30,
           "target": "targeted",
           "about": "a dark-edged slash"
         },
         {
           "name": "Sucker Punch",
           "type": "Dark",
-          "power": 35,
+          "power": 30,
           "target": "targeted",
           "about": "strikes first, before the target can act"
         },
         {
           "name": "Thief",
           "type": "Dark",
-          "power": 30,
+          "power": 26,
           "target": "targeted",
           "about": "a sudden lunge"
         },
         {
           "name": "Quick Attack",
           "type": "Normal",
-          "power": 20,
+          "power": 17,
           "target": "targeted",
           "about": "a blur of speed straight into the target",
           "charge": true
@@ -3349,7 +3349,7 @@
         {
           "name": "Crunch",
           "type": "Dark",
-          "power": 40,
+          "power": 35,
           "target": "targeted",
           "about": "a crushing bite",
           "effects": [
@@ -3364,7 +3364,7 @@
           "name": "Play Rough",
           "ranged": false,
           "type": "Fairy",
-          "power": 30,
+          "power": 26,
           "target": "spread",
           "about": "a rough flurry"
         }
