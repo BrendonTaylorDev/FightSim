@@ -103,6 +103,8 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         try:
             results, started = resolve_many(eng, [act])
             stats["pins"] += sum(1 for r in results if isinstance(r, dict) and r.get("type") == "pin_start")
+            if stats["pins"] and "first_pin" not in stats:
+                stats["first_pin"] = eng.turn     # how early in the fight the first pin came
             stats["subs"] += sum(1 for r in results if isinstance(r, dict) and r.get("submission"))
         except Exception:
             results = []

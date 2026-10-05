@@ -2767,7 +2767,13 @@ class Engine:
             why = f"{d.name} was {'thrown' if thrown else 'knocked down'}"
             share = max(0.0, min(1.0, self.strength(d) / 100.0))
             rt = float(dcfg.get("roll_through", 0.2)) * share
-            if (can_recover and thrown and awake and not from_ground and not slam and not self.is_upright(last)
+            # a strong fighter knocked or thrown down often springs straight back up: the stronger, the likelier
+            sp = dcfg.get("spring_up") if isinstance(dcfg.get("spring_up"), dict) else {}
+            if sp.get("enabled", True):
+                lo = float(sp.get("from", 55))
+                t = max(0.0, min(1.0, (self.strength(d) - lo) / max(1.0, 100.0 - lo)))
+                rt = max(rt, float(sp.get("max", 0.55)) * t)
+            if (can_recover and awake and not from_ground and not slam and not self.is_upright(last)
                     and not tumbled and rt > 0 and self._chance(rt, f"{d.name} rolling through the landing", "she comes up on her feet",
                                                 "she stays down")):
                 kept_feet, ends = True, "rolled to her feet"
@@ -5666,7 +5672,9 @@ class Engine:
         weak_below = float(cfg.get("weak_below", 50))
         s = self.strength(target)
         down = target.name in self.downed
-        fresh = float(cfg.get("downed", 0.30) if down else cfg.get("standing", 0.06))
+        # on the ground at full strength is only a little likelier than standing (she is up again in a moment); the
+        # knockdown counts for more and more as she wears down
+        fresh = float(cfg.get("downed_fresh", cfg.get("downed", 0.30)) if down else cfg.get("standing", 0.06))
         weak = float(cfg.get("weak_downed", 0.85) if down else cfg.get("weak_standing", 0.45))
         if s < weak_below:
             base = weak + (float(cfg.get("max", 0.95)) - weak) * max(0.0, min(1.0, (weak_below - s) / max(1.0, weak_below)))

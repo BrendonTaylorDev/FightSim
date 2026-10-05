@@ -315,6 +315,35 @@ def _is_sound(span):
                                                           or (len(toks) > 1 and len(set(toks)) == 1))
 
 
+_SOUND_NEAR = re.compile(r"\b(?:hiss|growl|grunt|yelp|squeak|bark|chitter|whine|snarl|cry|cri|gasp|huff|whimper|groan|"
+                         r"wheez|squeal|shriek|scream|howl|moan|sound|noise|yip|chirp|snort|grumbl|rumbl|keen)\w*", re.I)
+_COMMON_DOUBLES = {"all", "see", "feel", "tree", "grass", "full", "still", "cool", "deep", "keep", "good", "too", "will",
+                   "well", "small", "fall", "pull", "fell", "steel", "soon", "feet", "need", "been", "free", "off",
+                   "hiss", "growl", "grunt", "yelp", "bark", "huff", "cry", "shh"}
+
+
+def _italic_sounds(text):
+    """A sound the narrator wrote out but forgot to mark ("she hissed through her teeth, hss, and"; "a thin eek broke
+    out of her"; "a low growl, Grr."): put it in italics, so it reads (and shows on screen) as her sound."""
+    if not text:
+        return text
+    out = []
+    for para in text.split("\n"):
+        def fix(m):
+            word = m.group(2)
+            if word.lower() in _COMMON_DOUBLES or not _is_sound(word):
+                return m.group(0)
+            return m.group(1) + "*" + word + "*"
+        # set off by commas or ending the sentence, shortly after a sound word ("...a hiss, hss, and" / "growl, Grr.")
+        para = re.sub(r"((?:" + _SOUND_NEAR.pattern + r")[^.!?*\n]{0,40}?,\s*)(?<!\*)([A-Za-z][A-Za-z'-]{1,14})(?=[,.!?…—]|\s*$)",
+                      fix, para)
+        # "a thin eek broke out of her" / "a sharp yip escaped her"
+        para = re.sub(r"(\b(?:a|an|one|another)\s+(?:\w+\s+){0,2}?)(?<!\*)([A-Za-z][a-z'-]{1,14})(?=\s+(?:broke|breaking|escaped|"
+                      r"escaping|burst|came|slipped|tore|jumped|was out|left|got out)\b)", fix, para)
+        out.append(para)
+    return "\n".join(out)
+
+
 def degeneration_run_on(x):
     """A sentence that has turned into a dash-chained run-on (long sentences alone are fine)."""
     words = x.split()
@@ -793,7 +822,7 @@ TRY_UP = re.compile(r"\b((?:tried|trying|tries|struggl\w+|fought|fighting|attemp
 NUMB = re.compile(r"\b(numb(?:ed|ing|ness)?|past (?:pain|feeling|hurting)|beyond pain|no feeling (?:left|at all)|"
                   r"(?:couldn't|could not|can't) feel (?:it|her|his|the))\b", re.I)
 # the instructions' own wording turning up as prose
-PROMPT_ECHO = re.compile(r"\b(past (?:excruciating|very painful|devastated)\b|seconds \d+ (?:to|through|until|–|—|-) ?\d+\b|"
+PROMPT_ECHO = re.compile(r"\b(separate from any (?:other )?(?:move|attack|strike)\b|past (?:excruciating|very painful|devastated)\b|seconds \d+ (?:to|through|until|–|—|-) ?\d+\b|"
                          r"sore squeezes?\b|(?:a|an|the|in a wild,?) improvisational\b|from (?:minor|sore|hurting|very painful|excruciating) to (?:sore|hurting|very painful|"
                          r"excruciating|devastated)\b|the (?:very painful|excruciating|devastated|hurting|sore) one\b|"
                          r"the contact point\b|the pin ha[sd] only just begun|real damage (?:would|will|builds?|built|was going to)\b[^.!?]{0,25}"
@@ -6650,6 +6679,37 @@ class Narrator:
         return (f"\nTALK IN THIS PART: at most {thoughts} italic thought{'s' if thoughts != 1 else ''} (short; the "
                 f"building blocks' thoughts count toward it), {say}. Written-out sounds don't count.")
 
+    def _order_note(self, acts):
+        """When several things happen in one beat (a strike, the fall it causes, the pin that follows), the order
+        they happen in, from the engine: told in that order, never the pin before the blow that made it possible."""
+        steps = []
+        for a in acts or []:
+            t, att, dfn = a.get("type"), a.get("attacker"), a.get("defender")
+            if t == "instant" and a.get("environment"):
+                surf = " then ".join(l.get("surface", "") for l in a.get("landings", []) if l.get("surface"))
+                steps.append(f"{dfn} goes down" + (f" ({surf})" if surf else "")
+                             + (" and comes straight back up on her feet" if a.get("kept_feet") else ""))
+            elif t == "instant":
+                mv = (a.get("move") or {}).get("name") or a.get("flavor") or "the attack"
+                parts = [h["part"].lower() for h in a.get("hits") or []]
+                if a.get("dodged") and not parts:
+                    steps.append(f"{poss(att)} {mv} misses ({dfn} dodges)")
+                elif a.get("guard") and parts:
+                    steps.append(f"{poss(att)} {mv} is caught on {poss(dfn)} raised {parts[0]}")
+                elif parts:
+                    steps.append(f"{poss(att)} {mv} lands on {poss(dfn)} {parts[0]}")
+                if a.get("counter_hits"):
+                    steps.append(f"{dfn} counters")
+            elif t in ("pin_start", "pin_forced"):
+                if a.get("taken_down"):
+                    steps.append(f"{att} takes {dfn} down")
+                steps.append(f"{att} pins {dfn}")
+            elif t in ("hold_start", "grapple_start"):
+                steps.append(f"{att} gets a grip on {dfn}")
+        if len(steps) < 2:
+            return ""
+        return "ORDER (tell it in this order): " + "; ".join(f"{i + 1}) {s}" for i, s in enumerate(steps)) + ".\n\n"
+
     def _checked_note(self):
         """The beat's other limits that the draft is checked against, told before it is written (electricity, bones,
         swearing), so a first draft that keeps them never has to be written again."""
@@ -7776,6 +7836,7 @@ class Narrator:
         text = self._keep_subjects(raw, text)   # a cut can take the sentence that said who "she" is
         text = self._ensure_faint(self._ensure_getup(self._top_up(text, story_so_far)))
         text = _balance_marks(text)  # cuts above can split a thought: re-pair its marks
+        text = _italic_sounds(text)  # "she hissed, hss, and..." -> "*hss*": the sound shown (and coloured) as a sound
         text = _drop_hanging_leadins(text)
         # "slammed into the wall—grunt—and the muscles spasmed": a reaction word from the notes left as a stage direction
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
@@ -7982,6 +8043,19 @@ class Narrator:
 
     BAD_LEVELS = ("very painful", "excruciating", "devastated", "numb with shock")
 
+    SOUND_EXAMPLES = [
+        "a thin *eek* broke out of her", "she hissed through her teeth, *hss*, and", "a grunt, *hnf*, forced out of her",
+        "the yelp, *yip*, was out before she could stop it", "a low *grrh* rolled in her chest",
+        "she huffed, *hff*, and", "a strangled *nngh* came through her shut teeth", "a short bark, *hah*, of surprise",
+        "a whine, *hnnn*, high in her nose", "she spat out a *tch* of annoyance", "a chitter, *tk-tk-tk*, of pure temper",
+        "a hard *khh* of breath through her nose"]
+
+    def _sound_examples(self):
+        """Two examples of how to write a sound out, different each beat, so no example becomes a stock line."""
+        k = getattr(self, "_beat_no", 0) * 2
+        ex = self.SOUND_EXAMPLES
+        return "\"" + ex[k % len(ex)] + "\", \"" + ex[(k + 5) % len(ex)] + "\""
+
     def _sound_note(self):
         """How this place carries sound (scenes.json acoustics), and how to tell the sounds the fighters make (every
         pained sound described: what kind, where from, pitch and shape; now and then written out as it sounds)."""
@@ -8014,7 +8088,7 @@ class Narrator:
                       "teeth), and its shape and pitch (short, cut off, dragged out, rising, wet, rasping). The worse it "
                       "hurts, the bigger and less controlled the sound."
                       + (f" {write}, as ONE italic word inside a sentence that makes clear it is HER sound and what kind "
-                         f"(\"a thin *eek* broke out of her\", \"she hissed through her teeth, *hss*, and\"), never "
+                         f"({self._sound_examples()}), never "
                          f"standing alone between sentences, never in quotes and never ending a paragraph: *Hhk*, "
                          f"*Nngh*, *Hss*, *Ahh*, *Kh-hah*, *Yip*." if write else
                          " Describe the sounds; don't write them out.")
@@ -8245,7 +8319,7 @@ class Narrator:
             words = int(words * float(n.get("turning_point_length", 1.3)))
         self._facts = ("WHAT HAPPENS IN THIS BEAT (nothing else happens):\n" + self.describe(bundle)
                        + "\n\nCURRENT CONDITION (after this beat):\n" + condition_summary)
-        context += self._sound_note() + self._fading_thoughts_note() + self._checked_note()
+        context += self._sound_note() + self._fading_thoughts_note() + self._checked_note() + self._order_note(acts)
         if any(a.get("devastating") for a in acts):
             words += int(((n.get("devastating") or {}).get("extra_words", 150)))
             if self.progress:
