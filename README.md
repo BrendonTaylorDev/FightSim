@@ -2361,4 +2361,12 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **Dropped in by the program:** a bare line of told resolve that the program cuts ("She would not be defeated.") is replaced by a `resolve` line, with no model call.
 
   A line isn't offered again for 40 beats (`narration.lines.cooldown_beats`), and use is remembered between fights in lines_memory.json. Lines that call the part "it" are skipped when the part is plural ("twin tails"). Add your own lines to the file at any time: it is re-read while the program runs. The breath, closing and landing lines are in the file but not yet offered.
+- **From a live fight (build 125):**
+  - **A pin needs at least three points of contact** (`pin.contacts.min`). The director had Ripples pin Nocturne with her twin tails round one foreleg and nothing else. A pin written with fewer contacts is now filled out from what the pinner has free (jaws on the neck, her chest on the front, and so on), and its label is rebuilt from the real grips instead of a long, cut-off sentence.
+  - **Rewrites for wording alone are capped:** at most 2 paragraphs a part (`narration.style_repairs_max`) are sent back for filler, a repeated phrase, a stray label or a lone sound. Mistakes about what happened, reactions bigger than her injuries and wrong anatomy are always fixed.
+  - **Blood with no wound:** "the taste of blood… a thin trickle from her lip" on a fighter nothing had hurt is flagged. A fighter who has just bitten someone may still taste blood.
+  - **A foreleg called an arm** (on a fighter with forelegs) is flagged.
+  - **The takedown must be shown happening:** "she lay flat on her back" no longer counts as showing it. Rolled, thrown or knocked onto her back does.
+  - **Pain limits inside pins:** the limit used to be off for any beat with a pin, so "a wave of agony" got through on a hold that hadn't pressed yet. It now applies, except to a fighter a pin has held for two beats or more.
+  - **Pins on the first beat stay possible.** `pin.openings_from_beat` can turn them off, but in 300 simulated fights that moved Nocturne from about 60% to 69% wins, so it is left at 1.
 - **Not done: one call for several flagged paragraphs.** Paragraph rewrites already reuse Ollama's cached prompt, so batching would save only about 2 seconds a paragraph, and it risks paragraphs coming back tangled. Not worth it.

@@ -666,6 +666,8 @@
       "open_and_end": true
     },
     "_lines_comment": "lines: the library of finished sentences (story_lines.txt, same format as the blocks). One that fits is offered to the narrator per part, to use word for word if it fits; a bare line of told resolve the program cuts (\"She would not be defeated.\") is replaced by one that shows it. cooldown_beats: how long before the same line can come back. Used lines are remembered in lines_memory.json.",
+    "_style_repairs_comment": "style_repairs_max: how many paragraphs a part may be written again for WORDING alone (filler, a phrase already used this beat, a stray label, a sound standing alone). Mistakes about what happened, reactions bigger than her injuries and wrong anatomy are always fixed. Lower it for speed, raise it for polish.",
+    "style_repairs_max": 2,
     "lines": {
       "enabled": true,
       "file": "story_lines.txt",
@@ -1022,9 +1024,12 @@
       "chance": 0.3,
       "beats": 1
     },
+    "_openings_from_beat_comment": "openings_from_beat: the first beat a pin opening can be rolled (1 = from the start, a rare lucky opening; 2 = never on the opening beat, before anyone has traded a blow: in 300 simulated fights that moved Nocturne from about 60% to 69%, so it is off). Your own commands can always pin.",
+    "openings_from_beat": 1,
     "contacts": {
-      "_comment": "How many points of contact a pin aims for (weights; it never goes below what the pin shape itself uses). Each pin is filled out from whatever the pinner still has free: jaws on the neck (if nothing else is there), her chest or weight on the front (her back if face-down), her paws gripping the forelimbs with the claws in, her feet or hind paws on the flanks, her tails across the legs. Nothing is used twice.",
+      "_comment": "How many points of contact a pin aims for (weights; it never goes below what the pin shape itself uses). Each pin is filled out from whatever the pinner still has free: jaws on the neck (if nothing else is there), her chest or weight on the front (her back if face-down), her paws gripping the forelimbs with the claws in, her feet or hind paws on the flanks, her tails across the legs. Nothing is used twice. min: a pin the director writes with fewer points of contact than this is filled out the same way (so a small fighter doesn't pin a big one with one grip).",
       "enabled": true,
+      "min": 3,
       "weights": {
         "2": 15,
         "3": 30,

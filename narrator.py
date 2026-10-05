@@ -1584,7 +1584,13 @@ FILLER = re.compile(
     r"(?:her|the) world (?:narrowed|shrank) (?:down )?to|a battle of wills|she knew (?:she had to|that she (?:had|must))|"
     r"(?:this|it|the fight) (?:was|wasn't|was not) (?:far )?(?:from )?over|she had to win|"
     r"she was (?:ready|determined|resolute)(?: for (?:whatever|anything)[^.!?]*)?(?=[.!?])|"
-    r"(?:with|in) (?:a )?(?:newfound|renewed|grim|fierce) (?:determination|resolve|purpose))", re.I)
+    r"(?:with|in) (?:a )?(?:newfound|renewed|grim|fierce) (?:determination|resolve|purpose)|"
+    r"would not let (?:this|it|that|her) (?:end|beat|break|finish) her)", re.I)
+
+# blood in her mouth, a trickle, a coppery taste: only for a fighter something has really hurt
+BLOOD_SAID = re.compile(r"\b(?:taste of (?:her own )?blood|blood (?:in|filled|filling) her mouth|trickle of blood|"
+                        r"blood (?:ran|dripp\w*|trickl\w*|welled|seeped|beaded|oozed)|bled|bleeding|coppery|metallic "
+                        r"(?:tang|taste))\b", re.I)
 
 # the plain ground under them: landing on it needs no naming
 PLAIN_GROUND = {"ground", "grass", "earth", "floor", "dirt", "sand", "rock", "stone", "mud", "ice", "snow", "deck",
@@ -1605,7 +1611,8 @@ TAKEDOWN_SHOWN = re.compile(
     r"(?:went|came|crash\w*|fell|falling|hit|hitting|struck|landed|landing|thudd?\w*) (?:down )?(?:on|onto|into|to|against) "
     r"(?:the |her )?(?:ground|grass|earth|sand|stone|rock|floor|back|side|belly|front|dirt|mud|ice)|"
     r"(?:ground|grass|earth|sand|floor) (?:came up|rushed up|slammed|hit|met)|went down|goes down|go down|"
-    r"(?:onto|on) her back)\b", re.I)
+    r"(?:roll\w*|flipp?\w*|thrown|threw|knock\w*|haul\w*|twist\w*|tipp\w*|toppl\w*)[^.!?]{0,30}\bonto (?:her|its) "
+    r"(?:back|side|front|belly))\b", re.I)
 
 # how a takedown into a pin goes (the engine picks one: variety.takedown)
 TAKEDOWN_WAYS = {
@@ -6688,8 +6695,8 @@ class Narrator:
         """How big her reactions can be, from the engine's numbers: (worst damage, worst part, note) or None when
         nothing limits it (a part is already excruciating, she is fading, held or choking, or worn out overall)."""
         parts = (getattr(self, "damage_by", None) or {}).get(who) or {}
-        if not parts or getattr(self, "_pin_beat", False) or getattr(self, "_faint", None) \
-                or (self.strengths or {}).get(who, 100) < 40:
+        if not parts or getattr(self, "_faint", None) or (self.strengths or {}).get(who, 100) < 40 \
+                or (getattr(self, "_pin_age", None) or {}).get(who, 0) >= 2:
             return None
         part, worst = max(parts.items(), key=lambda kv: kv[1])
         if worst >= 150:
@@ -7207,6 +7214,19 @@ class Narrator:
                     ideas = B.pick("resolve_shown", 2, has=feats_w, state=st)
                 add(x, f"\"{m.group(0)}\" tells it instead of showing it: show it in her body and what she does"
                        + (" (for example: " + "; ".join(ideas) + ")" if ideas else "") + ", or leave it out")
+        for sent, whos, named in self._said(text):
+            if len(whos) == 1 and BLOOD_SAID.search(sent):
+                w = whos[0]
+                hurt = max(((getattr(self, "damage_by", None) or {}).get(w) or {"": 0}).values())
+                biter = w in (getattr(self, "_attackers", None) or set()) and "teeth" in (getattr(self, "_weapons_ok", None) or set())
+                if hurt < 30 and not biter:
+                    add(sent, f"blood on {w}, but nothing has cut or hurt her enough to bleed: leave it out")
+        for x in sents:
+            if re.search(r"\bforelegs?\b", x, re.I) and re.search(r"\barms?\b", x, re.I) and not re.search(
+                    r"\b(?:forearm|upper arm)", x, re.I):
+                quads = [w for w in (self.strengths or {}) if "forelegs" in self._feats_of(w)]
+                if quads:
+                    add(x, f"{' and '.join(quads)} has forelegs, not arms: call it her foreleg")
         for sent, why in self._too_intense(text):
             add(sent, why)
         for sent, phrase in self._repeated_phrases(text, prior):
@@ -7262,6 +7282,15 @@ class Narrator:
                 if p.strip() and why:
                     found[i] = why
         if not found or tries <= 0:
+            return text
+        # wording-only findings (filler, a repeated phrase, a leaked label, a sound standing alone) are worth fixing but
+        # not at any cost: at most narration.style_repairs_max such paragraphs a part; mistakes about what happened
+        # are always fixed
+        style = ("tells it instead of showing", "it repeats \"", "a move's name dropped", "the sound *")
+        only_style = [i for i in sorted(found) if all(any(m in w for m in style) for w in found[i])]
+        keep_style = set(only_style[:int(n.get("style_repairs_max", 2))])
+        found = {i: w for i, w in found.items() if i not in only_style or i in keep_style}
+        if not found:
             return text
         todo = sorted(found)[:cap]
         if self.progress:
@@ -8185,6 +8214,7 @@ class Narrator:
         self._time_window = (min(w[0] for w in windows), max(w[1] for w in windows)) if windows else None
         self._no_clock = not windows
         acts = bundle.get("actions") or []
+        self._pin_age = {e.get("defender"): int(e.get("beats") or 0) for e in pin_events if e.get("defender")}
         self._pin_beat = bool(windows or "PIN:" in condition_summary or any(
             a.get("type") in ("pin_start", "pin_forced", "struggle_request") for a in acts))
         if pin_events and not any(e.get("complete") or e["struggle"] == "escape" for e in pin_events):

@@ -805,6 +805,19 @@ def resolve(engine, b):
                 contacts = list(best.values())
         else:
             note = None
+        if act == "pin" and not manual and contacts:
+            # a pin the director wrote with too few points of contact (twin tails round one foreleg) is filled out
+            # from what the pinner still has free, like any pin shape; its label is rebuilt from the real grips
+            least = int(((engine.rules.get("pin") or {}).get("contacts") or {}).get("min", 3))
+            if len(contacts) < least:
+                _, filled = fuller_pin(engine, engine.get(att), engine.get(dfn), "",
+                                       [(c[0], c[3] if len(c) > 3 else "") for c in contacts], at_least=least)
+                have = {c[0] for c in contacts}
+                firm = _severity(engine, "hold", None, "firm")
+                contacts = list(contacts) + [(p, firm, ramp, w) for p, w in filled if p not in have]
+            if len(contacts) > 1 and (len(str(flavor or "")) > 90 or len(contacts) > len(merged)):
+                bits = [f"{(c[3] or 'pressure').split(',')[0]} on her {c[0].lower()}" for c in contacts]
+                flavor = ", ".join(bits[:-1]) + " and " + bits[-1]
         res = engine.start_holds(att, dfn, contacts, flavor, pin=(act == "pin"), move=move_info, enforce=not manual)
         res["facing"] = engine.facing_of(dfn)
         if act == "pin" and not res.get("continuing"):
@@ -1659,7 +1672,7 @@ def _spots(target):
             "tail": pick(lambda n, r: r == "tail" and "base" not in n and "fan" not in n)}
 
 
-def fuller_pin(engine, pinner, target, look, contacts):
+def fuller_pin(engine, pinner, target, look, contacts, at_least=0):
     """Fill a pin out with every limb the pinner still has free (pin.contacts: how many points of contact to aim
     for, weighted): jaws on the neck, her chest or her weight on the front (or the back, face-down), her paws gripping
     the other's forelimbs with the claws in, her feet or hind paws on both flanks, her tails or tail across the legs.
@@ -1670,7 +1683,7 @@ def fuller_pin(engine, pinner, target, look, contacts):
                if not str(k).startswith("_")}
     if not cfg.get("enabled", True) or not weights:
         return look, contacts
-    want = engine.rng.choices(list(weights), list(weights.values()))[0]
+    want = max(engine.rng.choices(list(weights), list(weights.values()))[0], int(at_least or 0))
     if len(contacts) >= want:
         return look, contacts
     plan = engine.body_plan(pinner)

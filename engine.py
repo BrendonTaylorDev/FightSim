@@ -5693,6 +5693,10 @@ class Engine:
         for f in self.active():
             if self.pinned_by(f.name):
                 continue
+            first = int((self.rules.get("pin") or {}).get("openings_from_beat", 2))
+            if not open_all and self.turn + 1 < first:
+                self.pin_window[f.name] = False   # nobody has traded a blow yet: no opening to pin anyone
+                continue
             self.pin_window[f.name] = bool(open_all) or self._chance(self.pin_chance(f), f"pin opening on {f.name}",
                                                                      "OPEN", "none")
         self.roll_sub_windows(open_all)
