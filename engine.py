@@ -690,7 +690,11 @@ class Engine:
                               self.pressed, self.alliances, self._pending_events, list(getattr(self, "rolls", [])),
                               self.tally, getattr(self, "weather", {}), list(getattr(self, "arena_marks", [])),
                               getattr(self, "chronicle", None) or self.new_chronicle(),
-                              list(self.__dict__.get("setups") or []), self.rng.getstate()))
+                              list(self.__dict__.get("setups") or []), self.rng.getstate(),
+                              {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
+
+    # engine state that lives outside the main snapshot tuple but must be undone with it
+    _SNAP_EXTRA = ("broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim")
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -698,7 +702,13 @@ class Engine:
          self.pins, self.positions, self.downed, self.since_pin, self.momentum, self.move_log, self.last_pin_end,
          self.injury_log, self.plan, self.facing, self._last_reposition, self._fresh_down, self._fresh_status,
          self.pressed, self.alliances, self._pending_events, self.rolls, self.tally, self.weather, self.arena_marks,
-         self.chronicle, self.setups, rng) = copy.deepcopy(snap)
+         self.chronicle, self.setups, rng, *more) = copy.deepcopy(snap)
+        extra = more[0] if more else {}
+        for k in self._SNAP_EXTRA:      # state added later than the tuple: put back what was there, drop what wasn't
+            if k in extra:
+                self.__dict__[k] = extra[k]
+            else:
+                self.__dict__.pop(k, None)
         self._last_manhandle = {k[3:]: v for k, v in self._last_reposition.items() if k.startswith("by:")}
         self._last_reposition = {k: v for k, v in self._last_reposition.items() if not k.startswith("by:")}
         self._knock_on = []
@@ -885,6 +895,11 @@ class Engine:
         if move.get("target") == "hold":
             raise ValueError(f"{move['name']} is a hold; use it to start a hold or pin")
         self._can_act(a, enforce)
+        busy = self.busy_with(a, move)
+        if enforce and busy:
+            raise ValueError(f"{poss_word(a.name)} {busy[0]} are clamped on {poss_word(busy[1])} {busy[2].lower()}: she "
+                             f"can't {move['name']} with them while they hold. Strike with something free, or let go "
+                             f"first (hold_release)")
         if enforce and move.get("charge") and (a.name in self.downed or self.pinned_by(a.name)):
             where = "PINNED" if self.pinned_by(a.name) else "ON THE GROUND"
             raise ValueError(f"{a.name} is {where}: {move['name']} is a running, full-body charge, and she can't launch one "
@@ -1106,11 +1121,13 @@ class Engine:
             charged = self._charge(a, d, move, plan, powers, charge_into)
             hits = hits + charged["hits"]
         ground = None
-        if hits and against and not sustained and not charged and target == "targeted" \
-                and not self.pinned_by(d.name) and not self.has(d, "airborne"):
-            # blows driven home with her back to something solid (held against it, or cornered): each one grinds
-            # her into it, and it may give way under her
-            ground = self._grind(a, d, against, min(len(plan), 4))
+        behind = self.scene_prop_for(against) if against else None
+        if hits and behind and not sustained and not charged and target == "targeted" \
+                and not self.pinned_by(d.name) and not self.has(d, "airborne") and d.name not in self.downed:
+            # blows driven home with her back to something solid in this arena (held against it, or cornered): each
+            # one grinds her into it, and it may give way under her. Only the blows really thrown count, not the
+            # parts a single blow carries over to; something that isn't here, or has already broken, does nothing
+            ground = self._grind(a, d, behind, min(max(1, int(count or 1)) if pummel or int(count or 1) > 1 else 1, 4))
             hits = hits + ground["hits"]
         self._attacked(a.name, [d.name], landed=bool(hits))
         flavor = self._flavor_fits_move(flavor, move)
@@ -1219,6 +1236,8 @@ class Engine:
             why = f"{a.name} isn't on her feet"
         elif d.name in self.downed or self.pinned_by(d.name):
             why = f"{d.name} is on the ground, so there is nobody to drive anywhere"
+        elif self.is_broken(into):
+            why = f"{into} already lies broken: there is nothing standing there to drive her into"
         if why:
             return {"skipped": why, "into": into, "hits": []}
         table = self.rules["severity"].get("environment") or self.rules["severity"]["instant"]
@@ -1401,8 +1420,29 @@ class Engine:
                                                        "ambience": ""}.get(key, "")
 
     def scene_props(self):
-        """Solid things in this arena to be thrown or driven into, or to lean on getting up."""
-        return list(self.scene_cfg.get("props") or []) or [self.scene_word("ground")]
+        """Solid things in this arena to be thrown or driven into, or to lean on getting up. One that has broken in
+        this fight (an arena mark says it lies broken) is gone: it can't be driven into or break again."""
+        props = list(self.scene_cfg.get("props") or [])
+        live = [p for p in props if not self.is_broken(p)]
+        return live or (props and [self.scene_word("ground")]) or [self.scene_word("ground")]
+
+    def is_broken(self, surface):
+        """Has this thing in the arena already broken in this fight?"""
+        s = short_phrase(str(surface or "")).lower()
+        gone = list(getattr(self, "broken_props", []) or []) + [m.split(" lies broken")[0].lower()
+                                                                  for m in getattr(self, "arena_marks", []) or [] if " lies broken" in m]
+        key = (re.findall(r"[a-z]{3,}", s) or [""])[-1]     # what the thing is: "the oak" and "an old oak" match
+        return bool(key) and any(key in re.findall(r"[a-z]{3,}", g) for g in gone)
+
+    def scene_prop_for(self, surface):
+        """The arena's own prop that some words mean ("the oak" -> "an old oak"), or None if the arena has no such
+        thing standing (it isn't in this arena, or it has already broken)."""
+        s = str(surface or "").lower()
+        for p in self.scene_cfg.get("props") or []:
+            words = re.findall(r"[a-z]{3,}", str(p).lower())
+            if words and words[-1] in s and not self.is_broken(p):
+                return p
+        return None
 
     def hazard_for(self, surface):
         """The tracked feature of this arena that a surface name means ("a steam pipe" -> the steam pipes), or None."""
@@ -1636,6 +1676,8 @@ class Engine:
         pulses = max(1, min(int(cfg.get("max_pulses", 4)), pulses))
         mult = float(cfg.get("pulse_mult", 0.6))
         against = short_phrase(against)
+        if against and self.is_broken(against):
+            against = ""          # it already lies broken: nothing behind her to grind her into
         table = self.rules["severity"].get("environment") or self.rules["severity"]["instant"]
         back = self.landing_parts(d.name, 3) if against else []
         brk = self.break_chance(against, cfg.get("break_chance", {}))
@@ -1731,6 +1773,20 @@ class Engine:
                   ("tail", r"\btails?\b|iron tail|aqua tail|tail slap|dragon tail"),
                   ("arm", r"punch|chop|break|slash|claw|scratch|swipe|cut|paw|jab|fist|thrust|fury"),
                   ("leg", r"kick|stomp|stamp"))
+
+    def busy_with(self, a, move):
+        """Is the one mouth she'd attack with already locked in one of her own grips (a hold, a pin's press, a
+        submission)? Then that move can't be thrown. Returns (her jaws, the held fighter, the part) or None."""
+        if not move or move.get("target") in ("whole_body", "status", "hold", "self"):
+            return None
+        text = f"{move.get('name', '')} {move.get('about', '')}".lower()
+        kind = next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, text)), None)
+        if kind != "bite":
+            return None
+        for h in self.holds.values():
+            if h.attacker == a.name and re.search(r"\b(jaws?|teeth|fangs?|mouth|bite)\b", str(h.with_part or "").lower()):
+                return ("jaws", h.defender, h.part)
+        return None
 
     def limb_mult(self, a, move):
         """A move thrown with a badly hurt limb lands weaker (moves.limb_limits): a chop with a ruined paw, a charge
@@ -2048,6 +2104,10 @@ class Engine:
             return 0.0   # held at point-blank: there is nowhere to go (it cuts both ways)
         if any(h.attacker == d.name and h.defender == a.name for h in self.holds.values()):
             return 0.0   # she has hold of her (a submission, a grip): locked on, she can't spring away
+        if any(h.attacker == a.name and h.defender == d.name for h in self.holds.values()):
+            return 0.0   # she is held by her (jaws on her arm, tails round her leg): she can't spring out of reach
+        if (getattr(self, "hauled", None) or {}).get(d.name) == (a.name, self.turn):
+            return 0.0   # hauled up and held there by this same attacker this beat
         if (getattr(self, "_juggle", None) or {}).get("who") == d.name:
             return 0.0   # knocked up into the air by the last blow: nothing to push off from
         sc = self._cfg("status_effects")
@@ -2382,6 +2442,8 @@ class Engine:
             self.downed.pop(d.name, None)
             self.facing.pop(d.name, None)
             self._fresh_down.discard(d.name)
+            # held up in her hands for the rest of this beat: whatever she does to her next, there's no dodging it
+            self.__dict__.setdefault("hauled", {})[d.name] = (a.name, self.turn)
             ev = {"type": "reposition", "attacker": a.name, "defender": d.name, "how": how, "before": before,
                   "after": "hauled up off the ground" if how == "pick up" else "dragged up onto her feet"}
         elif how == "sit her up":
@@ -2673,6 +2735,9 @@ class Engine:
             raise ValueError(f"{a.name} is on the ground: she has to be on her feet to {kind} anyone")
         if enforce and a.name in self.pressed:
             raise ValueError(f"{a.name} is still pressed against the scenery: she can't {kind} anyone this beat")
+        if enforce and (self.has(d, "airborne") or self.has(a, "airborne")) and not self.grabbed_by(a.name, d.name):
+            raise ValueError(f"{(d if self.has(d, 'airborne') else a).name} is in the air: nobody can {kind} her until "
+                             f"she comes down")
         if any(p["defender"] == d.name for p in self.pins.values()):
             raise ValueError(f"{d.name} is pinned: the pin has to end before she can be {past}")
         down = d.name in self.downed
@@ -4007,6 +4072,11 @@ class Engine:
                 + " | ".join(rows)) if rows else ""
 
     def mark_arena(self, text):
+        if " lies broken" in text:      # kept for the whole fight (the marks list only keeps the last few)
+            gone = self.__dict__.setdefault("broken_props", [])
+            what = text.split(" lies broken")[0].strip().lower()
+            if what not in gone:
+                gone.append(what)
         marks = self.__dict__.setdefault("arena_marks", [])
         if text not in marks:
             marks.append(text)
@@ -4529,6 +4599,8 @@ class Engine:
             raise ValueError(f"{a.name} is still pressed against the scenery: she can't grab anyone this beat")
         if self.grabbed_by(a.name, d.name):
             raise ValueError(f"{a.name} already has hold of {d.name}: strike her, throw her, or let go")
+        if enforce:
+            self._regrab_check(a, d)
         before = a.energy
         if enforce:
             self._can_act(a, True)
@@ -4545,6 +4617,8 @@ class Engine:
                 a.status.pop(st, None)
         pname = d.part(part).name
         # the grab she already had on her from the other side ends: you can't be held by her and holding her at once
+        for h in [h for h in list(self.holds.values()) if h.grab and h.attacker == d.name and h.defender == a.name]:
+            self.release(h.id, "reversed: the grab turned round on her")
         st = self.start_hold(a.name, d.name, pname, power, 0.0, flavor, with_part, keep_with=enforce)
         self.holds[st["hold_id"]].grab = True
         if d.name in self.downed:
@@ -4706,11 +4780,8 @@ class Engine:
         a, d = self.get_active(attacker), self.get_active(defender)
         if not contacts:
             raise ValueError("needs at least one body part to press")
-        wait = int((self.rules.get("holds", {}).get("break", {}) or {}).get("regrab_after", 2))
-        broke = (getattr(self, "broke_free_at", {}) or {}).get((a.name, d.name))
-        if enforce and not pin and broke is not None and self.turn - broke < wait:
-            raise ValueError(f"{d.name} only just tore free of {poss_word(a.name)} grip: {a.name} can't simply take "
-                             f"hold of her again so soon. Strike, move, or set something up instead")
+        if enforce and not pin:
+            self._regrab_check(a, d)
         if a is d:
             raise ValueError(f"{a.name} can't hold or pin herself")
         key = f"{a.name}>{d.name}"
@@ -4876,6 +4947,17 @@ class Engine:
                 "parts": [{"part": h["part"], "power": h["power"], "change_per_beat": h["change_per_beat"],
                            "with": h.get("with", ""), "existing": bool(h.get("existing")),
                            "asked_with": h.get("asked_with", "")} for h in started]}
+
+    def regrab_wait(self, a, d):
+        """Beats left before `a` may grip `d` again after `d` tore free of her (holds.break.regrab_after); 0 = free."""
+        wait = int((self.rules.get("holds", {}).get("break", {}) or {}).get("regrab_after", 2))
+        broke = (getattr(self, "broke_free_at", {}) or {}).get((a.name, d.name))
+        return 0 if broke is None else max(0, wait - (self.turn - broke))
+
+    def _regrab_check(self, a, d):
+        if self.regrab_wait(a, d) > 0:
+            raise ValueError(f"{d.name} only just tore free of {poss_word(a.name)} grip: {a.name} can't simply take "
+                             f"hold of her again so soon. Strike, move, or set something up instead")
 
     def release_between(self, attacker, defender, reason="released"):
         """End every hold one fighter has on another (e.g. breaking a whole pin)."""
@@ -5104,7 +5186,19 @@ class Engine:
                            "coil": bool(h.coil), "sub": h.sub,
                            "beats_held": h.turns_active, "hits": [hit], "tags": self._tags([hit])})
             if not fresh:
-                h.power = max(0, h.power + h.change_per_turn)
+                # a tightening grip climbs to holds.max_power and no further (coils have their own cap above); an easing
+                # grip that has nothing left in it lets go (inside a pin a contact stays on, at its lightest)
+                hp = h.power + h.change_per_turn
+                if not h.coil and not h.sub and h.change_per_turn > 0:   # submissions: submissions.max_beats
+                    hp = min(hp, max(h.power, float(self.rules.get("holds", {}).get("max_power", 35))))
+                h.power = round(max(0, hp), 2)
+                if h.power <= 0 and h.change_per_turn < 0:
+                    if in_pin:
+                        h.power, h.change_per_turn = 1.0, 0.0
+                    elif h.id in self.holds:
+                        ended = self.release(h.id, "eased off until nothing was left of the grip")
+                        events.append(dict(ended, type="hold_end", hold_ids=[h.id], parts=[h.part],
+                                           reason="eased off until nothing was left of the grip"))
 
         events += self._advance_pins(skip_hold_ids)
         events += self._hold_break_tick(skip_hold_ids)
@@ -6574,6 +6668,7 @@ class Engine:
                 "tally": self.tally, "momentum": self.momentum, "facing": self.facing, "move_log": self.move_log,
                 "last_reposition": getattr(self, "_last_reposition", {}), "alliances": self.alliances,
                 "weather": getattr(self, "weather", {}), "arena_marks": getattr(self, "arena_marks", []),
+                "broken_props": list(getattr(self, "broken_props", []) or []),
                 "chronicle": getattr(self, "chronicle", None) or self.new_chronicle(),
                 "setups": self.__dict__.get("setups") or [],
                 "extra": extra or {},
@@ -6617,6 +6712,7 @@ class Engine:
         self.alliances = data.get("alliances", [])
         self.weather = data.get("weather", {})
         self.arena_marks = data.get("arena_marks", [])
+        self.broken_props = list(data.get("broken_props", []) or [])
         self.chronicle = {**self.new_chronicle(), **(data.get("chronicle") or {})}
         self.setups = list(data.get("setups") or [])
         self.pressed, self._pending_events, self.pin_window = {}, [], {}

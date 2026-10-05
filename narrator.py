@@ -2985,7 +2985,7 @@ class Narrator:
                 way = {"pry": f"tears {poss(a['attacker'])} grip off her",
                        "twist": "twists out of her hold",
                        "claw": "digs into the ground and clings",
-                       "brace": "braces flat against the stone and will not be turned or lifted"}.get(a.get("manner"),
+                       "brace": f"braces flat against {self._sw('ground', 'the ground')} and will not be turned or lifted"}.get(a.get("manner"),
                                                                                                     "fights it off")
                 return [f"FIRST, {a['attacker']} TRIES to {verb.replace('her', a['defender'], 1)}, and {a['defender']} "
                         f"FIGHTS IT OFF: this time she {way}. She is NOT moved: she stays exactly as she lay"
@@ -3065,7 +3065,7 @@ class Narrator:
                 way = {"pry": f"tears {poss(a['attacker'])} grip off her before it can close",
                        "twist": "twists out of it where she lies",
                        "claw": "digs into the ground and clings, and cannot be shifted",
-                       "brace": "braces flat against the stone and makes herself too heavy to lift"}.get(a.get("manner"),
+                       "brace": f"braces flat against {self._sw('ground', 'the ground')} and makes herself too heavy to lift"}.get(a.get("manner"),
                                                                                                     "fights it off")
                 lines.append(f"{a['attacker']} goes to seize {who} where she lies, to {a.get('manhandle') or 'move'} her, "
                              f"but {who} FIGHTS THE GRAB OFF: this time she {way}. She is not lifted, thrown or moved; "

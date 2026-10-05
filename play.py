@@ -1166,8 +1166,10 @@ class Session:
                                            f"{res['attacker']}: {what}" + ("" if (m or {}).get("target") == "self"
                                                                            else f" → nothing landed on {res['defender']}")
                                            if not res.get("dodged") else
-                                           f"{res['attacker']}: {what} → {res['defender']} DODGED it"
-                                           + (" and countered" if res.get("counter_hits") else ""))
+                                           (f"{res['attacker']}: {what} → {res['defender']} fought it off (braced, "
+                                            f"nothing landed)" if res.get("resisted") else
+                                            f"{res['attacker']}: {what} → {res['defender']} DODGED it"
+                                            + (" and countered" if res.get("counter_hits") else "")))
             elif res.get("type") in ("hold_start", "pin_start"):
                 self.recent_attacks.append(f"{res['attacker']}: {'pin' if res['type'] == 'pin_start' else 'hold'} on "
                                            f"{res['defender']}")

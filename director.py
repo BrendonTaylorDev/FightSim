@@ -398,7 +398,9 @@ def _multi_hit(engine, move):
     """Moves that strike several times in one go (rules.json moves.multi_hit, or 'repeatedly' in their description)."""
     names = {n.lower() for n in engine.rules.get("moves", {}).get("multi_hit", [])}
     about = str(move.get("about", "")).lower()
-    return (move.get("improvised") or move["name"].lower() in names
+    # an improvised move repeats only when what it is says so (a flurry of jabs); otherwise a count on it is a pummel
+    # (each blow lighter, the run rolled) like any other close move
+    return (move["name"].lower() in names
             or any(w in about for w in ("times", "repeated", "2-5", "multiple", "twice", "flurry", "rapid")))
 
 
@@ -709,6 +711,15 @@ def resolve(engine, b):
         if not b.get("_aimed"):
             b = _apply_variety(engine, att, dfn, b)
     started = ()
+    if not manual and act in ("grapple", "hold_start", "pin", "submission", "throw", "slam", "drag"):
+        # confusion spoils a grab, a pin or a throw as surely as a blow: she may hurt herself instead
+        me = engine.get(att)
+        what = {"grapple": "a grab", "hold_start": "a hold", "pin": "a pin", "submission": "a submission hold",
+                "throw": "a throw", "slam": "a slam", "drag": "dragging her"}[act]
+        own = engine._confusion(me, {"name": what}, True, me.energy)
+        if own:
+            own["intent"] = intent
+            return own, ()
     if act == "submission":
         if not dfn:
             raise ValueError("'submission' needs a defender")
@@ -747,6 +758,12 @@ def resolve(engine, b):
         target = "spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1 else "targeted"
         move = engine.improvised_move(b.get("improvised_name"), b.get("improvised_type"), b.get("severity"),
                                       target, b.get("flavor", ""))
+    elif mv_name == "none" and act == "strike" and not manual and (int(b.get("count", 1) or 1) > 1
+                                                                     or b.get("pinned_against")):
+        # a plain blow with no move thrown again and again, or driven into the scenery: the same rules as any close
+        # move (a pummel's lighter blows and rolled length, the grind against what is behind her)
+        move = engine.improvised_move(b.get("flavor") or "a blow", "Normal", b.get("severity"), "targeted",
+                                      "a plain close blow")
     elif mv_name != "none":
         move = engine.find_move(att, b.get("move"))
         if move is None and manual and act in ("strike", "combo"):
@@ -789,6 +806,8 @@ def resolve(engine, b):
                      and (_fill_defender(engine, att, h.get("defender")) or dfn) == dfn]
             by_def[dfn] = ([first] if first else []) + (extra if move.get("target") == "targeted" else [])
         count = int(b.get("count", 1) or 1)
+        if not manual:
+            count = max(1, min(count, 6))      # the director's limit (its schema says 1-6); your own /move can go higher
         pummel = False
         place = (engine.pummel_place(att, dfn) if count > 1 and not _multi_hit(engine, move) and len(by_def) == 1
                  and move.get("target") == "targeted" and not move.get("charge") else None)
@@ -929,7 +948,8 @@ def resolve(engine, b):
                 raise ValueError(f"{att} has no active hold to adjust. Active holds: "
                                  f"{[f'#{h.id} {h.attacker}->{h.defender}' for h in engine.holds.values()]}")
             changes = [engine.set_intensity(h.id, power=at_least(h), change_per_turn=ramp) for h in mine]
-            res = dict(changes[0], hold_ids=[c["hold_id"] for c in changes], part=", ".join(c["part"] for c in changes))
+            res = dict(changes[0], hold_ids=[c["hold_id"] for c in changes], part=", ".join(c["part"] for c in changes),
+                       changes=changes)
         res["flavor"] = flavor
     elif act == "hold_release" and not manual and _own_pin(engine, att, b.get("hold_id"), dfn):
         # the pinned fighter "releasing" the pin on herself is an escape attempt: the engine rolls it
@@ -1210,6 +1230,12 @@ def resolve_many(engine, actions):
                         elif b.get("_manual"):
                             raise ValueError(f"can't {how} {who} right now (she has to be on the ground; not pinned for "
                                              f"a pick-up, a sit-up or a stand-up; and not already that way)")
+                        elif re.search(r"\b(haul|lift|pick|roll|flip|turn|sit|sat|stand|stood|drag)\w*\b.{0,12}\bher\b|"
+                                       r"\bher\b.{0,12}\b(up|over)\b", str(b.get("flavor") or ""), re.I):
+                            # the move didn't happen (she's pinned, or it's too soon to move her again): the
+                            # director's words for it mustn't reach the story either
+                            b["flavor"] = str(b.get("move") or "") if str(b.get("move") or "none").lower() not in (
+                                "none", "improvised") else ""
                 if link and link[0] >= 3 and not b.get("_manual") and results and engine._chain_on:
                     # a chain that has run this far may end at any link: the longer it is, the likelier; a tired
                     # attacker and a fresh defender both end it sooner

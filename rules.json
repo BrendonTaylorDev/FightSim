@@ -908,6 +908,8 @@
   "holds": {
     "_comment": "first_beat_damage: a hold (jaws on the throat, tails round a leg, coils) hurts from the beat it starts: the clamp itself lands as that much of one beat's pressure (1 = a full beat's worth, 0.5 = half, 0 = nothing until the next beat, as before build 93). Change live with /holdstart. A pin's presses have their own setting, pin.first_beat_damage.",
     "first_beat_damage": 1.0,
+    "_max_power_comment": "max_power: a tightening grip (hold_ramp tightening) climbs to this power and no further ('crushing' is 25; coils cap at holds.coil.max_power; submissions are limited by submissions.max_beats). An easing grip that reaches 0 lets go.",
+    "max_power": 35,
     "_coil_comment": "A COIL (Wrap, Bind, Constrict, Tail Bind, or tails, coils or a body wound round her): a hold that tightens by `tighten` every beat (up to max_power) and leaves her CONSTRICTED while it holds (breath squeezed: no energy back, weak blows from trapped limbs, hardly any dodge). It is harder to wrench out of (break chance x break_mult). A coil can become a PIN, and a coiled fighter is easy to pin (an opening at least pin_opening of the time): the coiler bears her down in the coils and they become the pin's presses. A pin with coils in it takes her under by CONSTRICTION (her circulation cut off, her heart slowing, never stopping; she wakes as usual), and faster (x pin_fade_mult).",
     "coil": {
       "tighten": 2,
@@ -930,10 +932,10 @@
       "grab_mult": 1.6,
       "regrab_after": 2
     },
-    "_shaken_comment": "A fighter who is holding someone (a plain hold, not a pin) and is hit hard may lose her grip. One roll per attack that lands on her: chance = the share of her full health that attack cost x per_health_share, never above max. Attacks costing less than min_share of her health don't roll. So at the default damage scale grips are rarely shaken, and at /scale 5 a big hit usually tears one loose. per_health_share 0 = never. Change live with /holdshake.",
+    "_shaken_comment": "A fighter who is holding someone (a plain hold, not a pin) and is hit hard may lose her grip. One roll per attack that lands on her: chance = the share of her full health that attack cost x per_health_share, never above max. Attacks costing less than min_share of her health don't roll. At /scale 5 about one attack in six costs 2%+ of her health; a top-5% hit (about 5.5%) shakes a grip loose about a quarter of the time, a top-1% hit (about 10%) half the time. per_health_share 0 = never. Change live with /holdshake.",
     "shaken": {
-      "per_health_share": 2.5,
-      "min_share": 0.03,
+      "per_health_share": 5,
+      "min_share": 0.02,
       "max": 0.95
     },
     "_loosen_comment": "break.loosen_band / loosen_mult / strain_band: the break-free roll has near misses. A roll that misses the chance by up to loosen_band of it (chance 20% -> rolls from 20 to 32) LOOSENS the grip: it stays on, pressing at loosen_mult of its strength from the next beat. The next strain_band of it (32 to 60) is a visible struggle that changes nothing. Anything higher, she simply endures. loosen_band 0 = no loosening."

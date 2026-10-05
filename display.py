@@ -924,8 +924,9 @@ class Display:
                 notes = [x[2:] if x.startswith("- ") else x for x in out[notes_from:]]
                 out[notes_from:] = self._wrap([n.rstrip(".") for n in notes], sep=" · ")
         elif t == "hold_change":
-            out.append(f"🔒 **Hold #{a['hold_id']} {a['direction']}**: power {num(a['power_before'])} → "
-                       f"**{num(a['power_after'])}**, {a['change_per_beat']:+g}/beat")
+            for c in (a.get("changes") or [a]):     # every grip she adjusted, not just the first
+                out.append(f"🔒 **Hold #{c['hold_id']} ({c.get('part', '')}) {c['direction']}**: power "
+                           f"{num(c['power_before'])} → **{num(c['power_after'])}**, {c['change_per_beat']:+g}/beat")
         elif t == "hold_end":
             ids = a.get("hold_ids") or [a["hold_id"]]
             what = ", ".join(a["parts"]) if a.get("parts") else a.get("part", "")
