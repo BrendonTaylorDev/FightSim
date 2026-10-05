@@ -1048,7 +1048,8 @@ class Session:
         if "beak" in names:
             return (f" BODY: {f.name} is a BIRD. She has a BEAK (no teeth, fangs, jaw, lips, muzzle or cheeks: she "
                     f"clacks or snaps her beak, hisses or screams through it), FEATHERS (no fur and no hackles: her "
-                    f"feathers fluff, flatten or ruffle), WINGS (no arms, hands or paws) and TALONS on her feet.")
+                    f"feathers fluff, flatten or ruffle), WINGS (no arms, hands or paws) and TALONS on her feet "
+                    f"(call them talons, never claws or paws).")
         if "wing" in names and re.search(r"\barm\b|upper arm|forearm", names):
             return (f" BODY: {f.name} has wings on her back AND arms with clawed hands; she is scaled or smooth-skinned, "
                     f"not furred.")
@@ -3064,9 +3065,21 @@ def handle_command(s, line):
         if new <= 0:
             raise ValueError("scale must be above 0")
         s.eng.rules["damage"]["damage_scale"] = new
-        if new >= 10:
-            print(f"Note: at {new}x a single solid hit does roughly {round(60 * 0.4 * new)}% to a sturdy body part; "
-                  f"fights will end much sooner. /scale 5 is the default (the win rates are tuned at 5).")
+        if new > 5:
+            # what a solid blow (power 60) really does now, on a fresh sturdy part and on one already worn down
+            pts = sorted((s.eng.rules["resistance"].get("smooth") or {}).get("points") or [[50, 1.0, 1.0]])
+            def mult(res):
+                if res <= pts[0][0]:
+                    return pts[0][1]
+                for (r0, m0, _), (r1, m1, _) in zip(pts, pts[1:]):
+                    if r0 <= res <= r1:
+                        return m0 + (m1 - m0) * (res - r0) / (r1 - r0)
+                return pts[-1][1]
+            print(f"Note: at {new:g}x a solid blow does about {round(60 * mult(95) * new)}% to a fresh, sturdy body part, "
+                  f"about {round(60 * mult(45) * new)}% once that part is worn down, and about "
+                  f"{round(60 * mult(15) * new)}% to a ruined one. Fights end much sooner and the numbers get very large. "
+                  f"/scale 5 is the default (the win rates are tuned at 5); for shorter fights, /length is the "
+                  f"balanced way.")
         _save_rule("damage_scale", new)
         print(f"Damage scale {cur} → {new} (saved to rules.json)"); return
     if cmd in ("reader", "secondreading"):

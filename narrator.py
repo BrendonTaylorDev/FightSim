@@ -737,6 +737,7 @@ THOUGHT_ANGLES = ["a quick tactical plan", "a sharp read on the opponent's weakn
 
 # stat leakage: percentages, and colors used as pain levels
 GAME_TERMS = re.compile(
+    r"\b(?:a|an) (?:real|heavy|tremendous|solid|DEVASTATING) blow on a part that was already\b|"
     r"\b(?:one|two|three|four|five|six|\d+) (?:more )?beats?\b|\b(?:minor|sore|hurting|very painful|excruciating|devastated),? (?:but )?not (?:minor|sore|hurting|very painful|"
     r"excruciating|devastated)\b|\bnumb with shock\b|(?:^|(?<=[\n*.!?]\s)|(?<=[\n*]))(?:devastated|excruciating|very painful|adrenaline surge|"
     r"super effective|critical hit|flinched|paralyzed|confused|restrained)[.!]|\b(?:can(?:'|’)?t|cannot|couldn(?:'|’)?t) attack\b|—(?:devastated|excruciating|very painful)\b|\bpin clock\b|\b\d+ (?:of|out of) \d+ seconds\b|\b(?:started|starts|began) (?:its|the) count(?:down)?\b|\d+(?:\.\d+)?\s*%|\bpercent\b|\b(?:orange|yellow|green|black|purple|violet)\s+(?:pain|ache|agony|fire|"
@@ -1194,9 +1195,20 @@ def _slip_label(issue):
     return None
 
 
+DANGLING_TAG = re.compile(r"(?:^|(?<=[.!?…*\"”]\s))(?:She|He|[A-Z][a-z]+)(?: (?:just|only|then))? "
+                          r"(?:thought|wondered|told herself)(?:,|\s)?\s*$")
+
+
 def _drop_hanging_leadins(text):
     """A sentence that ends in a colon promises something ("...and thought one cold, hard thing:"). When a cut took
-    what it promised and the next paragraph is plain narration, the lead-in goes too."""
+    what it promised and the next paragraph is plain narration, the lead-in goes too. So does a bare tag left at the
+    end of a paragraph with its thought cut away ("Glacia observed her coolly. She thought,")."""
+    paras = text.split("\n")
+    for i, p in enumerate(paras):
+        nxt = next((q.strip() for q in paras[i + 1:] if q.strip()), "")
+        if DANGLING_TAG.search(p.rstrip()) and nxt[:1] not in ("*", "_", '"', "“", "'", "‘"):
+            paras[i] = DANGLING_TAG.sub("", p.rstrip()).rstrip()
+    text = "\n".join(paras)
     paras = text.split("\n")
     for i, p in enumerate(paras):
         if not p.rstrip().endswith(":"):
@@ -7185,6 +7197,7 @@ class Narrator:
         if repair:
             # mistakes the program can point at: write just those paragraphs again; the rest stays word for word
             text = self._repair_paragraphs(user_msg, text, prior)
+            text = self._fix_tense(text, prior)
             if getattr(self, "_defer_reader", False):
                 # read back once the whole beat is written (narration.reader_timing "beat"): same reading, same rules,
                 # but the narrator's prompt stays in the model's memory from one part to the next
@@ -7982,7 +7995,7 @@ class Narrator:
         if B.enabled and B.entries:
             B.next_turn()
             msg += self._blocks_note([f"  - for the opening: {p}" for p in B.pick("opening", 3)])
-        return self._call(msg, words)
+        return _drop_hanging_leadins(self._call(msg, words))
 
     def look(self, condition, fighter_notes, scene, story_so_far, who=None):
         """Describe the scene as it stands right now, without advancing the fight."""
@@ -8008,7 +8021,7 @@ class Narrator:
                f"those injuries look (bruising, swelling, trembling, matted fur or dulled scales), their expression "
                f"and one brief thought in italics. Mention any pin or hold in progress. Use only what CURRENT "
                f"CONDITION and POSITIONS say.")
-        return self._call(msg, words)
+        return _drop_hanging_leadins(self._call(msg, words))
 
     @staticmethod
     def _drop_repeats(text, earlier):
@@ -8924,6 +8937,41 @@ class Narrator:
         trx = TYPE_SHOWN.get(str(a["move"].get("type", "")).lower())
         return bool(trx) and any(re.search(r"\b(?:" + trx + r")\b", s_, re.I) and (a["attacker"] in s_ or a["defender"] in s_)
                                  and any(_mentions_exact(s_.lower(), p) for p in parts) for s_ in sents_all)
+
+    def _present_sents(self, text, prior=""):
+        """Sentences the checks call present tense (they only count once a part has a few of them)."""
+        return [sent for sent, why in self._bad_sentences(text, prior).items()
+                if any("present tense" in w for w in (why if isinstance(why, (list, tuple, set)) else [why]))]
+
+    def _fix_tense(self, text, prior=""):
+        """Present tense that survived the paragraph rewrites: one small copy-editing call puts the passage into the
+        past tense, changing only the verbs (an easy job even for a small model). Kept only if it really is better
+        and nothing was lost."""
+        if self.rules.get("narration", {}).get("tense", "past") != "past" or not text:
+            return text
+        before = self._present_sents(text, prior)
+        if len(before) < 2:
+            return text
+        n = self.rules.get("narration", {})
+        if self.progress:
+            self.progress(f"putting {len(before)} present-tense sentences into the past tense")
+        try:
+            out = _chat(self.model,
+                        [{"role": "system", "content": "You are a careful copy editor. You change verb tenses and nothing "
+                                                       "else."},
+                         {"role": "user", "content": "Rewrite this passage in the PAST tense (\"she lunged\", not \"she "
+                                                     "lunges\"). Change ONLY the verbs that are in the present tense. Keep "
+                                                     "every other word, every sentence, every paragraph break, and anything "
+                                                     "in *italics* (thoughts and sounds) exactly as it is. Reply with the "
+                                                     "passage only.\n\n" + text}],
+                        host=self.host, temperature=0.1, num_ctx=n.get("context_window", 8192),
+                        num_predict=int(len(text.split()) * 1.8) + 80)
+        except llm.LLMError:
+            return text
+        out = (out or "").strip()
+        if not out or abs(len(out.split()) - len(text.split())) > 0.15 * len(text.split()):
+            return text          # it dropped or added something: keep what we had
+        return out if len(self._present_sents(out, prior)) < len(before) else text
 
     def _tell_missing_attacks(self, written, keys):
         """The last safety net: an attack every rewrite still left out of the story. The narrator is asked once more,
