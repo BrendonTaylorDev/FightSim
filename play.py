@@ -1038,7 +1038,21 @@ class Session:
             f"{' [ELIMINATED]' if f.eliminated else ''}: {f.description}"
             + (f" APPEARANCE: {f.appearance}" if getattr(f, "appearance", "") else "")
             + (f" TELLS (how she shows pain and effort): {f.tells}" if getattr(f, "tells", "") else "")
-            + (f" VOICE: {f.voice}" if getattr(f, "voice", "") else ""))
+            + (f" VOICE: {f.voice}" if getattr(f, "voice", "") else "")
+            + self._body_note(f))
+
+    @staticmethod
+    def _body_note(f):
+        """What her body is NOT, said plainly, for the bodies the narrator gets wrong (a bird given teeth and fur)."""
+        names = " ".join(f.parts).lower()
+        if "beak" in names:
+            return (f" BODY: {f.name} is a BIRD. She has a BEAK (no teeth, fangs, jaw, lips, muzzle or cheeks: she "
+                    f"clacks or snaps her beak, hisses or screams through it), FEATHERS (no fur and no hackles: her "
+                    f"feathers fluff, flatten or ruffle), WINGS (no arms, hands or paws) and TALONS on her feet.")
+        if "wing" in names and re.search(r"\barm\b|upper arm|forearm", names):
+            return (f" BODY: {f.name} has wings on her back AND arms with clawed hands; she is scaled or smooth-skinned, "
+                    f"not furred.")
+        return ""
 
     def recent_story(self, n=None):
         n = n or self.eng.rules.get("narration", {}).get("recent_beats_remembered", 2)

@@ -1593,6 +1593,10 @@ fur skin breath breathe breathing air ground floor weight place beat beats front
 
 
 # words that show a move of each type being used (a clash has to show the defender's own move meeting the attack)
+# fighter names that are also ordinary English words: at the start of a sentence they are the word, not her
+COMMON_NAMES = {"talon", "ember", "swift", "dusk", "blaze", "aura", "kindle", "cinder", "zephyr", "valor", "vixen",
+                "sable", "duchess", "undertow", "gloam", "cygnet", "ripples", "nocturne", "vesper", "glacia", "pyra"}
+
 TYPE_SHOWN = {
     "electric": r"electric\w*|lightning|bolt|spark\w*|crackl\w*|current|charge|static|volt\w*",
     "water": r"water|spray|jet|stream|torrent|surge|wave|spout|blast",
@@ -1608,7 +1612,10 @@ TYPE_SHOWN = {
     "poison": r"poison\w*|venom\w*|sludge|toxic",
     "fairy": r"glitter\w*|shimmer\w*|sparkl\w*|pink light",
     "steel": r"steel|metal\w*|iron",
-    "flying": r"wind|gust\w*|air",
+    "flying": r"wind|gust\w*|air|wings?|feathers?|beak|talons?|div\w*|swoop\w*",
+    "normal": r"tail|claws?|fist|punch\w*|slam\w*|kick\w*|scratch\w*|wings?|beak|talons?|tackl\w*|rammed|headbutt\w*",
+    "fighting": r"fist|punch\w*|kick\w*|chop\w*|knee|elbow|palm|jab\w*|hook",
+    "bug": r"sting\w*|pincer\w*|buzz\w*|swarm\w*",
 }
 
 EYE_COLORS = ("red", "black", "blue", "green", "golden", "gold", "amber", "yellow", "brown", "violet", "purple", "pink",
@@ -4246,8 +4253,18 @@ class Narrator:
         words = [w for w in (getattr(self, "absent_words", None) or []) if w]
         if not words:
             return []
-        rx = re.compile(r"\b(" + "|".join(map(re.escape, words)) + r")\b", re.I)
-        return [(m.group(1), sent) for sent in re.split(r"(?<=[.!?…])\s+|\n+", text) for m in [rx.search(sent)] if m]
+        # as a NAME: capitalized ("a talon", "an ember", "swift", "at dusk" are words, not Talon, Ember, Swift or Dusk);
+        # a sentence that merely starts with one of those words ("Swift as she was...") doesn't bring her in either
+        rx = re.compile(r"\b(" + "|".join(map(re.escape, words)) + r")\b")
+        out = []
+        for sent in re.split(r"(?<=[.!?…])\s+|\n+", text):
+            for m in rx.finditer(sent):
+                lead = sent[:m.start()].strip(" *\"'“‘(—-")
+                if not lead and m.group(1).lower() in COMMON_NAMES:
+                    continue
+                out.append((m.group(1), sent))
+                break
+        return out
 
     def _out_mentions(self, text):
         """Sentences that bring up a fighter who is out of the fight and never landed a blow (so there is nothing of
@@ -5359,6 +5376,10 @@ class Narrator:
         types = [a.get("type") for a in acts]
         # --- the newer kinds of moment (clash, flight, stances, water in the mouth, coils, weather, a pin just
         # broken): one idea each, on the side of the beat it belongs to
+        for e in also or ():
+            if isinstance(e, dict) and e.get("type") == "wing_strain" and last:
+                add(f"{e['fighter']} straining her hurt wing to stay up",
+                    B.pick("aerial", 1, has=feats(e["fighter"]), moment={"strain"}))
         for a in acts:
             att_, dfn_ = a.get("attacker"), a.get("defender")
             if act and a.get("clash"):
@@ -5375,7 +5396,12 @@ class Narrator:
                 add(f"{dfn_}, carried up and dropped", B.pick("aerial", 1, moment={"carried"}))
             if take and a.get("grounded"):
                 side[0] = "take"
-                add(f"{dfn_} falling out of the air", B.pick("aerial", 1, moment={"grounded"}))
+                # her own hurt wing failing her, or a blow knocking a sound flyer out of the sky
+                add(f"{dfn_} falling out of the air", B.pick("aerial", 1, has=feats(dfn_),
+                                                             moment={"grounded" if a.get("grounded_wing") else "knocked"}))
+            if take and a.get("dive") and not a.get("dodged") and a.get("hits"):
+                side[0] = "take"
+                add(f"{dfn_} hit from above", B.pick("aerial", 1, has=feats(dfn_), moment={"struck_from_above"}))
             if a.get("protected") or a.get("stance") or a.get("reflected"):
                 side[0] = "act" if act else "take"
                 add("the guard", B.pick("guard", 1, moment={"reflect"} if a.get("reflected") else {"block"}))
@@ -5892,7 +5918,8 @@ class Narrator:
         absent = [w for w in (getattr(self, "absent_words", None) or []) if w]
         if absent:
             extra.append(f"- NOT IN THIS FIGHT: {', '.join(absent)}. She is not here and not part of this story: "
-                         f"never mention her, by name or as her species, even if an example or the style sample does.")
+                         f"never mention her, by name or as her species, even if an example or the style sample does. "
+                         f"(The same words as ordinary words are fine: a talon, an ember, swift, dusk, a blaze.)")
         for name, body in (getattr(self, "damage_by", {}) or {}).items():
             if any("arm" in p for p in body):
                 extra.append(f"- {name} stands and walks on her two FEET. Her paws are her HANDS, at the ends of her "
@@ -6549,8 +6576,8 @@ class Narrator:
                     add(sent, f"{poss(who)} {p} is said to hurt, but it has never been hit: check which part the blow "
                               f"really landed on")
             for mv, got in victims.items():
-                if who in got or not re.search(r"\b" + re.escape(mv) + r"\b", sent, re.I):
-                    continue
+                if who in got or not re.search(r"\b" + re.escape(mv) + r"\b", sent):
+                    continue    # the move by its NAME: "the icy wind off her wings" is weather, not the move Icy Wind
                 if " " not in mv and not any(not re.search(r"\b(?:to|not|n't|never|would|could|didn't|did not)\s+$", sent[:x.start()], re.I)
                                              for x in re.finditer(r"\b" + re.escape(mv) + r"\b", sent, re.I)):
                     continue   # "not to bite, only to hold": the verb, not the move called Bite
@@ -8884,7 +8911,72 @@ class Narrator:
                         self._part_leads[sents[0]] = part_leads[k]
                     if sents:
                         self._pov_marks.append((sents[:3], part_leads[k] or "Both"))
+        written = self._tell_missing_attacks(written, [k for k, _, _ in plan])
         return "\n\n".join(w for w in written if w).strip()
+
+    def _attack_shown(self, a, sents_all, seen):
+        """Is this attack in the story: its move named, or its element / weapon hitting one of the parts it hit, in a
+        sentence about the one who threw it or the one it hit (the same test the draft check uses)."""
+        mv = a["move"]["name"]
+        if re.search(r"\b" + re.escape(mv) + r"\b", seen, re.I):
+            return True
+        parts = {h["part"].lower() for h in a["hits"]}
+        trx = TYPE_SHOWN.get(str(a["move"].get("type", "")).lower())
+        return bool(trx) and any(re.search(r"\b(?:" + trx + r")\b", s_, re.I) and (a["attacker"] in s_ or a["defender"] in s_)
+                                 and any(_mentions_exact(s_.lower(), p) for p in parts) for s_ in sents_all)
+
+    def _tell_missing_attacks(self, written, keys):
+        """The last safety net: an attack every rewrite still left out of the story. The narrator is asked once more,
+        for just that attack (a few sentences in the same voice, carrying on from the attacker's part), and it is put
+        in at the end of that part. Only if that call fails does a SMALL attack get one plain sentence from the program;
+        a big one (devastating, or leaving a part very painful or worse) never does."""
+        acts_now = [a for a in (getattr(self, "_acts_now", None) or []) if a.get("type") == "instant"
+                    and not a.get("environment") and a.get("hits") and (a.get("move") or {}).get("name")]
+        if len(acts_now) < 2 or not any(written):
+            return written
+        seen = "\n".join(w for w in written if w)
+        sents_all = [s_ for para in seen.split("\n") for s_ in _SENT.split(para.strip()) if s_]
+        missing = [a for a in acts_now if not self._attack_shown(a, sents_all, seen)]
+        if not missing:
+            return written
+        at = next((k for k, key in enumerate(keys) if key == "act" and k < len(written) and written[k]), None)
+        if at is None:
+            at = next((k for k, w in enumerate(written) if w), 0)
+        written = list(written)
+        context = getattr(self, "_last_context", "") or ""
+        if self.progress:
+            self.progress(f"an attack the drafts kept leaving out gets a short passage of its own: "
+                          f"{', '.join(a['move']['name'] for a in missing)}")
+        import blocks as story_blocks_mod
+        for a in missing:
+            att, dfn, mv = a["attacker"], a["defender"], a["move"]
+            parts = list(dict.fromkeys(h["part"].lower() for h in a["hits"]))
+            worst = max(float(h.get("damage_after", h.get("damage_taken", 0)) or 0) for h in a["hits"])
+            big = bool(a.get("devastating") or any(h.get("devastating") for h in a["hits"]) or worst >= 90)
+            ask = (f"\n\nTHE PASSAGE SO FAR (already written; never repeat it):\n<<<\n{_tail(seen, 1500)}\n>>>\n\n"
+                   f"One attack from this beat is missing from the passage: {poss(att)} {mv['name']} "
+                   f"({mv.get('about', '')}) striking {dfn} on the {', '.join(parts[:3])}"
+                   + (", a terrible, devastating blow" if big else "") + ". Write ONLY that attack, in "
+                   f"{'4 to 6' if big else '2 or 3'} sentences in the same voice and tense as the passage: {att} "
+                   f"throwing it and it landing on those parts, and {dfn}'s first reaction. It comes right after "
+                   f"the passage's last attack. Nothing else happens: no new falls, no other attacks, no pin.")
+            text = ""
+            try:
+                text = self._generate(context + ask, 110 if big else 60)
+                text = self._drop_repeats(text, seen) if text else ""
+            except llm.LLMError:
+                text = ""
+            if not text and not big:
+                part = parts[0]
+                kinds = story_blocks_mod.kind_of(mv.get("name", ""), mv.get("about", ""))
+                text = (f"Then {att} brought her wing round hard, and it struck {poss(dfn)} {part}." if "wing" in kinds else
+                        f"Then {poss(att)} talons raked {poss(dfn)} {part}." if "talon" in kinds else
+                        f"Then {poss(att)} {('fire' if 'fire' in kinds else 'cold' if 'ice' in kinds else 'blow')} "
+                        f"struck {poss(dfn)} {part}.")
+            if text:
+                written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()
+                seen = "\n".join(w for w in written if w)
+        return written
 
     @staticmethod
     def _segments(actor, receivers, words, n):

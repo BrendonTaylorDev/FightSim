@@ -59,8 +59,16 @@ def features(part_names):
     has = set()
     if not low.strip():
         return has          # no body known: nothing body-specific is offered (and nobody is taken for a serpent)
-    if "twin tails" in low:
-        has.add("tails")
+    if re.search(r"\btails\b", low):
+        has.add("tails")       # twin tails, six tails, nine tails
+    if "crest" in low or "plume" in low:
+        has.add("crest")
+    if "flame" in low:
+        has.add("flame")       # a burning tail tip, a crest or tail of living fire
+    if "mane" in low:
+        has.add("mane")
+    if "wing" in low or "feather" in low:
+        has.add("feathers" if "feather" in low or "beak" in low else "wings")
     if "tail" in low:
         has.add("tail")
     if "fin" in low or "fan" in low:
@@ -92,6 +100,27 @@ def features(part_names):
     return has
 
 
+def body_bans(has):
+    """Words a block must not use for this body: a bird has a beak, not teeth, a jaw or fur; nothing without ears
+    flattens them; a body with no arms or forelegs has no paws or hands; a serpent has no legs or feet."""
+    has = set(has or ())
+    if not has:
+        return None
+    bans = []
+    if "beak" in has:
+        bans += [r"\bteeth\b", r"\btooth\b", r"\bfangs?\b", r"\bjaws?\b", r"\blips?\b", r"\bmuzzle", r"\bsnout",
+                 r"\bwhiskers?\b", r"\bgums?\b", r"\bcheeks?\b"]
+    if "feathers" in has:
+        bans += [r"\bfur\b", r"\bhackles\b", r"\bpelt\b", r"\bscruff\b"]
+    if "ears" not in has:
+        bans += [r"\bears?\b"]
+    if "arms" not in has and "forelegs" not in has:
+        bans += [r"\bpaws?\b", r"\bhands?\b", r"\bfists?\b", r"\bfingers?\b", r"\bforelegs?\b", r"\bknuckles?\b"]
+    if "legs" not in has:
+        bans += [r"\blegs?\b", r"\bfeet\b", r"\bfoot\b", r"\bknees?\b", r"\btoes\b", r"\bhind\b"]
+    return re.compile("|".join(bans), re.I) if bans else None
+
+
 def state_of(strength):
     """Overall condition as the words a block's 'state:' can ask for (from % of full strength)."""
     s = float(strength if strength is not None else 100)
@@ -112,12 +141,17 @@ def kind_of(move_name="", about="", with_part="", manhandle="", grab=False, clos
                   ("charge", r"aqua jet|tackle|rush|charge|take down|\bram\b|body|headbutt|lunge"),
                   ("tail", r"\btails?\b"), ("beam", r"pulse|beam|gun|pump|bolt|ray|blast|stream|wave|surf|breath|wisp"),
                   ("punch", r"punch|break|chop|paw|cuff|jab|fist"), ("horn", r"horn|scythe"),
-                  ("wing", r"\bwings?\b|aerial ace|air slash|gust"), ("beak", r"beak|peck|drill"),
-                  ("talon", r"talons?|sky drop")):
+                  ("wing", r"\bwings?\b|aerial ace|air slash|gust|brave bird|sky attack|\bfly\b|acrobatics"),
+                  ("beak", r"beak|peck|drill"), ("talon", r"talons?|sky drop"),
+                  ("fire", r"\bfire|flame|ember|heat|inferno|burn|blitz|flare|incinerat|lava|scald"),
+                  ("ice", r"\bice\b|\bicy\b|blizzard|freeze|frost|hail|icicle"),
+                  ("wind", r"hurricane|gust|twister|air slash|air cutter|\bwind\b|defog"),
+                  ("rock", r"\brock\b|stone|accelerock|boulder")):
         if re.search(rx, t):
             kinds.add(k)
-    if ranged and "beam" in kinds:
-        return {"beam"}      # a discharge, a stream, a pulse: not a strike with the part it comes from
+    if ranged and kinds & {"beam", "fire", "ice", "wind"}:
+        # a discharge, a stream, a pulse: not a strike with the part it comes from (its element still counts)
+        return {"beam"} | (kinds & {"fire", "ice", "wind", "rock"})
     return kinds
 
 
@@ -185,6 +219,10 @@ class Blocks:
         self.load()      # the file can be edited while the program runs
 
     def pick(self, category, n=1, fmt=None, need=(), exclude=None, **ctx):
+        banned = body_bans(ctx.get("has")) if ctx.get("has") else None
+        if banned is not None:      # nothing her body doesn't have: no teeth on a bird, no paws on a snake
+            exclude = ([banned] + (list(exclude) if isinstance(exclude, (list, tuple)) else [exclude] if exclude is not None
+                                   else []))
         """Up to n blocks of this category that fit ctx, least-offered first (with some chance in it), none that
         was offered in the last few beats while others are to be had. Returns their texts, placeholders filled.
         need: condition names a block must HAVE to be offered here (need=("zone",): only blocks written for a zone).

@@ -1027,3 +1027,59 @@ Her limbs stirred, weakly, and lay still again. | state: spent
 She tried to lift her head and managed only part of the way. | state: spent
 The ground held her, and she had nothing left to argue with. | state: spent
 
+
+# ---------------------------------------------------------------------------------------------------------------
+# BUILD 133: flight, the elements and the new bodies
+# ---------------------------------------------------------------------------------------------------------------
+== before_strike | kind: wing
+She snapped her wings open and brought the leading edge round like a club.
+She pivoted on her feet and swung the wing flat and hard, all the weight of her shoulder behind it.
+Both wings beat once, lifting her, and she came down into the blow.
+She drew the wing back along her side and then whipped it forward edge-first.
+The wing came across in a blur of feathers, hard as a board at its leading edge.
+She folded her wings, dropped, and opened them again at the last instant, right on top of {foe}.
+
+== before_strike | kind: beak
+She drew her head back on her neck and struck with the beak like a hammer.
+Her beak opened and snapped forward, aimed at the softest place she could see.
+She struck with the beak twice, fast, at the same spot.
+Her neck shot forward with no warning at all, the hooked tip of the beak leading.
+
+== before_strike | kind: talon
+She came in feet first, talons spread wide.
+Her talons opened at the last moment and closed on whatever they found.
+She swung her feet forward under her, wings braking, and raked with the talons.
+She struck with both feet together, the way she would strike prey.
+
+== before_strike | kind: fire
+She drew in a long breath, and the heat built behind her teeth until it had to go somewhere. | has: arms
+She drew a long breath, and the air around her began to shimmer.
+She opened her mouth and the fire came out in a roaring tongue.
+The heat gathered in her chest, and when it came out it came out white.
+Embers spat from her as she gathered the fire.
+She let the flames go all at once, aimed straight at {foe}.
+
+== before_strike | kind: ice
+The air in front of her mouth went white with cold.
+Frost crackled across the ground at her feet as she gathered the cold.
+She breathed out, and the breath kept coming and froze as it went.
+The cold built in her until her own feathers glittered with it. | has: feathers
+
+== before_strike | kind: wind
+She swept her wings forward together and the air came with them like a wall. | has: wings
+She beat her wings hard and fast, and the wind rose under them. | has: wings
+She hurled the air itself at {foe}.
+The wind gathered round her, tearing at the grass, and then it went where she sent it.
+
+== before_strike | kind: rock
+Stones lifted from the ground around her and hung there.
+She threw her head and the rocks flew.
+The earth cracked under her and sharp stone thrust up toward {foe}.
+She sent the stones in a ragged volley, too many to dodge them all.
+
+== landing
+She hit the ground still flapping, and the wings took the worst of it badly. | has: wings
+She came down out of the air in a tangle of wings and feathers. | has: feathers
+She landed on her side with one wing pinned under her. | has: wings
+The fall from the air drove every breath out of her at once.
+She hit, bounced once, and lay with her wings spread in the dirt. | has: wings

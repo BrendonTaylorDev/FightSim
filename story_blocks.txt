@@ -3096,3 +3096,384 @@ she has nothing left but her will
 her body shudders, empty
 == pain_show | level: devastated | state: winded
 she gasps without sound
+
+# ---------------------------------------------------------------------------------------------------------------
+# BUILD 133: FLIGHT, ELEMENTS AND THE NEW BODIES
+# moment: takeoff, dive, carried, grounded (her own hurt wing gives out), knocked (a blow knocks a sound flyer out
+#         of the sky), struck_from_above (the one a dive lands on), strain (staying up on a badly hurt wing)
+# kind: fire, ice, wind, rock (the element of a move, alongside its shape: a Fire Fang is bite and fire)
+# has: wings, feathers (a bird: beak, no fur), crest, flame, mane, tails (several), talons, beak, arms
+# ---------------------------------------------------------------------------------------------------------------
+== aerial | moment: takeoff
+she runs three steps, opens her wings and the ground falls away beneath the fourth | has: legs
+a downdraft flattens the grass in a ring around the place she was standing
+the first wingbeat is all effort; by the third she is riding the air instead of fighting it
+she goes up steep and fast, out of reach before the other has finished turning
+she climbs with her head turned down, never once taking her eyes off her opponent
+dust and loose feathers swirl under her as she lifts, and then there is only the shadow | has: feathers
+her wings open to their full span and the whole arena seems to shrink beneath them
+she hangs at the top of the climb, wings spread wide, and lets the other one look up at her
+
+== aerial | moment: dive
+she tips over at the top of her climb and comes down like a dropped stone
+the wings close tight against her body and she becomes a single falling line
+the air screams past her and she aims the whole fall at one place
+a flare of the wings at the last moment, and all the speed goes into the blow
+she drops out of the sun and the other has to throw up a guard half blind
+the dive comes in at a slant, low over the ground at the end, too fast to sidestep
+she corrects once in the fall, a twitch of one wingtip, and the line is true again
+the sound reaches the other a heartbeat before she does: a hiss of air over feathers | has: feathers
+
+== aerial | moment: struck_from_above
+the hit comes from above, where there is no way to brace for it
+the weight of the whole fall lands on her at once and drives her down against the ground
+she looks up too late: there is only a shape, and then the blow
+it is like being hit by something thrown from a cliff
+the air goes out of her in one push, as if the sky itself had stepped on her
+she staggers under it and has to put a hand to the ground to stay up | has: arms
+she flattens under the impact, legs splaying for a moment before they find the ground again | has: forelegs
+she has no idea where it came from until the shadow slides off her
+
+== aerial | moment: carried
+the talons sink in and the ground drops away, and every wingbeat takes it further | has: legs
+she kicks at nothing; her feet find only air | has: legs
+the grip around her is the only solid thing in the world, and it is going to let go
+she can feel each wingbeat above her as a lurch upward
+the arena below wheels slowly, the trees small, the water a bright coin
+for one long moment at the top of the climb neither of them moves at all
+
+== aerial | moment: grounded
+the hurt wing folds under her in mid-beat and the sky lets go of her
+she tries to beat the bad wing and it only flutters, and she slides sideways out of the air | has: wings
+the wing that has been carrying her on pain alone finally will not answer
+she comes down in a long tilting spiral, the good wing hammering, the bad one trailing
+the ground rises at her faster than she can sort out which way is up
+
+== aerial | moment: knocked
+the blow knocks her clean out of her wingbeat and she tumbles
+she is spun round in the air, wings flailing for purchase that is not there
+the hit stops her dead in the air, and for a moment she simply falls
+she loses the air completely; the ground comes up in a rush of green and brown
+feathers burst loose from where it struck her and drift down after her | has: feathers
+she tries to catch herself with a wild beat of both wings and only half manages it | has: wings
+the blow takes her out of the sky like a stone takes a bird off a branch
+she is knocked sideways off her line, rolls in the air once, and comes down hard
+
+== aerial | moment: strain
+every downstroke drags at the hurt wing like a hook pulled through it
+she flies lopsided, the bad wing beating short and late
+she stays up on will alone, and every beat of it costs her
+the wing trembles at the top of each stroke, as if it might simply stop
+she holds the bad wing a little higher than the good one, favoring it even in the air
+a feather tears loose from the hurt wing and spins away below her | has: feathers
+her breath comes harder up here than it ever did on the ground
+she knows she should come down; she does not
+
+== movement | kind: fire
+a breath drawn deep, and then the fire comes out of her like a door flung open
+the flames roll across the gap and lick round her opponent from every side
+the heat arrives before the fire does, a dry wall of it
+a gout of flame, white at the heart and orange at the edges
+the air shimmers and buckles between them as the fire crosses it
+the fire spreads where it lands and clings, as if it were hungry
+sparks scatter across the ground at the edges of the blast
+the fire wraps round her opponent and for a moment there is only the glow inside it
+her flame flares bright with the effort, sputtering high and white | has: flame
+the heat on her own fur makes her eyes water, and she keeps pouring it out | has: forelegs
+
+== movement | kind: ice
+the air in front of her mouth turns white and the cold rolls out with it
+frost creeps over the ground ahead of the beam, crackling as it spreads
+the cold arrives with a sound like a pond freezing all at once
+glittering crystals hang in the air behind the attack and drift slowly down
+the beam is pale blue and so cold that it smokes
+everything it touches turns white at the edges
+
+== movement | kind: wind
+her wings sweep forward together and the air comes with them like a wave | has: wings
+the gust picks up leaves, grit and loose grass and throws all of it at once
+the wind tears at her opponent's footing and pushes her back a step at a time
+a spinning column of air whips up between them, full of debris
+the blast of wind flattens the grass in a long fan in front of her
+the air itself is the weapon: invisible until it lands, and then everywhere
+
+== movement | kind: rock
+stones lift from the ground around her and hang there for a heartbeat
+the rocks come in a ragged volley, some high, some skipping off the ground
+a jagged spike of stone erupts from the earth exactly where she means it to
+she throws her head and the stones fly from her mane like shrapnel | has: mane
+the rocks crack against each other in the air and come down in a hail of grit
+
+== movement | kind: wing
+she pivots on one foot and brings the wing across like a flail | has: wings
+the wing comes down from above, the leading edge first, heavy as a branch | has: wings
+both wings beat at once and she rises into the strike | has: wings
+the wing is hard as steel along its edge, and she swings it like a blade | has: wings
+
+== movement | kind: beak
+she drives the beak in with the whole weight of her neck behind it | has: beak
+the beak snaps shut an inch from where it was aimed, and the next one does not miss | has: beak
+a quick double strike of the beak, faster than the eye can follow | has: beak
+
+== movement | kind: talon
+she comes in feet first, talons spread wide, wings braking hard above her | has: talons
+the talons rake and catch and rake again | has: talons
+she seizes with one foot and strikes with the other | has: talons
+the grip of the talons closes like a trap and she leans back on it with her whole weight | has: talons
+
+== movement | kind: punch
+the fist comes round low and hooks up under her guard | has: arms
+a short, chopping blow with the heel of the hand, the arm barely bending | has: arms
+her clawed hand closes into a fist as it travels and lands like a hammer | has: arms
+
+== reaction | size: solid, heavy
+her feathers fluff out all over at once, then slowly settle | has: feathers
+her crest snaps up rigid and stays there | has: crest
+her wings jerk half open, as if to fly from it | has: wings
+her beak gapes open on a sound that does not quite come out | has: beak
+her tail flame flares high and flickers | has: flame
+her tails lash out behind her, every one of them at once | has: tails
+the rock spikes in her mane grate against each other as she flinches | has: mane
+
+== reaction | size: tremendous
+her wings fly open and she staggers, every feather on end | has: feathers
+the flame on her tail gutters low and spits | has: flame
+a scream tears out of her open beak, harsh and ragged | has: beak
+her tails go rigid behind her, fanned out wide | has: tails
+
+== pain_show | level: sore, hurting
+she settles her ruffled feathers with an irritated shake | has: feathers
+a sharp clack of her beak, more temper than pain | has: beak
+her crest flattens briefly, then rises again | has: crest
+she mantles her wings and refolds them, slower than before | has: wings
+her tail flame flickers once, then burns steady | has: flame
+
+== pain_show | level: very painful, excruciating
+she screams, beak wide, the sound harsh and ripped | has: beak
+the feathers over {part} stand out stiff and ragged, and she cannot make them lie down | has: feathers
+her crest lies flat against her skull and stays there | has: crest
+her wings sag at her sides, the tips trailing on the ground | has: wings
+her tail flame shrinks to a sputtering, smoking flicker | has: flame
+the tails bunch tight against her body as if to shield it | has: tails
+
+== pain_show | level: devastated
+her beak hangs open and she pants, too hurt even to scream | has: beak
+her feathers hang lank and wrong, and she does not try to settle them | has: feathers
+her tail flame is a weak, wavering glow; she curls her tail in to protect it | has: flame
+
+== pain_show | level: hurting, very painful, excruciating, devastated | zone: arm
+the wing hangs a little lower on that side, and she holds it half open, unable to fold it cleanly | has: wings
+the wing beats out of rhythm with the other one, short and late | has: wings
+she flinches every time the wing brushes against her side | has: wings
+
+== tell | state: winded, tired
+her beak hangs open as she pants | has: beak
+her wings droop at the shoulders, the tips touching the ground | has: wings
+her feathers stay ruffled; she has stopped bothering to settle them | has: feathers
+her flame burns lower than it did, steady but smaller | has: flame
+her crest has stopped rising: it lies half flat now | has: crest
+
+== tell | state: spent
+she can barely hold her wings off the ground | has: wings
+her tail flame is a sickly, guttering flicker | has: flame
+her beak is open and her head bobs with every breath | has: beak
+
+== held_in | state: fresh, winded
+a harsh shriek, cut off short | has: beak
+a hiss through her open beak, feathers flattening | has: beak
+a low, rumbling growl deep in her chest, smoke curling from her nostrils | has: flame
+
+# ---------------------------------------------------------------------------------------------------------------
+# THE NEW FIGHTERS: their own way of watching, thinking and holding a sound in
+# ---------------------------------------------------------------------------------------------------------------
+== watch | fighter: cygnet
+she watches down her long neck with cool disdain, as if the other were something on her plumage
+she arches her neck and watches, wings half raised, every feather on end
+
+== watch | fighter: duchess
+she watches with her head cocked, red-ringed eyes hard, her long tail flicking once
+she bobs her head as she watches, sharp and judging
+
+== watch | fighter: valor
+she watches with her chest thrust out and her crest flared high, already looking for the next charge
+she screams at the other one, a challenge, and waits to see if it is answered
+
+== watch | fighter: swift
+she hops from foot to foot as she watches, forked tail flicking, already itching to go
+she cocks her head and studies the damage, quick and pleased
+
+== watch | fighter: zephyr
+she watches calmly, circling slowly, her long crest streaming in the breeze
+she rides the air above, watching with patient eyes for the next opening
+
+== watch | fighter: pyra
+she watches through the shimmer of her own heat, flames rising higher as she sees the damage
+her fiery crest flares as she watches, imperious, waiting
+
+== watch | fighter: glacia
+she watches in perfect stillness, breath steaming, the air around her growing colder
+her long tail ripples behind her as she watches, serene and unreadable
+
+== watch | fighter: ember
+she watches from her perch, eyes locked on, embers sparking from her wingtips
+she fidgets, bobbing, unable to keep still, waiting for the moment to dive again
+
+== watch | fighter: cinder
+she watches with her tail flame flaring and a grin full of small fangs, smoke curling from her nostrils
+she flexes her claws as she watches, wings half spread, enjoying it
+
+== watch | fighter: tidecrest
+she watches anxiously, antennae drooping, half sorry for what she has done
+she watches with her small wings fluttering, worried and determined at once
+
+== watch | fighter: gloam
+she watches wide-eyed, swaying, slime dripping from her antennae
+her antennae reach toward the other as she watches, curious, sorry, and still ready
+
+== watch | fighter: kitsune
+she watches with a thin, satisfied smile, her nine tails fanning slowly behind her
+her red eyes glitter as she watches; this is exactly how she planned it
+
+== watch | fighter: kindle
+she watches with her six tails puffed out and her ears forward, trembling but proud
+she huffs a little puff of embers as she watches, trying to look fierce
+
+== watch | fighter: sable
+she watches with her huge ears swiveled forward, nose wrinkled, thinking
+the tufts in her ears puff warm air as she watches, studying the wound
+
+== watch | fighter: dusk
+she watches with her head low and her mane bristling, lips curled back from her fangs
+she stalks a slow half circle as she watches, rock spikes rattling softly
+
+== watch | fighter: vixen
+she watches with a sly grin, her mustache markings twitching, already planning the next cheap shot
+she creeps a little closer as she watches, tail curling, eyes bright with mischief
+
+== watch_thought | fighter: cygnet
+*Ruffled. She has RUFFLED me.*
+*Stay down where you belong.*
+
+== watch_thought | fighter: duchess
+*Know your place.*
+*Again, then. Properly this time.*
+
+== watch_thought | fighter: valor
+*Is that all? Come on!*
+*Never back off. Never.*
+
+== watch_thought | fighter: swift
+*Too slow! Way too slow!*
+*In and out. Again. Again.*
+
+== watch_thought | fighter: zephyr
+*Patience. The wind will turn.*
+*Wait for the gap. Then fall.*
+
+== watch_thought | fighter: pyra
+*Burn.*
+*Nothing stands in the heat for long.*
+
+== watch_thought | fighter: glacia
+*Cold settles everything, in the end.*
+*Be still. It is easier.*
+
+== watch_thought | fighter: ember
+*Faster. Hotter. Again.*
+*She can't track me. She can't.*
+
+== watch_thought | fighter: cinder
+*Now THAT was a hit.*
+*Come on, give me more than that!*
+
+== watch_thought | fighter: tidecrest
+*I'm sorry. But I can't stop now.*
+*Please just stay down.*
+
+== watch_thought | fighter: gloam
+*Ow. That looked like it hurt.*
+*Don't be mad at me, okay?*
+
+== watch_thought | fighter: kitsune
+*Exactly as I planned.*
+*You'll remember this.*
+
+== watch_thought | fighter: kindle
+*I did it! I really did it!*
+*Don't be scared. Don't be scared.*
+
+== watch_thought | fighter: sable
+*Interesting. That's her weak side.*
+*Keep your distance. Think.*
+
+== watch_thought | fighter: dusk
+*Hold. Wait for the opening.*
+*She's slowing. Go.*
+
+== watch_thought | fighter: vixen
+*Too easy.*
+*Mine. All of it's mine.*
+
+== held_in | fighter: cygnet
+a furious hiss through her open bill, neck drawn back in an S
+a harsh, trumpeting honk that cracks in the middle
+
+== held_in | fighter: duchess
+a strangled squawk, cut short
+she clacks her beak hard and keeps the rest behind it
+
+== held_in | fighter: valor
+a roar of pain that turns into a war-scream
+she screams in defiance instead, louder than the pain
+
+== held_in | fighter: swift
+a sharp, broken chirp she cannot keep in
+a thin shriek, quickly bitten off
+
+== held_in | fighter: zephyr
+a ragged, gasping screech
+she holds the cry in, beak clamped, and only a rasp escapes
+
+== held_in | fighter: pyra
+a ringing scream that makes her flames gutter
+a hiss of steam and smoke instead of a sound
+
+== held_in | fighter: glacia
+a thin, cracking wail, like ice giving way
+a sharp intake of breath that frosts in the air
+
+== held_in | fighter: ember
+a crackling shriek, sparks spitting from her feathers
+she screams and the embers flare with it
+
+== held_in | fighter: cinder
+a roaring bellow that breaks into a hoarse growl
+she clenches her fangs and growls, smoke pouring from her nostrils
+
+== held_in | fighter: tidecrest
+a low, mournful bellow
+she whimpers, antennae drooping flat
+
+== held_in | fighter: gloam
+a long, bubbling wail
+a wobbling gurgle of pain she can't stop
+
+== held_in | fighter: kitsune
+a high, broken yelp she resents at once
+she snarls, thin and vicious, refusing to cry out
+
+== held_in | fighter: kindle
+a thin, whining yelp
+a whimper she tries to turn into a growl
+
+== held_in | fighter: sable
+a squealing, tearful yelp
+she sniffs hard and holds back the cry, ears flat
+
+== held_in | fighter: dusk
+a strangled snarl that breaks into a whine
+she growls through bared fangs, holding her ground
+
+== held_in | fighter: vixen
+a high, indignant yelp
+she yips, then catches herself and grins through it

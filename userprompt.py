@@ -81,7 +81,7 @@ def style_passages(rules, want=None, limit=None, rounds=None, skip=()):
     # rounds: {tag: how many times a passage for that tag has been shown}: sections that share a tag take turns.
     # skip: words (a fighter who is not in this fight) whose passages are left out
     if skip:
-        rx = re.compile(r"\b(?:" + "|".join(re.escape(w) for w in skip if w) + r")\b", re.I)
+        rx = re.compile(r"\b(?:" + "|".join(re.escape(w) for w in skip if w) + r")\b")   # as a name: capitalized
         secs = [sec for sec in secs if not rx.search(sec[1])] or secs
     picked = []
     for w in [str(x).strip().lower() for x in (want or [])]:
