@@ -1250,7 +1250,10 @@
     "_timing_comment": "timing: after each beat, one line says how long it took, how fast the model wrote and read, and what had to be written again. /timing shows the averages by narrator model; /timing off hides the line.",
     "timing": true,
     "styled_text": "auto",
-    "bold_color": ""
+    "bold_color": "",
+    "_italic_colors_comment": "thought_color / sound_color: the story's italics are a fighter's thoughts or a sound she makes written out (*Nngh*). Spyder's console doesn't slant text, so each also gets a colour to stand out (yellow, cyan, green, magenta, red, blue, white, or empty for none). /set console.thought_color green",
+    "thought_color": "cyan",
+    "sound_color": "yellow"
   },
   "pinfall": {
     "_comment": "Only used by the quick /pin three-count command. Story pins (story_prompt.txt) are holds plus the director eliminating the loser.",

@@ -23,10 +23,10 @@ import sys
 from director import Director, resolve_many
 from display import Display
 from engine import Engine, body_region as body_region_of
-from narrator import Narrator, strip_pov
+from narrator import Narrator, strip_pov, _is_sound
 import llm
 
-VERSION = "2026-10-05 build 118 (/model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
+VERSION = "2026-10-05 build 119 (thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
 
 HELP = """
 =============================================================================================
@@ -1333,13 +1333,21 @@ _BOLD = re.compile(r"\*\*(?!\s)([^*\n]+?)(?<!\s)\*\*")
 _ITALIC = re.compile(r"(?<![*\w])\*(?![\s*])([^*\n]+?)(?<![\s*])\*(?![*\w])")
 
 
-def style_text(text, color=""):
-    """Turn the **bold** and *italic* marks in a piece of output into the codes a console understands."""
+def style_text(text, color="", thought_color="", sound_color=""):
+    """Turn the **bold** and *italic* marks in a piece of output into the codes a console understands. Italics in the
+    story are thoughts or written-out sounds; each can also get a colour, for consoles (Spyder's) that don't slant
+    text, so they still stand out from the narration."""
     on = "\x1b[1m" + (f"\x1b[{ANSI_COLORS[color]}m" if color in ANSI_COLORS else "")
     off = "\x1b[22m" + ("\x1b[39m" if color in ANSI_COLORS else "")
     text = _BANNER.sub(lambda m: f"{on}{m.group(1)}{off}", text)
     text = _BOLD.sub(lambda m: f"{on}{m.group(1)}{off}", text)
-    return _ITALIC.sub(lambda m: f"\x1b[3m{m.group(1)}\x1b[23m", text)
+
+    def italic(m):
+        c = sound_color if _is_sound(m.group(1)) else thought_color
+        if c in ANSI_COLORS:
+            return f"\x1b[3m\x1b[{ANSI_COLORS[c]}m{m.group(1)}\x1b[39m\x1b[23m"
+        return f"\x1b[3m{m.group(1)}\x1b[23m"
+    return _ITALIC.sub(italic, text)
 
 
 class StyledOut:
@@ -1360,7 +1368,9 @@ class StyledOut:
 
     def write(self, text):
         if isinstance(text, str) and "*" in text and self._on():
-            text = style_text(text, str(self.rules.get("console", {}).get("bold_color", "") or "").lower())
+            con = self.rules.get("console", {})
+            text = style_text(text, str(con.get("bold_color", "") or "").lower(),
+                              str(con.get("thought_color", "") or "").lower(), str(con.get("sound_color", "") or "").lower())
         return self.stream.write(text)
 
     def __getattr__(self, name):  # flush, isatty, encoding... all come from the real screen

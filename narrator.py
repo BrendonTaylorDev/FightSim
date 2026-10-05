@@ -397,7 +397,9 @@ EXTRA_SWING = re.compile(r"\b((?:struck|strikes|hit|hits|slashed|slashes|swung|s
                          r"then (?:she|he) struck|this time (?:she|he) (?:aimed|went|struck)|"
                          r"(?:a |the |her |his )(?:second|third) (?:blow|strike|slash|swipe|swing|rake|hit|cut)|"
                          r"(?:two|three|four) (?:quick |fast |brutal |savage )?"
-                         r"(?:blows|strikes|slashes|swipes|rakes|hits)|struck (?:twice|three times))\b", re.I)
+                         r"(?:blows|strikes|slashes|swipes|rakes|hits)|struck (?:twice|three times)|"
+                         r"(?:blow|strike|hit|rake|slash|swipe|cut)\b[^.!?]{0,30}\bcame (?:next|after|then|later)|"
+                         r"then the (?:blow|strike|rake|slash|hit) (?:to|on|into|at))\b", re.I)
 
 # after an escape: words that put her back under the pin
 STILL_PINNED = re.compile(r"\b((?:arms?|legs?|chest|shoulders?|hips?|body|back|neck|tails?) (?:was |were |still |stayed )*"
@@ -3236,7 +3238,9 @@ class Narrator:
                     self._one_strike = a["attacker"]  # checked afterwards: no second or third swing
                 lines.append(f"  - This is ONE strike, not several: it lands on {a['hits'][0]['part']} and the force "
                              f"jars {', '.join(jar)} next to it in the same instant. Don't narrate extra swings or "
-                             f"separate blows for those parts.")
+                             f"separate blows for those parts: tell all of them landing TOGETHER, in the same sentence "
+                             f"or the one right after, before any reaction (nothing she does comes between them, and "
+                             f"nothing 'comes next'). Her reactions to each place come after, all from that one blow.")
             if m and m.get("extras"):
                 lines.append("  - It lands differently because: " + "; ".join(
                     {"paralyzed": f"{a['attacker']} is paralyzed, so it comes out weaker and stiffer",
@@ -6791,6 +6795,11 @@ class Narrator:
             if PROMPT_ECHO.search(x) or _BARE_MORE.search(x):
                 add(x, "it repeats the instructions' wording (a pain level used as a label, 'the contact point'), or "
                        "counts the time left on the pin: say how it FEELS instead")
+            m = re.match(r"\s*\*([^*\n]{1,20})\*\s+[A-Z]", x)
+            if m and _is_sound(m.group(1)):
+                add(x, f"the sound *{m.group(1)}* stands alone, so it isn't clear who makes it: put it inside a "
+                       f"sentence that says it is hers and what kind of sound it is (\"a thin *{m.group(1).lower()}* broke "
+                       f"out of her\")")
             if self._label_slip(x):
                 add(x, "a move's name dropped into the sentence as a label: describe what the move does instead")
             if BARE_IMPACT.search(x):
@@ -7646,8 +7655,10 @@ class Narrator:
                       "growl ground out, a ragged cry that cracks in the middle), where it comes from (throat, chest, nose, "
                       "teeth), and its shape and pitch (short, cut off, dragged out, rising, wet, rasping). The worse it "
                       "hurts, the bigger and less controlled the sound."
-                      + (f" {write}, as ONE italic word in the middle of a sentence, never in quotes and never ending a "
-                         f"paragraph: *Hhk*, *Nngh*, *Hss*, *Ahh*, *Kh-hah*, *Yip*." if write else
+                      + (f" {write}, as ONE italic word inside a sentence that makes clear it is HER sound and what kind "
+                         f"(\"a thin *eek* broke out of her\", \"she hissed through her teeth, *hss*, and\"), never "
+                         f"standing alone between sentences, never in quotes and never ending a paragraph: *Hhk*, "
+                         f"*Nngh*, *Hss*, *Ahh*, *Kh-hah*, *Yip*." if write else
                          " Describe the sounds; don't write them out.")
                       + " Sounds only: no words, no sobbing or weeping."
                       + " BODY IN MOTION: whenever she shakes, trembles, jerks, thrashes or writhes, say WHERE and HOW: "
