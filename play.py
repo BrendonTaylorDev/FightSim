@@ -26,7 +26,7 @@ from engine import Engine, body_region as body_region_of
 from narrator import Narrator, strip_pov
 import llm
 
-VERSION = "2026-10-04 build 116 (clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
+VERSION = "2026-10-05 build 117 (commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
 
 HELP = """
 =============================================================================================
@@ -1289,17 +1289,27 @@ def ask_scene(s, read=input):
     print(scene_list(eng))
     print(f"Type a number or a name, r for a random one, or just press Enter to stay in "
           f"{eng.scene_cfg.get('title', 'the same arena')}. (Turn this question off: /set scene.ask_at_start false)")
-    for _ in range(4):
+    wrong = 0
+    while wrong < 4:
         try:
             line = read("Scene> ").strip()
         except (EOFError, KeyboardInterrupt):
             return
         if not line:
             return
+        if line.startswith("/") and not re.match(r"/scenes?\b", line, re.I):
+            # any other command works here too (/set, /model, /settings...); then the question is asked again
+            try:
+                handle_command(s, line)
+            except ValueError as e:
+                print(f"Error: {e}")
+            print("(Now the arena: a number or a name, r for random, or Enter to stay.)")
+            continue
         if line.startswith("/"):
             line = line.lstrip("/").replace("scene", "", 1).strip() or ""
             if not line:
                 continue
+        wrong += 1
         try:
             import contextlib, io
             with contextlib.redirect_stdout(io.StringIO()):   # the arena is printed once, just below

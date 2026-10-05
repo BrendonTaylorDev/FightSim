@@ -2323,4 +2323,5 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **Pain from a miss.** The dodge note now says a miss costs the attacker balance or breath, not pain of her own.
   - **"Invented bite" false alarms.** Teeth closing on a cry, a groan, her own lip or empty air no longer count as a bite.
 - **Skip setting the scene:** `/set narration.scene_intro false`. The first Enter goes straight to the first beat (the first beat's notes already say it is the start of the fight). `true` brings it back.
+- **Commands at the arena question (build 117):** typing a command such as `/set …` or `/model …` at the `Scene>` prompt now runs it and asks for the arena again. Before, the command was taken as an arena name.
 - **Not done: one call for several flagged paragraphs.** Paragraph rewrites already reuse Ollama's cached prompt, so batching would save only about 2 seconds a paragraph, and it risks paragraphs coming back tangled. Not worth it.
