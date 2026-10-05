@@ -511,7 +511,8 @@ def variety_hint(engine):
 def weak_spot_hint(engine):
     """Now and then, with no /focus set: point one fighter at her opponent's weak spots (soft parts, or ones already
     worn down), so weak spots are gone for sometimes, never constantly (director.weak_spot_chance). Some of these
-    nudges (director.weak_spot_repeat) are for a run of blows (a pummel, a combo, a chain, a grapple worked at):
+    nudges (director.weak_spot_repeat) are for a run of blows (a pummel, a combo, a chain, a grapple worked at, a
+    charge, a held stream):
     one weak spot hit again and again, a group of parts worked together, or a few weak spots in turn."""
     from engine import body_region
     cfg = engine.rules.get("director", {})
@@ -537,7 +538,7 @@ def weak_spot_hint(engine):
                 f"({why(p)}). Just this once; the next blow can land anywhere.")
     kind = engine.rng.choice(["same", "group", "several"])
     run = ("if she lands a run of blows this beat (a pummel with a count, a combo, a chain, a grapple she keeps "
-           "working at)")
+           "working at, a charge that drives into it, a stream she holds on it)")
     if kind == "same":
         p = engine.rng.choice(soft[:3])
         engine.weak_aim = {p.name}
