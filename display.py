@@ -172,7 +172,9 @@ class Display:
                 k += 3
                 out.append(f"    {label}")
                 added = h.get("damage_added", h["damage_taken"])
-                out.append(f"        damage      {pad(dmg)}   +{num(h['damage_taken'])} = power {num(h['power'])} × "
+                rl = h.get("roll", 1.0)
+                rtxt = "" if rl == 1.0 else f" (rolled ×{rl:.2f})"     # damage.roll: this one landed harder or softer
+                out.append(f"        damage      {pad(dmg)}   +{num(h['damage_taken'])} = power {num(h['power'])}{rtxt} × "
                            f"{h['mult']:.2f}{' (pin cap)' if h.get('capped') else ''}{sc}"
                            + (f" (the part counts +{num(added)}: past 300% its number climbs slowly)"
                               if added < h["damage_taken"] - 0.05 else "")

@@ -679,6 +679,7 @@ def resolve(engine, b):
     att = b.get("attacker")
     flavor = short_phrase(b.get("flavor", ""), 24)  # keep it a label, not a paragraph (never ending on "and")
     intent = b.get("intent", "")
+    was_involved = engine.get(att).name in engine.involved
     engine.get_active(att)
     manual = bool(b.get("_manual"))
     if act == "eliminate" and not manual and act not in director_actions(engine):
@@ -1051,6 +1052,10 @@ def resolve(engine, b):
             # those); it is only a pause
             flavor = "catching her breath"
         res = {"type": "breather", "focus": att, "flavor": flavor}
+        who = engine.get(att).name
+        if not was_involved and not engine.pinned_by(who) and not engine.pinning(who) and not any(
+                who in (h.attacker, h.defender) for h in engine.holds.values()):
+            engine.involved.discard(who)   # a real pause: she rests (energy.rest_bonus), no exertion
 
     res["intent"] = intent
     return res, started
@@ -1135,7 +1140,7 @@ def _landing(engine, b, res):
             impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": "solid"}]
     word = "driven into" if in_place else (launch if launch != "none" else "knocked down")
     out = engine.land(who, [(x.get("surface"), x.get("parts") or [], x.get("severity")) for x in impacts],
-                      credited=res.get("spiked_by") or res["attacker"], thrown=thrown, in_place=in_place, can_recover=thrown and not manual,
+                      credited=res.get("spiked_by") or res["attacker"], thrown=thrown, in_place=in_place, can_recover=(thrown or launch == "knocked down") and not manual,
                       tumble=True if b.get("tumble") else (None if not manual else False),
                       how=f"{word}: " + " → ".join(short_phrase(x.get("surface"), default="the ground") for x in impacts))
     out["launch"] = "driven down" if out.get("in_place") else launch

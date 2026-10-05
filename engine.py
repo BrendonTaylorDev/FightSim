@@ -425,8 +425,10 @@ class Engine:
         # the damage roll: every instance of damage (a move, a press, a landing, an impact) lands a little harder or
         # softer than its number, so no two are quite alike (damage.roll: plus or minus this share; 0 = off)
         spread = float((r.get("damage") or {}).get("roll", 0.17) or 0)
+        rolled = 1.0
         if spread > 0 and power > 0:
-            power = power * self.rng.uniform(1 - spread, 1 + spread)
+            rolled = self.rng.uniform(1 - spread, 1 + spread)
+            power = power * rolled
         self.__dict__.setdefault("hit_turn", {})[f"{defender.name}|{p.name}"] = self.turn   # for the notes' decay
         res_b, dmg_b, hp_b = p.resistance, p.damage, defender.health
         pain_b = tier_for(dmg_b, pain_tiers(r))
@@ -503,6 +505,7 @@ class Engine:
             "part": p.name,
             "devastating": bool(getattr(self, "_dev_active", None)),
             "power": power,
+            "roll": round(rolled, 2),
             "bracket": bracket["label"],
             "mult": bmult,
             "capped": capped,
@@ -1100,7 +1103,9 @@ class Engine:
         if dodge or (clash and clash["outcome"] != "through") or (guard and guard["kind"] == "deflect"):
             hits = []
         else:
+            blocked = bool(guard and guard.get("kind") == "block")   # caught on a guard: no perfect angle
             dev = (self._devastating_roll(a, d, move, plan) if enforce and not pum and math["type_mult"] != 0
+                   and not blocked
                    and move.get("target") not in ("status", "self") else None)
             if dev:
                 powers = [round(pw * dev["mult"], 2) for pw in powers]
@@ -1188,7 +1193,9 @@ class Engine:
             mouth = self._into_mouth(a, d, move, hits, bool(sustained))
             if mouth:
                 res["into_mouth"] = mouth
-            res["status_applied"] = (self._status_from_move(d, move) + self._restrain(a, d) + (mouth or [])
+            blocked = bool(guard and guard.get("kind") == "block")   # a blocked blow passes on no status
+            res["status_applied"] = ((self._status_from_move(d, move) if not blocked else [])
+                                     + self._restrain(a, d) + (mouth or [])
                                      + list((res.get("charge") or {}).get("hazard_status") or [])
                                      + list((res.get("sustain") or {}).get("hazard_status") or []))
             launch = self._launch_from_move(move)
@@ -2126,7 +2133,9 @@ class Engine:
                (float(sc.get("dazed_dodge_mult", 0.4)) if self.has(d, "dazed") else 1.0) * \
                (float(sc.get("doubled_over_dodge_mult", 0.5)) if self.has(d, "doubled_over") else 1.0)
         s = max(0.0, min(1.0, self.strength(d) / 100))
-        legs = [p.damage for p in d.parts.values() if body_region(p.name) in ("hind_up", "hind_low", "fore_low", "tail")]
+        # what she runs on: a biped's or a bird's fore_low is arms or wingtips, not legs
+        feet = ("hind_up", "hind_low", "tail") + (("fore_low",) if self.body_plan(d) == "quadruped" else ())
+        legs = [p.damage for p in d.parts.values() if body_region(p.name) in feet]
         leg = 1.0 / (1.0 + (sum(legs) / len(legs) if legs else 0) / 150.0)
         ch = float(cfg.get("base", 0.18)) * (0.4 + 0.6 * s) * leg * slow
         if self.has(d, "chilled"):
@@ -2259,6 +2268,9 @@ class Engine:
         n = self.get(name).name
         self._knock_on = []
         self.pressed.pop(n, None)  # she's off whatever a charge left her against
+        self.get(n).status.pop("airborne", None)  # knocked out of the air: she's down, not flying
+        if n not in self.downed:
+            getattr(self, "lying_at", {}).pop(n, None)  # a new fall: not at the foot of whatever she fell by before
         if self.pinned_by(n) and not thrown:
             if facing:
                 self.facing[n] = facing
@@ -2911,6 +2923,7 @@ class Engine:
                                                 "she stays down")):
                 kept_feet, ends = True, "rolled to her feet"
                 self.pressed.pop(d.name, None)
+                d.status.pop("airborne", None)  # she came down to land on her feet
                 loose = self._lose_grip(d.name, why, on_her=True)
                 facing = None
             else:
