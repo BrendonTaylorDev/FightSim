@@ -3250,6 +3250,17 @@ class Narrator:
                              f"and down her throat. She chokes on it: coughing, sputtering, spitting it out, eyes and "
                              f"nose burning, a gasp that pulls in more water before air. She coughs it up; nothing about "
                              f"it is drowning. It leaves her SPUTTERING (short of breath for a little while).")
+            gr = a.get("ground_into")
+            if gr:
+                parts = ", ".join(dict.fromkeys(h["part"] for h in gr["surface_hits"]))
+                lines.append(f"  - HER BACK TO {gr['against'].upper()}: {a['defender']} is held or driven against "
+                             f"{gr['against']} with nowhere to give, so every blow also grinds her back into it ({parts}): "
+                             f"the bark, stone or wall behind her as much a part of each hit as the blow itself.")
+                for h in gr["surface_hits"]:
+                    self._must_parts.append(h["part"])
+                if gr.get("broke"):
+                    lines.append(f"  - {gr['against'].upper()} BREAKS behind her: it cracks and gives way, and she goes "
+                                 f"through and down with it (a heavy extra hit). She ends up on the ground.")
             sus = a.get("sustain")
             if sus:
                 later = sum(len(p["hits"]) for p in sus["pulses"])

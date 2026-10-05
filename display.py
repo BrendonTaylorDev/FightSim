@@ -752,6 +752,10 @@ class Display:
                            f"{self.rules.get('moves', {}).get('sustain', {}).get('pulse_mult', 0.6)})"
                            + (f", pressing her into {su['against']}" if su["against"] else "")
                            + (f" — **{su['against']} BREAKS** on pulse {su['pulses'][-1]['n']}!" if su["broke"] else ""))
+            gr = a.get("ground_into")
+            if gr:
+                out.append(f"🪵 Driven into {gr['against']} with every blow ({gr['blows']})"
+                           + (f" — **{gr['against']} BREAKS**!" if gr["broke"] else ""))
             ch = a.get("charge")
             if ch and ch.get("skipped"):
                 out.append(f"- (no charge into {ch['into']}: {ch['skipped']})")
@@ -808,6 +812,10 @@ class Display:
                     tags.update({id(h): f"driven on into {st['into']}" for h in st.get("surface_hits", [])})
                     tags.update({id(h): f"{st['into']} breaks" for h in st.get("break_hits", [])})
                 tags.update({id(h): "the charge" for h in a["hits"] if id(h) not in tags})
+            if a.get("ground_into"):
+                gr = a["ground_into"]
+                tags.update({id(h): f"driven into {gr['against']}" for h in gr.get("surface_hits", [])})
+                tags.update({id(h): f"{gr['against']} breaks" for h in gr.get("break_hits", [])})
             if a.get("sustain"):
                 for p in a["sustain"]["pulses"]:
                     tags.update({id(h): f"pulse {p['n']}" for h in p.get("move_hits", [])})

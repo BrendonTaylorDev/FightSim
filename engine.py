@@ -422,6 +422,11 @@ class Engine:
         blow does: pin.pressure_cap)."""
         r = self.rules
         p = defender.part(part_name)
+        # the damage roll: every instance of damage (a move, a press, a landing, an impact) lands a little harder or
+        # softer than its number, so no two are quite alike (damage.roll: plus or minus this share; 0 = off)
+        spread = float((r.get("damage") or {}).get("roll", 0.17) or 0)
+        if spread > 0 and power > 0:
+            power = power * self.rng.uniform(1 - spread, 1 + spread)
         self.__dict__.setdefault("hit_turn", {})[f"{defender.name}|{p.name}"] = self.turn   # for the notes' decay
         res_b, dmg_b, hp_b = p.resistance, p.damage, defender.health
         pain_b = tier_for(dmg_b, pain_tiers(r))
@@ -1100,6 +1105,13 @@ class Engine:
         if hits and charge_into and not sustained:
             charged = self._charge(a, d, move, plan, powers, charge_into)
             hits = hits + charged["hits"]
+        ground = None
+        if hits and against and not sustained and not charged and target == "targeted" \
+                and not self.pinned_by(d.name) and not self.has(d, "airborne"):
+            # blows driven home with her back to something solid (held against it, or cornered): each one grinds
+            # her into it, and it may give way under her
+            ground = self._grind(a, d, against, min(len(plan), 4))
+            hits = hits + ground["hits"]
         self._attacked(a.name, [d.name], landed=bool(hits))
         flavor = self._flavor_fits_move(flavor, move)
         res = {"type": "instant", "attacker": a.name, "defender": d.name, "defenders": [d.name],
@@ -1145,6 +1157,9 @@ class Engine:
             if sustained:
                 res["sustain"] = sustained
                 res["knock_on"] = sustained.get("knock_on") or []
+            if ground:
+                res["ground_into"] = ground
+                res["knock_on"] = (res.get("knock_on") or []) + (ground.get("knock_on") or [])
             if charged:
                 res["charge"] = charged
                 res["knock_on"] = (res.get("knock_on") or []) + (charged.get("knock_on") or [])
@@ -1583,6 +1598,35 @@ class Engine:
                 ev["reeling"] = beats
             events.append(ev)
         return events
+
+    def _grind(self, a, d, against, blows):
+        """Blows landed while she is held or pressed against the scenery (a pummel against a tree, a strike that pins
+        her to the wall): each one also drives her back into it (moves.grind: power, break_mult). If it breaks, a heavy
+        extra hit and she goes down with it."""
+        cfg = (self.rules.get("moves") or {}).get("grind") or {}
+        against = short_phrase(against)
+        table = self.rules["severity"].get("environment") or self.rules["severity"]["instant"]
+        back = self.landing_parts(d.name, 2)
+        brk = self.break_chance(against, ((self.rules.get("moves") or {}).get("sustain") or {}).get("break_chance", {})) \
+            * float(cfg.get("break_mult", 0.5))
+        out = {"against": against, "blows": blows, "hits": [], "surface_hits": [], "break_hits": [], "broke": False,
+               "hazard_status": self.hazard_effects(d, [against])}
+        for i in range(1, blows + 1):
+            self._source = f"being driven into {against}"
+            sh = [self._apply_damage(d, p, float(table.get(cfg.get("power", "light"), 10))) for p in back[:1 + (i == 1)]]
+            out["surface_hits"] += sh
+            out["hits"] += sh
+            if self._chance(brk, f"{against} breaking behind {d.name} (blow {i})", "it BREAKS", "it holds"):
+                self.mark_arena(f"{against} lies broken where {d.name} was driven through it")
+                self._source = f"{against} breaking"
+                bh = [self._apply_damage(d, p, float(table.get("heavy", 25))) for p in back]
+                out["break_hits"], out["broke"] = bh, True
+                out["hits"] += bh
+                self.knock_down(d.name, parts=back, why=f"{d.name} went down with {against}")
+                out["knock_on"], self._knock_on = self._knock_on, []
+                break
+        out["facing"] = self.facing_of(d.name)
+        return out
 
     def _sustain(self, a, d, move, plan, powers, pulses, against, enforce):
         """Hold a stream or beam on the target for more pulses: each one hits the same parts again (weaker), and if

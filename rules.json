@@ -58,6 +58,8 @@
     "_same_move_comment": "max_same_move_in_a_row: the director can't make a fighter use the same named move more than this many times in a row (0 = no limit). Your /commands aren't limited.",
     "max_same_move_in_a_row": 2,
     "_sustain_comment": "Sustained moves: a move marked \"sustainable\" (streams and beams like Hydro Pump, Flamethrower, Ice Beam) can be held for up to max_pulses pulses. Each extra pulse hits the same parts at pulse_mult power and costs energy_per_pulse. If the target is pressed against something, each pulse also slams her into it, and it may break (break_chance by surface): a heavy extra hit, the move ends early, and she goes down.",
+    "_grind_comment": "grind: blows landed while she is held or pressed against something in the arena (a pummel against a tree, \"pinned_against\" on an ordinary strike) each drive her back into it too: power is the severity of that extra hit on her back, break_mult scales the thing's chance to break (from sustain.break_chance) for each blow.",
+    "grind": {"power": "light", "break_mult": 0.5},
     "sustain": {
       "max_pulses": 4,
       "pulse_mult": 0.6,
@@ -454,6 +456,8 @@
   },
   "damage": {
     "_comment": "damage_scale multiplies every hit's damage (and so the health it costs). It does NOT change how fast resistance wears down (that's resistance_scale, below). 1 = the base numbers; the default is 5 (the one the balance is tuned for). Change it here or in the program with /scale.",
+    "_roll_comment": "roll: every instance of damage (a move, each press of a pin or hold, a landing, an impact) is rolled within plus or minus this share of its number (0.17: a 30 lands as 25 to 35), so no two hits are quite alike. Severity words already vary by severity.variance on top. 0 = off.",
+    "roll": 0.17,
     "damage_scale": 5,
     "_resistance_scale_comment": "resistance_scale multiplies how fast resistance wears down (resistance lost = power x loss_per_power x resistance_scale). It does NOT change damage. 1 = normal; 2 = parts soften twice as fast; 0.5 = half as fast. Change it in the program with /resscale.",
     "resistance_scale": 1.0,

@@ -2406,6 +2406,12 @@ def clinch_hint(engine, prefer=None, roll=None):
     if streams:
         ways.append(f"{engine.rng.choice(streams)} held on her at no distance (\"sustain\" 3; no \"pinned_against\" needed)")
     ways.append("a throw or a slam out of the grab, which she can't slip")
+    props = scene_props(engine)
+    if props and close:
+        # held against the scenery: driven back into something solid and pummelled there, nowhere to give
+        ways.append(f"she drives {foe.name} back against {engine.rng.choice(props)} and holds her there while she "
+                    f"pummels her ({engine.rng.choice(close)} with \"count\" 3 or 4 and \"pinned_against\" that, so every "
+                    f"blow grinds her into it)")
     engine.rng.shuffle(ways)
     return (f"BIG MOMENT IDEA (optional, if it fits the moment): {f.name} TAKES HOLD of {foe.name} (action \"grapple\" "
             f"as the first action: the part she grips in \"part\", what she grips it with in \"hits\") and works her "
@@ -2440,7 +2446,12 @@ def chain_hint(engine, prefer=None, roll=None):
         "two fast blows to the same spot or the part beside it, then something bigger that knocks her down or launches her",
         (close[0] if close else "a named move") + ", and straight out of it " + (close[1] if len(close) > 1 else "an improvised follow-up")
         + (", then a throw or a slam to finish" if f.name not in engine.downed and foe.name not in engine.downed else ""),
-    ])
+    ] + ([
+        # a JUGGLE: launched off her feet, and caught in the air before she comes down
+        "a rising blow (an uppercut to the jaw, a horn or a head driven up under her chest) that LAUNCHES her "
+        "(\"launch\": \"launched\", no \"landing\" yet), then " + (close[0] if close else "a second blow")
+        + " catches her in the air before she lands and smashes her back down (that link gets the \"landing\"): the juggle"
+    ] if f.name not in engine.downed and foe.name not in engine.downed and not engine.has(foe, "airborne") else []))
     ahead = engine.strength(f) - engine.strength(foe)
     more = (" She is well on top: this one can run to four or five links if she keeps finding openings."
             if ahead >= 25 and engine.strength(f) >= 50 else "")
