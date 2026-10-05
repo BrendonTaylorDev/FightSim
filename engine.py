@@ -6278,7 +6278,7 @@ class Engine:
                                                                                    f"off her {name}")
             else:
                 out.append(f"keeps her {name} tucked in, unusable" if arm else f"won't put any weight on her {name}")
-        return out[:3]
+        return out[:3 if self._decay("origin_beats", 4) else 5]
 
     def breakable_parts(self, f):
         """Parts whose bones may break: devastated, on a fighter whose overall health is below the limit."""
@@ -6337,7 +6337,7 @@ class Engine:
             lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {ht['reaction']}{ground}\n"
                          f"   painful parts (they hurt and get favored, but do NOT override overall strength): "
                          f"{', '.join(hurt[:10]) or 'nothing serious'}"
-                         + (f"\n   barely touched so far: {', '.join(fresh[:6])}" if hurt and fresh else ""))
+                         + (f"\n   barely touched so far: {', '.join(fresh[:6 if self._decay('origin_beats', 4) else 12])}" if hurt and fresh else ""))
         if not self.pins:
             lines.append("PINS: none. Nobody is pinned or held down for a count right now." + self.pin_end_note())
         for p in self.pins.values():

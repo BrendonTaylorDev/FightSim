@@ -2429,7 +2429,7 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
     - **Fixed by rewriting that paragraph:** tense, too much talk, the same hurt told again, blood with no wound. Wording-only ones stay capped at 2 a part.
     - **Never cost a model call** (`narration.cleanup_only`): filler, a leaked move label and a bare sound. The program's cleanup swaps the filler for a finished line, cuts the label and puts the sound in italics.
   - **The second reading runs on big beats only** (`narration.reader_when` "big"): a pin starting or ending, a knockdown or takedown, a devastating blow, the arena, a grip closing, someone out. `/set narration.reader_when always` brings it back for every beat.
-  - **Small details fade from the notes** (`narration.notes_decay`):
+  - **Small details fade from the notes** (`narration.notes_decay`, **off by default**: it shortened late notes by only about 5%, so the full notes are kept; `/set narration.notes_decay.enabled true` turns it on):
     - How a part was hurt ("from Ripples' Ice Beam, then her pin") is kept while that part was hit in the last 4 beats. After that only its pain level stays, unless one huge hit did it (150%+ part damage at once), which is remembered for the rest of the fight.
     - Visible marks on a part left alone shorten to the main one.
     - Surface details like grit or a scuff last 6 beats.
