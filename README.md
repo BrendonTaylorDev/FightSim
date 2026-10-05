@@ -2346,4 +2346,19 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **Pain shown by level:** a new `pain_show` list of how each pain level shows, from MINOR to DEVASTATED, by body area and by species feature. Two of them, sized to the worst place the beat left her with, are offered after each blow.
   - **Samples sized to the blow:** a blow that leaves a part only sore asks for a `strike take light` sample, and one that leaves it hurting or very painful asks for `strike take mid`. Each falls back to `strike take` when there is none.
 - **More samples to rotate through (build 123):** 41 new passages in style_sample_scenes.txt: 10 attacks (5 each, every move), 8 light takes, 5 moderate takes, 3 knockdowns, 3 dodges, 2 throws, 2 landings from a throw, 3 pin holds, 3 pin struggles and 2 get-ups, across the cave, the lakeside, the gorge, the frozen lake, the swamp and the storm. Passages where the blow puts her down are tagged `knockdown take` and shown only when a blow really does, so they don't teach the narrator to invent falls.
+- **A library of finished sentences (build 124):** story_lines.txt holds 937 whole sentences in the house voice, with the same conditions as the blocks:
+  - after a hit, sized to the pain level from MINOR to DEVASTATED, by body area and species feature (356)
+  - before a strike, by kind of move (136)
+  - breath, by how worn she is (80)
+  - closing lines (101)
+  - resolve shown in the body (80)
+  - holding a pin, early, middle or long (60)
+  - under a pin, from still fighting to nearly out (80)
+  - landings (44)
+
+  How they're used:
+  - **Offered word for word:** each part of a beat gets at most one that fits the real moment, marked "use it word for word if it fits, or leave it". So far that's after a blow, as a strike is made, and holding or under a pin.
+  - **Dropped in by the program:** a bare line of told resolve that the program cuts ("She would not be defeated.") is replaced by a `resolve` line, with no model call.
+
+  A line isn't offered again for 40 beats (`narration.lines.cooldown_beats`), and use is remembered between fights in lines_memory.json. Lines that call the part "it" are skipped when the part is plural ("twin tails"). Add your own lines to the file at any time: it is re-read while the program runs. The breath, closing and landing lines are in the file but not yet offered.
 - **Not done: one call for several flagged paragraphs.** Paragraph rewrites already reuse Ollama's cached prompt, so batching would save only about 2 seconds a paragraph, and it risks paragraphs coming back tangled. Not worth it.

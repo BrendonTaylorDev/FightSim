@@ -1,7 +1,1029 @@
-# test stub (replaced by the full library)
-== resolve
-She set her feet again, wider than before, and waited.
+# STORY LINES: finished sentences the engine can offer word for word or drop in to replace a cut sentence.
+# Past tense, third person, the subject fighter is always "she". Slots: {part} (lower case body part), {foe}.
+# Every line must be true whenever its conditions hold. Same format as story_blocks.txt.
+
+# ---------------------------------------------------------------------------------------------------------------
+# AFTER_HIT: the receiver right after a blow, sized to how badly {part} hurts now
+# ---------------------------------------------------------------------------------------------------------------
+== after_hit | level: minor
+She hardly felt it: a flat tap on her {part}, and her attention was already elsewhere.
+The blow left nothing on her {part} but a little warmth under the fur.
+Her {part} took it the way a wall takes a thrown pebble.
+A brief sting crossed her {part} and was gone before she had finished noticing it.
+She let a short breath out through her nose, more put out than hurt.
+Whatever it had meant to do to her {part}, it had not done it.
+The fur on her {part} lay rumpled for a moment and then smoothed.
+It was the kind of knock she might have taken in play.
+She shrugged it off her {part} as she would have shrugged off a burr.
+Nothing in her {part} so much as hesitated.
+Her {part} tingled faintly, and she let the tingle go without a thought.
+She blinked once, and that was all the notice she gave it.
+A small heat spread where it had landed and faded inside a breath.
+There was a scuff in her fur and nothing underneath it.
+The touch skimmed off her {part} and went nowhere.
+Her lip twitched, nearly amused.
+For a heartbeat her {part} buzzed, then went quiet.
+She did not so much as shift her weight.
+A faint ache bloomed under the fur and was already shrinking as she found it.
+Her breathing never changed.
+If anything, it woke her up.
+She gave her {part} a single shake and forgot it.
+A fly would have bothered her more.
+The sting was so slight that she was not sure it had landed at all.
+A dull thud sounded against her {part}, and then there was nothing.
+It barely ruffled her.
+A small grunt escaped her, more from surprise than pain, and she was done with it.
+Her eyes narrowed, but not from hurt.
+It had cost her nothing, and she knew it.
+Her muscles had already forgotten it.
+She did not flinch; there was nothing to flinch from.
+Her {part} pricked faintly, like a nettle brushed in passing.
+The impact spent itself in her fur.
+For a moment she wondered whether that had been the whole of it.
+The mark it left would not even show.
+She noted the blow, set it aside, and kept her mind on {foe}.
+Her guard did not even drop.
+If it had been meant to slow her, it had failed.
+Her pulse did not quicken.
+Not even her expression changed.
+It came and went so fast that her body never troubled to react.
+She tested her {part} with a small flex and found it entirely hers.
+A prickle ran over the skin of her {part} and faded.
+Her {part} jumped under the fur, a single twitch, and was still.
+She snorted softly, the sound of something not worth her time.
+Her eyes never left {foe}.
+Her head rocked a little and came straight back. | zone: head
+Her skull rang faintly, like a tapped bowl, and settled. | zone: head
+She swallowed once, found her throat working as it should, and let it go. | zone: neck
+The breath it knocked loose came back on the next one. | zone: chest
+Her belly tightened against it by reflex and then loosened, untroubled. | zone: belly
+It landed along her back where the muscle was thickest and simply stopped there. | zone: back
+Her {part} jarred a little and was ready again at once. | zone: arm
+She rolled her shoulder once, and it turned as smoothly as ever. | zone: arm
+Her {part} absorbed it without a tremor. | zone: leg
+Her {part} flicked away from the touch and back. | zone: tail
+Her ears flicked once and turned forward again. | has: ears
+Her tail gave one sharp flick, the only sign she had been touched. | has: tail
+Her twin tails missed half a beat and found their rhythm again. | has: tails
+Her fins lifted and settled, unbothered. | has: fins
+The thick ruff swallowed most of it before it ever reached the skin. | has: ruff | zone: neck, chest
+Her wings rustled once and folded tight again. | has: wings
+She tossed her head once, and the horn was level again before the motion had finished. | has: horn
+She brushed at the place with a hand-paw, as one brushes off dust, and lowered it again. | has: arms
+Her foreleg flexed once at the elbow and was ready again. | has: forelegs | zone: arm
+
+== after_hit | level: sore
+A short grunt left her, and her {part} stung for a breath before she put it out of her mind.
+She winced, one quick tightening around the eyes, then moved her {part} as if nothing had happened.
+The sting in her {part} was real enough to notice and not enough to matter.
+Her {part} smarted where it had landed; she gave it a hard shake and it answered at once.
+A dull ache settled into her {part}, the kind that would be a bruise by the end of the day.
+She hissed through her teeth, once, and then her {part} was hers again.
+Her {part} throbbed twice and quieted to a faint warmth.
+It smarted. She let it smart and did not slow.
+Her breath caught for an instant and came back even.
+The skin over her {part} burned briefly, a shallow heat already on its way out.
+She flinched, a small and honest flinch, then flexed her {part} until the sting ran out of it.
+Under the fur of her {part} a tender spot was mapping itself, small and exact.
+Her mouth tightened at the corners and relaxed.
+That one had stung, and she gave it a short grunt of acknowledgement.
+Her {part} jarred with a hard knock that rattled through it and was gone.
+For a moment her {part} felt hot and tight; then it loosened, and she trusted it again.
+She sucked a breath in sharply and let it out slow.
+The blow left a tender patch on her {part}, no bigger than a pawprint.
+Her {part} complained, briefly, and she overruled it.
+Pain flicked through her {part} like a plucked nerve and went out.
+She bared her teeth, not at the pain but past it.
+Her {part} would remember this tomorrow; for now, it did what she asked.
+A grunt, a narrowing of the eyes, and she was using her {part} as freely as before.
+It stung like a slap and faded like one.
+Her nostrils flared once at the jolt.
+The ache had a shape, small and round, and she could already feel its edges shrinking.
+She gave a short, sharp exhale that was almost a laugh.
+Her muscles flinched together around the blow and then let it go.
+The fur on her {part} stood up and lay down again.
+She checked her {part} with a quick flex: sore, and perfectly willing.
+That had some weight to it. She noted it and went on.
+Her {part} stung hot for a breath, then cooled.
+She grunted low, the sound of a load shifted rather than a hurt taken.
+The sting made her blink twice, quickly.
+A bruise was getting itself ready under her fur; she had no time for it.
+Her eyes flicked to {foe} and narrowed.
+Her {part} took the brunt and came away with nothing worse than a smarting.
+Her eyes watered for a moment and cleared. | zone: head
+Her jaw ached where it had rattled, and she worked it once from side to side until it sat right. | zone: head
+A brief ringing went through her skull and thinned to nothing. | zone: head
+Her throat tightened on a swallow, then opened again. | zone: neck
+She stretched her neck slowly, and the sting along it eased. | zone: neck
+The air went out of her in a grunt and came back on the next breath. | zone: chest
+Her ribs ached where they had taken it, a dull pressure she breathed through once and set aside. | zone: chest
+Her belly clenched and held a moment, then let go. | zone: belly
+She tightened her middle against the ache, and the ache backed off. | zone: belly
+A stinging stripe ran across her back; she arched against it once and it faded. | zone: back
+Her spine jolted, and she rolled her shoulders until it sat easy again. | zone: back
+Her {part} jumped at the shock, then answered every order she gave it. | zone: arm
+A numb tingle ran down her {part} to the paw and drained out through the claws. | zone: arm
+Her {part} stung from hip to paw, and she flexed it hard until the sting let go. | zone: leg
+The muscle in her {part} jumped, and she let it jump and kept her weight where it was. | zone: leg
+Her {part} smarted to the tip and swung loose again. | zone: tail
+She curled her {part} tight against the sting, then let it out to full length. | zone: tail
+Her ears pinned for an instant and came back up. | has: ears
+Her tail lashed once, hard, and then hung easy again. | has: tail
+Her twin tails clamped together for a beat, then loosened and began to turn. | has: tails
+Her fins snapped flat and slowly opened again. | has: fins
+Her ruff bristled all at once and took a long moment to settle. | has: ruff
+She jerked her horn up, short and angry, and the sting went out with the motion. | has: horn
+Her wings jerked half open at the jolt and folded again, slowly. | has: wings
+She rubbed the place once with a hand-paw, quickly, and let it drop. | has: arms
+She flexed the forepaw, spread the toes, and found it sound. | has: forelegs | zone: arm
+Her {part} gave a small kick of its own and steadied. | has: legs | zone: leg
+
 == after_hit | level: hurting
-She let the ache in her {part} settle where it was and did not look at it again.
+Her face pinched around the pain, and she drew her {part} in a little closer than before. | zone: arm, leg, tail
+A deep ache settled into her {part} and stayed there, steady as a pulse.
+She grimaced, teeth showing, and tested her {part} with care before she trusted it.
+Her {part} throbbed in time with her heart, and every beat reminded her where it was.
+She kept her {part} still a moment longer than she needed to.
+Her {part} still answered, but a fraction late, as if it had to think first.
+The ache spread outward from where the blow had landed until it filled her {part}.
+She held herself carefully around her {part}, the way one carries a bowl filled to the brim.
+Under the fur, her {part} was already beginning to swell, hot and tight.
+Her jaw set, and a muscle jumped along her cheek.
+She favoured her {part}, only slightly, sparing it the first part of every movement.
+That one had gone in deep, and her body knew it before she did.
+Her eyes squeezed shut for a heartbeat, and when they opened they were harder.
+She glanced down at her {part}, quickly, as if to read the hurt in the fur. | zone: chest, belly, arm, leg, tail
+The pain in her {part} was dull and wide, and it did not fade when she willed it to.
+Her breath went in through her teeth and came out slow and measured.
+Every movement of her {part} came with a price now, small, and paid each time.
+She flexed her {part} gingerly and felt the ache tighten its grip.
+Her lips drew back from her teeth in a silent grimace.
+A slowness came into her {part}; not much, but she could feel it.
+She carried her {part} a little stiffly now, out of the way of whatever came next. | zone: arm, leg, tail
+It hurt properly now, a thick, sullen throb that did not argue and did not go.
+Her body leaned away from the side that hurt before she could stop it.
+She took a moment she could not really spare to feel what was left in her {part}.
+A tremor ran through her {part} and stilled.
+She pressed the pain down and kept her face as still as she could; it was not quite still enough.
+That would leave a mark, and the mark was already making itself known.
+Her face gave her away: a tight, hard grimace she could not quite smooth.
+She checked her {part} with a careful flex, once, and did not like what it told her.
+The pain arrived late and stayed long.
+Her {part} felt thick and hot, as if it belonged a little less to her than before.
+A hiss went out between her teeth, and she cut it short.
+She shifted her weight a little off her {part}, a small adjustment she hoped did not show. | zone: arm, leg
+Something in her {part} had been knocked out of place and had not settled back yet.
+The ache made her slower by a hair, and she felt the hair.
+She closed her eyes for less than a breath and opened them on {foe}.
+Each heartbeat pushed a dull pulse into her {part}.
+She rolled the hurt around in her mind, measuring it, and did not like the size of it.
+Her head throbbed behind the eyes, and she narrowed them against it. | zone: head
+Her jaw ached from hinge to point; she worked it slowly and it moved, stiffly. | zone: head
+A thin, steady note sang in her ears and would not quite go away. | zone: head
+Swallowing had become something she noticed, a tight, sore pull every time. | zone: neck
+She held her head a little lower to ease the ache in her neck. | zone: neck
+Her ribs ached on every breath in, so she took them shallower, and a little faster. | zone: chest
+A deep, bruised soreness sat behind her breastbone and pressed back when she breathed. | zone: chest
+Her middle stayed clenched around the ache, a shade tighter than she meant it to be. | zone: belly
+She curled a fraction over her belly, and straightening again cost her. | zone: belly
+The ache lay across her back like a strap pulled too tight, and turning pulled on it. | zone: back
+Her back stiffened around the hurt, and she moved from the hips to spare it. | zone: back
+Her {part} ached all the way to the paw, and she kept it closer to her body. | zone: arm
+When she flexed the paw, the ache in her {part} ran up to the shoulder. | zone: arm
+She drew her {part} in and found it stiff and sore to bend. | zone: leg
+A stiffness had come into her {part} that made every push a little shorter. | zone: leg
+Her {part} hung lower, and moving it sent an ache up into her hips. | zone: tail
+She held her tail carefully clear, its easy sway gone stiff. | zone: tail | has: tail
+Her ears went flat and stayed flat a moment longer than she liked. | has: ears
+Her twin tails slowed in their turning, as if the ache had got into them too. | has: tails
+Her tail clamped low and only slowly came back up. | has: tail
+Her fins drew in tight and quivered faintly. | has: fins
+Her ruff stood out stiff and stayed that way. | has: ruff
+She carried her horn a little lower to spare her neck, and kept it there. | has: horn | zone: neck
+Her wings drew in close to her sides, held tight against the ache. | has: wings
+She pressed a hand-paw to the place for a moment, then made herself take it away. | has: arms
+Her forepaw curled under, and it took her a moment to spread it flat again. | has: forelegs | zone: arm
+Her knee trembled briefly and then held. | has: legs | zone: leg
+
+== after_hit | level: very painful
+A short cry jumped out of her before she could shut her teeth on it.
+She curled around her {part} for a heartbeat, guarding it, and uncurled only slowly.
+Her {part} throbbed so hard she could feel it in her teeth.
+She hesitated, half a breath too long, before she dared move her {part} again.
+Anyone watching could see where it hurt; she was holding her {part} as if it might come apart.
+A sharp *ah* broke from her, and she bit the rest of it off.
+The pain in her {part} was bright and close, and it made her careful in a way she hated.
+She drew her {part} in tight and kept it there, out of reach. | zone: arm, leg, tail
+Her breath stopped short, and when it came again it came through clenched teeth.
+Every small movement found the hurt in her {part} and pulled on it.
+She tried her {part} once, flinched, and did not try it again soon.
+A low, strained grunt escaped her, more than she had meant to let out.
+Her {part} had gone hot and heavy, and it shook when she asked anything of it.
+Her eyes went wide, then narrowed hard, and she turned the hurt side away.
+She held still for a moment because moving was going to hurt, and she knew it.
+The blow had found something tender, and the tenderness spread outward in slow, deep pulses.
+Her whole body flinched toward the pain and stayed bent around it.
+She clamped down on a cry and caught most of it.
+Her {part} answered late, and badly, with a jab that made her eyes sting.
+The pain sat in her {part} like a fist clenched under the fur, and she held herself around it.
+The hurt showed in everything now: the guarded set of her, the shortened reach, the careful breath.
+For a moment she could only hold her {part} still and wait for the first of it to pass.
+She moved, and her {part} reminded her, sharply, why she should not have.
+She let out one sharp breath with a sound in it, and no more.
+Her face had stopped hiding anything.
+She made herself breathe, and the breath shook.
+Her {part} pulsed with a heat the rest of her could not ignore.
+She carried her {part} as if it were a separate, fragile thing she had been told to keep safe. | zone: arm, leg, tail
+She knew {foe} had seen it, and there was nothing to be done about that now.
+The next thing she did was smaller than she had planned, and slower.
+Her {part} hung back from everything, as if it had learned to be afraid. | zone: arm, leg, tail
+She shut her eyes against it for a moment and opened them warier.
+Her muscles knotted around her {part}, guarding it whether she wanted them to or not.
+A thin, hard whine got out of her, and she stopped it halfway.
+She did not look at her {part}; she did not need to, with it shouting at her like that.
+Her eyes watered hard, and she ducked her head low to shield them. | zone: head
+Her jaw throbbed so deeply that she held her mouth half open to keep from moving it. | zone: head
+A hard pounding started behind her brow and did not let up. | zone: head
+Her neck locked stiff, and turning her head meant turning half her body with it. | zone: neck
+Each swallow scraped, and she gave up swallowing. | zone: neck
+Her breath came in short hitches that stopped where the ribs hurt. | zone: chest
+She could not fill her chest; the pain stopped every breath halfway, like a bar dropped across a door. | zone: chest
+She folded over her belly, briefly, and had to make herself unfold. | zone: belly
+The ache in her middle was deep and sickly, and she held her stomach tight around it. | zone: belly
+Her back seized along its length, and for a moment she could not straighten it. | zone: back
+Every twist pulled at the bruise across her back, so she stopped twisting. | zone: back
+Her {part} came in against her body and stayed there, guarded and shaking slightly. | zone: arm
+She tried to close the paw at the end of her {part}; it closed halfway, slowly, and the jolt went up to the shoulder. | zone: arm
+Her {part} shook with the strain, and she kept it bent, unwilling to lock it. | zone: leg
+She drew her {part} up out of the line of anything else and held it there. | zone: leg
+Her {part} clamped tight to her body and would not come away from it. | zone: tail
+She held her {part} stiffly still, because every sway reached up into her spine. | zone: tail
+Both ears clamped back hard, and the rest of her face followed. | has: ears
+Her twin tails stopped turning altogether and hung, braced. | has: tails
+Her tail tucked low before she could stop it. | has: tail
+Her fins shivered flat against her and would not lift. | has: fins
+Her ruff stood out like a startled thing and did not settle. | has: ruff
+Her horn dipped, heavy, as the pain pulled her head down after it. | has: horn
+Her wings jerked half open with the jolt, and she dragged them closed, shaking. | has: wings
+She clutched the place with one hand-paw and let go only when she needed the paw. | has: arms
+Her forelegs braced wide and stiff, holding her together around the hurt. | has: forelegs
+Her knees wanted to give, and she kept them bent and wary. | has: legs
+
+== after_hit | level: excruciating
+A raw cry tore out of her, and another, and she could hold back neither.
+Her {part} would not do what she told it; it only shook and burned.
+She could hardly think past the pain in her {part}; it filled every space a thought might have used.
+Trembling ran through her from her {part} outward, and she could not make it stop.
+She cried out, hoarse and cracked, and the cry left her with no breath at all.
+Her {part} hung useless for a long moment while the pain beat in it like a second heart. | zone: arm, leg, tail
+She tried to move her {part}, and the attempt broke off in a shuddering gasp.
+Everything narrowed to the throbbing in her {part}.
+Her breath came in ragged pulls, each one catching on a sound she could not stop.
+She curled hard around her {part}, shaking, and did not uncurl.
+The hurt was too big for her {part}; it pushed up into her ribs and her throat and came out of her mouth as a groan.
+She could not look away from the pain long enough to look at anything else.
+Her {part} jerked at every heartbeat, and she cried out with the worst of them.
+Her teeth chattered with the shock of it.
+A thin, high sound came out of her and kept coming.
+Holding still hurt; moving hurt worse; she shook between the two.
+Her limbs trembled as if she had been out in the cold too long.
+She had to think about every breath, and thinking was almost more than she had.
+Her {part} had stopped being something she used and become something she endured.
+Any small shift sent a fresh jolt through her {part}, and a cry with it.
+Her mind kept trying to reach past it and kept failing.
+She gasped, and the gasp broke into a hoarse cry halfway through.
+The sound she made was not one she had ever made before.
+She shut her teeth on the next cry, and it came out through them anyway.
+She pressed herself small around the pain, every muscle quivering.
+For a long moment there was nothing in her but the pain and the work of breathing past it.
+Her skull pounded so hard that the edges of everything throbbed with it. | zone: head
+She tucked her head down tight, shaking, a low cry dragging out of her. | zone: head
+She could not turn her head; her neck had locked around the pain, and every try wrung a cry from her. | zone: neck
+Each breath was a fight with her ribs, and each one ended in a raw, broken sound. | zone: chest
+She could take air only in tiny sips, trembling, her chest refusing anything more. | zone: chest
+She doubled over her belly with a strangled cry and stayed doubled. | zone: belly
+Her middle cramped in long, hard clenches, and a groan came out with each one. | zone: belly
+Her back would not straighten, and the attempt tore a cry out of her. | zone: back
+Her {part} dangled, shaking, the paw at its end opening and closing on nothing. | zone: arm
+She could not lift her {part}; she tried, and the cry that came out of her ended the trying. | zone: arm
+Her {part} trembled so violently that she could not trust it with any weight at all. | zone: leg
+Her {part} gave whenever she asked anything of it, and each time she cried out. | zone: leg
+Her {part} lay trembling, and the smallest twitch of it made her cry out. | zone: tail
+Her ears lay plastered flat, and she flinched even at the sound of her own breathing. | has: ears
+Her twin tails wound tight around each other, shaking. | has: tails
+Her tail lashed in jerks she could not control. | has: tail
+Her fins trembled half open and would not close. | has: fins
+Her wings shuddered against her sides. | has: wings
+Both hand-paws clutched at the place and could not let go. | has: arms
+Her forelegs shook so hard she could not keep them still. | has: forelegs
+Her head hung, horn low, trembling with every breath. | has: horn
+Her ruff stood on end and shivered with every breath she dragged in. | has: ruff
+
+== after_hit | level: devastated
+Her {part} hung slack, and she stopped asking anything of it. | zone: arm, leg, tail
+She fought on with the rest of her and left her {part} out of it. | zone: arm, leg, tail
+Every touch to her {part}, even her own movement brushing it, wrung a cry from her.
+Her {part} trembled on its own, beyond her reach.
+What was left of her {part} only shook, and she arranged herself around it.
+She cried out as her {part} shifted, and cried out again when it shifted back.
+Her {part} had gone past aching into a slack, quivering heaviness that did not answer at all. | zone: arm, leg, tail
+She worked around her {part} now, as though it were a weight someone had tied to her. | zone: arm, leg, tail
+It no longer mattered what she told her {part}; it would not listen. | zone: arm, leg, tail
+She held her {part} still with the rest of her body, because it could no longer hold itself still. | zone: arm, leg, tail
+Whatever she did next, she would do it without her {part}. | zone: arm, leg, tail
+Her {part} jerked at the smallest jolt, and each jerk pulled a hoarse sound from her.
+She let her {part} lie where it was and gathered everything else. | zone: arm, leg, tail
+Her {part} lay against her, trembling, a thing she guarded rather than used. | zone: arm, leg, tail
+She took her weight entirely off her {part} and kept it off. | zone: arm, leg
+She moved now as though her {part} were already gone. | zone: arm, leg, tail
+Her {part} was swollen tight and shook with every heartbeat.
+She was fighting on the strength of what remained, and her {part} was not part of it. | zone: arm, leg, tail
+A cry broke from her at the merest jar, and still she set the rest of her body to work.
+She breathed around it in short, careful pulls.
+Her {part} did not belong to the fight any more; the rest of her did. | zone: arm, leg, tail
+Each heartbeat jolted through her {part}, and her mouth opened on a sound each time.
+The trembling in her {part} had a life of its own.
+She stopped looking at her {part} at all. | zone: chest, belly, arm, leg, tail
+Even the air moving over her {part} made her flinch.
+She brought everything else to bear and left her {part} to shake on its own.
+Her head hung low and heavy, and lifting it even a little cost her a cry. | zone: head
+Her jaw sagged, slack, and she breathed through her nose around it. | zone: head
+Her neck would barely hold her head up; it trembled under the weight. | zone: neck
+Her chest barely moved; she breathed in thin, shuddering threads, and every deeper one broke into a cry. | zone: chest
+Her middle had gone soft and quivering, and she kept her body curled over it. | zone: belly
+Her back sagged, the long muscles slack, and she held herself together with everything else. | zone: back
+Her {part} hung from the shoulder, slack and shaking, the paw curled loose. | zone: arm
+She kept her {part} tucked tight against her, useless, and readied what she had left. | zone: arm
+Her {part} trailed, slack, and she shifted everything onto what still held. | zone: leg
+Her {part} shook too hard to bend, and she leaned the rest of herself away from it. | zone: leg
+Her {part} lay limp, past moving. | zone: tail
+She did not even try to lift her {part}; when it dragged, she cried out. | zone: tail
+Her twin tails hung limp and tangled, all their turning gone. | zone: tail | has: tails
+She held the useless limb against her chest with her other arm. | zone: arm | has: arms
+Her fins lay flat and did not stir again. | has: fins
+Her wings pressed flat to her sides and quivered there. | has: wings
+Her ears hung sideways, slack, as if she had forgotten them. | has: ears
+Her horn wavered with the shaking of her head. | has: horn
+The least jar to her {part} drew a cry out of her, and still she did not stop.
+She held herself so that nothing at all could touch her {part}.
+Her {part} was past guarding; she simply kept everything else between it and the fight.
+There was nothing left in her {part} to call on, so she called on everything else.
+Her {part} shook with a trembling she had no say in, and she let it shake.
+Every breath dragged across her ribs and brought a hoarse sound with it. | zone: chest
+The least bend at the middle made her cry out, so she did not bend. | zone: belly
+Her back would not bear her weight in any shape, and each new shape she tried brought a cry. | zone: back
+
+# ---------------------------------------------------------------------------------------------------------------
+# BEFORE_STRIKE: the attacker in the instant before the move lands, or as she commits to it
+# ---------------------------------------------------------------------------------------------------------------
 == before_strike | kind: claw
-Her weight went onto her hind legs as the claws came up. | has: forelegs
+Her claws slid out to their full length as she came in.
+She spread her toes wide, every claw bared, and reached.
+The paw went back past her shoulder and came round with the claws already open.
+She aimed the claws low and late, where the eye would not follow them.
+Her lip curled as she raked, as if her mouth wanted a share of it.
+She put her whole weight behind the swipe and let the claws do the rest.
+The claws hooked, ready to catch and drag rather than merely cut.
+She came in on the slant, paw cocked, the claws pale at the ends of her toes.
+At the last instant she turned the paw so that the claws would meet their mark edge-first.
+Her shoulder dropped, and her paw swept up from below with the claws spread like a fan.
+She drew the paw back only as far as her chest; the claws needed no more room than that.
+Every claw she owned was out and angled.
+She struck with the paw open, wanting to tear rather than to knock.
+Her claws flexed once in the air, as though tasting it, and then she raked.
+She picked her line across {foe}'s side and committed to it, claws first.
+
+== before_strike | kind: bite
+Her jaws opened wide, lips drawn back off every tooth.
+She lunged neck-first, mouth gaping, eyes fixed on the spot she wanted.
+She drove her head forward with her jaws already parting.
+Her muzzle wrinkled back from her fangs as she went in.
+She went for the bite with her head low and her neck stretched long.
+Her mouth opened on a growl that carried on into the bite.
+She chose her mark, somewhere soft, and opened her jaws for it.
+Her jaw muscles bunched, ready to clamp and hold.
+She snapped forward from the neck, the rest of her following after.
+Her teeth showed white and wet as she closed the distance.
+She meant to bite and keep hold, and her jaws opened wide enough for both.
+Her breath hissed in through bared teeth, and then she lunged.
+She tucked her chin a fraction to guard her own throat and went in mouth-first.
+The bite came from low down, her head turned sideways to take in more.
+She marked {foe}'s nearest limb and let her jaws gape.
+
+== before_strike | kind: charge
+She dropped her head and drove off with everything her legs had.
+Her weight went forward before her feet did, and then her feet caught up.
+She came in a straight line, gathering speed with every stride.
+Her shoulders squared to take the impact she was about to give.
+She tucked her chin and made herself a single hard shape.
+The first stride was a shove, the second a run, the third all of her at once.
+She did not slow as she closed; she leaned into it.
+Her claws dug in for purchase and threw her forward.
+She lowered herself as she came, aiming her shoulder at the middle of {foe}.
+Every part of her pointed the same way.
+She picked the spot she meant to hit and ran at it as though it were a door to break.
+The distance shrank to nothing, and she braced her neck for the meeting.
+The breath went out of her in one push as she launched.
+She ran low, eyes up, the whole of her body thrown in behind her shoulders.
+She reached her top speed a stride before contact and held it there.
+
+== before_strike | kind: tail
+She turned her back for an instant, and the turn was the whole of the wind-up.
+The swing started in her hips and gathered speed all the way to the tip. | has: tail
+Her twin tails swept out together, side by side, heavy with the turn. | has: tails
+She pivoted hard, and the lash came round behind her body, a beat late and far faster.
+Her tail drew back into a long, tense curve. | has: tail
+She twisted from the shoulders down, putting every bit of her length behind the swing.
+The tip of her tail flicked once before it came, the only warning she gave. | has: tail
+Her twin tails crossed behind her and opened like a pair of whips. | has: tails
+She spun where she was, low, letting the turn do the work her limbs would have done.
+Her body wound sideways and then unwound all at once.
+She aimed the swing at {foe}'s legs, low enough to sweep.
+Her tail stiffened from root to tip, all its weight sent out to the end. | has: tail
+She whipped round with her eyes still on the target, her head the last part of her to turn.
+The swing went wide and flat, meant to catch whatever stood in its path.
+She dropped one shoulder and swung through, hips first.
+Her twin tails wound back once to gather speed, then lashed out. | has: tails
+
+== before_strike | kind: beam
+She felt the power gather in her chest and climb.
+She braced for the recoil she knew was coming.
+The air in front of her began to shimmer and hum.
+She held the gathering power a heartbeat longer than was comfortable, to make it count.
+Power pooled somewhere inside her and pushed at her ribs to be let out.
+Her eyes narrowed to fix the aim, and everything else in her went still.
+She locked her gaze on the middle of {foe} and let the charge build.
+A prickle ran along her spine as the power built.
+She aimed with her whole body, head steady, every limb set to hold her in line.
+A low hum built inside her chest and rose until it filled her head.
+She let it build until it hurt to hold, then let it go.
+Her breath stopped while she aimed.
+She chose the line, steadied, and released.
+Her body went rigid around the charge, the better to hold it on target.
+The last thing she did before she fired was lower her head and sight along it.
+
+== before_strike | kind: punch
+Her paw drew back to her shoulder and came forward with her hips behind it.
+She curled her hand-paw into a hard knot and drove it out from the hip. | has: arms
+She turned her shoulder into it so that the whole of her weight would land.
+No wind-up: the paw came straight from where it had been, short and hard.
+She aimed past the surface, at a point somewhere behind it.
+Her forepaw rose and came down like a mallet, pads first. | has: forelegs
+Close enough to smell {foe}, she threw the blow from there.
+Her elbow tucked tight to her side so that none of the force would leak away. | has: arms
+She snapped the blow out fast and meant to bring the paw back faster.
+She set her jaw as she swung, bracing for the jar of contact.
+She feinted high with her eyes and struck low with her paw.
+Her breath went out in a hard huff behind the blow.
+The paw went out edge-first, toes folded, made for chopping.
+She drove from her hips, and the shoulder snapped through after.
+She picked the spot she wanted and put the paw there with all of her behind it.
+
+== before_strike | kind: horn
+She lowered her head until the horn pointed straight along her line of sight.
+Her neck stiffened behind the horn to take the shock of the hit.
+She swept her head sideways, the horn slashing a flat arc ahead of her.
+She sighted along her horn as she might have sighted along a spear.
+From below she drove upward, the horn rising with her.
+Low and hooked, the horn was meant to catch and lift.
+Her horn dipped, steadied, and she went in behind it.
+She butted forward with her whole neck, the horn leading by a paw's width.
+The horn came round in a short, wicked sweep.
+She tucked her chin to bring the horn level with {foe}'s chest.
+Every muscle in her neck braced behind the horn.
+She tilted her head so that the edge of the horn, not its point, would meet the target.
+The softest place she could see was where the horn went.
+Her head jerked down and forward, a short stab rather than a sweep.
+She lunged with her head turned, horn first, eyes narrowed against the impact.
+
+== before_strike | kind: throw
+Weight low, she hauled, turning from the hips.
+Her grip tightened for the lift, and then she swung.
+She took the whole weight onto her own body for an instant before she let it go.
+She twisted, turning {foe}'s own weight against her.
+Her legs drove, her back straightened, and the lift came.
+She pivoted and let the turn carry the throw.
+The heave started deep in her back and ran out through her shoulders.
+There was a balance point, and she tipped it.
+Close in before the throw, she left nothing to brace against.
+Her teeth clenched with the strain of the lift.
+She hauled once to break the balance, then again to send it.
+She swung through the full turn without slowing and chose her moment to let go.
+Under the weight she sank low, and came up hard.
+She aimed the throw at open space, where there would be nothing to catch on.
+She heaved with a grunt that came all the way up from her belly.
+
+== before_strike | kind: grab
+The nearest limb was the one she closed on, hard.
+The hold caught and set before there was time to see it coming.
+She went in close, inside the reach of anything that could hurt her, and took hold.
+She caught and pulled in the same motion, giving no time to set against it.
+Her grip found its place and tightened.
+A hold, not a hit: that was what she lunged for.
+She clamped on with everything she had and braced to be dragged.
+She seized, and in the same motion leaned back to take the slack out.
+Locked on, she had the limb she wanted.
+She chose where to take hold the way one chooses a handle.
+She wrapped herself around the hold as far as her body allowed.
+Low was where she grabbed, where there was less to fight back with.
+Her hand-paws closed and she twisted, locking the grip. | has: arms
+She took hold as if she meant never to let go again.
+She took hold of {foe} the way she would take hold of something to be dragged.
+
+# ---------------------------------------------------------------------------------------------------------------
+# BREATH: her breathing after an exchange, by her overall state
+# ---------------------------------------------------------------------------------------------------------------
+== breath | state: fresh
+Her breathing was easy, slow and deep, as if she had only been walking.
+She drew in a full breath and felt it go all the way down.
+Her sides rose and fell evenly.
+Her breath had barely changed.
+She breathed through her nose, quiet and unhurried.
+There was air in her to spare.
+She had not yet had to think about breathing.
+Her lungs filled at once and emptied without effort.
+One deep breath, and she was ready again.
+Her chest moved slow and easy, a sleeper's rhythm in a waking body.
+She breathed as if the exchange had been a warm-up.
+The air came and went without asking anything of her.
+Her breath was steady enough to keep time by.
+She took a long breath for the pleasure of it.
+Only the faintest quickening showed in her breathing, and it was already settling.
+She breathed in, held it a moment, and let it out slowly, perfectly in command of it.
+Her nostrils flared once, taking in the scent of the fight, and her breathing stayed calm.
+Her breath ran cool and even through her teeth.
+Her body was hardly warmed, her breathing hardly stirred.
+She was not even breathing hard.
+
+== breath | state: winded
+Her breath came quick and short, and she worked to slow it.
+She breathed through her open mouth, sides pumping.
+She needed a few breaths before she could take a full one.
+Her chest heaved, and she made herself take the next breath deeper.
+The air went in fast and came out fast, and she could not quite catch up with it.
+She sucked in air, held it, and let it go in a long, steadying push.
+Her breathing was loud in her own ears.
+Her flanks went in and out, quick and hard.
+She drew a breath that snagged halfway and had to take another.
+She was breathing harder than she wanted {foe} to hear.
+Each breath came a little ragged at the edges.
+She panted, briefly, then shut her mouth and breathed through her nose to hide it.
+Her ribs pushed out hard with every breath.
+She had to remind herself to breathe out as well as in.
+The breath she took was quick and shallow, and the next was not much better.
+Her wind was going, and she could feel exactly how much of it was left.
+She gulped down air in mouthfuls.
+Her breathing had gone fast and high in her chest.
+She steadied her breath by force, in and out, in and out, until it listened.
+For a moment all she could do was breathe.
+
+== breath | state: tired
+Her breath rasped in her throat, dry and heavy.
+Every breath took effort now, a pull and a push she had to put her back into.
+She breathed with her mouth hanging open, her tongue gone dry.
+Her sides heaved, slow and deep, and would not slow any further.
+The air came in thin, never quite enough, and she took it anyway.
+She let her head hang a little and breathed.
+There was a catch in every breath, a small rough snag that did not go away.
+Her breathing had become the loudest thing about her.
+She drew air the way one hauls a heavy load, in long, effortful pulls.
+Her lungs burned as they filled.
+Breathing had become work, and she was running short of the strength for it.
+Each breath she took seemed smaller than the one she needed.
+Her chest rose and fell in long, labouring strokes.
+She breathed in deep, and it was still not deep enough.
+A low rasp rode on each breath out.
+Her breath had slowed, but only because it had grown too heavy to hurry.
+She took the air in great dragging gulps and felt the heaviness in her limbs with each one.
+Her mouth had gone dry from breathing through it.
+She drew a breath, let it go, and drew another, each as heavy as a stone lifted.
+Her breathing never quite settled between one effort and the next.
+
+== breath | state: spent
+Her breath came in shallow, shuddering sips.
+She breathed in little gasps that barely moved her chest.
+Air went in and out of her in thin threads, and she held on to each one.
+Her ribs fluttered more than they rose.
+She could not get a full breath; every try stopped short and fell back.
+Her breathing was ragged and uneven, a stumble rather than a rhythm.
+She breathed as though each breath had to be fetched from far away.
+Each breath scraped faintly in her throat.
+She hung on her own breathing, with nothing else left to hold.
+Her mouth hung open, and the breath went through it in small, hoarse puffs.
+Her sides trembled with the work of breathing.
+She dragged in air, and it seemed to give her nothing.
+Between breaths there were pauses, and the pauses frightened her.
+She breathed fast and shallow, high in her throat, like something run to the end of itself.
+The breath went out of her in a long, shaking sigh, and it was a while before the next came.
+Her breathing was all she could hear, and it did not sound like her.
+She gasped, and the gasp shook all the way down.
+Her head drooped with each breath out and lifted with each breath in.
+There was no rhythm left in her breathing, only need.
+She sipped at the air, too tired to gulp.
+
+# ---------------------------------------------------------------------------------------------------------------
+# CLOSING: a last line for a part of a beat
+# ---------------------------------------------------------------------------------------------------------------
+== closing | role: attacker
+She drew back a little and watched {foe} for what came next.
+Her eyes were already on the next opening.
+She let her weight settle and waited for the answer.
+She marked the side {foe} was guarding, and meant to find a way around it.
+She did not press yet; she wanted to see what came back.
+Then she pulled back, out of reach, and reset.
+She kept her eyes on {foe}'s face and read it.
+Whatever came next, she had already begun to plan it.
+One breath in, and she had chosen her next target.
+There was an opening there, and she would find it again.
+Gathered close to her own centre, she waited.
+That had told her something, and she kept it.
+Her gaze travelled over the other body, looking for the next place.
+She did not dwell on the last one; there was the next to think about.
+She set herself for whatever answer was coming.
+Then she was still, watching, her weight already shifting for the next.
+She gave {foe} nothing to read and kept every choice open.
+She let her muscles loosen a little and kept them ready.
+Next time she would come in lower.
+Her ears turned forward, catching every small sound. | has: ears
+Her tail swung once behind her, measuring, and went still. | has: tail
+Her twin tails began to turn again, slowly, keeping her balanced. | has: tails
+She lowered her horn a fraction and kept it pointed where it would do the most good. | has: horn
+Her own breath was loud, but her eyes did not waver. | state: winded, tired
+She was tiring, and she spent none of what was left on anything but watching. | state: tired, spent
+
+== closing | role: receiver
+She gathered herself and turned to face what came next.
+She put the hurt where she could carry it and lifted her head.
+Her eyes found {foe} again and stayed there.
+Her eyes came up, because she made them.
+She breathed once, deliberately, and let the rest of her take over.
+She tucked the hurt away and got her guard back up.
+Then she was watching again, warier than before.
+She would not let that happen the same way twice.
+She set her jaw and waited.
+Slowly, she drew herself back together.
+She shifted her weight to spare what hurt, and was ready.
+She did not look away.
+There would be an answer for that, and she was already working out where to deliver it.
+She kept her eyes level and her breathing quiet.
+The lesson went in, and stayed.
+She looked for an opening and found none yet; she kept looking.
+She held herself still and let the first of it pass.
+Her gaze sharpened.
+Her better side came round to the front.
+She did not flinch a second time.
+She took stock of herself, quickly, and found enough left.
+Her ears came forward again, one after the other. | has: ears
+Her fins lifted, slowly, back into the fight. | has: fins
+Her ruff settled by degrees, and she let it. | has: ruff
+She had the breath to answer, and she meant to use it. | state: fresh, winded
+Her limbs were heavy, and she readied them anyway. | state: tired, spent
+
+== closing | role: winning
+She could feel the fight leaning her way, and she leaned with it.
+There was no need to rush, and she did not.
+Her pace stayed even, her eyes cold.
+Every exchange now was costing {foe} more than it cost her.
+Nothing she had taken would she give back now.
+She waited for the next moment and knew it would come.
+Pressing, she still took care not to overreach.
+Her own hurts could wait; there was work still to do.
+She watched for the first sign of a trick, and assumed nothing.
+Close was where she stayed, so that there was no room to recover.
+She was patient now, as only the one ahead can afford to be.
+She kept her breathing slow and let {foe} hear it.
+She tightened the circle by a step.
+Not yet, she told her muscles, and they stayed tight.
+She knew where {foe} was weakest, and she kept that place in her sights.
+She let the advantage do some of the work for her.
+The next blow could wait until she had chosen it well.
+There was a calm in her now, and she used it.
+Close and unhurried, she waited.
+Her guard stayed up anyway.
+She stayed careful, because carelessness was how a lead was lost.
+Soon, then. But not in a hurry.
+She had strength in hand, and she rationed none of it. | state: fresh
+She was tired too, but she kept that where it could not be seen. | state: tired, spent
+Her breathing was ragged, and she let it be ragged; it was not the thing that mattered. | state: winded, tired
+
+== closing | role: losing
+She looked for something, anything, she could still use.
+Her guard shortened, drawn in tight around what was left.
+She began to look at the fight differently, for gaps rather than openings.
+Cleverness would have to do now, because strength would not.
+What still worked, she counted; what did not, she planned around.
+She kept her eyes up even when her body wanted them down.
+Slower, then; slower, and more careful.
+One thing to do next, chosen well: that was all she asked of herself.
+She drew in as much air as she could hold and waited for her moment.
+She was hurt, but she was still there, and she was still watching.
+What had gone wrong was plain to her now, and she meant to fix one piece of it.
+She gave up what she could not hold and kept what she could.
+She looked for the next mistake and made herself ready to use it.
+Her head came up another fraction.
+She bided her time, because time was all she had in hand.
+Luck would have to come into it, and she would have to be ready when it did.
+Winning was too far off to think about; the next moment was not.
+Slowly, her limbs drew in, ready to move.
+Her eyes went to {foe} and searched for any weakness at all.
+She was still in it. Just.
+Whatever scraps of strength were left, she gathered into one place.
+She kept her breathing as quiet as she could and her guard up.
+She would have one more chance, perhaps, and she meant to see it coming.
+There was still strength in her, and she meant to make it count. | state: fresh, winded
+There was very little left, and she held every bit of it ready. | state: tired, spent
+
+# ---------------------------------------------------------------------------------------------------------------
+# RESOLVE: resolve shown through the body, never told
+# ---------------------------------------------------------------------------------------------------------------
+== resolve
+Her jaw set hard, and she lifted her head.
+She drew a long breath through her nose and let it out slowly, ready.
+Her eyes narrowed and fixed.
+She bared her teeth, and it was not fear that bared them.
+Her claws slid out and stayed out.
+She gathered herself the way she would before a long run.
+The muscles along her back tightened one after another, like a line drawn taut.
+She shook her head once, hard, and her eyes were clear afterward.
+Head lowered, she stared.
+Her breathing slowed, deliberately, until it was hers again.
+She swallowed, squared her shoulders, and looked straight at {foe}.
+She flexed each paw in turn, as if checking her weapons.
+Something in her face hardened and stayed hard.
+Her eyes would not blink.
+Her whole body went still, the stillness of something about to move.
+A low growl started in her chest and did not stop.
+She dragged a breath down to the bottom of her chest and held it there.
+Her eyes went to {foe} and did not leave.
+Her chin lifted a fraction.
+She narrowed her eyes until there was nothing in them but the fight.
+She clenched her teeth until her jaw ached.
+She found her balance and settled into it.
+Chin tucked, eyes fixed ahead, she waited.
+Every muscle she had left bunched.
+She pressed her lips flat over her teeth and waited.
+Her nostrils flared, and she breathed in the fight.
+She let her shoulders drop and her weight sink, ready to spring.
+She took the ache and folded it away somewhere behind her ribs.
+Her eyes, when they lifted, were steady.
+She drew her lips back, slowly, from every tooth she had.
+Her body leaned forward of its own accord, toward the fight rather than away.
+She squared herself to {foe}, her whole front turned to meet her.
+Her claws came out and dug in.
+Her heartbeat slowed and steadied under her ribs.
+Even when it wanted to droop, her head stayed level.
+A long shiver went through her and left her steadier than before.
+She drew herself in tight and hard, like a paw closing.
+One breath for herself; the rest went to the fight.
+Her gaze went flat and unwavering.
+She made her paws unclench, then clench again, on purpose.
+Every part of her that had been loose drew tight.
+She held her eyes wide and stared straight ahead.
+The next breath she leaned into as if it were a slope to climb.
+She found something steady inside herself and stood on it.
+She breathed out through her teeth, a long, even stream, and set herself.
+She shut her mouth and breathed through her nose, slow and even.
+She made herself still, and in the stillness she got her strength back together.
+Her eyes hardened to two dark points.
+Shoulders back, head up.
+She forced the shake out of her limbs and made them hers again.
+Her centre dropped lower, and she readied herself.
+Her claws tightened into whatever lay under her paws.
+Her chest swelled with a slow breath, and she held it like something saved for later.
+She drew her mouth tight and did not make a sound.
+Whatever weariness had been in her face went out of it, pushed down by something harder.
+Her ears swung forward, both of them, and pinned there. | has: ears
+Her ears went flat, not in fear, and she lowered her head to match. | has: ears
+Her ruff rose slowly until it stood out full around her neck. | has: ruff
+Her twin tails stopped their lazy turning and locked out straight behind her. | has: tails
+Her tail went stiff and straight, its tip quivering. | has: tail
+She swished her tail once, hard, and kept her eyes forward. | has: tail
+Her fins spread wide and stayed spread. | has: fins
+Her fins flared to their full width, edge-on. | has: fins
+Down came her horn, and down it stayed. | has: horn
+Her horn came up level with {foe}'s eyes. | has: horn
+Her wings mantled, half open, and held. | has: wings
+She drew her wings tight against her body, every line of her made narrow and hard. | has: wings
+She closed her hand-paws into fists and kept them closed. | has: arms
+She wiped the back of a hand-paw across her mouth and raised it again. | has: arms
+She spread her forepaws and pressed down through the pads. | has: forelegs
+She bent her knees and sank low, her weight loaded into her legs. | has: legs
+She wet her lips, once, and her face went still.
+The fur along her spine rose and stayed up.
+She let out a breath she had been holding and did not take her eyes off {foe}.
+She tightened her belly and brought her limbs in close, compact as a knot.
+Her stare did not move, not even when she breathed.
+She set her weight forward, toward the fight, and kept it there.
+A deep breath lifted her sides, and she let it out without a sound.
+Her wings snapped open to their full span and folded again, crisp and ready. | has: wings
+Her twin tails wound once around each other and pulled tight. | has: tails
+
+# ---------------------------------------------------------------------------------------------------------------
+# PIN_PRESS: the pinner holding the pin
+# ---------------------------------------------------------------------------------------------------------------
+== pin_press | held: early
+Her weight shifted forward, testing how much the body beneath her would take.
+She settled her weight and felt for the first sign of resistance.
+Paws spread for balance, she bore down.
+Each limb went where it would do the most good, squarely and without hurry.
+She adjusted her hold once, finding a better angle.
+Her claws stayed in; weight was what she wanted, not wounds.
+She leaned in low, so that any struggle would have to lift all of her.
+She kept her head up and out of reach of anything that might snap at it.
+She bore down, waiting to learn how much fight was left underneath her.
+Locking her limbs, she made herself heavy.
+She found the places that hurt and set her weight close beside them.
+Her breath was quick, but her hold was steady.
+The last of the slack went out of the hold.
+She widened her stance at the first stir beneath her.
+Settled in, she looked like something meaning to stay.
+She let her weight sink, slowly, until there was no give left beneath her.
+A small shift tested the hold, and the hold kept.
+The eyes beneath her were what she watched, for the moment before a struggle.
+She tucked her head in close and gave the body under her nothing to strike at.
+Every part of her was arranged to keep {foe} exactly where she was.
+
+== pin_press | held: middle
+Her limbs had begun to ache from holding, and she held.
+She shifted her weight from one side to the other to rest each in turn, without ever easing.
+She stayed alert for every twitch beneath her and met it before it grew.
+Her breathing had fallen into time with the body under her.
+She kept her weight where it was and let time do its work.
+Her muscles had settled into the hold, stiff and patient.
+Her head came lower, closer, watching.
+She resettled a paw that had begun to slip.
+She held, and went on holding, and gave nothing back.
+The hold had become a matter of patience, and she had patience.
+She pressed a little harder, just to remind {foe} she was there.
+Her own hurts throbbed with the effort of staying put.
+She had stopped thinking about the hold and simply was it.
+She felt each breath beneath her lift her slightly, and each lift was smaller.
+Not by a hair did she ease off.
+Her grip shifted without loosening.
+She kept her eyes on the face below her and her weight where it would tell.
+A tremor went through her braced limbs, and she locked them again.
+She breathed slowly through her nose and stayed exactly where she was.
+The longer she held, the heavier she made herself.
+
+== pin_press | held: long
+Her limbs shook with the long effort of holding, and still she held.
+She had held so long that the ache in her braced limbs had become a steady burn.
+Her breath came hard now, but her weight had not moved.
+She was tiring, and she knew it, and she leaned in harder to hide it.
+Every part of her that was bearing down had begun to tremble.
+She stayed, because staying was the whole of the task and she was doing it.
+She shifted carefully, giving her tired limbs a moment's relief and the body beneath her none.
+Her own breathing had grown as loud as the breathing beneath her.
+She held on through the weariness, jaw set.
+Her claws had dug in long ago, and she kept them there.
+She felt the heartbeat under her, slow now, and waited for the next one.
+She did not dare ease up; not after holding this long.
+The ache in her shoulders said to let go, and she paid it no attention.
+Her weight had settled until it seemed part of the body beneath her.
+Her limbs had stiffened into the hold, as though they had forgotten how to do anything else.
+She shut her eyes for a moment and opened them again, the hold unchanged.
+Her mouth had gone dry from breathing through it, and she held.
+She watched the eyes beneath her and leaned down by another fraction.
+She had stopped keeping track of the time and simply held.
+Every breath she took went to keeping her where she was.
+
+# ---------------------------------------------------------------------------------------------------------------
+# PIN_UNDER: the pinned fighter
+# ---------------------------------------------------------------------------------------------------------------
+== pin_under | fade: fighting
+Hard and sudden, she bucked to throw the weight off.
+Beneath the weight she twisted, searching for an angle.
+Her claws scrabbled for anything that would give her leverage.
+Everything in her back went into one upward heave.
+She wrenched one limb free and drove it at whatever she could reach.
+Her body arched, and she tried to roll.
+She kept moving, never letting the weight above her settle.
+Her teeth snapped at anything that came near her face.
+Her hind paws shoved and found no purchase.
+She threw her weight one way and then the other, looking for a weak corner in the hold.
+She dragged in a breath and spent it in a single violent heave.
+Her limbs flailed, then steadied, then pushed again with more purpose.
+Bit by bit, she worked one paw under the weight.
+She jerked her head aside and bit at the nearest limb.
+Kick after kick, she felt the weight above her shift a little.
+Her whole body strained, every muscle bent on getting free.
+She twisted her hips as far as they would go and then further.
+She thrashed, not wildly but in short, hard bursts, each one aimed somewhere new.
+She pushed with her shoulders until the hold gave a little, and then it pushed back.
+She would not lie still for {foe}.
+
+== pin_under | fade: weakening
+Her struggles were shorter now, with longer rests between them.
+The push she made faltered halfway.
+She twisted, but the twist had lost its snap.
+Her paws scrabbled less often, and with less force.
+Another heave, and less to gather for it.
+Her breath was going faster than her limbs.
+She strained against the weight, and her limbs shook with the effort.
+Every heave cost more and moved less.
+Each stop to breathe lasted longer than she meant.
+Her kicks were growing short and weak.
+Her body would only rock when she tried to roll.
+She bucked once, hard, and then lay panting.
+Her claws dragged rather than gripped.
+She pressed upward with her back and felt the weight barely notice.
+Her strength was going in pieces, a little with each try.
+She managed a twist, then another, weaker, then a long breath.
+She was still pushing, but she was pushing slower.
+Her limbs trembled even at rest.
+She fought for every breath, and the fighting left less for the hold.
+She drove upward once more, and the effort ended in a groan.
+
+== pin_under | fade: fading
+Her movements had shrunk to small, sluggish twitches.
+Her eyes kept drifting half shut and being dragged open again.
+She pushed weakly, and the limb fell back almost at once.
+Her breathing had gone shallow and slow beneath the weight.
+She could barely lift her head.
+Her paws opened and closed on nothing.
+She tried to gather herself and found almost nothing there.
+Her body sagged under the weight, heavier than before.
+The fight was leaving her limbs, and she could feel it go.
+She stirred, and the stirring faded out before it became anything.
+Her gaze wandered, lost its mark, and found it again more slowly.
+A faint push came from her shoulders and went nowhere.
+Her limbs lay heavy, the paws twitching now and then.
+She made a sound that might have been an effort and might only have been a breath.
+Her muscles quivered with an effort that never reached the surface.
+She breathed in thin, careful pulls, each one smaller than the last.
+Everything beyond the weight above her had begun to blur at the edges.
+She tried to push, and could not quite remember how.
+Her head lolled to one side, and she dragged it back.
+What strength she had left went into breathing.
+
+== pin_under | fade: nearly out
+She lay almost still, only her ribs moving.
+Her eyes were nearly closed, and they no longer fought to open.
+A single limb twitched and lay quiet again.
+Her breathing had slowed to a faint, uneven rise and fall.
+She had nothing left to push with.
+Her paws lay open and slack.
+She could hear her own heartbeat more clearly than anything else.
+The weight above her had stopped being something to fight and become something she simply lay beneath.
+Her head lay turned to one side and did not lift.
+Every thought came slowly and went before it was finished.
+She tried once more to stir, and only a paw moved, barely.
+Her body had gone soft and heavy beneath the hold.
+The edges of everything had gone dim.
+A faint tremor ran through her, and then nothing.
+Her breath was a whisper going in and a whisper going out.
+She was still awake, just, and holding on to that alone.
+Her eyes found {foe}'s face, lost it, and did not find it again.
+The urge to struggle came and passed through her without moving anything.
+She lay very still, gathering nothing.
+Only the slow lift of her chest showed there was anything left in her.
+
+# ---------------------------------------------------------------------------------------------------------------
+# LANDING: the moment after she hits the ground from a throw or knockdown
+# ---------------------------------------------------------------------------------------------------------------
+== landing
+The ground came up and met her all at once, and the breath went out of her.
+She hit hard and lay a moment, stunned, waiting for her body to report.
+In a heap she landed, limbs tangled under her.
+The impact jarred her from head to hips.
+For a moment she did not know which way was up.
+She skidded, rolled, and came to rest with the world still turning around her.
+The ground knocked a grunt out of her and kept the breath that went with it.
+She lay where she had landed, blinking, while the shock drained out of her.
+Her teeth had clacked together with the jolt, and her jaw ached from it.
+She tried to get her limbs under her, and they did not answer at once.
+She came to a stop and lay gasping, her limbs splayed.
+The jolt went all the way through her and out the other side.
+The force of it rolled her once and let her go.
+For a long heartbeat she lay stunned, staring at nothing.
+The air had been knocked clean out of her, and she lay working to get it back.
+She scrabbled at the ground, trying to find which way her own legs went.
+Everything hurt at once for a moment, and then the hurts sorted themselves out.
+Mouth open, she lay waiting for the breath to come.
+The ground was hard under her, and she was grateful only that it had stopped moving.
+She pushed at the ground with one paw before she knew she meant to.
+Her sight jumped with the impact and slowly steadied.
+Crumpled where she had come down, she gathered her wits.
+Her first thought was to get up; her body's first thought was to stay.
+She got her head up first, then a paw, then waited for the rest of her.
+Every limb pointed a different way.
+She drew one breath, then another, before she tried to move.
+The ground had taken the strength out of her limbs for a moment.
+Instinct tucked her in, and she lay curled, breathing hard.
+She was down, and she knew it, and she was already working out how to get up.
+She raised her head and shook it to clear the ringing.
+Her claws dug into the ground on their own, holding her to it.
+Just long enough to be sure nothing had come loose, she lay still.
+She hit, bounced, and was already rolling to get her paws under her. | state: fresh
+The landing jarred her, but she had plenty left, and she was moving before the jar had faded. | state: fresh
+She rolled with it and came round to face the fight, more angry than hurt. | state: fresh
+She was down for no longer than it took to breathe in. | state: fresh, winded
+She lay gulping at the air the fall had knocked out of her. | state: winded
+She took a moment to find her breath before she tried for her feet. | state: winded, tired
+She lay longer than she should have, every limb heavy. | state: tired, spent
+Getting up felt very far away, and she began on it anyway. | state: tired
+She lay where she had landed, and for a long moment she did not move at all. | state: spent
+Her limbs stirred, weakly, and lay still again. | state: spent
+She tried to lift her head and managed only part of the way. | state: spent
+The ground held her, and she had nothing left to argue with. | state: spent
+

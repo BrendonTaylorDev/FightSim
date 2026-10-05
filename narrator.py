@@ -4930,6 +4930,21 @@ class Narrator:
         b.enabled = bool(cfg.get("enabled", True))
         return b
 
+    def _offer_line(self, add, label, category, fmt=None, exclude=None, **ctx):
+        """One finished sentence from the library for this part (at most one per part), handed over with `add`."""
+        L = self._lines()
+        if not L.enabled or getattr(self, "_line_offers", 0) >= 1:
+            return
+        fmt = dict(fmt or {})
+        part = str(fmt.get("part") or "")
+        if part.endswith("s") and not part.endswith(("ss", "us")):
+            # "twin tails", "left ribs": a line that calls the part "it" would read wrong
+            exclude = list(exclude or []) + [re.compile(r"\b(?:it|its)\b", re.I)]
+        fin = L.pick(category, 1, fmt=fmt, exclude=exclude, **ctx)
+        if fin:
+            self._line_offers = getattr(self, "_line_offers", 0) + 1
+            add(label + " (use it word for word if it fits, or leave it)", fin)
+
     def _feats_of(self, who):
         """What a fighter's body has (tails, fins, horn, arms...), from her own part names."""
         return story_blocks.features(list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()))
@@ -5062,14 +5077,9 @@ class Narrator:
                             level=lv_w, zone=zone_w, has=feats(who), state=state(who))
             add(f"how the pain in {poss(who)} {worst_hit[1].lower()} shows ({lv_w}: no bigger than that)", shows)
             foe = next((w for w in (self.strengths or {}) if w != who), "")
-            L = self._lines()
-            if L.enabled and getattr(self, "_line_offers", 0) < 1:
-                fin = L.pick("after_hit", 1, fmt={"part": worst_hit[1].lower(), "foe": foe}, exclude=too_big,
-                             level=lv_w, zone=zone_w, has=feats(who), state=state(who), role="receiver")
-                if fin:
-                    self._line_offers = getattr(self, "_line_offers", 0) + 1
-                    add(f"a finished line for {who} after the blow (use it word for word if it fits, or leave it)",
-                        fin)
+            self._offer_line(add, f"a finished line for {who} after the blow", "after_hit",
+                             fmt={"part": worst_hit[1].lower(), "foe": foe}, exclude=too_big, level=lv_w, zone=zone_w,
+                             has=feats(who), state=state(who), role="receiver")
             raw = (getattr(self, "_raw_done", None) or {}).get(who)
             if raw is not None:
                 # a blow on a part that was already badly hurt: a reaction as raw as she can no longer keep in
@@ -5104,14 +5114,9 @@ class Narrator:
             else:
                 add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, has=feats(who)) if kinds
                     else B.pick("movement", 1, has=feats(who)))
-            L = self._lines()
-            if L.enabled and kinds and getattr(self, "_line_offers", 0) < 1:
-                fin = L.pick("before_strike", 1, fmt={"foe": target or ""}, kind=kinds, has=feats(who),
-                             state=state(who), role="attacker")
-                if fin:
-                    self._line_offers = getattr(self, "_line_offers", 0) + 1
-                    add(f"a finished line for {who} as she commits (use it word for word if it fits, or leave it)",
-                        fin)
+            if kinds:
+                self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
+                                 fmt={"foe": target or ""}, kind=kinds, has=feats(who), state=state(who), role="attacker")
             return kinds
 
         if key in ("dwell", "watch"):
@@ -5292,6 +5297,8 @@ class Narrator:
                     add(f"{a_}, holding the pin", B.pick("pin_hold", 1, has=feats(a_), state=state(a_), facing=face,
                                                          fighter=a_.lower()))
                     add(f"what holding it costs {a_}", B.pick("pin_strain", 1, held=held_w, has=feats(a_)))
+                    self._offer_line(add, f"a finished line for {a_} holding the pin", "pin_press",
+                                     fmt={"foe": d_}, held=held_w, has=feats(a_), state=state(a_))
                 # (on the beat she breaks out, too: what the pinner sees and thinks just before it goes)
                 add(f"what {a_} can see of {d_}", B.pick("tell", 1, has=feats(d_), posture={"pinned"},
                                                            state=state(d_) if d_ in self.strengths else {"spent"}))
@@ -5305,6 +5312,8 @@ class Narrator:
                 if not escaped:
                     add(f"{d_}, under the pin", B.pick("pin_under", 2, fade=fade, has=feats(d_), facing=face,
                                                        fighter=d_.lower()))
+                    self._offer_line(add, f"a finished line for {d_} under the pin", "pin_under",
+                                     fmt={"foe": a_}, fade=fade, has=feats(d_), state=state(d_))
                 pressed = sorted(list((e or {}).get("pressure_hits") or []) + [
                     x["hits"][0] for x in also or () if x.get("type") == "hold_ongoing" and x.get("defender") == d_
                     and x.get("hits")], key=lambda h: -h.get("damage_after", 0))
