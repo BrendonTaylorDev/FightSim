@@ -234,6 +234,7 @@ class Hold:
     grab: bool = False       # a grapple: she is held at point-blank, on her feet (neither can dodge the other)
     coil: bool = False       # coils, tails or a body wrapped round her: it tightens every beat and squeezes her breath
     sub: str = ""            # a submission hold (engine.SUBMISSIONS): it wrenches, it doesn't pin
+    locked: str = ""         # a submission held so long it became a pin: it keeps wrenching at full, still building
 
 
 USER_SETTINGS = "my_settings.json"
@@ -3675,10 +3676,34 @@ class Engine:
         return res
 
     def _submission_tick(self):
-        """A submission hold that has run submissions.max_beats beats is let go: she can't keep it on any longer."""
+        """A submission hold that has run submissions.max_beats beats is let go: she can't keep it on any longer. One
+        that has held submissions.becomes_pin_after beats first becomes a PIN: she is held down in it, the pin's clock
+        and pass-out start, and the grips go on wrenching as hard as before, still building (no lighter pin pressure)."""
         cfg = self.rules.get("submissions") or {}
         cap = int(cfg.get("max_beats", 3))
         events, done = [], {}
+        after = int(cfg.get("becomes_pin_after", 0) or 0)
+        if after > 0:
+            subs = {}
+            for h in self.holds.values():
+                if h.sub:
+                    subs.setdefault((h.attacker, h.defender, h.sub), []).append(h)
+            for (a, d, name), hs in subs.items():
+                if (max(h.turns_active for h in hs) < after or self.pin_on(d) is not None or self.pinning(a)
+                        or self.pinned_by(a) or self.has(self.get(d), "airborne") or self.get(d).eliminated):
+                    continue
+                key = f"{a}>{d}"
+                self.pins[key] = {"attacker": a, "defender": d, "seconds": 0, "fade": 0.0, "beats": 0,
+                                  "duration": self.rules.get("pin", {}).get("duration_seconds", 60),
+                                  "started_turn": self.turn, "from_submission": name}
+                self.since_pin[d] = 0
+                self._count("pinned", d)
+                self.downed.setdefault(d, 0)
+                for h in hs:
+                    h.locked, h.sub = name, ""
+                events.append({"type": "sub_to_pin", "attacker": a, "defender": d, "submission": name,
+                               "beats_held": max(h.turns_active for h in hs), "parts": [h.part for h in hs],
+                               "with": [h.with_part for h in hs if h.with_part]})
         for h in list(self.holds.values()):
             if h.sub and h.turns_active >= cap:
                 done.setdefault((h.attacker, h.defender, h.sub), []).append(h)
@@ -3689,6 +3714,54 @@ class Engine:
                            "hold_ids": [h.id for h in hs], "parts": [h.part for h in hs],
                            "with": [h.with_part for h in hs if h.with_part], "beats_held": max(h.turns_active for h in hs),
                            "reason": f"{a} lets the {name} go: she can't keep it on any longer"})
+        return events
+
+    def _free_blow_tick(self, skip_hold_ids=()):
+        """Now and then, while a pin or a submission is on, the one holding her gets a quick extra blow in with what
+        she has free (a paw, a short jab, a Water Gun at point-blank): holds.free_blow. Rare, light, and nothing to do
+        with the punishment for a failed escape. Not on the beat the grip closes."""
+        cfg = (self.rules.get("holds") or {}).get("free_blow") or {}
+        ch = float(cfg.get("chance", 0) or 0)
+        if ch <= 0:
+            return []
+        pairs = {}
+        for h in self.holds.values():
+            if h.id in skip_hold_ids:
+                continue
+            if (h.attacker, h.defender) in {(m, p["defender"]) for p in self.pins.values() for m in self.pin_members(p)}:
+                pairs.setdefault((h.attacker, h.defender), "pin")
+            elif h.sub:
+                pairs.setdefault((h.attacker, h.defender), h.sub)
+        events = []
+        for (an, dn), what in pairs.items():
+            a, d = self.get(an), self.get(dn)
+            if a.eliminated or d.eliminated or any(self.has(a, st) for st in ("asleep", "frozen", "paralyzed", "flinched")):
+                continue
+            r = self.rng.random()
+            self.note_roll(f"{an} getting a free blow in on {dn} during the {what}", ch, r,
+                           "she does" if r < ch else "no")
+            if r >= ch:
+                continue
+            usable = [m for m in a.moves if m.get("target") in ("targeted", "spread") and not m.get("charge")
+                      and not m.get("carry") and float(m.get("power", 0) or 0) > 0
+                      and a.move_uses.get(m["name"], 1) > 0 and a.energy >= self.energy_cost(m)]
+            gripped = [h.part for h in self.holds.values() if h.attacker == an and h.defender == dn]
+            same, near = neighbor_parts(list(d.parts), self.rng.choice(gripped)) if gripped else ([], [])
+            spots = [x for x in same + near if x not in gripped] or [x for x in d.parts if x not in gripped] or list(d.parts)
+            part = self.rng.choice(spots)
+            if usable:
+                move = self.rng.choice(usable)
+                self._use_move(a, move)
+                self._spend(a, self.energy_cost(move) * float(cfg.get("energy_share", 0.5)), False, move["name"])
+                base = self.move_math(an, dn, move)["effective"]
+                label = move["name"]
+            else:
+                base, label = self.power_for("instant", "solid"), "a quick blow"
+            power = round(base * float(cfg.get("power_mult", 0.4)), 2)
+            self._source = f"{poss_word(an)} free blow ({label}) during the {what}"
+            hit = self._apply_damage(d, part, power)
+            events.append({"type": "free_blow", "attacker": an, "defender": dn, "during": what, "move_name": label,
+                           "part": hit["part"], "power": power, "hits": [hit], "tags": self._tags([hit])})
         return events
 
     def choke_kind(self, pinner, with_part="", coil=False):
@@ -5285,10 +5358,12 @@ class Engine:
                 if rcfg.get("enabled", True):
                     # held pressure builds: each beat the press stays on, it bites a little deeper (pin.ramp)
                     ramp = min(float(rcfg.get("max", 1.6)), 1.0 + float(rcfg.get("per_beat", 0.12)) * h.turns_active)
+            # a submission that has become a pin (h.locked) keeps its own wrench: no lighter pin pressure, no cap
+            as_pin = in_pin and not h.locked
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp
-                     if in_pin else h.power) * first
-            self._source = f"{poss_word(h.attacker)} {'pin' if in_pin else h.sub or ('coils' if h.coil else 'hold')}"
-            hit = self._apply_damage(d, h.part, round(power, 2), cap=self.pin_cap() if in_pin else None)
+                     if as_pin else h.power) * first
+            self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or ('coils' if h.coil else 'hold'))}")
+            hit = self._apply_damage(d, h.part, round(power, 2), cap=self.pin_cap() if as_pin else None)
             h.turns_active += 1
             if h.coil and not d.eliminated:
                 # coils tighten every beat (holds.coil: tighten, max_power). Round her body or throat they squeeze her
@@ -5302,16 +5377,16 @@ class Engine:
                     self.set_status(d, "constricted", 2)
             events.append({"type": "hold_ongoing", "hold_id": h.id, "attacker": h.attacker, "hold_power": h.power,
                            "pin_mult": (round(time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp, 4)
-                                        if in_pin else None),
+                                        if as_pin else None),
                            "first": fresh, "first_mult": first if fresh else None,
                            "defender": h.defender, "flavor": h.flavor, "with": h.with_part, "grab": bool(h.grab),
-                           "coil": bool(h.coil), "sub": h.sub,
+                           "coil": bool(h.coil), "sub": h.sub or h.locked,
                            "beats_held": h.turns_active, "hits": [hit], "tags": self._tags([hit])})
             if not fresh:
                 # a tightening grip climbs to holds.max_power and no further (coils have their own cap above); an easing
                 # grip that has nothing left in it lets go (inside a pin a contact stays on, at its lightest)
                 hp = h.power + h.change_per_turn
-                if not h.coil and not h.sub and h.change_per_turn > 0:   # submissions: submissions.max_beats
+                if not h.coil and not h.sub and not h.locked and h.change_per_turn > 0:   # submissions keep building
                     hp = min(hp, max(h.power, float(self.rules.get("holds", {}).get("max_power", 35))))
                 h.power = round(max(0, hp), 2)
                 if h.power <= 0 and h.change_per_turn < 0:
@@ -5325,6 +5400,7 @@ class Engine:
         events += self._advance_pins(skip_hold_ids)
         events += self._hold_break_tick(skip_hold_ids)
         events += self._submission_tick()
+        events += self._free_blow_tick(skip_hold_ids)
         events += self._crumple_tick()
         events += self.get_up_tick()
         events += self._scene_event_tick(busy=had_grip)

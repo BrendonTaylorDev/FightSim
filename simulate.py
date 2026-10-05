@@ -119,6 +119,10 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         for e in events:
             if e.get("struggle") == "escape":
                 stats["escapes"] += 1
+            if e.get("type") == "sub_to_pin":     # a submission held so long it became a pin
+                stats["pins"] += 1
+                stats["subs_to_pin"] = stats.get("subs_to_pin", 0) + 1
+                stats.setdefault("first_pin", eng.turn)
         for x in eng.fighters.values():
             lost = (before.get(x.name, x.health) - x.health) / max(1.0, x.max_health) * 100
             stats["worst_beat"] = max(stats["worst_beat"], lost)

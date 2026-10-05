@@ -1072,6 +1072,19 @@ class Display:
             elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
                 out.append(f"🔓 **{e['attacker']} lets the {e['submission'].upper()} go** after {e['beats_held']} "
                            f"beat{'s' if e['beats_held'] != 1 else ''}: she can't keep it on any longer")
+            elif e["type"] == "free_blow":
+                h = (e.get("hits") or [{}])[0]
+                if not self.tight():
+                    out.append("")
+                out.append(f"👊 **{e['attacker']} gets a free blow in** during the {e['during']}: {e['move_name']} on "
+                           f"{poss_word(e['defender'])} {e['part']} (power {num(e['power'])}, x{self.rules.get('holds', {}).get('free_blow', {}).get('power_mult', 0.4)} "
+                           f"of the move) → +{num(h.get('damage_taken', 0))}% damage, ❤️ -{num(h.get('health_loss', 0))}")
+            elif e["type"] == "sub_to_pin":
+                if not self.tight():
+                    out.append("")
+                out.append(f"🔒 **{poss_word(e['attacker'])} {e['submission'].upper()} becomes a PIN** after "
+                           f"{e['beats_held']} beats: {e['defender']} is held down in it, the pin clock and pass-out start "
+                           f"next beat, and the grips keep wrenching at full power, still building")
             elif e["type"] == "hold_loosened":
                 if not self.tight():
                     out.append("")

@@ -2442,7 +2442,7 @@ class Narrator:
         self._any_grip = bool(getattr(self, "grips", None)) or any(
             isinstance(x, dict) and x.get("type") in ("pin_start", "pin_forced", "pin_progress", "hold_start",
                                                       "hold_ongoing", "hold_end", "pin_broken", "pin_left",
-                                                      "grapple_start")
+                                                      "grapple_start", "sub_to_pin")
             for x in self._all_dicts(bundle))
         self._getup_failed = {e["fighter"] for e in bundle.get("also_this_beat", []) or []
                               if e.get("type") == "get_up" and not e.get("stands")}
@@ -2631,6 +2631,17 @@ class Narrator:
                                  + (f", ending up {Engine.FACING_LOOK[fc]}" if fc in Engine.FACING_LOOK else "")
                                  + ". Show her going down; it does no new damage.")
                 lines += self._knock_on_lines(e.get("knock_on"))
+            elif e["type"] == "free_blow":
+                lines.append(f"A FREE BLOW during the {e['during']}: without letting go, {e['attacker']} gets one quick, "
+                             f"short extra blow in on {poss(e['defender'])} {e['part']} with what she has free "
+                             f"({e['move_name']}, at point-blank and only a fraction of its full force). It lands; show it "
+                             f"briefly, and the grip stays exactly as it was.")
+            elif e["type"] == "sub_to_pin":
+                lines.append(f"THE {e['submission'].upper()} BECOMES A PIN at the END of this beat: {e['attacker']} has kept "
+                             f"it on so long that {e['defender']} is simply held down in it now, unable to get free or up. "
+                             f"The same grips, not loosened: they keep wrenching as hard as ever and tighten further. From "
+                             f"now on it can put her out like any pin. Show her being pinned in it as the last thing that "
+                             f"happens.")
             elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
                 lines.append(f"THE {e['submission'].upper()} ENDS at the END of this beat: {e['attacker']} lets it go, "
                              f"spent; she can't keep it on any longer. {e['defender']} is left on the ground where she "
