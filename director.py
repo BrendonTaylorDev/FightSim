@@ -769,6 +769,14 @@ def resolve(engine, b):
                                       "a plain close blow")
     elif mv_name != "none":
         move = engine.find_move(att, b.get("move"))
+        dex = engine.dex_move(b.get("move")) if move is None and not manual and act in ("strike", "combo") else None
+        if dex is not None and (float(dex.get("power", 0) or 0) <= 0 or dex.get("target") in ("status", "self")
+                                or (dex.get("type") not in ("Normal", "Fighting", "Dark")
+                                    and dex.get("type") not in engine.get(att).types)):
+            # a move she doesn't know that is no plain blow (Hypnosis, a Flamethrower from a Water type): it must not
+            # land as a generic hit under that name. A bite, a punch, a scratch she can always throw
+            raise ValueError(f"{engine.get(att).name} doesn't know {b.get('move')}. Her moves: "
+                             f"{', '.join(m['name'] for m in engine.get(att).moves)} (or an improvised technique)")
         if move is None and manual and act in ("strike", "combo"):
             # a typed /move the fighter doesn't know: use it from moves.json for this one attack (not learned)
             dex = engine.dex_move(b.get("move"))

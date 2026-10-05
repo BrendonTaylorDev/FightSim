@@ -1060,11 +1060,16 @@ class Engine:
         spill_cfg = self.rules.get("moves", {}).get("auto_spill", {})
         auto_n = int(spill_cfg.get("parts", 0) or 0)
         auto_n = {"one": 0, "few": 2, "many": 4, "all": 6}.get(self.plan.get("targeting", ""), auto_n)
-        if target == "targeted" and len(names) == 1 and int(count or 1) == 1 and auto_n > 0 and not no_spill:
+        # a real blow jars what's around it; so does a beam or a blast aimed at one spot (a spread move given one part)
+        if target in ("targeted", "spread") and len(names) == 1 and int(count or 1) == 1 and auto_n > 0 and not no_spill:
             # a real blow jars what's around it: the parts next to the target take a lighter knock
             same, near = neighbor_parts(list(d.parts), names[0])
             self.rng.shuffle(same)
             self.rng.shuffle(near)
+            # an eye, an ear, a jaw sits IN the head: the head itself usually feels the blow too
+            head = next((p for p in same if p.lower() == "head"), None)
+            if head and names[0].lower() != "head" and self.rng.random() < 0.75:
+                same = [head] + [p for p in same if p != head]
             extra = (same[:1] + near + same[1:])[:auto_n]
             if extra:
                 jar = round(move["power"] * math["type_mult"] * math["stab"] * math["extra_mult"]
