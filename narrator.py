@@ -1620,6 +1620,12 @@ FILLER = re.compile(
     r"(?:with|in) (?:a )?(?:newfound|renewed|grim|fierce) (?:determination|resolve|purpose)|"
     r"would not let (?:this|it|that|her) (?:end|beat|break|finish) her)", re.I)
 
+# present tense with a possessive subject: "Nocturne's weight presses down", "Her body trembles"
+PRESENT_POSS = re.compile(r"\b(?:[A-Z][a-z]+(?:'s|’s|'|’)|[Hh]er|[Tt]he Absol's|[Tt]he Buizel's)\s+(?:\w+\s+){0,2}?"
+                          r"(?:is|are|has|presses|comes|digs|rests|grips|clamps|works|twists|trembles|stutters|whirls|"
+                          r"flares|heaves|sinks|burns|throbs|aches|pulses|holds|bites|drives|catches|shakes|tightens|"
+                          r"pounds|races|screams|stays|seeps|clings|drips|dig|press|tremble|stutter|whirl|flare|heave)\b")
+
 # a sentence about how a part hurts (for "the same hurt told again and again")
 HURT_SAID = re.compile(r"\b(?:throb\w*|ach(?:e|ed|es|ing)|burn\w*|sting\w*|pain\w*|hurt\w*|sore\w*|flar\w+|pulse\w*|"
                        r"pulsing|tender|agony|fire|protest\w*)\b", re.I)
@@ -6126,6 +6132,27 @@ class Narrator:
         if missing_surf:
             issues.append(f"it never showed her hitting {' and '.join(dict.fromkeys(missing_surf))}: she crashes into "
                           f"it on the way (the order is listed above), and it hits the parts listed for it. Name it")
+        # with two or more attacks in a beat, each one has to be in the story: its name, or its element hitting one of
+        # the parts it hit, in a sentence about the one who threw it or the one it hit
+        acts_now = [a for a in (getattr(self, "_acts_now", None) or []) if a.get("type") == "instant"
+                    and not a.get("environment") and a.get("hits") and (a.get("move") or {}).get("name")]
+        if coverage and len(acts_now) >= 2:
+            seen = (prior or "") + "\n" + text
+            sents_all = [s for para in seen.split("\n") for s in _SENT.split(para.strip()) if s]
+            for a in acts_now:
+                mv = a["move"]["name"]
+                typ = str(a["move"].get("type", "")).lower()
+                if re.search(r"\b" + re.escape(mv) + r"\b", seen, re.I):
+                    continue
+                parts = {h["part"].lower() for h in a["hits"]}
+                trx = TYPE_SHOWN.get(typ)
+                shown = trx and any(re.search(r"\b(?:" + trx + r")\b", s, re.I)
+                                    and (a["attacker"] in s or a["defender"] in s)
+                                    and any(_mentions_exact(s.lower(), p) for p in parts) for s in sents_all)
+                if not shown:
+                    issues.append(f"it never showed {poss(a['attacker'])} {mv} hitting {a['defender']} "
+                                  f"({', '.join(sorted(parts)[:4])}): every attack listed in this beat has to be told, "
+                                  f"in the order given")
         cl = getattr(self, "_clash", None)
         if cl and coverage:
             seen = (prior or "") + "\n" + text
@@ -6919,7 +6946,7 @@ class Narrator:
                 labels = [_slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
                            else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
                            else "missing escape" if "ESCAPE" in i
-                           else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
+                           else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
                            else "parts called useless too early" if "as useless" in i
                            else "wrong strike count" if "ONE strike" in i
                            else "invented bite" if "a bite that isn't" in i
@@ -7135,6 +7162,8 @@ class Narrator:
         present = [x for para in thoughtless.split("\n") for x in _SENT.split(para.strip())
                    if x and (PRESENT_TENSE.search(x) or (name_rx and name_rx.search(x)))
                    and not re.match(r'^\s*["“]', x)]
+        present += [x for para in thoughtless.split("\n") for x in _SENT.split(para.strip())
+                    if x and x not in present and PRESENT_POSS.search(x) and not re.match(r'^\s*["“]', x)]
         if n.get("tense", "past") == "past" and len(present) >= 3:
             for x in present:
                 add(x, "present tense: the story is told in the PAST tense (\"she lunged\", not \"she lunges\")")
@@ -8321,6 +8350,7 @@ class Narrator:
         self._no_clock = not windows
         acts = bundle.get("actions") or []
         self._pin_age = {e.get("defender"): int(e.get("beats") or 0) for e in pin_events if e.get("defender")}
+        self._acts_now = list(acts)
         self._pin_beat = bool(windows or "PIN:" in condition_summary or any(
             a.get("type") in ("pin_start", "pin_forced", "struggle_request") for a in acts))
         if pin_events and not any(e.get("complete") or e["struggle"] == "escape" for e in pin_events):

@@ -773,6 +773,19 @@ def resolve(engine, b):
         hits = [h for h in (b.get("hits") or []) if h.get("part")]
         if not hits and b.get("part"):
             hits = [{"part": b["part"], "severity": b.get("severity")}]
+        if not hits and act == "pin":
+            # a bare /pin: one of the pin shapes this pinner's body allows (what presses where, filled out), as the
+            # director would choose it, so the story knows what she pins her with
+            try:
+                shapes = pin_shapes(engine, engine.get(att), engine.get(dfn))
+            except Exception:
+                shapes = {}
+            if shapes:
+                look, cts = shapes[engine.rng.choice(sorted(shapes))]
+                hits = [{"part": p, "severity": "crushing" if i == 0 else "firm", "with": w}
+                        for i, (p, w) in enumerate(cts)]
+                if str(flavor or "").strip() in ("", "pins them down"):
+                    flavor = look
         if not hits:  # nothing named: press the defender's most-damaged parts, or their core if unhurt
             hits = [{"part": p, "severity": "crushing" if i == 0 else "firm"}
                     for i, p in enumerate(engine.default_pin_parts(dfn, 3 if act == "pin" else 1))]
