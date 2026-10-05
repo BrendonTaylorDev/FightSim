@@ -1554,6 +1554,25 @@ TYPE_SHOWN = {
     "flying": r"wind|gust\w*|air",
 }
 
+EYE_COLORS = ("red", "black", "blue", "green", "golden", "gold", "amber", "yellow", "brown", "violet", "purple", "pink",
+              "white", "grey", "gray", "silver", "orange", "dark")
+
+LANDED = re.compile(r"\b(?:landed|landing (?:hard|badly|heavily)|hit the (?:ground|grass|earth|sand|floor|tree|trunk)|"
+                    r"crash\w* (?:into|onto|down)|slamm?\w* (?:into|onto|down on)|thudd?\w* (?:into|onto|against))\b",
+                    re.I)
+AIRBORNE = re.compile(r"\b(?:mid-?air|in the air|through the air|airborne|in flight|sail\w* through|arc\w* through)\b",
+                      re.I)
+
+# the plain ground under them: landing on it needs no naming
+PLAIN_GROUND = {"ground", "grass", "earth", "floor", "dirt", "sand", "rock", "stone", "mud", "ice", "snow", "deck",
+                "soil", "turf", "clearing", "shallows", "water", "beach", "ledge", "shore"}
+# other words that show a surface was reached
+SURFACE_WORDS = {
+    "oak": "tree|trunk|bark|oak", "pine": "tree|trunk|bark|pine", "tree": "tree|trunk|bark", "trunk": "trunk|log|tree",
+    "log": "log|trunk", "stalagmite": "stalagmite|column|spire", "stalactite": "stalactite|spike", "boulder":
+    "boulder|rock|stone", "wall": "wall|rock face|stone", "pillar": "pillar|column", "column": "column|pillar",
+}
+
 # the passage shows a fighter being taken down (any way of getting her from her feet onto the ground)
 TAKEDOWN_SHOWN = re.compile(
     r"\b(?:threw|throws?|thrown|throwing|hurl\w*|flung|fling\w*|swept|sweep\w*|trip\w*|tackl\w*|hook\w*|tipp\w*|"
@@ -2328,6 +2347,7 @@ class Narrator:
         self._one_strike = None
         self._takedown = None       # (pinner, pinned): she was on her feet and is taken down into the pin this beat
         self._clash = None          # (defender, her move, its type): she met the attack with a move of her own
+        self._must_surfaces = []    # (fighter, surface): scenery she is thrown, knocked or dragged into this beat
         self._chain_beat = False    # several attacks by one fighter this beat (a chain, a pummel): "again" is right
         self._must_tumble = None    # thrown and tumbling on: the passage has to show her going on across the ground
         actions = bundle.get("actions") or [bundle["action"]]
@@ -2383,8 +2403,12 @@ class Narrator:
         self._move_names = set(getattr(self, "_move_names", set())) | {
             str(m.get("name")) for m in moves if m.get("name")} | {
             str((a.get("clash") or {}).get("move")) for a in actions if (a.get("clash") or {}).get("move")}
-        self._no_electric = bool(moves) and not any(str(m.get("type", "")).lower() == "electric" for m in moves) \
-            and not any(a.get("status_move") for a in actions) and "electric" not in clash_types
+        # a beat with no move at all (a throw, a slam, a pin) has no electricity in it either, unless the arena
+        # itself sparks (the power plant's cables) or something else this beat does
+        place = str(getattr(self, "_scene_text", "") or "") + " " + str(bundle.get("also_this_beat") or "")
+        self._no_electric = not any(str(m.get("type", "")).lower() == "electric" for m in moves) \
+            and not any(a.get("status_move") for a in actions) and "electric" not in clash_types \
+            and not ELECTRIC.search(place) and not re.search(r"\bspark", place, re.I)
         if "electric" in clash_types or any(str(m.get("type", "")).lower() == "electric" for m in moves):
             self._seen_electric = True   # remembered later in the fight ("where the lightning had met her water")
         # anyone touched by a tick, landing, pin, or the like counts as hurt (only clean beats get the check)
@@ -2743,6 +2767,10 @@ class Narrator:
     def _describe_action_core(self, a):
         lines = []
         t = a["type"]
+        if t == "instant" and a.get("environment"):
+            # checked afterwards: every surface she hits that isn't just the ground under her has to be in the story
+            self._must_surfaces = list(getattr(self, "_must_surfaces", None) or []) + [
+                (a.get("defender"), str(l.get("surface") or "")) for l in a.get("landings", []) if l.get("surface")]
         intent = f" (why: {a['intent']})" if a.get("intent") else ""
         if t == "instant" and a.get("environment") and a.get("manhandle"):
             self._must_manhandle = a
@@ -5635,6 +5663,66 @@ class Narrator:
             return False
         return True
 
+    _STOP = frozenset("""a an the and or but of to in on at by for with from into onto over under up down out off as
+        her his its she he it they them their this that these those was were is be been had has have did do not no so
+        then than there here what which who all one each every more most some any just still only even again too very
+        back away around through across against along behind before after while when where like""".split())
+
+    def _part_words(self):
+        """Words from body-part names (and sides): saying where it hurts again is not a repeated phrase."""
+        if getattr(self, "_part_words_cache", None) is None:
+            words = {"left", "right", "upper", "lower", "front", "hind", "fore"}
+            for tpl in (self.rules.get("body_templates") or {}).values():
+                if isinstance(tpl, dict):
+                    for part in tpl:
+                        words |= {w for w in re.findall(r"[a-z]+", str(part).lower())}
+            for part in getattr(self, "part_names", None) or ():
+                words |= {w for w in re.findall(r"[a-z]+", str(part).lower())}
+            self._part_words_cache = frozenset(words)
+        return self._part_words_cache
+
+    def _repeated_phrases(self, text, prior=""):
+        """Sentences that say again, word for word, a phrase already used in this beat ("the sound of cloth tearing"
+        three times): [(sentence, phrase)]. A phrase counts when four words in a row carry at least three that mean
+        something (not a body part, a side, a name, or a small word), so saying again WHERE it hurts never counts."""
+        names = {w.lower() for x in (getattr(self, "strengths", None) or {}) for w in re.findall(r"[A-Za-z]+", x)}
+        skip = self._STOP | self._part_words() | names
+
+        def grams(s):
+            w = [re.sub(r"(?:'s|’s|')$", "", x) for x in re.findall(r"[a-z'’]+", s.lower())]
+            out = {}
+            for i in range(len(w) - 3):
+                g = w[i:i + 4]
+                if sum(1 for x in g if len(x) > 2 and x not in skip) >= 3:
+                    out.setdefault(" ".join(g), None)
+            return out
+        seen = set()
+        for para in str(prior or "").split("\n"):
+            for s in _SENT.split(para.strip()):
+                seen |= set(grams(s))
+        out = []
+        for para in str(text or "").split("\n"):
+            for s in _SENT.split(para.strip()):
+                if not s:
+                    continue
+                g = grams(s)
+                hit = [x for x in g if x in seen]
+                if hit:
+                    out.append((s, hit[0]))
+                seen |= set(g)
+        return out
+
+    def _other_wording(self, phrase):
+        """An alternative for a repeated phrase when it is one of the program's own blow sounds: another sound of the
+        same kind, not yet used in this beat."""
+        key = {w for w in phrase.split() if len(w) > 3}
+        for kind, opts in self.BLOW_SOUND.items():
+            for o in opts:
+                if phrase in o.lower() or len(key & set(re.findall(r"[a-z]+", o.lower()))) >= 2:
+                    rest = [x for x in opts if x != o]
+                    return random.Random(phrase).choice(rest) if rest else ""
+        return ""
+
     def _label_slip(self, sent):
         """A move's name set into a sentence between dashes or brackets as a bare label, or None."""
         names = [x for x in getattr(self, "_move_names", set()) if x]
@@ -5891,6 +5979,18 @@ class Narrator:
             if m:
                 issues.append(f"it showed extra failed tries at getting up (\"{m.group(0)}\"), but she gets up on the "
                               f"FIRST try: one attempt, and she ends on her feet")
+        missing_surf = []
+        for who, surf in (getattr(self, "_must_surfaces", None) or []) if coverage else []:
+            words = re.findall(r"[a-z]+", surf.lower())
+            noun = words[-1] if words else ""
+            if not noun or noun in PLAIN_GROUND:
+                continue
+            rx = r"\b(?:" + SURFACE_WORDS.get(noun, re.escape(noun)) + r")\w*"
+            if not re.search(rx, (prior or "") + "\n" + text, re.I):
+                missing_surf.append(surf)
+        if missing_surf:
+            issues.append(f"it never showed her hitting {' and '.join(dict.fromkeys(missing_surf))}: she crashes into "
+                          f"it on the way (the order is listed above), and it hits the parts listed for it. Name it")
         cl = getattr(self, "_clash", None)
         if cl and coverage:
             seen = (prior or "") + "\n" + text
@@ -6465,6 +6565,9 @@ class Narrator:
             rows.append("no bone breaks, cracks, snaps or gives way" + (
                 f" except in {', '.join(p.title() for p in ok)}, which can now break" if ok else
                 ": bones bruise and ache only"))
+        eyes = {w: c for w, c in (getattr(self, "eye_colors", None) or {}).items() if w in (self.strengths or {})}
+        if len(set(eyes.values())) > 1:
+            rows.append("eyes: " + ", ".join(f"{w} {c}" for w, c in eyes.items()))
         mode = str(self.rules.get("narration", {}).get("swearing", "rare")).lower()
         since = getattr(self, "_beat_no", 0) - getattr(self, "_last_swear", -999)
         if mode == "rare" and since <= int(self.rules.get("narration", {}).get("swearing_gap", 5)):
@@ -6561,7 +6664,7 @@ class Narrator:
                 labels = [_slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
                            else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
                            else "missing escape" if "ESCAPE" in i
-                           else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
+                           else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
                            else "parts called useless too early" if "as useless" in i
                            else "wrong strike count" if "ONE strike" in i
                            else "invented bite" if "a bite that isn't" in i
@@ -6800,6 +6903,11 @@ class Narrator:
                 add(x, f"the sound *{m.group(1)}* stands alone, so it isn't clear who makes it: put it inside a "
                        f"sentence that says it is hers and what kind of sound it is (\"a thin *{m.group(1).lower()}* broke "
                        f"out of her\")")
+            for w, c in (getattr(self, "eye_colors", None) or {}).items():
+                m = re.search(r"\b" + re.escape(w) + r"(?:'s|’s|'|’)\s+(?:[\w-]+,?\s+){0,2}?(" + "|".join(EYE_COLORS)
+                              + r")\s+eyes\b", x, re.I)
+                if m and m.group(1).lower() != c and not (c == "black" and m.group(1).lower() == "dark"):
+                    add(x, f"{poss(w)} eyes are {c.upper()}, not {m.group(1).lower()}")
             if self._label_slip(x):
                 add(x, "a move's name dropped into the sentence as a label: describe what the move does instead")
             if BARE_IMPACT.search(x):
@@ -6886,6 +6994,21 @@ class Narrator:
             add(sent, why)
         for sent, why in self._pressed_again(text, prior):
             add(sent, why)
+        if getattr(self, "_must_surfaces", None):
+            landed_at = None
+            sents_all = [s for para in ((prior or "") + "\n" + text).split("\n") for s in _SENT.split(para.strip()) if s]
+            base = len([s for para in (prior or "").split("\n") for s in _SENT.split(para.strip()) if s])
+            for k, s in enumerate(sents_all):
+                if landed_at is None and LANDED.search(s):
+                    landed_at = k
+                elif landed_at is not None and k >= base and AIRBORNE.search(s) and not re.search(
+                        r"\b(bounc\w*|tumbl\w*|skid\w*|roll\w*|again|second)\b", s, re.I):
+                    add(s, "she has already landed: this goes back to the throw and tells it again. Go on from the "
+                           "landing instead")
+        for sent, phrase in self._repeated_phrases(text, prior):
+            alt = self._other_wording(phrase)
+            add(sent, f"it repeats \"{phrase}\", already used in this beat: say it a different way"
+                      + (f" (for example \"{alt}\")" if alt else "") + ", or leave it out if it adds nothing new")
         return out
 
     def _rewrite_paragraph(self, user_msg, paras, i, reasons):

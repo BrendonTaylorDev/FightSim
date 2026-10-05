@@ -26,7 +26,7 @@ from engine import Engine, body_region as body_region_of
 from narrator import Narrator, strip_pov, _is_sound
 import llm
 
-VERSION = "2026-10-05 build 119 (thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
+VERSION = "2026-10-05 build 120 (a phrase said twice in a beat is rewritten with another wording; scenery she hits must be shown; the throw is not told again after the landing; eye colours checked; no lightning in a throw. Build 119: thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
 
 HELP = """
 =============================================================================================
@@ -848,6 +848,18 @@ class Session:
                   for m in [re.match(r"[^:]+: (.+?)(?: \((?:improvised|a charge[^)]*)\))* → ", x)] if m}
         self.narrator.missed_moves = sorted(dodged - landed)
         self.narrator.posture_start = dict(getattr(self, "_posture_start", {}))
+        self.narrator.part_names = {p for f in self.eng.fighters.values() for p in f.parts}
+        eyes = {}
+        for f in self.eng.fighters.values():
+            look = " ".join(str(getattr(f, k, "") or "") for k in ("description", "appearance", "tells"))
+            m = re.search(r"\b(red|black|blue|green|gold(?:en)?|amber|yellow|brown|violet|purple|pink|white|grey|gray|"
+                          r"silver|orange|dark)(?:\s[\w-]+){0,2}\s+eyes\b", look, re.I)
+            if m:
+                eyes[f.name] = m.group(1).lower()
+        self.narrator.eye_colors = eyes
+        if getattr(self.narrator, "_part_names_seen", None) != len(self.narrator.part_names):
+            self.narrator._part_words_cache = None   # new fighters: their part names are not repeated phrases
+            self.narrator._part_names_seen = len(self.narrator.part_names)
         self.narrator.breakable = {x.lower() for f in self.eng.fighters.values() for x in self.eng.breakable_parts(f)}
 
     def reroll(self):
