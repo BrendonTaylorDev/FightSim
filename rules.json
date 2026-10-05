@@ -752,6 +752,9 @@
     "top_up_below": 0.55,
     "_max_rewrites_comment": "1 = one rewrite per draft; 2 = one more try when the text still gets the events wrong (an invented fall, a missing hit).",
     "max_rewrites": 2,
+    "_beat_budget_comment": "beat_budget_minutes: once a beat has taken this long, the optional extra passes stop (a second whole rewrite, a second draft, wording-only fixes, the second reading); past 1.5 times it, no whole rewrites at all, only paragraph fixes. Every part is still written in full and the program's own checks and cleanup still run, so no detail is cut to save time. 0 = no budget. show_timing prints where each beat's time went. Set with /budget.",
+    "beat_budget_minutes": 6,
+    "show_timing": true,
     "_talk_comment": "How much fighters talk. spoken_per_beat: spoken lines allowed in a beat; spoken_gap: beats of silence after someone speaks; thoughts_per_part: italic thoughts allowed in each part of a beat. /talk quiet|less|normal|free sets presets.",
     "talk": {
       "enabled": true,

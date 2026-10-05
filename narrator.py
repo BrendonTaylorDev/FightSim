@@ -13,6 +13,28 @@ import re
 
 import blocks as story_blocks
 import llm
+
+import sys as _sys
+import time as _time
+
+CALL_LOG = []   # (what wrote it, seconds, prompt characters) for every model call in the current beat
+_STAGE = [""]   # which step of a part's writing is calling (draft, rewrite...), set by Narrator._call
+
+
+def _chat(*args, **kw):
+    """llm.chat, timed: each call is logged with the step that made it, so a slow beat can say where its time went."""
+    who = _sys._getframe(1).f_code.co_name
+    if who == "_generate":
+        who = _sys._getframe(2).f_code.co_name
+    if who == "_call" and _STAGE[0]:
+        who = _STAGE[0]
+    size = sum(len(str(m.get("content", ""))) for m in (args[1] if len(args) > 1 else kw.get("messages") or []))
+    t = _time.time()
+    try:
+        return llm.chat(*args, **kw)
+    finally:
+        CALL_LOG.append((who, _time.time() - t, size))
+
 import userprompt
 from engine import tier_for, pain_tiers, Engine, body_region
 
@@ -6940,13 +6962,15 @@ class Narrator:
 
     def _call(self, user_msg, words, coverage=False, prior=""):
         self._note_phrases(user_msg)
+        _STAGE[0] = "draft"
         text = self._generate(user_msg, words)
         issues = self._review(text, coverage, prior)
         mode = str(self.rules.get("narration", {}).get("best_of_two", "never")).lower()
-        if mode == "always" or (mode == "important" and self._important):
+        if (mode == "always" or (mode == "important" and self._important)) and not self._late():
             # a big moment: write a second draft and keep whichever has fewer problems
             if self.progress:
                 self.progress("big moment: writing a second draft to compare")
+            _STAGE[0] = "second draft"
             other = self._generate(user_msg, words)
             other_issues = self._review(other, coverage, prior)
             # the one that gets the EVENTS right wins (an invented fall outweighs any number of wording slips)
@@ -6978,12 +7002,18 @@ class Narrator:
                 self.progress("checking the draft: " + ("" if repair else "rewriting to fix ")
                               + ", ".join(dict.fromkeys(labels)))
             missing = [i for i in issues if any(m in i for m in MISSING_MARKS)]
-        if issues and (missing or not repair):
+        if issues and (missing or not repair) and self._late(1.5):
+            # the beat is far past its time budget (narration.beat_budget_minutes): no more whole rewrites; the
+            # cleanup below still cuts what is wrong, and the paragraph fixes still run for what is missing
+            if self.progress:
+                self.progress("this beat is well past its time budget: no whole rewrite, the fixes are done paragraph by paragraph")
+        elif issues and (missing or not repair):
             # something that should be there is missing (a hit, the escape, the get-up): that needs writing again
             if repair and self.progress:
                 self.progress("something is missing from the draft: writing it again")
             fix = (user_msg + "\n\nYOUR PREVIOUS DRAFT had problems: " + " ALSO, ".join(issues)
                    + ". Write it again with the same events, fixing all of that.")
+            _STAGE[0] = "rewrite"
             redo = self._generate(fix, words)
             # the rewrite is checked too: if it broke something the draft had right (dropped the escape, a hit...),
             # keep whichever has fewer problems, weighting the ones that change what happened
@@ -6995,16 +7025,18 @@ class Narrator:
             # still wrong about what happened (an invented fall, a missing hit...)? one more try, aimed only at that
             heavy = [i for i in issues if self._issue_weight([i]) >= 10
                      and (not repair or any(m in i for m in MISSING_MARKS))]
-            if heavy and int(self.rules.get("narration", {}).get("max_rewrites", 2)) >= 2:
+            if heavy and int(self.rules.get("narration", {}).get("max_rewrites", 2)) >= 2 and not self._late():
                 if self.progress:
                     self.progress("still wrong about what happened: one more rewrite")
                 fix2 = (user_msg + "\n\nYOUR LAST TWO DRAFTS got the events wrong: " + " ALSO, ".join(heavy)
                         + ". Write it again. Nothing happens in this beat except what is listed above: nobody falls, "
                           "is pinned, or is wounded unless it's listed. Keep all the listed events and their detail.")
+                _STAGE[0] = "rewrite 2"
                 third = self._generate(fix2, words)
                 third_issues = self._review(third, coverage, prior)
                 if self._issue_weight(third_issues) < self._issue_weight(issues):
                     text, issues = third, third_issues
+        _STAGE[0] = ""
         if repair:
             # mistakes the program can point at: write just those paragraphs again; the rest stays word for word
             text = self._repair_paragraphs(user_msg, text, prior)
@@ -7408,6 +7440,9 @@ class Narrator:
         is left for the cuts at the end, as before."""
         n = self.rules.get("narration", {})
         tries, cap = int(n.get("repair_tries", 2)), int(n.get("repair_paragraphs_max", 6))
+        if self._late():
+            # past the beat's time budget: one try each, and wording-only slips are left to the cleanup
+            tries, cap = min(tries, 1), min(cap, 4)
         paras = text.split("\n")
         if found is None:
             bad = self._bad_sentences(text, prior)
@@ -7424,7 +7459,7 @@ class Narrator:
         style = ("tells it instead of showing", "it repeats \"", "a move's name dropped", "the sound *",
                  "has already been described")
         only_style = [i for i in sorted(found) if all(any(m in w for m in style) for w in found[i])]
-        keep_style = set(only_style[:int(n.get("style_repairs_max", 2))])
+        keep_style = set(only_style[:0 if self._late() else int(n.get("style_repairs_max", 2))])
         found = {i: w for i, w in found.items() if i not in only_style or i in keep_style}
         if not found:
             return text
@@ -7562,7 +7597,7 @@ class Narrator:
         """One more look at a single finding, asked the other way round ('is this fine?'). True = still wrong."""
         n = self.rules.get("narration", {})
         try:
-            raw = llm.chat(n.get("reader_model") or self.model,
+            raw = _chat(n.get("reader_model") or self.model,
                            [{"role": "system", "content": CONFIRM_PROMPT},
                             {"role": "user", "content": f"FACTS:\n{facts[:9000]}\n\nTHE PARAGRAPH IT IS IN:\n{para}\n\n"
                                                         f"THE SENTENCE: \"{sent}\"\n\nTHE CHECKER'S CLAIM ({kind}): {says}\n\n"
@@ -7586,6 +7621,10 @@ class Narrator:
         facts = getattr(self, "_facts", None)
         if not n.get("reader_check", True) or not facts or len(text.split()) < 25:
             return text
+        if self._late():
+            if self.progress:
+                self.progress("past this beat's time budget: skipping the second reading (the program's own checks still ran)")
+            return text
         self._note_phrases(user_msg)
         facts = (self._timeline() + "\n\n" + facts).strip()
         paras = text.split("\n")
@@ -7594,7 +7633,7 @@ class Narrator:
         if self.progress:
             self.progress("second reading: checking the passage against the facts")
         try:
-            raw = llm.chat(n.get("reader_model") or self.model,
+            raw = _chat(n.get("reader_model") or self.model,
                            [{"role": "system", "content": READER_PROMPT},
                             {"role": "user", "content": f"FACTS:\n{facts[:9000]}\n\nPASSAGE (numbered paragraphs):\n"
                                                         f"{numbered}\n\nList the contradictions as JSON."}],
@@ -7736,7 +7775,7 @@ class Narrator:
     def _generate(self, user_msg, words):
         n = self.rules.get("narration", {})
         system, user_msg = self._fit(user_msg, words)
-        out = llm.chat(self.model,
+        out = _chat(self.model,
                        [{"role": "system", "content": system},
                         {"role": "user", "content": user_msg}],
                        host=self.host,
@@ -7897,7 +7936,34 @@ class Narrator:
             return text
         return _drop_orphans(text, re.sub(r"\n{3,}", "\n\n", "\n".join(paras)).strip())
 
+    def _late(self, factor=1.0):
+        """Has this beat run past its time budget (narration.beat_budget_minutes, times factor)? Past it, only the
+        optional extra passes are dropped (a second whole rewrite, wording-only fixes, the second reading); every
+        part is still written in full, and the program's own cleanup still runs. 0 = no budget."""
+        mins = float(self.rules.get("narration", {}).get("beat_budget_minutes", 6) or 0)
+        t0 = getattr(self, "_beat_t0", None)
+        return bool(mins > 0 and t0 and _time.time() - t0 > mins * 60 * factor)
+
+    def beat_timing(self):
+        """Where this beat's time went: a short line for the screen (narration.show_timing)."""
+        if not CALL_LOG:
+            return ""
+        total = _time.time() - (getattr(self, "_beat_t0", None) or _time.time())
+        groups = {}
+        names = {"draft": "drafts", "second draft": "second drafts", "rewrite": "rewrites", "rewrite 2": "second rewrites",
+                 "_repair_paragraphs": "paragraph fixes", "_rewrite_paragraph": "paragraph fixes",
+                 "_second_reading": "second reading", "_reader_confirm": "reader confirms", "_top_up": "top-up"}
+        for who, secs, size in CALL_LOG:
+            g = groups.setdefault(names.get(who, "other"), [0, 0.0, 0])
+            g[0] += 1; g[1] += secs; g[2] += size
+        bits = [f"{k} {v[0]}× {v[1] / 60:.1f}m" for k, v in sorted(groups.items(), key=lambda kv: -kv[1][1])]
+        avg = sum(s for _, _, s in CALL_LOG) // max(1, len(CALL_LOG))
+        return (f"beat written in {total / 60:.1f} min: " + ", ".join(bits)
+                + f" (prompts average {avg // 1000}k characters)")
+
     def narrate(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
+        self._beat_t0 = _time.time()
+        del CALL_LOG[:]
         self._blocks().next_turn()
         self._lines().next_turn()
         raw = self._narrate(bundle, condition_summary, fighter_notes, scene, story_so_far)

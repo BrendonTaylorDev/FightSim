@@ -292,6 +292,8 @@ HELP = """
  RULES AND FIGHTERS   (changes are saved to rules.json unless noted)
 =============================================================================================
   /scale [n]          how hard every hit lands on body parts (default 5)
+  /budget [min|off]   a beat's time budget (default 6): past it, the optional extra checking passes stop;
+                      /budget timing on|off shows where each beat's time went
   /healthloss [n]     how much health each point of body-part damage costs (default 0.5)
   /resscale [n]       how fast body-part resistance wears down (separate from /scale)
   /wear [n]           resistance ALSO lost per 1% of damage a hit really does (0 = off)   /wear 0.05
@@ -787,7 +789,12 @@ class Session:
     def _write_prose(self, args):
         """Run the narrator. On a model failure the beat's stats still stand; /reroll can narrate it later."""
         try:
-            return self.narrator.narrate(*args)
+            text = self.narrator.narrate(*args)
+            if self.eng.rules.get("narration", {}).get("show_timing", True) and hasattr(self.narrator, "beat_timing"):
+                t = self.narrator.beat_timing()
+                if t:
+                    print(f"  [{t}]")
+            return text
         except llm.LLMError as e:
             self.pending = {"args": args}
             self.out(f"\n[narration failed: {e}]\n[The stats below are already applied. Type /reroll to narrate "
@@ -1362,7 +1369,7 @@ HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the orde
     ("story", "story plan focus targeting steering weakspots weak", "steering the story: /plan, /focus, /weakspots, /targeting"),
     ("moves", "moves moveinfo learn forget", "moves: /moves, /moveinfo, /learn, /forget"),
     ("healing", "healing heal restore recover aftermath", "healing and after the match: /heal, /restore, /recover"),
-    ("rules", "rules settings set get scale model sounds words style sample reader", "rules and fighters: /set, /scale, /model, /sounds, /words, /sample..."),
+    ("rules", "rules settings set get scale model sounds words style sample reader budget time slow timing", "rules and fighters: /set, /scale, /model, /sounds, /words, /sample..."),
     ("looking", "looking status health look", "looking around: /status, /health, /look"),
     ("files", "files undo reroll save load export quit", "undo, files, quit: /undo, /reroll, /save, /load, /export"),
 ]
@@ -2135,6 +2142,23 @@ def handle_command(s, line):
         print(f"{f.name} is now {s.eng.facing[f.name]} (pins and the story will follow)"
               + (f"; presses moved: {', '.join(moved)}" if moved else ""))
         s.autosave(); return
+    if cmd in ("budget", "beatbudget"):
+        n = s.eng.rules.setdefault("narration", {})
+        if not a:
+            print(f"Beat time budget: {n.get('beat_budget_minutes', 6)} min (past it, the optional extra passes stop: a "
+                  "second whole rewrite, wording-only fixes, the second reading; nothing is shortened). Timing line: "
+                  f"{'on' if n.get('show_timing', True) else 'off'}.\nUse: /budget <minutes|off>   /budget timing on|off"); return
+        if a[0].lower() == "timing":
+            on = len(a) < 2 or a[1].lower() in ("on", "yes", "true")
+            n["show_timing"] = on
+            _save_rules_key(["narration", "show_timing"], on)
+            print(f"Timing line {'on' if on else 'off'} (saved)"); return
+        val = 0.0 if a[0].lower() in ("off", "none", "0") else float(a[0].rstrip("m"))
+        if val < 0:
+            raise ValueError("minutes, 0 or more")
+        n["beat_budget_minutes"] = val
+        _save_rules_key(["narration", "beat_budget_minutes"], val)
+        print(f"Beat time budget {'off' if not val else f'{val:g} min'} (saved)"); return
     if cmd in ("pins", "pinrate"):
         pu = s.eng.rules.setdefault("director", {}).setdefault("pin_urge", {})
         if not a:
