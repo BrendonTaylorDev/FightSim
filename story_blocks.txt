@@ -2220,3 +2220,879 @@ she licks the split in her lip and keeps her eyes up
 she shakes the water out of her ears and doesn't take her eyes off the other one | has: ears
 she resettles her weight off the sore side, then, deliberately, back onto it
 she stares across the gap until the other one has to move
+
+# pain_show: how a fighter visibly SHOWS the pain of a hit in one body part, sized to its level.
+# The narrator gets 2-3 of these that fit the engine's numbers and rewords them. Keep reactions
+# in proportion: minor barely registers, sore is shaken off, hurting is clear but contained,
+# very painful may draw a short cry, excruciating may draw screams, devastated means the part barely works.
+
+# ============================================================
+# MINOR: barely registers
+# ============================================================
+== pain_show | level: minor
+a blink, and her eyes are back on the fight
+she flicks a glance down at {part} and away
+a small huff through her nose
+she shrugs it off without breaking stride
+her weight shifts a hair and settles
+not even a pause in her footing
+she rolls her neck once, unbothered
+a slight tightening at the corner of her mouth
+she brushes past it as if it were a fly
+the hit draws nothing but a short exhale
+she resets her stance like nothing happened
+her eyes narrow a fraction, nothing more
+a twitch along {part}, gone in an instant
+she lets out a breath she didn't need to hold
+she keeps moving, {part} working as it should
+a quick downward glance, then she is watching her opponent again
+her lips press together for half a heartbeat
+the skin over {part} prickles and fades
+she takes it the way she'd take a shove in a crowd
+a faint sting she files away and ignores
+her stance gives an inch and takes it back
+she blinks once, slower than usual
+a dull tap she barely seems to feel
+she half-turns {part} toward the blow, then forgets it
+her rhythm doesn't change
+the impact earns no more than a flick of her eyes
+she tilts her head, almost curious
+a light flush of warmth over {part}
+she sniffs, steady as before
+her shoulders lift and drop in a shrug
+she gives {part} one small shake and moves on
+the hit lands, and she answers it with a level look
+a short puff of air
+she doesn't even look at where it landed
+her focus stays fixed forward
+a tiny hitch in her breathing, smoothed over at once
+she flexes {part} once out of habit
+she steps through it as if it were wind
+her jaw shifts, a small adjustment
+the tingle in {part} is already fading
+a quick twitch of her mouth, more annoyance than hurt
+she settles back onto her feet without hurry
+whatever she felt, it doesn't reach her face
+she squares up again, unmoved
+a faint pink mark on {part}, nothing she minds
+one brow lifts slightly
+she lets the force roll through and out of her
+a brief stillness, then she carries on as before
+
+== pain_show | level: minor | zone: head
+she blinks hard once to clear her eyes
+she gives her head a single brisk shake
+her head tips with the blow and comes straight back
+== pain_show | level: minor | zone: neck
+she rolls her neck, loosening it
+her chin dips and lifts again
+== pain_show | level: minor | zone: chest
+a soft breath knocked out of her, drawn back in at once
+her chest lifts in one deeper breath, then settles
+== pain_show | level: minor | zone: belly
+her middle tightens and loosens
+a small *hff* as her stomach takes it
+== pain_show | level: minor | zone: back
+she arches her back slightly, settling it
+a ripple of muscle along her back, then calm
+== pain_show | level: minor | zone: arm
+she flexes the limb once and plants it again
+the limb jolts and is steady by the next breath
+== pain_show | level: minor | zone: leg
+her hind weight shifts and resettles
+the hind leg dips a fraction and straightens
+== pain_show | level: minor | zone: tail
+her tail flicks once at the touch
+the tail sways back into its rhythm
+
+== pain_show | level: minor
+her ears flick back and forward again | has: ears
+one ear twitches toward {part} and returns | has: ears
+her ears barely stir | has: ears
+the tip of her tail twitches once | has: tail
+her tail keeps its slow, unhurried sway | has: tail
+the fur along her tail lifts a little and lies down | has: tail
+her twin tails give a single flick | has: tails
+her twin tails sway apart and settle together | has: tails
+one of her tails curls and uncurls | has: tails
+her fins ripple once and lie still | has: fins
+a brief flicker runs along her fins | has: fins
+her fins lift a touch, then smooth back | has: fins
+her ruff lifts a little, then smooths | has: ruff
+the fur of her ruff stirs and settles | has: ruff
+her ruff barely ruffles | has: ruff
+she dips her horn slightly, a reflexive nod | has: horn
+her horn stays level and pointed at her opponent | has: horn
+she tosses her horn once, dismissive | has: horn
+her wings rustle and fold back | has: wings
+a slight lift of her wings, then stillness | has: wings
+her wingtips flick once | has: wings
+she brushes the spot with the back of her hand | has: arms
+she shakes out her hand once | has: arms
+her fingers flex and her guard comes back up | has: arms
+she paws the ground once | has: forelegs
+she shifts her forefeet and stands square | has: forelegs
+her forelegs set a little wider, then relax | has: forelegs
+she bounces on her legs once | has: legs
+her knees give a fraction and straighten | has: legs
+she steps lightly from foot to foot | has: legs
+her antennae twitch and go still | has: antennae
+she clicks her beak shut | has: beak
+her talons flex against the ground | has: talons
+
+# ============================================================
+# SORE: brief wince or grunt, shaken off, part still used fully
+# ============================================================
+== pain_show | level: sore
+a short hiss through her teeth
+a quick wince that's gone before it lands
+she grunts and shakes {part} out
+her face tightens, then smooths over
+she tests {part} once, finds it holds, and moves on
+a sharp little exhale through her nose
+her eyes squeeze shut for a blink and open again
+she bares her teeth briefly at the sting
+a grimace she swallows almost at once
+she shakes it off with a toss of her head
+the sting in {part} makes her suck in a breath
+her breath catches, then evens out
+she rolls {part} once, loosening it
+a brief flinch, more surprise than hurt
+a low growl under her breath
+her lips pull back for a moment, then relax
+a hot sting spreads across {part} and dulls
+she checks her footing, then steps in again
+a short grunt, and her guard is back up
+her brow knots and unknots
+she takes the sting with a tightened jaw
+she flexes {part} and the ache settles to a throb
+a moment's stiffness, then she's moving freely
+she exhales hard, pushing it out of her
+the impact jolts a small *hff* out of her
+she glares, more irritated than hurt
+a sting that makes her blink twice
+her stance wavers briefly before she plants herself
+she tucks her chin and keeps her eyes up
+the throb in {part} earns a sour look
+a hiss, and she's already circling again
+she grits her teeth until the sharpness passes
+her nostrils flare once
+she gives {part} a quick test, then trusts it
+she lets the hurt show for a heartbeat, no longer
+her breathing quickens a little, then settles
+she squares her shoulders against the sting
+a small sound in her throat, swallowed down
+she twists slightly away from the sting and back
+the spot warms and starts a dull throb
+she bites down on a grunt
+her eyes water briefly, and she blinks them clear
+she resets her guard a touch tighter
+the bruise will come later; for now she ignores it
+a twitch of pain at the corner of her eye
+she shifts {part} as though settling a strap that pinched
+she sniffs hard and gets on with it
+a grunt, half annoyance, half hurt
+
+== pain_show | level: sore | zone: head
+she blinks hard twice and her eyes refocus
+she shakes her head once to clear the ring from it
+she squints for a moment, jaw tight
+a dull throb starts up at her temple
+her head snaps back and she brings it level again
+she presses her eyes shut for an instant, then glares
+== pain_show | level: sore | zone: neck
+she rolls her neck stiffly once
+her head tilts away from the sore side for a moment
+a grunt as she turns her head too fast
+she works her jaw, loosening the side of her neck
+the side of her neck tightens and she shrugs it loose
+she tucks her chin and the sting fades
+== pain_show | level: sore | zone: chest
+the breath knocked short, she takes another
+a grunt as some of the air goes out of her
+she draws a deep breath to test her chest, and it holds
+a tight sting across her chest makes her hiss
+she hunches a little, then straightens
+a single cough that she shakes off
+== pain_show | level: sore | zone: belly
+her stomach muscles clench against the blow
+a short *oof* pushed out of her
+she tightens her middle and breathes through it
+she curls forward a fraction, then straightens
+the ache in her gut fades to a dull throb
+she exhales hard, guarding her middle for a moment
+== pain_show | level: sore | zone: back
+she arches against the sting, then settles
+her spine stiffens briefly
+she twists once to loosen the ache between her shoulders
+a hiss as the muscles along her back bunch
+she shrugs the soreness out of her back
+she stretches tall for a moment, working it loose
+== pain_show | level: sore | zone: arm
+she shakes the limb out once
+she flexes the paw open and closed, testing it
+a quick wince the next time she uses the limb
+the limb tingles, then she trusts it again
+she rotates the shoulder above it, checking
+the forelimb stings when she uses it, and she uses it anyway
+== pain_show | level: sore | zone: leg
+she shakes the hind leg out behind her
+a hitch in her step, gone by the next one
+she stamps once, testing the leg
+she shifts her weight off it for a heartbeat
+the leg throbs as she pushes off, and holds
+her stride shortens for a step, then evens out
+== pain_show | level: sore | zone: tail
+her tail lashes once at the sting
+she curls her tail closer for a moment
+the tail stiffens, then swings free again
+a hiss as her tail jerks
+she gives her tail a hard shake
+she keeps the tail tucked a beat longer than she needs to
+
+== pain_show | level: sore
+her ears pin back for a moment | has: ears
+one ear flattens and slowly rises again | has: ears
+her ears twitch flat with the hiss | has: ears
+her ears swivel back, then forward, irritated | has: ears
+her tail lashes once, hard | has: tail
+the fur on her tail fluffs out briefly | has: tail
+her tail goes stiff behind her, then loosens | has: tail
+both her tails whip sideways together | has: tails
+her twin tails bristle and settle | has: tails
+her twin tails curl in, then fan out again | has: tails
+her fins flare stiffly and lower | has: fins
+her fins clamp down for a moment | has: fins
+a ripple of tension runs down her fins | has: fins
+her ruff bristles up | has: ruff
+the fur of her ruff stands, then smooths | has: ruff
+her ruff puffs out around her neck | has: ruff
+she lowers her horn, jaw tight | has: horn
+she tosses her horn as if to shake off the sting | has: horn
+her horn dips, then comes back up | has: horn
+her wings jerk half open | has: wings
+her wings snap tight against her back | has: wings
+a twitch runs through her wingtips | has: wings
+she shakes out her hand | has: arms
+she touches {part} briefly with her fingertips | has: arms
+her fists clench and open | has: arms
+she stamps a forefoot | has: forelegs
+she paws at the ground, irritated | has: forelegs
+her forelegs tense, then plant | has: forelegs
+her knees flex as she resettles | has: legs
+she bounces on her toes to shake it off | has: legs
+she shifts from one leg to the other | has: legs
+her antennae jerk back, then rise | has: antennae
+her beak snaps shut on a grunt | has: beak
+her talons rake the ground once | has: talons
+
+# ============================================================
+# HURTING: clear pain, checks or favours the part a little, still contained
+# ============================================================
+== pain_show | level: hurting
+she grimaces, teeth showing
+a sharp breath hissed in through her teeth
+she checks {part} with a quick look and a wince
+she favours {part} a little as she moves
+her movements around {part} turn careful
+a short growl of pain, cut off
+she hesitates a beat before using {part}
+the throb in {part} keeps pace with her heartbeat
+her face pinches tight and stays that way a moment
+she breathes out slowly through pursed lips
+a yelp she bites short
+she shifts to keep {part} away from her opponent
+the ache settles in deep and doesn't leave
+she grunts whenever she has to use {part}
+her eyes sting wet for a moment
+she holds still a heartbeat, waiting for the throb to ease
+her guard drops slightly on the hurt side
+a sharp intake of breath as {part} moves
+she stiffens, then makes herself loosen
+her teeth clench hard enough to show in her jaw
+the bruise is already darkening on {part}
+she circles to put her good side forward
+a hiss leaks out with her next few steps
+she tries to shake it off and doesn't quite manage
+her breathing grows heavier, more deliberate
+she keeps {part} slightly tucked, not quite trusting it
+the next movement comes a fraction slow
+a pained grunt escapes before she can stop it
+her mouth tightens into a thin line
+she glances at {part}, checking it still answers her
+she tenses for the next blow on that side
+a dull pulsing ache spreads out from {part}
+her brows draw together and stay drawn
+she sucks air sharply, then steadies
+the swelling starts, tight under the skin
+she moves around the pain rather than through it
+a low growl rumbles in her chest
+she blows out a hard breath and resets
+she can't hide the wince this time
+she tests {part} gingerly before trusting it
+the throb makes her pause mid-motion
+her stance widens for steadiness
+she flexes {part} and grimaces at the stiffness
+a soft hiss each time she breathes in
+it takes her a moment to move freely again
+she shortens her movements to spare {part}
+her lip curls back over her teeth and stays there
+
+== pain_show | level: hurting | zone: head
+she shakes her head hard, teeth gritted
+a throbbing ache settles behind her eyes
+she squints against the pounding in her skull
+she keeps her head a little lower, guarded
+a grimace as she turns her head too quickly
+a dull ringing in her ears that she shakes off
+== pain_show | level: hurting | zone: neck
+she holds her head stiffly, sparing her neck
+turning her head draws a wince
+she tucks her chin low to protect her throat
+her neck muscles knot and she works against them
+a sharp breath as the ache runs down from her neck
+she turns her whole body instead of just her head
+== pain_show | level: hurting | zone: chest
+each breath catches a little at the top
+she breathes shallow to spare her chest
+a cough that makes her grimace
+she curls her shoulders in over her chest
+she draws a limb in close to guard her chest
+deep breaths bring a sharp twinge, so she keeps them short
+== pain_show | level: hurting | zone: belly
+she hunches slightly over her middle
+a grunt as her stomach muscles knot
+she keeps a limb low across her belly, guarding
+her breath comes out rough from the blow to her gut
+she straightens slowly, wincing
+the ache in her belly makes her lean back from her opponent
+== pain_show | level: hurting | zone: back
+she moves stiffly, keeping her spine straight
+twisting draws a sharp hiss
+she arches, trying to ease the knot in her back
+she avoids bending, holding her back rigid
+a grunt as she has to turn too fast
+the ache between her shoulders pulls her into a slight hunch
+== pain_show | level: hurting | zone: arm
+she keeps the limb tucked closer to her body
+she grimaces each time the limb takes weight or strikes
+she flexes the paw, and it's slow to close
+she starts leading with her other side
+she shakes the limb and winces at the throb
+she uses the limb more carefully, a hair late
+== pain_show | level: hurting | zone: leg
+a slight limp creeps into her step
+she favours the hind leg, keeping her weight forward
+pushing off draws a wince
+she plants carefully, testing the leg each time
+the leg stiffens under her and she shifts off it
+her stride shortens on that side
+== pain_show | level: hurting | zone: tail
+she keeps her tail tucked close
+her tail hangs lower, its swing cut short
+she winces when her tail brushes anything
+the tail jerks and she hisses
+she holds her tail still, not trusting it
+her balance goes slightly off with the tail held stiff
+
+== pain_show | level: hurting
+her ears pin back hard against her skull | has: ears
+one ear droops while the other flicks | has: ears
+her ears twitch with each throb | has: ears
+her tail curls tight against her | has: tail
+her tail lashes in short, pained jerks | has: tail
+the tip of her tail quivers | has: tail
+her twin tails curl tight around her | has: tails
+her twin tails twitch out of rhythm | has: tails
+her tails pull in close to her body | has: tails
+her fins stay flattened tight | has: fins
+her fins quiver with the throb | has: fins
+one fin twitches and is held stiff | has: fins
+her ruff stays bristled | has: ruff
+her ruff flattens as she grimaces | has: ruff
+her ruff ripples as she flinches | has: ruff
+she carries her horn lower | has: horn
+she ducks her horn forward to cover the hurt side | has: horn
+her horn wavers as she grimaces | has: horn
+her wings half-spread for balance | has: wings
+her wings clamp tight to her sides | has: wings
+a wing twitches and droops slightly | has: wings
+she presses a hand to {part} | has: arms
+her fingers curl protectively near {part} | has: arms
+she rubs {part} with the heel of her hand | has: arms
+she lifts a forefoot briefly off the ground | has: forelegs
+she shifts her weight back onto her hindquarters | has: forelegs
+a forefoot paws restlessly at the ground | has: forelegs
+she shifts her weight from foot to foot | has: legs
+her knees bend lower, bracing | has: legs
+she favours one leg slightly | has: legs
+her antennae fold back and stay there | has: antennae
+her beak clacks as she grits against it | has: beak
+her talons dig hard into the ground | has: talons
+
+== pain_show | level: hurting | state: tired
+she's too worn to hide the wince now
+the ache settles into her tired limbs like extra weight
+she grunts and takes longer to reset
+== pain_show | level: hurting | state: spent
+she barely manages to keep {part} up
+the throb drags at her already heavy movements
+== pain_show | level: hurting | state: winded
+a hiss that turns into a cough as she tries to breathe
+
+# ============================================================
+# VERY PAINFUL: strong pain, a short cry at most, guards and favours the part
+# ============================================================
+== pain_show | level: very painful
+a short cry jolted out of her
+she pulls {part} in close and guards it
+a strangled sound caught in her throat
+she hesitates before putting any effort through {part}
+she favours {part} openly now
+the hurt is plain enough that her opponent sees it
+she staggers a step and catches herself
+her breath comes in short, sharp pulls
+she cries out once, then clamps her jaw shut
+she shields {part} with the rest of her body
+her face twists, and she can't smooth it out
+a hoarse yelp torn from her
+she moves stiffly around {part}
+she flinches at each movement of {part}
+her eyes water and she blinks hard against it
+she sinks lower, bracing against it
+she backs off a step to collect herself
+her guard stays clamped on the hurt side
+a groan rumbles low in her throat
+she can't stop the wince that follows every motion
+she sucks in breath through her teeth, again and again
+she shifts to keep her opponent off that side
+her shoulders hunch around the hurt
+she holds still for a long moment, gathering herself
+{part} throbs hot and swollen
+a sharp cry that she cuts off mid-sound
+she has to force {part} to move
+the hurt slows her, and it shows
+she flinches from her opponent's next feint
+her breathing goes ragged
+she grits her teeth and shoves past it
+her lips peel back in a snarl of pain
+a moan escapes, low and short
+she draws {part} out of reach
+she glances at {part}, and doesn't like what she feels
+she uses {part} only when she must
+her movements turn deliberate and slow
+strain carves deep lines into her face
+she gasps once as {part} moves wrong
+her posture curls protectively around the hurt
+her stance drops low and wide
+she sets her teeth and forces herself back in
+a short, hoarse cry and a stumble
+she hisses with each movement of {part}
+she keeps her weight off {part} as much as she can
+the swelling on {part} is visible now
+a rough grunt that is half a cry
+she gives ground rather than meet the next blow on that side
+
+== pain_show | level: very painful | zone: head
+her head rocks back and she cries out
+she shakes her head, but the pounding stays
+she squeezes her eyes shut against the throbbing
+she keeps her head low and tucked, guarding it
+a ringing in her ears sends her a step sideways
+she flinches at every sudden movement of her head
+== pain_show | level: very painful | zone: neck
+she can barely turn her head
+she cries out when her head jerks
+she holds her neck rigid, turning her whole body
+she hunches her shoulders up to guard her neck
+even swallowing makes her wince
+a short cry as her head is knocked sideways
+== pain_show | level: very painful | zone: chest
+each breath draws a pained hitch
+she breathes in shallow sips
+a cry as the air is driven from her
+she hunches over her chest, guarding it
+coughing makes her wince hard
+she can't fill her lungs all the way
+== pain_show | level: very painful | zone: belly
+she doubles over for a moment before straightening
+a pained cry, her middle clenched
+she holds a limb across her belly
+she breathes shallow to spare her gut
+she bends forward, guarding her middle
+straightening up costs her a groan
+== pain_show | level: very painful | zone: back
+she cries out as her back arches
+she moves stiffly, her back held rigid
+turning draws a sharp cry
+she hunches against the spasms in her back
+the muscles along her back knot visibly
+she can't twist without wincing
+== pain_show | level: very painful | zone: arm
+she holds the limb close and favours it
+she can't put her full force through the limb
+a cry as the limb takes her weight
+she hesitates, then strikes with her other side
+the paw won't close all the way
+she keeps the limb pulled back from any contact
+== pain_show | level: very painful | zone: leg
+she limps badly
+she can barely push off with the hind leg
+a cry as she puts weight on it
+her stride drags on that side
+her hind leg buckles briefly and she catches herself
+she keeps her weight on her other limbs
+== pain_show | level: very painful | zone: tail
+her tail hangs low and stiff
+she cries out as her tail is jarred
+she keeps her tail clamped tight against her
+the tail stays still, held carefully
+she can't swing her tail without wincing
+her balance suffers with the tail clamped
+
+== pain_show | level: very painful
+her ears pin flat and won't lift | has: ears
+her ears press back so hard they nearly vanish into her fur | has: ears
+one ear keeps flicking toward the hurt | has: ears
+her tail clamps tight under her | has: tail
+her tail jerks with each throb | has: tail
+her tail goes rigid behind her | has: tail
+her twin tails wrap tight around her | has: tails
+her twin tails lash in jerky, pained strokes | has: tails
+one of her tails droops | has: tails
+her fins clamp tight and quiver | has: fins
+her fins fold down hard | has: fins
+her fins flare wide in a spasm | has: fins
+her ruff stands fully on end | has: ruff
+her ruff bristles and ripples with each breath | has: ruff
+her ruff flattens tight to her neck | has: ruff
+she drops her horn low, guarding | has: horn
+her horn sways as she staggers | has: horn
+she levels her horn at her opponent, buying time | has: horn
+she folds a wing over {part} | has: wings
+her wings half-drop | has: wings
+her wings flare out for balance | has: wings
+she clutches {part} with one hand | has: arms
+her hand presses hard over {part} | has: arms
+she holds an arm across her body | has: arms
+she lifts a foreleg clear of the ground | has: forelegs
+her forelegs splay for balance | has: forelegs
+she sinks onto her forelegs and pushes back up | has: forelegs
+one leg buckles and she catches it | has: legs
+she stands lopsided on her legs | has: legs
+her legs brace wide | has: legs
+her antennae pull flat against her head | has: antennae
+a short cry from her open beak | has: beak
+her talons clench and scrape | has: talons
+
+== pain_show | level: very painful | state: tired
+the cry comes easier now that she's worn down
+she sags around {part}, too tired to hide it
+== pain_show | level: very painful | state: spent
+she barely has the breath left to cry out
+she needs a long moment before {part} moves at all
+== pain_show | level: very painful | state: winded
+the cry comes out as a wheeze
+
+# ============================================================
+# EXCRUCIATING: overwhelming; screams allowed, staggers, can barely use the part
+# ============================================================
+== pain_show | level: excruciating
+a raw cry tears out of her
+she screams, short and hoarse
+she staggers badly, nearly falling
+she can barely move {part}
+her whole body trembles
+she can't think past {part}
+her eyes squeeze shut, wet at the corners
+a long, ragged cry
+she folds around {part}
+her stance nearly gives out under her
+she gasps in short, shuddering breaths
+{part} won't answer her properly
+for a moment she forgets the fight and knows only {part}
+she shakes from head to foot
+she bites down on a scream and it leaks out anyway
+she stumbles back, guarding {part} with everything she has
+her breath hitches into a whimper
+a hoarse howl of pain
+she drops low, then drags herself up
+{part} trembles and won't stop
+every movement draws a cry
+she freezes, rigid, unable to move for a moment
+she drags {part} rather than using it
+her teeth clench so hard her jaw shakes
+a cold shiver runs through her
+she pants in fast, shallow gasps
+sounds of pain leak out with every breath
+her guard falls apart on the hurt side
+she lurches, off-balance
+her eyes go wide and unfocused for an instant
+a choked, keening sound
+she can't keep {part} still; it twitches and jerks
+a scream she cuts short, breathing hard
+she curls in on herself
+she sways in place
+her whole body flinches when {part} shifts
+she nearly drops, then catches herself
+her cries come out in bursts
+she shudders hard
+it takes everything to keep her head up
+{part} is swollen and hot
+she stumbles and barely keeps her footing
+the pain drives everything else out of her eyes
+she wrenches herself upright with a cry
+she clings to her stance through the trembling
+she can't string two moves together without stopping
+
+== pain_show | level: excruciating | zone: head
+her head lolls before she drags it up
+she presses her head low, crying out against the pounding
+she staggers, dazed
+she shakes her head and nearly falls
+a high cry as her head is wrenched aside
+she squeezes her eyes shut against the hammering in her skull
+== pain_show | level: excruciating | zone: neck
+she can't turn her head at all
+a scream as her neck is wrenched
+she holds her neck locked, trembling
+her head droops and she cries out lifting it
+every breath pulls at her neck
+she shields her neck with shaking limbs
+== pain_show | level: excruciating | zone: chest
+she can barely draw breath
+each breath ends in a cry
+she wheezes, chest heaving
+she folds forward, gasping
+she curls over her chest, shuddering
+shallow gasps that never fill her
+== pain_show | level: excruciating | zone: belly
+she doubles over, crying out
+she can barely straighten
+she curls around her middle
+a hoarse scream as her gut seizes
+she sinks low, guarding her belly
+she gasps, unable to stand straight
+== pain_show | level: excruciating | zone: back
+she screams as her back spasms
+she can barely twist
+she arches in pain and nearly falls
+she moves hunched and rigid
+her back trembles under the strain
+a cry each time she bends
+== pain_show | level: excruciating | zone: arm
+the limb hangs, barely usable
+she cries out when the limb brushes anything
+the paw won't grip at all
+she holds the limb tight against her, shaking
+she can't put any weight on the limb
+she fights one-sided now, the hurt limb held back
+== pain_show | level: excruciating | zone: leg
+the hind leg nearly gives out
+she screams as the leg takes her weight
+she limps heavily, dragging the leg
+she stumbles as the leg folds
+she hops and lurches to keep weight off it
+she can barely stand on the leg
+== pain_show | level: excruciating | zone: tail
+her tail drags limp
+a scream as her tail is jolted
+she can't lift her tail
+the tail trembles and twitches
+her balance wavers with the tail gone useless
+she wraps the tail around herself, shaking
+
+== pain_show | level: excruciating
+her ears are plastered flat and trembling | has: ears
+her ears twitch erratically | has: ears
+her ears droop sideways | has: ears
+her tail goes limp | has: tail
+her tail thrashes in pain | has: tail
+her tail curls tight around her, quivering | has: tail
+her twin tails sag | has: tails
+her twin tails thrash wildly | has: tails
+one of her tails hangs limp while the other quivers | has: tails
+her fins spasm | has: fins
+her fins droop slack | has: fins
+her fins quiver violently | has: fins
+her ruff stands stiff and shaking | has: ruff
+her ruff flattens to nothing | has: ruff
+a shudder runs through her ruff | has: ruff
+her horn sways as her head drops | has: horn
+she can barely hold her horn up | has: horn
+her horn scrapes the ground as she sags | has: horn
+her wings drop and drag | has: wings
+her wings spasm open | has: wings
+her wings shake and won't fold | has: wings
+she clutches {part} with both hands | has: arms
+her arms shake as she raises them | has: arms
+her hand hovers trembling near {part}, afraid to touch it | has: arms
+her forelegs buckle | has: forelegs
+she falls onto her forelegs and shoves herself up | has: forelegs
+she can't keep her forelegs steady | has: forelegs
+her knees buckle | has: legs
+she stumbles on shaking legs | has: legs
+her legs tremble as she rises | has: legs
+her antennae jerk and curl | has: antennae
+a scream from her wide-open beak | has: beak
+her talons claw at the ground for purchase | has: talons
+
+== pain_show | level: excruciating | state: tired
+she sways, worn out, the trembling getting worse
+she has no strength left to hide any of it
+== pain_show | level: excruciating | state: spent
+a scream with no breath behind it
+she sags, barely upright
+== pain_show | level: excruciating | state: winded
+she can't get enough air to cry out properly
+
+# ============================================================
+# DEVASTATED: past pain; the part barely works, she fights on with the rest of her
+# ============================================================
+== pain_show | level: devastated
+{part} hangs slack, barely responding
+broken whimpers leak out with every breath
+the slightest movement of {part} draws a cry
+{part} trembles, useless
+she fights with everything but {part}
+she can't make {part} obey
+a thin, broken whimper
+she keeps the rest of her moving, {part} dead weight
+{part} twitches but won't move
+each touch to {part} brings a strangled cry
+she's past flinching now
+she shifts her weight entirely off {part}
+she breathes in ragged, shaking gasps
+she drags {part} along with her
+a hollow, shuddering sound
+her face is drawn and grey
+she sets her jaw and fights on without {part}
+{part} lies limp against her side
+every heartbeat throbs in {part}
+whimpers she can't stop
+she turns {part} away from her opponent
+she trembles from head to foot
+{part} hangs swollen and slack
+she fights lopsided, compensating
+her eyes are glassy with pain
+a low moan that doesn't stop
+she leans entirely on her good side
+{part} jerks and spasms on its own
+she keeps fighting with whatever she has left
+her eyes leak at the corners from the pain
+she flinches at her opponent's every move
+the hurt in {part} has gone numb and strange
+she can't feel {part} properly anymore
+{part} answers a beat late, if at all
+a cry escapes whenever she has to use {part}
+she shakes but holds her ground
+she swallows her cries and fights on
+she curls {part} close, protecting what's left
+her breath shudders in and out
+she stands unsteadily, but she stands
+she grinds out a whimper through her teeth
+she lashes out with her other side
+every movement is slow and halting
+she moves as if {part} belonged to someone else
+a weak sound slips out when {part} is jostled
+
+== pain_show | level: devastated | zone: head
+her head sways, too heavy to hold up
+she stumbles, her eyes unfocused
+she barely raises her head
+she shakes her head weakly and it doesn't clear
+whimpering, she keeps her head low
+she blinks slowly, as if surfacing
+== pain_show | level: devastated | zone: neck
+her head hangs
+she can't turn her head at all
+she whimpers lifting her head
+her neck sags under the weight of her head
+she keeps her neck utterly still
+she turns her whole body to look anywhere
+== pain_show | level: devastated | zone: chest
+breathing is a struggle
+each breath brings a whimper
+she gasps shallow and quick
+she slumps forward over her chest
+her chest heaves and shudders
+she wheezes with every breath
+== pain_show | level: devastated | zone: belly
+she stays hunched over her middle
+she can't straighten at all
+she whimpers whenever her middle shifts
+she keeps herself curled over her belly
+her middle trembles
+she sinks low and stays there
+== pain_show | level: devastated | zone: back
+her back sags
+she can't straighten her back
+she whimpers at every twist
+she moves hunched and stiff
+the muscles along her back quiver
+she drags herself forward, back bowed
+== pain_show | level: devastated | zone: arm
+the limb hangs useless
+she fights on without the limb
+the paw drags along the ground
+she can't lift the limb
+the limb twitches weakly
+she cradles the limb against herself
+== pain_show | level: devastated | zone: leg
+the hind leg drags
+she can't stand on the leg
+she fights from a crouch
+the leg folds under her
+she hobbles on her other limbs
+she keeps the leg off the ground
+== pain_show | level: devastated | zone: tail
+her tail drags limp
+her tail lies still on the ground
+the tail twitches weakly
+she can't lift her tail
+a whimper as her tail scrapes the ground
+she fights off balance without her tail
+
+== pain_show | level: devastated
+her ears hang limp | has: ears
+her ears twitch weakly, then still | has: ears
+one ear droops flat, the other quivers | has: ears
+her tail lies limp behind her | has: tail
+her tail trembles and drags | has: tail
+her tail barely twitches | has: tail
+her twin tails drag limp | has: tails
+one of her tails hangs dead while the other trembles | has: tails
+her twin tails shiver weakly | has: tails
+her fins hang slack | has: fins
+her fins tremble weakly | has: fins
+her fins fold limp against her | has: fins
+her ruff lies flat and still | has: ruff
+her ruff trembles faintly | has: ruff
+her ruff hangs limp around her neck | has: ruff
+her horn droops toward the ground | has: horn
+she can barely lift her horn | has: horn
+her horn wavers weakly | has: horn
+her wings drag | has: wings
+her wings hang half-open, trembling | has: wings
+a wing twitches and won't fold | has: wings
+her hand hangs limp | has: arms
+she cradles {part} with her other arm | has: arms
+her fingers twitch but won't close | has: arms
+a foreleg folds beneath her | has: forelegs
+she can barely stand on her forelegs | has: forelegs
+she leans her weight onto her hindquarters | has: forelegs
+her legs shake under her | has: legs
+she sinks to her knees and rises again | has: legs
+one leg barely holds her | has: legs
+her antennae droop | has: antennae
+a faint sound from her half-open beak | has: beak
+her talons scrape weakly | has: talons
+
+== pain_show | level: devastated | state: tired
+she can barely keep {part} from dragging
+her whimpers grow quieter, worn out
+== pain_show | level: devastated | state: spent
+she has nothing left but her will
+her body shudders, empty
+== pain_show | level: devastated | state: winded
+she gasps without sound
