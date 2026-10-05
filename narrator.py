@@ -1616,9 +1616,13 @@ FILLER = re.compile(
     r"(?:with|in) (?:a )?(?:newfound|renewed|grim|fierce) (?:determination|resolve|purpose)|"
     r"would not let (?:this|it|that|her) (?:end|beat|break|finish) her)", re.I)
 
+# a sentence about how a part hurts (for "the same hurt told again and again")
+HURT_SAID = re.compile(r"\b(?:throb\w*|ach(?:e|ed|es|ing)|burn\w*|sting\w*|pain\w*|hurt\w*|sore\w*|flar\w+|pulse\w*|"
+                       r"pulsing|tender|agony|fire|protest\w*)\b", re.I)
+
 # blood in her mouth, a trickle, a coppery taste: only for a fighter something has really hurt
 BLOOD_SAID = re.compile(r"\b(?:taste of (?:her own )?blood|blood (?:in|filled|filling) her mouth|trickle of blood|"
-                        r"blood (?:ran|dripp\w*|trickl\w*|welled|seeped|beaded|oozed)|bled|bleeding|coppery|metallic "
+                        r"blood (?:ran|dripp\w*|trickl\w*|welled|seeped|beaded|oozed)|bled|bleeding|copper(?:y)?|metallic "
                         r"(?:tang|taste))\b", re.I)
 
 # the plain ground under them: landing on it needs no naming
@@ -4969,7 +4973,7 @@ class Narrator:
     def _offer_line(self, add, label, category, fmt=None, exclude=None, **ctx):
         """One finished sentence from the library for this part (at most one per part), handed over with `add`."""
         L = self._lines()
-        if not L.enabled or getattr(self, "_line_offers", 0) >= 1:
+        if not L.enabled or getattr(self, "_line_offers", 0) >= (2 if getattr(self, "_important", False) else 1):
             return
         fmt = dict(fmt or {})
         part = str(fmt.get("part") or "")
@@ -6892,7 +6896,7 @@ class Narrator:
         self._note_phrases(user_msg)
         text = self._generate(user_msg, words)
         issues = self._review(text, coverage, prior)
-        mode = str(self.rules.get("narration", {}).get("best_of_two", "important")).lower()
+        mode = str(self.rules.get("narration", {}).get("best_of_two", "never")).lower()
         if mode == "always" or (mode == "important" and self._important):
             # a big moment: write a second draft and keep whichever has fewer problems
             if self.progress:
@@ -7274,10 +7278,33 @@ class Narrator:
                     ideas = B.pick("resolve_shown", 2, has=feats_w, state=st)
                 add(x, f"\"{m.group(0)}\" tells it instead of showing it: show it in her body and what she does"
                        + (" (for example: " + "; ".join(ideas) + ")" if ideas else "") + ", or leave it out")
+        told = {}
+        for x in ((prior or "") + "\n" + text).split("\n"):
+            for s in _SENT.split(x.strip()):
+                if not s or not HURT_SAID.search(s):
+                    continue
+                for w, parts in (getattr(self, "damage_by", None) or {}).items():
+                    for p in parts:
+                        if parts[p] >= 30 and _mentions_exact(s.lower(), p):
+                            told.setdefault((w, p), []).append(s)
+        for (w, p), ss in told.items():
+            limit = 4 if (getattr(self, "damage_by", None) or {}).get(w, {}).get(p, 0) >= 150 else 3
+            for s in ss[limit:]:
+                if s in text:
+                    add(s, f"{poss(w)} {p} has already been described {limit} times this beat: show something new instead "
+                           f"(what she does about it, her opponent, the place), or leave it out")
+        for sent, whos, named in self._said(text):
+            if len(whos) == 1 and re.search(r"\b(?:three legs|all fours|four legs|hind legs?|forelegs?)\b", sent, re.I) \
+                    and "arms" in self._feats_of(whos[0]) and "forelegs" not in self._feats_of(whos[0]):
+                add(sent, f"{whos[0]} stands on two legs and has arms: no forelegs, hind legs or all fours")
         for sent, whos, named in self._said(text):
             if len(whos) == 1 and BLOOD_SAID.search(sent):
                 w = whos[0]
-                hurt = max(((getattr(self, "damage_by", None) or {}).get(w) or {"": 0}).values())
+                mine = (getattr(self, "damage_by", None) or {}).get(w) or {"": 0}
+                hurt = max(mine.values())
+                if re.search(r"\bmouth|tongue|lip|taste|coppery|metallic", sent, re.I):
+                    hurt = max([d for p, d in mine.items() if re.search(r"jaw|muzzle|cheek|mouth|lip|nose|throat|head", p)]
+                               or [0])
                 biter = w in (getattr(self, "_attackers", None) or set()) and "teeth" in (getattr(self, "_weapons_ok", None) or set())
                 if hurt < 30 and not biter:
                     add(sent, f"blood on {w}, but nothing has cut or hurt her enough to bleed: leave it out")
@@ -7346,7 +7373,8 @@ class Narrator:
         # wording-only findings (filler, a repeated phrase, a leaked label, a sound standing alone) are worth fixing but
         # not at any cost: at most narration.style_repairs_max such paragraphs a part; mistakes about what happened
         # are always fixed
-        style = ("tells it instead of showing", "it repeats \"", "a move's name dropped", "the sound *")
+        style = ("tells it instead of showing", "it repeats \"", "a move's name dropped", "the sound *",
+                 "has already been described")
         only_style = [i for i in sorted(found) if all(any(m in w for m in style) for w in found[i])]
         keep_style = set(only_style[:int(n.get("style_repairs_max", 2))])
         found = {i: w for i, w in found.items() if i not in only_style or i in keep_style}
