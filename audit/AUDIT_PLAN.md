@@ -49,7 +49,7 @@ Tool: `sim/harness.py`. `H.session(seed, scene=..., settings=[...])` and `H.beat
 - **Afterwards:** a pass over the narrator's own checks (tense, missing hits, anatomy...), same approach.
 
 ## Status
-- [ ] A  [ ] B  [ ] C  [ ] D  [ ] E: reports go in `audit/report_X.md` as they come in. (First run: all five were stopped by a usage limit before reporting. Now run ONE group at a time to limit usage, in order A, B, C, D, E; each saves findings to scratchpad audit_X/report.md as it goes, copied here as audit/report_X.md.)
+- [x] A (report_A.md; fixes in progress)  [ ] B  [ ] C  [ ] D  [ ] E: reports go in `audit/report_X.md` as they come in. (First run: all five were stopped by a usage limit before reporting. Now run ONE group at a time to limit usage, in order A, B, C, D, E; each saves findings to scratchpad audit_X/report.md as it goes, copied here as audit/report_X.md.)
 - [ ] Coverage cross-check against the inventories; anything not exercised goes to a second round.
 - [ ] Fix every confirmed bug, rerun the regression checks and balance, commit and push.
 
