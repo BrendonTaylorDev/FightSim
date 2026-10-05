@@ -2440,3 +2440,14 @@ every other. On build 74 it found more than a dozen kinds of contradiction; on t
   - **Every instance of damage is rolled** (`damage.roll` 0.17): a move, each press of a pin or hold, a landing and an impact land within about ±17% of their number, so a base of 30 lands as 25 to 35. Severity words (environment hits, strikes without a move) already varied by `severity.variance`. Chances like "30% to be knocked down" are not jittered: a random chance and then a roll works out exactly the same as rolling at the average, so it would change nothing.
   - **Juggle nudge:** one of the chain ideas is now a rising blow (an uppercut to the jaw, a horn driven up under her chest) that launches her, then a second blow that catches her in the air and smashes her back down. Juggles were in the director's instructions but never suggested.
   - **Held against the scenery:** a strike or pummel with `pinned_against` now drives her back into it with every blow (`moves.grind`): an extra light hit on her back per blow. The thing may break (at half the held-stream chance), giving a heavy hit as she goes down with it. Before, `pinned_against` only did anything for held streams, so "pummels her against the oak" never touched the oak. The grab idea now offers this as one of its ways.
+- **Audit, group A (grappling, holds, manhandling):** 16 bugs fixed. See `audit/report_A.md`.
+  - Plain blows with a count now follow the pummel rules.
+  - Holds: tightening holds cap at 35; easing holds let go at 0.
+  - Dodging: no dodging while held by your attacker or just after being hauled up.
+  - Grabs keep the regrab cooldown.
+  - Jaws already clamped in a grip can't bite.
+  - Scenery: grinding works only into real, unbroken scenery, and broken scenery stays broken all fight.
+  - Throws, slams and drags can't reach a fighter in the air.
+  - Confusion can spoil a grab or throw.
+  - Rescale: `holds.shaken` (hard hits shake a grip loose).
+  - **Tuning:** after the damage roll, Nocturne's win rate had slipped to about 57.6%. Her health went from 1800 to 1860, which brings her back to 60.4% over 800 simulated fights, with 8.2 pins and 0.97 submissions a fight. Ripples is unchanged.
