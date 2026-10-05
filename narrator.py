@@ -5015,6 +5015,19 @@ class Narrator:
             near = next((p for t2, p, _, _, j in mine if j == i and p != part), None)
             if near and not whole:
                 add("how it spreads", B.pick("travel", 1, fmt={"part": part.lower(), "next": near.lower()}))
+            # nothing bigger than her injuries allow: the engine's ceiling filters the ideas before the model sees them
+            ceil = self._pain_ceiling(who)
+            too_big = [rx for need_, rx in INTENSE if ceil and ceil[0] < need_] or None
+            # how the pain shows, sized to the worst place this beat left her with
+            worst_hit = max(best.values(), key=lambda x: x[2])
+            lv_w = self._pain(worst_hit[2])["label"] if worst_hit[2] > 0 else "minor"
+            lv_w = "devastated" if lv_w == "numb with shock" else lv_w
+            zone_w = story_blocks.ZONE_OF.get(body_region(worst_hit[1]))
+            shows = B.pick("pain_show", 1, fmt={"part": worst_hit[1].lower()}, need=("zone",), exclude=too_big,
+                           level=lv_w, zone=zone_w, has=feats(who), state=state(who))
+            shows += B.pick("pain_show", 2 - len(shows), fmt={"part": worst_hit[1].lower()}, exclude=too_big,
+                            level=lv_w, zone=zone_w, has=feats(who), state=state(who))
+            add(f"how the pain in {poss(who)} {worst_hit[1].lower()} shows ({lv_w}: no bigger than that)", shows)
             raw = (getattr(self, "_raw_done", None) or {}).get(who)
             if raw is not None:
                 # a blow on a part that was already badly hurt: a reaction as raw as she can no longer keep in
@@ -5023,7 +5036,7 @@ class Narrator:
                     + B.pick("reaction", 1, size=self._strength_key(taken), has=feats(who)))
             else:
                 add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who),
-                                                                   fighter=who.lower()))
+                                                                   fighter=who.lower(), exclude=too_big))
             mind(who, "receiver", by)
             if who not in (getattr(self, "pinned_now", None) or ()):
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
@@ -5339,7 +5352,7 @@ class Narrator:
     _SLOTS = [("see", r"can see of"), ("mind", r"thought$|^what \S+ feels$"),
               ("body", r"holding the pin|holding it costs|own .* (?:shows|takes the strain)"),
               ("feel", r"how the hurt|what the press|how it spreads|feels now"),
-              ("react", r"reaction of that size|under the pin"), ("breath", r"breath$"),
+              ("react", r"reaction of that size|under the pin|how the pain in"), ("breath", r"breath$"),
               ("after", r"afterwards|lying there"), ("move", r".")]
     # the order the steps of a part come in changes from beat to beat ("see" always before "move": she looks, then goes)
     _ACT_ORDERS = [("after", "see", "mind", "move", "body"), ("after", "body", "see", "move", "mind"),
@@ -5524,6 +5537,10 @@ class Narrator:
                    for a in acts for h in (a.get("hits") or []))
         if hard:
             add(None, "strike take hard")
+        elif hits and any(h for a in hits for h in (a.get("hits") or [])):
+            worst = max((h.get("damage_after", 0) for a in hits for h in (a.get("hits") or [])), default=0)
+            add(None, "strike take mid" if self._pain(worst)["label"] in ("hurting", "very painful")
+                else "strike take light")
         add("strike act", "strike take")
         tags = [t for t in dict.fromkeys(tags) if t]
         counts = self.__dict__.setdefault("_sample_counts", {})

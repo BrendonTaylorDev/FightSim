@@ -184,10 +184,11 @@ class Blocks:
         self.turn += 1
         self.load()      # the file can be edited while the program runs
 
-    def pick(self, category, n=1, fmt=None, need=(), **ctx):
+    def pick(self, category, n=1, fmt=None, need=(), exclude=None, **ctx):
         """Up to n blocks of this category that fit ctx, least-offered first (with some chance in it), none that
         was offered in the last few beats while others are to be had. Returns their texts, placeholders filled.
-        need: condition names a block must HAVE to be offered here (need=("zone",): only blocks written for a zone)."""
+        need: condition names a block must HAVE to be offered here (need=("zone",): only blocks written for a zone).
+        exclude: a pattern (or several): blocks whose text matches are never offered here."""
         if not self.enabled or n <= 0:
             return []
         fmt = fmt or {}
@@ -200,6 +201,9 @@ class Blocks:
                 continue
             if any(s not in fmt for s in SLOT.findall(text)):
                 continue
+            if exclude is not None and any(rx.search(text) for rx in (exclude if isinstance(exclude, (list, tuple))
+                                                                       else [exclude])):
+                continue       # bigger than this fighter's injuries allow (the engine's pain ceiling)
             key = cat + "|" + text
             used = self.uses.get(key, 0)
             w = (1.0 + 0.6 * len(conds)) / (1.0 + used) ** 2      # the more exactly it fits, and the less used, the better
