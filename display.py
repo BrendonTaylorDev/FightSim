@@ -1102,6 +1102,12 @@ class Display:
                 out.append(f"💢 {e['defender']} fights {poss_word(e['attacker'])} hold on her {', '.join(e['parts'])}; it holds as "
                            f"it was{way('hold_strain', e.get('manner'))}")
         for e in bundle["also_this_beat"]:
+            if e["type"] == "collapse":
+                out.append(f"🫠 **{e['fighter']} collapses on her own** ({e['health']:.0f}% health: her body gives out"
+                           + (f", {e['facing']}" if e.get("facing") else "") + f") — collapse chance "
+                           f"{e['chance'] * 100:.0f}%; she can try to get up as usual")
+                out += self.knock_on_lines(e.get("knock_on") or [])
+        for e in bundle["also_this_beat"]:
             if e["type"] == "crumple":
                 pct_ = f"crumple chance {e['chance'] * 100:.0f}%"
                 out.append((f"🧱 **{e['fighter']} slides down {e['surface']} and ends sitting against it** — {pct_}"

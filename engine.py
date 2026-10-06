@@ -1809,6 +1809,36 @@ class Engine:
             events.append(ev)
         return events
 
+    def _collapse_tick(self):
+        """Below zero health she fights on, but her body may give out by itself (health.collapse): at the end of a
+        beat a fighter on her feet below 0% may simply COLLAPSE, no blow needed. The deeper below zero, the likelier;
+        she can get up again as usual, and it can't happen again for `cooldown` beats."""
+        cfg = (self.rules.get("health") or {}).get("collapse") or {}
+        if not cfg.get("enabled", True):
+            return []
+        events = []
+        for f in self.active():
+            pct = self._health_pct(f)
+            if pct >= 0 or f.name in self.downed or self.pinned_by(f.name) or self.pinning(f.name) \
+                    or self.has(f, "airborne") or any(f.name in (h.attacker, h.defender) for h in self.holds.values()):
+                continue
+            last = f.learned.get("collapse_turn")
+            if last is not None and self.turn - int(last) < int(cfg.get("cooldown", 5)):
+                continue
+            chance = min(float(cfg.get("max", 0.4)),
+                         float(cfg.get("base", 0.08)) + float(cfg.get("per_10_below", 0.03)) * (-pct) / 10.0)
+            if self.has(f, "adrenaline"):
+                chance *= float(cfg.get("adrenaline_mult", 0.3))
+            if not self._chance(chance, f"{f.name} collapsing on her own (below zero)", "she COLLAPSES", "she stays up"):
+                continue
+            f.learned["collapse_turn"] = self.turn
+            facing = self.knock_down(f.name, why=f"{f.name} collapsed on her own, her body giving out")
+            ev = {"type": "collapse", "fighter": f.name, "facing": facing, "chance": round(chance, 2),
+                  "health": round(pct, 1), "knock_on": self._knock_on}
+            self._knock_on = []
+            events.append(ev)
+        return events
+
     def _grind(self, a, d, against, blows):
         """Blows landed while she is held or pressed against the scenery (a pummel against a tree, a strike that pins
         her to the wall): each one also drives her back into it (moves.grind: power, break_mult). If it breaks, a heavy
@@ -5570,6 +5600,7 @@ class Engine:
         events += self._free_blow_tick(skip_hold_ids)
         events += self._wing_strain_tick()
         events += self._crumple_tick()
+        events += self._collapse_tick()
         events += self.get_up_tick()
         events += self._scene_event_tick(busy=had_grip)
 
@@ -6912,9 +6943,26 @@ class Engine:
         return (f"WEATHER: {word.upper()} over the arena ({w['beats']} more beat{'s' if w['beats'] != 1 else ''}; "
                 f"called by {w['by']}): it is part of every moment until it clears.")
 
+    def hurt_where_text(self, n=6):
+        """WHAT HURT WHERE: each fighter's worst parts and what did it, so a remembered hurt lands on the part it
+        really hit (not "where her kick had landed" on a forearm the kick never touched)."""
+        rows = []
+        for f in self.active():
+            bad = sorted((p for p in f.parts.values() if p.damage >= 30), key=lambda p: -p.damage)[:n]
+            bits = []
+            for p in bad:
+                srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
+                srcs = [re.sub(r"(\S+) (escape|struggle)$", r"\1 blow breaking out of a hold", c) for c in srcs]
+                if srcs:
+                    bits.append(f"{p.name.lower()} ({' and '.join(srcs)})")
+            if bits:
+                rows.append(f"{f.name}: " + "; ".join(bits))
+        return ("WHAT HURT WHERE (a memory of an old hurt goes on the part it really hit, by what really hit it): "
+                + " | ".join(rows)) if rows else ""
+
     def narrator_condition(self):
         text = self.condition_summary() + ("\n" + self.weather_text() if getattr(self, "weather", None) else "")
-        for extra in (self.wear_text(), self.movement_text()):
+        for extra in (self.wear_text(), self.movement_text(), self.hurt_where_text()):
             if extra:
                 text += "\n" + extra
         if getattr(self, "arena_marks", None):
@@ -6987,6 +7035,9 @@ class Engine:
                            f"thrown, launched, picked up, or knocked down while pinned)")
             lines.append(f"   {ground}; can be pinned now: " + ("YES" if ok else f"NO ({why})")
                          + f"; if pinned, she'd break out on about {self.escape_base(f) * 100:.0f}% of her tries")
+            if self._health_pct(f) < 0 and ((self.rules.get("health") or {}).get("collapse") or {}).get("enabled", True):
+                lines.append(f"   BELOW ZERO ({self._health_pct(f):.0f}%): running on nothing; at the end of a beat on her "
+                             f"feet her body may give out and collapse on its own (rolled), and she can get up again")
             gw = self.guarded_wound(f)
             if gw:
                 ow = self.open_side_word(gw[0])

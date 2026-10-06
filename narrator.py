@@ -1182,7 +1182,7 @@ def _is_stub(sent):
     return len(words) <= (4 if lead in ("it", "that", "this", "so", "and", "then", "only") else 7)
 
 
-SLIP_LABELS = (("SECOND time", "same blow told twice"), ("NO pin and no hold", "invented pin"),
+SLIP_LABELS = (("but that landed on her", "wrong part remembered"), ("SECOND time", "same blow told twice"), ("NO pin and no hold", "invented pin"),
                ("go limp or unable to move", "limp while still strong"), ("nothing of hers can break", "broken bones"),
                ("cracks or pops", "invented crack"), ("has never been hit", "pain in a part never hit"),
                ("was never landed on her", "wrong move remembered"), ("word from the notes", "game terms"),
@@ -2534,6 +2534,7 @@ class Narrator:
         # charged into the scenery: she hits it either way; whether she then goes down is the crumple roll
         rammed = {a.get("defender"): a["charge"] for a in actions if a.get("charge") and not a["charge"].get("skipped")}
         fell = {e["fighter"] for e in bundle.get("also_this_beat", []) if e.get("type") == "crumple" and e.get("down")}
+        self._landed |= {e["fighter"] for e in bundle.get("also_this_beat", []) if e.get("type") == "collapse"}
         self._landed |= {d for d, ch in rammed.items() if ch.get("broke") or d in fell}
         self._slammed = {d for d in rammed if d not in self._landed}  # hit the scenery but kept her feet
         self._charge_beat = bool(rammed)
@@ -2661,6 +2662,15 @@ class Narrator:
                 lines += self._alliance_end_lines(e)
             elif e["type"] == "get_up":
                 lines += self._get_up_lines(e)
+            elif e["type"] == "collapse":
+                fc = e.get("facing")
+                lines.append(f"COLLAPSE: at the end of the beat, with nothing touching her, {poss(e['fighter'])} body "
+                             f"simply GIVES OUT. She has been running on nothing for a while; now her legs fold, or her "
+                             f"knees buckle and the rest of her follows, and she goes down"
+                             + (f" ({Engine.FACING_LOOK.get(fc, fc)})" if fc else "")
+                             + ". Nobody hits her: show what gives first, the moment she knows it, the ground arriving, "
+                             "and what she does once she is down (breath, trying to understand it, a first try at "
+                             "moving). She does NOT get up again in this beat. It does no new damage.")
             elif e["type"] == "crumple" and e.get("down"):
                 fc = e.get("facing")
                 if fc == "sitting up":
@@ -5742,6 +5752,15 @@ class Narrator:
                                                                      has=feats(who), state=state(who)))
                 elif any(a.get("defender") == who for a in dodged):
                     add(f"how {who} gets out of the way", B.pick("dodge", 2, has=feats(who)))
+        for e in also or ():
+            if e.get("type") == "collapse" and (last or key in ("take", "all")):
+                # below zero, her body gives out on its own: what gives first, the ground, what she does down there
+                who = e["fighter"]
+                side[0] = "take"
+                add(f"how {who} collapses", B.pick("collapse", 2, has=feats(who), state=state(who)))
+                add(f"{who} looking at her own body as it fails her",
+                    B.pick("self_look", 1, fmt={"part": "legs"}, has=feats(who), state=state(who)))
+                self._offer_line(add, f"a finished line for {who} collapsing", "collapse", has=feats(who))
         memory = self._memory_line([w for w in targets if hits.get(w)], hits) if take else None
         return self._blocks_plan(lines, key, first, last, actor or (doers or [None])[0],
                                  receivers[0] if len(receivers) == 1 else (targets[0] if len(targets) == 1 else None), memory)
@@ -5935,6 +5954,8 @@ class Narrator:
         hits = [a for a in acts if a.get("type") == "instant" and not a.get("environment")]
         if hits and all(a.get("dodged") and not a.get("hits") for a in hits):
             add("strike act", "dodge")
+        if (take or both) and any(e.get("type") == "collapse" for e in also or ()):
+            tags.append("collapse")
         if (take or both) and any(e.get("type") == "get_up" for e in also or ()):
             tags.append("getup")
         if any(a.get("chain") for a in acts):
@@ -6724,6 +6745,13 @@ class Narrator:
                     add(sent, f"it remembers {mv} as something that hurt {who}, but {mv} was never landed on her: it hit "
                               f"{' and '.join(others)}")
                     break
+        # "her right forearm throbbed where Ripples' kick had landed": an old hurt pinned on the wrong part
+        for sent, whos, named in self._said(text):
+            for who in whos:
+                why = self._misplaced_memory(who, sent)
+                if why:
+                    add(sent, why)
+                    break
         # back on her feet with no get-up this beat: she ends the beat on the ground
         pe, ps = getattr(self, "posture_end", {}) or {}, getattr(self, "posture_start", {}) or {}
         rising = {getattr(self, "_getup_who", None), getattr(self, "_must_rise", None)} | set(getattr(self, "_getup_failed", ()) or ())
@@ -6980,6 +7008,70 @@ class Narrator:
                     "heel": ("foot", "hind paw", "hock"), "forehead": ("head",), "brow": ("head",), "temple": ("head",),
                     "collarbone": ("shoulder",), "spine": ("back", "upper back", "lower back"), "belly": ("stomach", "belly"),
                     "gut": ("stomach", "belly"), "toes": ("foot", "hind paw", "talon")}
+
+    # a plain word for what hurt her, and what it can have been in the engine's record of the part
+    _CAUSE_WORDS = {"kick": ("kick", r"kick|stomp|foot|feet|heel|hind"), "kicks": ("kick", r"kick|stomp|foot|feet|heel|hind"),
+                    "punch": ("punch", None), "fist": ("punch", None), "bite": ("bite", None), "teeth": ("bite", None),
+                    "fangs": ("bite", None), "jaws": ("bite", None), "claws": ("claw", None), "claw": ("claw", None),
+                    "talons": ("talon", None), "tail": ("tail", None), "headbutt": ("charge", None),
+                    "charge": ("charge", None), "horn": ("horn", None), "beak": ("beak", None), "beam": ("beam", None),
+                    "blast": ("beam", None), "jet": ("beam", None)}
+    _MEMORY = re.compile(r"\b(?:where|from|left by|after|since|earlier|before|still|had (?:landed|struck|hit|caught|"
+                         r"bitten|raked|kicked|punched|slashed|clawed|connected|met))\b", re.I)
+
+    def _misplaced_memory(self, who, sent):
+        """A sentence that remembers what hurt one of `who`'s parts ("her right forearm throbbed where Ripples' kick
+        had landed") when the engine's record says that weapon or move landed on a DIFFERENT part of hers. Only a
+        sentence naming one part of hers and one cause is judged, and only when the cause really did land somewhere
+        else on her (so the rewrite can be told where). Returns the problem, or ''."""
+        log = getattr(self, "injury_log", None) or {}
+        parts = (self.damage_by or {}).get(who) or {}
+        if not log or not parts or not self._MEMORY.search(sent):
+            return ""
+        low = sent.lower()
+        named = [p for p in parts if re.search(r"\b" + re.escape(p) + r"s?\b", low)]
+        if not named:
+            named = [p for p in parts if re.search(r"\b" + re.escape(re.sub(r"^(left|right) ", "", p)) + r"s?\b", low)
+                     and not re.search(r"\b(left|right) " + re.escape(re.sub(r"^(left|right) ", "", p)), low)]
+        named = list(dict.fromkeys(named))
+        if len(named) != 1:
+            return ""
+        part = named[0]
+        others = [o for o in (self.strengths or {}) if o != who]
+        src = lambda p: [str(c) for c in log.get(f"{who}|{p.title()}", log.get(f"{who}|{p}", []))]
+        all_parts = {p: src(p) for p in parts}
+
+        def fits(c, attacker, kind, extra_rx, move=None):
+            c_low = c.lower()
+            if not c_low.startswith(attacker.lower()):
+                return False
+            if move:
+                return move.lower() in c_low
+            if re.search(r"\b(?:escape|struggle|answering blow|free blow)\b", c_low):
+                return True     # (the blow that broke a pin or a hold: whatever it was told as)
+            mv = c[len(poss(attacker)):].strip()
+            return kind in story_blocks.kind_of(mv, "") or bool(extra_rx and re.search(extra_rx, c_low))
+        for att in others:
+            tag = re.escape(att) + r"(?:'s|’s|'|’)"
+            m = re.search(r"\b" + tag + r"\s+(?:\w+\s+)?(" + "|".join(self._CAUSE_WORDS) + r")\b", sent, re.I)
+            moves = [mv for mv, got in (getattr(self, "move_victims", None) or {}).items() if who in got
+                     and re.search(r"\b" + re.escape(mv) + r"\b", sent)]
+            if m:
+                kind, extra = self._CAUSE_WORDS[m.group(1).lower()]
+                label, test = f"{poss(att)} {m.group(1).lower()}", (lambda c, a=att, k=kind, x=extra: fits(c, a, k, x))
+            elif len(moves) == 1:
+                label, test = moves[0], (lambda c, a=att, mv=moves[0]: fits(c, a, None, None, mv))
+            else:
+                continue
+            if any(test(c) for c in all_parts[part]):
+                return ""
+            where = [p for p, cs in all_parts.items() if p != part and any(test(c) for c in cs)]
+            if not where:
+                return ""
+            return (f"it remembers {label} on {poss(who)} {part}, but that landed on her {', '.join(where[:3])}: "
+                    f"her {part} was hurt by " + (", ".join(dict.fromkeys(all_parts[part][-2:])) or "nothing yet")
+                    + ". Put the memory on the part it really hit, or name what really hurt this one")
+        return ""
 
     def _untouched_part(self, fighter, sent):
         """A body part this sentence names on `fighter` that has taken no damage at all (side-less names count
@@ -8654,10 +8746,24 @@ class Narrator:
         dcfg, wcfg = n.get("dwell") or {}, n.get("watch") or {}
         if getattr(self, "_faint", None) or not acts or all(a.get("type") == "aftermath" for a in acts):
             return []
+        out_now = set(getattr(self, "out_names", None) or ())
+        gone_down = [e for e in (bundle.get("also_this_beat") or []) if e.get("type") == "collapse"]
+        if gone_down and wcfg.get("enabled", True) and random.random() < float(wcfg.get("collapse_chance", 0.7)):
+            # her body gave out on its own: the one she was fighting watches it happen
+            v = gone_down[0]["fighter"]
+            by = next((o for o in (self.strengths or {}) if o != v and o not in out_now), None)
+            if by:
+                self.__dict__.setdefault("_moment_last", {})["watch"] = getattr(self, "_beat_no", 0)
+                return [{"key": "watch", "who": by, "part": "legs", "words": int(wcfg.get("words", 220)), "focus": (
+                    f"{poss(by)} side: she WATCHES {v} collapse on her own, with nobody touching her. She stays where "
+                    f"she is. What she sees first (a knee going, a sway, the eyes losing her), how {v} goes down and "
+                    f"how she lies, every twitch and breath after; what it tells {by} (how far gone {v} is, whether "
+                    f"she'll get up, whether this is a trick); {poss(by)} own breath and injuries, what she feels "
+                    f"(triumph, wariness, pity, hunger, unease) and thinks. No attack begins. {v} stays down: she "
+                    f"does not get up in this beat.")}]
         pool = [x for x in getattr(self, "_linger_pool", []) if x[2] > 0]
         if not pool:
             return []
-        out_now = set(getattr(self, "out_names", None) or ())
         also = bundle.get("also_this_beat") or []
         rising = {e.get("fighter") for e in also if e.get("type") == "get_up"}
         # the victim: whoever took the most this beat and is still in it

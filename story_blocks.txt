@@ -1672,6 +1672,20 @@ she notices the fur standing up along the other's spine and the way it does not 
 she sees the tail stop moving entirely and knows what that means | has: tail
 she watches the ears pin flat and stay there | has: ears
 
+# COLLAPSE: below zero health, her body gives out on its own (health.collapse).
+# ---------------------------------------------------------------------------------------------------------------
+== collapse
+her legs go first, not with pain but with a kind of quiet, as if they had simply stopped being asked
+she takes a step that isn't there, and the ground comes up to meet her
+there is no blow; she just folds, the way a held breath finally lets go
+her knees buckle and for a moment she hangs there, surprised, before the rest of her follows
+she feels it coming a heartbeat too late: the edges of the world going soft, the weight of her own body too much
+she goes down slowly, almost carefully, like something set down by tired hands
+she lies where she fell, blinking, trying to work out how she got there
+the worst of it is the silence in her limbs when she tells them to move
+she reaches for the ground to push, and her arm only trembles against it | has: arms
+her tail drags once across the ground and lies still | has: tail
+
 # SELF_LOOK: the one who is hurt looking at her own body (narration.self_look.chance in ordinary hit passages;
 # always offered in dwell and read). {part} is the hurt part.
 # ---------------------------------------------------------------------------------------------------------------

@@ -655,6 +655,8 @@
         "tuft": 0.2
       }
     },
+    "_collapse_comment": "collapse: below 0% health she fights on, but at the end of a beat, standing and free of holds and pins, her body may give out on its own: chance base + per_10_below for every 10% she is below zero, at most max (x adrenaline_mult during an adrenaline surge). She goes down and can get up again as usual. After a collapse it can't happen again for cooldown beats.",
+    "collapse": {"enabled": true, "base": 0.08, "per_10_below": 0.03, "max": 0.4, "cooldown": 5, "adrenaline_mult": 0.3},
     "exhaustion_per_beat": 0.5,
     "pain_drain": [
       {
@@ -820,6 +822,7 @@
       "words": 220,
       "max_strength": 75,
       "part_levels": ["very painful"],
+      "collapse_chance": 0.7,
       "hold_max_strength": 80
     },
     "_self_look_comment": "self_look: chance that a fighter who is hit gets a cue to LOOK at her own hurt body (the wound, the shaking, whether the limb still answers) when one of her parts is very painful or worse. Always offered in the dwell and read parts.",
