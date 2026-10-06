@@ -1736,6 +1736,7 @@ class Director:
         engine.directed = bool(direction) or any(v and v != "WAIT" for v in players.values())
         engine.ordered = {n for n, v in players.items() if v and v != "WAIT"}   # fighters acting on a player's order
         hint = initiative_hint(engine) if not direction else ""
+        urged = encourage_hint(engine) if not direction else ""
         steer = plan_hint(engine)
         if not direction and not hint:
             # a submission (rarer) is offered before a pin when both are open; one already on comes first too
@@ -1770,6 +1771,8 @@ class Director:
             rng_hint = (rng_hint + "\n" + unused).strip()
         if rng_hint:
             hint = (hint + "\n" + rng_hint).strip()
+        if urged:
+            hint = (urged + "\n" + hint).strip()     # the author's /encourage comes first
         if players:
             # an idea for what a PLAYED fighter should do is the player's to have: keep only the ones for the
             # fighters the director runs (and the ones for a played fighter the player handed to the director)
@@ -2594,6 +2597,59 @@ def scene_block(engine, scene):
     return (scene + "\n\nWHAT THIS PLACE DOES (tracked by the program; use these exact names as a \"surface\" in "
             "\"landing\", or in \"charge_into\" / \"pinned_against\", and the effect in brackets is rolled):\n" + brief
             + "\nNow and then the place also does something by itself; you never choose that.")
+
+
+ENCOURAGE = {
+    "sustain": "a HELD STREAM: a beam, stream or blast move held on her with \"sustain\": 2 to 4 (she keeps it on her "
+               "pulse after pulse, maybe pinning her against the scenery)",
+    "pummel": "a PUMMEL: one close strike with \"count\": {n} on her at no distance (inside a grab, against the scenery, or "
+              "on her while she is down). If they are apart, get there first in a chain: grab her, or knock her down",
+    "charge": "a CHARGE into the scenery: a charging move (or an improvised body charge) with \"charge_into\" set to a "
+              "scene feature, driving her into it",
+    "chain": "a CHAIN of {n} links: {n} quick actions in a row by the same attacker on her, each following the last",
+    "throw": "a THROW: \"action\": \"throw\", hurling her into the scenery",
+    "slam": "a SLAM: \"action\": \"slam\", lifting her and driving her down",
+    "grab": "a GRAB: \"action\": \"grapple\", seizing her and keeping her at point-blank",
+    "hold": "a HOLD: \"action\": \"hold_start\", a grip that squeezes",
+    "pin": "a PIN, whenever one is allowed",
+    "submission": "a SUBMISSION hold (an armbar, a crab, a crossface...), whenever an opening allows one",
+    "feint": "a FEINT: \"feint\": true on a strike",
+    "dive": "flying and DIVING: take off (\"reposition\": \"take off\") and strike down at her from the air",
+    "carry": "a CARRY: from the air, a close strike with \"carry\": true, hauling her up to drop her",
+    "spike": "a SPIKE: from the air, a carry (\"carry\": true) and then, as the next link, a dive, charge or held stream "
+             "driving her straight down into the ground",
+    "juggle": "a JUGGLE: a strike that \"launch\"es her as one link of a chain, and the next link catching her in the air",
+    "launch": "a LAUNCH: a heavy strike with \"launch\": \"launched\" or \"thrown\"",
+}
+ENCOURAGE_ALIASES = {"stream": "sustain", "held": "sustain", "beam": "sustain", "pummels": "pummel", "charges": "charge",
+                     "chains": "chain", "combo": "chain", "throws": "throw", "slams": "slam", "grapple": "grab",
+                     "grabs": "grab", "holds": "hold", "pins": "pin", "submissions": "submission", "sub": "submission",
+                     "feints": "feint", "flight": "dive", "dives": "dive", "fly": "dive", "carries": "carry",
+                     "spikes": "spike", "juggles": "juggle", "launches": "launch"}
+
+
+def encourage_hint(engine):
+    """The author's /encourage: for its beats, the director is pointed hard at that kind of attack (who on whom, if
+    named). A strong nudge, never an order: the rules and the dice still decide whether it works."""
+    keep, lines = [], []
+    for e in getattr(engine, "encouraged", None) or []:
+        if engine.turn >= int(e.get("until", 0)):
+            continue
+        keep.append(e)
+        att, dfn = e.get("attacker"), e.get("defender")
+        try:
+            if (att and engine.get(att).eliminated) or (dfn and engine.get(dfn).eliminated):
+                continue
+        except (ValueError, KeyError):
+            continue
+        what = ENCOURAGE.get(e["kind"], e["kind"]).replace("{n}", str(e.get("count") or (3 if e["kind"] == "pummel" else 2)))
+        who = (f"{att}" if att else "whoever acts") + (f" on {dfn}" if dfn else "")
+        left = int(e["until"]) - engine.turn
+        lines.append(f"THE AUTHOR WANTS ({left} more beat{'s' if left != 1 else ''}): {who}: {what}. Do it this beat "
+                     f"if it can be done at all; if it can't yet, set it up (close in, take off, knock her down, wait "
+                     f"for the opening) so it comes soon.")
+    engine.encouraged = keep
+    return "\n".join(lines)
 
 
 def flight_hint(engine, roll=None):

@@ -720,7 +720,7 @@ class Engine:
                               {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
 
     # engine state that lives outside the main snapshot tuple but must be undone with it
-    _SNAP_EXTRA = ("out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim")
+    _SNAP_EXTRA = ("encouraged", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim")
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
