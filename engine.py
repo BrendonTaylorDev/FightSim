@@ -253,6 +253,42 @@ def merge_settings(base, extra):
     return n
 
 
+BALANCE = 146     # my_settings.json "balance": the damage units its saved numbers are in (see migrate_settings)
+# build 146 lowered part damage (scale 5 -> 3, slower wear) and raised health per damage point to keep fights as long:
+# a number saved before it is converted by these factors
+_BALANCE_146 = {("damage", "damage_scale"): 0.6, ("health", "loss_per_damage_point"): 0.46 / 0.155,
+                ("resistance", "loss_per_power"): 0.75}
+
+
+def migrate_settings(path):
+    """Read my_settings.json, converting what an older build saved into this build's units (and saying so once):
+    a /scale or /length from before build 146 would otherwise undo the new balance."""
+    data = load_json(path)
+    if not isinstance(data, dict) or int(data.get("balance", 0) or 0) >= BALANCE:
+        return data
+    said = []
+    for (sec, key), f in _BALANCE_146.items():
+        v = (data.get(sec) or {}).get(key)
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            new = round(v * f, 4)
+            data[sec][key] = new
+            said.append(f"{sec}.{key} {v} -> {new}")
+    for sec, key in (("resistance", "smooth"), ("health", "pain_drain")):
+        if key in (data.get(sec) or {}):
+            del data[sec][key]
+            said.append(f"{sec}.{key} reset to the new default")
+    data["balance"] = BALANCE
+    try:
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(data, fh, indent=2, ensure_ascii=False)
+    except OSError:
+        pass
+    if said:
+        print("[my_settings.json: build 146 changed how body-part damage is counted, so your saved settings were "
+              "converted to keep the same effect: " + "; ".join(said) + "]")
+    return data
+
+
 class Engine:
     def __init__(self, rules_path=None, fighters_path=None, seed=None, rules=None, only=None):
         """rules: an already-loaded rules dict to keep using (a new fight in the same session). only: the names of
@@ -264,7 +300,7 @@ class Engine:
         if rules is None and rules_path is None and os.path.exists(mine):
             # what you set with /commands (my_settings.json) wins over the rules.json a new build ships
             try:
-                self.settings_applied = merge_settings(self.rules, load_json(mine))
+                self.settings_applied = merge_settings(self.rules, migrate_settings(mine))
             except (ValueError, OSError) as e:
                 print(f"[my_settings.json could not be read ({e}); using rules.json as it is]")
         fdata = load_json(fighters_path or os.path.join(here, "fighters.json"))

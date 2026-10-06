@@ -873,6 +873,10 @@ PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|every (?:press|hi
 # a badly hurt part called fine
 HEALTHY = re.compile(r"\b(still (?:good|strong|fine|whole|sound|working)|(?:was|were|felt) (?:good|fine|strong|whole)\b|"
                      r"(?:her|his) good (?:paw|arm|leg|side|hand|foot|ear|eye)|unhurt|uninjured|undamaged|untouched)", re.I)
+# the move types an element's staging belongs to (a Normal body charge never gets fire)
+ELEMENT_TYPES = {"fire": ("fire",), "ice": ("ice",), "rock": ("rock", "ground"), "wind": ("flying",)}
+CLAW_STRIKE = re.compile(r"\b(?:claws?|talons?)\b[^.!?,;—]{0,20}?\b(?:sank|sink\w*|rak\w+|tore|tear\w*|ripp\w+|"
+                         r"slash\w*|dug|digging|bit|raked|scor\w+|gouged)\s+(?:in|into|across|through|deep)\b", re.I)
 TAIL_STRIKE = re.compile(r"\btails?(?: blade| tip)?\b[^.!?,;—]{0,30}?\b(?:struck|slashed|sliced|cut|smacked|slammed|cracked|"
                          r"caught|hit|came down|whipped (?:across|into|through|down)|swept (?:across|into|through))\b", re.I)
 # features nobody in this fight may have (filled in by the program from who is fighting)
@@ -3866,6 +3870,33 @@ class Narrator:
             lines.append("  - It hurts nobody this time: a near thing, a shock, and both of them wary of the place now.")
         return lines
 
+    def _blood_lines(self, text):
+        """Blood (in her mouth, a trickle) on a fighter nothing has hurt enough to bleed: [(sentence, fighter)]."""
+        out = []
+        for sent, whos, named in self._said(text):
+            if len(whos) == 1 and BLOOD_SAID.search(sent):
+                w = whos[0]
+                mine = (getattr(self, "damage_by", None) or {}).get(w) or {"": 0}
+                hurt = max(mine.values())
+                if re.search(r"\bmouth|tongue|lip|taste|coppery|metallic", sent, re.I):
+                    hurt = max([d for p, d in mine.items() if re.search(r"jaw|muzzle|cheek|mouth|lip|nose|throat|head", p)]
+                               or [0])
+                biter = w in (getattr(self, "_attackers", None) or set()) and "teeth" in (getattr(self, "_weapons_ok", None) or set())
+                if hurt < 30 and not biter:
+                    out.append((sent, w))
+        return out
+
+    def _arena_leaks(self, text):
+        """Sentences with cave things (the sample passages are set in a sea cave) when the fight is somewhere else."""
+        scene_low = (str(getattr(self, "_scene_text", "") or "") + " " + str(getattr(self, "scene_words", "") or "")).lower()
+        out = []
+        for para in (text or "").split("\n"):
+            for x in _SENT.split(para.strip()):
+                m = ARENA_LEAK.search(x) if x else None
+                if m and m.group(1).lower().rstrip("s") not in scene_low:
+                    out.append(x)
+        return out
+
     def _arena_name(self):
         first = str(getattr(self, "_scene_text", "") or "").strip().split(".")[0]
         if len(first) > 70:
@@ -4613,6 +4644,15 @@ class Narrator:
                 m = HORN_STRIKE.search(sent)
                 if m and any(_mentions(sent.lower(), p) for p in strikes):
                     out.append(("horn", m.group(0), sent))
+                    continue
+            # claws tearing into a part this beat hit, when nothing this beat strikes with claws (a body charge, a
+            # stream): "Ripples' claws sank into Nocturne's left shoulder"
+            if "claws" not in ok and not getattr(self, "_pin_beat", False) and not getattr(self, "_ongoing", False) \
+                    and not re.search(r"\b(had|memory|remember\w*|earlier|before|still)\b", sent, re.I):
+                m = CLAW_STRIKE.search(sent)
+                if m and any(_mentions(sent.lower(), p) for p in strikes) and (
+                        any(w in sent for w in (getattr(self, "_attackers", None) or ())) or not named):
+                    out.append(("claws", m.group(0), sent))
         return out
 
     @staticmethod
@@ -5534,11 +5574,15 @@ class Narrator:
                     continue
                 mv = a.get("move") or {}
                 close = close or bool(a.get("pummel") or a.get("point_blank"))
-                kinds |= story_blocks.kind_of(mv.get("name", ""), mv.get("about", ""), a.get("with", ""),
-                                              a.get("manhandle") or "", a.get("type") == "grapple_start",
-                                              close=bool(a.get("pummel")),
-                                              ranged=str(mv.get("target", "")) in ("whole_body", "spread")
-                                              or "ranged" in str(mv.get("range", "")) or bool(mv.get("ranged")))
+                got = story_blocks.kind_of(mv.get("name", ""), mv.get("about", ""), a.get("with", ""),
+                                           a.get("manhandle") or "", a.get("type") == "grapple_start",
+                                           close=bool(a.get("pummel")),
+                                           ranged=str(mv.get("target", "")) in ("whole_body", "spread")
+                                           or "ranged" in str(mv.get("range", "")) or bool(mv.get("ranged")))
+                mtype = str(mv.get("type") or "").lower()
+                if mtype:     # an element comes from the move's type, never from a stray word ("heat") in its text
+                    got = {k for k in got if k not in ELEMENT_TYPES or mtype in ELEMENT_TYPES[k]}
+                kinds |= got
             if close and "grab" not in kinds:
                 kinds = {"close"}
             if {"grab", "close"} <= kinds:      # a grab and then blows inside it: an idea for each
@@ -6554,7 +6598,9 @@ class Narrator:
                           + ". Show that stretch of the fall")
         for who, how in (getattr(self, "_must_down", None) or []) if coverage else []:
             full = (prior or "") + "\n" + text
-            if not (SLID_DOWN.search(full) or FALL.search(full) or GROUNDED.search(full)):
+            # her going down, said of HER (Ripples falling earlier in the beat doesn't show Nocturne crumpling)
+            if not any(who in whos and (SLID_DOWN.search(sent) or FALL.search(sent) or GROUNDED.search(sent))
+                       for sent, whos, named in self._said(full)):
                 issues.append(f"it never showed {who} {how}: she ends this beat ON THE GROUND. Show her going down "
                               f"(it does no new damage)")
         if getattr(self, "_faint", None) and coverage and not self._shown_out((prior or "") + "\n" + text):
@@ -7703,7 +7749,8 @@ class Narrator:
         still = ({x[1] for x in self._disabled_lines(text, sure=True)} | {x[2] for x in self._hand_weight_lines(text)}
                  | {x[3] for x in self._healthy_lines(text)} | {x[2] for x in self._getup_lines_invented(text)}
                  | {x[3] for x in self._overblown_lines(text)}
-                 | {x[2] for x in self._weapon_lines(text) if x[0].startswith("bite")}
+                 | {x[2] for x in self._weapon_lines(text) if x[0].startswith("bite") or x[0] == "claws"}
+                 | {x[0] for x in self._blood_lines(text)} | set(self._arena_leaks(text))
                  | {x[4] for x in self._grip_released_lines(text)} | {x[4] for x in self._grip_gone_lines(text)}
                  | {x[4] for x in self._grip_place_lines(text)} | {x[2] for x in self._phantom_release_lines(text)}
                  | {x[1] for x in self._foreign_mentions(text)} | {x[0] for x in self._log_slips(text)}
@@ -7803,10 +7850,6 @@ class Narrator:
             m = PAIN_LABEL.search(x)
             if m:
                 add(x, f"a pain level used as a label (\"{m.group(0)}\"): say how it FEELS instead")
-            # the sample passages are set in a sea cave: their cave walls must not follow the fight to another arena
-            m = ARENA_LEAK.search(x)
-            if m and m.group(1).lower().rstrip("s") not in scene_low:
-                add(x, f"\"{m.group(0)}\" isn't in this arena (the fight is in {self._arena_name()}): use what is here")
             if TAIL_PROPEL.search(x) and not re.search(r"\b(water|lake|shallows|swim\w*|current|waves?)\b", x, re.I):
                 add(x, "her twin tails only drive her through water; on land they balance her")
             m = gore.search(x) if gore is not None else None
@@ -7896,7 +7939,9 @@ class Narrator:
             add(sent, (f"a bite that isn't in this beat (\"{words}\"): no move here uses teeth" if kind == "bite" else
                        f"nobody bites {kind[8:]} this beat (\"{words}\"): the only teeth in this beat are the ones listed"
                        if kind.startswith("bite on ") else
-                       f"the strike lands with the {kind} (\"{words}\"), but this move is delivered with {ok}"))
+                       f"the strike lands with the {kind} (\"{words}\"), but this move is delivered with {ok}" if ok else
+                       f"the strike lands with {kind} (\"{words}\"), but no attack this beat uses {kind}: show it landing "
+                       f"the way the move really lands (a body slammed in, a blast, a blow)"))
         for holder, held, part, words, sent in self._grip_released_lines(text):
             add(sent, f"{poss(holder)} grip on {poss(held)} {part} comes off (\"{words}\"), but it STAYS ON all through "
                       f"this beat: she never lets go, it doesn't slip or break, and {held} does not get free of it")
@@ -7981,17 +8026,11 @@ class Narrator:
             if len(whos) == 1 and re.search(r"\b(?:three legs|all fours|four legs|hind legs?|forelegs?)\b", sent, re.I) \
                     and "arms" in self._feats_of(whos[0]) and "forelegs" not in self._feats_of(whos[0]):
                 add(sent, f"{whos[0]} stands on two legs and has arms: no forelegs, hind legs or all fours")
-        for sent, whos, named in self._said(text):
-            if len(whos) == 1 and BLOOD_SAID.search(sent):
-                w = whos[0]
-                mine = (getattr(self, "damage_by", None) or {}).get(w) or {"": 0}
-                hurt = max(mine.values())
-                if re.search(r"\bmouth|tongue|lip|taste|coppery|metallic", sent, re.I):
-                    hurt = max([d for p, d in mine.items() if re.search(r"jaw|muzzle|cheek|mouth|lip|nose|throat|head", p)]
-                               or [0])
-                biter = w in (getattr(self, "_attackers", None) or set()) and "teeth" in (getattr(self, "_weapons_ok", None) or set())
-                if hurt < 30 and not biter:
-                    add(sent, f"blood on {w}, but nothing has cut or hurt her enough to bleed: leave it out")
+        for sent, w in self._blood_lines(text):
+            add(sent, f"blood on {w}, but nothing has cut or hurt her enough to bleed: leave it out")
+        for sent in self._arena_leaks(text):
+            m = ARENA_LEAK.search(sent)
+            add(sent, f"\"{m.group(0)}\" isn't in this arena (the fight is in {self._arena_name()}): use what is here")
         for x in sents:
             if re.search(r"\bforelegs?\b", x, re.I) and re.search(r"\barms?\b", x, re.I) and not re.search(
                     r"\b(?:forearm|upper arm)", x, re.I):

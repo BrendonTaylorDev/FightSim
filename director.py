@@ -1794,6 +1794,12 @@ class Director:
                              "big moment: a throw or a slam" if "SEIZES" in line else "big moment: a held stream")
                     if "OVERDUE" in line:
                         label += " (overdue)"
+                elif label.startswith("the author wants"):
+                    m2 = re.match(r"THE AUTHOR WANTS \(([^)]*)\): ([^:]+): ([^.;(]+)", line)
+                    label = (f"your /encourage: {m2.group(3).split(':')[0].strip().lower()} ({m2.group(2).strip()}, {m2.group(1)})" if m2
+                             else "your /encourage")
+                    engine.nudges.append(label)
+                    continue
                 who = [n for n in sorted(names, key=lambda n: line.find(n) if n in line else 10 ** 6) if n in line][:2]
                 if label.startswith(("pin opportunity", "pin setup", "reposition idea")):
                     who = who[::-1]   # those lines name the fighter to be pinned first: show "pinner on pinned"

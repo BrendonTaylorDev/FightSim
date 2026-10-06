@@ -460,10 +460,10 @@
     "variance": 0.15
   },
   "damage": {
-    "_comment": "damage_scale multiplies every hit's damage (and so the health it costs). It does NOT change how fast resistance wears down (that's resistance_scale, below). 1 = the base numbers; the default is 5 (the one the balance is tuned for). Change it here or in the program with /scale.",
+    "_comment": "damage_scale multiplies every hit's damage (and so the health it costs). It does NOT change how fast resistance wears down (that's resistance_scale, below). 1 = the base numbers; the default is 3 (the one the balance is tuned for since build 146; it was 5 before, with faster wear: parts went from sore to ruined in two or three blows). Change it here or in the program with /scale.",
     "_roll_comment": "roll: every instance of damage (a move, each press of a pin or hold, a landing, an impact) is rolled within plus or minus this share of its number (0.17: a 30 lands as 25 to 35), so no two hits are quite alike. Severity words already vary by severity.variance on top. 0 = off.",
     "roll": 0.17,
-    "damage_scale": 5,
+    "damage_scale": 3,
     "_resistance_scale_comment": "resistance_scale multiplies how fast resistance wears down (resistance lost = power x loss_per_power x resistance_scale). It does NOT change damage. 1 = normal; 2 = parts soften twice as fast; 0.5 = half as fast. Change it in the program with /resscale.",
     "resistance_scale": 1.0,
     "part_curve": {
@@ -518,12 +518,13 @@
         "health_mult": 2.2
       }
     ],
-    "loss_per_power": 0.4,
+    "loss_per_power": 0.3,
     "_loss_per_damage_comment": "loss_per_damage: resistance ALSO lost per 1% of damage the hit really did (times resistance_scale), on top of loss_per_power. 0 = off (the old rule: wear depends on the blow's power only). With it on, a part that takes a great deal of damage softens faster, so heavy hits change how the next ones land. /wear shows and changes it.",
     "loss_per_damage": 0,
     "loss_per_beat": 0,
     "minimum": 0,
     "_previous": {
+      "builds 74-145": {"loss_per_power": 0.4, "damage_scale": 5, "health_loss_per_damage_point": 0.155, "smooth_points": [[15, 2.8, 3.4], [40, 1.6, 2.1], [60, 0.7, 1.15], [80, 0.25, 0.75], [95, 0.14, 0.6], [120, 0.08, 0.45]], "pain_drain_at_90_150": [0.5, 1.5]},
       "build 69-73": {
         "loss_per_power": 0.5,
         "damage_scale": 2.5,
@@ -546,38 +547,7 @@
     "smooth": {
       "_comment": "A gradient instead of thresholds: a part's damage mult and health mult slide smoothly with its resistance, along straight lines between these anchor points [resistance, damage mult, health mult] (flat beyond the first and last). The anchors sit in the middle of each bracket, so the overall pace stays close to the brackets'; the brackets themselves still give the labels and icons. enabled false = the old thresholds.",
       "enabled": true,
-      "points": [
-        [
-          15,
-          2.8,
-          3.4
-        ],
-        [
-          40,
-          1.6,
-          2.1
-        ],
-        [
-          60,
-          0.7,
-          1.15
-        ],
-        [
-          80,
-          0.25,
-          0.75
-        ],
-        [
-          95,
-          0.14,
-          0.6
-        ],
-        [
-          120,
-          0.08,
-          0.45
-        ]
-      ]
+      "points": [[15, 1.6, 2.6], [40, 1.0, 1.9], [60, 0.5, 1.2], [80, 0.28, 0.8], [95, 0.17, 0.62], [120, 0.1, 0.47]]
     },
     "max_loss_per_hit": 35,
     "_max_loss_per_hit_comment": "max_loss_per_hit: the most resistance (in points) one blow can take off a part, however devastating, the soft cap's extra wear included. 0 = no limit.",
@@ -595,7 +565,7 @@
     "minimum": null,
     "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
     "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
-    "loss_per_damage_point": 0.155,
+    "loss_per_damage_point": 0.46,
     "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. One HIT costs at most about per_hit of the fighter's own full health (0.05 = 5%), rolled up or down by jitter (0.15 = plus or minus 15%) and smaller for a light knock (power under power_ref scales it down, to no less than power_floor of it): past that the extra levels off, adding at most room x that cap more however big the raw number. Everything that lands on her in one BEAT is softened the same way past per_beat. A devastating blow gets far looser limits (moves.devastating cap_mult, room_mult). The stat block shows 'softened from' when it applies.",
     "soft_cap": {
       "enabled": true,
@@ -660,16 +630,7 @@
     "_collapse_comment": "collapse: below 0% health she fights on, but at the end of a beat, standing and free of holds and pins, her body may give out on its own: chance base + per_10_below for every 10% she is below zero, at most max (x adrenaline_mult during an adrenaline surge). She goes down and can get up again as usual. After a collapse it can't happen again for cooldown beats.",
     "collapse": {"enabled": true, "base": 0.08, "per_10_below": 0.03, "max": 0.4, "cooldown": 5, "adrenaline_mult": 0.3},
     "exhaustion_per_beat": 0.5,
-    "pain_drain": [
-      {
-        "min_damage": 90,
-        "per_beat": 0.5
-      },
-      {
-        "min_damage": 150,
-        "per_beat": 1.5
-      }
-    ]
+    "pain_drain": [{"min_damage": 60, "per_beat": 0.4}, {"min_damage": 90, "per_beat": 0.9}, {"min_damage": 150, "per_beat": 2.0}]
   },
   "story": {
     "_comment": "reasons: why the two wild fighters are fighting. One is picked from the file for each fight (fitting the arena); one fighter is the holder (there first, or holding what is wanted), the other the comer. The opening tells it, every beat carries a short note (thought_chance: now and then one thought either of them might have), interludes get it in full, and the aftermath gets its ending. Off by default: /reason on (or choosing one with /reason <n>) turns it on. Only for one-on-one fights. /reason to see, choose, write your own, or turn it off.",
@@ -1652,16 +1613,16 @@
     "lead_margin": 5.0
   },
   "fight_length": {
-    "_comment": "Presets for /length: about how many beats a fight runs. Each sets health.loss_per_damage_point to base x health_loss and damage.resistance_scale to base x wear: fighters lose health and wear down faster, so a pin wins sooner (pin success follows her remaining health). Pin openings and escapes are not changed. Measured over 200 simulated fights each (Nocturne vs Ripples, lakeside forest).",
+    "_comment": "Presets for /length: about how many beats a fight runs. Each sets health.loss_per_damage_point to base x health_loss and damage.resistance_scale to base x wear: fighters lose health and wear down faster, so a pin wins sooner (pin success follows her remaining health). Pin openings and escapes are not changed. Measured over 100 simulated fights each (Nocturne vs Ripples, lakeside forest; build 146's balance: fewer wild swings, Nocturne vs Ripples closer to even).",
     "default": "60",
-    "base": {"loss_per_damage_point": 0.155, "resistance_scale": 1.0},
+    "base": {"loss_per_damage_point": 0.46, "resistance_scale": 1.0},
     "presets": {
-      "30": {"health_loss": 5.0, "wear": 2.3, "_measured": "31 beats, 2.7 pins, Nocturne wins 65%"},
-      "35": {"health_loss": 3.6, "wear": 1.8, "_measured": "36 beats, 3.2 pins, Nocturne wins 60%"},
-      "40": {"health_loss": 2.8, "wear": 1.5, "_measured": "41 beats, 3.6 pins, Nocturne wins 63%"},
-      "45": {"health_loss": 2.35, "wear": 1.3, "_measured": "45 beats, 4.0 pins, Nocturne wins 68%"},
-      "50": {"health_loss": 1.9, "wear": 1.2, "_measured": "49 beats, 4.4 pins, Nocturne wins 66%"},
-      "60": {"health_loss": 1.0, "wear": 1.0, "_measured": "62 beats, 5.6 pins, Nocturne wins 68%"}
+      "30": {"health_loss": 5.0, "wear": 2.3, "_measured": "29 beats, 2.8 pins, Nocturne wins 62% (build 146)"},
+      "35": {"health_loss": 3.6, "wear": 1.8, "_measured": "36 beats, 3.4 pins, Nocturne wins 55% (build 146)"},
+      "40": {"health_loss": 2.8, "wear": 1.5, "_measured": "39 beats, 3.4 pins, Nocturne wins 59% (build 146)"},
+      "45": {"health_loss": 2.35, "wear": 1.3, "_measured": "44 beats, 4.0 pins, Nocturne wins 59% (build 146)"},
+      "50": {"health_loss": 1.9, "wear": 1.2, "_measured": "49 beats, 4.4 pins, Nocturne wins 56% (build 146)"},
+      "60": {"health_loss": 1.0, "wear": 1.0, "_measured": "64 beats, 5.9 pins, Nocturne wins 58% (build 146)"}
     }
   },
   "submissions": {
