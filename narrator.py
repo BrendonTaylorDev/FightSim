@@ -211,6 +211,8 @@ MILD_GORE = re.compile(
     r"tang of (?:copper|iron)|smell of iron|(?:into|through) (?:the )?(?:soft |tender |raw )?flesh|skin (?:split\w*|tore|torn)|"
     r"blister\w*|(?:audible|sickening|wet) (?:crack|pop|snap|sound)|audible pops?|"
     r"(?:brutal|loud|sharp|awful|terrible) crack(?: of| in| from| at)? (?:her |the |its )?(?:knee|joint|elbow|ankle|hip|hock|shoulder)s?\b|"
+    r"(?:knee|joint|elbow|ankle|hock)s? (?:was|were|came) next, (?:a|with a) (?:brutal|loud|sharp|awful|terrible|heavy) crack|"
+    r"vertebrae (?:crush|grind|grat)\w*|bone beneath (?:\w+ )?show\w* its shape|"
     r"flesh part\w*|fib(?:er|re)s? (?:\w+ )?(?:separat|part|tear|tore|split|ripp)\w*|"
     r"(?:tearing|tore|ripping) (?:\w+ )?through (?:the )?(?:muscle|tissue|tendon)\w*|audible tear|"
     r"tendons? (?:\w+ ){0,3}(?:tore|tear\w*|gave|giving|snapp\w*|rupt\w*)|bone (?:\w+ )?(?:giving|gave) way|"
@@ -2390,7 +2392,7 @@ class Narrator:
                   "driven in hard, everything round it pushed out of its shape",
                   "buried in her, the body there mashed flat and bulging out on every side",
                   "crushing down so the part folds round it, the fur and flesh squeezed up in thick rolls",
-                  "pressed so deep the bone beneath shows its shape through the flattened muscle",
+                  "pressed so deep the muscle there goes flat and hard as a board under it",
                   "grinding her down until the part spreads out flat under it, the fur splayed in every direction",
                   "so hard that her whole outline caves in there, the flesh pouring out to the sides",
                   "mashing the muscle against the bone, the skin pulled drum-tight round the edges"],
@@ -2512,7 +2514,9 @@ class Narrator:
         seed = int(getattr(self, "beat_now", 0) or 0) + zlib.crc32(h["part"].encode())
         look = self.PRESS_LOOK[k][seed % len(self.PRESS_LOOK[k])]
         part, reg = h["part"].lower(), body_region(h["part"])
-        if k != "light" and (reg in ("shoulder", "fore_up", "hind_low", "tail") or any(
+        twist = re.search(r"twist|lock|wrench|bend|crank|lever|arm ?bar|wring",
+                          " ".join(str(h.get(x) or "") for x in ("with", "flavor", "label")), re.I)
+        if k != "light" and twist and (reg in ("shoulder", "fore_up", "hind_low", "tail") or any(
                 w in part for w in ("knee", "hock", "elbow", "hip", "wrist", "ankle"))):
             look += "; " + self.JOINT_LOOK[seed % len(self.JOINT_LOOK)]
         elif reg == "neck" and k != "light":
@@ -5735,7 +5739,12 @@ class Narrator:
                 kinds |= got
             if close and "grab" not in kinds:
                 kinds = {"close"}
-            if {"grab", "close"} <= kinds:      # a grab and then blows inside it: an idea for each
+            if who in {g[0] for g in (getattr(self, "grips", None) or [])}:
+                # she has hold of her: no footwork ideas (giving ground, circling) for a fighter pressed on top of
+                # her opponent, only ones made for close work
+                add(f"a way {who} might stage it", B.pick("movement", 1, kind=(kinds & {"grab", "close"}) or {"close"},
+                                                          need=("kind",), has=feats(who)))
+            elif {"grab", "close"} <= kinds:      # a grab and then blows inside it: an idea for each
                 add(f"a way {who} might stage it", B.pick("movement", 1, kind={"grab"}, need=("kind",), has=feats(who))
                     + B.pick("movement", 1, kind={"close"}, need=("kind",), has=feats(who)))
             else:
@@ -8251,6 +8260,15 @@ class Narrator:
         for sent in self._arena_leaks(text):
             m = ARENA_LEAK.search(sent)
             add(sent, f"\"{m.group(0)}\" isn't in this arena (the fight is in {self._arena_name()}): use what is here")
+        biting = {g[0]: (g[1], str(g[2]).lower()) for g in (getattr(self, "grips", None) or [])
+                  if re.search(r"\b(?:jaws?|teeth|fangs?|mouth|bite)\b", str(g[3] or ""), re.I)}
+        for sent, whos, named in self._said(text):
+            if len(whos) == 1 and whos[0] in biting and re.search(
+                    r"\b(?:lower(?:ed|s)? her head|horn (?:point|aim|level|angl)\w*|(?:point|aim|level)\w* her horn|"
+                    r"opened her (?:mouth|jaws)|roar(?:ed|s)?\b|howl(?:ed|s)?\b|snapp?(?:ed)? at)", sent, re.I):
+                held, part = biting[whos[0]]
+                add(sent, f"{poss(whos[0])} jaws are clamped on {poss(held)} {part}: her head stays there, her mouth "
+                          f"full. Show her pressing or shaking, not a free head")
         cols = getattr(self, "body_colors", None) or {}
         for sent, whos, named in self._said(text):
             if len(whos) != 1:

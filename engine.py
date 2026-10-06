@@ -1242,6 +1242,9 @@ class Engine:
                     d.learned.setdefault("wary", {})[f"{a.name}|{move['name']}"] = True   # that one hurt her badly
         sustained = None
         if hits and int(sustain or 0) > 1 and move.get("sustainable"):
+            if against and (d.name in self.downed or self.pin_on(d.name) is not None) and \
+                    short_phrase(against) != short_phrase((self.pressed.get(d.name) or {}).get("surface") or ""):
+                against = ""       # down or pinned on the ground: no tree or wall behind her to grind her into
             sustained = self._sustain(a, d, move, plan, powers, int(sustain), against, enforce)
             hits = hits + [h for pulse in sustained["pulses"] for h in pulse["hits"]]
             if not sustained["pulses"] and not sustained.get("broke"):
@@ -5312,8 +5315,15 @@ class Engine:
         text = str(flavor or "")
         jaw_rx = r"\b(?:jaws?|teeth|bit(?:e|es|ing)?|fangs?|mouth)\b"
         jaw_parts = {str(st["part"]).lower() for st in started if re.search(jaw_rx, str(st.get("with") or ""), re.I)}
-        if not text or not jaw_parts:
+        if not text:
             return text
+        if not jaw_parts:
+            # jaws in the line with no grip that uses them ("jaw-clamping flanks" pressed with her full weight, her
+            # jaws already clamped elsewhere): rebuilt from the grips
+            if not re.search(jaw_rx, text, re.I) or not started:
+                return text
+            bits = [f"{st.get('with') or 'pressure'} on her {str(st['part']).lower()}" for st in started]
+            return ", ".join(bits[:-1]) + (" and " if len(bits) > 1 else "") + bits[-1]
         names = sorted({str(p).lower() for p in getattr(d, "parts", {})}, key=len, reverse=True)
         wrong = False
         for clause in re.split(r",|;|\band\b", text):
