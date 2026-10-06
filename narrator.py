@@ -6232,7 +6232,7 @@ class Narrator:
         if not names:
             return None
         alt = "|".join(sorted((re.escape(x) for x in names), key=len, reverse=True))
-        return re.search(r"(?:[—–]|\s-\s|\()\s*(?:" + alt + r")\s*(?:[—–]|\s-\s|\))", sent, re.I)
+        return re.search(r"(?:[—–]|\s-\s|\()\s*(?:" + alt + r")\s*(?:[—–]|\s-\s|\)|[.!?](?=\s|$))", sent, re.I)
 
     def _bone_slip(self, sent):
         """The severe bone wording in one sentence that isn't about a part allowed to break, or None."""
@@ -9426,9 +9426,34 @@ class Narrator:
                 text = self._drop_repeats(text, seen) if text else ""
             except llm.LLMError:
                 text = ""
-            if text:
-                written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()
+            if not text:
+                continue
+            if "failed tries at getting up" in issue and getattr(self, "_getup_who", None):
+                # the failed tries come BEFORE she stands: put them in front of the sentence where she rises
+                placed = False
+                for k, w in enumerate(written):
+                    spot = self._rise_at(w or "", self._getup_who)
+                    if spot is not None:
+                        written[k] = (w[:spot].rstrip() + "\n\n" + text.strip() + "\n\n" + w[spot:].lstrip()).strip()
+                        placed = True
+                        break
+                if placed:
+                    continue
+            written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()
         return written
+
+    def _rise_at(self, text, who):
+        """Where in this text `who` gets to her feet (the start of that sentence), or None."""
+        if not text or who not in (self.strengths or {}):
+            return None
+        for sent, whos, named in self._said(text):
+            if who not in whos:
+                continue
+            m = STANDING.search(sent)
+            if m and not STAND_OVER.search(sent) and not NOT_UP.search(sent[:m.start()]):
+                at = text.find(sent)
+                return at if at >= 0 else None
+        return None
 
     def _tell_missing_attacks(self, written, keys):
         """The last safety net: an attack every rewrite still left out of the story. The narrator is asked once more,

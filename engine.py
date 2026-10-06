@@ -720,7 +720,7 @@ class Engine:
                               {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
 
     # engine state that lives outside the main snapshot tuple but must be undone with it
-    _SNAP_EXTRA = ("broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim")
+    _SNAP_EXTRA = ("out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim")
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -4713,6 +4713,12 @@ class Engine:
         if for_story:
             out = ["HOW THE FIGHT WENT (the key moments, for the aftermath to look back on; do not list them, "
                    "let the characters remember one or two): " + "; ".join(m["text"] for m in keep)]
+            ko = (getattr(self, "out_reason", None) or {}).get(lose)
+            if fin:
+                out.append(f"HOW IT ENDED: {win} PINNED {lose}: {win} was ON TOP, holding her down, and {lose} was the "
+                           f"one held down underneath until she passed out. Never the other way round.")
+            elif ko:
+                out.append(f"HOW IT ENDED: {lose} was {ko}; {win} was left standing over her.")
             if tp:
                 out.append(f"THE TURNING POINT: {win} was behind or level until beat {tp['beat']}, then never again")
             out.append("WHAT DECIDED IT: " + "; ".join(reasons))
@@ -6561,6 +6567,7 @@ class Engine:
         """The story decides a fighter is out (pinned for the full count, knocked out, submitted)."""
         d = self.get_active(name)
         was_down = d.name in self.downed
+        self.__dict__.setdefault("out_reason", {})[d.name] = reason
         ended = self._put_out(d)
         if self.facing.get(d.name) == "sitting up":   # nobody stays sitting once she's out: she slumps over
             self.facing[d.name] = self.rng.choice(["on her side", "face-up"])
