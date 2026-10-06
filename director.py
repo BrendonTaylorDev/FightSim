@@ -6,6 +6,7 @@ The director can SEE the numbers but never calculates anything.
 import json
 import re
 from engine import short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR
+from blocks import kind_of
 
 import llm
 import userprompt
@@ -1254,6 +1255,39 @@ def true_label(engine, label, hits):
     return cut if cut and cut != label and len(cut.split()) >= 1 else ""
 
 
+_BITE_WORDS = re.compile(r"\b(?:teeth|fangs?|jaws?|bit(?:e|es|ing)|bitten|chomp\w*|maw)\b", re.I)
+
+
+def _move_of(engine, res):
+    """The move behind a result: its own dict when the fighter knows it, else what the result carries."""
+    mv = res.get("move") or {}
+    try:
+        return engine.find_move(res.get("attacker"), mv.get("name")) or mv
+    except (ValueError, KeyError):
+        return mv
+
+
+def honest_weapon(label, move):
+    """The director's few words for an attack, kept to the weapon the move really uses: "she rolls her over, her
+    teeth clamping down" on a Hip Roll has no bite in it, so the clause about teeth is cut (the narrator would
+    otherwise tell a bite nobody threw)."""
+    label = str(label or "")
+    if not label or not _BITE_WORDS.search(label):
+        return label
+    about = f"{(move or {}).get('name', '')} {(move or {}).get('about', '')} {(move or {}).get('description', '')}"
+    if "bite" in kind_of(about, "") or _BITE_WORDS.search(about):
+        return label
+    bits = re.split(r"(,\s*|;\s*|\s+and\s+|\s+then\s+|\s+while\s+)", label)
+    keep, i = [], 0
+    while i < len(bits):
+        part, sep = bits[i], (bits[i + 1] if i + 1 < len(bits) else "")
+        if not _BITE_WORDS.search(part):
+            keep.append(part + sep)
+        i += 2
+    out = re.sub(r"(?:,\s*|;\s*|\s+(?:and|then|while))\s*$", "", "".join(keep)).strip()
+    return out or str((move or {}).get("name") or "")
+
+
 def resolve_many(engine, actions):
     """Apply several actions in order, all or nothing: if any one is invalid, nothing changes.
     Returns (results, ids_of_holds_started_now)."""
@@ -1425,8 +1459,8 @@ def resolve_many(engine, actions):
                 raise ValueError(f"action {i} ({b.get('action')}): {e}" if len(actions) > 1 else str(e)) from e
             if isinstance(res, dict) and res.get("type") == "instant" and res.get("hits") and res.get("flavor") \
                     and not res.get("environment"):
-                res["flavor"] = true_label(engine, res["flavor"], res["hits"]) or (
-                    (res.get("move") or {}).get("name") or "attack")
+                res["flavor"] = honest_weapon(true_label(engine, res["flavor"], res["hits"]),
+                                              _move_of(engine, res)) or ((res.get("move") or {}).get("name") or "attack")
             if link and isinstance(res, dict):
                 res["chain"] = {"link": link[0], "of": link[1]}
             results.append(res)

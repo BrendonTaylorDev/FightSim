@@ -6,6 +6,7 @@ and the stat block you see is printed straight from here.
 import copy
 import difflib
 import json
+import math
 import os
 import random
 import re
@@ -478,7 +479,7 @@ class Engine:
         # x how much the part matters to the whole body (health.part_weights: a throat far more than an ear)
         vital = self.part_weight(p.name)
         raw_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital
-        health_loss = self._soften_loss(defender, raw_loss)
+        health_loss = self._soften_loss(defender, raw_loss, power)
         defender.health = self._floor(hp_b - health_loss)
         # the health the soft cap kept from her doesn't vanish: a share of it wears the part down further
         # (health.soft_cap.to_resistance resistance points per point of health softened away)
@@ -638,25 +639,38 @@ class Engine:
                 return round(m0 + (m1 - m0) * t, 4), round(h0 + (h1 - h0) * t, 4)
         return pts[-1][1], pts[-1][2]
 
-    def _soften_loss(self, defender, raw):
+    def _soften_loss(self, defender, raw, power=None):
         """health.soft_cap: a hit on a ruined part costs a lot of health, but no single blow and no single beat swings
-        wildly. Health lost past per_hit (a share of HER OWN full health) by one hit, and past per_beat by everything
-        that lands on her in one beat, counts at `above` (0.3 = 30%). Smooth: nothing changes below the limits."""
+        wildly. Past per_hit (a share of HER OWN full health, rolled up or down by jitter, and smaller for a light
+        hit: power_ref) the extra health levels off toward at most `room` x that cap more, however big the raw number
+        (a true soft cap, not a share of the excess); the same for everything that lands in one beat past per_beat.
+        A devastating blow gets a far looser cap (moves.devastating: cap_mult, room_mult). Nothing changes below."""
         cfg = self.rules.get("health", {}).get("soft_cap") or {}
         if not cfg.get("enabled", True) or raw <= 0 or not defender.max_health:
             return raw
-        k = max(0.0, min(1.0, float(cfg.get("above", 0.3))))
         dv = getattr(self, "_dev_active", None)
         dcfg = (self.rules.get("moves") or {}).get("devastating") or {}
-        if dv:    # a devastating blow is ALLOWED to swing the fight: the cap is much looser for it
-            k = max(k, float(dcfg.get("cap_above", 0.7)))
-        squash = lambda x, cap: x if cap <= 0 or x <= cap else cap + (x - cap) * k
-        loss = squash(raw, float(cfg.get("per_hit", 0.05)) * defender.max_health
-                      * (float(dcfg.get("cap_mult", 3.0)) if dv else 1.0))
+        room = float(cfg.get("room", 0.6))
+        loose = float(dcfg.get("cap_mult", 3.0)) if dv else 1.0
+        room *= float(dcfg.get("room_mult", 2.0)) if dv else 1.0
+
+        def soft(x, cap):
+            if cap <= 0 or x <= cap:
+                return x
+            r = room * cap
+            return cap + (r * (1 - math.exp(-(x - cap) / r)) if r > 0 else 0.0)
+        jit = float(cfg.get("jitter", 0.15) or 0)
+        roll = self.rng.uniform(1 - jit, 1 + jit) if jit > 0 else 1.0
+        light = 1.0
+        ref = float(cfg.get("power_ref", 40) or 0)
+        if ref > 0 and power is not None and not dv:
+            # a light knock (a jolt getting up, a tumble, a press) can't cost what a full blow can, ruined part or not
+            light = max(float(cfg.get("power_floor", 0.25)), min(1.0, float(power) / ref))
+        loss = soft(raw, float(cfg.get("per_hit", 0.05)) * defender.max_health * loose * roll * light)
         tally = self.__dict__.setdefault("beat_loss", {})
         before = tally.get(defender.name, 0.0)
-        cap = float(cfg.get("per_beat", 0.12)) * defender.max_health * (float(dcfg.get("cap_mult", 3.0)) if dv else 1.0)
-        out = squash(before + loss, cap) - squash(before, cap)
+        cap = float(cfg.get("per_beat", 0.12)) * defender.max_health * loose
+        out = soft(before + loss, cap) - soft(before, cap)
         tally[defender.name] = before + loss
         return out
 

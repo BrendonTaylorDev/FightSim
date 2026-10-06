@@ -1133,7 +1133,9 @@ class Display:
                            + roll)
                 for h in e.get("fall_hits") or []:
                     out.append(f"   💥 the drop on try {h['try']} hurts: {h['part']} damage {num(h['damage_before'])}% → "
-                               f"**{num(h['damage_after'])}%**")
+                               f"**{num(h['damage_after'])}%**"
+                               + (f" · {self.heart} -{num(h['health_loss'])}" if h.get("health_loss") else "")
+                               + (f" (softened from {num(h['health_raw'])})" if h.get("softened") else ""))
             elif e["type"] == "stays_down":
                 out.append(f"🧗 {e['fighter']} stays down this beat: she only just went down, so there is no get-up roll "
                            f"yet (the first one is next beat)")

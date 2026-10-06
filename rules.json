@@ -408,7 +408,7 @@
       "mult": 0.6
     },
     "devastating": {
-      "_comment": "Very rarely a blow lands DEVASTATINGLY: its power x a roll in mult, and health.soft_cap is much looser for that one hit (per_hit and per_beat x cap_mult, the part past them counts at cap_above), so it can swing the fight. chance per landed attack (not pummels), x weak_point_mult on a part already devastated (300%+) or hurt_part_mult on one excruciating (150%+), x open_mult when she is caught open (moves.vulnerable); at most max_chance. ground_chance: a hard landing on a fighter with two or more badly hurt parts finds every sore spot at once (x ground_mult). The narrator is told why it was so severe.",
+      "_comment": "Very rarely a blow lands DEVASTATINGLY: its power x a roll in mult, and health.soft_cap is much looser for that one hit (per_hit and per_beat x cap_mult, with room_mult x the room past them), so it can swing the fight. chance per landed attack (not pummels), x weak_point_mult on a part already devastated (300%+) or hurt_part_mult on one excruciating (150%+), x open_mult when she is caught open (moves.vulnerable); at most max_chance. ground_chance: a hard landing on a fighter with two or more badly hurt parts finds every sore spot at once (x ground_mult). The narrator is told why it was so severe.",
       "enabled": true,
       "chance": 0.015,
       "weak_point_mult": 2.0,
@@ -420,6 +420,7 @@
         2.2
       ],
       "cap_mult": 3.0,
+      "room_mult": 2.0,
       "cap_above": 0.7,
       "ground_chance": 0.03,
       "ground_mult": [
@@ -593,12 +594,15 @@
     "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
     "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
     "loss_per_damage_point": 0.155,
-    "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. Health one HIT costs past per_hit (a share of the fighter's own full health: 0.05 = 5%), and health everything that lands on her in one BEAT costs past per_beat (0.12 = 12%), counts only at `above` (0.3 = 30%). Below those limits nothing changes. The stat block shows 'softened from' when it applies. enabled false = the old rule (a pummel on a ruined part could cost half her health in a beat).",
+    "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. One HIT costs at most about per_hit of the fighter's own full health (0.05 = 5%), rolled up or down by jitter (0.15 = plus or minus 15%) and smaller for a light knock (power under power_ref scales it down, to no less than power_floor of it): past that the extra levels off, adding at most room x that cap more however big the raw number. Everything that lands on her in one BEAT is softened the same way past per_beat. A devastating blow gets far looser limits (moves.devastating cap_mult, room_mult). The stat block shows 'softened from' when it applies.",
     "soft_cap": {
       "enabled": true,
       "per_hit": 0.05,
       "per_beat": 0.12,
-      "above": 0.3,
+      "room": 0.6,
+      "jitter": 0.15,
+      "power_ref": 40,
+      "power_floor": 0.25,
       "_to_resistance_comment": "to_resistance: the health the soft cap keeps from her is not simply lost: this many resistance points come off the hit part for every point of health softened away (0.1: a blow softened by 100 health wears the part 10 points more). 0 = off.",
       "to_resistance": 0.1
     },

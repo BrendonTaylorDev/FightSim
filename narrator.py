@@ -750,6 +750,12 @@ GAME_TERMS = re.compile(
     r"\b(?:painful|numb|grinding|burning|aching|stinging|deep|hot|dull)-(?:red|orange|yellow|green|black|white)\b", re.I)
 
 
+# a beam fired in a beat with no ranged move ("The beam of ice was pale blue" for an Ice Fang); not sunbeams
+STRAY_BEAM = re.compile(r"\b(?:beam|blast|bolt) of (?:ice|frost|cold|water|fire|flame|energy|light(?!ning)|power)\b|"
+                        r"\b(?:ice|icy|frost|water|fire|energy|freezing) (?:beam|blast|ray)\b|\bthe beam\b(?! of (?:sun|light))",
+                        re.I)
+
+
 # words that say a body part stopped working; only allowed once that part is excruciating or worse
 DISABLED = re.compile(r"\b(useless|limp|dangl\w*|dead weight|ruined|broken|wouldn't (?:move|work|obey|respond)|"
                       r"couldn't (?:move|use|feel) (?:it|her|his)|refused to (?:work|move|obey)|gave out|"
@@ -2543,6 +2549,11 @@ class Narrator:
         self._no_electric = not any(str(m.get("type", "")).lower() == "electric" for m in moves) \
             and not any(a.get("status_move") for a in actions) and "electric" not in clash_types \
             and not ELECTRIC.search(place) and not re.search(r"\bspark", place, re.I)
+        # a beat with no beam, blast or stream in it (a bite, a claw, a charge): nobody fires a beam
+        self._no_beam = not any(Engine.is_ranged(m) or re.search(r"beam|blast|pulse|gun|pump|jet|stream|breath|wave|ray",
+                                                                  str(m.get("name", "")), re.I) for m in moves) \
+            and not any(a.get("clash") for a in actions)
+        self._beam_moves = [str(m.get("name")) for m in moves if m.get("name")]
         if "electric" in clash_types or any(str(m.get("type", "")).lower() == "electric" for m in moves):
             self._seen_electric = True   # remembered later in the fight ("where the lightning had met her water")
         # anyone touched by a tick, landing, pin, or the like counts as hurt (only clean beats get the check)
@@ -6341,6 +6352,15 @@ class Narrator:
             if m:
                 issues.append(f"it added electricity (\"{m.group(0)}\") to a move that isn't Electric-type. Show each move "
                               f"as its own type only")
+        if getattr(self, "_no_beam", False):
+            b = next((STRAY_BEAM.search(x) for para in text.split("\n") for x in _SENT.split(para.strip())
+                      if x and STRAY_BEAM.search(x) and not re.search(
+                          r"\b(?:had|earlier|before|last|remember\w*|since|still|left by|from (?:the|her) (?:last|earlier))\b",
+                          x, re.I)), None)
+            if b:
+                issues.append(f"it fired a beam (\"{b.group(0)}\"), but nothing this beat is a beam, blast or stream: "
+                              f"{', '.join(self._beam_moves) or 'every attack here'} is delivered close, the way its move "
+                              f"says (a fang is a bite, a claw a rake). Show each move as what it is")
         rep = getattr(self, "_must_reposition", None)
         if rep and coverage:
             full = (prior or "") + "\n" + text
@@ -6673,12 +6693,14 @@ class Narrator:
                         break
             if PAIN_NOW.search(sent):
                 p = self._untouched_part(who, sent)
-                noun = p.split()[-1].rstrip("s") if p else ""
-                if p and noun not in struck_nouns and re.search(
-                        r"\b" + re.escape(noun) + r"s?\b\W+(?:\w+\W+){0,3}?(?:hurting|ach(?:ed|ing)|throbb(?:ed|ing)|"
+                noun = (getattr(self, "_untouched_word", None) or p.split()[-1].rstrip("s")) if p else ""
+                if p and noun not in struck_nouns and (re.search(
+                        r"\b(?:pain|ache|agony|hurt|throb|sting)\s+(?:in|from|of)\s+(?:her|the)\s+(?:\w+\s+)?"
+                        + re.escape(noun) + r"s?\b", low) or re.search(
+                        r"\b" + re.escape(noun) + r"s?\b\W+(?:\w+\W+){0,3}?(?:hurting|ach(?:ed|ing)|throbb(?:ed|ing)|puls(?:ed|ing)|"
                         r"scream(?:ed|ing)|burn(?:ed|ing)|blaz(?:ed|ing)|"
                         + ("" if noun in ("fin", "ear", "tail", "fan", "antenna", "nostril", "ruff") else   # these flare by moving
-                           r"flar(?:ed|ing)(?! (?:wide|out|open|up|back|flat))|") + r"on fire)\b", low):
+                           r"flar(?:ed|ing)(?! (?:wide|out|open|up|back|flat))|") + r"on fire)\b", low)):
                     add(sent, f"{poss(who)} {p} is said to hurt, but it has never been hit: check which part the blow "
                               f"really landed on")
             for mv, got in victims.items():
@@ -6947,21 +6969,42 @@ class Narrator:
                 out.append((whos[0], f"{w.group(0)}, on her {part}, which has never been hurt"))
         return out
 
+    # everyday words for places on a body that are not part names of their own: which part they belong to
+    BODY_ALIASES = {"ankle": ("foot", "hock", "hind paw", "talon", "paw"), "wrist": ("paw", "hand", "forearm", "forepaw"),
+                    "elbow": ("upper arm", "forearm", "upper foreleg", "lower foreleg"), "shin": ("lower leg", "hock", "knee"),
+                    "heel": ("foot", "hind paw", "hock"), "forehead": ("head",), "brow": ("head",), "temple": ("head",),
+                    "collarbone": ("shoulder",), "spine": ("back", "upper back", "lower back"), "belly": ("stomach", "belly"),
+                    "gut": ("stomach", "belly"), "toes": ("foot", "hind paw", "talon")}
+
     def _untouched_part(self, fighter, sent):
         """A body part this sentence names on `fighter` that has taken no damage at all (side-less names count
-        only when every side is untouched), or None."""
+        only when every side is untouched), or None. An everyday word for a place on her body ("ankle", "wrist")
+        counts as the part it belongs to (BODY_ALIASES); self._untouched_word is the word the sentence used."""
         dmg = self.damage_by.get(fighter) or {}
         low = sent.lower()
         groups = {}
         for p, d in dmg.items():
             base = re.sub(r"^(left|right) ", "", p)
             groups.setdefault(base, []).append((p, d))
+        self._untouched_word = None
         for base, items in groups.items():
             if not re.search(r"\b" + re.escape(base) + r"s?\b", low):
                 continue
             sided = [p for p, _ in items if re.search(r"\b" + re.escape(p) + r"\b", low)]
             named = sided or [p for p, _ in items]
             if all(dmg[p] <= 0 for p in named):
+                return named[0]
+        for word, homes in self.BODY_ALIASES.items():
+            m = re.search(r"\b(?:(left|right) )?" + re.escape(word) + r"s?\b", low)
+            if not m or any(re.search(r"\b" + re.escape(word) + r"s?\b", p) for p in dmg):
+                continue    # (a body that really has a part by that name is handled above)
+            home = next((h for h in homes if h in groups), None)
+            if not home:
+                continue
+            items = groups[home]
+            named = [p for p, _ in items if m.group(1) and p.startswith(m.group(1))] or [p for p, _ in items]
+            if all(dmg[p] <= 0 for p in named):
+                self._untouched_word = word
                 return named[0]
         return None
 
@@ -7252,7 +7295,7 @@ class Narrator:
         if issues:
             # one rewrite with every problem spelled out; a local model follows concrete notes far better than rules
             if self.progress:
-                labels = [_slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
+                labels = [_slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "stray beam" if "fired a beam" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
                            else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
                            else "missing escape" if "ESCAPE" in i
                            else "missing escape blow" if "breaks free with" in i else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
