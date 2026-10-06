@@ -6300,3 +6300,1569 @@ the space is there, and she fills it with everything she has
 she moves into the gap like water finding the low place
 *Now, before she covers it.*
 she doesn't hesitate; the opening is the invitation and she takes it
+
+# ===============================================================================================================
+# MORE (build 148): the physical moment: reactions, sensations, how pain shows, movement, breath, guards, landings
+# ===============================================================================================================
+# ---------------------------------------------------------------------------------------------------------------
+# IMPACT EXPANSION: more reactions, sensations, pain shows and the physical moments of a fight
+# (same categories and condition combinations as story_blocks.txt; a few new sensible combinations)
+# ---------------------------------------------------------------------------------------------------------------
+
+# REACTIONS: the moment of impact, sized to the blow
+== reaction | size: glancing
+a quick frown, as if someone had stepped on her shadow
+she breathes out sharply and the moment is gone
+her skin shivers over the spot the way a pond shivers under a dropped leaf
+she does not look at it at all, which says enough
+a small click of her teeth, irritation more than anything
+her chin comes up a fraction, insulted
+the touch skids off her and she lets it
+she resettles her weight as if nothing had asked her to move it
+a dry sniff, and her eyes stay exactly where they were
+it costs her a blink, no more
+the faint sting makes her lip twitch, and she smooths it at once
+a narrow look that promises to remember it
+her crest flicks up and lies straight down again | has: crest
+a few feathers lift where it brushed her and settle on their own | has: feathers
+her wings give one small rustle against her sides | has: wings
+her flame leans away from the blow and stands straight again | has: flame
+she tips her beak toward the place, considers it, and lets it go | has: beak
+her coils shift one loop over and lie still | has: coils
+the rocky points of her mane grind once and are quiet | has: mane
+she dusts the spot with the back of one paw, almost a sneer | has: arms
+her ruff lifts at the edges and settles | has: ruff
+her talons shift their grip on the ground and hold | has: talons
+
+== reaction | size: solid
+a grunt that comes from low in her belly
+the hit pushes a short "huh" out of her, half a question
+she bares her teeth at nothing and shakes her head once
+her weight goes onto the far side and stays there a beat
+a sharp sniff, and her eyes go hard
+she squints as if into wind, mouth tight
+the breath she had saved for the next move is gone and she has to fetch another
+she twists a little, as though she could turn the sting out of herself
+a quick, clipped yelp, more anger than pain
+her eyes flick to the place and back, measuring it
+her mouth pulls sideways and stays crooked for a moment
+she sways back from it and comes forward again on the same breath
+a hiss, then a long breath out to finish it
+the shock of it hums under her skin for a few heartbeats
+she takes it with her head down and her back hunched, like rain
+her feathers lift along her back in a ridge and only slowly lie down | has: feathers
+her crest jerks flat against her head | has: crest
+her beak snaps shut hard, a sound like a lid dropped on a box | has: beak
+her flame jumps tall and ragged for a breath | has: flame
+she half spreads one wing as if to fend it off, too late | has: wings
+a ripple runs down the whole length of her coils and out to the tip | has: coils
+her talons clench and scrape short grooves in the ground | has: talons
+her mane bristles and the hard points of it clatter together | has: mane
+her ears flatten sideways, then turn back toward her opponent | has: ears
+her tail jerks straight out behind her and slowly curls back | has: tail
+
+== reaction | size: heavy
+the blow wrenches a cough out of her and she nearly bites her tongue on it
+she hunches round it, mouth open, eyes squeezed to slits
+a loud grunt, and her front end dips toward the ground
+she goes stiff from head to foot and only her breath moves
+her cry comes out flat and short, as if stamped out of her
+she spins half round with the force and has to find her opponent again
+a whine slips out on the breath after, quieter and worse
+her face crumples for a heartbeat and she makes it hard again
+she sucks a breath through her teeth that whistles
+the strength goes out of her stance and she puts it back piece by piece
+she lurches sideways and her balance chases after her
+a bellow of hurt, too loud, that she regrets at once
+her eyes go wet and blank, and then focused and furious
+the hit drives a long groan out of her that she cannot stop halfway
+her head goes down as if ducking a second blow that is not coming
+she shakes all over, once, the way she would shake off water
+her feathers flare out in a ruffled burst and stay raised | has: feathers
+her wings bang open with the shock and she drags them shut | has: wings
+a hoarse squawk breaks out of her beak before she can stop it | has: beak
+her flame gutters low and climbs back up, unsteady | has: flame
+her crest slams flat and quivers | has: crest
+her coils jerk tight, then loose, as if they had been stung | has: coils
+her talons rake the ground backward as she is shoved | has: talons
+her tails fan wide behind her and every tip trembles | has: tails
+she clutches at the place with her free hand and her face twists | has: arms
+
+== reaction | size: tremendous
+the scream catches somewhere in her chest and comes out as a hoarse bark
+her body throws itself away from the blow before her mind has caught up
+for a moment her limbs do not know which of them should hold her
+a strangled howl, and then the ragged sucking for air after it
+she reels, eyes rolling, and the cry follows a heartbeat late
+she clenches so hard round the hurt that she shakes like a drawn bow
+her mouth gapes and shuts and gapes, like a fish on a bank
+a wail that rises, hitches, and rises again
+the sound she makes bounces back at her off everything around them
+she drops her head nearly to the ground and keens into it
+she staggers in a half circle, unable to stop her own momentum
+the cry is so big it seems to empty her; she sways in the quiet after it
+every muscle she owns jumps at once and then hangs slack for a heartbeat
+she shrieks, and the shriek turns into coughing
+her face shows it all in a moment: lost, then found, then furious
+a howl breaks loose, then splinters into gasping
+she makes a sound like a kicked door and then no sound at all for a long moment
+the shock throws her head back so hard the cry goes straight up
+her legs fold and unfold under her as if they were arguing | has: legs
+she hugs herself round the hurt, rocking on the spot | has: arms
+her forelegs splay and she stops herself just short of the ground | has: forelegs
+she rocks back on her heels from it, mouth wide | has: legs
+her beak gapes wide and the shriek that comes out of it is harsh enough to hurt her own ears | has: beak
+both wings snap fully open and beat once, wildly, at nothing | has: wings
+her flame flares huge and then shrinks to a shaking ember | has: flame
+her crest stands bolt upright and trembles | has: crest
+her coils whip and lash across the ground in one long convulsion | has: coils
+the hard points of her mane rattle as she shudders | has: mane
+her tails thrash in every direction and then cling to her | has: tails
+her talons clench on nothing and stay clenched, trembling | has: talons
+
+# SENSATIONS: what the pain in a part is like, by how bad it now is
+== sensation | level: sore
+her {part} stings like a slap from a wet branch, sharp and shallow
+a warm tingle spreads over her {part} and cools again
+her {part} feels faintly bruised, the way it does after a long day's running
+there is a small hot spot on her {part} that she keeps almost noticing
+her {part} prickles under the skin as though there were grit in it
+her {part} protests on the first movement and is quiet on the second
+a dull, sulky ache in her {part} that is easy to step over
+her {part} feels stiff, as if it had cooled down too fast
+the surface of her {part} burns, and the burn is already thinning
+a tender patch on her {part}, nothing worse, as long as nothing touches it twice
+her {part} hums faintly, like a plucked string going quiet
+her {part} is a little slow, a little warm, a little sorry for itself
+the sting in her {part} sharpens when she breathes in and fades as she breathes out
+her {part} aches in a narrow line where the blow skidded across it
+she can feel her heartbeat in her {part} for a few beats, and then she cannot
+
+== sensation | level: hurting
+her {part} aches deep and wide, as if the blow had sunk in and spread
+a stubborn heat sits in her {part} and does not cool
+her {part} tightens up between movements and has to be coaxed loose again
+a knot of hurt in her {part} that tugs on everything around it
+her {part} throbs slow and heavy, like a drum heard through a wall
+every use of her {part} wakes a sharp complaint and leaves a dull one behind
+her {part} feels fat and stiff, swelling into its own skin
+the hurt in her {part} is a pressure more than a pain, until she moves it
+her {part} feels tender from every side at once
+a sour, nagging ache in her {part} that she cannot shake out
+her {part} stings when it stretches and aches when it bunches
+the ache in her {part} has spread a little further each time she checks on it
+her {part} feels slow, as if it were wading through something thick
+a hot point in her {part} with a cold, numb ring round it
+her {part} jars on every step, a small hard knock each time
+she can feel the swelling in her {part} pushing at her with each pulse
+her {part} cramps once, as a warning, and lets go
+the pain in her {part} is steady now, something she can count on being there
+
+== sensation | level: very painful
+her {part} pounds like a fist on a door that will not open
+a deep, hot ache in her {part} that flares sharp whenever she forgets about it
+her {part} feels packed with heat, the skin straining to hold it all
+the pain in her {part} has a centre she could point to and edges that keep spreading
+her {part} trembles under even small loads, and the trembling hurts
+a twisting ache wrings her {part} and does not let go when she breathes
+her {part} sends a bright stab up through her at every jolt
+the throb in her {part} is so steady she starts breathing in time with it
+her {part} feels scraped inside, every movement rubbing on the sore place
+something in her {part} clenches when she reaches, a fist closing round the hurt
+the pain in her {part} keeps calling her eyes down to it, again and again
+her {part} burns in a long stripe and aches in a wide pool round it
+she feels each heartbeat as a hard push outward from inside her {part}
+her {part} stiffens between moves, and every restart is a fresh wrench
+a sick, heavy ache in her {part} that settles in her stomach too
+her {part} is too hot, too tight and too loud to ignore
+the hurt in her {part} sharpens to a point whenever she breathes in deep
+her {part} feels held in a vice that someone keeps tightening a turn at a time
+
+== sensation | level: excruciating
+her {part} blazes so fiercely that her eyes stream from it
+the pain in her {part} swallows sound; for a moment she hears nothing at all
+her {part} feels clamped in burning jaws that will not open
+every twitch of her {part} sets off a burst of agony that rings through all of her
+her {part} is a wall of pain she keeps walking into
+the hurt in her {part} pulses so hard it shakes the breath in her
+her {part} throbs with a heat that seems to pour out into the rest of her
+the pain in her {part} is too big to brace against; it goes straight through every brace
+her {part} feels hammered flat and still being hammered
+she cannot find one quiet place anywhere in her {part}
+her {part} jolts with sharp, sickening shocks, each one emptying her lungs
+the agony in her {part} comes up into her throat and sits there, choking her
+her {part} is so tender that the stir of air from her own movement hurts it
+her thoughts keep breaking on the pain in her {part} like waves on a rock
+her {part} feels pressed in a hot fist and twisted
+the pain in her {part} makes her stomach heave and her sight swim
+
+== sensation | level: devastated
+her {part} has gone past answering; it only lies there and hurts
+the pain in her {part} has a dull, endless roar to it, like water over a weir
+her {part} feels hollowed out and filled again with ache
+she has stopped trying to use her {part}; even the thought of it hurts
+her {part} is heavy, hot and shaking, and all of it is pain
+her {part} sends up a thin cry inside her every time her heart beats
+the faintest pressure on her {part} turns her whole body into a flinch
+her {part} feels like something heavy strapped to her that hurts as if it were her own
+there is no edge to the pain in her {part} any more; it simply is her {part}
+her {part} quivers on its own, and every quiver is a fresh hurt
+she has forgotten what her {part} felt like before; she knows only this
+her {part} burns and freezes by turns, and she cannot bear either
+her {part} lies still because it can do nothing else, and the stillness aches
+the hurt in her {part} has outlasted her flinching; now she only shakes
+her {part} seems to drag the rest of her down toward it, an anchor of pain
+her {part} hurts so steadily that a moment of less pain startles her
+
+== sensation | zone: head | level: very painful, excruciating, devastated
+the ground swims each time she moves her eyes
+a heavy pressure fills her skull, as if it were stuffed with wet sand
+light hurts; she squints, and the squinting hurts too
+her ears hum with a high thin note that will not stop
+her thoughts come slow and in the wrong order
+a hot, bruised tightness clamps her face from ear to ear
+
+== sensation | zone: head | level: sore, hurting
+a pulse taps at her temple, light and quick
+her eyes water a little and her sight stays clear
+a dull pressure above her eyes, like a storm coming on
+her face feels hot on the side that took it
+
+== sensation | zone: neck | level: sore
+her throat tickles and she swallows twice to quiet it
+a pull down one side of her neck when she looks round
+
+== sensation | zone: neck | level: hurting, very painful, excruciating, devastated
+every swallow catches halfway, as if on a burr
+her neck is stiff as a post, and turning it is a negotiation
+her throat burns when she breathes fast, so she tries not to
+a deep ache at the base of her skull that tightens when she lowers her head
+the air feels rough going down, as if it had grit in it
+she tastes copper at the back of her throat and swallows it
+
+== sensation | zone: chest | level: sore
+her chest feels thumped, like a drum still humming after the beat
+a short sharp twinge at the very top of a deep breath
+
+== sensation | zone: chest | level: hurting, very painful, excruciating, devastated
+each breath pushes against something sore that pushes back
+a deep bruise sits in the middle of her chest and aches with every heartbeat
+she gets air in shallow pulls, never quite reaching the bottom of her lungs
+a shout, a cough, a laugh: any of them would hurt, so she does none of them
+her chest feels heavy, as if something were sitting on it
+a sharp catch at her side halts each breath in the same place
+
+== sensation | zone: belly | level: sore
+her stomach gives one small lurch and settles
+a dull ache at her middle, the kind that comes after a hard laugh
+
+== sensation | zone: belly | level: hurting, very painful, excruciating, devastated
+her middle feels clenched round a hot stone
+a slow sick roll in her belly every time she moves too quickly
+the hurt pulls her forward at the waist like a hand on a rope
+her belly aches deep inside, under the muscle, where she cannot brace it
+she feels queasy and hot, and the ground looks further away than it is
+a cramping pull low down that comes and goes with her breath
+
+== sensation | zone: back | level: sore
+her back feels stiff in one place, as if after a bad night's sleep
+a twinge low in her back when she turns, brief and sour
+
+== sensation | zone: back | level: hurting, very painful, excruciating, devastated
+her back is one long stiff ache from her neck to her hips
+the muscles along her spine clench whenever she reaches forward
+a hot spot between her shoulders burns when she twists
+straightening up feels like pulling against a rope tied low on her back
+every jolt runs up her spine like a knock through a beam
+her back feels too short, drawn tight round the bruise
+
+== sensation | zone: arm | level: sore
+her {part} feels stiff for the first movement and loosens after
+a faint ache in her {part} when she reaches out with it
+
+== sensation | zone: arm | level: hurting, very painful, excruciating, devastated
+her {part} throbs at the joint and goes weak at the tip
+pushing with her {part} sends a hot jolt into her chest
+her {part} feels swollen and slow, as if it were packed with clay
+her {part} wants to curl in against her and she has to make it straighten
+any jar to her {part} rings up into her teeth
+her {part} prickles and burns by turns, never settling
+
+== sensation | zone: leg | level: sore
+her {part} twinges as she pushes off and quiets as she lands
+a stiffness in her {part} that a few steps work out
+
+== sensation | zone: leg | level: hurting, very painful, excruciating, devastated
+her {part} trembles at the end of every push
+the joint in her {part} feels hot and full and does not want to bend
+her {part} aches worst when she stands still, so she keeps moving
+every landing jars through her {part} and up into her hip
+her {part} feels hollow, as if it might fold without warning
+a burning stripe down her {part} whenever she stretches it
+
+== sensation | zone: tail | level: sore
+her {part} tingles where it was struck and keeps its line
+a small ache at the root of her {part} when she swings it
+
+== sensation | zone: tail | level: hurting, very painful, excruciating, devastated
+her {part} aches from the root, and every swing pulls at her back
+her {part} feels heavy and wrong, a weight she has to carry instead of use
+a hot throb at the base of her {part} that answers every step
+her {part} stings along its length whenever it brushes the ground
+she cannot swing her {part} without a sharp tug at her hips
+her {part} hangs numb at the tip and sore at the root
+
+# PAIN_SHOW: how she visibly shows the pain of a hit in one part, sized to its level ({part} as in the main file)
+== pain_show | level: minor
+a short, unimpressed breath through her teeth
+she keeps her eyes on her opponent and not on {part}
+a flicker across her face, gone before it can settle
+her stride carries on through it unbroken
+she gives the blow a single small nod, as if returning a greeting
+the sting on {part} is already old news
+she smooths her stance with a small roll of her weight
+a flat look, and nothing else given away
+her pace holds; whatever it was, it was not enough
+she breathes out once, long, and is done with it
+a tiny wince she wipes off her face at once
+she lets {part} take it and does not bother to guard it afterwards
+a slight tilt of her head, as if she had heard something odd
+nothing in her movement changes, and that is a message of its own
+the faintest hitch at the corner of her mouth
+
+== pain_show | level: minor | zone: head
+she blinks once, hard, and her gaze sharpens
+== pain_show | level: minor | zone: neck
+she tips her head to one side and back, loosening a kink
+== pain_show | level: minor | zone: chest
+her next breath is a little deeper, nothing more
+== pain_show | level: minor | zone: belly
+a small tightening of her middle that she lets go at once
+== pain_show | level: minor | zone: back
+a shrug ripples down her back and is gone
+== pain_show | level: minor | zone: arm
+she turns the limb over once, looks at it, and forgets it
+== pain_show | level: minor | zone: leg
+her footing shifts and finds itself again in the same breath
+== pain_show | level: minor | zone: tail
+the tail gives one irritated swish
+
+== pain_show | level: minor
+her crest twitches up a fraction and settles | has: crest
+her beak opens a crack and closes again, unbothered | has: beak
+her flame does not so much as flicker | has: flame
+her feathers stir where it touched and lie smooth again | has: feathers
+her coils tighten by one loop and slacken | has: coils
+the stony points of her mane barely shift | has: mane
+her wings stay folded, unconcerned | has: wings
+
+== pain_show | level: minor | state: tired, spent
+she is too tired to waste even a wince on it
+she hardly feels it under all her other aches
+
+== pain_show | level: sore
+a sour face, there and gone
+she huffs through her nose and works {part} once to be sure of it
+the sting makes her eyes narrow to slits for a breath
+a short growl that is mostly temper
+she checks {part} with a sideways glance and lets it be
+her mouth tightens and stays tight a moment longer than she wants
+a grunt pushed out on the impact, and then she breathes normally
+she twitches the sting away the way she would shake off rain
+the spot smarts, and she rubs it against nothing, then stops herself
+her chin dips once in a wince and comes up defiant
+a hissed breath, a reset of her feet, and she is back in it
+{part} feels warm and tight, and she flexes it until it loosens
+she squints through the sting and keeps coming
+a thin "tch" of annoyance between her teeth
+the hurt is enough to sharpen her, not enough to slow her
+
+== pain_show | level: sore | zone: head
+her eyes water for a breath and she blinks the world straight
+a dull bump of pain over her brow that she frowns through
+== pain_show | level: sore | zone: neck
+she cricks her neck to one side with a grimace
+swallowing is a little rough for a moment
+== pain_show | level: sore | zone: chest
+she coughs once and pushes the breath back into place
+her chest stings when she breathes in, and she breathes in anyway
+== pain_show | level: sore | zone: belly
+she tightens her middle against a second blow that does not come
+a queasy flicker low in her middle that she breathes past
+== pain_show | level: sore | zone: back
+she rolls her spine, wincing, until the stiffness gives
+her back twitches under the skin, bunching and easing
+== pain_show | level: sore | zone: arm
+the limb stings on its next use and she uses it harder out of spite
+she presses the limb against her body for a moment and then lets it go
+== pain_show | level: sore | zone: leg
+she skips half a step and is back in rhythm
+the leg prickles when she plants it, then holds
+== pain_show | level: sore | zone: tail
+the tail lashes, more temper than hurt
+she draws the tail in close for one breath and lets it swing out again
+
+== pain_show | level: sore
+her crest jerks up stiff and only slowly sinks | has: crest
+her feathers ruffle over {part} and she shakes them flat | has: feathers
+her flame spits once, irritable | has: flame
+her coils shift and bunch, then loosen | has: coils
+the points of her mane rattle as she shakes her head | has: mane
+her wingtips twitch out from her sides and fold back | has: wings
+
+== pain_show | level: sore | state: tired, spent
+the sting lands on top of everything else and she sighs through her teeth
+she grimaces more than the blow deserves; she is tired of being touched
+
+== pain_show | level: hurting
+the pain shows in the set of her mouth and will not leave it
+she breathes in carefully, as if the air near {part} might be sharp
+she rubs {part} against her own side, a small helpless gesture
+her eyes stay hard, but her body has already started guarding the hurt
+a low groan she manages to keep short
+she rolls {part} and the stiffness is worse than she expected
+each step she takes has a little catch in it now
+a hiss that keeps going a beat after it should have stopped
+she draws back a pace to give the throb a chance to settle
+her whole face winces before she can smooth it
+she turns so that {part} faces away, almost without thinking
+the hurt sits in her eyes as plainly as if she had said it
+her next move is a little smaller than it should be
+she pants twice, quick, and steadies her breath by force
+there is a careful stiffness round {part} that was not there before
+
+== pain_show | level: hurting | zone: head
+her eyes water and she keeps blinking long after the blow
+she tilts her head as if trying to tip the ache out of it
+== pain_show | level: hurting | zone: neck
+she holds her head carefully level, as if it were balanced on a stick
+a cough catches on the sore place and she grimaces
+== pain_show | level: hurting | zone: chest
+she lets her chest swell once, testing, and does not like the answer
+each breath out comes with a soft grunt
+== pain_show | level: hurting | zone: belly
+she draws her belly in tight and breathes round it
+she bends a fraction at the middle and does not quite straighten again
+== pain_show | level: hurting | zone: back
+she lowers herself rather than bending, keeping her back still
+a grimace each time her back has to turn her
+== pain_show | level: hurting | zone: arm
+she takes the limb out of the front of her guard
+the limb comes up slower and lower than it did
+== pain_show | level: hurting | zone: leg
+the leg takes her weight with a small hitch
+she sets that foot down lightly, as if the ground were hot
+== pain_show | level: hurting | zone: tail
+her tail swings stiffly, as if on a hinge that needs oil
+she keeps the tail low and still, and her turns get wider
+
+== pain_show | level: hurting
+her crest lies half flat and twitches with each throb | has: crest
+her feathers stay puffed up over {part} | has: feathers
+her flame sinks lower and burns unsteadily | has: flame
+she draws her coils in round herself in a tight, guarding ring | has: coils
+the hard points of her mane bristle forward like a warning | has: mane
+she holds one wing a little out from her side, away from the hurt | has: wings
+her beak opens and she pants through it, short and quick | has: beak
+her talons bunch and grip, bunch and grip, on the ground | has: talons
+
+== pain_show | level: hurting | state: winded
+she would groan if she had the air for it
+the hurt and the breathlessness tangle, and she has to stop to sort them out
+== pain_show | level: hurting | state: tired
+the wince takes longer to fade than it used to
+she lets the hurt slow her a little, because fighting it costs too much
+== pain_show | level: hurting | state: spent
+every throb seems to drain a little more out of her
+she sways with the ache instead of standing against it
+== pain_show | level: hurting | state: fresh
+she is fresh enough to hide most of it, but not all
+the hurt is real, and for now she carries it easily
+
+== pain_show | level: very painful
+a cry jumps out of her, short and harsh, and her mouth snaps shut after it
+she hunches over {part} for a heartbeat before she can make herself stand tall
+her breathing turns to a quick, hard panting through her teeth
+she holds {part} still and moves everything else around it
+she gives ground, step after step, buying time for the worst to pass
+the hurt pulls a long, low sound out of her
+she shakes {part} as if to fling the pain off it, and gasps
+her eyes stay wet; the pain will not let them dry
+her whole stance tilts away from {part}
+a whimper slips out, and she covers it with a snarl
+she has to brace herself before she can use {part} at all
+her face goes tight and pinched round the mouth
+
+== pain_show | level: very painful | zone: head
+she carries her head low between her shoulders, eyes screwed half shut
+== pain_show | level: very painful | zone: neck
+she cannot look round without crying out, so she turns all of herself
+== pain_show | level: very painful | zone: chest
+a cry chops itself off when her ribs move
+== pain_show | level: very painful | zone: belly
+she folds at the middle and has to haul herself straight
+== pain_show | level: very painful | zone: back
+her back seizes and she freezes until it lets go
+== pain_show | level: very painful | zone: arm
+she lets the limb hang a little and fights round it
+== pain_show | level: very painful | zone: leg
+the leg buckles a fraction under her and she yelps
+== pain_show | level: very painful | zone: tail
+she clamps her tail against her and winces at every turn
+
+== pain_show | level: very painful
+her crest stays pressed flat and her eyes stay narrow | has: crest
+her feathers shiver in uneven ripples along her body | has: feathers
+her flame dips and smokes with each cry | has: flame
+her coils draw up tight under her, ready to flinch from anything | has: coils
+she lowers her head and the jagged points of her mane come forward like a shield | has: mane
+a hoarse cry cracks out of her beak | has: beak
+
+== pain_show | level: very painful | state: winded
+she cries out, and then has to fight for the air the cry spent
+== pain_show | level: very painful | state: tired
+she no longer has the strength to keep {part} still, and it trembles
+== pain_show | level: very painful | state: fresh
+she is still strong, and she spends all of that strength on keeping the cry inside
+
+== pain_show | level: excruciating
+a scream breaks out of her and she cannot pull it back
+she staggers sideways as if the ground had tipped under her
+her body curls round {part} before she can choose anything else
+her breath comes in jerking gulps, each with a sound in it
+she shakes her head wildly, as if the pain could be shaken loose
+she clutches at {part} with whatever she has nearest
+her eyes squeeze shut and the tears run anyway
+she freezes mid-move, rigid, and only her breath shudders
+a raw yell that fades into a long whine
+she sinks almost to the ground, then hauls herself back up by force
+for a heartbeat she cannot see her opponent at all
+every limb she has trembles at once
+
+== pain_show | level: excruciating | zone: head
+she sways, eyes swimming, and her cry comes out slurred
+== pain_show | level: excruciating | zone: neck
+she holds her head at a stiff tilt, and every jolt makes her cry out
+== pain_show | level: excruciating | zone: chest
+she hacks out a cough and screams with it
+== pain_show | level: excruciating | zone: belly
+she folds round her middle and cannot unfold
+== pain_show | level: excruciating | zone: back
+she twists away from the pain and screams when the twist reaches her back
+== pain_show | level: excruciating | zone: arm
+she holds the limb clear of everything, shaking, and cries out if it touches anything
+== pain_show | level: excruciating | zone: leg
+the leg gives under her, and the scream comes as she drops onto the good side
+== pain_show | level: excruciating | zone: tail
+she cries out each time her tail drags against the ground
+
+== pain_show | level: excruciating
+her crest lies plastered back, trembling | has: crest
+her feathers puff out all over her, every one on end | has: feathers
+her flame shrinks to a hissing smudge | has: flame
+her coils knot and writhe | has: coils
+her mane bristles stiff, the points grinding together | has: mane
+her beak gapes on a ragged, rasping scream | has: beak
+
+== pain_show | level: excruciating | state: tired
+she has nothing left to stop the scream with
+== pain_show | level: excruciating | state: spent
+she trembles so hard she can barely stand, and makes no attempt to hide any of it
+== pain_show | level: excruciating | state: winded
+the scream turns into a wheeze halfway through
+
+== pain_show | level: devastated
+{part} sags against her, a dead weight that still hurts
+she looks at {part} once and does not look again
+her whimpering keeps time with her breathing
+she gathers what is left of her round {part} and fights from behind it
+she moves stiffly round {part} like an animal round a trap
+{part} flinches from her own movement
+a wordless, shaking sound comes out of her and goes on
+she fights in short bursts, each ending in a gasp
+her eyes are dull and wet and do not quite focus
+{part} has stopped taking part in the fight
+she leans away from {part} as if it were trying to pull her down
+she shivers, and every shiver reaches {part} and makes her cry out
+
+== pain_show | level: devastated | zone: head
+her head bobs low and comes up slowly each time, eyes struggling to focus
+== pain_show | level: devastated | zone: neck
+she lets her head hang rather than hold it up
+== pain_show | level: devastated | zone: chest
+she breathes in small sips, each one ending in a whimper
+== pain_show | level: devastated | zone: belly
+she stays folded over her middle, unable to unbend
+== pain_show | level: devastated | zone: back
+her back is bowed and stays bowed
+== pain_show | level: devastated | zone: arm
+the limb trails behind her, scraping
+== pain_show | level: devastated | zone: leg
+she hops on what is left, the leg trailing
+== pain_show | level: devastated | zone: tail
+the tail trails flat behind her, leaving a line in the dust
+
+== pain_show | level: devastated
+her crest has collapsed flat and does not stir | has: crest
+her feathers hang dull and ruffled, sticking out at odd angles | has: feathers
+her flame is a faint flicker that barely lights the ground | has: flame
+her coils lie loose and shuddering | has: coils
+her wings hang open at her sides as if she has forgotten them | has: wings
+
+== pain_show | level: devastated | state: tired
+she cannot keep the whimpers in any more
+== pain_show | level: devastated | state: spent
+she is held up by nothing but stubbornness
+== pain_show | level: devastated | state: winded
+she has no breath left even to whimper
+
+# TELLS: what an opponent can SEE of her
+== tell | state: fresh | posture: standing
+her weight sits light and centred, ready to go any direction
+she watches with interest rather than worry
+now and then she shifts her stance purely to make her opponent shift hers
+she holds herself loose, nothing clenched, nothing hidden
+her feathers lie smooth and tight against her | has: feathers
+her flame burns tall and steady | has: flame
+
+== tell | state: winded
+her breathing is audible from across the ground now
+she keeps a little more distance than she did
+she tilts her head back slightly to get more air
+she has started blinking more, quick and dry
+her coils lie in looser loops than before | has: coils
+
+== tell | state: tired
+her movements have lost their snap; she arrives rather than strikes
+she rocks her weight back onto her heels whenever she can | has: legs
+she keeps her mouth open now even when she is not moving
+her stance has widened, more for balance than for readiness
+a pause before every effort, short, but there
+
+== tell | state: spent
+her eyes are dull and slow to follow anything
+she leans toward her opponent as if the ground were tilted that way
+every movement starts with a visible gathering of will
+her head lifts only when something comes at it
+her crest lies flat and has stopped moving at all | has: crest
+
+== tell | state: winded, tired
+her feathers lift and fall with each heavy breath | has: feathers
+her mane hangs lower, the points no longer bristling | has: mane
+her coils shift restlessly, never quite settling | has: coils
+
+== tell | zone: arm | level: hurting, very painful
+she keeps her {part} a little behind her, out of the line of the fight
+she lifts her {part} slower than the other, and not as high
+she winces when she has to push off with her {part}
+
+== tell | zone: arm | level: excruciating, devastated
+her {part} hangs at an odd angle, as if she has given up holding it right
+she turns every exchange so that her {part} is left out of it
+she shakes whenever her {part} has to do anything at all
+
+== tell | zone: leg | level: hurting, very painful | posture: standing
+she shifts most of her weight to the other side whenever she stops
+her stance is crooked now, set to spare her {part}
+she pushes off from the other side every time
+
+== tell | zone: leg | level: excruciating, devastated | posture: standing
+her {part} trembles under her even when she stands still
+she lurches rather than walks, her {part} dragging behind each step
+she balances on the good side and lets her {part} hang
+
+== tell | zone: leg | level: hurting, very painful
+she keeps her {part} drawn up close to her body
+her {part} twitches whenever she moves the rest of herself
+
+== tell | zone: chest, belly | level: hurting, very painful
+her breathing has gone careful and short
+she turns her body a little side-on, hiding her {part}
+she tenses all over when anything comes close to her {part}
+
+== tell | zone: chest, belly | level: excruciating, devastated
+she is bent nearly double over her {part}
+she gasps whenever she has to twist, and she has stopped twisting
+she cannot hide the shaking in her {part}; it shows from across the ground
+
+== tell | zone: head | level: hurting, very painful, excruciating, devastated
+her eyes take a moment to find her opponent after each movement
+she squints as if against bright light, though there is none
+she keeps tilting her head as if listening for something
+a swelling is coming up where it hit, tight and shiny
+
+== tell | zone: head | level: excruciating, devastated
+she sways on her feet when she turns her head | posture: standing
+her eyes keep sliding out of focus and back
+
+== tell | zone: neck | level: hurting, very painful, excruciating, devastated
+she holds her head oddly still, as if balancing something on it
+she grimaces each time she swallows
+her breathing has a thin wheeze in it
+
+== tell | zone: back | level: hurting, very painful, excruciating, devastated
+she lowers her head rather than arch her back
+her whole body turns as one block, stiff
+she flinches if anything comes at her from behind
+
+== tell | zone: tail | level: hurting, very painful, excruciating, devastated
+she keeps her tail clamped and turns wide to make up for it
+her tail droops and twitches at the tip
+her balance wobbles on the turns, with the tail held stiff
+
+== tell | posture: down, pinned
+she keeps her chin tucked, guarding her throat from above
+she breathes in short pants, watching
+her limbs are drawn in, ready or simply hurt, it is hard to say
+she has stopped struggling and is saving something
+her eyes are open and steady, and that is the worrying part
+
+# BREATH: how she is breathing, by her condition
+== breath | state: fresh
+she breathes easily, the air going all the way down
+a steady rhythm in and out, unbroken by the last exchange
+her nostrils barely move; she breathes like a sleeper
+she takes a breath and holds it, wound tight, before the move
+her breath is quiet enough that she can hear her opponent's
+a quick sniff to read the air, and her breathing settles back
+
+== breath | state: winded
+she breathes in gulps between each movement
+her breath comes loud through her open mouth
+she pulls air in through her teeth, hissing a little
+she has started breathing on every step instead of every few
+she pants, short and quick, and holds the pant still when she needs to aim
+a dry rasp at the end of each breath out
+her ribs work visibly, pumping
+
+== breath | state: tired
+her breathing is a rough sawing in and out, louder than her steps
+she gulps air like water after a long thirst
+each breath in lifts her head a little; each breath out drops it
+she tries to slow her breathing by force and cannot
+she has to stop and breathe before she can answer
+there is a faint whine riding on her breath now
+she drags each breath down into her as if it were heavy
+her breath catches and stutters whenever she tries to hold it
+
+== breath | state: spent
+her breath rattles faintly going in and drags out slow
+she breathes in short, uneven hitches, out of any rhythm
+she sucks at the air with her whole body and it barely helps
+each breath is a small effort she has to decide to make
+her breathing has become the loudest thing about her
+the breath goes in shallow and comes out shaking
+she pants with her eyes half closed, saving them
+her breathing stops for a heartbeat and starts again with a gasp
+
+== breath | zone: chest
+she breathes round the hurt, never quite filling up
+each breath in ends in a small wince
+her breath comes quick and shallow, like a small bird's
+she takes a big breath by mistake and it stops halfway with a grunt
+she lets the air out slowly, dreading the moment her ribs reach the bottom
+
+== breath | zone: neck
+her breath scrapes in like something dragged over gravel
+each breath has a faint, high whistle at the top of it
+she breathes through her mouth, carefully, keeping her throat still
+air sticks in her throat and she has to swallow before she can breathe again
+she coughs between breaths, small and rough
+
+== breath | zone: belly
+she breathes with her shoulders, keeping her belly tight
+each breath in pushes on the hurt and she flinches from her own breathing
+she grunts on every breath out, the sound squeezed up from her belly
+she takes air in small sips, stomach held hard
+the breath goes in and stops where her middle starts to object
+
+== breath | zone: back
+she breathes carefully, as if each breath might shift something in her back
+a deep breath tugs at the bruise along her spine, so she breathes shallow
+her breathing hitches whenever her back has to move with it
+
+# HELD_IN: the sound she makes, or keeps back
+== held_in | state: fresh, winded
+a short grunt that she flattens into a breath
+her jaw clicks shut and the sound stays behind it
+a growl comes instead of a cry; she prefers it
+she swallows the yelp and it shows only as a jump in her throat
+a sharp sniff, and then nothing
+her lips press hard together and nothing gets past them
+she breathes out hard through her nose, and that is all she gives
+a clipped "hah" that could almost be a laugh
+she grinds her teeth on the sound until it dies
+the cry gets as far as her throat and turns back
+a snap of her beak, and the cry stays behind it | has: beak
+her flame flares instead of her voice | has: flame
+
+== held_in | state: tired
+she manages to keep it to a moan, just
+the sound slips out low and breathy, half held
+she gets her teeth closed on it a beat too late
+a whimper starts and she drags it down into a grunt
+a hoarse noise that she keeps from rising
+she buries the sound in a cough, not very well
+her jaw trembles with the effort of staying shut
+a long hiss leaks out of her, and she lets that much go
+a rough, cracked squawk she cannot stop entirely | has: beak
+she shuts her eyes tight as if that might keep the noise in too
+
+== held_in | state: spent
+a cry comes out of her with every breath, small and helpless
+she groans openly; there is nothing left to hide it with
+the sound goes up and breaks, and she does not try to mend it
+she whines aloud, and the whine does not stop when the worst of it fades
+a hoarse cry, then another, smaller, then only the panting
+she lets the sound out because holding it costs breath she does not have
+a broken, rasping sound from somewhere deep in her
+she moans through her open mouth and her eyes stay shut
+a thin shriek scrapes out of her beak | has: beak
+she yelps, then whimpers, then is quiet only because the air ran out
+
+== held_in | raw: scream, raw
+the scream comes and she cannot shape it; it simply pours out
+she screams until her voice cracks and then keeps going on the cracked part
+she tries to bite down and the scream comes out through her teeth, ragged
+the sound she makes is long and raw and she does not hear herself make it
+a scream, a gasp, and a second scream, smaller and hoarser
+
+== held_in | raw: contained
+she locks her whole face against it and lets only a breath escape
+the sound stays behind her teeth, though her eyes give it away
+a hiss, held under control to the very end of it
+
+# TRAVEL: how a hurt spreads from the part that took it to the parts beside it
+== travel
+her {part} takes the blow and her {next} goes stiff with the shock of it
+the hurt seeps from her {part} into her {next} like cold through wet fur
+a jolt runs from her {part} and fizzes out in her {next}
+her {next} aches dully, borrowing the hurt from her {part}
+the shock leaves her {part} and settles in her {next}, smaller and slower
+her {part} burns and her {next} throbs, two different voices of one hurt
+the blow reaches her {next} through her {part}, as a push and then a pang
+her {next} clenches as the hurt in her {part} reaches for it
+she feels the hit spread from her {part} into her {next} like a ripple from a stone
+her {part} goes numb for a moment and her {next} feels it all instead
+the force runs along her {part} and fetches up in her {next} like a wave against a wall
+a dull ache creeps from her {part} into her {next} over the next few breaths
+her {next} buzzes, as if the blow to her {part} had plucked a string between them
+her {next} takes the strain her {part} can no longer take, and starts to ache with it
+the pain jumps from her {part} to her {next} quicker than she can follow it
+her {part} and her {next} throb together now, one sore stretch of her
+a bright sting in her {part} and a slow deep echo in her {next}
+it goes in at her {part} and pushes out through her {next}
+her {next} cramps in sympathy, a beat after her {part} is hit
+the hurt in her {part} pulls on her {next} like a rope drawn taut between them
+she guards her {part}, and her {next} pays for the guarding
+the ache spreads out from her {part} in a slow ring that takes in her {next}
+her {next} answers the blow late, with a hot dull pulse
+her {part} jolts and her {next} shudders a heartbeat behind it
+a hot line runs from her {part} along into her {next} and fades there
+her {next} tightens hard to brace her {part}, and the bracing hurts too
+pain spills over from her {part} into her {next}, like a cup filled too full
+her {part} rings and her {next} hums with it
+
+# RAW: a blow on a part that was already badly hurt
+== raw | raw: contained
+she goes perfectly still, and only the shaking of her {part} gives her away
+a single sharp breath through her nose, and her eyes go flat and hard
+her {part} flinches from it and she holds it in place by will alone, jaw clenched
+the sound stops behind her teeth; she breathes round it, slow and deliberate
+her face empties of everything for a moment, and then she is watching her opponent again
+a tremor runs through her {part} and she lets it run, saying nothing
+
+== raw | raw: cry
+a sharp cry bursts out of her, and her {part} jerks back against her body
+she yelps, high and short, and turns her {part} away from the fight
+the cry is out and gone, and she is panting hard through her nose after it
+a ragged shout of pain, cut off when her teeth meet
+she cries out and her whole body shrinks round the {part} for a heartbeat
+her voice breaks on the cry and she clamps down on the rest
+
+== raw | raw: scream
+she screams, and the sound goes on longer than the blow did
+the scream drags her head back and leaves her shaking where she stands
+the {part} takes it and the scream comes up out of her in one long ragged pull
+she screams, and when it stops she is bent almost double round the {part}
+the scream fills the place around them and she cannot stop it until her breath runs out
+
+== raw | raw: raw
+she has no breath to scream with: only a raw, cracked sound, and shaking that will not stop
+the {part} burns so badly she cannot think; she curls up and the sound keeps coming
+her body flinches away from the {part} again and again, as if it could leave it behind
+every breath brings a broken little noise with it, and her eyes are blind with tears
+she shakes so hard her teeth chatter, the {part} held against her like something burning
+
+== raw | raw: scream, raw
+the touch alone is enough; she screams before she has decided anything
+she cannot stop the sound and cannot stop the shaking, and does not try to stop either
+the {part} has nothing left in it to bear this, and her voice says so
+
+# GUARDS
+== guard | moment: block
+the blow bursts against the barrier and spills away in a fan of light
+she does not even blink as it strikes; the shield takes all of it
+the barrier flickers under the impact and holds
+her opponent's move dies a hand's width from her face
+the force of the meeting stops dead at the shield and goes nowhere
+the shield hums after it, and so does the air around her
+
+== guard | moment: reflect
+the move comes back the way it came, faster, and her opponent has no time to be surprised
+she takes the force in and gives it back in the same breath
+it strikes, and the strike rebounds straight into the one who sent it
+she turns the whole weight of the blow round and sends it home
+her opponent meets her own blow coming back at her, and it is just as hard as she made it
+
+== guard | moment: catch
+she takes it on the limb and feels the shock run up into her teeth
+the guard holds, but the limb behind it goes numb to the tip
+she braces and catches it high, where she is hardest
+the impact drives her guard back against her own body, and that holds too
+she catches the blow and leans into it, refusing to give ground
+the guard is up just in time; the blow lands on it with a hard, dull thump
+her coils take the blow in a thick loop and roll with it | has: coils
+she meets it with the bend of her wing, and the wing shudders but holds | has: wings
+she catches it on a raised forearm, wincing, and shoves it aside | has: arms
+
+== guard | moment: turn
+a twist of her body and the blow slides away along her side
+she goes with it, guiding it past, and lets it spend itself on the air
+she nudges the attack off its line and it misses by a whisker
+the force skates across her guard and on into empty ground
+she turns it aside so smoothly that her opponent overbalances
+the attack meets her guard at a slant and veers off, harmless
+
+# LANDING, DODGE, GETUP
+== landing
+she lands on her side and the air is driven out of her in a huff
+she comes down hard on her front and her chin hits the ground
+she rolls once, twice, and stops sprawled with dust in her eyes
+the ground jars her from end to end and her teeth click together
+she lands on all fours, but her legs fold under the force and she drops flat | has: forelegs
+she lands on her back and lies a moment, staring up, before she can turn over
+she skids on the slick ground and fetches up against something hard
+she hits feet first, too fast, and the impact drives her down onto her haunches | has: legs
+she lands awkwardly, half on top of her own limbs, and has to untangle herself
+she tumbles over and over, and the world keeps spinning after she has stopped
+she comes down with a thud that she feels in her teeth
+she lands in a heap, and the heap takes a moment to become her again
+the ground scrapes all along her side as she slides
+she tries to turn in the air and only half manages, and the half she missed takes the ground
+she lands on her own wings and they splay out under her | has: wings
+she hits the ground in a long sprawl of coils, and every loop of it jolts | has: coils
+she lands in a burst of dust that hangs round her
+she bounces off the ground and lands again a body's length further on
+she hits and lies flat, dazed, the ground cool under her cheek
+she lands hard enough to jolt a grunt out of her and drive her into the dirt
+
+== dodge
+she pivots on the spot and the blow brushes past her back
+she drops flat and it whistles over
+she skips sideways and lets it go by
+she twists her head aside and feels the air of it on her face
+she leans back just far enough, and not a whisker more
+she sees it coming early and is already moving
+she ducks under and comes up on the far side
+she slides out of the way like water round a stone
+she darts back, then in again before the blow is finished
+she sidesteps so close that the miss stirs her fur
+she lifts off the ground and it passes beneath her | has: wings
+she ripples aside in one smooth curve and it strikes empty ground | has: coils
+she hops the sweep and lands lightly | has: legs
+she rolls out of its path and comes up facing her opponent
+she flinches away just in time and the blow catches only air
+she lets her legs fold and the blow passes over her head | has: legs
+she sways from the hips and the attack misses by a finger's width
+she reads the shift of weight and is gone before the blow is
+she spins away, and the spin brings her round ready
+she bends out of the way as if she had no stiffness in her at all
+
+== getup
+she gets her front half up first and drags the rest after it
+she pushes herself up on shaking limbs and stands there swaying
+she rises in one ragged lurch and almost goes down again
+she lies still for a breath, gathers herself, and comes up all at once
+she uses her tail as a prop to lever herself upright | has: tail
+she spreads her wings against the ground and pushes herself up on them | has: wings
+she gathers her coils under her and rears up | has: coils
+she climbs to her feet one limb at a time, watching her opponent the whole way
+she rolls over, gets her knees under her, and waits for the dizziness to pass | has: legs
+she pushes up on her forelegs and staggers as her hind end follows | has: forelegs
+she struggles up, slips, and tries again with her teeth gritted
+she gets up slowly, wincing, and stands crooked
+she shakes the dust off as she rises, as if that had been the point
+she hauls herself upright with a groan she does not bother to hide
+she rises to a crouch and stays there, not yet ready to trust standing
+she gets up because lying there is worse
+she comes up fast, too fast, and the world spins; she waits it out
+her first try is all wobble; the second puts her on her feet
+she rises and plants herself wide, daring the ground to take her again
+she comes up spitting dirt, eyes already on her opponent
+
+# CLASH AND CRASH
+== clash
+the shock of the meeting runs back up both their bodies at once
+for a moment the two forces grind against each other and neither yields
+light and grit burst out sideways from the place where they meet
+the impact throws them both back a step
+she feels her own move falter against the other's and pushes harder
+the meeting makes a sound like thunder trapped in a small room
+the ground between them is scorched and smoking where the two met
+both attacks spend themselves at once and leave only ringing air
+the force sprays out in every direction, and both of them flinch from it
+she gets the worst of it and is shoved back, heels dragging | has: legs
+she gets the better of it, and her move breaks through the last of the other's
+the clash leaves her ears ringing and her eyes dazzled
+heat, cold, light and dust all fight in the gap between them
+they hold the struggle for a long breath, straining, before it breaks
+the recoil jars her teeth together
+both of them stagger back, blinking, waiting for the dust to fall
+the meeting point flares bright and collapses into nothing
+everything nearby shakes with the force of it
+she feels it in her chest, as if she had been struck and had struck back at once
+when the light fades they are both still standing, and both shaken
+
+== crash
+she slams into it shoulder first and bounces back, dazed
+she cannot stop in time and hits it with her full weight
+the miss carries her on and she strikes the obstacle with a dull thud
+she tumbles over and fetches up against it in a heap
+she swerves at the last moment and scrapes along it instead of hitting it square
+she hits it head first and her sight swims
+she lies stunned against it for a heartbeat, legs still trying to run | has: legs
+her momentum carries her into the hard edge, and she yelps
+the obstacle takes all her speed and gives none of it back
+she spins off it, off balance, and has to scramble to stay up
+she hits, rebounds, and sits down hard
+the crash leaves her shaken and very angry
+she pushes away from it with a groan, rubbing the sore place against her side
+grit and loose splinters shower down round her
+she hits it with a thump that echoes, and her opponent sees every bit of it
+her own speed is her undoing; she pays for every stride of it
+she shakes her head, gets her bearings, and turns to find her opponent
+she hits it wings half open, and they fold against it with a jolt | has: wings
+
+# DEVASTATING BLOWS
+== devastating | reason: position
+she was mid-stride, every limb committed, and the blow found her with nothing to brace
+she had turned to guard the other side, and the whole of it went in unopposed
+it came as she was rising, still off balance, and drove straight through her
+she was caught stretched out and open, all her weight going the wrong way
+there was no time even to flinch; the blow simply arrived and took her
+
+== devastating | reason: weak_point
+the blow landed dead on the deepest hurt in the {part}, as if it had been aimed by memory
+the {part} had been holding on by a thread, and the blow cut it
+of all the places it could have landed, it found the one in the {part} that could bear it least
+it struck the same spot on the {part} that had already taken the worst, and drove the old hurt deeper
+the {part} was already swollen and tender, and the blow went straight into the swelling
+
+== devastating | reason: angle
+it caught her square, the force going straight in with nothing turned aside
+the timing was perfect: it struck just as her guard dropped
+it came from below, at exactly the angle to drive all its force up through her
+she never saw the line of it until it was already inside her guard
+it landed as she leaned into it, her own weight adding to its force
+
+== devastating | reason: ground
+she landed on every sore place at once, as if the ground had marked them out
+the fall drove her down onto her worst hurts, one after another
+she hit the ground on the side that had already taken the most, and it took more
+the ground caught her at the worst angle, and every bruise she had woke at once
+there was a hard edge exactly where she came down, and it found the hurt place
+
+== devastating_sell | health: fresh | partlevel: light
+she stops, utterly still, as if listening to something inside her
+the force of it shakes her from end to end, though nothing seems to give
+for a moment the confidence drains out of her face, and then she makes it come back
+
+== devastating_sell | health: fresh | partlevel: hurt, ruined
+the {part} buckles under it, and she knows the fight has just changed
+she staggers, the {part} trembling, and stares at her opponent with new respect
+the cry comes up from somewhere deep in her, and she is still strong enough to be shocked by it
+
+== devastating_sell | health: worn | partlevel: light
+she stumbles and has to catch herself, and she knows that should not have happened
+the blow takes something out of her that she cannot put back
+she looks suddenly tired, as if the fight had aged her in a moment
+
+== devastating_sell | health: worn | partlevel: hurt, ruined
+the {part} gives way completely, and she cries out at the shock of it
+she fights to keep standing, and the {part} fights her
+everything she was holding back about the {part} comes out at once
+
+== devastating_sell | health: spent | partlevel: light
+she lurches sideways and barely catches herself, as if a string holding her up had been cut
+the blow is nothing much, but she has nothing left to absorb it, and she reels
+she wavers, and for a moment it looks as if she might simply fold
+
+== devastating_sell | health: spent | partlevel: hurt, ruined
+the {part} takes it, and something in her gives way: her whole body sags
+she screams, high and broken, and then has no breath left for anything
+her eyes go wide and empty, and the {part} jerks against her
+
+== devastated_reaction | state: fresh, winded
+she rocks back on her heels, staring, as if she cannot believe what just happened
+a hoarse cry is wrung out of her, and she bites down on the rest
+she stumbles back a step, shaking her head as if to clear it
+her body jerks rigid for a heartbeat, then she forces herself to breathe
+she presses against the pain with all her strength, jaw clenched, eyes wet
+she gasps, hunches, and then straightens with visible effort
+she holds herself together, but only just
+the blow knocks the confidence off her face, and she has to put it back
+she snarls through the pain, but there is fear in the snarl now
+
+== devastated_reaction | state: tired, spent
+she sinks to the ground and cannot get up at once
+she shakes so hard that she can barely stay upright
+it is too much; she gives a long, breaking cry and does not stop it
+she sways and goes down onto her knees, gasping | has: legs
+her eyes go blank for a moment, then fill with pain and fear
+she curls round the hurt and lies still, trembling
+she can only breathe, short and ragged, and nothing else
+a thin keening sound comes out of her and goes on
+her whole body sags, and only stubbornness keeps her off the ground
+
+# WATER, JUGGLES, FEINTS
+== sputter
+water rushes up her nose and she chokes, snorting
+she coughs and coughs, spraying water with every breath
+she gasps and gets only more water, and the panic shows in her eyes
+she gags on the water and has to spit it out before she can breathe
+her eyes stream and her nose runs and she cannot stop coughing
+she tries to breathe and only sputters
+water spills from her mouth as she coughs, and she shakes her head hard to clear it
+the coughing fit leaves her bent over and wheezing
+she can hear the water gurgling in her own chest
+every cough sends a jolt through her ribs
+she gulps air between coughs, desperate for it
+her breathing is wet and ragged, and every breath brings another cough
+she spits, coughs, spits again, eyes watering
+she sneezes water out and blinks hard
+the water leaves her shaken and wheezing, and she backs off to recover
+her feathers are soaked and heavy as she coughs | has: feathers
+
+== juggle | moment: up
+the blow lifts her off the ground and she flails at the empty air
+her stomach drops as the ground falls away from her
+she is spun round in the air, limbs everywhere, and cannot tell up from down
+she sails up, helpless, and watches the ground getting further away
+she rises, weightless, and has no way to stop herself
+for a long moment she hangs there, waiting for the fall to take her
+the world turns slowly round her as she goes up
+she is thrown upward and the breath goes out of her in a gasp
+
+== juggle | moment: caught
+the blow catches her as she falls and smashes her back down
+she has no footing, no way to brace, and the strike hits her full
+she is struck in mid-air and sent crashing to the ground
+the second blow takes her before she lands and adds its force to the fall
+she is hammered down out of the air and hits hard
+the strike meets her at the top of her flight and drives her straight back down
+there is nothing to push against, so the blow takes all of her
+she is batted out of the air like a leaf in a gust, and comes down hard
+
+== feint | moment: bit
+she lunges to block the obvious blow, and the real one comes in behind it
+she flinches at the fake and leaves herself wide open
+her eyes follow the feint, and she never sees the strike coming
+she braces for a blow from one side and is hit from the other
+she twists away from the fake and twists straight into the real thing
+the feint pulls her guard down, and the blow lands high
+she reacts to the shoulder, and the hit comes from the hip
+she falls for it completely, and knows it the moment she does
+her whole body turns toward a threat that is not there
+
+== feint | moment: read
+she sees the fake for what it is and does not move
+she waits out the feint and meets the real blow with her guard up
+she shifts her weight just enough to cover both, and lets the fake go by
+she catches the tell in her opponent's eyes and stays put
+the feint is clever, but she has seen that trick before
+she ignores the fake entirely and watches for the real strike
+she does not take the bait, and her opponent knows it
+
+# ANTICIPATION
+== anticipate
+she sees it coming and her body clenches round the hurt place
+a whimper escapes her as the blow comes toward her sore side
+she tries to twist away, but the hurt makes her slow
+her eyes widen as she sees where it is going
+she curls in to protect the hurt part, and leaves her other side open
+she flinches before it lands, and the flinch is almost as bad as the blow
+her breath catches in fear as it comes toward her
+she turns her body to shield the hurt part, a fraction too late
+everything in her tries to pull the hurt part out of the way
+she braces, knowing exactly how much this is going to hurt
+a cry starts before the blow even reaches her
+she shrinks back, eyes on the blow, the hurt part pressed against her
+she turns her face away and waits for it to land
+her coils draw tight round the hurt place before the blow arrives | has: coils
+she pulls her wing in close, trying to cover the hurt place | has: wings
+she lifts a hand to shield the hurt part, trembling | has: arms
+she tucks her tail in close, as if that could help | has: tail
+her crest flattens as she sees it coming | has: crest
+
+== anticipate_seen
+she sees the hurt part pulled in, and goes straight for it
+the flinch tells her everything she needs to know
+she watches her opponent shrink back, and knows exactly where to strike
+she aims for the place her opponent is guarding most carefully
+the fear in her opponent's eyes tells her where to hit
+she sees the hurt side turned away and goes round to find it
+the way her opponent shields that part is a map to it
+she feints at the hurt part and watches her opponent flinch
+she sees the protection and knows the hurt is still there
+the guarding is clumsy, and she finds the gap in it
+*That's where it hurts. Right there.*
+*She's scared of that side. Good.*
+*She can't protect it forever.*
+*Look at her flinch. She knows what's coming.*
+*Go where she's hiding it.*
+
+# FRENZY AND LAST STAND
+== frenzy
+she stops counting; the blows keep coming without her
+the same spot, again and again, until her opponent's voice changes
+her breath goes out on every strike, a grunt with each one
+each blow starts before the last has finished landing
+the strikes run together into one long drumming
+she hits until her own limbs begin to burn, and keeps hitting
+there is no aim left in it, only the next blow and the one after
+her own panting keeps time with the blows
+she hardly sees her opponent now; she sees the place, and the place, and the place
+the blows get sloppier and harder at the same time
+she drives on long after the first ones would have been enough
+her arms ache at the shoulder and still they rise and fall | has: arms
+a snarl rides on every strike, getting hoarser
+she forgets to breathe and only remembers when she has to stop
+the rhythm takes her, and she lets it
+blow on blow on blow, each landing on top of the last
+
+== last_stand
+she gathers herself in one long breath and spends all of it at once
+her whole body shakes with the effort before she even moves
+she holds nothing back for later; there is no later in this
+she rises off the ground with a groan and throws herself forward
+she aims everything she has left at one place and goes
+it is clumsy and enormous, the strength of someone who has stopped counting the cost
+the hurt parts are forgotten; for one moment all of her works again
+a hoarse yell goes out ahead of her like a banner
+she drags the last strength up from somewhere underneath the pain
+she moves faster than she has in a long time, and it costs her everything
+she plants her feet and puts her whole weight into it, past caring what comes after | has: legs
+her sight narrows to one target and she goes straight at it
+the effort leaves her mouth as a raw shout
+she is shaking before it starts and shaking after, and steady only for the moment it takes
+everything she has been saving goes into it, and she feels herself empty as it leaves
+she comes at her opponent the way a falling tree comes down: slow to start, then all at once
+
+# STATUS TELLS
+== status_tell | status: flinched
+she jerks back from the blow and her guard comes up a beat too late to matter
+her eyes shut tight and her body hunches, waiting for a second blow
+she twitches all over, every reflex firing at once
+
+== status_tell | status: dazed
+she stares at a spot beside her opponent, then finds the right one
+her steps wander a little, as if the ground were moving under her
+she shakes her head slowly, blinking, and the blinking does not help
+
+== status_tell | status: off_balance
+her legs splay as she tries to catch her weight | has: legs
+she tips sideways and has to take a quick extra step to stay up
+her balance swings like a loose gate and she grabs after it
+
+== status_tell | status: doubled_over
+she bends at the middle and her breath comes out in a groan
+she cannot unbend; her body will not let her
+she hangs over the hurt, head low, mouth open
+
+== status_tell | status: breathless
+she gapes and heaves, but the air will not come
+her chest jerks with empty pulls, and she can only wait
+the world narrows to the need for one breath
+
+== status_tell | status: sputtering
+she coughs and splutters, water running from her mouth and nose
+she shakes her head hard, coughing, trying to clear her breath
+
+== status_tell | status: stiff
+she moves as if she had rusted, every joint slow to bend
+the stiffness makes her clumsy; her first movement is a stagger
+
+== status_tell | status: bound
+the held limb is going numb, and the grip feels like a cold weight
+she strains against the grip and gets nowhere, the limb growing heavier
+
+== status_tell | status: cramped
+a muscle knots and will not let go, and she stops dead in the middle of a move
+she tries to stretch the cramp out and it only seizes harder
+the cramp pulls the limb in against her and holds it there
+
+== status_tell | status: paralyzed
+a jolt runs through her and her limbs lock, quivering
+she tries to move and her body answers late and jerky
+her muscles twitch on their own, and the twitching will not stop
+
+== status_tell | status: confused
+she turns toward the wrong place and has to look again
+she blinks, slow and puzzled, as if the fight had changed its rules
+she lunges at nothing and catches herself, bewildered
+
+== status_tell | status: constricted
+the coils press her ribs in and every breath is a small battle
+she cannot move her limbs inside the loops; only her head is free
+
+== status_seen | status: flinched, dazed, off_balance, doubled_over, breathless, sputtering
+she reads it in the stiff, hunched shape of her opponent, and moves
+she catches the moment the guard drops and is already striking
+*There it is.*
+she does not need a second look; the opening is plain
+she steps in before her opponent can collect herself
+
+== status_seen | status: stiff, cramped, bound
+she sees the limb answer late, and works round to that side
+she notes the stiffness and makes her opponent turn on it
+*That one's not working. Use it.*
+
+== status_seen | status: opening
+she drives into the gap before it can close
+the blow is already in the air as the guard falls away
+she takes the opening without stopping to think about it
+
+== status_seen | status: paralyzed, confused
+she sees the strange, jerky way her opponent moves, and goes in
+she sees her opponent looking the wrong way and takes the chance
+she watches the limbs fail to answer and walks straight in
+*She doesn't know where I am. Good.*
+
+# CRUSHED: driven into something and held there
+== crushed
+the weight leans in on her and leans in again, as if testing what she can bear
+she is pressed so flat that her own heartbeat seems to push back against it
+the hard thing behind her will not give, and the thing in front of her will not stop
+her cheek is ground against whatever is behind her, her head turned sideways
+her ribs flex and hold, flex and hold, with every fresh shove
+the push goes on so long that she stops expecting it to end
+her wings are pinned flat behind her, folded awkwardly against the hard surface | has: wings
+her coils are mashed against the surface and cannot find room to move | has: coils
+the cold of the charge has frozen her fur to the surface behind her | kind: ice
+grit grinds between her back and the stone with every push | kind: rock
+
+== crushed | state: fresh, winded
+she gets whatever she can against the weight and shoves, and for a moment it actually gives
+she grits her teeth and holds, refusing to be flattened
+she keeps her eyes open and fixed on the one doing it, furious
+she twists her head to find air and drags it in through her teeth
+a growl rumbles up against the pressure, muffled but there
+her muscles bunch and lock, and she takes it the way a wall takes a wave
+
+== crushed | state: tired, spent
+she stops pushing back and the pressure flattens her further
+a weak, wheezing sound comes out each time the weight shifts
+her limbs go slack against it and her head lolls
+she can only take in a sip of air before the pressure takes it back
+her eyes close and she simply endures
+she makes a small helpless noise, and the weight keeps on
+
+# CONSTRICTION: held in coils
+== constriction
+the coils shift and slide, finding each place she is soft and settling there
+every time she breathes out, the loops take up the slack
+the squeeze is slow and even, never quite more than she can bear and never less
+she can feel the long muscles moving in the coils around her, unhurried
+
+== constriction | fade: fighting
+she strains against the coils with everything she has and they barely flex
+she twists and squirms, hunting for a gap between the loops
+she snaps at the nearest loop, and the squeeze answers her
+she sucks in a breath while she can and holds it, fighting the squeeze
+
+== constriction | fade: weakening
+her pushes against the coils come weaker and further apart
+she gasps for each breath and gets less each time
+her struggles slow, as if she were wading through deep mud
+she feels the strength leaking out of her limbs into the squeeze
+
+== constriction | fade: fading
+her eyes half close; the squeeze feels distant, as if it were happening to someone else
+she can hardly feel her paws any more
+her struggles have shrunk to small, aimless movements
+each breath is a tiny sip, and she cannot remember the last full one
+
+== constriction | fade: nearly out
+her head sags against the coils and stays there
+the world is only the slow squeeze and the slower beat of her own heart
+she makes one feeble push against the coils and it goes nowhere
+her breath is so faint that the coils hardly notice it
+
+# WEATHER
+== weather | weather: rain
+the rain plasters her fur flat and runs off her in streams
+puddles spread across the ground and every step splashes
+the rain is cold, and it drums on her back without stopping
+her feathers grow sodden and heavy in the downpour | has: feathers
+the rain hisses where it strikes her flame, and steam curls up | has: flame
+the rain runs down her face and into her mouth, tasting of earth
+
+== weather | weather: sun
+the sun beats down on her back, heavy as a hand
+the ground is too hot to stand still on
+the heat saps her, and her fur feels like a coat she cannot take off
+her flame burns brighter in the heat, eager | has: flame
+the light flashes off her opponent and blinds her for a heartbeat
+her mouth goes dry in the heat
+
+== weather | weather: hail
+hailstones rattle off her back and sting her ears | has: ears
+the ground turns white with hail and slippery underfoot
+a hailstone strikes her square on the head and she flinches
+the hail patters on her feathers and stings through them | has: feathers
+the hail hisses as it strikes her flame | has: flame
+the cold of the hail seeps into her and stiffens her movements
+
+# MOVEMENT: ways to stage an attack, by the kind of move
+== movement | kind: claw
+she slashes on the way out, so the cut lands as she retreats
+two strokes crossing, one high and one low, the second where the first drove her opponent
+the claws hook in at the end of the swing and pull her opponent half a step forward
+a swipe at the face to make her blink, and then the real rake across the body
+she reaches long, further than she seemed able, and only the tips of the claws catch
+she strikes as she lands from a leap, the whole drop behind the stroke
+a flurry of short scratches, quick and stinging, to break the other's rhythm
+
+== movement | kind: bite
+she darts in, snaps, and is back out of reach before the other has finished flinching
+she goes for the limb nearest the ground, where it is hardest to pull away
+she clamps down and plants herself, turning the bite into a tug of war
+her jaws open wide enough to show everything, a threat before the bite
+she catches the edge of the body as she passes and drags her teeth along it
+she bites, lets go, and bites again a hand's width further along
+
+== movement | kind: charge
+she starts slow, a walk, then a trot, and only at the very end the full rush
+she charges at a slant, so the impact spins as well as shoves
+she builds speed in a curve and arrives from the side the other is not watching
+she leaps the last length and lands on the other with her whole weight
+she lowers herself until she is almost skimming the ground, then rises into the impact
+she charges through the other's guard, not round it
+she comes in shoulder down and keeps driving after the hit, legs pumping | has: legs
+
+== movement | kind: tail
+the tail hooks round the far side and pulls rather than strikes
+she spins on the spot and the tail comes round twice, the second time harder
+a low sweep at the legs, then the tail rising for a blow from above
+she braces on her front and lashes the tail out behind her like a kick
+she uses the tail to throw grit first, and then the blow
+the tip of the tail flicks at the eyes while the thick root of it slams into the body
+
+== movement | kind: beam
+she fires in short pulses, each one aimed at the last place she hit
+she sweeps the beam upward, forcing the other to rise or be caught
+she plants herself low and wide and lets the force pour out of her
+the beam narrows to a point as she bears down on one spot
+she fires once, wide, to herd the other where she wants her, and then the true shot
+the beam leaves a line of churned, smoking ground behind it
+she holds her breath and fires until her lungs burn, then lets it go
+
+== movement | kind: punch
+she slips the guard with a feint and drives a straight blow into the gap | has: arms
+a heavy body blow, the kind that bends the other forward | has: arms
+a looping strike over the top, coming down on the head | has: arms
+she strikes and steps through in one movement, her weight following the blow
+a short jab, then another, then a heavy one behind them | has: arms
+she shoves the guard aside with one paw and hits through the space with the other | has: arms
+
+== movement | kind: horn
+she drives the horn forward with the whole push of her body behind it | has: horn
+she lowers her head to aim and the horn swings round like a scythe | has: horn
+she hooks the horn under the other's guard and heaves upward | has: horn
+a short stab of the horn, quick in and quick out | has: horn
+she slashes the horn across, edge first, a flat cut rather than a thrust | has: horn
+
+== movement | kind: throw
+she pivots on one foot and flings the other off her hip | has: legs
+she drags her opponent round in a full circle before letting go
+she lifts her high and slams her flat on her back
+she drops her own weight suddenly, pulling the other down over her and past
+she throws her into the nearest hard thing, aimed with care
+she hauls her up by the scruff and hurls her away with a twist of the neck
+
+== movement | kind: grab
+she grabs and pulls tight, chest to chest, so there is no room to strike back
+her paws close round the other's limb and hold fast | has: arms
+she pins one limb with her body and another with her grip
+she takes the scruff and pulls the head down
+her coils loop round twice and tighten slowly, steadily | has: coils
+her talons close round a limb and squeeze | has: talons
+
+== movement | kind: wing
+she spins and the wing comes round with the force of the whole turn | has: wings
+she strikes with the wrist of the wing, hard and close | has: wings
+she beats the wing down onto the other from above | has: wings
+a double strike, both wings at once, from either side | has: wings
+the wing slices across, fast and flat, at shoulder height | has: wings
+
+== movement | kind: beak
+she stabs with the beak, quick and precise, at the softest place she can see | has: beak
+she pecks so fast the beak blurs | has: beak
+she grabs with the beak and twists | has: beak
+she draws her head back and drives the beak in hard | has: beak
+she hammers with the beak, again and again, at one spot | has: beak
+
+== movement | kind: talon
+she drops on her target from above, talons first | has: talons
+she rakes with the talons as she passes, a slashing grip | has: talons
+she seizes with both feet and beats her wings to drive the grip harder | has: wings
+she kicks out with one foot, talons spread | has: talons
+she lands on the other and grips, talons digging in | has: talons
+
+== movement | kind: close
+she pummels at close range, short sharp blows that leave no room to answer
+she drives whatever is nearest into the other: shoulder, head, hip
+every blow is short and compact, and lands in the same place
+she works the body, close in, blow after blow
+she butts with her head when there is no room for anything else
+
+== movement | kind: fire
+she breathes fire in a long, rolling stream and sweeps it across
+a ball of flame forms in her mouth and she hurls it
+she sets the ground alight round the other and closes the ring
+the fire spits from her in short bursts, each one scorching
+heat ripples off her before the fire comes, warping the air
+her flame burns brighter and the fire pours out | has: flame
+
+== movement | kind: ice
+she breathes a cone of frost that spreads wide, freezing as it goes
+shards of ice form in the air and fly at the target
+the cold settles over the other like a blanket, slowing her
+she freezes the ground under the other's feet
+the ice cracks as it strikes, spreading frost over everything it touches
+her breath turns to fog and then to ice
+
+== movement | kind: wind
+she whips up a gust that drags at the other's footing
+the wind spins round the target, trapping her in a vortex
+she beats her wings and sends a blast of air across the ground | has: wings
+the wind slams into the other like a shove from a giant hand
+she sends the gust low along the ground, sweeping the other's legs
+
+== movement | kind: rock
+she hurls a boulder with a heave of her whole body
+stones burst up from the ground beneath the other
+she sends a hail of sharp stones at the target
+a slab of rock tilts up out of the ground and topples toward the other
+she slams the ground and the shock sends stones flying
+the stones spin as they fly, scattering grit everywhere
+
+== movement
+she shifts her footing half a step before every move, so the angle is never the same twice
+she lets the other strike first and answers into the open space it leaves
+she moves in on the other's breath out, when the body is slackest
+she circles until the other has to face into the wind
+she keeps her eyes on the other's shoulders, not the face
+she presses and presses, and only strikes when the other starts to give ground
+she stops short, waits, and goes the moment the other relaxes
