@@ -1675,7 +1675,9 @@
     "stuck_below": 25,
     "stuck_damage": 300,
     "stuck_mult": 0.6,
-    "_becomes_pin_after_comment": "becomes_pin_after: a submission still on after this many beats becomes a PIN (the pin clock and pass-out start) without easing off: its grips go on wrenching at full power and keep building. 0 = never.",
+    "_damage_cap_comment": "damage_cap: a submission's wrench never uses more than these multipliers on a worn part, however ruined it is: mult (damage) and health_mult (health). Looser than pin.pressure_cap (0.45 / 1.0): a wrench hurts more than being held down, but it can't run away with the numbers. Once it becomes a pin, the pin's own cap applies. enabled false = no cap.",
+    "damage_cap": {"enabled": true, "mult": 0.8, "health_mult": 1.5},
+    "_becomes_pin_after_comment": "becomes_pin_after: a submission still on after this many beats becomes a PIN (the pin clock and pass-out start) without easing off: its grips go on wrenching at full power and keep building, capped like any pin's presses (pin.pressure_cap). 0 = never.",
     "becomes_pin_after": 4
   },
   "tactics": {

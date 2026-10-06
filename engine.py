@@ -3948,6 +3948,12 @@ class Engine:
         c = self.rules.get("pin", {}).get("pressure_cap")
         return c if isinstance(c, dict) and c.get("enabled", True) else None
 
+    def sub_cap(self):
+        """How hard a submission's wrench can bite into a worn-down part: submissions.damage_cap {"mult",
+        "health_mult"}. Looser than a pin's (a wrench is meant to hurt), but it can't tear a ruined part apart."""
+        c = (self.rules.get("submissions") or {}).get("damage_cap")
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
     STANCES = {"protect": "protecting", "counter": "countering", "mirror": "mirroring"}
 
     def weather_mult(self, mtype):
@@ -5561,12 +5567,15 @@ class Engine:
                 if rcfg.get("enabled", True):
                     # held pressure builds: each beat the press stays on, it bites a little deeper (pin.ramp)
                     ramp = min(float(rcfg.get("max", 1.6)), 1.0 + float(rcfg.get("per_beat", 0.12)) * h.turns_active)
-            # a submission that has become a pin (h.locked) keeps its own wrench: no lighter pin pressure, no cap
+            # a submission that has become a pin (h.locked) keeps its own wrench (no lighter pin pressure), but it is
+            # a pin now: its bite into a worn part is capped like any pin's. A submission still on is capped too, more
+            # loosely (submissions.damage_cap): a wrench hurts more than being held down, but it doesn't run away
             as_pin = in_pin and not h.locked
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp
                      if as_pin else h.power) * first
             self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or ('coils' if h.coil else 'hold'))}")
-            hit = self._apply_damage(d, h.part, round(power, 2), cap=self.pin_cap() if as_pin else None)
+            cap = self.pin_cap() if in_pin else self.sub_cap() if h.sub else None
+            hit = self._apply_damage(d, h.part, round(power, 2), cap=cap)
             h.turns_active += 1
             if h.coil and not d.eliminated:
                 # coils tighten every beat (holds.coil: tighten, max_power). Round her body or throat they squeeze her
