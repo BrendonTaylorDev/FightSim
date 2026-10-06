@@ -14,9 +14,9 @@
 # super effective act, super effective take (an attack her body has no answer for); resisted act, resisted take (one
 # her body is made to take, or that can't touch her).
 # A tag nothing answers to falls back to the next one asked for, then to the first section.
-# {A} and {B} in a passage: the program puts in the names of the fighters in the current fight ({A} the one who acts,
-# {B} the one it happens to), so a passage written with them fits ANY pair. Passages that name a real fighter are
-# shown only when she is in the fight.
+# {A} and {B} in a passage ({A} the one who acts in it, {B} the one it happens to) are shown as two names that belong
+# to no fighter (Wren and Sorrel), so such a passage is shown in EVERY fight, whoever is in it. Passages that name a
+# real fighter are shown only when she is in the fight.
 # These passages come from a test fight played on the real engine (the sleek Ripples: no flotation sac; no pin
 # clock; pain never numb), so nothing in them contradicts the program's rules.
 # Your earlier samples are untouched: /sample lists them and switches back (/sample style_sample.txt).
@@ -1498,3 +1498,2162 @@ Cinder hung in the air above her and waited for the trick. The Buizel's side ros
 *That's it,* she thought, and found she did not quite believe it. *That's it.*
 
 Her own wings were shaking. She let herself come down onto the sand, heavily, and stood there breathing in the sudden enormous quiet, looking at the small orange body that had cost her so much.
+
+# ===============================================================================================================
+# PASSAGES FOR ANY PAIR (build 148): {A} acts, {B} is acted on; shown in every fight as Wren and Sorrel.
+# ===============================================================================================================
+
+== super effective act
+The heat came off {B} in waves, and the air around her shook with it. Every time she breathed out, the flame at the end of her tail flared high and bright, and the ground under her had gone pale and dry in a ring.
+
+{A} had felt that heat on her face twice now. She did not want to feel it a third time.
+
+She drew the water up from deep in her chest, cold and heavy, and held it there while {B} came round to her left, still blazing, still sure of herself. *Come closer. Come right up close.* {B} did. She dropped her head to rush, and the flame on her tail swung up behind her like a torch lifted in a gale.
+
+{A} let the water go.
+
+It left her in a hard, solid rope and struck {B} full across the chest and the side of the neck, and the sound it made was not the slap of water on skin. It was a long, furious *hssss*, and steam burst off {B} in a white cloud so thick that for a moment {A} lost sight of her altogether.
+
+When the cloud tore open, {B} had stopped short in the middle of her rush. Her whole front was dark and dripping. The heat that had rolled off her a heartbeat ago was simply gone, and in its place a wet chill hung in the air between them. The tail flame had shrunk to a low, sputtering tongue, blue at the root, and it bent and shivered as though a wind were trying to pinch it out.
+
+{A} watched it struggle. She watched {B} feel it struggle: the sudden stillness in her, the way her head turned, very slightly, toward her own tail before she could stop it.
+
+*That is what frightens you. Not me. That.*
+
+She had spent the whole fight trying to find a way through all that heat. There had never been a way through it. There had only been a way to put it out, and she had it in her chest, and there was plenty more where that came from.
+
+She drew breath again, slowly, and let {B} hear her do it.
+
+== super effective act
+{B} came up out of the water streaming, and {A} smiled before she could help it.
+
+She was soaked from head to heel. It ran off her in sheets and pooled round her feet and kept running, and every part of her shone with it, slick and dark in the grey light. She shook her head once to clear her eyes and the spray went out in a wide fan. She looked comfortable. She looked, for the first time in the fight, as if she thought she had the better ground.
+
+*Stay wet. Please stay wet.*
+
+{A} felt the charge come up in her. It started as a prickle along her back and gathered, tighter and tighter, until the air around her began to smell sharp and burnt, and small blue threads snapped between her and the stones at her feet with a dry *tick, tick*. Her own skin prickled and crawled. The hair on {B}'s neck lifted too, though she was a long stride off and did not yet know why.
+
+{A} let it go.
+
+The bolt did not have to look for {B}. It found her the way water finds a crack, all at once and everywhere. It hit her on the shoulder and did not stop at the shoulder: it ran across the wet skin of her back and down her flanks and into the puddle round her feet, so that the whole puddle lit and jumped, and for one long, glaring instant {B} stood in the middle of a net of light that had nowhere else to go but through her.
+
+Her body went rigid. Every limb locked straight out. Her jaw clamped. The sound she made came through her teeth in a high, buzzing whine, cut short when the light went out.
+
+She stayed standing. {A} would give her that. But she stood the way a thing stands when it has forgotten how to do anything else, water still dripping off her, small twitches running up her legs on their own.
+
+{A} shook herself out and felt the last sparks leave it. She did not need to look at the lake behind {B}. {B} would be looking at it now. And every time she went into it, she would come out wet.
+
+== super effective act
+{B} owned the air above the ridge, and she knew it. She went round and round in long easy circles, wings wide and barely moving, riding the rising wind off the rock, and every so often she tipped and fell on {A} and was gone again before anything could reach her.
+
+{A} had stopped trying to reach her. She stood still on the cold stone and breathed in, slowly, and let the cold gather.
+
+It came up through her chest like frost forming on a pane, from the edges inward, until her breath smoked white and the stone round her feet whitened too. Ice crept across the puddles behind her with a faint dry crackle. Her own chest ached with it.
+
+*Come down. Just once more.*
+
+{B} came down. She tipped, folded, and dropped, and {A} lifted her head and breathed out into the path of the dive.
+
+The cold went up in a glittering spray and met {B} wing-first. {A} saw it catch along the leading edges and spread back across the long flight feathers, saw them go stiff and pale and rattle like dry leaves. {B}'s dive broke apart in the air. She opened her wings to pull up and only half of each one answered; the rest stayed set where the frost had caught it, and she lurched, lopsided, and hit the stone in a hard, scraping skid.
+
+She was up quickly. But not as quickly as before, and not all of her. One wing came up and opened and shook itself. The other came up slowly, and halfway, and stayed there trembling, its feathers clumped and furred with white, and when she tried to fold it, it would not fold.
+
+{A} watched {B} turn her head and look at it. A long look, as if it belonged to someone else.
+
+*You live in the wind. The wind is cold up there. You never had to stand still in it.*
+
+She breathed in again. Her teeth hurt. Her chest hurt. It did not matter; the frost was already gathering again behind her ribs, and {B} was on the ground, where {A} could reach her, beating one good wing at the air to warm the other and getting nowhere at all.
+
+== super effective act
+{B} was built like a wall, and she fought like one. She stood square, feet planted wide, and took what came at her and let it bounce. {A} had hit her twice already across the shoulders and felt both blows go into thick muscle and simply stop there, like fists in wet sand.
+
+*Not there, then. Somewhere it can't spread.*
+
+She watched. {B} breathed heavily through her nose, chest broad and level, and each time she shifted her weight forward to charge, her front opened, just under the chest, where all that solid muscle came together in one place and had nothing round it to share the load.
+
+{B} charged. {A} let her.
+
+She stepped inside the rush instead of away from it, close enough to feel the hot breath on her face, and set her feet, and turned her whole body behind one short blow from her hip, straight into that place.
+
+It was a different blow to the others. She felt the difference all the way up her arm. There was no give to soak it, no loose flesh to roll it aside; it went in and met a body that was all of one piece, and the whole piece took it. {B}'s charge stopped flat against her fist. A great *hhuh* of air came out of her, hot across {A}'s cheek.
+
+{A} did not wait. Her other fist came round into the same place, and then the first again, short and hard and fast, a knock and a knock and a knock, each one landing where the last had already been, and she felt the solid body in front of her begin to give, not all at once but in small helpless jolts, like a door that has been barred and is finding out the bar was not enough.
+
+She stepped back. {B} stayed where she was, bent over, feet still planted wide because she had forgotten to move them.
+
+*That's what you're made for. Taking hits that come from far away. Not ones that come from right here.*
+
+{A} shook out her stinging knuckles and settled her feet again. She knew exactly where to put the next one now, and so, from the way {B} was holding herself, did {B}.
+
+== super effective act
+{B} filled the whole far end of the clearing. She stood with her wings half raised and her head high, and every breath she let out rolled across the grass in a low growl that {A} could feel in the soles of her feet. Nothing in the fight so far had made that growl so much as falter. Fire had washed off her. Teeth and claws had bounced.
+
+{A} stopped trying with teeth and claws.
+
+She went still, there in the long grass, and called up the light. It came softly. A shimmer at first, like heat over a road, then a glow that gathered round her in a slow spiral of pale, sweet-smelling sparks. It hummed, very faintly, a high clean note just at the edge of hearing. In the middle of all that great dark bulk across the clearing, it looked like a small thing. {B}'s lip curled at it.
+
+*Laugh. Go on.*
+
+{A} sent it.
+
+It crossed the clearing in a soft rush and broke over {B}'s chest and face, and {A} saw the instant it touched. The growl stopped. Not faded: stopped, cut off in the middle, as if a hand had closed over it. {B}'s great head reared away. Her wings flew wide and then jerked in close to her body, and she gave a sound {A} had not heard from her before, a high, startled bark of hurt, much too small for the size of her.
+
+The light did not burn her and it did not batter her. It simply went in, where everything else had stopped at the surface, and {A} could see it working: the way the big body flinched away from it inch by inch, the way the shoulders hunched and the eyes squeezed nearly shut against a glow that should have been nothing to her.
+
+Pale sparks still clung to {B}'s chest and drifted off her one by one. Where they had been, she shuddered.
+
+*There it is. Everything else was the wrong key.*
+
+{A} let the last of the shimmer settle round her own shoulders. Her legs were steady. Her breath was even. For the first time since the fight began, it was {B} who took a step back.
+
+== super effective take
+{B} saw the spark gather and thought nothing of it. She was high, and the sky was wide, and she had been dodging things from the ground all fight.
+
+It did not come from the ground the way things came from the ground. It came all at once, the air between them simply splitting with a crack so loud she felt it in her teeth, and then it was in her.
+
+It took her across the wing and did not stay in the wing. It ran the whole length of her, wingtip to wingtip and down through her chest, and her body had nothing to stop it with: no ground under her to drain it away, nothing heavy in her to slow it. She was built to be light. The light went straight through.
+
+Every muscle she had locked at once. Her wings clapped stiff and wide and would not beat. Her head jerked back. The cry that came out of her was not a cry at all but a thin, crackling buzz forced up through her clenched beak, and then the sky tipped and she was falling.
+
+She did not fall far. The spasm let go and her wings came back to her, and she beat them hard, clumsily, again, again, and caught the air a body's length above the rocks and clawed her way back up into it.
+
+But they were not quite hers. That was the thing. There was a fizzing in them, a crawling buzz under the skin of each wing that would not settle, and every stroke came half a beat late, and the long muscles across her chest kept jumping on their own, small twitches she could not stop. Her heart was going fast and uneven. Her breath tasted burnt.
+
+*Nowhere to put it. There's nowhere up here to put it.*
+
+She had always thought of the sky as the safe place. She thought about that now, hanging there with her wings shaking, and looked down at {A}, who was already drawing the charge up again, the air round her beginning to snap.
+
+== super effective take
+The cold hit {B} across the side and the shoulder, and at first she was only surprised at how little it seemed.
+
+A spray of frost. A sting. She had taken worse on that shoulder already. She shook herself and lifted her head to roar, and the roar came out wrong, short and stiff, and that was when she understood.
+
+The cold had not stopped at her skin. It was going in. She could feel it moving, slow and certain, down into the muscle of her shoulder and along her side, and wherever it went her body simply slowed, as if someone were turning down a flame inside her. Her own heat had always come from outside, from sun and stone and the warmth of moving. She had no fire of her own to throw at it. There was nothing in her to push it back.
+
+Her wing on that side drooped. She told it to lift and it lifted, but late, heavily, like a limb that had been slept on. The limb below it felt thick. When she tried to step forward, the step was shorter than she meant and the ground was further away than it should have been.
+
+She breathed out, and her breath smoked.
+
+*Move. Keep moving. Moving is warm.*
+
+She moved. It helped, a little, and not enough. A deep shiver started low in her chest and ran out through her limbs, a long rolling tremble she could not hold still, and her teeth came together with a small, hard click and then another. Her eyes felt heavy. Something in her, very old and very quiet, was telling her to find a sunny rock and lie down on it and wait.
+
+That frightened her more than the cold did.
+
+She pulled her lips back and made herself stand tall, and the shoulder ached the whole way up in a dull, frozen throb. Across the ground, {A} was breathing in again, the air round her mouth already going white, and {B} felt her whole stiff body want to turn away from it.
+
+== super effective take
+{B} had let the flames come. Nothing so far had marked her. Claws had skated off her and teeth had rung on her and left her standing, and she had thought that fire would only be more noise.
+
+It washed over her chest and her left side in a roaring sheet, and for a breath she felt nothing at all.
+
+Then the heat went in.
+
+It did not stay on the surface the way blows did. It spread. She could feel it soaking through the hard plating of her chest and outward along her side, the metal of her drinking it and holding it and passing it deeper, so that the hurt did not come from where the flames had touched but from everywhere at once, a broad, rising, unbearable warmth that kept climbing after the fire had already gone.
+
+Her plates ticked as they heated, a quick dry *tink, tink, tink*. The air round her shimmered. She smelled something hot and sharp, and knew it was herself.
+
+She flinched, which she never did, and there was nowhere to flinch to. The heat was in her own shell. She twisted and it came with her. She dropped low to the cool ground and pressed her chest to the earth and felt the earth hiss faintly where she touched it, and still the warmth went on spreading, into her shoulders, into the joints of her legs, until even standing still was like standing too close to a fire.
+
+A low, steady groan came out of her through her teeth. She could not stop it.
+
+*It doesn't bounce. It doesn't bounce off.*
+
+Everything about her was made to turn things away. Every hard edge of her had kept her safe all her life. Now every one of them was holding the heat in, and she understood with a kind of cold, sick clarity that she could not get rid of it, only wait for it to leave.
+
+{A} was watching from across the ground, flame still licking at her mouth, and {B} could not, for that moment, make herself look back at her.
+
+== super effective take
+The stone came up off the ground faster than anything that heavy had a right to move.
+
+{B} saw it late. She was turning in the air, wings wide, half her mind already on her next dive, and it was simply there, a jagged grey mass filling the space in front of her, and she had time to tuck her head and nothing else.
+
+It hit her in the chest and the root of her left wing.
+
+Nothing in her soaked it. She had been made light, all air and hollow and stretched skin, made to slip round the world and never be in the way of it, and the rock did not care. It struck her full, all its weight behind it, and drove her out of the sky as if she had flown into a cliff. A hard *whumpf* went out of her with all her breath, and then she was tumbling, wings flung loose, earth and sky trading places too fast to follow.
+
+She hit the ground and the ground hit back.
+
+For a long moment she lay on her side on the rough stone, beak open, chest heaving and getting nothing. When the air came at last it came in thin, shaking pulls, each one leaning on the deep bruise spreading across her chest. Her left wing lay out flat beside her. She told it to fold. It folded a little, and the root of it flared with a deep, sick ache that made her eyes water, and she let it lie.
+
+*Down. It knocked me down. Out of the sky.*
+
+That was worse than the ache. Up there she could not be caught. Up there the fight was hers. And a single stone had reached up and taken it from her, and here she was on the hard ground, heavy, tangled in her own feathers, the stone dust still drifting down round her.
+
+She got her feet under her. The wing trailed. She dragged it in against her side and held it there, and turned her head, trembling, to find {A}, who was already pulling the next stone up out of the earth.
+
+== super effective take
+The water came out of nowhere, a white rope of it, and hit {B} square in the chest.
+
+She had been hit by water before. She knew the cold slap of it, the hiss, and had always shaken it off in a burst of steam and gone on burning. She waited for that now. It did not come.
+
+The water kept coming. It poured over her chest and down her front and ran in streams along her sides, and everywhere it touched, the heat went out of her. Not pushed back: gone, drained off in great boiling clouds that rolled up round her head and stung her eyes, and under the clouds, her skin went cold. Cold, in her. She had never been cold in her life.
+
+She felt the flame on her tail shrink. She did not need to look. She felt it the way one feels a breath caught halfway, a small panicked tightening at the base of her spine, the light at the end of her dimming and guttering and spitting as the spray reached it. Her whole body turned toward it without asking her. She swung her tail up and away, high and to the side, curled it tight against her back where the water could not find it.
+
+The jet stopped. She stood there steaming, chest heaving, every breath coming in thick and wet.
+
+The fire inside her tried to come back. She could feel it trying, a slow stubborn warmth climbing up from her middle, but it came up into soaked skin and wet chest and had to fight its way through all of it, and it came up weak, and her limbs shook while it did.
+
+*Light. Stay lit. Stay lit.*
+
+She uncurled her tail, carefully. The flame at the end of it was small and blue and leaning, but it was there. She breathed on it, almost, the way one breathes on an ember, and it rose a little, a little more.
+
+Then she lifted her head and looked at {A}, and for the first time in the fight she was the one who had to keep her distance.
+
+== super effective take
+{B} had stood in the cold all fight and been glad of it. Her breath frosted; the ground round her feet was rimed white; every blow that landed had met a body that was hard and chill and sure of itself.
+
+The fire hit her on the side and the shoulder, and all of that changed at once.
+
+It was not the heat that frightened her. It was what the heat did. She felt her own surface give under it, the hard cold edges of her going slick and soft, beads of water running off her where there had been no water a moment before. They dripped on the stone with a small, steady *tik, tik, tik*. She smelled wet. She smelled herself melting.
+
+She jerked away from the flames, too hard, and slid. The ice she had laid down round her feet was going to slush, and she could not trust her footing on it any more.
+
+The hurt came after, and it went deep. Where the fire had struck, her side throbbed with a wet, raw warmth that her body could not answer. She called the cold back into it and the cold came, sluggish, and the warmth swallowed it and kept on throbbing. She tried again. A thin frost spread over the hurt place and then ran away as water. Her breath, when it came, came out in a cloud that thinned to nothing.
+
+*It goes right into me. There's nothing in me that stops it.*
+
+She drew herself up. The shoulder sagged; it felt heavy and loose, as if something holding it together had softened. A tremor ran through her, not from cold, from the lack of it. Steam still curled off her side in slow threads.
+
+Across the stone, {A} stood in a haze of her own warmth, the air bending round her, and the frost on the ground between them was already turning dark and wet.
+
+{B} set her feet on the last firm ice she had and breathed out, long and slow, trying to make the cold come back. It came, a little. It would have to be enough.
+
+== resisted act
+{A} put everything she had into the flame.
+
+She had been saving it. She had held it in her chest through several exchanges and let it build until her throat ached and her eyes watered with the heat of it, and when {B} finally came in close and left her front open, {A} breathed it all out at once in a roaring orange flood that lit the whole ground round them.
+
+It hit. She saw it hit, full on the chest, wrapping round {B}'s shoulders and licking up past her face.
+
+And {B} stood in it.
+
+She did not flinch. She did not even close her eyes. The fire poured over her and she leaned into it a little, the way one leans into a warm wind, and the flame on her own tail flared up bright and tall behind her as if it had been fed. When the flood thinned and went out, she was exactly where she had been. Her chest was hardly marked. A faint smoke rose off her, and that was all, and the air round her shimmered hotter than before.
+
+{A} felt her own heat drain away into the ground with nothing to show for it.
+
+*Like pouring water into the lake.*
+
+She had known. Somewhere she had known; it was why she had held back so long. But she had wanted it to be enough, and she had let herself believe that if she made it big enough, hot enough, it would be. It was not. There was a mark, just. A slight stiffness in the way {B} turned, a small sting she was shrugging off. Nothing more.
+
+{B} looked at her through the last of the smoke. She did not say anything. She did not need to. Her mouth curved, slowly, and she breathed out, and a little lazy curl of fire came with it, as if to say *thank you*.
+
+{A} swallowed the taste of ash and stepped back. Her chest was empty and hot and tight. She would have to find something else. She would have to find it soon.
+
+== resisted act
+{A} had waited all fight for {B} to come low enough, and now she had.
+
+The flyer swept in across the ground at chest height, wings wide, talons reaching, and {A} did not dodge. She set her feet and turned her shoulder and drove her fist up into the middle of her as she passed, short and hard, everything behind it.
+
+It landed. She felt it land.
+
+But it did not land the way it should have. {B} was not there to be hit. There was nothing under her, nothing to brace against, and when the blow struck, she simply went with it, rolled up and over and away along the line of the punch like a leaf turning in a gust, wings tilting, the whole force of it spending itself in the air instead of in her. {A}'s arm went on through empty space after her. Her weight came off her back foot. She nearly fell over her own punch.
+
+She caught herself, and looked up.
+
+{B} was already level again, a few lengths up and wheeling round in a wide, unhurried curve. There was a stiffness in one shoulder, maybe. A little hitch in her stroke. She had felt it. But she was flying, and she was high, and the ground {A} needed to put her weight into was down here, with {A}.
+
+*Every blow I have comes up from the earth. And she isn't on it.*
+
+Her knuckles stung. The jar of the strike had gone back up her own arm, more than it had gone into {B}. She opened and closed her fist and felt the ache settle into the joints.
+
+Above her, {B} gave a single short cry, sharp and bright, and it sounded very much like laughter.
+
+{A} bent her knees again, slowly. She could keep doing this. She could keep throwing her fists into the air and keep watching them come back with nothing. Or she could find a way to bring {B} down to where her fists lived.
+
+She watched the wings, and the turn, and waited.
+
+== resisted act
+{A} hit {B} with everything she had, and it rang.
+
+It was not the sound she wanted. She had driven in shoulder-first, all her weight behind her, aimed at the broad flat plate of {B}'s side, and the moment she struck it a great hollow *clang* went out across the ground, like a bell struck with a stone, and the shock came straight back into her own shoulder and down her spine.
+
+{B} slid a half-step. That was all. Half a step, a scrape of feet on gravel, and then she settled and stood, and the ringing went on and on in the air between them, fading slowly.
+
+{A} stepped back and shook her shoulder. It throbbed. Her neck throbbed. She felt as though she had run into a wall, and the wall had barely noticed.
+
+*Like hitting a cliff. Like hitting the whole mountain.*
+
+She looked for a mark on {B} and found a dull smudge on the plate where she had struck, and a slight stiffness in the way {B} turned toward her, a small careful shrug of the shoulder, as if something underneath had felt the knock and was rearranging itself round it. Nothing more. The metal had spread the blow across the whole of that side and handed it back, and {A} was the one holding most of it.
+
+{B} watched her rub her shoulder. Her eyes were flat and calm, and something in them was close to boredom.
+
+*All right. All right. Not that way.*
+
+{A} made herself stop rubbing. It cost her. Her shoulder went on aching in a deep, dull way, a bruise forming that she had given herself, and she knew now that every blow she threw like that would land the same way, ring the same way, and send most of itself straight back into her.
+
+She circled. Slowly, looking. There had to be a joint somewhere, a gap where the plates met, somewhere that did not ring. She kept her weight light and her eyes on {B}'s edges and did not throw anything at all.
+
+{B} turned with her, at her leisure, and waited for her to try again.
+
+== resisted act
+{A} called the dark up and threw it, a ring of shadow that bent the light as it went and made the ground under it go dim and cold.
+
+It was the thing she trusted most. It had driven bigger fighters than {B} to their knees. She felt it leave her heavy and certain, and she watched it cross the ground toward {B}'s chest with the old cold satisfaction already rising in her.
+
+It reached {B}, and {B} let it come.
+
+The shadow broke over her and did not break into her. {A} saw it happen and could not quite believe it: the ring flattened against {B} like smoke against a window, spread across her chest and shoulders, and then slid off her, sideways and down, pooling round her feet for a moment and seeping away into the ground. {B} rocked on her heels. One shoulder twitched where the edge of it had caught. She blinked, slowly, once.
+
+That was all.
+
+*She's made of it. She's made of the same thing.*
+
+{A} knew it then, all the way down. Her dark had nowhere to go in {B}. There was no light in her for it to put out, no fear in her for it to find. It had gone looking and found only more of itself, and it had sat down there and gone quiet.
+
+{B} straightened. She shook out her shoulders, the way one shakes off a little rain, and her red eyes came up and settled on {A}, and in them was something that might have been amusement and might have been pity. It was hard to tell. It was hard to tell anything in that face. {A} supposed {B} found her own face just as hard.
+
+The cold place in {A}'s chest where the dark had come from felt empty and stupid.
+
+She lowered her head. Her claws were still there. Her teeth were still there. Those, at least, did not care what {B} was made of.
+
+She stepped forward, and this time she did not reach for the shadow at all.
+
+== resisted take
+The jet hit {B} on the shoulder and burst into spray, and she almost laughed.
+
+It was hard, she would give it that. It shoved her a half-step sideways on the wet stone and stung where it landed, a cold, sharp slap across the muscle of her shoulder that made it ache a little afterward. But that was all it was. A slap. The water ran down her the way rain did, the way the river did every morning of her life, beading on her skin and sliding off and dripping from her elbows, and her body knew exactly what to do with it, which was nothing.
+
+She shook herself. It flew off her in a wide glittering fan.
+
+*You're throwing my own home at me.*
+
+The ache in her shoulder was real. She rolled it, once, and felt it pull and then settle, a dull bruise that would be there for a while and would not slow her. She had felt worse diving into cold water too fast.
+
+{A} was still braced across the ground, breathing hard, cheeks puffed from the effort, and {B} could see the doubt starting in her face. She let her see it. She let her watch the water run off her and soak into the stone round her feet and then she stepped out of the puddle it had made, not hurrying, and her feet came down light and easy on the wet rock, as if the whole ground had been laid down for her.
+
+If anything, she felt better. Cool. Slick. Awake. The wet on her skin was not something done to her; it was something she was.
+
+She tipped her head to one side and looked at {A}, and let a little of the water she had been holding gather at the back of her own throat.
+
+*Go on. Throw me another one.*
+
+{A} did not. {B} watched her think about it, and decide against it, and saw her eyes go looking for something else, something she did not have.
+
+== resisted take
+The cold came at {B} in a glittering spray and broke across her chest, and for an instant she felt it: a sharp, biting sting, frost crackling white across her front, the breath caught in her throat at the shock.
+
+Then her body answered.
+
+Heat came up from deep in her middle, steady and enormous, the way it always came, and met the frost from underneath. She felt it go. The white crust on her chest went to beads, the beads went to steam, and the steam rose off her in a thin lazy veil and was gone. The flame on her tail flickered once, low, and then stood up tall again, brighter than before, as if the cold had only made it angry.
+
+The sting stayed a moment longer. A raw, chilled patch across the middle of her chest that ached when she breathed in deep. She breathed in deep anyway, on purpose, and let the ache come and go.
+
+*That's all? That's all you have?*
+
+She looked at {A} through the last of the steam. {A}'s breath was still smoking white, the ground round her feet still rimed with frost, and none of it mattered. All that cold had to cross a body that burned from the inside, and it had not got far.
+
+{B} rolled her shoulders. They moved easily. Her chest was warm again. Under the surface, where the frost had tried to bite, her own fire was already pressing outward, filling the cold place back in, and she could feel that small numb patch shrinking with every beat of her heart.
+
+She took a step toward {A}. The last thin ice on the ground hissed and melted under her foot.
+
+Somewhere in her a small, hot contempt took root and settled. She had expected more. She had braced for more. And it had come, and touched her, and gone, and she was still standing in her own heat with the air bending round her.
+
+*Cold won't do it. Nothing cold will ever do it.*
+
+She opened her mouth and let a little flame lick out over her teeth, and smiled round it.
+
+== resisted take
+The fire poured over {B} and she stood in it with her eyes half closed.
+
+It was hot. She did not pretend it was not. It roared round her chest and up past her face and for a heartbeat the world was orange and loud and she felt the sting of it across her nose, along her brow, a quick dry tightness of skin. That was real. It would sting for a while.
+
+But the rest of it came into her like a meal.
+
+She felt her own fire rise to meet it. The heat settled into her skin and sank down into her chest and fed the warmth already there, so that the flame at the end of her tail lifted and brightened behind her until she could hear it crackle. She breathed in through the blaze, and the breath was warm and full and good.
+
+*You're feeding me. You know you're feeding me.*
+
+The flames thinned and went out. {B} opened her eyes all the way.
+
+Her chest smoked faintly. Her face still prickled where the fire had licked it, a small, hot itch along the brow that made her want to blink. She let herself blink once, and that was all she gave it.
+
+Across the ground, {A} was breathing hard, mouth still open, and {B} watched the knowledge arrive on her face: the slight sag of her shoulders, the way her eyes went to {B}'s tail and back. She had thrown something big. It had come back to her as nothing.
+
+{B} took one slow step forward. The grass under her foot curled and blackened with a soft crackle. Heat rolled off her in waves now, more than before the fire had touched her, and the air between them shook with it.
+
+She did not hurry. She did not need to. She was the one standing in her own element, and {A} had just handed her more of it.
+
+*Again, if you like. Go on. I'll take all of it.*
+
+She let a thin plume of smoke curl from her nostrils, and waited.
+
+== resisted take
+The blow came in hard and low, all of {A}'s weight behind it, and struck {B} square on the side.
+
+She heard it before she felt it. A deep, round *clang* that went out across the ground and came back off the rocks. Her feet slid on the gravel half a step. Her head rocked. Inside the plate where the blow had landed, a dull jar ran through her, spreading outward across her side and her shoulder, thinning as it went, until by the time it reached her legs it was hardly anything at all.
+
+There was an ache. She admitted that much. A deep, flat soreness under the plate where it had struck, the kind that would stiffen later. She shifted her weight and felt it there, and it did not get worse.
+
+*That's it. That's all of it.*
+
+She looked at {A}.
+
+{A} had come away from the blow worse than {B} had. That much was plain. She was shaking out her shoulder and her face was tight, and she was rubbing at the joint as if she could push the hurt back out of it. {B} watched her do it with a cool, steady interest.
+
+They always did this. They always hit her as if she were made of the same soft stuff as they were, and the metal took it, and spread it, and gave most of it back to them. She had been built for exactly this. Her plates had held against stone and claw and teeth and they would hold against fists.
+
+She rolled her shoulder once, slowly, to show {A} that she could.
+
+The ache under the plate settled to a quiet throb. She could live with it. She could live with a great many more just like it.
+
+*Hit me again. Ring me like a bell. See which of us gets tired first.*
+
+She stepped forward, unhurried, and her feet came down heavy and sure on the gravel, and {A} stepped back.
+
+== resisted take
+The shadow came across the ground at {B} in a cold, bending ring, and she did not even brace for it.
+
+It hit her chest and she felt it, a little: a chill that went through her and settled on her skin, a heaviness in her shoulders as though a wet cloak had been dropped on them, a dimming of the edges of the world. For a heartbeat her ears rang with a low, hollow hum.
+
+Then it slid off her.
+
+She felt it go, and almost smiled. The dark had come looking for somewhere to bite and found only more dark, and it had nothing to say to that. It poured off her shoulders, down her legs, pooled at her feet in a cold black puddle of shade, and seeped away into the ground and was gone. The chill on her skin went with it. Only a dull ache stayed behind in her chest, low and faint, where the push of the thing had landed.
+
+*Mine. That's mine. You threw mine at me.*
+
+She shook herself once, from neck to tail, the way one shakes off mist.
+
+Across the ground, {A} stood with her head still lowered from the throw, and {B} watched her understand. It was not much to watch. A stillness. A slight lift of the head. But {B} knew that stillness. She made it herself, when a thing she trusted came back to her empty.
+
+Something in her was almost sorry for it. She let that go. It had no use here.
+
+She stretched her neck and felt the ache in her chest loosen and fade. Her breath came easy. The shadows round the edges of the ground felt close and friendly, the way they always did, and she could have reached out and pulled them round her shoulders like a coat.
+
+*You can't frighten the dark with the dark.*
+
+{B} lifted her lip from her teeth, slowly, and took a step toward {A}, and the shade went with her.
+
+== opening
+The clearing was quiet in the way of places that have been waiting a long time. A single tree stood near its middle, old and leaning, its roots knotted up out of the packed earth, and the wind moving through its upper leaves made a sound like slow breathing. Beyond it the ground ran down to the water's edge, where the grass gave way to grey stones and the stones gave way to a flat, still shine.
+
+{A} came out of the long grass on the near side and stopped where it thinned. She stood there a while, letting her breath settle, looking at nothing in particular and at everything. The ground under her was dry and firm. She tested it with her weight, shifting once from one side to the other, and it held without a sound.
+
+*Good footing. Remember where it ends.*
+
+{B} was already there. She had been there, it seemed, for some time: in the shade under the tree, so still that the eye slid past her at first and had to come back. Now she moved, unhurried, out into the light. She did not look at the ground. She looked at {A}, steadily, from head to feet and back again, the way someone reads a letter twice to be sure of it.
+
+Neither of them spoke. A bird somewhere in the branches gave a short, startled note and went silent.
+
+{A} lowered her head a little. The air between them seemed to tighten, the way it does before rain, and she felt her own pulse in her throat, quick and even. Her body knew what this was before she had decided anything. Every part of her was listening.
+
+*She's calm. Too calm. Let's see how long that lasts.*
+
+{B} took a single step to the side, circling, keeping the tree at her back. {A} turned to follow, keeping her distance exactly. The leaves overhead stirred and settled. A dry stem cracked under someone's weight, and neither of them looked down to see whose.
+
+The wind dropped. For the length of a held breath the whole clearing was still.
+
+Then {A} moved.
+
+== opening
+Rain had fallen in the night, and the low ground beside the water still held it. Puddles lay in every hollow, flat and grey, each one holding a small piece of the sky. The rocks along the shore were dark and wet and smelled of moss. Further up, where the ground rose toward a line of boulders, it had already begun to dry, pale patches spreading through the mud like islands.
+
+{B} stood up there on the drier ground. She had chosen it on purpose, that much was plain; she had placed herself with her back to the largest of the boulders and the open slope in front of her, so that anyone coming had to come uphill. She waited with her weight settled and her head high, and the cool morning air moved over her and she let it.
+
+{A} came along the shore, unhurried, stepping round the deeper puddles without looking at them. She stopped at the foot of the slope. From there she could see all of it: the boulders, the drying mud, the rival on top of it all with the stone behind her.
+
+*She thinks the hill is worth something. Maybe it is.*
+
+She did not climb yet. She let her eyes go over {B} slowly, the set of her, the stillness, the small shift of weight that came when {A} stopped moving. Rested. Watchful. Not as calm as she was trying to look; there was a tightness about her breathing, a little too even, a little too careful.
+
+{B} looked back down at her and did not blink. Somewhere behind them the water lapped once at the stones, a soft, hollow *tok*, and went quiet.
+
+{A} breathed in through her nose. Wet earth, moss, the faint sharp smell of the other fighter carried down the slope on the breeze. Her heart had picked up without her asking it to. She let it.
+
+*Then I'll come up. And you'll wish I hadn't.*
+
+She set her weight forward onto the first of the dry ground, and felt it hold, and began to climb.
+
+== strike act
+{A} had been watching the same thing for a while now, and it had finally happened again.
+
+Every time {B} shifted her weight to circle left, she let her guard drift for the length of a breath. Not much. Just enough that the near side of her body, the flank below the shoulder, came open and stayed open while her feet found the ground. {A} had seen it once and doubted it. She had seen it twice and stopped doubting.
+
+*Now. While she's looking at her footing.*
+
+She did not wind up. Winding up would have shown. She simply let go of the stillness she had been holding and went, low and straight across the packed earth, faster than she had moved all fight. The ground went by under her in a blur of dust and broken stems. She felt her own breath leave her in a hard push and not come back yet.
+
+{B}'s head came round. {A} saw her eyes find the threat and widen, saw the body begin to turn to meet it, and knew the turn would be late. It was already late. The flank was still there, still open, a hand's width of it, and {A} put the whole of her rush into that hand's width.
+
+She felt the moment of it in her own body before she heard it: the jolt travelling back up through her, the solid, heavy give of something that had not been braced. The sound came half a heartbeat after, a dull *thud*, like a sack dropped on a floor.
+
+She did not stay to admire it. She let the force of her own blow carry her past, turning as she went, and came round on the far side with her weight already under her again, ready to move either way.
+
+*Felt that. She felt that.*
+
+Dust drifted between them in a slow cloud. Through it {A} watched {B} stagger a half-step and catch herself, and she pulled a long breath down to the bottom of her chest and held it, waiting to see which way the other would go.
+
+== strike act
+The water's edge was soft and treacherous, and {A} had stayed clear of it all fight. Now {B} was backing toward it, and {A} let her.
+
+She followed at an easy walk, not pressing. Every step {B} took backward put her nearer the wet stones, nearer the place where the ground went slick and uncertain. {A} could hear the water lapping behind her rival, small and patient. She kept her own weight on the dry gravel and her eyes on {B}'s feet.
+
+*Another step. One more.*
+
+{B} took it. The stone under her rolled. It was a small thing, a shift no wider than a finger, but {A} saw her body jerk to correct it, saw her attention drop for an instant to the ground.
+
+That instant was enough.
+
+{A} came in from the side, not straight on, so that {B} would have to turn on the bad footing to face her. She closed the distance in a single rush and struck at the shoulder, high, a hard, driving blow meant to push as much as hurt. She felt it land. She felt the shoulder give under it and the whole body behind it go back, and back, onto the wet stones.
+
+Water splashed up round both of them, cold and sudden. {A} had not meant to come this far in. She did not care. The blow had done what she wanted: {B} was down on one side at the very edge of the water, scrambling, the stones sliding out from under her as she tried to rise.
+
+{A} stepped back onto the dry gravel at once. Her feet were wet now, and that annoyed her more than it should have. She shook one, then the other.
+
+*Stay there. Stay in the wet and see how you like it.*
+
+Her own shoulder ached a little from the force of it, a dull hum in the joint. She rolled it once. It was nothing. Across from her, {B} was getting her feet under her, slowly, water running off her, and {A} watched her the whole time and did not let her see how hard she was breathing.
+
+== strike act
+{B} was tired, and she was trying not to show it. {A} could see it anyway.
+
+It was in the breathing first: quicker than before, with a small catch at the top of each breath, as if the air had to be coaxed in. It was in the way she held her weight, a little too far back, a little too careful. And it was in her eyes, which had been sharp and quick at the start and were now just a shade slow to follow.
+
+*Tired things drop their guard when they think they're safe. So let her think it.*
+
+{A} eased back. She let her own shoulders drop, let her breathing loosen, took half a step away as though she too needed a moment. The ground between them widened by a body's length. Somewhere behind her the wind moved through the tree and set the leaves hissing.
+
+{B}'s weight shifted. Her head came up a little. For the length of a breath she let herself rest.
+
+{A} went.
+
+There was no warning and she gave none. She crossed the gap in a sudden explosion of effort that burned all the way down her back, and struck {B} squarely in the middle of the chest, a short, heavy blow with everything she had behind it. She felt the breath go out of {B} under it, felt it rather than heard it, a hard rush of air against her own face.
+
+*There.*
+
+The impact came back up through her and jarred her to the skull. She held on through it, held her balance and her place, and did not step back. She stayed close, close enough to see the shock on {B}'s face before it closed over, close enough to hear the ragged, hitching gasp as she tried to pull the air back in.
+
+Then {A} did step back, one pace, and planted herself.
+
+Her own chest was heaving. She had spent something on that rush, and she would feel it later. Not now. Now she watched {B} fight for her breath, and waited.
+
+== strike act
+The rock stood up out of the grass like a broken tooth, waist-high and grey, and {A} had put it between them on purpose.
+
+{B} had to come round it. There was no other way. She came round the left side, carefully, keeping close to the stone, and {A} heard her before she saw her, the scuff of weight on gravel and the short, quick breathing. {A} did not wait on the right side where she should have been. She had already gone up.
+
+The top of the rock was rough and warm from the sun. She crouched on it, low and still, and looked down at the place where {B} would step out into the open.
+
+*Come on. Just a little further.*
+
+{B} stepped out. She looked right, where {A} should have been, and found nothing. Her head began to turn.
+
+{A} dropped on her.
+
+It was not a long fall, but it was enough. She came down with all of her weight behind the blow and struck {B} across the back, high, between the shoulders, and drove her forward and down. The ground came up to meet them both. {A} felt the shock of the landing in her own body, a hard knock that rang up through her and rattled her breath. Under her, {B} grunted, a deep, involuntary *hnn*, and folded.
+
+{A} did not stay on top of her. She rolled clear at once, over the grass, and came up on her feet a body's length away with her weight low and her eyes fixed.
+
+The rock behind her was empty now. The sun lay on it.
+
+*She didn't look up. She'll look up next time.*
+
+{B} was pushing herself off the ground, slowly, her back curved with the effort. {A} saw her wince as she straightened, saw her pause halfway, breathing hard through a shut mouth. Then she came the rest of the way up and turned, and her eyes found {A} and held.
+
+{A} gave her nothing back. She only breathed, and let the jolt of the landing fade from her own body, and waited for the next opening.
+
+== strike act
+{A} had taken the last blow on her left side, and it was still there, a warm ache under her ribs that pulled every time she breathed too deep. She did not mind it. It had told her something.
+
+It had told her that {B} came in from the right every time. Every single time. Feinted left, eyes flicking, weight shifting, and then the real thing from the right, hard and fast. It was a good habit. It had worked. It was still a habit.
+
+*So stand on your left. Give her the side she wants.*
+
+She turned her body a little, letting the hurt side face {B}, letting her see it, letting her see the slight guard {A} kept over it. She even let her breath catch once, on purpose, at the top.
+
+{B} saw. {A} watched her see it, watched the decision move behind her eyes and settle into her weight. The feint came: a quick lurch to the left, sharp, convincing. {A} did not move for it.
+
+Then {B} came from the right.
+
+{A} was already there. She had turned before the rush began, swinging round to meet it head-on, and instead of the hurt side {B} found the front of her, braced and ready. {A} met her in the middle of the rush with a blow that came up from low, short and driving, aimed under the guard at the point where the chest met the belly.
+
+The rush stopped against it. Everything {B} had put into coming forward came back into her own body, and {A} felt the whole weight of it arrive through the blow and jar her to the shoulder. She heard the breath go out of {B} in a hard, wet *hhuh*.
+
+{A} pushed off and stepped back. Her side pulled. She let it.
+
+*Same trick every time. Not again.*
+
+{B} had doubled over where she stood, drawn in round her middle, breath dragging. {A} kept her own weight light, her own breathing slow, and waited for her to straighten.
+
+== strike act
+It was nearly dark under the tree. The leaves had closed overhead and the light came through in scattered coins that moved when the wind moved, so that nothing in there stayed the same shape for long. {A} had led them in. She liked it under here. She could see well enough, and she could hear better.
+
+She could hear {B} now, somewhere to her left. The shuffle of a careful step on leaf litter. A breath let out slowly through the nose, meant to be quiet, not quite.
+
+*She doesn't like it in here. Good.*
+
+{A} kept still. She let the shadows lie on her. Overhead a branch creaked and settled; a few dry leaves came spinning down through the light and landed without a sound. {B} took another step. Closer. {A} could see her now, a shape against the brighter ground beyond the trunk, head turning slowly, searching the gloom on the wrong side.
+
+{A} waited until the head turned away. Then she came out of the dark in a single long lunge.
+
+She struck low, at the leg nearest her, the one {B} had just put her weight on. It was a quick, hard blow, meant to take the footing rather than to wound, and it did. She felt the leg go out sideways under the impact, felt {B} lurch and drop, felt her own momentum carry her past and round in a tight turn among the roots.
+
+{B} landed half on her side among the leaves with a startled sound, high and short, more surprise than hurt. She was already scrambling up again. {A} let her. She stood a body's length off in the moving light, breathing evenly, and let {B} see her now.
+
+*You'll look at every shadow from here on. Every one.*
+
+{B} came to her feet with her weight off the struck leg and her eyes darting, from {A} to the dark beyond her and back again. {A} saw that, and was satisfied, and stepped back into the shade.
+
+== strike take light
+It caught {B} on the outside of the shoulder, a glancing knock that turned her half round before she had decided to turn.
+
+She took a quick step to keep her balance and found the ground with it. The shoulder stung. It was a bright, shallow sting, the kind that comes from brushing hard against bark, and it sat on the surface of her skin and went no deeper. She rolled the joint once. It moved. It moved the way it always had, with only a faint warmth where the blow had landed.
+
+*Barely. She barely touched me.*
+
+That was not quite true, and she knew it, but it was near enough. {A} had come in fast and gone out faster, and the blow had been more of a brush than a strike, the edge of something meant to land square. {B} had seen it late and moved anyway, and the moving had been enough to take most of the weight out of it.
+
+She let her breath out slowly through her nose. It came out even. Good.
+
+{A} had gone past and was turning at the far edge of the grass, already setting herself for the next one. {B} watched her do it. The sting in her shoulder was fading as she watched, settling into a mild, dull warmth she could feel if she thought about it and forget if she did not.
+
+She decided not to think about it.
+
+The ground under her was firm, a little sandy, warm from the afternoon. She shifted her weight from side to side, testing, and felt nothing in her body that would slow her down. The shoulder sent up one small complaint when she leaned onto it and then fell quiet.
+
+*She's quick. Faster than she looks from over there. Watch her start, not her finish.*
+
+{B} lowered her head a fraction and squared herself to the other fighter. Across the grass, {A} had stopped turning and was looking back at her, and {B} let her see that she was still standing straight, still breathing easy, still entirely there.
+
+== strike take light
+The blow clipped her across the side of the head and her ear rang with it.
+
+{B} blinked. For a moment the world was a little too bright and a little too loud, a high thin note humming somewhere behind her eye, and she shook her head once, sharply, to clear it. The note thinned and went. What was left was a hot, prickling patch along the side of her face where it had struck, and a dull throb under it that beat with her pulse for a few breaths and then began to fade.
+
+*Lucky. That was lucky.*
+
+She had been lucky. A finger's width further in and it would have caught her square, and then she would not be standing here thinking about luck. As it was, the force of it had slid off the curve of her head and spent itself in the air, and all she had to show for it was the stinging and the ringing and a slight sour taste of surprise.
+
+She stepped back, out of reach, and let herself have a breath.
+
+The ground here was rough, scattered with small stones that shifted underfoot, and she felt them roll and settle as she moved. {A} had not followed. She stood where the blow had left her, watching, her own breath a little quick, as though she were trying to judge how much it had done.
+
+{B} straightened. She did it deliberately, so that {A} would see it. The side of her face was warm and tight and that was all. She worked her jaw once and felt nothing wrong in it.
+
+*Let her wonder. Let her think it did nothing at all.*
+
+It had done a little. A sting that would last a while, a tenderness there if she touched it. Not enough to change how she stood or how she moved. Not enough to change anything.
+
+She lifted her chin, set her feet among the loose stones, and fixed her eyes on {A} again.
+
+== strike take light
+Something struck the back of her leg as she turned, and {B} heard herself make a short, irritated sound, *tch*, more annoyance than hurt.
+
+She had been watching the wrong side. That was the whole of it. {A} had come round low behind her while her eyes were elsewhere, and the blow had landed on the back of the leg just above the joint, quick and light, gone almost before she felt it.
+
+She felt it now. A hot little ache, sharp at the centre and spreading out thin, like a nettle sting. She put her weight on the leg to see what it would do. It held her. It held her without trembling, without folding, and the ache sat there and did not grow.
+
+*Not there. She won't get that one twice.*
+
+{B} came round fully, now, and faced her. {A} had already danced back out of reach, light and pleased with herself, and stood a body's length off with her weight ready to go either way.
+
+It was a small thing, that blow. {B} knew it. A clever thing, too: it had not been meant to hurt so much as to show her where she was open, to say *I can get behind you whenever I like*. That annoyed her more than the sting did.
+
+She tested the leg again, shifting her weight onto it and off. The ache was already dulling. It would stiffen later, perhaps, if she let it rest. She would not let it rest.
+
+The grass round her feet was trampled and flat now, pressed down by the turning of the fight, and she could smell the green bruise of it under the smell of her own breath. She settled her feet into it.
+
+*Again, then. Come round again. I'll be watching this time.*
+
+Some small sound came from off to the side; she ignored it. She kept her eyes on {A} and nowhere else, and let the sting fade from her leg into nothing.
+
+== strike take mid
+It landed in her side, low, just under the ribs, and {B}'s breath went out of her in a single hard *hff* that she could not stop.
+
+She folded a little round it. She could not help that either. The ache came on fast, faster than the blow itself had seemed to, a thick, deep heat spreading out from the place where it had struck and settling under her ribs like a stone. She drew her body in round it, guarding, and for a long moment she did nothing but breathe.
+
+The breathing was the hard part. A shallow breath was bearable. A deep one dragged at the bruise and made her whole side clench, so she took small ones, quick, high in her chest, and felt how little air they brought.
+
+*Get your head up. She's still there.*
+
+She got her head up. {A} was there, a little way off, watching her with the steady patience of someone waiting to see how much she had done. {B} did not give her the answer. She straightened, slowly, one careful degree at a time, and the side pulled and burned at every degree, and she straightened anyway.
+
+The ache did not go. It sat there, warm and swollen-feeling, and every time she shifted her weight it reminded her. She found she was holding the hurt side turned away from {A} without having decided to, keeping it back, out of reach.
+
+That would slow her. She knew it. A fighter guarding one side was a fighter half a beat late on the other.
+
+She tried a step. It was fine. A second, and the side twinged on the landing, a hot flicker that made her jaw tighten. Bearable. She could do this.
+
+*Not as quick now. So be clever.*
+
+The ground under her was hard-packed and dusty, and her own breathing was loud in her ears. She set her feet a little wider for balance, kept the hurt side turned, and watched {A}'s weight for the next shift.
+
+== strike take mid
+The blow caught her high on the chest and knocked her back a full step, and the ground was not where she expected it.
+
+{B} stumbled, caught herself against the trunk of the tree behind her, and stayed there, leaning. The bark was rough and cold against her back. Her chest was not cold. It burned, a broad, flat ache across the front of her that started where the blow had landed and spread outward with every beat of her heart, and when she breathed in it tightened like a band pulled hard.
+
+A sound got out of her, low, a groan she shut her mouth on halfway.
+
+*Up off the tree. Don't lean. She'll see you leaning.*
+
+She pushed off the trunk. It cost her; the movement pulled at the hurt across her chest and made her eyes sting, and for a moment the light in the clearing swam a little at the edges. Then it steadied. She was standing on her own again, not straight, but standing.
+
+{A} had come halfway in after the blow and stopped, watching. {B} met her eyes and held them. Her breath was coming in short pulls through her nose, each one stopping short of the place where it hurt, and she could feel her heart going hard and fast against the bruise.
+
+The ache settled. It did not fade; it settled, which was different, sinking in and making itself at home. She knew she would carry it for the rest of this. Every time she reached, every time she twisted, it would be there.
+
+She tested it. A small twist, a shift of weight, and the front of her chest flared up hot and sharp and then sank back to the steady throb. All right. She knew its shape now.
+
+*Fine. I can fight with it. I've fought with worse.*
+
+She had not, perhaps. It did not matter. She lowered her head, drew in as much air as the bruise would let her, and stepped away from the tree.
+
+== strike take mid
+It came across the limb she had put out to catch herself, and {B} felt the whole of it go hot and heavy at once.
+
+She snatched it back. That hurt too. The ache lived in the muscle now, deep and pulsing, as though something were still pressing on it from the inside, and when she tried to put her weight onto it the throb jumped and she took her weight off again quickly. A short, sharp *ah* escaped her before she could close her mouth on it.
+
+*Stupid. Reached out and she took it.*
+
+She held the hurt limb close and stood a little crooked on the others, breathing. The ground under her was gravel and rough grass, and she could feel every small stone through the good side and nothing much through the other, only the dull, swollen beat of the bruise.
+
+{A} was circling. {B} turned to keep her in view and the turn made her shift her weight onto the hurt side for an instant. It held. It held with a hard, bright stab that went up through the whole limb and made her suck air in sharply, but it held.
+
+So it would bear weight. Not much. Not for long.
+
+She tried it again, deliberately, a slow shift, and let the ache come up and peak and fade back down. She learned where the edges of it were. There was a way of standing that kept it bearable, weight back, the hurt limb set down light, and she found that way and kept it.
+
+*Slower now. She knows it, too.*
+
+{A} had stopped circling. Her eyes had gone to the hurt limb and rested there, and {B} watched her notice it, and felt her own face go hard.
+
+She would not limp in front of her. She could not help a little. She would not help it more than that.
+
+== strike take hard
+It found her already hurt, in the same place, and the world narrowed down to that one place and nothing else.
+
+{B} did not hear herself cry out. She felt it: her mouth open, her throat tearing with a sound that came up from the bottom of her chest and went on longer than she would ever have allowed. The ground tipped. She was on it, somehow, half curled, without any memory of falling, and the pain stood in her side like something that had been driven in and left there, enormous and hot and pulsing, pushing out against her ribs with every heartbeat.
+
+She could not breathe past it. She tried. The first breath stopped halfway and came out of her as a broken whimper, and the second was worse, and she gave up on breathing deep and took tiny ones, gasping, through a mouth she could not close.
+
+Her eyes were shut so hard that tears ran out of the corners. Her whole body was rigid, locked round the hurt, every muscle drawn tight, and a fine, fast trembling had started somewhere in her middle and was running out along her limbs. She could not stop it. She did not try.
+
+*Not there. Not there again. Please.*
+
+The thought shamed her the moment she heard it, and the shame was the first thing that was hers again. She held on to it.
+
+She opened her eyes. The light was wrong, smeared and far off. She found the ground under her face, dust and grit, and the sky beyond it, and somewhere in the blur a shape standing over her, waiting.
+
+{A}.
+
+{B} made herself uncurl a little. Just a little. It sent a fresh wave of heat through her side and she bit down on the sound it wanted to make and let only a thin, shaking breath out instead. Then another. Her body was still trembling. She lifted her head off the ground anyway, and looked up, and did not look away.
+
+== strike take hard
+The blow took her full across the back and drove her to the ground, and for a moment {B} did not know where she was.
+
+Then she knew, all at once, because the pain arrived. It came up from the middle of her back in a slow, enormous swell, deep and heavy, like being pressed under a fallen stone, and it filled her from neck to hips and kept on filling. The breath she had been holding came out of her in a long, cracked cry that she heard as if from a distance. It went on until there was no more air behind it.
+
+She lay flat. Her face was in the grass. She could smell the earth, dark and wet, and feel each blade pressed against her cheek, and she could not move. Moving was a thing other bodies did.
+
+*Get up. Get up get up get up.*
+
+She tried. She drew one limb in under her and pushed, and her back answered with a jolt so fierce that her sight went dark at the edges and her limb gave and she was down again, gasping, a small strangled *nnh* forced out through her shut mouth.
+
+Her body had started shaking. It was a deep, hard shudder, out of her control, running along her spine in waves. Sweat stood cold on her skin. Every breath was a negotiation; she found she could only take the smallest, shallowest ones, little sips high in her chest that did not ask her back to move at all.
+
+Somewhere near her, footsteps. {A}, coming round to look.
+
+{B} turned her head. It was the only part of her she could trust to move. She turned it against the grass until she could see, sideways, the shape standing a little way off, and she held her eyes open on it although they streamed.
+
+*Still here. Still awake. You haven't finished.*
+
+She could not have said it aloud. She did not need to. She stared, and breathed in her small, broken sips, and kept staring.
+
+== strike take hard
+It caught her leg, the one she had been favouring, square across the place that had been hurt before, and {B} screamed.
+
+She had not known she was going to. The sound simply tore out of her, high and raw, and the leg went out from under her as if it had been taken away, and she went down hard on her side on the stones at the water's edge. Cold spray came up round her. She barely felt it.
+
+What she felt was the leg. It was all she felt. The hurt in it had been a steady, grinding ache before, something she could carry; now it had become a blaze, enormous and deep, a throbbing so fierce she could feel it in her jaw and behind her eyes. She drew the leg in to her body without meaning to and held it there, and the holding hurt, and letting go hurt more.
+
+*Can't. Can't stand on that. Can't.*
+
+Her breath came in great ragged heaves, each one ending in a sob she could not stop. Her face was wet. The water, and her own tears. She pressed her forehead against the cold stone and let the coldness be the only thing for a moment, and it was not enough.
+
+When she opened her eyes again {A} was standing over her, close, outlined against the bright sky.
+
+{B} could not get up. She knew that with the whole of her body. But she could still move the rest of her, and she did: she dragged herself back a little way along the stones, away, the hurt leg trailing, every scrape of it against the ground sending a fresh bolt up into her hip.
+
+She stopped. She turned her face up.
+
+*Look at her. Don't look at the leg. Look at her.*
+
+She looked. Her jaw was shaking, her breath still coming in those hitching heaves, and in her eyes, under the tears, there was still something hard and bright that had not gone out.
+
+== strike take
+It landed in the soft place below her ribs, and {B} grunted, a short heavy sound forced up out of her through a shut mouth.
+
+She went sideways half a step and caught herself. For a breath her whole side was one flat sting, the kind that follows a hard slap; then the sting sank inward and became an ache she could feel the exact size of, round and warm and already tightening.
+
+She had been hit harder. She told herself so. It was true.
+
+*Fast. Faster than she was a moment ago. Watch her weight, not her face.*
+
+She straightened, carefully, and found the ache pulled at the top of each breath, a small catch, nothing she could not live with. She rolled her shoulders. Her body answered, a little stiff on the struck side, a little slow, but it answered, and it answered whole.
+
+{A} had landed beyond her and spun to face her, light on her feet, pleased with herself, already measuring the distance again. {B} turned to keep her in front. She did it without hurry, and she let her breath out through her nose slowly, so that the breath would not show.
+
+The ground under her was dry earth, cracked and pale, and a little dust had risen round her feet when she stumbled. It settled now. She watched it settle, and then she looked up.
+
+There was nothing in her body that would stop her. A bruise, yes; she would feel it tomorrow and could ignore it today. A breath that caught. A warmth along her side.
+
+*Fine. Now it's my turn.*
+
+She set her feet and gave {A} a long, level look across the dry ground, and did not blink first.
+
+== strike take
+The blow came from her blind side and rocked her head round, and {B} heard the sound of it inside her own skull before she felt anything at all, a flat hollow *knock*.
+
+Then she felt it. The side of her face went hot and tight in one sweep, cheek to brow, and her eye on that side watered and blurred. She staggered. Her weight went out over her feet and for a moment she thought she would go down, and then her body found the ground again of its own accord and she stood swaying, blinking hard.
+
+*Where did that come from? Where is she?*
+
+There. To the left, and stepping back, light and quick. {B} turned her head to follow and the turn made the hurt side of her face throb, a deep pulsing ache that beat behind her eye and down into her jaw. She worked her mouth once. It moved. It ached, but it moved.
+
+The blur in her eye was clearing slowly. She let it clear. She breathed through her nose, long and deliberate, until the thumping of her heart slowed enough that she could think around it.
+
+It was not the worst she had taken. It was not nothing either. The swelling was already coming; she could feel the skin tightening over her cheekbone, a stretched warmth, and she knew by the time this was done that side of her face would be stiff and sore and she would be turning her head to see past it.
+
+She did not like that. She liked even less that {A} knew it too.
+
+*Fine. Then I'll turn my head.*
+
+She turned it now, deliberately, putting her good eye on {A} and keeping it there. The ground under her was rough grass, flattened and torn by the fight. She dug in. Her face throbbed with every heartbeat, and she let it throb, and lifted her chin.
+
+== knockdown take
+It hit her square, and the ground simply went away.
+
+{B} did not remember falling. One moment she was standing; the next she was on her side in the dust, the sky tipped at a strange angle above her and the breath gone out of her completely, as if a door had slammed somewhere inside her chest. She lay there with her mouth open, trying to pull air in, and none came. A breath. Nothing. Another. Then, at last, a thin, whistling gasp that scraped all the way down.
+
+The place where it had landed had gone hot and tight, a broad deep ache spreading out from the middle of her, and when the air finally filled her it pressed against that ache from inside and made her wince.
+
+*Down. You're down. Get up.*
+
+She got one limb under her. It shook. She pushed, and her body came up off the ground a little way and then her strength ran out and she sagged back, panting, the dust sticking to her damp skin.
+
+The ground was warm and dry and smelled of sun. It would have been easy to stay. She knew that, and the knowing frightened her more than the hurt did.
+
+She tried again. Slower. She drew herself together first, gathered her weight, and then pushed, and this time she came up and kept coming, onto her feet, swaying, the world tilting and then righting itself round her.
+
+She stood. She was not steady. Her weight wanted to go to one side and she let it, a little, and took the ache in her middle with short careful breaths that did not go all the way down.
+
+{A} was a little way off, watching. Not coming in. Waiting to see.
+
+*Let her see, then. I'm up.*
+
+{B} lifted her head. Her legs were trembling and she could not stop them, so she ignored them, and set her eyes on {A}, and held them there while her breath came back to her in pieces.
+
+== knockdown take
+The blow took her legs out from under her, and {B} hit the ground on her back so hard the sky jolted.
+
+For a heartbeat there was nothing but sky. Pale, wide, with a single bird crossing it very high. Then the pain caught up, a deep blunt throb in her side where the blow had landed and a second, sharper one across her back where the ground had met her, and the two of them joined in the middle and spread.
+
+She heard herself make a sound, a low, startled grunt, and then nothing, because there was no breath left to make sound with.
+
+*Roll. Roll before she's on you.*
+
+She rolled. It hurt. Her side flared as she turned and she gasped at it and kept turning, over, onto her front, and the ground was gritty and warm under her and smelled of crushed grass. She got her weight under her. Her body was shaking, a fine shiver that ran all through her and would not stop, and the place where she had been struck pulsed with every beat of her heart.
+
+She pushed up. Halfway. Stayed there, crouched, head low, breathing in short ragged pulls.
+
+The bruise was going to be bad. She could feel it already, the skin swelling tight, the muscle underneath gone stiff and sullen. Every time she shifted, it answered.
+
+Footsteps in the grass, light and circling. {A}. {B} turned her head to find her and the movement sent a fresh pull through her side.
+
+*Stand. Just stand. Worry about the rest after.*
+
+She stood. It was ugly, a lurch and a stagger and a moment where her weight went too far and she had to catch it, but at the end of it she was upright, and her eyes were on {A}, and she was breathing.
+
+She kept the hurt side back. She kept her head up. She did not let her face show any of it, and failed only a little.
+
+== knockdown take
+It came down on her from above, heavy, and drove her flat into the shallows.
+
+Cold water closed over {B}'s face. For a moment she was underneath it, everything muffled and grey, a roaring in her ears that was her own blood, and then she got her head up and the air came back in a choking rush and she coughed and spluttered and coughed again.
+
+She was on her belly at the water's edge, stones under her, the water running in and out round her body. The blow had landed across her shoulders, and the ache of it was still arriving, a slow, heavy spread from the top of her back down toward her ribs, deep and dull and building.
+
+*Up. Out of the water. Up.*
+
+Her body did not want to. She asked it anyway, and it came, slowly, every part of it heavy and late. She got her front off the stones. Water streamed off her. The ache across her shoulders sharpened as she rose and she hissed through her shut mouth, a thin, furious sound.
+
+She was shaking. Partly the cold. Partly not.
+
+She crawled the last little way onto the dry stones, out of the wash, and stopped there, crouched, dripping, getting her breath. The air felt warm after the water. Her shoulders throbbed in long, slow pulses.
+
+There was a moment, crouched there, when she did not know if she would get the rest of the way up. Her body felt full of sand. Her breath would not settle.
+
+Then it did, a little. She set her weight back and pushed, and her legs took it, and she rose, swaying, onto her feet.
+
+{A} stood on the bank above her, dry, watching, outlined against the bright sky.
+
+{B} lifted her head and looked up at her. Water ran into her eyes. She blinked it away and did not look down again.
+
+*Again. You'll have to do that again.*
+
+== chain
+{A} did not stop after the first one. She had decided she would not, before she ever threw it.
+
+The opening blow went high, at the head, quick and light. It was not meant to land hard; it was meant to make {B} look up. {B} looked up. Her guard came up with her eyes, the way it always did, and {A} was already moving through the blow and out the other side of it.
+
+*Low. While she's looking at the sky.*
+
+The second came in under the raised guard and struck the side, below the ribs, and this one was not light. {A} put her weight into it, all of it, a short hard driving blow from close in, and felt it land deep. The breath went out of {B} in a rush. Her body began to fold round the hurt.
+
+No pause. {A} let the force of her own strike turn her, and the turn brought her round to the other side, the side {B} had just left open by folding, and she struck there too. Another blow, quick, into the shoulder, shoving it back.
+
+{B} staggered. Her feet tangled. She was trying to guard everything at once now and guarding nothing, and {A} could see it, could see the panic flicker through her as she lost track of where the next one would come from.
+
+*Don't let her breathe. Don't give her a single breath.*
+
+{A} gave her none. She stepped in close, so close she could feel the heat coming off {B}'s body and hear the ragged, broken gasping, and drove the last blow straight into the middle of her, square and heavy, with the whole length of her body behind it.
+
+It landed. She felt it all the way up through her own frame and into her jaw.
+
+Then she stepped back, at last, and let herself breathe. Her chest was heaving. Her own body ached from the effort of it, a fierce burn along her back and shoulders. She did not care. She stood and watched, and waited to see what was left.
+
+== chain
+It began with a feint, and {A} meant every part of it to look real.
+
+She went left, sharp, a lunge with her weight thrown hard, and {B} turned to meet it. {A} let her turn. Halfway through the lunge she checked, planted, and came back the other way, and the change of direction pulled at every muscle down her side and she ignored it.
+
+{B} was turned wrong. Her body faced the empty air where {A} had been.
+
+{A} struck her from behind the shoulder, a quick, cutting blow that knocked her further round. *One.* She did not wait to see it land. She was already stepping through, inside, to the front, and the second came up from below into the chest as {B} came round to face her, met her as she turned, stopped her turning dead.
+
+{B}'s breath went out of her with a sound like a cough. Her body jerked back.
+
+*Again. Same place. Don't let it close.*
+
+The third went into the same place. {A} felt the difference in it: the muscle that had been braced the first time had nothing left the second, and the blow sank in, deep, and {B} made a sound that was not a cough at all but a thin, broken cry.
+
+{A} heard it. Something cold and certain settled in her chest.
+
+She did not throw a fourth. She did not need to. She stepped back out of reach, light, quick, and stood with her weight balanced and her breath coming hard and fast, watching {B} stagger and try to straighten and fail and try again.
+
+The ground between them was scuffed and torn, the grass flattened in a ragged circle where they had turned and turned. Dust hung in the low light.
+
+*That's how it's done. Remember how that felt.*
+
+Her own body was humming. Her legs trembled with spent effort. She locked them still, and kept her eyes on {B}, and waited.
+
+== grab
+{B} had come in too close, and {A} decided to keep her there.
+
+It was not a choice made in thought. It was made in the body. The other fighter had pressed forward after her last blow, eager, overextended, her weight a fraction too far forward, and {A} felt the opening the way one feels a step that is not there in the dark. She did not back away from it. She went into it.
+
+*Close. Closer. Don't let her get room.*
+
+She caught hold. Whatever she had to catch with, she used, and she used all of it: she closed on {B} high, round the shoulder and the upper body, and pulled her in tight against her own chest so that there was no space between them at all. She felt {B}'s whole body jolt with surprise. She felt the breath go out of her and the heat of her and the hard quick pounding of her heart.
+
+{B} pulled back. {A} let her pull, a little, then hauled her in again, harder. The ground scuffed under both of them. Dust rose.
+
+This close, nothing could be swung. Nothing could be aimed. It came down to weight and grip and who would let go first, and {A} had decided she would not be the one.
+
+She set herself. She sank her weight low, spread her stance, and locked her hold, and when {B} twisted against it she twisted with her, smoothly, and gave up nothing.
+
+*There. Now you're mine to move.*
+
+{B} was breathing hard against her, short, furious huffs. {A} could feel her gathering, could feel the muscles under her hold bunch for another wrench. She tightened her grip before it came and felt {B}'s body jerk and then go still again, straining.
+
+She held. Her whole body ached with the effort of it, a burn that built steadily, and she let it build, and held on.
+
+== grab
+{A} had been waiting for {B} to commit, and when she did, {A} took her.
+
+The rush came straight and hard, aimed at the middle of her, and {A} did not move out of its way. She turned only a little, enough that the blow glanced off her side instead of landing full, and as {B} drove past she closed on her. She caught her round the body from the side, hard, and used the other fighter's own weight to swing her round.
+
+They turned together, a half-circle, the ground churning under them. {A} felt {B}'s momentum fight her and then give, and when they stopped turning they were chest to chest and {A} had her.
+
+*Don't let go. Whatever happens, don't let go.*
+
+{B} heaved. It was a strong heave, all her strength in it, and {A} felt her own grip slip a fraction and hauled it back. She could feel the other's breath hot against her, quick and hard, and smell the dust and sweat of her. A sound came out of {B}, a low, rough growl of effort.
+
+{A} answered it with weight. She leaned in, pressing down, bending {B} back from the hips, and felt the other fighter's balance start to go.
+
+The grass under their feet was wet. That helped. {B}'s footing slid every time she tried to plant herself, and every slide gave {A} a little more.
+
+She was not gentle with the hold. She did not need to be. She squeezed, steadily, until she felt {B}'s ribs pressed against her and heard the breath in them shorten.
+
+*Breathe if you can. I'll take that away too.*
+
+Her own breath was ragged. Her muscles shook with the strain. She held anyway, and kept leaning, and watched {B}'s face, close enough now to see every flicker of the struggle behind her eyes.
+
+== grab take
+Something closed on {B} from the side, hard, and she could not move.
+
+She had been reaching for her own blow when it happened, and the reaching had left her open, and now {A} had her. A hold round her body, high, pulling her close, and before {B} had understood it she was pressed against the other fighter with no room to do anything at all.
+
+She heaved. Nothing. She heaved again, harder, and the grip only tightened, pressing in round her ribs until each breath came up short and shallow.
+
+*Off. Get off me. Get her off.*
+
+Panic flickered up through her and she made herself push it down. Panicking would only use up what air she had. She stopped heaving and let her body go still for a moment, and in the stillness she felt everything: the weight leaning on her, the heat of {A}'s breath on her neck, the ache of her own ribs under the squeeze, a dull, building pressure that grew a little with each breath out.
+
+Her feet were scrabbling for purchase on loose earth. They found it and lost it.
+
+There. A gap. Low down, where {A}'s weight was settled on one side more than the other. Small. Possibly nothing.
+
+{B} gathered herself. She breathed in as far as the hold would let her, which was not far, and held the breath, and waited until she felt {A} shift.
+
+The hold tightened again before she could use it. Her breath went out of her in a hard little squeak she was ashamed of. Her ribs ached in earnest now, a deep squeezing hurt, and the edges of things had begun to look faintly grey.
+
+*Wait. Wait for it. She can't hold forever.*
+
+She did not know if that was true. She held on to it anyway, and kept still, and listened to {A} breathe, and waited.
+
+== grab take
+The grip went round {B} from behind and lifted her off her feet before she could set them.
+
+That was the worst of it. Not the squeeze, though there was a squeeze, a hard steady pressure across her middle that drove the air up out of her lungs. It was the ground going away. She kicked and found nothing under her, nothing to push against, nothing to brace, and her own weight hung in {A}'s hold and was used against her.
+
+*Can't push. Can't reach. Think.*
+
+She twisted. She threw her whole body to one side, then the other, and the hold shifted with each twist but did not loosen. Behind her she heard {A} grunt with effort, felt the grip shift and settle and close in again, tighter.
+
+Her ribs were aching under it now. Not sharply. A deep, building pressure, steady and patient, that pressed in a little further every time she let a breath go. She tried to breathe without letting go of anything. It did not work.
+
+A sound came out of her, a short, frustrated *hhn*. She threw her head back, trying to strike behind her, and hit nothing but air.
+
+The world tipped as {A} turned with her, carrying her. The sky slid past, the tree, the rocks at the water's edge, all blurred, all wrong.
+
+*Down. She'll put me down somewhere. Be ready when she does.*
+
+{B} made herself go limp. Not entirely. Enough that the weight in {A}'s hold changed, that it sagged and dragged, that the other fighter had to work harder to keep it.
+
+She felt the work. She felt {A}'s breathing quicken behind her.
+
+She let her own breath out, and in, as much as the squeeze allowed, and kept every muscle loose and ready, waiting for the ground to come back.
+
+== pummel
+{A} had her held, and she did not waste it.
+
+{B} was pinned close against her, struggling, her breath coming hard and hot, and there was no room between them to swing anything. {A} did not need room. She drew back only the width of her own body and struck, short, into {B}'s side, low under the ribs.
+
+{B} grunted. Her body jerked against the hold.
+
+*Again.*
+
+{A} struck again, the same place, no wind-up, no pause. Each blow was small and quick and meant to land on what the last one had left. She felt the difference soon: the muscle under her blows had stopped bracing, had nothing left to brace with, and the strikes sank in deeper, softer, and the sounds {B} made changed. They stopped being grunts. They became short, breathy cries, forced out of her one at a time.
+
+{A} did not let up. Her own body ached from the work, a hot steady burn that grew with every strike, and she ignored it. She kept the rhythm. Hit, breathe, hit.
+
+*Every one you take is one less you can give back.*
+
+{B} twisted hard in her hold, trying to turn the hurt side away, and {A} let her turn and struck the other side instead, high on the chest, a sharp jab that made {B}'s head snap back.
+
+She could feel {B}'s breathing through the hold now, quick and ragged and catching, every breath shorter than the last. The struggle under her had gone uneven: a hard heave, then a pause, then a weaker heave.
+
+{A} held on through the heaves and struck in the pauses.
+
+Sweat stung her eyes. Her breath was loud in her own ears. She did not stop until the other fighter's body went heavy against her for a moment, sagging, and then she held her there and caught her own breath and waited to see if it was a trick.
+
+== pummel
+{B} was down, and {A} was on her, and there was no room for anything but this.
+
+She had come down with her, landing heavily half across her, and now she pressed her weight on {B}'s chest to hold her flat and struck down, short and hard, at the shoulder. Then the side. Then the shoulder again. Close, quick, ugly blows with no grace in them at all, every one driven down into the ground underneath.
+
+{B} curled to cover herself. {A} struck round the cover. She struck the side of the head, glancing, and the ribs below the guard, and felt each blow land and heard each one: a flat, dull *thup*, *thup*, and under it the sharp little gasps that came out of {B} with every impact.
+
+*Keep her down. Keep her covering. Don't let her think.*
+
+{B} heaved under her, trying to roll. {A} rode it out, sliding with the heave and settling again, and the moment {B}'s guard dropped to push, she struck at what was left open. The chest. Hard. {B}'s breath went out of her in a broken huff and the heave collapsed.
+
+{A}'s own breath was rasping now, high and loud. Her body burned with the work of it. A strand of something, grass or dust, had caught in her eye and she blinked it away without stopping.
+
+The ground under them was torn up, dirt scattered, the grass flattened round them in a ragged patch.
+
+{B} had stopped trying to roll. She lay with her body drawn in, covering, shaking, every breath a ragged pull. {A} struck once more, at the side, and felt it land on something already sore and heard the thin cry that answered.
+
+Then she stopped, and stayed where she was, heavy on top of her, panting, and looked down.
+
+*Still with me? Still there?*
+
+== throw
+{A} had her held, and she had felt the moment {B}'s weight came off the ground.
+
+It was only a fraction. A heave that went too far, a lean that put the other fighter's body up on its toes, all of it resting on {A}'s hold for the space of a breath. {A} felt it the way one feels a branch shift underfoot, and she did not let the breath finish.
+
+*Now. While she's light.*
+
+She set herself. Her weight sank low, into the ground, and she drove up from there, from the very bottom of her body, and turned as she drove. It was not her strength alone. It was the turn, the whole of her swinging round from the hips, and {B}'s weight went with it because it had nowhere else to go.
+
+{B} left the ground. {A} felt her go, felt the weight swing out wide, felt the hold strain to keep it and then, at the top of the swing, she let go.
+
+The release was the easy part. The hard part had been the turn, and her body told her about it now: a hot, wrenching pull through her back and down her side, a burn in every muscle that had done the lifting. She ignored it and watched.
+
+{B} turned over once in the air. The ground was waiting for her. A rock, low and broad, jutted from the grass where {A} had aimed her, and {B} met its edge with her back and slid off it onto the earth with a heavy sound, a deep *whump*, and the breath leaving her in a cry that cracked halfway.
+
+{A} stood where the throw had left her, breathing hard. She had spun most of the way round with it. She turned the rest and planted herself.
+
+*That one she'll remember.*
+
+Her own back was throbbing. She rolled it once and let the ache settle, and kept her eyes on the shape by the rock, waiting to see if it would move.
+
+== throw
+{B} came in hard and low, all her weight behind the rush, and {A} did not stop her. She helped her.
+
+She stepped aside at the last moment, a quick half-turn, and as {B} drove past she caught hold of her, not to stop the rush but to steer it. She took the other fighter's weight as it came and added her own and pulled, down and round.
+
+{B}'s own speed did the rest.
+
+*Go on, then. All the way.*
+
+The rush became a stumble, and the stumble became a fall, and the fall had {A}'s whole body behind it. {B} pitched forward over her own feet, over {A}'s braced hip, and the ground rose to meet her far faster than she had meant to arrive at it. {A} heard her gasp, short and high, in the instant before she landed.
+
+She landed hard. Shoulder first, then the rest of her, a long skidding tumble over the packed earth that kicked up a cloud of dust and did not stop until she fetched up against the roots of the tree with a jolt that shook its lowest leaves.
+
+{A} had stayed on her feet. Barely. The pull had dragged her a step forward and nearly over and she had caught herself on a wide stance, breathing hard, her own shoulder aching from the wrench of the hold.
+
+She straightened. She did not hurry to follow. There was no need to hurry. She stood in the settling dust and watched {B} lie among the roots, watched her chest heave, watched her try to work out which way was up.
+
+*All that speed. Should have kept some for stopping.*
+
+A few leaves came spinning down from the shaken branches and landed in the dust between them. {A} let them fall. She shook out the ache in her shoulder, set her weight evenly, and began to walk toward the tree.
+
+== throw take
+The ground went away, and {B} had time to understand only that she was in the air.
+
+Sky, then earth, then sky again, wrong side up. She could not tell how high she was or which way she was falling. Her body twisted on its own, trying to find down, and found it far too late.
+
+She hit on her back. The impact went through her like a dropped stone through water, a single enormous jolt that knocked every scrap of air out of her lungs at once and left her lying there with her mouth open and nothing coming in. Her head knocked the ground a beat after her body did. A dull *clop*, and small sparks behind her eyes.
+
+*Breathe. Breathe. Come on.*
+
+Nothing came. She lay flat with her chest locked and the sky swimming above her, and the empty, crushing want for air grew and grew until she thought it would split her, and then, at last, her lungs let go and she dragged in a breath that whooped and scraped all the way down.
+
+The pain came in after it. A broad, deep ache across the whole of her back, shoulder to hips, dull and heavy and spreading, and a sharper throb at the back of her head that beat with her pulse.
+
+She rolled onto her side. Slowly. Her back answered with a hard pull that made her hiss through her shut mouth. She lay there on her side in the dust, curled a little, getting the breath to come regularly.
+
+It came. Ragged, catching, but it came.
+
+*Up. Before she's here.*
+
+She heard footsteps somewhere. Close or far, she could not quite tell. She got her front off the ground and stayed there a moment, swaying, the earth tilting and settling, and then lifted her head and looked for {A}.
+
+She found her. She kept her eyes on her, and pushed herself the rest of the way up, and the ache across her back flared with the effort and she let it.
+
+== throw take
+{B} went across the ground on her side, and could not stop.
+
+She had been thrown low, not high, skimmed off her feet and flung, and now she was sliding, rolling, over and over across the rough grass with the world turning round her: sky, ground, the tree, sky. Small stones knocked her as she went. Her shoulder struck one, then her hip, then her side, each one a small sharp knock that she barely had time to feel before the next arrived.
+
+Then the water's edge.
+
+The ground dropped away into the shallows and she went with it, off the bank and into cold water with a splash that went up over her head. The cold shocked her. She came up spluttering, on her side in a hand's depth of water, the stones beneath her slick and round, and lay there gasping.
+
+*Where is she. Where. Find her.*
+
+Her body was a map of small hurts. The shoulder that had hit the stone stung hot and bright. Her hip ached, a dull blunt throb. Her side, where she had rolled across the gravel at the edge, had gone raw and tender, a long scraped sting that the water made worse.
+
+None of it was the worst she had taken. All of it together was a lot.
+
+She got her front up out of the water. It streamed off her. She coughed once, hard, and the cough went through every one of those small hurts at once and she winced and waited for it to pass.
+
+Above her on the bank, {A} stood dry and steady, looking down.
+
+{B} looked up at her through the water running into her eyes. She did not try to stand yet. She knew if she tried now she would fall, and she would not fall again in front of her.
+
+She stayed crouched in the cold shallows, and breathed, and let the stinging fade, and waited until she was sure.
+
+== getup
+{A} lay on her side and listened to her own breathing until it sounded like hers again.
+
+The ground under her was rough, all small stones and dry stalks, and it pressed into her in more places than she could count. She noticed each one. It was a good sign, noticing. It meant the world had come back.
+
+*Up. Slowly. Don't give her a fall to watch.*
+
+She drew herself together first. She brought her limbs in under her and let them find the ground, and the hurt place in her side flared at the bend and she held still until it settled. Then she pushed.
+
+Her front came up. Her weight shifted back onto whatever would take it, and it took it, though it trembled. She stayed there a moment, half up, head low, and let the dizziness wash through her and out. The stones under her swam and steadied.
+
+She pushed again. This time she kept rising.
+
+She came up onto her feet and stood there swaying, and the ground tipped one way and then the other and then held still. Her side ached in a long, steady pull. Her breath was coming short. She let it.
+
+She was standing.
+
+{B} was across the clearing, watching. {A} could see her clearly now, every line of her, and she could see too the small surprise in her face, quickly hidden. She had not expected {A} to get up so soon. Or at all.
+
+*Didn't think I would. Look again.*
+
+{A} lifted her head. It was heavy. She lifted it anyway, all the way, until she was looking straight across at the other fighter. Her body was shaking a little and she let it shake where {B} could not see, deep in her legs, and kept the rest of her still.
+
+She set her weight. She drew one long breath, as deep as the hurt would allow, and let it out slowly.
+
+Then she took a step forward.
+
+== getup
+The first time {A} tried to stand, her body folded under her and dropped her back into the grass.
+
+She lay there with her face against the ground and was furious with herself. The grass smelled green and crushed. A small beetle was climbing a stalk a hand's width from her eye, unhurried, and she watched it climb for a moment because it was the only thing in the world that was not turning.
+
+*Not like that. Find something to lean on.*
+
+The rock was near. She could see the edge of it, grey and rough, not far away. She dragged herself toward it. It was slow and ugly and every pull sent a fresh throb through the hurt she was carrying, and she did it anyway, a little at a time, until she could lean her weight against the stone.
+
+It was cool against her side. It held her.
+
+She used it. She got herself half upright against the rock, propped, and rested there, breathing in short hard pulls. Then she pushed off from it, slowly, and found her own footing, and let the rock go.
+
+She stood. She was not straight. Her weight sat crooked, off the hurt side, and her breath was coming high and quick in her chest. But she stood.
+
+Across the grass, {B} had begun to move toward her, then stopped, as if she had changed her mind.
+
+{A} watched her stop. She watched her waver.
+
+*You thought it was over. It isn't.*
+
+The ground under her feet was steady now. She trusted it a little more, and then a little more again, and shifted her weight to see how far she could trust herself. Not far. Far enough.
+
+She lifted her head and fixed her eyes on {B}, and in the quiet she could hear her own heart pounding, slow and heavy and stubborn.
+
+== getup
+{A} came up out of the shallows all at once, before she could think about how much it would hurt, because thinking about it would have kept her down.
+
+Water poured off her. Her whole body shook as she rose, trembling with cold and with the ache of the blow that had put her there, and for a moment she stood in the wash with her weight wavering and the stones shifting under her and was not sure she would stay up.
+
+She stayed up.
+
+*Out of the water. Find dry ground.*
+
+She took a step toward the bank. It was a bad step, a lurch that jarred the hurt place in her and made her hiss through her breath. The second step was better. By the third she was out of the water and onto the dry stones, and she stopped there and let her breath catch up with her.
+
+The air was warm after the cold of the water. It dried on her slowly. She stood dripping with her head low and her sides heaving, and the ache in her settled into its steady, familiar throb, and she felt her balance come back into her by small degrees.
+
+{B} was standing further up the bank. She had not followed {A} down into the water. She was watching, waiting, her own breath quick.
+
+{A} lifted her head and met her eyes.
+
+*Still here. You'll have to try harder than that.*
+
+She did not feel as strong as the thought sounded. Her body felt heavy and slow, every movement a little behind where she meant it to be. But she was up, and she was dry, or nearly, and she was looking straight at {B}.
+
+That would have to be enough. She set her feet wide on the stones, braced the hurt side, and waited.
+
+== dodge
+{A} saw it coming a heartbeat before it arrived, and a heartbeat was all she needed.
+
+{B} had gathered herself too long. That was what gave it away: the stillness before the strike, the small settling of weight, the breath drawn in and held. {A} had seen it twice already in this fight. She saw it now, and she was moving before {B} was.
+
+*Left. Now.*
+
+She did not jump. Jumping would have left her in the air with nowhere to go. She simply let her weight go sideways, all at once, and her body followed it, low and quick, and the ground skidded under her as she went.
+
+The blow went past where she had been. She felt the wind of it along her side, close enough to stir the air against her skin, and heard it hit nothing with a soft, empty *whff*.
+
+{B} went with it. All that gathered weight had nowhere to stop, and it carried her on, a step and another, stumbling, past {A}'s side and out into the open ground beyond.
+
+{A} came round to face her. Her own breath was quick from the sudden effort, and something in her side had pulled with the twist, a sharp brief ache that faded as she straightened. She ignored it.
+
+*Too slow. Far too slow.*
+
+{B} had caught herself and was turning back, and {A} could see the frustration in her face, quickly shut away. She had thrown everything into that and got nothing.
+
+{A} gave her a moment to understand it. She stood balanced on the scuffed ground, light, ready, and let {B} see that she was not even breathing hard.
+
+She was, a little. She kept it out of her face.
+
+Somewhere off in the grass a bird took flight with a clatter. Neither of them looked.
+
+== dodge
+The blow was coming at her head, and {A} dropped under it.
+
+There was no time to think about it. Her body did it on its own, folding low, flattening against the ground, and the strike went over her close enough that she felt the air of its passing on the top of her head. Grit sprayed up round her as she dropped. A stone dug into her side.
+
+*Down here. She can't reach me down here.*
+
+She rolled. Not away, but under, toward {B}, past her, so that when she came up again she was behind her. The roll scraped her across the gravel and she felt the sting of it along her side and paid it no mind.
+
+She came up on her feet behind {B}'s back.
+
+{B} had overreached. The missed blow had pulled her forward and down, and her weight was still going forward, and her head was still turned toward the empty place where {A} had been. For the length of a breath she did not know where {A} was.
+
+{A} knew exactly where she was.
+
+She did not strike. Not yet. She stepped back instead, out of reach, and let {B} turn and find her, let her see that she had been behind her, unguarded, for that breath and done nothing with it.
+
+*I could have. Remember that.*
+
+{B} turned. {A} saw her eyes find her and widen a fraction and narrow again. Saw her understand.
+
+The scrape along {A}'s side was stinging now, a long thin line of heat, the kind of small hurt that gets louder when everything else goes quiet. She let it sting. She stood with her weight easy and her breath steady and met {B}'s stare across the trampled ground.
+
+== dodge
+{A} let it come right up to her before she moved.
+
+{B}'s rush was straight and fast and heavy, aimed square at the middle of her, and {A} stood still and let it fill her sight: the bunched body, the lowered head, the ground churning under the charge. She waited until she could feel the rush in the air in front of her.
+
+Then she turned.
+
+Only a little. A quarter-turn, a pivot, her near side swinging back and away like a door opening. The rush went through the space the door had left. She felt {B} pass, felt the heat and weight of her go by close enough to touch, and smelled her, dust and sweat and effort.
+
+*Through. Go on through.*
+
+{B} went on through. Her charge carried her past, and past, and toward the tree beyond, and {A} heard her try to stop: the scrabble of her feet on the ground, a gasp, the dull thump of a shoulder against bark as she failed to stop in time.
+
+{A} turned to watch. She had not moved a single step from where she stood.
+
+The pivot had cost her a little. Something in her hip had twisted with it, a quick bright twinge that she breathed through and let fade. It faded.
+
+{B} pushed herself off the trunk and turned round. A few leaves were coming down round her, shaken loose. She was breathing hard. One shoulder, the one that had hit the tree, was drawn in a little, guarded.
+
+{A} watched her notice the leaves and brush past them. Watched her look across at {A}, still standing exactly where she had been, and saw the slow, hot understanding arrive.
+
+*All that, for a tree.*
+
+{A} let her face show nothing. She settled her weight evenly, and waited, and let the silence say the rest.
+
+== pin start
+{B} was down on her back in the grass, and {A} did not give her the time to roll.
+
+She came in fast and low and was over her before {B} had finished landing. She did not strike. Striking would have given {B} a moment to cover, a moment to think. Instead she simply let herself fall onto her, chest first, and put the whole of her weight down across {B}'s body.
+
+The breath went out of {B} underneath her in a rush. {A} felt it against her own chest, hot and sudden.
+
+*Flat. Keep her flat. Don't let her get a side.*
+
+She settled. She shifted her weight forward until it lay across {B}'s chest and shoulders, where it would do the most, and pressed down. She felt the body under her heave once, hard, and she rode it, sliding with it and settling again a little heavier than before.
+
+Then the limbs. She found what she could reach and held it down: a shoulder pressed into the ground, a leg pinned beneath her own. Whatever {B} could have pushed with, she took away, one piece at a time, until there was very little left that could move.
+
+The grass under them was cool and damp. It crushed beneath their weight and gave off a sharp green smell.
+
+{B}'s breath was coming quick and shallow under her now, short sips forced past the weight. {A} could feel her heart through her own chest, fast, faster than hers.
+
+*There. Now we see how strong you are.*
+
+She held still and waited. Her own breath was loud in her ears, ragged from the chase, and her muscles burned with the effort of holding. She settled into the burn. She was not going anywhere.
+
+Under her, very slowly, she felt {B} begin to gather herself.
+
+{A} pressed down a little more, and felt the gathering stop.
+
+== pin start
+The ground near the water was soft, and {A} used that.
+
+{B} had slipped on the wet stones and gone down on her side, and before she could get up {A} was on her. She came down across her back and pushed, rolling her, turning her face-up, and pressed her down into the mud at the water's edge.
+
+It gave. The mud took {B}'s shape as {A} leaned into her: her shoulders sank, her hips sank, the wet earth closing up round her sides and holding her as surely as {A} did.
+
+*The ground's helping. Let it.*
+
+{A} kept her own footing on the firmer stones above and leaned forward, all her weight on {B}'s chest. She felt the mud squelch and settle. She felt the body under her try to push up and find nothing firm to push against, only soft earth that sucked and gave and gave again.
+
+She took the rest. She pinned what she could reach, pressing down on a shoulder until it sank deeper into the mud, setting her weight on a leg so that it could not draw up. She did it carefully, one thing at a time, as if she were laying stones in a wall.
+
+When it was done {B} was flat beneath her in the mud, and {A} was over her, and the shallow water was lapping softly at both their sides.
+
+The cold of it came through to {A} and she did not like it. She stayed.
+
+*Lie still. You'll only sink.*
+
+{B} looked up at her from the mud, breathing hard and quick, and {A} looked back down. Neither of them spoke. A little water ran in round {B}'s neck and pooled there, and {A} watched her feel it and not flinch.
+
+She pressed down harder, slowly, and felt the breath under her shorten.
+
+== pin start take
+The weight came down on {B} all at once, and the ground under her back did not give.
+
+She had landed on it a moment before, hard, and now there was something on top of her too, heavy and warm, pressing her into it from above. {A}. Across her chest, across her shoulders, pressing down. Her breath, which had only just come back, went out of her again in a hard squeeze.
+
+*No. Not this. Not flat.*
+
+She heaved. It was instinct, all her strength at once, and it moved {A} perhaps a finger's width before the weight settled back, heavier, as if the heave had only told {A} where to lean.
+
+Then the rest of it. A shoulder pressed down into the earth. A leg trapped, the weight sitting on it until she could not draw it up. She felt each one arrive, one after another, and each one took away a little more of what she could do.
+
+Her chest was the worst. The weight there pressed on her ribs every time she breathed out and did not let them come all the way back, so that each breath was smaller than the last. She took small ones. Quick ones. High in her chest, through her nose.
+
+The ground was hard and cold under her back. Something, a stone or a root, was digging into her between the shoulders, a small sharp point she could not shift away from.
+
+*Think. There's always a gap. Find the gap.*
+
+She lay still and searched for it. She felt where {A}'s weight was heaviest and where it was lightest. She felt the small shifts as {A} breathed. She felt the warmth of her and the hard, quick beat of her heart, and somewhere under the panic a small cold part of her began, carefully, to count.
+
+Above her the other fighter's face hung close, breathing hard, watching her.
+
+{B} stared back up at her and did not blink.
+
+== pin start take
+{B} had almost got up. That was the part she could not forgive herself.
+
+She had been halfway, weight coming off the ground, and then {A} had hit her from the side and she was down again, and this time {A} came down with her. She landed hard on her back. The weight followed her down and settled on her, on her middle and her chest, pressing her flat.
+
+*Up. Get up. Push.*
+
+She pushed. The weight did not move. It sat on her like a fallen log, warm and solid and patient, and when she pushed harder it only pressed back harder.
+
+Then she felt {A} shift. Not off her: across her. Setting herself. A weight came onto her shoulder and pinned it to the ground; another found her leg and held it. One by one {A} took away each thing she might have used, calmly, as if she had done it many times before.
+
+{B}'s breath was coming short. The weight on her chest squeezed it out of her and let only a little back in, and she was gulping at the air in small quick sips, and each sip was a little smaller.
+
+The ground under her was gritty and dry. She could feel every grain of it through her back.
+
+*Don't panic. Panic wastes breath.*
+
+She made herself stop pushing. She let her body go still under the weight, not slack, still, and in the stillness she could feel more: the heat of {A} above her, the rough sound of her breathing, the way the weight shifted forward a little with each of {A}'s breaths and back again.
+
+Forward, and back.
+
+{B} lay there and listened to it, and breathed her small breaths, and felt her heart going fast against the weight on her chest.
+
+{A}'s face was close above her. {B} looked up into it and kept her own face perfectly blank.
+
+== pin hold
+{A} had not expected holding still to be this much work.
+
+It looked like nothing. Lying across {B}, pressing her down, waiting. But every part of {A}'s body was doing something. Her weight was leaning forward, and she had to keep it leaning. Her hold on the shoulder was pressing down, and she had to keep it pressing. Her own breath was coming hard, and every breath shifted her, and every shift had to be corrected before {B} could feel it and use it.
+
+*Steady. Don't give her anything.*
+
+Under her, {B} was still. Not limp: still. {A} could feel the difference. The body beneath her was tense all through, a coiled, waiting stillness, every muscle ready to go the moment it was given a chance.
+
+{A} gave it none.
+
+She kept her weight where it was. She felt {B}'s chest rise and fall under her, quick and shallow, each breath squeezed short by the press of her. She felt the heart going fast. She felt, now and then, a small testing push from somewhere, a shoulder or a hip, and each time she leaned into it and felt it stop.
+
+Her own muscles were aching now. A slow, steady burn along her back and through the parts of her doing the holding, building a little more with every breath. She let it build. It was a cost she could pay.
+
+The ground was cool under them. A breeze moved over the grass and stirred it against her side.
+
+*How long can you breathe like that? Not long. Not as long as I can hold.*
+
+{B}'s eyes were open, looking up at her. They were steady. {A} looked back into them and saw nothing there she could read, only a dark, patient watching, and she did not like it.
+
+She pressed down a little harder, and watched the eyes, and waited for them to change.
+
+== pin hold
+The struggling had stopped some time ago, and {A} did not trust it.
+
+{B} lay under her, flat on the packed earth, breathing in short, light sips. Her body had gone quiet. Not slack, but quiet, a heavy stillness that might have been exhaustion or might have been something else.
+
+*Tired. Or waiting. Which?*
+
+{A} did not ease off to find out. She kept her weight exactly where it had been, across the chest, pressing, and kept her hold on the shoulder and the leg, and let the silence go on.
+
+It was harder than the struggling had been. During the struggling there had been something to push against, something to answer. Now there was only the holding, and the holding was a slow ache that had settled into every part of her and kept on growing. Her back burned. The parts of her that pressed down had gone stiff and trembling with the strain. Her breath came out rough and loud.
+
+She could feel {B} breathing under her. Every breath was smaller than it should have been. Every one came up against her weight and stopped short.
+
+The sun was hot on {A}'s back. A fly buzzed somewhere close and went away. Down at the water's edge something splashed once and was quiet.
+
+*Hold. That's all you have to do. Hold.*
+
+{B}'s eyes had half closed. They opened again, slowly, and found {A}'s face, and stayed there a moment, and began to drift closed again.
+
+{A} watched them. She did not shift. She did not let up. Her own muscles were shaking now, a fine steady tremor she could not stop, and she pressed down through it and kept her weight on {B}'s chest and listened to the small, quick, fading breaths beneath her.
+
+Then she felt the body under her tense, very slightly, all through, and she leaned in and held on.
+
+== pin hold
+Rain had started, light and cold, and {A} held on through it.
+
+It fell on her back and ran down her sides and dripped onto {B} below her. It made the ground under them slick. {A} could feel the earth turning to mud beneath {B}'s back, could feel her own footing begin to soften, and she adjusted, spreading her weight wider, pressing down more evenly.
+
+*Wet ground. She'll try to slide. Don't let her.*
+
+{B} was breathing fast under her. The rain fell on her upturned face and she blinked it away, again, again, and her breath hitched each time it went into her mouth. Her body was pressed flat. A shoulder was held down. A leg was trapped. {A} had all of it, every piece.
+
+It was not comfortable. {A}'s own body was a long ache from the effort of it, a burn in her back, a trembling in the parts of her doing the work. The rain made it worse. Cold on hot muscle.
+
+Under her, {B} moved. A small shift of the hips, a testing slide in the new mud.
+
+{A} felt it at once and pressed down on it. The slide stopped.
+
+Another, a little later, from the other side. {A} answered that too.
+
+*Every time. I'll be there every time.*
+
+She could feel {B} getting tired. Each push was smaller than the last, slower to come, quicker to stop. The breath under her was going shallower. The heart was still fast, but it was fast and thin now, not fast and strong.
+
+{A}'s own heart was steady. Heavy and slow and certain. She leaned into her hold and listened to the rain on the leaves of the tree nearby, a soft hushing roar, and kept her weight where it was.
+
+The rain kept falling. Neither of them moved.
+
+== pin struggle
+{B} had been lying still for a long time, and she had been using it.
+
+She had been listening. To {A}'s breathing, mostly, which came hard and ragged above her, and to the way {A}'s weight moved with it. Forward on the breath in. Back, just a little, on the breath out. Always the same.
+
+*On the out. When she lets it go.*
+
+She waited. In, and the weight pressed forward. Out, and it eased. In. Out.
+
+On the next out she went.
+
+She threw everything she had to one side at once, hips and shoulder together, a sudden twisting heave with all her remaining strength in it. For a moment she felt it work. The weight on her chest slid. Her shoulder came a finger's width off the ground. Air rushed into her lungs, real air, deep, and it was so good it nearly made her stop.
+
+Then {A} came back down.
+
+The weight returned, heavier than before, and pressed her shoulder back into the ground. The air was squeezed out of her again. Her hips were flattened. The heave ran out of her and was gone, and she lay where she had started, and nothing had changed except that she was more tired.
+
+*Nearly. That was nearly.*
+
+The ache was everywhere now. Her chest from the weight, her shoulder from the hold, her back from the hard ground beneath. Her muscles shook from the effort she had spent. She could feel her heart going fast and thin.
+
+She lay still and got her breath, what little of it she could get. Small sips. High in her chest.
+
+Above her, {A}'s breathing had changed too. It was harder now, rougher. That heave had cost her something as well.
+
+{B} heard it, and felt something small and stubborn stir in her chest.
+
+*You felt that. You're tired too.*
+
+She closed her eyes for a moment, and listened, and began to wait again.
+
+== pin struggle
+{B} could not move her body, so she moved what she could.
+
+She was flat under {A}, pressed into the earth, every part of her held. Every part but one. Her free side, the side {A} had not quite covered, could still shift a little, and she shifted it now, slowly, feeling for anything.
+
+The ground there was soft. A little loose earth, crumbling under her as she pressed.
+
+*Dig. Make room. Make a little room.*
+
+She pressed down into it, slowly, so slowly that {A} would not feel it as a push. The earth gave. A finger's width. Another. Her side sank a little, and the weight on her shifted a little to follow, and she felt for the first time a small gap open between {A}'s weight and her own chest.
+
+She took a breath into it. A real one. It hurt, her ribs ached as they filled, and it was the best thing she had felt in a long time.
+
+Then she pushed.
+
+It was not much. A shove from below, all she had, timed to the moment {A} shifted to follow her. And it nearly worked. The weight lurched. For a heartbeat {A} was off balance, leaning too far, and {B} felt the hold on her shoulder slip.
+
+{A} caught it. {B} felt her catch it, felt the weight come back and settle and press down harder, pinning the shoulder flat again, pressing her back into the hollow she had dug as if it had been made for her.
+
+*No. No, no.*
+
+The breath she had stolen was gone. The weight was heavier than before. She lay in her little hollow and felt how tired she was, all through her, a dull heavy ache that had got into her bones.
+
+Her eyes stung. She would not let them show it.
+
+She looked up at {A}. She was breathing hard, and so was {A}, and for a moment neither of them looked away.
+
+== pin struggle
+It started as a twitch, and then {B} let it become everything.
+
+She had been lying quiet so long that her muscles had gone stiff with it. She felt them now, every one, as she gathered them. Shoulder. Hip. Leg. She drew them in together, slowly, under the weight, the way water gathers behind a stone.
+
+*All of it. Everything at once. There won't be another.*
+
+She heaved.
+
+It came from her middle, a deep twisting buck that threw her hips up off the ground and wrenched her shoulder against the hold. A sound came out of her with it, a raw, grinding *hhrrnn* through her clenched mouth. She felt {A} rock above her. She felt the weight on her chest lift, slide, shift.
+
+She did not stop. She kicked off the ground with whatever she had free and twisted further, harder, until her whole body was straining and her vision went grey at the edges.
+
+{A} came down on her.
+
+All at once and all over, heavier than before, slamming her back flat into the earth. The shoulder that had nearly come free was pressed down hard, hard enough that it ached deep in the joint. Her hips were driven back to the ground. The breath was knocked out of her in a broken huff.
+
+She lay there.
+
+The heave had spent everything. She could feel it in every muscle, a shaking emptiness, as if she had been poured out. Her chest heaved for air it could not get. Her heart was pounding so hard she could hear it.
+
+*That was all of it. And she just... held.*
+
+She felt something give in her, not in her body, deeper, and she shut her eyes against it.
+
+Then she opened them again. {A}'s face was there above her, breathing hard, wary. Still wary. {B} saw that, and held on to it.
+
+== escape
+{A} had been saving one breath for this, a deep one, dragged in past the weight a little at a time, and now she spent it.
+
+She did not push straight up. Straight up was where {B}'s weight was heaviest. She drove sideways instead, hips first, twisting hard toward the side where the hold had been lightest all along, and threw everything she had left into that one wrench.
+
+The weight slid. {B} had been leaning a fraction too far forward, the way she had leaned every time she took a breath, and now there was nothing under the lean but air. {A} felt her pitch, felt the pressure on her chest swing off to one side, felt her own shoulder come free of the ground.
+
+*Out. Go. Now.*
+
+She rolled. Over, away, out from under, the ground scraping along her side and her back as she went. She did not care. She rolled again and came up onto whatever would hold her, and kept moving, scrambling backward across the earth until there was a body's length between them.
+
+Then she stopped and turned.
+
+{B} had gone down on her side with the force of the twist and was pushing herself up, quick, her face tight with surprise and anger. She had not expected it. {A} could see that she had not expected it at all.
+
+{A}'s chest was heaving. Air, real air, as much as she wanted, all the way down; it hurt to take it and she took it anyway, great ragged gulps. Her shoulder throbbed where it had been pinned. Her back stung from the roll.
+
+None of that mattered. She was out. She was up.
+
+*Don't let her see how close that was. Don't.*
+
+She set her weight and lifted her head, and met {B}'s eyes across the scuffed ground, and kept her own as hard and steady as she could make them.
+
+== escape
+It was not strength that got {A} out. It was a single unguarded breath.
+
+{B} had been holding her for a long time, and she was tired. {A} could feel it. The weight on her had begun to shift with every breath {B} took, a small sag at the end of each one, a moment when the pressure eased before it came back. {A} had felt it come and go again and again. She had counted it. She knew its shape.
+
+The next sag came.
+
+{A} struck upward into it. Not a heave. A short, sharp blow, straight up from beneath, into {B}'s chest at the very moment she let her breath go.
+
+It landed. {B} grunted, high and startled, and her whole body jerked back, and for a heartbeat the hold was gone.
+
+*Now.*
+
+{A} went. She twisted out from under in one long scrambling movement, dragging herself free across the ground, feeling the grit tear at her side and not caring. Her trapped leg came loose. Her shoulder came up. She was out from under, and rolling, and then on her feet, staggering, a body's length away.
+
+{B} had caught herself on one side and was coming round, her breath hitching, guarding the spot where {A} had struck.
+
+{A} stood swaying. The world tilted and settled. Her chest was burning, her shoulder throbbed in long slow pulses, and she was gulping air so fast it made her dizzy.
+
+She did not care. She was standing. Nothing was on her.
+
+*Free. Remember how she leans. Remember it.*
+
+She backed another step, and another, and stopped there with her weight braced and her eyes fixed on {B}, and made her breath slow down, one ragged pull at a time.
+
+== escape aftermath
+She was out, and {A}'s body did not seem to know it yet.
+
+It still felt the weight. Her chest still pulled her breaths short, as if something were pressing on it, though nothing was. She had to make herself breathe deeper, deliberately, and when she did, her ribs ached from the long squeeze, a broad dull soreness that bloomed out from the middle of her.
+
+*It's gone. You can breathe. Breathe.*
+
+She breathed. It helped a little.
+
+The rest of her was coming back in pieces. The shoulder that had been held down was stiff and cold; she rolled it and felt the blood come back into it in a rush of pins and needles that made her hiss. Her back was sore from the hard ground. Her leg, the one that had been trapped, trembled when she put weight on it, and she shifted the weight off again and let it rest.
+
+She did not go back in. Not yet. She backed away instead, a step at a time, and kept her eyes on {B} the whole while.
+
+{B} was on her feet now, and she was watching {A} too. Her breathing was hard. The escape had cost her something, a blow she had not seen coming, and {A} could see her holding the place where it had landed.
+
+*Good. That's yours to carry now.*
+
+{A} stopped when the distance felt right. She stood with her weight even and her body loose, letting the stiffness work its way out. The pins and needles faded from her shoulder. The tremor in her leg steadied.
+
+She would not let {B} pin her like that again. She knew the feel of it now: the weight, the slow press, the way it came down when she tried to rise. She would see it coming.
+
+The ache in her ribs had settled to something she could fight on.
+
+She lifted her head, and waited.
+
+== faint
+Sound was the last of the world to leave {B}.
+
+The ground under her had stopped being a thing she could feel some time ago, and the weight on her had thinned to a vague pressure, like a blanket. The sky had gone soft at the edges and then soft all through. What she could still hear was the wind in the grass, and {A} breathing hard above her, and under it all her own breath, slow and small.
+
+*Not finished. I'm not... I was going to...*
+
+What she was going to do slipped away before she could find it.
+
+She tried to lift her eyelids. They did not answer, and it did not seem to matter very much. Everything she had been fighting so hard against, the hurt, the weight, the shortness of breath, had gone quiet, as if a door had closed between it and her.
+
+Her body went loose. All of it at once: the tension drained out of her shoulders, out of her hips, out of everything she had kept clenched all fight. Her head rolled a little to one side and stayed there.
+
+Her chest went on rising and falling. Small, slow, even.
+
+{A} felt it go out of her the way one feels a rope go slack. The stiffness under her, the faint push back against her weight, gone, both at once.
+
+She did not move.
+
+She knew how a body could lie still and wait; she had done it herself. So she kept her weight where it was, and watched the shut eyes, and listened. A breath. Another. She pressed no harder. She only waited for a twitch, a flinch, anything.
+
+Nothing came.
+
+She lifted her weight off slowly, a little at a time, and the chest beneath her rose easier. Then she stepped back, and stood, and looked down.
+
+{B} lay on her back on the trampled ground, eyes closed, breathing. {A} watched her for a long moment, her own sides heaving, and then looked away at the sky.
+
+== faint
+{B} was still on her feet when it began. She would not have said so afterward. She would not remember.
+
+She had been standing, swaying, her weight off the hurt side, her eyes on {A}. She had been thinking about the next step. She had been sure there would be a next step. Then the edges of the world began to darken, softly, like evening coming on, and the sound of {A}'s breathing grew very loud and then very far away.
+
+*Wait. Not yet. Not...*
+
+Her body did not wait. Her weight sagged. Her whole frame simply stopped holding itself up, and she went down slowly, almost gently, onto her side on the warm ground.
+
+She lay there. Her eyes were half open. They were not looking at anything.
+
+{A} stood where she was. She did not come closer. She had seen fighters fall before and get up again, and she watched now with her whole body ready, waiting for the trick.
+
+{B}'s chest rose. Fell. Rose. Slow and shallow and steady.
+
+Her eyes drifted the rest of the way shut.
+
+A breeze came through the grass and stirred it against {B}'s still side, and she did not move. A leaf came down from the tree and landed near her face, and she did not move. The light lay across her, warm and unchanging.
+
+*Done. She's done.*
+
+{A} let her breath out. It shook a little on the way. She took a step closer, then another, and stood over the still shape and looked down at it, and saw nothing in it now but sleep.
+
+The tension went out of her own body all at once, and she felt how tired she was, and how much it had cost. Her legs trembled. She let them.
+
+She stayed there, standing, and kept watch.
+
+== aftermath
+{A} did not move for a long time after it was over.
+
+She stood where the fight had left her, her weight uneven, her breath still coming hard. The clearing had gone very quiet. The wind moved in the tree and the grass and that was all. Somewhere a bird began to sing again, cautiously, as if testing whether it was safe.
+
+The fight let go of her in pieces. Her breath slowed first, though every one still snagged at the same sore place in her side. Then her heart, coming down from its pounding to something heavy and slow. Then the trembling in her legs, which had been there so long she had stopped noticing it, and which she noticed now only as it eased.
+
+What was left was the hurt. With nothing else to think about, she could feel all of it.
+
+Her side, where she had been struck, was a deep, sullen ache that pulsed with her heartbeat. Her shoulder was stiff and hot. There was a long scrape along one flank that she had not noticed getting and that stung now in the breeze. Her whole body was sore, a broad tiredness that had sunk into every muscle and settled there.
+
+*Won. You won. So why does it feel like this?*
+
+She did not know. She did not try to know. She just stood there and let herself feel it.
+
+After a while she took a step. It hurt. She took another, slowly, favouring the side, and walked a little way out of the trampled patch where the fight had been, onto clean grass, and stood there.
+
+The grass was cool. The sun was warm. Her breath was nearly even.
+
+*Rest soon. Not yet.*
+
+She turned her head and looked back across the clearing at the still shape lying in the flattened grass, and stood there watching it breathe.
+
+== aftermath
+It was over, and {A} found she did not quite believe it.
+
+She stood at the water's edge where the last of it had happened, and the water lapped at the stones round her feet, cold and indifferent. She did not step out of it. She did not do anything at all for a while. Her body had been ready for the next blow for so long that it did not know how to stop being ready.
+
+*She's down. It's done. Let go.*
+
+She let go a little at a time. Her shoulders came down from where they had been, up and tense, guarding. Her weight settled more evenly. Her breath, which had been quick and shallow, began to lengthen.
+
+Then the hurt came in, as it always did, once there was room for it.
+
+Her face throbbed, a slow swollen ache along one side that she could feel every time she moved her mouth. Her ribs were sore on the left, sore enough that she took her breaths carefully, not too deep. The hurt leg had stiffened while she stood still and now it would barely bend. And underneath it all a deep, heavy weariness, as if she had been carrying stones up a hill since morning.
+
+She waded out of the water at last, slow and limping, and stood on the dry stones above it.
+
+The wind was cool. It dried her slowly. She closed her eyes for a moment and felt it move over her and breathed.
+
+*That was close. Closer than it should have been.*
+
+She thought of the moment near the start when {B} had nearly put her down, and of the blow she had not seen coming, and her face tightened at the memory.
+
+Then she opened her eyes and turned, slowly, to look at the one who had done all that.
+
+== aftermath take
+{B} lay where she had fallen, on her side in the trampled grass, and the clearing had gone still round her.
+
+She was breathing. That was the first thing to look for, and it was there: her side rising, slow and even, and falling, and a pause, and rising again. Nothing like the quick, ragged gulping of before. It was the breathing of someone asleep at the bottom of a long, hard day.
+
+Her body had gone loose. All the guarding she had done, all the bracing, had let go together, and she lay heavy and soft against the ground with nothing held back. Her head was turned a little to one side. Her eyes were closed. A stalk of grass had bent across her face and she had not moved to push it away.
+
+The marks of the fight were all there to read. A swelling along her side where the hardest blows had landed, dark and puffed. A scrape on one shoulder, a thin line of dried blood. The leg she had favoured lay a little apart from the rest of her, as if it had been set down carefully and left.
+
+A breeze came across the clearing and stirred the grass round her. She did not stir with it.
+
+A small bird landed on the ground a little way off, looked at her with its head on one side, and hopped closer. Then it thought better of it and flew away.
+
+The light was moving. The shadow of the tree had crept across the grass since the fight began, and its edge lay near her now, a cool line, not quite touching.
+
+{A} stood a little way off and watched it creep. Her own body ached. She did not sit. She stood, stiffly, favouring her own hurts, and watched {B} breathe, and kept watch over her until she woke.
+
+== aftermath take
+The water had gone still round {B} where she lay.
+
+She was on her back at the very edge of it, half on the stones and half in the shallows, and the little waves came in and touched her side and went out again without disturbing her. It had pulled at her at first, gently, as if trying to take her somewhere. Now it had given up and only lapped.
+
+She was breathing. Slow, shallow, steady. Her chest rose and fell, rose and fell, and each breath was the same as the one before.
+
+Her face was turned up to the sky. It was quiet now, all the tightness gone out of it, the jaw loose, the brow smooth. One side of it was swollen, puffed and tender-looking, and a thin trickle of blood had dried at the corner of her mouth. Her eyes were closed.
+
+The fight was written on her. The bruises along her ribs, darkening. A long scrape down one side, crusted with grit. The limb she had guarded so carefully, all fight, now lying open and forgotten in the water, nobody asking anything of it.
+
+A small fish came in close to her side, nosed at nothing, and darted away again.
+
+The sun was going down behind the trees. The light lay low and gold across the water and across her, and her shadow stretched out long behind her on the stones.
+
+{A} stood on the bank above her. She was hurting, all over, a deep tiredness under every ache. She did not come down to the water. She did not turn away either.
+
+*Still breathing. Good.*
+
+She had not expected to feel that. She did, though. She let herself feel it, and stood there in the gold light, and watched the slow rise and fall of {B}'s chest, and waited for her to stir.
+
+== clash
+{A} saw it coming straight at her and did not move out of its way.
+
+She went to meet it.
+
+Both of them had chosen the same moment. Both of them had put everything into it, and now they came together in the middle of the open ground with a sound like stones slammed together, a deep, flat *crack* that went out across the clearing and came back off the trees.
+
+The shock of it went through {A} from the front to the back. Every part of her jarred at once. She felt the ground slide under her as she was driven back a step, then caught herself, braced, and leaned in.
+
+*Hold. Don't give her an inch.*
+
+For a long moment neither of them gave. They were locked there, pushing, straining, each one's force pressed flat against the other's, and the effort of it burned through {A}'s whole body, a fierce, shaking heat. She could hear {B} breathing, harsh and loud, close. She could feel her own breath grinding out of her.
+
+The ground scored under their feet. Dust rose round them in a slow cloud.
+
+{A} found something. A little more. Somewhere deep, past where the effort burned, there was a last reserve, and she reached down and found it and threw it forward.
+
+The balance tipped.
+
+She felt it go. Felt {B}'s force give, just slightly, then a little more, then all at once, and her own push went through where the other's had been and carried on. {B} was knocked back. Not far. A stumble, a step, a hard landing on her feet.
+
+{A} stood where the clash had been, swaying, breathing hard. Her body ached from the impact everywhere at once, a deep, all-over soreness.
+
+*Stronger. I was stronger. Just.*
+
+She did not let {B} see how close it had been. She set her weight, and lifted her head.
+
+== clash
+They went at each other at the same instant, and {A} knew it the moment she moved.
+
+There was no time to change it. She had already committed, all her weight going forward, and across from her {B} was coming too, and the space between them closed so fast there was nothing to do but finish it.
+
+They met.
+
+The impact was enormous. {A} felt it in her skull, a deep ringing knock that went through her from front to back and left her ears humming. The air was full of dust. For a moment she could not see, could not hear, could only feel the force of {B} pressed flat against her own, both of them straining, neither of them moving.
+
+*Push. Push through.*
+
+She pushed. Her whole body was shaking with it. The ground was sliding under her, slowly, gravel crunching, and she dug in and stopped it sliding and pushed harder.
+
+And something gave. Not in her. In {B}.
+
+She felt it as a change in the pressure, a sudden lessening, the way a door gives when the person holding it shut lets go. {A}'s push went through all at once and she lurched forward with it, off balance for an instant, and {B} was thrown back and sideways and went down hard on one side.
+
+{A} caught herself. Barely. She stood with her legs wide and her breath roaring in her ears and her whole body ringing like a struck bell.
+
+The dust was settling. Through it she could see {B} pushing herself up, slowly, shaking her head.
+
+*Both of us felt that. But she felt it more.*
+
+{A} did not feel like a winner. Her body was one great ache from the impact, every muscle jarred. She drew herself up anyway, carefully, and stood straight, and let {B} see her standing.
+
+== clash take
+{B} felt it coming back up through her before she understood what had happened.
+
+She had put everything into it. All of it, the whole of her strength, driven straight ahead, and it had met something coming the other way, and for a moment the two had pressed flat against each other in the middle of the air and neither one had given. She had felt the force of it in every part of her body, a deep straining push like leaning against a wall.
+
+Then the wall had pushed back.
+
+She felt her own force crumple. Not all at once; it bent first, and she tried to hold it, and then it simply gave way, and what was left of {A}'s came through and hit her.
+
+It was weaker than it would have been. It was enough. It took her square and knocked her back off her feet, and she landed hard on her side with the breath going out of her in a startled *hah*.
+
+*She met it. She met it head-on and she was stronger.*
+
+She lay there a moment, getting her breath. Her body ached all over, the jarring kind of ache that comes from a collision, deep and dull and everywhere. Her chest stung where the last of the blow had landed.
+
+The worst of it was not the hurt. It was the knowing. She had thrown everything, and it had not been enough.
+
+She pushed herself up. Slowly. Her whole body shook, and she let it shake, and got her weight under her.
+
+{A} was standing where the clash had been, not even knocked back. Or barely. Breathing hard, watching her.
+
+{B} looked at her, and set her jaw.
+
+*Next time I won't meet you. I'll go round.*
+
+She came all the way up to her feet and set herself, and kept her eyes on {A}.
+
+== clash take
+The two of them met in the middle, and {B} lost.
+
+She knew it almost at once. The impact went through her and she felt her force stop, stall, push against something that pushed back harder. For a heartbeat they were matched. Then they were not. The balance tipped, and it tipped the wrong way, and {B} felt it go out from under her like a foot slipping on wet stone.
+
+The rest of {A}'s strength came through. It hit her in the chest and shoulders and drove her back, sliding, her feet scoring the ground, until she lost her footing entirely and went down.
+
+She landed on her back. The jar of it went through her and knocked a short cry out of her, more surprise than pain.
+
+*How? How was she stronger?*
+
+She lay there with her chest heaving. The ache was everywhere: the dull bruising soreness of the collision itself, through her whole front, and a sharper throb where she had landed. Her ears were ringing. The sky above her was pale and very bright.
+
+She rolled onto her side. Her body was slow to answer, heavy and late. She stayed there a moment, breathing, letting the ringing in her ears fade.
+
+It was not the worst blow she had taken. Most of the force had been spent before it reached her, wasted in the collision. She could feel that. It had knocked her down but it had not hurt her the way it could have.
+
+That was something. She held on to it.
+
+She got her weight under her and came up, slowly, to her feet. She swayed. She steadied.
+
+{A} was standing a little way off, breathing hard, watching her. Not coming in. Tired too.
+
+*She felt that as well. She's just hiding it better.*
+
+{B} lifted her head, and squared herself, and waited.
+
+== dive
+{A} went up until the ground was a flat green field far below her and {B} was a small dark shape on it, turning, looking for her.
+
+She hung there at the top of her climb, light, the wind cold and steady against her face. It was quiet up here. The sounds of the clearing had fallen away, and all she could hear was the air moving past her and her own heart, slow and certain.
+
+*Look up. Go on. You won't see me in the sun.*
+
+{B} did not look up. She was turning in a slow circle, searching the edges of the clearing, the tree, the rocks.
+
+{A} dropped.
+
+She let herself fall straight down, everything pulled in tight, and the air rose round her to a roar and then a shriek. The ground came up fast. The small dark shape grew and grew, sprouted a head and a body, began to turn its face upward at the sound.
+
+Too late. {A} saw the eyes find her, saw them widen, saw the body begin to move.
+
+She struck.
+
+The whole weight of the drop went into it. She hit {B} square across the back and felt the impact shock up through her own body, through her legs and her hips and into her chest, and felt {B} go down under it, flattened into the grass.
+
+She did not stay. She was already pushing off, rising, driving herself back up into the air before {B} could turn. The ground fell away below her again. She heard, behind and beneath, a short choked cry and the scrabble of something trying to get up.
+
+*Again. And again. Until you're afraid of the sky.*
+
+She climbed. Her body ached from the impact, a deep jar in every joint. She let it ache. She went up into the bright air, turning, already looking down for the next one.
+
+== dive take
+There was a shadow on the ground in front of {B}, and then there was no time.
+
+The weight came down on her from above like a falling tree. Her body folded under it. Her chest hit the ground and the air went out of her in a single flat grunt, and she was pressed flat into the grass, and something struck hard across her back and drove her down and was gone.
+
+She did not see what. By the time she got her head round, gasping, the sky above her was empty except for a dark shape rising, already high, already out of reach.
+
+*Above me. Always above. Where I can't see.*
+
+The pain came in slow. A broad, heavy ache across the top of her back, between the shoulders, spreading outward with every breath. A sharper sting beneath it, a long line of heat where something had scraped her. When she tried to push herself up the ache flared, deep, and she gasped and stopped halfway.
+
+She stayed there, crouched, breathing.
+
+Her back throbbed. It would be a bruise, a big one. She could feel the muscle there already going stiff and hot and swollen. Every time she moved her head it pulled.
+
+She pushed up the rest of the way, slowly, and stood. She did not stand straight. She could not quite.
+
+She looked up.
+
+{A} was circling far overhead, small against the bright sky, unhurried. Waiting.
+
+{B} kept her eyes on her. She did not look down again. Her neck ached from holding her head back and she held it back anyway, and tracked the dark shape as it turned, and turned, and began to come round.
+
+*Not this time. I'm watching you now.*
+
+== devastating
+{A} had been waiting for it the whole fight, and when it came it came all at once.
+
+{B} slipped. It was nothing, a loose stone rolling under her, a lurch to one side to catch herself. But the lurch turned her, and the turn opened the side she had been nursing since the early blows, the swollen, beaten place, and it was there in front of {A}, bare, for a single breath.
+
+{A} was already moving. She did not choose it; her body had chosen it long ago and only now been given leave. Every scrap of strength she had left went down into the ground and came back up through her and out into the blow, and she aimed it at the exact centre of the old hurt.
+
+It landed.
+
+She knew at once that it was different. The earlier blows had all met something, a brace, a flinch, a tightening that soaked up some of the force and sent it back. This one met none of that. There was nothing left in that place to meet it with. She felt the blow sink, and keep sinking, and felt {B}'s whole body buckle round it as if the string holding her up had been cut.
+
+*That's the one. That went all the way through.*
+
+A strange calm came over her. She held still with the blow still pressed home, for no longer than a heartbeat, and felt {B} shudder against it.
+
+Then she stepped back.
+
+{B} did not follow her. {B} did not do anything. She went down where she stood, folding slowly, and the noise she made as she went was small and thin and wavering, nothing like the cries from before.
+
+{A} stood over her with her chest heaving and her own body ringing from the force of it. The clearing had gone silent. Even the wind seemed to have stopped to listen.
+
+*She won't forget that. Neither will I.*
+
+She did not feel like celebrating. She kept her weight ready, and her eyes down, and watched.
+
+== devastating take
+The stone rolled under {B}'s foot, and she had time to think *no* before it reached her.
+
+It struck the old hurt. Not near it. Into it, into the swollen centre where every hard blow had gone before, and it arrived there with more behind it than any of them.
+
+For a moment there was nothing. A strange, high emptiness, as if the world had drawn a breath and held it. Then the hurt came up out of that place and went through all of her at once, and it was so large that she could not find the edges of it.
+
+She heard a sound. It took her a long moment to understand that it was coming out of her. It was not a cry. It was too thin for that, high and wavering and helpless, and it would not stop; it went on and on until the breath behind it ran out and left her mouth open and silent.
+
+She was on the ground. Her body had folded round the hurt and locked there, and a deep, heavy shaking had started in her middle and was rolling out through every part of her in slow waves.
+
+*Wrong. This is wrong. Something's wrong.*
+
+She tried to breathe and the breath caught on the hurt and turned into a whimper. She tried again, smaller. That was a little better. Tiny sips, high in her chest, each one ending in a soft broken sound she could not keep in.
+
+Everything else had gone far off. The ground under her cheek was rough and warm and very far away. The light was strange and grey. There was a ringing in her ears, steady, like an insect too close.
+
+Somewhere above her, a shape. {A}. Standing, watching.
+
+{B} could not lift her head to see. She could not do anything but lie curled round the place and shake, and breathe her tiny breaths, and wait for it to become something she could bear.
+
+== breaking point
+It found {B} where she had already been hurt too many times, and something in her gave.
+
+She heard herself cry out before she felt it. High, raw, cracking in the middle, a sound that came out of her without asking permission. Then the feeling arrived, and it was not like the others. The others had been blows, each one sharp and then fading to an ache. This did not fade. It stayed. It grew. It filled her from the inside like water filling a hollow, and it pressed outward against her ribs and down into her hips and up into her throat, and it did not stop.
+
+She was on the ground. She did not remember getting there.
+
+Her body had curled round the hurt without her. Her limbs were drawn in, locked, shaking. A deep tremor ran through her in long waves, and her breath came in ragged little sobs, each one stopping short against the hurt and coming back out of her as a whimper.
+
+*Not again. Not there. Please, not there.*
+
+She heard the thought and hated it. She hated the whimper too. She clamped her mouth shut on the next one and it came out anyway, thin and broken, through her nose.
+
+Her eyes were shut so tight that tears ran out of the corners. Her face was wet with them. She did not care.
+
+Everything in her wanted to stay down. Stay curled. Stay small, so that nothing else could find her. The want was enormous and it was very tempting, and she lay there in it for a long moment, shaking, and almost gave in.
+
+Then, from somewhere, a small hard spark of anger.
+
+*No. No. Get your head up.*
+
+She opened her eyes. The world swam. She found {A} in the blur, standing, waiting, and {B}, still curled round her hurt and still shaking, made herself hold her stare.
+
+== collapse
+{B} had been standing so long on will alone that she did not notice when the will ran out.
+
+{A} had stepped back to breathe. The fighting had paused, the way it sometimes did, both of them drawing air, both of them measuring. {B} was measuring too. She was looking at {A} across the trampled ground and choosing her next move, and she had chosen it, and she was ready to go.
+
+She did not go.
+
+Her body tilted instead. Slowly, without any hurry, like a tree leaning after the last root lets go. She felt it happen from a distance, as if she were watching someone else, and some small calm part of her noted that the ground was getting closer.
+
+*Wait. That's not what I...*
+
+She landed on her side in the dust. It did not even hurt much. Nothing hurt much, suddenly; everything had gone dull and soft and heavy. She lay there with one eye against the earth and the other open on a pebble a little way off, smooth and grey, with a thin line of light along its top.
+
+She told herself to get up. She told herself very clearly. The message went out from her and did not arrive anywhere.
+
+Her breath was coming slow and shallow. Her heart was going hard; she could hear it in the ear pressed to the ground, a dull, fast drum. The rest of her had gone quiet. A faint tremor ran along her side and stopped.
+
+*Move. Anything. Just move.*
+
+Nothing moved. The pebble went on lying there in its line of light.
+
+Footsteps. Close, and then closer, and then stopping. She could feel them through the ground. {A}'s shadow fell across her and across the pebble, and the light on it went out.
+
+{B} could not turn her head. She lay still under the shadow with her eye open, and listened to {A} breathing above her, and waited.
+
+== knockout
+It was not even the hardest blow of the fight. It was simply the last one {B} had room for.
+
+{A} felt it land and felt, in the same instant, the fight go out of the body in front of her. Not slowly. All at once, the way a light goes out. {B}'s eyes had been locked on her a moment before, hard and bright and furious, and now they were open and empty, looking past {A} at nothing.
+
+Then {B} dropped.
+
+She made no attempt to catch herself. She went down in a single loose slump, everything slack together, and hit the ground and lay there in whatever shape the fall had left her: one side under her, the rest of her sprawled, her head turned away. A little dust rose round her and drifted and settled on her.
+
+{A} did not move. She stood with her weight still braced for the answer, the counter, the trick, and she waited.
+
+{B}'s side rose. Slowly. Fell. Rose.
+
+That was all.
+
+*Up. Get up. She's going to get up.*
+
+She did not get up. The breathing went on, slow and quiet and even, and nothing else in her moved at all.
+
+{A} let her breath go. It came out of her in a long, shaking rush, and with it went the strength she had been holding in her legs. They trembled. Her whole body trembled, all at once, every place she had been struck waking up and announcing itself now that there was nothing left to fight.
+
+She took a step closer. Then another. She stood over {B} and looked down at the slack face, the closed eyes, the dust settling on her side, and waited to feel something she could name.
+
+Nothing came that had a name. Only quiet, and the ache in her own body, and the slow, steady rise and fall of {B}'s breathing.
+
+She stayed there, standing guard, until her legs would not let her stand any longer.
+
+== watch
+{A} let the moment stretch, and spent it looking.
+
+{B} had not gone down. She had stayed on her feet, but only just, and the blow had left her hunched round the place where it landed, her body drawn in on that side as if a hook had caught her there and was still pulling. As {A} watched, a tremor started in her somewhere deep and worked its way out and faded.
+
+*That's the place. Remember it.*
+
+The breathing told more. It came quick and shallow, and it stopped short every time, as if it had walked into a wall halfway down. Now and then one breath went a little too deep, and {B}'s face tightened all at once, and something almost got out of her, a small catching noise, before she shut it in. {A} heard it. She would have heard it from much further away.
+
+*You can swallow it all you like. I still heard.*
+
+{B} began to straighten. She did it in stages, a little and then a pause, a little more and then a longer pause, her face set hard. When she was upright at last she was not quite straight, and the hurt side was held back and in, out of reach.
+
+She was slower now. {A} could see it everywhere: in the care with which she placed her weight, in the way she tested the ground before trusting it, in the slight lag before her eyes swung round to find {A} again.
+
+But they did find her. And when they did, they were not beaten. Tired, yes. Dimmer than they had been at the start. But still there, still fixed, still looking for a way in.
+
+{A}'s own body was not quiet either. A hot ache sat in her shoulder where an earlier blow had landed, and she eased her weight off it without taking her eyes from {B}.
+
+*Show me the rest. Show me everything you're hiding.*
+
+== dwell
+The blow was over, but the hurt had only just started arriving.
+
+{B} had braced for it to land. She had not braced for this: for the way it kept coming after {A} had already stepped away. A first bright flash where it struck. Then, a breath later, a deeper one underneath, where the earlier blows had left the muscle bruised and tender. Then a slow heavy swell that rose up out of the middle of her and spread outward until it reached her ribs and her hip and the backs of her eyes.
+
+She was bent round it. She did not remember bending. Her body had simply folded on that side and drawn itself in, and the place itself was hot and swollen and strange, as if it belonged to someone else and had been fastened on.
+
+*Wait. Just wait. It'll ease.*
+
+She tried a breath. A shallow one went in and came out again. A deeper one pressed against the hurt from inside and lit it up all over again, and a noise slipped out of her, a thin, high *hnn* through her shut mouth, before she caught it. She did not try the deep ones again.
+
+A tremor had started somewhere low in her and was running outward, fine and quick, through all of her. She held herself tighter to stop it. It did not stop. Her skin had gone clammy. Her limbs felt heavy, and far away, and not quite hers.
+
+She waited. The hurt came in slow pulses, keeping time with her heart, and each pulse was a very little less than the one before. She listened to them fade.
+
+At last there was something she could live with. Not gone. Never gone. But a weight now, a deep sore ache in her side that pulled when she breathed, instead of a thing that filled her.
+
+*There. Now you can look up.*
+
+She opened her eyes. The light came in harsh and then softened. {A} was still there, a little way off, watching.
+
+{B} drew a careful breath, not too deep, and began to straighten.
+
+== dwell
+{B} stood very still and let it go through her, because there was nothing else to do with it.
+
+The blow had landed on her shoulder, high, near the neck, and it had not been the hardest she had taken. But it had landed on top of an older hurt, a bruise from earlier in the fight, and the two had found each other and joined, and now the whole side of her was one deep, heavy ache from her neck to her ribs.
+
+It throbbed. Slow, steady, keeping time with her heart. Each throb went out from the shoulder in a ring and faded, and then the next one came.
+
+*Don't move. Just let it settle.*
+
+She did not move. She stood with her head a little bowed and her weight a little off that side and breathed through it. Her breath was shaking. She noticed that and tried to steady it and could not quite.
+
+A small trickle of something warm ran down from the hurt place. She felt it go. A thin thread, warm and slow, and then it stopped.
+
+The ache was changing as she stood there. The sharp edge of it was dulling, sinking, turning into something deeper and heavier. A weight. She could feel the shoulder stiffening, the muscle going tight and hot round the bruise, and she knew that when she tried to move it would tell her about it.
+
+She tried a little. It told her. A hot pull, all down the side, and her breath caught and came out as a short hiss.
+
+*Fine. I know where you are now. Stay there.*
+
+She lifted her head. Slowly. The ache went up into her neck with the movement and she let it.
+
+{A} was a little way off, watching her with that patient, measuring look. {B} met it. Her shoulder burned and she did not let it show, and she let her breath out, slow and even, and set her feet.
+
+== read
+{A} was the one on the ground, and from there she could see more than {B} thought.
+
+{B} stood over her at a careful distance, not closing in. She had the look of someone who believes she has time. One side of her face had swollen, the skin puffed and tight, and {A} watched her turn her head now and then to see round it. She did it without thinking. She had done it often enough already that it had become a habit.
+
+Her breathing was even. Very even. {A} lay still and listened to it, and after a while she heard what she was listening for: a breath that stopped short, caught on something, and went on as if it had not. Then another, a little later. Then another.
+
+*You're hurting too. You're just better at hiding it than I am.*
+
+{B}'s eyes were on {A}'s side, the one that would not let her straighten properly. They stayed there, and there was something pleased and patient in them that made {A}'s skin tighten. She knew what that look meant. {B} was choosing.
+
+{A} let her choose. She kept the hurt side where it was, plain to see, and did not move to cover it. Let {B} think that was all of it.
+
+And she kept looking. {B}'s weight sat a shade heavier on one side than the other, not a limp, only a preference. The shoulder on that side rode a fraction high and tense, the way a shoulder does when it has been struck and expects to be struck again.
+
+*And that, too. She's guarding more than she knows.*
+
+{B} shifted her stance, a small resettling, and at the end of it her breath caught again, the same small snag. Her face did not change. {A} saw it anyway.
+
+She lay still and let her own hurts ache, and stored every piece of it away: the face, the shoulder, the breath. Then, slowly, so slowly it might have been nothing, she began to draw herself together.
+
+== read
+{A} stopped circling and simply looked, and took her time about it.
+
+{B} was not where she had been at the start of this. That much was plain. At the start she had stood loose and easy, her weight balanced, her eyes quick. Now everything about her had tightened. Her stance had narrowed. Her weight sat back, careful, as if she did not quite trust the ground. And her eyes, still hard, still steady, followed {A} with the faint slowness of someone who has to think about each movement before making it.
+
+*She's stiffening up. The longer this goes, the worse it'll get for her.*
+
+{A} looked closer. There, at the side, where {A} had landed the last good blow: {B} was holding herself round it. Not obviously. A slight curve to her body, a turning-away, so that the hurt side was a little further back than the other. Every time she breathed in, that curve deepened a fraction.
+
+And her breathing. Quick, shallow, high in the chest. Each breath stopped before it reached the bottom.
+
+*Can't get a full breath. She'll tire faster than I will.*
+
+{A} shifted her own weight, slowly, to the left. {B}'s eyes followed. A beat later, her body followed too, turning to keep {A} in front, and the turn was careful, guarded, the hurt side kept back.
+
+{A} shifted to the right. The same. Careful. Guarded. A half-beat slow.
+
+She saw it now, the whole shape of it. {B} could turn one way easily and the other way only slowly, because the other way meant leading with the hurt side.
+
+*So I'll come from the slow side.*
+
+{A} let none of it show in her face. She took a slow step to the right, and another, and watched {B} turn to follow, slow, careful, and smiled inwardly, and kept circling.

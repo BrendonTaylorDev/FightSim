@@ -1469,6 +1469,10 @@ GOT_UP = re.compile(r"\b(?:got (?:back )?(?:up|to her feet|on(?:to)? her feet)|(
 # things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
 ARENA_LEAK = re.compile(r"\b(cave|stalactite|stalagmite)(?:s|'s)?(?: (?:walls?|floor|roof|ceiling|mouth))?\b", re.I)
 
+# the names a style sample written for any pair ({A}, {B}) is shown with: nobody in the roster
+SAMPLE_NAMES = ("Wren", "Sorrel")
+SAMPLE_NAME_RX = re.compile(r"\b(?:" + "|".join(SAMPLE_NAMES) + r")\b")    # (one copied into the story is cut)
+
 # the weapon of each kind of move, as the story shows it landing
 KIND_SHOWN = {"bite": r"jaws?|teeth|fangs?|bit|bites?|biting", "claw": r"claws?|clawed|raked?|slash\w*|swip\w+",
               "tail": r"tails?", "charge": r"charg\w+|slamm?\w*|rammed|drove|barrel\w*|crash\w*",
@@ -3931,17 +3935,17 @@ class Narrator:
         d, t = a.get("defender") or "her", str(m.get("type") or "").lower()
         mine = ", ".join(x.title() for x in (getattr(self, "fighter_types", None) or {}).get(d, []))
         if e == "super":
-            return (f" It is SUPER EFFECTIVE: {d}'s body ({mine}) has no answer for {t} and reacts badly to it. Make "
+            return (f" It is SUPER EFFECTIVE: {poss(d)} body ({mine}) has no answer for {t} and reacts badly to it. Make "
                     f"that plain: it bites deeper than a blow its size should, in a way only {t} does to a body like "
                     f"hers (show how it gets in and what it does there), she KNOWS her body can't take this kind of "
                     f"attack, and {a.get('attacker', 'her opponent')} sees it work. Its numbers below are already the "
                     f"bigger ones: show THAT much, no more.")
         if e == "weak":
-            return (f" It is NOT VERY EFFECTIVE: {d}'s body ({mine}) is made to take {t}. Make that plain: the "
+            return (f" It is NOT VERY EFFECTIVE: {poss(d)} body ({mine}) is made to take {t}. Make that plain: the "
                     f"{t} spends itself against her and does less than it looks like it should, her body shrugs much "
                     f"of it off in its own way, she knows it, and {a.get('attacker', 'her opponent')} sees it fall "
                     f"short. What it does do (listed below) still lands: show that much.")
-        return (f" It has NO EFFECT at all: {d}'s body ({mine}) simply doesn't take {t}. It passes through or "
+        return (f" It has NO EFFECT at all: {poss(d)} body ({mine}) simply doesn't take {t}. It passes through or "
                 f"off her and leaves nothing; show both of them seeing that.")
 
     def _effect_on(self, who, acts):
@@ -5615,6 +5619,12 @@ class Narrator:
                             level=lv_w, zone=zone_w, has=feats(who), state=state(who))
             add(f"how the pain in {poss(who)} {worst_hit[1].lower()} shows ({lv_w}: no bigger than that)", shows)
             foe = next((w for w in (self.strengths or {}) if w != who), "")
+            eff_ = self._effect_on(who, acts)
+            if eff_:
+                self._offer_line(add, f"a finished line for {who}: the {eff_[1]} on a body like hers", "effect_take",
+                                 fmt={"part": worst_hit[1].lower(), "foe": by or foe}, exclude=too_big, effect=eff_[0],
+                                 type=eff_[1], vs=set((getattr(self, "fighter_types", None) or {}).get(who, [])),
+                                 has=feats(who), level=lv_w)
             self._offer_line(add, f"a finished line for {who} after the blow", "after_hit",
                              fmt={"part": worst_hit[1].lower(), "foe": foe}, exclude=too_big, level=lv_w, zone=zone_w,
                              has=feats(who), state=state(who), role="receiver")
@@ -5637,9 +5647,6 @@ class Narrator:
                 add(f"what the {eff[1]} does to a body like {poss(who)}", B.pick(
                     "effect_body", 1, fmt={"part": worst_hit[1].lower()}, effect=eff[0], type=eff[1], vs=vs,
                     zone=zone_w, has=feats(who), level=lv_w))
-                self._offer_line(add, f"a finished line for {who}: the {eff[1]} on a body like hers", "effect_take",
-                                 fmt={"part": worst_hit[1].lower(), "foe": by or foe}, exclude=too_big, effect=eff[0],
-                                 type=eff[1], vs=vs, has=feats(who), level=lv_w)
             mind(who, "receiver", by)
             if who not in (getattr(self, "pinned_now", None) or ()):
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
@@ -5983,7 +5990,7 @@ class Narrator:
         if act:
             side[0] = "act"
             for who in doers[:2]:
-                strike_blocks(who, None)
+                strike_blocks(who, next((t for t in targets if t != who), None))
                 for other in [t for t in targets if t != who][:1]:
                     before = {p.lower(): b4 for _, p, b4, _, _ in hits.get(other, [])}
                     seen = self._worst_parts(other, 2, "hurting", before=before)
@@ -6264,7 +6271,8 @@ class Narrator:
         if not text or not self.rules.get("narration", {}).get("sample_copy_check", True):
             return text
 
-        names_rx = re.compile(r"\{[AB]\}|\b(?:" + "|".join(re.escape(n) for n in (self.strengths or {"\0": 0})) + r")\b")
+        names_rx = re.compile(r"\{[AB]\}|\b(?:" + "|".join(re.escape(n) for n in list(self.strengths or {}) + list(SAMPLE_NAMES))
+                              + r")\b")
 
         def key(x):      # (a fighter's name and a sample's {A}/{B} slot read the same, so a copy is still a copy)
             return WHITESPACE.sub(" ", re.sub(r"[^\w\s]", "", names_rx.sub("someone", x).lower())).strip()
@@ -6361,11 +6369,9 @@ class Narrator:
             if no_sac and sample:
                 sample = sample_without_sac(sample)   # nobody here has a flotation sac: the sample doesn't show one either
             if sample and ("{A}" in sample or "{B}" in sample):
-                # a passage written for any pair: {A} is the one acting in it, {B} the one it happens to
-                cast = list(getattr(self, "_sample_cast", None) or []) + list(self.strengths or {}) + ["She", "Her foe"]
-                a_ = cast[0]
-                b_ = next((x for x in cast[1:] if x != a_), "her opponent")
-                sample = sample.replace("{A}", a_).replace("{B}", b_)
+                # a passage written for any pair ({A} the one acting in it, {B} the one it happens to) is shown with two
+                # names that belong to nobody here: it reads as the other fight it is, never as these two fighters
+                sample = sample.replace("{A}", SAMPLE_NAMES[0]).replace("{B}", SAMPLE_NAMES[1])
             if self.rules.get("pin", {}).get("fade", {}).get("enabled", True):
                 sample = re.sub(r"(?m)^\s*Second \d+:\s*", "", sample)   # no pin clock: don't show one in the sample
             if sample and left is not None:
@@ -7904,7 +7910,7 @@ class Narrator:
                  | {x[1] for x in self._foreign_mentions(text)} | {x[0] for x in self._log_slips(text)}
                  | {x for para in text.split("\n") for x in _SENT.split(para.strip()) if x and self._label_slip(x)}
                  | {x for para in text.split("\n") for x in _SENT.split(para.strip()) if x and self._pure_filler(x)})
-        for rx in ([PROMPT_ECHO, _BARE_MORE, BARE_IMPACT] + ([NUMB] if self.rules.get("narration", {}).get("numb_tier", True) is False
+        for rx in ([PROMPT_ECHO, _BARE_MORE, BARE_IMPACT, SAMPLE_NAME_RX] + ([NUMB] if self.rules.get("narration", {}).get("numb_tier", True) is False
                                                   else [])):
             if rx.search(text):
                 text = _drop_matching(text, rx)
