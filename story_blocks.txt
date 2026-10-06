@@ -646,7 +646,7 @@ that she is not done, said plainly
 
 == thought | role: pinner
 that holding still is harder than hitting
-a count of her own hurts and which one will give first
+a count of her own hurts and which one will give first | has: hurts
 what the body under her is about to try, read through her paws
 a reluctance she does not examine
 impatience, and the knowledge that impatience is how pins are lost
@@ -792,7 +792,7 @@ she hooks the horn behind a knee and lifts | has: horn
 she locks her elbows so that they will not start to shake
 she shifts her weight a hair toward whichever limb is trying something
 she feels the other's breathing through her own chest
-her own injuries pay for every moment of this
+her own injuries pay for every moment of this | has: hurts
 she keeps her claws out of the fur; this is holding, not cutting
 she watches the eyes below her for the moment before a try
 the effort is all in staying still, and staying still is the hardest thing she has done today
@@ -873,17 +873,17 @@ her {part} blazes once more, white, and the white spreads
 the last clear thing she knows is the pain in her {part}
 
 == pin_strain | held: early
-her own hurts object at once to the position: she has to hold them still too
-the first effort of clamping down sends a jolt through whatever of hers is already sore
-she finds the one way to brace that spares her worst injury, and it spares nothing else
+her own hurts object at once to the position: she has to hold them still too | has: hurts
+the first effort of clamping down sends a jolt through whatever of hers is already sore | has: hurts
+she finds the one way to brace that spares her worst injury, and it spares nothing else | has: hurts
 her breath is loud in her own ears as she settles her weight
 
 == pin_strain | held: middle
 her limbs have begun to burn with holding still
-the ache of her own injuries has settled in and is getting comfortable
+the ache of her own injuries has settled in and is getting comfortable | has: hurts
 a tremor starts in the leg that is doing most of the work and she wills it quiet
 sweat or spit runs into her eye and she cannot spare a paw to wipe it
-every try from below jars her own hurts as much as it jars the pin
+every try from below jars her own hurts as much as it jars the pin | has: hurts
 her jaw aches from being clenched
 
 == pin_strain | held: long
@@ -1671,6 +1671,28 @@ her own breath is loud in her ears; she slows it so she can hear the other's
 she notices the fur standing up along the other's spine and the way it does not settle
 she sees the tail stop moving entirely and knows what that means | has: tail
 she watches the ears pin flat and stay there | has: ears
+
+# KNOCKOUT: very rarely a beat knocks her out cold with no pin (moves.knockout).
+# ---------------------------------------------------------------------------------------------------------------
+== knockout
+the blow lands and something behind her eyes simply switches off
+she does not fall so much as stop holding herself up, all of her at once
+her eyes stay open a moment after she is gone, and then the lids slide down
+every muscle lets go together, and she pours to the ground like water
+there is no cry; the sound she was going to make never arrives
+she lands and does not try to catch herself, and that is how it is plain she is gone
+her body bounces once on the ground, loose as a dropped rope, and settles
+a last breath goes out of her in a long sigh, and the next one comes slow and shallow, from very far down
+her limbs fold under her at angles she would never have allowed awake
+her tail gives one last twitch and lies still | has: tail
+her wings fall open on the ground on either side of her and do not close | has: wings
+
+== knockout_watch
+she stands over the body, waiting for it to move, and it does not
+the silence after is enormous; she can hear her own heart in it
+she lowers herself by a degree, ready for a trick, and slowly understands there is no trick
+her own legs start shaking now that there is nothing left to hold them up for
+she watches the slow rise and fall of the other's side and lets out the breath she had been holding
 
 # COLLAPSE: below zero health, her body gives out on its own (health.collapse).
 # ---------------------------------------------------------------------------------------------------------------

@@ -1267,6 +1267,65 @@ def _move_of(engine, res):
         return mv
 
 
+def _knockouts(engine, results, hp0):
+    """After the beat's actions: did what landed on someone knock her out cold? (moves.knockout; very rare)"""
+    out = []
+    for who in dict.fromkeys(r.get("defender") for r in results if isinstance(r, dict) and r.get("defender")):
+        try:
+            f = engine.get(str(who).split(",")[0].strip())
+        except (ValueError, KeyError):
+            continue
+        if f.eliminated:
+            continue
+        mine = [r for r in results if isinstance(r, dict) and r.get("defender") == f.name
+                and (r.get("hits") or r.get("landings"))]
+        if not mine:
+            continue
+        kinds = []
+        for r in mine:
+            if r.get("sustain"):
+                kinds.append("held stream")
+            if r.get("pummel"):
+                kinds.append("pummel")
+            if (r.get("chain") or {}).get("link", 1) > 1:
+                kinds.append("chain")
+            if r.get("charge") and not r["charge"].get("skipped"):
+                kinds.append("charge")
+            if r.get("spiked_down") or (r.get("juggle") or {}).get("spiked"):
+                kinds.append("spike")
+            elif r.get("juggle"):
+                kinds.append("blow in mid-air")
+            if r.get("carried") or (r.get("environment") and any(l.get("severity") in ("heavy", "brutal")
+                                                                for l in r.get("landings") or [])):
+                kinds.append("drop" if r.get("carried") or r.get("drop_severity") else "slam")
+            if r.get("manhandle") == "slam":
+                kinds.append("slam")
+        dev = any(h.get("devastating") for r in mine for h in (r.get("hits") or []))
+        ko = engine.knockout_roll(f.name, hp0.get(f.name, f.health) - f.health, list(dict.fromkeys(kinds)), dev)
+        if ko:
+            ko["by"] = next((r.get("attacker") for r in reversed(mine) if r.get("attacker") != f.name), None)
+            out.append(ko)
+    return out
+
+
+def honest_move_name(engine, res, label):
+    """A label that names ANOTHER of her moves ("Flare Blitz" on what was really a Flamethrower): the real move's
+    name goes in its place, so the narrator isn't told one move while the engine ran another."""
+    label = str(label or "")
+    real = str((res.get("move") or {}).get("name") or "")
+    if not label or not real:
+        return label
+    try:
+        mine = [m["name"] for m in engine.get(res.get("attacker")).moves]
+    except (ValueError, KeyError, TypeError):
+        return label
+    for name in sorted(mine, key=len, reverse=True):
+        if name.lower() != real.lower() and re.search(r"\b" + re.escape(name) + r"\b", label, re.I) \
+                and not re.search(r"\b" + re.escape(real) + r"\b", label, re.I):
+            label = re.sub(r"\b" + re.escape(name) + r"\b", real, label, flags=re.I)
+    return label
+
+
 def honest_weapon(label, move):
     """The director's few words for an attack, kept to the weapon the move really uses: "she rolls her over, her
     teeth clamping down" on a Hip Roll has no bite in it, so the clause about teeth is cut (the narrator would
@@ -1317,6 +1376,7 @@ def resolve_many(engine, actions):
     if real and len(real) < len(actions):
         actions = real
     snap = engine.snapshot_state()
+    hp0 = {f.name: f.health for f in engine.fighters.values()}
     results, started = [], ()
     # a CHAIN: two or three attacks in a row by one fighter on one opponent (a grab may open it, a throw or a slam
     # may close it). Each link leads into the next: a link that lands makes the next harder to dodge, and a link
@@ -1459,8 +1519,9 @@ def resolve_many(engine, actions):
                 raise ValueError(f"action {i} ({b.get('action')}): {e}" if len(actions) > 1 else str(e)) from e
             if isinstance(res, dict) and res.get("type") == "instant" and res.get("hits") and res.get("flavor") \
                     and not res.get("environment"):
-                res["flavor"] = honest_weapon(true_label(engine, res["flavor"], res["hits"]),
-                                              _move_of(engine, res)) or ((res.get("move") or {}).get("name") or "attack")
+                res["flavor"] = honest_move_name(engine, res, honest_weapon(
+                    true_label(engine, res["flavor"], res["hits"]), _move_of(engine, res))) or (
+                    (res.get("move") or {}).get("name") or "attack")
             if link and isinstance(res, dict):
                 res["chain"] = {"link": link[0], "of": link[1]}
             results.append(res)
@@ -1548,6 +1609,7 @@ def resolve_many(engine, actions):
             jg["res"].pop("juggled_up", None)
             if land:
                 results.append(land)
+        results += _knockouts(engine, results, hp0)
     except Exception:
         engine._chain_on = None
         engine._juggle = None

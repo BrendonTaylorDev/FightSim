@@ -512,6 +512,10 @@ BLOW_INTO = re.compile(r"\b(?:drove|driving|slamm\w+|smash\w+|ramm\w+|kick\w+|pu
                        r"buried|rak\w+|slash\w+)\b[^.!?;]{0,40}?\b(?:into|against|across|onto|down on)\s+(?:the |her |his |"
                        r"[A-Z][\w-]+(?:'s|’s|'|’) )(?:(?:left|right|upper|lower|exposed|soft|unprotected|white|cream) )*"
                        r"([a-z]+)", re.I)
+# "her left shoulder took the brunt of the force": a part said to take a blow
+BLOW_TOOK = re.compile(r"\b(?:her|his|[A-Z][\w-]+(?:'s|’s|'|’))\s+(?:(?:left|right|upper|lower)\s+)*([a-z]+)\s+"
+                       r"(?:took|caught|absorbed|bore|got) (?:the )?(?:brunt|full force|force|worst|impact|blow|most)\b",
+                       re.I)
 # a tail or coil that is wrapped round someone can't also be spinning free
 FREE_TAIL = re.compile(r"\b(?:tails?|coils?)\b[^.!?;]{0,30}\b(?:spinn?ing|spun|spin|whirl\w*|churn\w*|propell\w*|lash\w*|"
                        r"whipp\w*)\b", re.I)
@@ -1189,7 +1193,7 @@ SLIP_LABELS = (("but that landed on her", "wrong part remembered"), ("SECOND tim
                ("copies the notes", "notes copied"), ("nothing hits that part", "blow that isn't listed"),
                ("tails are round", "gripping tails shown free"), ("body, not hers", "wrong fighter's anatomy"),
                ("failed tries at getting up", "get-up tries skipped"), ("did by itself this beat", "arena event not shown"),
-               ("coming up on her feet", "roll-through not shown"), ("left out the tumble", "tumble not shown"),
+               ("coming up on her feet", "roll-through not shown"), ("left out the tumble", "tumble not shown"), ("she ends this beat ON THE GROUND. Show her going down", "fall not shown"),
                ("nobody gets up this beat", "invented get-up"), ("nothing lands on", "blow that isn't listed"),
                ("in this fight so far", "wrong count"), ("is the one far worse hurt", "wrong part called the worst"),
                ("this stretch is about", "wrong fighter's anatomy"), ("it has been told", "same pressing told again"),
@@ -1470,6 +1474,19 @@ PROMPT_LINE = re.compile(r"^\s*[*_\-\s]*(?:POSTURE THIS BEAT|WHAT HAPPENS IN THI
                          r"FIGHT SO FAR|POSITIONS(?: NOW)?\b|GETTING UP:|LINGER ON ONE MOMENT|MORE HARD RULES|STYLE SAMPLE|"
                          r"THE AUTHOR'S INSTRUCTIONS|EXTRA STYLE NOTE|YOUR (?:PREVIOUS|LAST TWO) DRAFTS?|SCENE:|FIGHTERS:|"
                          r"OVERALL \d|STAY IN THIS MOMENT|THE STORY SO FAR)")
+
+
+def _mend_orphans(text):
+    """What a cut leaves behind: a thought tag whose thought is gone ("... strength. , she thought, ." or ". , Cinder
+    thought, her mind racing as..."), a doubled full stop. The tag goes; a clause that went on after it keeps going as
+    its own sentence."""
+    tag = r"(?:she|he|[A-Z][a-z]+)\s+(?:thought|wondered|told herself|said to herself)"
+    text = re.sub(r"(^|(?<=[.!?\"”*]))[ \t]*,?[ \t]*" + tag + r",?[ \t]*[.!?]", r"\1", text, flags=re.M)
+    text = re.sub(r"(^|(?<=[.!?\"”*]))([ \t]*),[ \t]*" + tag + r",[ \t]*(\w)",
+                  lambda m: m.group(1) + (m.group(2) or " ") + m.group(3).upper(), text, flags=re.M)
+    text = re.sub(r"([.!?])[ \t]+\.(?=\s|$)", r"\1", text)
+    text = re.sub(r"(?m)^[ \t]*[.,][ \t]*", "", text)
+    return re.sub(r"[ \t]{2,}", " ", text)
 
 
 def _balance_marks(text):
@@ -2492,6 +2509,7 @@ class Narrator:
         self._escaped = []          # (freed, pinner): every grip that pinner had on her ended this beat
         self._chain_beat = False    # several attacks by one fighter this beat (a chain, a pummel): "again" is right
         self._must_tumble = None    # thrown and tumbling on: the passage has to show her going on across the ground
+        self._must_down = []        # crumpled at the foot of the scenery, or collapsed on her own: it must be shown
         actions = bundle.get("actions") or [bundle["action"]]
         self._weapons_ok = self._weapons_named(bundle)
         if any(isinstance(a, dict) and (a.get("type") == "reposition" or a.get("manhandle")) for a in actions):
@@ -2663,6 +2681,7 @@ class Narrator:
             elif e["type"] == "get_up":
                 lines += self._get_up_lines(e)
             elif e["type"] == "collapse":
+                self.__dict__.setdefault("_must_down", []).append((e["fighter"], "collapsing to the ground on her own"))
                 fc = e.get("facing")
                 lines.append(f"COLLAPSE: at the end of the beat, with nothing touching her, {poss(e['fighter'])} body "
                              f"simply GIVES OUT. She has been running on nothing for a while; now her legs fold, or her "
@@ -2672,6 +2691,7 @@ class Narrator:
                              "and what she does once she is down (breath, trying to understand it, a first try at "
                              "moving). She does NOT get up again in this beat. It does no new damage.")
             elif e["type"] == "crumple" and e.get("down"):
+                self.__dict__.setdefault("_must_down", []).append((e["fighter"], f"crumpling to the ground at the foot of {e['surface']}"))
                 fc = e.get("facing")
                 if fc == "sitting up":
                     lines.append(f"CRUMPLE: once {e['by']} is no longer holding her up, {e['fighter']} slides down "
@@ -3596,6 +3616,18 @@ class Narrator:
                              + ("" if self.rules.get("pin", {}).get("fade", {}).get("enabled", True)
                                 else f" at second {a['pin_ended']['seconds']}") + f". {a['defender']} "
                              f"is no longer held, though she is still on the ground. No clock runs any more.")
+        elif t == "eliminated" and a.get("knockout"):
+            by = a.get("by") or "her opponent"
+            lines.append(f"KNOCKOUT: the {a.get('how', 'blow')} above is the last thing {a['fighter']} takes. It does not "
+                         f"just hurt her: it switches her OFF. In the instant it lands, or the instant after, her body "
+                         f"gives up all at once: the eyes roll or go blank, every muscle lets go together, she drops "
+                         f"(or sags where she is held or lies) and does not move again. OUT COLD, still breathing; Pokemon "
+                         f"faint, nobody dies. No pin and no count: this is how the fight ends. Then the silence, "
+                         f"and {by}: what she sees, how her own body answers now it is over, what she does."
+                         + (f" {a['fighter']} ends up {Engine.FACING_LOOK[a['facing']]}." if a.get("facing") in
+                            Engine.FACING_LOOK else ""))
+            if a.get("winner"):
+                lines.append(f"  - {a['winner']} has won, by knockout.")
         elif t == "eliminated" and a.get("unhurt"):
             lines.append(f"{a['fighter']} is OUT of the fight before taking any real damage (the author's decision: "
                          f"{a.get('reason', '')}). Do NOT invent a cause, an earlier exchange, or injuries: show "
@@ -5271,7 +5303,8 @@ class Narrator:
         cache = self.__dict__.setdefault("_feats_cache", {})
         parts = self.damage_by.get(who) or {}
         if parts:
-            cache[who] = story_blocks.features(parts)
+            # "hurts": some part of her really is hurt (lines about her own hurts need it: has: hurts)
+            cache[who] = set(story_blocks.features(parts)) | ({"hurts"} if any(d >= 30 for d in parts.values()) else set())
         return cache.get(who, set())
 
     def _blk_posture(self, who, end=False):
@@ -5322,7 +5355,7 @@ class Narrator:
         def mind(who, role, other, **more):      # one thought and one feeling that fit where the fight stands
             st = standing(who, other) if other else {"level"}
             add(f"{poss(who)} thought", B.pick("thought", 1, role={role} | (st - {"level"}), stage=stage, standing=st,
-                                                 fighter=who.lower(), **more))
+                                                 fighter=who.lower(), **dict({"has": feats(who)}, **more)))
             add(f"what {who} feels", B.pick("emotion", 1, role={role}, stage=stage, standing=st, fighter=who.lower(), **more))
 
         def hits_on(who):        # [(damage taken, part, damage BEFORE its first hit this beat, damage after, action index)]
@@ -5752,6 +5785,14 @@ class Narrator:
                                                                      has=feats(who), state=state(who)))
                 elif any(a.get("defender") == who for a in dodged):
                     add(f"how {who} gets out of the way", B.pick("dodge", 2, has=feats(who)))
+        for a in acts:
+            if a.get("knockout") and (take or last or key in ("all",)):
+                who = a["fighter"]
+                side[0] = "take"
+                add(f"how {who} goes out", B.pick("knockout", 2, has=feats(who)))
+                self._offer_line(add, f"a finished line for {who} knocked out", "knockout", has=feats(who))
+                if a.get("by"):
+                    add(f"what {a['by']} sees", B.pick("knockout_watch", 1, has=feats(a["by"])))
         for e in also or ():
             if e.get("type") == "collapse" and (last or key in ("take", "all")):
                 # below zero, her body gives out on its own: what gives first, the ground, what she does down there
@@ -5956,6 +5997,8 @@ class Narrator:
             add("strike act", "dodge")
         if (take or both) and any(e.get("type") == "collapse" for e in also or ()):
             tags.append("collapse")
+        if any(a.get("knockout") for a in acts):
+            tags.insert(0, "knockout")
         if (take or both) and any(e.get("type") == "get_up" for e in also or ()):
             tags.append("getup")
         if any(a.get("chain") for a in acts):
@@ -6410,6 +6453,11 @@ class Narrator:
                           f"on across {tb['tumble']['across']}, rolling and skidding"
                           + (f", and fetches up against {tb['tumble']['into']}" if tb['tumble'].get('into') else "")
                           + ". Show that stretch of the fall")
+        for who, how in (getattr(self, "_must_down", None) or []) if coverage else []:
+            full = (prior or "") + "\n" + text
+            if not (SLID_DOWN.search(full) or FALL.search(full) or GROUNDED.search(full)):
+                issues.append(f"it never showed {who} {how}: she ends this beat ON THE GROUND. Show her going down "
+                              f"(it does no new damage)")
         if getattr(self, "_faint", None) and coverage and not self._shown_out((prior or "") + "\n" + text):
             issues.append(f"it never showed {self._faint[0]} fainting: this is the beat she goes under, "
                           f"and she passes out under the pin. End with her last seconds, her body going limp and "
@@ -6655,6 +6703,14 @@ class Narrator:
                 if noun in all_nouns and region != "other" and region not in struck_regions:
                     add(sent, f"a blow lands on someone's {m.group(1).lower()} (\"{' '.join(m.group(0).split())[:60]}\"), but "
                               f"nothing hits that part this beat: only the listed hits land")
+            m = BLOW_TOOK.search(sent)
+            if m and not RECALLED.search(sent[:m.start()]) and not MISSED_HER.search(sent) \
+                    and not NEARLY.search(sent[:m.start()][-45:]):
+                noun = m.group(1).lower().rstrip("s")
+                region = body_region(noun)
+                if noun in all_nouns and region != "other" and region not in struck_regions:
+                    add(sent, f"a blow lands on someone's {m.group(1).lower()} (\"{' '.join(m.group(0).split())[:60]}\"), "
+                              f"but nothing hits that part this beat: only the listed hits land")
             m = BLOW_AT.search(sent)
             if m and not RECALLED.search(sent[:m.start()]) and not MISSED_HER.search(sent) \
                     and not NEARLY.search(sent[:m.start()][-45:]):
@@ -8426,17 +8482,79 @@ class Narrator:
         text = self._drop_sample_copies(text)
         text = self._drop_seen(text)
         text = self._drop_said_repeats(text)
+        text = self._cut_retold(text)
         text = self._keep_subjects(raw, text)   # a cut can take the sentence that said who "she" is
         text = self._ensure_faint(self._ensure_getup(self._top_up(text, story_so_far)))
         text = _balance_marks(text)  # cuts above can split a thought: re-pair its marks
         text = _italic_sounds(text)  # "she hissed, hss, and..." -> "*hss*": the sound shown (and coloured) as a sound
         text = _drop_hanging_leadins(text)
+        text = _mend_orphans(text)
         # "slammed into the wall—grunt—and the muscles spasmed": a reaction word from the notes left as a stage direction
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
         self.recent_reactions = (self.recent_reactions + [reactions_used(text)])[-3:]
         self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
         self._beat_no += 1
         return self.pov_labels(text)
+
+    def _cut_retold(self, text):
+        """One short model pass over the finished beat: which sentences tell an event AGAIN that the passage already
+        told (the same blow landing, the same slam into the tree, the same fall). It only names them; the program
+        cuts a named sentence only if it is really there, comes after the sentence it repeats, and shares that
+        sentence's matter (at least two of the same content words), and never the opening of a part. Nothing is
+        rewritten, so it costs seconds. narration.repeat_pass false turns it off."""
+        n = self.rules.get("narration", {}) or {}
+        if not n.get("repeat_pass", True) or len(text.split()) < 150 or self._late(1.3):
+            return text
+        paras = [p for p in text.split("\n") if p.strip()]
+        numbered = "\n\n".join(f"[{i}] {p}" for i, p in enumerate(paras, start=1))
+        schema = {"type": "object", "properties": {"repeats": {"type": "array", "maxItems": 4, "items": {
+            "type": "object", "properties": {"sentence": {"type": "string"}, "already_told_in": {"type": "string"}},
+            "required": ["sentence", "already_told_in"]}}}, "required": ["repeats"]}
+        if self.progress:
+            self.progress("checking for events told twice")
+        try:
+            raw = _chat(n.get("reader_model") or self.model, [
+                {"role": "system", "content": (
+                    "You find RETELLINGS in a passage of a fight story: a sentence that tells, a second time, a "
+                    "physical event the passage has ALREADY told (the same blow landing on the same place, the same "
+                    "slam into the same tree or ground, the same fall, the same grip closing). Feelings, pain, "
+                    "breathing, thoughts, sounds, and what someone sees or remembers are NOT retellings. A new blow, "
+                    "even to the same place, is not a retelling. Most passages have none: an empty list is the usual "
+                    "answer. For each, give the later sentence exactly as written, and the earlier sentence that "
+                    "already told it, exactly as written.")},
+                {"role": "user", "content": f"PASSAGE (numbered paragraphs):\n{numbered}\n\nList the retellings as JSON."}],
+                host=self.host, temperature=0.1, fmt=schema, num_ctx=n.get("context_window", 8192), num_predict=300)
+            found = json.loads(raw).get("repeats") or []
+        except (llm.LLMError, ValueError, AttributeError, TypeError):
+            return text
+        stop = self._STOP if hasattr(self, "_STOP") else frozenset()
+
+        def words(x):
+            return {w for w in re.findall(r"[a-z]+", x.lower()) if w not in stop and len(w) > 3}
+        leads = {" ".join(str(m[0]).split()[:6]).lower() for m in (getattr(self, "_pov_marks", None) or []) if m}
+        cut = 0
+        for r in found if isinstance(found, list) else []:
+            later = " ".join(str((r or {}).get("sentence") or "").split())
+            earlier = " ".join(str((r or {}).get("already_told_in") or "").split())
+            if len(later.split()) < 5 or len(earlier.split()) < 4 or later == earlier:
+                continue
+            a, b = text.find(earlier), text.find(later)
+            if a < 0 or b < 0 or b <= a or " ".join(later.split()[:6]).lower() in leads:
+                continue
+            if len(words(later) & words(earlier)) < 2 or not (IMPACT_NOW.search(later) or SLID_DOWN.search(later)
+                                                               or FALL.search(later) or re.search(
+                    r"\b(?:slam\w*|crash\w*|smash\w*|hit|struck|drove|driv\w+|crush\w*|press\w*|pinn\w+|landed)\b",
+                    later, re.I)):
+                continue
+            text = text[:b] + text[b + len(later):]
+            text = re.sub(r"[ \t]{2,}", " ", text)
+            text = re.sub(r"(?m)^[ \t]+|[ \t]+$", "", text)
+            cut += 1
+        if cut:
+            text = re.sub(r"\n{3,}", "\n\n", text)
+            if self.progress:
+                self.progress(f"cut {cut} sentence{'s' if cut > 1 else ''} that told an event a second time")
+        return text
 
     def pov_labels(self, text):
         """Each part of the beat headed with whose side it is told from ("— Nocturne —", "— Both —"), so the reader

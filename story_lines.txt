@@ -687,7 +687,7 @@ Every exchange now was costing {foe} more than it cost her.
 Nothing she had taken would she give back now.
 She waited for the next moment and knew it would come.
 Pressing, she still took care not to overreach.
-Her own hurts could wait; there was work still to do.
+Her own hurts could wait; there was work still to do. | has: hurts
 She watched for the first sign of a trick, and assumed nothing.
 Close was where she stayed, so that there was no room to recover.
 She was patient now, as only the one ahead can afford to be.
@@ -855,7 +855,7 @@ She resettled a paw that had begun to slip.
 She held, and went on holding, and gave nothing back.
 The hold had become a matter of patience, and she had patience.
 She pressed a little harder, just to remind {foe} she was there.
-Her own hurts throbbed with the effort of staying put.
+Her own hurts throbbed with the effort of staying put. | has: hurts
 She had stopped thinking about the hold and simply was it.
 She felt each breath beneath her lift her slightly, and each lift was smaller.
 Not by a hair did she ease off.
@@ -1106,3 +1106,10 @@ She took one more step than her body had in it, and went down.
 There was no blow; she folded like a held breath finally let go.
 She lay where she fell, blinking, trying to understand how she had got there.
 Her knees went first, and for a moment she hung there, surprised, before the rest of her followed.
+
+== knockout
+Something behind her eyes simply went out, and she dropped where she stood.
+She did not fall so much as stop holding herself up.
+Every muscle in her let go at once, and the ground took her.
+Her eyes stayed open a moment after she was gone, and then the lids slid down.
+She lay where she landed, loose and still, breathing slow and shallow from very far down.

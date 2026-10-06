@@ -6529,6 +6529,34 @@ class Engine:
                 "defender_health": round(d.health, 2), "max_health": d.max_health, "counts": counts, "result": result,
                 "kicked_out_at": counts[-1]["count"] if result == "kickout" else None}
 
+    def knockout_roll(self, name, lost, kinds, devastating=False):
+        """Very rarely a big enough beat simply knocks her OUT, no pin needed (moves.knockout): only when she is
+        already very low (max_health_pct of her full health or less), the beat cost her at least min_loss_pct of
+        it, and it came from something that piles up or hits all at once (a held stream, a pummel, a chain, a charge
+        into the scenery, a spike or a catch in mid-air, a drop from a height, a slam), or landed devastatingly.
+        Returns the elimination result, or None."""
+        cfg = (self.rules.get("moves") or {}).get("knockout") or {}
+        d = self.get(name)
+        if not cfg.get("enabled", True) or d.eliminated or not d.max_health or not (kinds or devastating):
+            return None
+        pct = self._health_pct(d)
+        loss = lost / d.max_health * 100.0
+        if pct > float(cfg.get("max_health_pct", 15)) or loss < float(cfg.get("min_loss_pct", 6)):
+            return None
+        ch = (float(cfg.get("base", 0.03)) + float(cfg.get("per_loss_pct", 0.008)) * (loss - float(cfg.get("min_loss_pct", 6)))
+              + float(cfg.get("below_zero_per_10", 0.01)) * max(0.0, -pct) / 10.0)
+        if devastating:
+            ch *= float(cfg.get("devastating_mult", 2.0))
+        if self.has(d, "adrenaline"):
+            ch *= 0.5
+        ch = min(float(cfg.get("max", 0.25)), ch)
+        how = " and ".join(kinds) if kinds else "devastating blow"
+        if not self._chance(ch, f"{d.name} knocked out by the {how}", "KNOCKED OUT", "she stays conscious"):
+            return None
+        out = self.eliminate(d.name, f"knocked out cold by the {how}")
+        out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1))
+        return out
+
     def eliminate(self, name, reason=""):
         """The story decides a fighter is out (pinned for the full count, knocked out, submitted)."""
         d = self.get_active(name)
