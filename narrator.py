@@ -2682,6 +2682,9 @@ class Narrator:
                 lines += self._get_up_lines(e)
             elif e["type"] == "collapse":
                 self.__dict__.setdefault("_must_down", []).append((e["fighter"], "collapsing to the ground on her own"))
+                if any(a.get("pummel") and a.get("defender") == e["fighter"] for a in bundle.get("actions") or []):
+                    lines.append(f"  - (after the pummel: {e['fighter']} stays up and conscious through EVERY blow of "
+                                 f"it; only when the last one has landed and the blows stop does her body give out)")
                 fc = e.get("facing")
                 lines.append(f"COLLAPSE: at the end of the beat, with nothing touching her, {poss(e['fighter'])} body "
                              f"simply GIVES OUT. She has been running on nothing for a while; now her legs fold, or her "
@@ -3618,6 +3621,10 @@ class Narrator:
                              f"is no longer held, though she is still on the ground. No clock runs any more.")
         elif t == "eliminated" and a.get("knockout"):
             by = a.get("by") or "her opponent"
+            if "pummel" in str(a.get("how") or ""):
+                lines.append(f"THE PUMMEL TO THE END: {a['fighter']} takes every blow of it AWAKE, each one landing on "
+                             f"her conscious and hurting, her reactions growing weaker and slower from blow to blow. "
+                             f"Only the LAST blow switches her off. Not one blow earlier.")
             lines.append(f"KNOCKOUT: the {a.get('how', 'blow')} above is the last thing {a['fighter']} takes. It does not "
                          f"just hurt her: it switches her OFF. In the instant it lands, or the instant after, her body "
                          f"gives up all at once: the eyes roll or go blank, every muscle lets go together, she drops "

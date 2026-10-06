@@ -784,12 +784,17 @@ def resolve(engine, b):
         target = "spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1 else "targeted"
         move = engine.improvised_move(b.get("improvised_name"), b.get("improvised_type"), b.get("severity"),
                                       target, b.get("flavor", ""))
-    elif mv_name == "none" and act == "strike" and not manual and (int(b.get("count", 1) or 1) > 1
-                                                                     or b.get("pinned_against")):
-        # a plain blow with no move thrown again and again, or driven into the scenery: the same rules as any close
-        # move (a pummel's lighter blows and rolled length, the grind against what is behind her)
-        move = engine.improvised_move(b.get("flavor") or "a blow", "Normal", b.get("severity"), "targeted",
-                                      "a plain close blow")
+    elif mv_name in ("none", "") and act in ("strike", "combo") and not manual:
+        # a plain blow with no move named: it lands as a plain close technique, so every rule applies to it like any
+        # close move (a dive from the air and who can reach whom, guards, feints, a pummel's lighter blows and rolled
+        # length, the grind against what is behind her) instead of a bare hit that skipped them. Your own /strike
+        # with no move stays a plain hit you control
+        target = ("spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1
+                  else "targeted")
+        fl = str(b.get("flavor") or "").strip()
+        sev = b.get("severity") or next((h.get("severity") for h in (b.get("hits") or []) if h.get("severity")), None)
+        move = engine.improvised_move(fl if fl and len(fl) <= 40 else "a plain blow", "Normal", sev, target,
+                                      fl or "a plain close blow")
     elif mv_name != "none":
         move = engine.find_move(att, b.get("move"))
         dex = engine.dex_move(b.get("move")) if move is None and not manual and act in ("strike", "combo") else None

@@ -941,9 +941,16 @@ class Engine:
         chart = self.rules.get("moves", {}).get("type_chart", {})
         mtype = next((t for t in chart if t.lower() == str(mtype or "Normal").lower()), "Normal")
         name = " ".join(str(name or "improvised strike").split()[:5]).title()
+        # close unless it plainly crosses the distance: two quick jabs on two parts are not a beam (a spread move is
+        # otherwise taken for one, and a ranged move reaches a fighter in the air)
+        words = f"{name} {about or ''}".lower()
+        far = bool(re.search(r"\b(?:beam|blast|pulse|jet|stream|spray|breath|wave|ray|bolt|gust|shot|spit|burst|"
+                             r"torrent|volley|flamethrower|bubbles?)\b", words)) and not re.search(
+            r"\b(?:punch|kick|bite|claw|slash|jab|knee|elbow|headbutt|tackle|slam|stomp|rake|chop|swipe|grab|"
+            r"shove|ram|body)\b", words)
         return {"name": name, "type": mtype, "power": table.get(sev, table.get("solid", 25)),
                 "target": target if target in ("targeted", "spread") else "targeted",
-                "about": about or "an improvised attack", "improvised": True}
+                "about": about or "an improvised attack", "improvised": True, "ranged": far}
 
     def move_attack(self, attacker, defender, move_name, parts, count=1, flavor="", move=None, no_spill=False,
                     enforce=False, sustain=0, against="", charge_into="", pummel=False, feint=False):
