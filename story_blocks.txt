@@ -22,6 +22,8 @@
 #   posture: standing, down                          whether she is on her feet
 #   held:  early, middle, long                        how long a pin has been held
 #   part:  jaw, nose, eye...                          a word of the body part's own name
+#   effect: super, weak, none                         how the attack's type meets her body (effect_* blocks only)
+#   type:  fire, water, electric, ice, ...            the attack's type        vs: her own type(s)
 # In the text of a block, {part} is the body part in question ("left thigh") and {next} a part beside it.
 # Add as many lines as you like: more blocks means more variety. /blocks shows the counts.
 

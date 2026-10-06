@@ -3278,8 +3278,7 @@ class Narrator:
         if t == "instant":
             m = a.get("move")
             if m:
-                eff = {"super effective": " It is SUPER EFFECTIVE.", "not very effective": " It is not very effective.",
-                       "no effect": " It has NO EFFECT at all."}.get(m["effectiveness"], "")
+                eff = self._effect_note(a, m)
                 aim = {"targeted": "aimed at one spot", "spread": "spread across several parts",
                        "whole_body": "hitting the whole body"}.get(m["target"], "")
                 kind = "an improvised move" if m.get("improvised") else f"{m['type']}-type move"
@@ -3920,6 +3919,45 @@ class Narrator:
                 if m and m.group(1).lower().rstrip("s") not in scene_low:
                     out.append(x)
         return out
+
+    EFFECT_KEY = {"super effective": "super", "not very effective": "weak", "no effect": "none"}
+
+    def _effect_note(self, a, m):
+        """What the type matchup means for this blow, said so the story can show it: a body with no answer for this
+        kind of attack, or one built to shrug it off."""
+        e = self.EFFECT_KEY.get(m.get("effectiveness"))
+        if not e or a.get("dodged") and not a.get("hits"):
+            return ""
+        d, t = a.get("defender") or "her", str(m.get("type") or "").lower()
+        mine = ", ".join(x.title() for x in (getattr(self, "fighter_types", None) or {}).get(d, []))
+        if e == "super":
+            return (f" It is SUPER EFFECTIVE: {d}'s body ({mine}) has no answer for {t} and reacts badly to it. Make "
+                    f"that plain: it bites deeper than a blow its size should, in a way only {t} does to a body like "
+                    f"hers (show how it gets in and what it does there), she KNOWS her body can't take this kind of "
+                    f"attack, and {a.get('attacker', 'her opponent')} sees it work. Its numbers below are already the "
+                    f"bigger ones: show THAT much, no more.")
+        if e == "weak":
+            return (f" It is NOT VERY EFFECTIVE: {d}'s body ({mine}) is made to take {t}. Make that plain: the "
+                    f"{t} spends itself against her and does less than it looks like it should, her body shrugs much "
+                    f"of it off in its own way, she knows it, and {a.get('attacker', 'her opponent')} sees it fall "
+                    f"short. What it does do (listed below) still lands: show that much.")
+        return (f" It has NO EFFECT at all: {d}'s body ({mine}) simply doesn't take {t}. It passes through or "
+                f"off her and leaves nothing; show both of them seeing that.")
+
+    def _effect_on(self, who, acts):
+        """The strongest type matchup among the blows that LANDED on `who` this beat: (super/weak/none, move type)."""
+        best = None
+        rank = {"super": 3, "none": 2, "weak": 1}
+        for a in acts or ():
+            m = a.get("move") or {}
+            e = self.EFFECT_KEY.get(m.get("effectiveness"))
+            if not e or a.get("type") != "instant" or a.get("defender") != who:
+                continue
+            if not (a.get("hits") or e == "none"):
+                continue
+            if best is None or rank[e] > rank[best[0]]:
+                best = (e, str(m.get("type") or "").lower())
+        return best
 
     def _arena_name(self):
         first = str(getattr(self, "_scene_text", "") or "").strip().split(".")[0]
@@ -5589,6 +5627,19 @@ class Narrator:
             else:
                 add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who),
                                                                    fighter=who.lower(), exclude=too_big))
+            eff = self._effect_on(who, acts)
+            if eff:
+                vs = set((getattr(self, "fighter_types", None) or {}).get(who, []))
+                word = {"super": "SUPER EFFECTIVE on her", "weak": "NOT VERY EFFECTIVE on her",
+                        "none": "NO EFFECT on her"}[eff[0]]
+                add(f"how {who} knows it ({eff[1]}: {word})", B.pick(
+                    "effect_know", 1, effect=eff[0], type=eff[1], vs=vs, has=feats(who), fighter=who.lower()))
+                add(f"what the {eff[1]} does to a body like {poss(who)}", B.pick(
+                    "effect_body", 1, fmt={"part": worst_hit[1].lower()}, effect=eff[0], type=eff[1], vs=vs,
+                    zone=zone_w, has=feats(who), level=lv_w))
+                self._offer_line(add, f"a finished line for {who}: the {eff[1]} on a body like hers", "effect_take",
+                                 fmt={"part": worst_hit[1].lower(), "foe": by or foe}, exclude=too_big, effect=eff[0],
+                                 type=eff[1], vs=vs, has=feats(who), level=lv_w)
             mind(who, "receiver", by)
             if who not in (getattr(self, "pinned_now", None) or ()):
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
@@ -5621,6 +5672,15 @@ class Narrator:
             if kinds:
                 self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
                                  fmt={"foe": target or ""}, kind=kinds, has=feats(who), state=state(who), role="attacker")
+            eff = self._effect_on(target, [a for a in acts if a.get("attacker") == who]) if target else None
+            if eff:
+                vs = set((getattr(self, "fighter_types", None) or {}).get(target, []))
+                add(f"{who} and the matchup ({eff[1]} on {target}: "
+                    + {"super": "it works on her", "weak": "she is made for it", "none": "it can't touch her"}[eff[0]] + ")",
+                    B.pick("effect_see", 1, fmt={"foe": target}, effect=eff[0], type=eff[1], vs=vs, has=feats(who),
+                           fighter=who.lower()))
+                self._offer_line(add, f"a finished line for {who}: the {eff[1]} against {target}", "effect_act",
+                                 fmt={"foe": target}, effect=eff[0], type=eff[1], vs=vs, has=feats(who))
             return kinds
 
         if key in ("dwell", "watch", "read"):
@@ -6147,6 +6207,12 @@ class Narrator:
             add(None, "escape aftermath")
         if any(a.get("devastating") for a in acts):
             add("devastating", "devastating take")
+        effs = {self.EFFECT_KEY.get((a.get("move") or {}).get("effectiveness")) for a in acts
+                if a.get("type") == "instant" and (a.get("hits") or not a.get("dodged"))}
+        if "super" in effs:
+            add("super effective act", "super effective take")
+        elif effs & {"weak", "none"}:
+            add("resisted act", "resisted take")
         if any(a.get("clash") for a in acts):
             add("clash", "clash take")
         if any(a.get("dive") or a.get("carried") or a.get("grounded") or a.get("type") == "take_off" for a in acts):
@@ -6198,14 +6264,16 @@ class Narrator:
         if not text or not self.rules.get("narration", {}).get("sample_copy_check", True):
             return text
 
-        def key(x):
-            return WHITESPACE.sub(" ", re.sub(r"[^\w\s]", "", x.lower())).strip()
+        names_rx = re.compile(r"\{[AB]\}|\b(?:" + "|".join(re.escape(n) for n in (self.strengths or {"\0": 0})) + r")\b")
+
+        def key(x):      # (a fighter's name and a sample's {A}/{B} slot read the same, so a copy is still a copy)
+            return WHITESPACE.sub(" ", re.sub(r"[^\w\s]", "", names_rx.sub("someone", x).lower())).strip()
         name = self.rules.get("narration", {}).get("style_sample_file", "style_sample.txt")
-        if getattr(self, "_sample_keys_for", None) != name:
+        if getattr(self, "_sample_keys_for", None) != (name, tuple(self.strengths or ())):
             src = userprompt.sample_text(self.rules)
             self._sample_keys = {k for para in src.split("\n") for x in _SENT.split(para)
                                  for k in [key(x)] if len(k.split()) >= 5}
-            self._sample_keys_for = name
+            self._sample_keys_for = (name, tuple(self.strengths or ()))
         if not self._sample_keys:
             return text
         paras, cut = [], False
@@ -6292,6 +6360,12 @@ class Narrator:
                                                 skip=[w for w in (getattr(self, "absent_words", None) or []) if w]):
             if no_sac and sample:
                 sample = sample_without_sac(sample)   # nobody here has a flotation sac: the sample doesn't show one either
+            if sample and ("{A}" in sample or "{B}" in sample):
+                # a passage written for any pair: {A} is the one acting in it, {B} the one it happens to
+                cast = list(getattr(self, "_sample_cast", None) or []) + list(self.strengths or {}) + ["She", "Her foe"]
+                a_ = cast[0]
+                b_ = next((x for x in cast[1:] if x != a_), "her opponent")
+                sample = sample.replace("{A}", a_).replace("{B}", b_)
             if self.rules.get("pin", {}).get("fade", {}).get("enabled", True):
                 sample = re.sub(r"(?m)^\s*Second \d+:\s*", "", sample)   # no pin clock: don't show one in the sample
             if sample and left is not None:
@@ -9507,6 +9581,7 @@ class Narrator:
             if self.progress:
                 self.progress("narrator is writing")
             self._sample_want = self._sample_tags("all", acts, pin_events, also_now)
+            self._sample_cast = [actor] + list(receivers or []) if actor else list(receivers or [])
             return self._call(context + f"Write this beat in about {words} words. {DETAIL}"
                               + self._blocks_for("all", acts, pin_events, also_now, actor, receivers, True, True)
                               + self._talk_note(""),
@@ -9537,6 +9612,7 @@ class Narrator:
             # the receiving side is where every hit has to have shown up by (checked against everything so far)
             check = key == "take" or (i == len(plan) and "take" not in [k for k, _, _ in plan])
             self._sample_want = self._sample_tags(key, acts, pin_events, also_now)
+            self._sample_cast = [actor] + list(receivers or []) if actor else list(receivers or [])
             ask += self._blocks_for(key, acts, pin_events, also_now, actor, receivers, i == 1, i == len(plan))
             ask += self._camera_note(key)
             ask += self._talk_note(so_far)

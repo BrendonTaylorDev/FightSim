@@ -11,7 +11,12 @@
 # Tags the program asks for: opening; strike act, strike take, strike take light (the part ends minor or sore), strike take mid (hurting or very painful), strike take hard (a blow that leaves a part excruciating or worse), knockdown take (the blow puts her down); chain; breaking point; sustain take; grab, grab take;
 # pummel; throw, throw take; getup; dodge; pin start, pin start take; pin hold, pin struggle; escape; faint;
 # aftermath, aftermath take; clash, clash take; dive, dive take; sputter take; coil, coil take; escape aftermath.
+# super effective act, super effective take (an attack her body has no answer for); resisted act, resisted take (one
+# her body is made to take, or that can't touch her).
 # A tag nothing answers to falls back to the next one asked for, then to the first section.
+# {A} and {B} in a passage: the program puts in the names of the fighters in the current fight ({A} the one who acts,
+# {B} the one it happens to), so a passage written with them fits ANY pair. Passages that name a real fighter are
+# shown only when she is in the fight.
 # These passages come from a test fight played on the real engine (the sleek Ripples: no flotation sac; no pin
 # clock; pain never numb), so nothing in them contradicts the program's rules.
 # Your earlier samples are untouched: /sample lists them and switches back (/sample style_sample.txt).
