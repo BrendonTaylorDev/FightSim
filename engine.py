@@ -1749,6 +1749,15 @@ class Engine:
                 return []
             if self._last_event is not None and self.turn - self._last_event < int(cfg.get("event_gap", 4)):
                 return []
+            # only an event that has someone to happen to can come (one for a fighter lying down needs one down):
+            # otherwise the roll would say "something happens" and nothing would
+            pinned_now = {p["defender"] for p in self.pins.values()}
+            down_now = [f for f in live if f.name in self.downed and f.name not in pinned_now]
+            up_now = [f for f in live if f.name not in self.downed]
+            evs = [e for e in evs if (down_now if e.get("who") == "down" else up_now if e.get("who") == "standing"
+                                      else live)]
+            if not evs:
+                return []
             r = rng.random()
             self.note_roll(f"{self.scene_word('place')} doing something by itself", chance, r,
                            "something happens" if r < chance else "nothing")

@@ -459,7 +459,8 @@ EXTRA_SWING = re.compile(r"\b((?:struck|strikes|hit|hits|slashed|slashes|swung|s
 STILL_PINNED = re.compile(r"\b((?:arms?|legs?|chest|shoulders?|hips?|body|back|neck|tails?) (?:was |were |still |stayed )*"
                           r"pinned(?! (?:back|flat))|(?:still|again|stayed|remained|lay) pinned|pinned (?:her|him) "
                           r"(?:down )?again|the pin (?:held|holds|tightened|clamped)|(?:forc|clamp|slamm)\w+ the pin back|"
-                          r"back (?:under|beneath) (?:her|him|the))\b", re.I)
+                          r"back (?:under|beneath) (?:her|him|the)|(?:heav\w+|writh\w+|thrash\w+|buck\w+|squirm\w+) "
+                          r"(?:beneath|under) her|(?:maintain|keep) her (?:grip|hold) on (?:her|the pin))\b", re.I)
 
 
 # which way someone lies, for the facing check
@@ -584,7 +585,7 @@ ROLLING = re.compile(r"\b(roll\w*|flip\w*|turn\w* over|twist\w* onto)\b", re.I)
 
 
 # signs that a fighter is back on her feet
-STANDING = re.compile(r"\b(on (?:her|his|its) (?:feet|paws|legs)|(?:stood|stands|standing|upright)|got (?:up|to (?:her|his) "
+STANDING = re.compile(r"\b(on(?:to)? (?:her|his|its) (?:feet|paws|legs|talons|hind legs)|made it (?:up|upright)|(?:stood|stands|standing|upright)|got (?:up|to (?:her|his) "
                       r"feet)|made it up|hauled (?:herself|himself) up|(?:rose|risen) (?:to|up|unsteadily|shakily)|"
                       r"back up|to (?:her|his) feet|(?:regained|found|kept) (?:her|his) (?:feet|footing)|"
                       r"(?:pushed|levered|dragged|pulled|forced) (?:herself|himself) (?:up|upright)|was up)\b", re.I)
@@ -869,7 +870,8 @@ PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|every (?:press|hi
                          r"the contact point\b|the pin ha[sd] only just begun|real damage (?:would|will|builds?|built|was going to)\b[^.!?]{0,25}"
                          r"over the coming|an instant hit\b|pressure (?:was|is) only just landing|no seconds (?:had )?"
                          r"tick\w* (?:by|past)|no pressure had built|(?:not|no longer) (?:even |just )?(?:excruciating|"
-                         r"devastated)\b|(?:excruciating|devastated) anymore)", re.I)
+                         r"devastated)\b|(?:excruciating|devastated) anymore|(?:this|that) is the (?:end|start) of the "
+                         r"(?:beat|part|passage|scene)\b|end of (?:the )?beat\b)", re.I)
 # a badly hurt part called fine
 HEALTHY = re.compile(r"\b(still (?:good|strong|fine|whole|sound|working)|(?:was|were|felt) (?:good|fine|strong|whole)\b|"
                      r"(?:her|his) good (?:paw|arm|leg|side|hand|foot|ear|eye)|unhurt|uninjured|undamaged|untouched)", re.I)
@@ -1198,7 +1200,10 @@ SLIP_LABELS = (("but that landed on her", "wrong part remembered"), ("SECOND tim
                ("copies the notes", "notes copied"), ("nothing hits that part", "blow that isn't listed"),
                ("tails are round", "gripping tails shown free"), ("body, not hers", "wrong fighter's anatomy"),
                ("failed tries at getting up", "get-up tries skipped"), ("did by itself this beat", "arena event not shown"),
-               ("coming up on her feet", "roll-through not shown"), ("left out the tumble", "tumble not shown"), ("she ends this beat ON THE GROUND. Show her going down", "fall not shown"),
+               ("coming up on her feet", "roll-through not shown"), ("left out the tumble", "tumble not shown"), ("coming off: it is over this beat", "grip release not shown"),
+               ("adrenaline surge: something kicks in", "adrenaline not shown"),
+               ("trying to get up and failing", "failed get-up not shown"),
+               ("on the ground or getting back up", "get-up given to the wrong fighter"), ("she ends this beat ON THE GROUND. Show her going down", "fall not shown"),
                ("nobody gets up this beat", "invented get-up"), ("nothing lands on", "blow that isn't listed"),
                ("in this fight so far", "wrong count"), ("is the one far worse hurt", "wrong part called the worst"),
                ("this stretch is about", "wrong fighter's anatomy"), ("it has been told", "same pressing told again"),
@@ -1463,6 +1468,18 @@ GOT_UP = re.compile(r"\b(?:got (?:back )?(?:up|to her feet|on(?:to)? her feet)|(
                     r"regained her feet|found her feet again|stood (?:back )?up|rose to (?:her|all four) (?:feet|paws))\b", re.I)
 # things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
 ARENA_LEAK = re.compile(r"\b(cave|stalactite|stalagmite)(?:s|'s)?(?: (?:walls?|floor|roof|ceiling|mouth))?\b", re.I)
+
+# the weapon of each kind of move, as the story shows it landing
+KIND_SHOWN = {"bite": r"jaws?|teeth|fangs?|bit|bites?|biting", "claw": r"claws?|clawed|raked?|slash\w*|swip\w+",
+              "tail": r"tails?", "charge": r"charg\w+|slamm?\w*|rammed|drove|barrel\w*|crash\w*",
+              "punch": r"punch\w*|fists?|chop\w*|paws?|struck", "horn": r"horn|gored?", "wing": r"wings?",
+              "beak": r"beak|peck\w*", "talon": r"talons?", "throw": r"threw|thrown|hurl\w*|flung"}
+
+# an adrenaline surge shown happening
+SURGE_SAID = re.compile(r"\b(?:adrenaline|second wind|surg\w+|rush\w* (?:of|through)|flood\w* (?:through|into|her)|"
+                        r"kick\w* in|fresh strength|new strength|strength (?:came|returned|flooded|poured|surged)|"
+                        r"pain (?:fell|dropped|receded|faded|went) (?:away|back|distant)|burst of (?:strength|energy|speed))",
+                        re.I)
 
 # a get-up told as a struggle ("she heaved herself up once more", "she finally managed to stand"): only for a fighter
 # who was really down
@@ -1776,7 +1793,7 @@ def _issue_label(i):
     return _slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "stray beam" if "fired a beam" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
                            else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
                            else "missing escape" if "ESCAPE" in i
-                           else "missing escape blow" if "breaks free with" in i else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
+                           else "missing escape blow" if ("breaks free with" in i or "breaks loose for a moment" in i) else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
                            else "parts called useless too early" if "as useless" in i
                            else "wrong strike count" if "ONE strike" in i
                            else "invented bite" if "a bite that isn't" in i
@@ -2539,6 +2556,12 @@ class Narrator:
             for x in self._all_dicts(bundle))
         self._getup_failed = {e["fighter"] for e in bundle.get("also_this_beat", []) or []
                               if e.get("type") == "get_up" and not e.get("stands")}
+        # a plain grip that comes off this beat (knocked loose by a fall, torn free, let go): the story has to show it
+        self._must_release = list(dict.fromkeys(
+            (x["attacker"], x["defender"], (x.get("parts") or [x.get("part") or ""])[0])
+            for x in self._all_dicts(bundle) if x.get("type") == "hold_end" and x.get("attacker") and x.get("defender")
+            and not x.get("submission") and not x.get("pin_ended")))
+        self._must_surge = [e["fighter"] for e in bundle.get("also_this_beat", []) or [] if e.get("type") == "adrenaline"]
         self._one_strike = None
         self._takedown = None       # (pinner, pinned): she was on her feet and is taken down into the pin this beat
         self._clash = None          # (defender, her move, its type): she met the attack with a move of her own
@@ -2920,7 +2943,8 @@ class Narrator:
                            f"from that moment, and it is NOT on her when the beat ends.")
             elif k["type"] == "hold_end":
                 out.append(f"  - {k['attacker']} LOSES HER GRIP on {poss(k['defender'])} {k['part']} ({k['reason']}): "
-                           f"that hold is over.")
+                           f"that hold is over. Show it come off as it happens (torn loose, wrenched away as she goes "
+                           f"down); {k['defender']} is free of it from that moment.")
             elif k["type"] == "slumps":
                 fc = k.get("facing")
                 out.append(f"  - {k['fighter']} slumps to the ground as it takes her"
@@ -4042,6 +4066,9 @@ class Narrator:
             self._must_struggle = f"{d} partly breaks loose and hits {a}"
             self._struggle_kind = "partial"
             hit_on = (e.get("hits_on_pinner") or [{}])[0].get("defender") or a
+            if e.get("hits_on_pinner"):     # checked afterwards like an escape blow: the hit itself must be told
+                self._escape_blows = list(getattr(self, "_escape_blows", None) or []) + [
+                    (d, hit_on, sorted({h["part"].lower() for h in e["hits_on_pinner"]}), "partial")]
             out.append(f"  - YOU MUST SHOW THIS: {d} PARTLY BREAKS LOOSE for a moment (" + self._try_how(e) + f") and "
                        f"lands a hit on {hit_on} before {a} forces the pin back down. The pin holds:")
             out += [self._hit_line(h) for h in e.get("hits_on_pinner", [])]
@@ -6636,17 +6663,43 @@ class Narrator:
                               f"{'one attempt has' if tries == 2 else 'two attempts have'} to FAIL first, each in its own "
                               f"short paragraph (she gets partway up and goes back down), and only then does she stand. She "
                               f"must not simply get to her feet in one go")
+        for holder_, held_, part_ in (getattr(self, "_must_release", None) or []) if coverage else []:
+            full_ = (prior or "") + "\n" + text
+            if not any(GRIP_OFF.search(s_) and (holder_ in w_ or held_ in w_ or not w_)
+                       for s_, w_, n_ in self._said(full_)):
+                issues.append(f"it never showed {poss(holder_)} grip on {poss(held_)} {str(part_).lower() or 'body'} "
+                              f"coming off: it is over this beat (torn loose, knocked free, let go). Show it come away, "
+                              f"and {held_} free of it from then on")
+        for who_ in (getattr(self, "_must_surge", None) or []) if coverage else []:
+            said_ = " ".join(s_ for s_, w_, n_ in self._said((prior or "") + "\n" + text) if who_ in w_)
+            if not SURGE_SAID.search(said_):
+                issues.append(f"it never showed {poss(who_)} adrenaline surge: something kicks in as she is pushed past "
+                              f"her limit (a rush of strength, the pain falling away behind sheer will, her body moving "
+                              f"faster). It is a turning point: show it rising in her")
+        for who_ in sorted(getattr(self, "_getup_failed", None) or ()) if coverage else []:
+            # she tries to rise this beat and can't (the engine rolled it): the tries have to be in the story
+            if who_ in (self.strengths or {}) and self._failed_tries((prior or "") + "\n" + text, who_) < 1 \
+                    and not TRY_UP.search(" ".join(s_ for s_, w_, n_ in self._said((prior or "") + "\n" + text)
+                                                   if who_ in w_)):
+                issues.append(f"it never showed {who_} trying to get up and failing: she tries to rise this beat (up "
+                              f"to three times, each shorter and weaker) and can't, so she ends the beat still on the "
+                              f"ground. Show the tries and her sinking back down")
         if getattr(self, "_getup_tries", None) == 1:
             m = GETUP_RETRY.search(text)
             if m:
                 issues.append(f"it showed extra failed tries at getting up (\"{m.group(0)}\"), but she gets up on the "
                               f"FIRST try: one attempt, and she ends on her feet")
-        for d_, a_, parts_ in (getattr(self, "_escape_blows", None) or []) if coverage else []:
+        for d_, a_, parts_, *kind_ in (getattr(self, "_escape_blows", None) or []) if coverage else []:
             seen_ = [s for para in ((prior or "") + "\n" + text).split("\n") for s in _SENT.split(para.strip()) if s]
             if not any(HIT_VERB.search(s) and any(_mentions_exact(s.lower(), p) for p in parts_) for s in seen_):
-                issues.append(f"it never showed the blow {d_} breaks free with: it lands on {poss(a_)} "
-                              f"{' and '.join(parts_)}. Show the blow itself landing there (what she hits with, and "
-                              f"{poss(a_)} reaction), not only the pain afterwards")
+                if kind_ and kind_[0] == "partial":
+                    issues.append(f"it never showed the blow {d_} lands when she breaks loose for a moment: it hits "
+                                  f"{poss(a_)} {' and '.join(parts_)}. Show it landing there (what she hits with, and "
+                                  f"{poss(a_)} reaction), then the pin clamping back down: she does NOT get free")
+                else:
+                    issues.append(f"it never showed the blow {d_} breaks free with: it lands on {poss(a_)} "
+                                  f"{' and '.join(parts_)}. Show the blow itself landing there (what she hits with, and "
+                                  f"{poss(a_)} reaction), not only the pain afterwards")
         missing_surf = []
         for who, surf in (getattr(self, "_must_surfaces", None) or []) if coverage else []:
             words = re.findall(r"[a-z]+", surf.lower())
@@ -6668,15 +6721,8 @@ class Narrator:
             sents_all = [s for para in seen.split("\n") for s in _SENT.split(para.strip()) if s]
             for a in acts_now:
                 mv = a["move"]["name"]
-                typ = str(a["move"].get("type", "")).lower()
-                if re.search(r"\b" + re.escape(mv) + r"\b", seen, re.I):
-                    continue
                 parts = {h["part"].lower() for h in a["hits"]}
-                trx = TYPE_SHOWN.get(typ)
-                shown = trx and any(re.search(r"\b(?:" + trx + r")\b", s, re.I)
-                                    and (a["attacker"] in s or a["defender"] in s)
-                                    and any(_mentions_exact(s.lower(), p) for p in parts) for s in sents_all)
-                if not shown:
+                if not self._attack_shown(a, sents_all, seen):
                     issues.append(f"it never showed {poss(a['attacker'])} {mv} hitting {a['defender']} "
                                   f"({', '.join(sorted(parts)[:4])}): every attack listed in this beat has to be told, "
                                   f"in the order given")
@@ -6762,7 +6808,9 @@ class Narrator:
             elif self._must_struggle and kind == "escape":
                 last = list(ESCAPE_WORDS.finditer(full))[-1].end()
                 again = STILL_PINNED.search(full[last:])
-                if again and len(full) - last <= len(text):  # the slip is in this part, not an earlier one
+                # the slip is in this part (the escape may have been told in an earlier one: "Swift's ribs heaved under
+                # her" in the part after she rolled clear is still a pin that is over)
+                if again and last + again.start() >= len(full) - len(text):
                     issues.append(f"it put her back under the pin after the ESCAPE (\"{again.group(0)}\"): once she "
                                   f"breaks free the pin is over for good this beat. Nothing presses on her any more, and "
                                   f"the two end the beat apart")
@@ -6973,6 +7021,32 @@ class Narrator:
                             r"\b(?:hit|struck|crashed|slammed|smashed|landed|dropped|went down|fell|thrown|threw|hurled|"
                             r"flung|tumbl\w+|skidd\w+)\b", sent, re.I)):
                         fell[w] = True      # from here on in the passage she is down
+        # "her paws scrabbled" said of a bird: a body part this fighter doesn't have (blocks.body_bans, from her own
+        # part names), in a sentence about her alone. "Ripples' paws pinned Swift" names both and is left alone
+        for sent, whos, named in self._said(text):
+            if len(whos) != 1:
+                continue
+            w = whos[0]
+            bans = story_blocks.body_bans(self._feats_of(w))
+            if bans is None:
+                continue
+            hit = None
+            for m in re.finditer(r"\b(?:[Hh]er|" + re.escape(w) + r"(?:'s|’s|'|’))\s+([\w-]+)(?:\s+([\w-]+))?", sent):
+                for word in (m.group(1), m.group(2)):     # "her paws", "her webbed paws"
+                    if word and bans.fullmatch(word.lower()):
+                        hit = (word, m.group(0))
+                        break
+                if hit:
+                    break
+            if not hit:     # "the fur on her neck", "the teeth of the bird"
+                m = re.search(r"\b([\w-]+) (?:on|of|along|across) (?:her|" + re.escape(w) + r"(?:'s|’s|'|’)?)\b", sent)
+                # (only her own covering: "the paws on her wing" may well be her opponent's)
+                if m and m.group(1).lower() in ("fur", "hackles", "pelt", "scruff", "whiskers", "feathers", "scales") \
+                        and bans.fullmatch(m.group(1).lower()):
+                    hit = (m.group(1), m.group(0))
+            if hit:
+                add(sent, f"{w} has no {hit[0].lower()} (\"{hit[1]}\"): she has "
+                          + ", ".join(sorted(self._feats_of(w)))[:90] + "; use her own body")
         # on her feet from the first moment of the beat to the last, never knocked off them, and no get-up of her own:
         # yet the passage has her lying there or hauling herself up (another fighter's get-up handed to her)
         down_now = set(self.on_ground) | set(getattr(self, "_landed", set()) or ()) | set(getattr(self, "_slammed", set()) or ())
@@ -9568,8 +9642,16 @@ class Narrator:
             return True
         parts = {h["part"].lower() for h in a["hits"]}
         trx = TYPE_SHOWN.get(str(a["move"].get("type", "")).lower())
-        return bool(trx) and any(re.search(r"\b(?:" + trx + r")\b", s_, re.I) and (a["attacker"] in s_ or a["defender"] in s_)
-                                 and any(_mentions_exact(s_.lower(), p) for p in parts) for s_ in sents_all)
+        # what it strikes with (a bite: jaws, teeth; a kick: kicked...) counts as much as its element does: "her jaws
+        # clamped down on Swift's throat" is the Throat Bite told, even with the name left out
+        import blocks as story_blocks_mod
+        kinds = story_blocks_mod.kind_of(mv, a["move"].get("about", ""))
+        wrx = [KIND_SHOWN[k] for k in kinds if k in KIND_SHOWN]
+        wrx += [re.escape(w.lower()[:-1] if w.lower().endswith("s") else w.lower()) + r"\w*"
+                for w in re.findall(r"[A-Za-z]+", mv) if len(w) >= 4 and w.lower() not in ("attack", "strike", "blow")]
+        rx = "|".join(([trx] if trx else []) + wrx)
+        return bool(rx) and any(re.search(r"\b(?:" + rx + r")\b", s_, re.I) and (a["attacker"] in s_ or a["defender"] in s_)
+                                and any(_mentions_exact(s_.lower(), p) for p in parts) for s_ in sents_all)
 
     def _present_sents(self, text, prior=""):
         """Sentences the checks call present tense (they only count once a part has a few of them)."""
