@@ -756,7 +756,7 @@ class Engine:
                               {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
 
     # engine state that lives outside the main snapshot tuple but must be undone with it
-    _SNAP_EXTRA = ("encouraged", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim")
+    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim")
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -909,7 +909,14 @@ class Engine:
                                 float(((self.rules.get("flight") or {}).get("spike") or {}).get("mult", 1.4)))]
         elif self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
                 and move.get("target") not in ("status", "hold", "self") and not move.get("carry"):
-            extras = extras + [("diving from above", float((self.rules.get("flight") or {}).get("dive_mult", 1.3)))]
+            dm = float((self.rules.get("flight") or {}).get("dive_mult", 1.3))
+            n = self.air_speed(a)
+            if n:
+                sp = (self.rules.get("flight") or {}).get("speed") or {}
+                extras = extras + [(f"diving from above, with the speed of {n} pass{'es' if n != 1 else ''} behind it",
+                                    round(dm * (1 + float(sp.get("per_pass", 0.1)) * n), 3))]
+            else:
+                extras = extras + [("diving from above", dm)]
         if move.get("improvised"):
             stab = 1.0    # a technique she makes up on the spot isn't one of her own type's moves: no same-type bonus
         xm = 1.0
@@ -1371,6 +1378,8 @@ class Engine:
                 res["dive"], res["climbs"] = True, True    # she struck her in the air: there is no one to catch her
             else:
                 self._after_dive(a, d, res, bool(hits))
+                if res.get("climbs") and hits and not res.get("dodged"):
+                    self._strafe(a, d, res, math)
         if spiking and hits and not res.get("dodged"):
             res["spiked_down"] = True     # driven down into the ground (director: her landing is the harder for it)
         return res
@@ -5029,6 +5038,7 @@ class Engine:
         for h in [h for h in self.holds.values() if h.attacker == f.name]:
             self.holds.pop(h.id, None)
         beats = int(cfg.get("airborne_beats", 3)) + self.flight_vigour(f, "extra_beats", 0)
+        self._set_air_speed(f, 0)      # a fresh climb: no speed built yet
         self.set_status(f, "airborne", beats)
         self.involved.add(f.name)
         return {"type": "take_off", "fighter": f.name, "beats": beats, "energy": round(cost, 1),
@@ -5047,6 +5057,38 @@ class Engine:
         val = (cfg.get(band) or {}).get(key, default)
         return type(default)(val) if isinstance(default, (int, float)) else val
 
+    def air_speed(self, f):
+        """Passes she has built up in the air (flight.speed): every dive she lands and climbs back from adds one, up
+        to max_passes; each makes her next dive land harder. Only while she is airborne."""
+        if not self.has(f, "airborne"):
+            return 0
+        return int((self.__dict__.get("air_passes") or {}).get(f.name, 0))
+
+    def _set_air_speed(self, f, n):
+        sp = (self.rules.get("flight") or {}).get("speed") or {}
+        book = self.__dict__.setdefault("air_passes", {})
+        book[f.name] = max(0, min(int(sp.get("max_passes", 3)), int(n))) if sp.get("enabled", True) else 0
+
+    def _strafe(self, a, d, res, math):
+        """flight.strafe: her speed carries her round for a second, quicker pass before she climbs away: one more
+        blow, lighter than the dive, on another part of the one she dove at. More often while she is strong."""
+        cfg = (self.rules.get("flight") or {}).get("strafe") or {}
+        if not cfg.get("enabled", True) or d.eliminated or self.pinned_by(d.name) or a.energy < 5:
+            return
+        ch = float(cfg.get("chance", 0.3)) * self.flight_vigour(a, "strafe_mult", 1.0)
+        if not self._chance(min(0.9, ch), f"{a.name} coming round for a strafing pass", "she strafes", "no"):
+            return
+        struck = {h["part"] for h in res.get("hits") or []}
+        options = [p for p in d.parts if p not in struck] or list(d.parts)
+        part = self.rng.choice(options)
+        power = round(float(math.get("effective", 0)) * float(cfg.get("power", 0.35)), 2)
+        self._source = f"{poss_word(a.name)} strafing pass"
+        h = self._apply_damage(d, part, power)
+        h["strafe"] = True
+        res["hits"] = list(res.get("hits") or []) + [h]
+        res["strafe"] = {"part": part, "power": power}
+        a.energy = max(0.0, a.energy - float(cfg.get("energy", 3)))
+
     def _after_dive(self, a, d, res, landed):
         """A dive is done: the defender may catch her as she comes in and drag her out of the air
         (flight.counter_grab); otherwise she climbs back up (flight.climb_chance) or comes down to land."""
@@ -5063,8 +5105,12 @@ class Engine:
         if self._chance(climb, f"{a.name} climbing back up after the dive", "back up", "she lands"):
             self.set_status(a, "airborne", max(a.status.get("airborne", 0), 2))
             res["climbs"] = True
+            if landed:      # her speed builds: the next dive comes in harder (flight.speed)
+                self._set_air_speed(a, self.air_speed(a) + 1)
+                res["air_speed"] = self.air_speed(a)
         else:
             a.status.pop("airborne", None)
+            self._set_air_speed(a, 0)
             res["lands_after_dive"] = True
 
     def pummel_place(self, attacker, defender):

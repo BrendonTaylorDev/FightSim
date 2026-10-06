@@ -732,7 +732,12 @@ class Display:
             if a.get("dive"):
                 out.append(f"🪽 **Dive from above** (×{num(float(a.get('dive_mult') or 1.3))} power)" + (
                     f" — **{a['dragged_down']['by']} catches her and drags her out of the air**" if a.get("dragged_down")
-                    else " — she climbs back up" if a.get("climbs") else " — she comes down to land"))
+                    else " — she climbs back up" if a.get("climbs") else " — she comes down to land")
+                    + (f" · speed built: {a['air_speed']} pass{'es' if a['air_speed'] != 1 else ''} (her next dive lands harder)"
+                       if a.get("air_speed") else ""))
+            if a.get("strafe"):
+                out.append(f"💨 **Strafing pass**: her speed carries her round for a second, quicker blow on "
+                           f"{a['defender']}'s {a['strafe']['part']} (power {num(a['strafe']['power'])}, listed last)")
             if a.get("carried"):
                 out.append(f"🦅 **{a['attacker']} carries {a['defender']} up** ({a['carried']['height']}) and drops her")
             if a.get("grounded"):

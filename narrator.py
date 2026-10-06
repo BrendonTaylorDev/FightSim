@@ -210,6 +210,7 @@ MILD_GORE = re.compile(
     r"seep\w*|ooz\w*|weeping|fluid|froth\w*|taste[sd]? (?:of )?(?:copper|iron|blood)|copper(?:y)? taste|metallic tang|"
     r"tang of (?:copper|iron)|smell of iron|(?:into|through) (?:the )?(?:soft |tender |raw )?flesh|skin (?:split\w*|tore|torn)|"
     r"blister\w*|(?:audible|sickening|wet) (?:crack|pop|snap|sound)|audible pops?|"
+    r"(?:brutal|loud|sharp|awful|terrible) crack(?: of| in| from| at)? (?:her |the |its )?(?:knee|joint|elbow|ankle|hip|hock|shoulder)s?\b|"
     r"flesh part\w*|fib(?:er|re)s? (?:\w+ )?(?:separat|part|tear|tore|split|ripp)\w*|"
     r"(?:tearing|tore|ripping) (?:\w+ )?through (?:the )?(?:muscle|tissue|tendon)\w*|audible tear|"
     r"tendons? (?:\w+ ){0,3}(?:tore|tear\w*|gave|giving|snapp\w*|rupt\w*)|bone (?:\w+ )?(?:giving|gave) way|"
@@ -871,7 +872,9 @@ PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|every (?:press|hi
                          r"over the coming|an instant hit\b|pressure (?:was|is) only just landing|no seconds (?:had )?"
                          r"tick\w* (?:by|past)|no pressure had built|(?:not|no longer) (?:even |just )?(?:excruciating|"
                          r"devastated)\b|(?:excruciating|devastated) anymore|(?:this|that) is the (?:end|start) of the "
-                         r"(?:beat|part|passage|scene)\b|end of (?:the )?beat\b)", re.I)
+                         r"(?:beat|part|passage|scene)\b|end of (?:the )?beat\b|shrug\w* much of it off in its own way|in its own way, and "
+                         r"she knew it|(?:saw|sees) it fall short\b|has no answer for \w+ and react|the hurt part, and how "
+                         r"she (?:is|was) holding it)", re.I)
 # a badly hurt part called fine
 HEALTHY = re.compile(r"\b(still (?:good|strong|fine|whole|sound|working)|(?:was|were|felt) (?:good|fine|strong|whole)\b|"
                      r"(?:her|his) good (?:paw|arm|leg|side|hand|foot|ear|eye)|unhurt|uninjured|undamaged|untouched)", re.I)
@@ -3041,6 +3044,8 @@ class Narrator:
     def _describe_action_core(self, a):
         lines = []
         t = a["type"]
+        if a.get("flavor"):
+            a = dict(a, flavor=self._clean_flavor(a))
         if t == "instant" and a.get("environment"):
             # checked afterwards: every surface she hits that isn't just the ground under her has to be in the story
             self._must_surfaces = list(getattr(self, "_must_surfaces", None) or []) + [
@@ -3407,6 +3412,14 @@ class Narrator:
                                 f"air: {a['attacker']} hits the ground with her." if a.get("dragged_down") else
                                 f"Then she beats her wings and climbs straight back up out of reach." if a.get("climbs") else
                                 f"She does not climb again: she comes down to land, wings spread to stop."))
+                if (a.get("move") or {}).get("extras") and any("speed of" in str(x) for x in a["move"].get("extras") or []):
+                    lines.append(f"  - She has been building SPEED with every pass she makes and climbs back from: this "
+                                 f"dive comes in faster than the last, and lands harder for it.")
+                if a.get("strafe"):
+                    lines.append(f"  - A STRAFING PASS: as she climbs away, her own speed carries her round and she sweeps "
+                                 f"back across {a['defender']} for one quicker, lighter blow on her "
+                                 f"{a['strafe']['part'].lower()} (the last hit listed) before she is gone again, out of "
+                                 f"reach. YOU MUST SHOW THIS: it is a second strike, fast and glancing, not the dive again.")
             if a.get("carried"):
                 lines.append(f"  - CARRIED UP: {a['attacker']} seizes her in her {self._grip_word(a['attacker'])} and hauls "
                              f"her up off the ground, {a['carried']['height']}, wings labouring, then LETS GO. "
@@ -3930,12 +3943,48 @@ class Narrator:
 
     EFFECT_KEY = {"super effective": "super", "not very effective": "weak", "no effect": "none"}
 
+    FLAVOR_FEATS = [(r"\bblades?\b|\bedges? of (?:her|its) tails?", "blade"), (r"\bfins?\b", "fins"),
+                    (r"\bhorns?\b", "horn"), (r"\bwings?\b", "wings"), (r"\btalons?\b", "talons"),
+                    (r"\bbeak\b", "beak"), (r"\bcoils?\b", "coils"), (r"\bfeathers?\b", "feathers"),
+                    (r"\bmane\b", "mane"), (r"\bcrest\b", "crest")]
+
+    def _clean_flavor(self, a):
+        """The director's one-line direction can give the attacker a body she lacks (tail blades, a fin) or the
+        wrong weapon for the move (a fin cut for a punch): drop the parts of it that do."""
+        fl = str(a.get("flavor") or "")
+        who = a.get("attacker") or a.get("fighter") or ""
+        if not who:
+            return fl
+        feats = self._feats_of(who)
+        if not feats:
+            return fl
+        parts = " ".join(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()).lower()
+        m = a.get("move") or {}
+        mv = " ".join([str(m.get("name") or ""), str(m.get("about") or "")]).lower()
+        bans = story_blocks.body_bans(feats)
+        keep = []
+        for bit in re.split(r"(?<=[,;.])\s+|\s+(?=and\b)", fl):
+            low = bit.lower()
+            bad = bans is not None and bans.search(bit) and not re.search(r"\b(?:opponent|foe|other)\b", low)
+            for rx, tag in self.FLAVOR_FEATS:
+                if re.search(rx, low) and tag not in feats and tag.rstrip("s") not in parts \
+                        and not re.search(rx, mv):
+                    bad = True
+                elif re.search(rx, low) and mv and tag in ("fins", "blade") and not re.search(rx, mv) \
+                        and re.search(r"\b(?:punch|chop|kick|break|fist|palm)", mv):
+                    bad = True      # a fin or blade doing a punch's work
+            if not bad:
+                keep.append(bit)
+        return fl if len(keep) == len([b for b in re.split(r"(?<=[,;.])\s+|\s+(?=and\b)", fl)]) else ""
+
     def _effect_note(self, a, m):
         """What the type matchup means for this blow, said so the story can show it: a body with no answer for this
         kind of attack, or one built to shrug it off."""
         e = self.EFFECT_KEY.get(m.get("effectiveness"))
         if not e or a.get("dodged") and not a.get("hits"):
             return ""
+        if (a.get("clash") or {}).get("outcome") in ("back", "cancel"):
+            return ""               # nothing of it reached her: no matchup to show on her body
         d, t = a.get("defender") or "her", str(m.get("type") or "").lower()
         mine = ", ".join(x.title() for x in (getattr(self, "fighter_types", None) or {}).get(d, []))
         if e == "super":
@@ -3966,6 +4015,8 @@ class Narrator:
             m = a.get("move") or {}
             e = self.EFFECT_KEY.get(m.get("effectiveness"))
             if not e or a.get("type") != "instant" or a.get("defender") != who:
+                continue
+            if (a.get("clash") or {}).get("outcome") in ("back", "cancel"):
                 continue
             if not (a.get("hits") or e == "none"):
                 continue
@@ -8200,6 +8251,25 @@ class Narrator:
         for sent in self._arena_leaks(text):
             m = ARENA_LEAK.search(sent)
             add(sent, f"\"{m.group(0)}\" isn't in this arena (the fight is in {self._arena_name()}): use what is here")
+        cols = getattr(self, "body_colors", None) or {}
+        for sent, whos, named in self._said(text):
+            if len(whos) != 1:
+                continue
+            me = whos[0]
+            other = [w for w in (self.strengths or {}) if w != me]
+            if not re.search(r"\barms?\b(?!pit)", sent, re.I) or re.search(r"\b(?:forearm|upper arm|arms? length)", sent, re.I) \
+                    or not (len(named) <= 1):
+                pass
+            elif "forelegs" in self._feats_of(me) and "arms" not in self._feats_of(me) and re.search(
+                    r"\b(?:her|its) (?:\w+ )?arms?\b", sent, re.I):
+                add(sent, f"{me} walks on four legs and has no arms: say her foreleg (or her leg)")
+            m = re.search(r"\b(?:the|that) (\w+)(?:[- ]\w+)? (?:body|form|shape|fur|bulk|mass|figure|hide|coat)\s+"
+                          r"(?:beneath|under|below|above|over|against|on top of|in front of|before|across from) her\b",
+                          sent, re.I)
+            if m and other and m.group(1).lower() in cols.get(me, set()) and not any(
+                    m.group(1).lower() in cols.get(o, set()) for o in other):
+                add(sent, f"\"{m.group(0)}\": {m.group(1).lower()} is {poss(me)} own color, not {poss(other[0])}; "
+                          f"give {other[0]} her own colors from her APPEARANCE")
         for x in sents:
             if re.search(r"\bforelegs?\b", x, re.I) and re.search(r"\barms?\b", x, re.I) and not re.search(
                     r"\b(?:forearm|upper arm)", x, re.I):
