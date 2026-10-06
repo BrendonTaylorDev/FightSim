@@ -2693,10 +2693,15 @@ def flight_hint(engine, roll=None):
                          + f". {foe.name} can only reach her with "
                          + (", ".join(reach) if reach else "nothing she has (no beams, blasts or streams)") + ".")
         elif engine.can_fly(f) and not engine.pinning(f.name) and not engine.pinned_by(f.name):
-            ch = float(cfg.get("flight_chance", 0.3)) * (1.5 if not reach else 1.0)
+            vig = engine.flight_vigour(f, "takeoff_mult", 1.0)
+            ch = min(0.95, float(cfg.get("flight_chance", 0.3)) * (1.5 if not reach else 1.0) * vig)
             if roll >= ch:
                 continue
-            lines.append(f"FLIGHT IDEA (optional, a winged fighter's strength): {f.name} could take off this beat "
+            strong = vig >= 1.5      # still strong: flying is how she fights, not a gamble
+            lines.append((f"FLIGHT (her way of fighting while she is strong): {f.name} should take off this beat "
+                          f"unless the moment plainly needs her on the ground " if strong else
+                          f"FLIGHT IDEA (optional, a winged fighter's strength): {f.name} could take off this beat ")
+                         + 
                          f"(\"reposition\": \"take off\" on her own action, with her attack). Up there only beams, "
                          f"blasts and streams reach her ({foe.name} has "
                          + (", ".join(reach) if reach else "none: she would be out of reach") + "), and her close "

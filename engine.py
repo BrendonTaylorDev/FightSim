@@ -5028,10 +5028,24 @@ class Engine:
         f.energy = max(0.0, f.energy - cost)
         for h in [h for h in self.holds.values() if h.attacker == f.name]:
             self.holds.pop(h.id, None)
-        self.set_status(f, "airborne", int(cfg.get("airborne_beats", 3)))
+        beats = int(cfg.get("airborne_beats", 3)) + self.flight_vigour(f, "extra_beats", 0)
+        self.set_status(f, "airborne", beats)
         self.involved.add(f.name)
-        return {"type": "take_off", "fighter": f.name, "beats": int(cfg.get("airborne_beats", 3)), "energy": round(cost, 1),
+        return {"type": "take_off", "fighter": f.name, "beats": beats, "energy": round(cost, 1),
                 "hurt_wing": self.wing_damage(f) >= float((cfg.get("strain") or {}).get("from", 100))}
+
+    def flight_vigour(self, f, key, default):
+        """flight.vigour: a flyer who is still strong flies more (longer in the air, back up after a dive more often;
+        the director is pointed at taking off more often too). `key` from the band her strength is in: healthy (at or
+        above healthy_at % of her full strength), fair (at or above fair_at), else low."""
+        cfg = (self.rules.get("flight") or {}).get("vigour") or {}
+        if not cfg.get("enabled", True):
+            return default
+        pct = self._health_pct(f)
+        band = ("healthy" if pct >= float(cfg.get("healthy_at", 60)) else
+                "fair" if pct >= float(cfg.get("fair_at", 35)) else "low")
+        val = (cfg.get(band) or {}).get(key, default)
+        return type(default)(val) if isinstance(default, (int, float)) else val
 
     def _after_dive(self, a, d, res, landed):
         """A dive is done: the defender may catch her as she comes in and drag her out of the air
@@ -5045,7 +5059,8 @@ class Engine:
             a.status.pop("airborne", None)
             res["dragged_down"] = {"by": d.name, "facing": self.knock_down(a.name, why=f"{a.name} was dragged out of the air")}
             return
-        if self._chance(float(cfg.get("climb_chance", 0.55)), f"{a.name} climbing back up after the dive", "back up", "she lands"):
+        climb = min(0.95, float(cfg.get("climb_chance", 0.55)) * self.flight_vigour(a, "climb_mult", 1.0))
+        if self._chance(climb, f"{a.name} climbing back up after the dive", "back up", "she lands"):
             self.set_status(a, "airborne", max(a.status.get("airborne", 0), 2))
             res["climbs"] = True
         else:

@@ -60,7 +60,9 @@ def _pick_action(eng, rng, f, d):
             return dict(a, action="pin", flavor=look[:80],
                         hits=[{"part": p, "severity": s, "with": w} for (p, w), s in zip(contacts, sev)])
     budget = f.energy
-    if not eng.has(f, "airborne") and eng.can_fly(f) and rng.random() < 0.3:     # any winged fighter, dragons too
+    # any winged fighter, dragons too: as often as the director is pointed at it (more while she is strong: flight.vigour)
+    if not eng.has(f, "airborne") and eng.can_fly(f) \
+            and rng.random() < min(0.95, 0.3 * eng.flight_vigour(f, "takeoff_mult", 1.0)):
         cost = eng.takeoff_cost(f)
         if f.energy - cost >= 12:     # only with breath left for a move once she is up (the take-off is paid first)
             a["reposition"] = "take off"
@@ -209,6 +211,12 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         for x in eng.fighters.values():
             lost = (before.get(x.name, x.health) - x.health) / max(1.0, x.max_health) * 100
             stats["worst_beat"] = max(stats["worst_beat"], lost)
+        for x in eng.active():      # how much of the fight each winged fighter spends in the air
+            if eng.can_fly(x) or eng.has(x, "airborne"):
+                stats.setdefault("fly_beats", {}).setdefault(x.name, [0, 0])
+                stats["fly_beats"][x.name][1] += 1
+                if eng.has(x, "airborne"):
+                    stats["fly_beats"][x.name][0] += 1
         last = f.name
     stats["beats"] = eng.turn
     stats["winner"] = eng.winner() or ""
