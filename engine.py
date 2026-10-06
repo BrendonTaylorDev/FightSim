@@ -6244,6 +6244,17 @@ class Engine:
         at_edge = float(s.get("escape_chance_at_edge", full))
         if hp >= edge:
             return at_edge + (full - at_edge) * (hp - edge) / max(1.0, 100.0 - edge)
+        pts = sorted((float(a), float(b)) for a, b in (s.get("escape_points") or []) if a < edge)
+        if pts:
+            # below the edge, the chance follows these points ([health %, chance], straight lines between them, flat
+            # past the last one): harder and harder, never nothing
+            pts = pts + [(edge, at_edge)]
+            if hp <= pts[0][0]:
+                return pts[0][1]
+            for (h0, c0), (h1, c1) in zip(pts, pts[1:]):
+                if h0 <= hp <= h1:
+                    return c0 + (c1 - c0) * (hp - h0) / max(0.001, h1 - h0)
+            return at_edge
         below = edge - min(hp, edge) if hp >= 0 else edge
         base = at_edge * 0.5 ** ((below // every) if s.get("escape_steps", False) else (below / every))
         if hp < 0:
@@ -6424,9 +6435,13 @@ class Engine:
             known = (dfn.learned.get("pins") or {}).get(p["shape"], 0) if lcfg.get("enabled", True) else 0
             if known:
                 esc_try *= min(float(lcfg.get("pin_escape_cap", 1.45)), 1 + float(lcfg.get("pin_escape_per_time", 0.15)) * known)
+            # never impossible: however hurt she is and however long it has run, an attempt can still work
+            # (pin.struggle.escape_floor; break_loose_floor for breaking loose for a moment)
+            esc_try = max(float(s.get("escape_floor", 0.05)), esc_try)
             esc = self._per_beat(min(0.95, esc_try), tf)
-            # if the escape fails: the chance to break loose for a moment and land a hit, same halving curve
+            # if the escape fails: the chance to break loose for a moment and land a hit, same curve
             part_try = s.get("partial_chance", 0.50) * curve * (1 + 0.6 * a_weak) * fade * crowd
+            part_try = max(float(s.get("break_loose_floor", 0.05)), part_try)
             part = self._per_beat(min(0.95, part_try), tf)
             if self.has(dfn, "asleep") or self.has(dfn, "frozen"):
                 # asleep or frozen under the pin: no struggle at all, no breaking loose, no blow on the pinner
