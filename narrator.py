@@ -211,6 +211,7 @@ MILD_GORE = re.compile(
     r"tang of (?:copper|iron)|smell of iron|(?:into|through) (?:the )?(?:soft |tender |raw )?flesh|skin (?:split\w*|tore|torn)|"
     r"blister\w*|(?:audible|sickening|wet) (?:crack|pop|snap|sound)|audible pops?|"
     r"(?:brutal|loud|sharp|awful|terrible) crack(?: of| in| from| at)? (?:her |the |its )?(?:knee|joint|elbow|ankle|hip|hock|shoulder)s?\b|"
+    r"torn and bloody|(?:skin|hide|flesh) (?:\w+ )?(?:torn|ragged|in tatters)|ragged (?:skin|flesh|hide)|"
     r"(?:knee|joint|elbow|ankle|hock)s? (?:was|were|came) next, (?:a|with a) (?:brutal|loud|sharp|awful|terrible|heavy) crack|"
     r"vertebrae (?:crush|grind|grat)\w*|bone beneath (?:\w+ )?show\w* its shape|"
     r"flesh part\w*|fib(?:er|re)s? (?:\w+ )?(?:separat|part|tear|tore|split|ripp)\w*|"
@@ -841,7 +842,7 @@ PRESENT_TENSE = re.compile(r"\b(?:[Ss]he|[Hh]e|[Ii]t)\s+(?:is|has|does|(?!was\b|
                            r"almost\b|nearly\b|thus\b)[a-z]{2,}(?<![su])s)\b(?!['’])")
 STOCK_PHRASE = re.compile(r"\b(?:a symphony of|symphony of (?:nature|sound)|(?:vast )?canvas of|tension (?:was|is|hung|hangs)"
                           r"(?: thick)?(?: and)? palpable|palpable tension|(?:the|a) (?:clearing|world|air|forest) held its "
-                          r"breath|like a sleeping giant|ready to clash|time (?:seemed to )?st(?:ood|ands) still|a dance "
+                          r"breath|like a sleeping giant|ready to clash|palpable|time (?:seemed to )?st(?:ood|ands) still|a dance "
                           r"of (?:death|light and shadow)|stage (?:was )?set)\b", re.I)
 PAIN_LABEL = re.compile(r"\b(?:pain|ache|hurt)\s+(?:stays?|stayed|is|was|remains?|remained|goes|went|stays at)\s+"
                         r"(?:minor|sore|hurting|very painful|excruciating|devastated)\b", re.I)
@@ -876,7 +877,13 @@ PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|every (?:press|hi
                          r"devastated)\b|(?:excruciating|devastated) anymore|(?:this|that) is the (?:end|start) of the "
                          r"(?:beat|part|passage|scene)\b|end of (?:the )?beat\b|shrug\w* much of it off in its own way|in its own way, and "
                          r"she knew it|(?:saw|sees) it fall short\b|has no answer for \w+ and react|the hurt part, and how "
-                         r"she (?:is|was) holding it)", re.I)
+                         r"she (?:is|was) holding it|glimpsed in passing|(?:the )?fur or scales|scales or fur)", re.I)
+# a whole-body breakdown from one hurt part: only for a fighter who is worn down overall
+OVERREACT = re.compile(r"\b(?:every muscle (?:in her (?:whole )?body )?(?:seized|locked|spasm\w*)|her (?:whole )?body (?:had )?"
+                       r"stopped (?:listening|obeying|answering)|worse than anything|the pain was overwhelming|"
+                       r"overwhelming pain|(?:her (?:whole )?body|she) (?:was )?(?:simply )?curl(?:ing|ed) in on itself|"
+                       r"writh(?:ed|ing)|her whole body (?:convuls\w+|seized|spasm\w*)|consumed? her "
+                       r"entire being|nothing in her head but)", re.I)
 # a badly hurt part called fine
 HEALTHY = re.compile(r"\b(still (?:good|strong|fine|whole|sound|working)|(?:was|were|felt) (?:good|fine|strong|whole)\b|"
                      r"(?:her|his) good (?:paw|arm|leg|side|hand|foot|ear|eye)|unhurt|uninjured|undamaged|untouched)", re.I)
@@ -2930,6 +2937,24 @@ class Narrator:
         if self._tiers_used:
             guide = [f"{t['label']} = {t['reaction']}" for t in pain_tiers(self.rules) if t["label"] in self._tiers_used]
             lines.append("PAIN GUIDE (how each lasting pain level shows from now on):\n  " + "\n  ".join(guide))
+            caps = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+            strong, mid = float(caps.get("strong_from", 70)), float(caps.get("mid_from", 40))
+            for who, left in (getattr(self, "strengths", None) or {}).items():
+                bad = [p_ for p_, lv, _z in self._worst_parts(who, 3, floor="excruciating")]
+                if not bad or float(left) < mid:
+                    continue
+                what = " and ".join(bad)
+                if float(left) >= strong:
+                    lines.append(f"MEASURED PAIN: {poss(who)} {what} {'is' if len(bad) == 1 else 'are'} that bad, but she "
+                                 f"is still STRONG overall. The pain stays IN THAT PART: a sharp cry or a hiss when it is "
+                                 f"struck, a flinch, she guards it and can barely use it, and it shows on her face. The rest "
+                                 f"of her is unaffected: no whole-body seizing or shuddering, no curling up, writhing or "
+                                 f"collapse, no \"worse than anything\" or \"overwhelming\". She recovers within a breath "
+                                 f"and fights on with everything else.")
+                else:
+                    lines.append(f"MEASURED PAIN: {poss(who)} {what} {'is' if len(bad) == 1 else 'are'} that bad, and she "
+                                 f"is worn but not spent: a real cry, a moment to recover, the hurt part useless for now, "
+                                 f"but she does not collapse or writhe, and she fights on.")
         lines.append("Impact examples are suggestions: pick reactions that fit each fighter's species (their TELLS) and "
                      "the moment, and never reuse the same reaction twice in a beat. Scale how fast each fighter recovers "
                      "to their OVERALL strength under CURRENT CONDITION: a strong fighter cries out, then fights on.")
@@ -5739,7 +5764,9 @@ class Narrator:
                 kinds |= got
             if close and "grab" not in kinds:
                 kinds = {"close"}
-            if who in {g[0] for g in (getattr(self, "grips", None) or [])}:
+            if self._in_air(who) or any(a.get("attacker") == who and a.get("dive") for a in acts):
+                pass        # in the air or diving: the dive's own ideas cover it; no footwork on the ground
+            elif who in {g[0] for g in (getattr(self, "grips", None) or [])}:
                 # she has hold of her: no footwork ideas (giving ground, circling) for a fighter pressed on top of
                 # her opponent, only ones made for close work
                 add(f"a way {who} might stage it", B.pick("movement", 1, kind=(kinds & {"grab", "close"}) or {"close"},
@@ -8260,6 +8287,18 @@ class Narrator:
         for sent in self._arena_leaks(text):
             m = ARENA_LEAK.search(sent)
             add(sent, f"\"{m.group(0)}\" isn't in this arena (the fight is in {self._arena_name()}): use what is here")
+        for x in sents:
+            m = STOCK_PHRASE.search(x)
+            if m:
+                add(x, f"\"{m.group(0)}\" is a stock phrase: say the concrete thing instead (a sound, a movement, a "
+                       f"detail of the place), or leave it out")
+        caps_ = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+        strong_ = float(caps_.get("strong_from", 70))
+        fresh = {w for w, v in (getattr(self, "strengths", None) or {}).items() if float(v) >= strong_}
+        for sent, whos, named in self._said(text):
+            if len(whos) == 1 and whos[0] in fresh and OVERREACT.search(sent):
+                add(sent, f"\"{OVERREACT.search(sent).group(0)}\": {whos[0]} is still strong overall, so the pain "
+                          f"stays in the hurt part (a cry, a flinch, guarding it), not her whole body: say it smaller")
         biting = {g[0]: (g[1], str(g[2]).lower()) for g in (getattr(self, "grips", None) or [])
                   if re.search(r"\b(?:jaws?|teeth|fangs?|mouth|bite)\b", str(g[3] or ""), re.I)}
         for sent, whos, named in self._said(text):
@@ -8275,8 +8314,7 @@ class Narrator:
                 continue
             me = whos[0]
             other = [w for w in (self.strengths or {}) if w != me]
-            if not re.search(r"\barms?\b(?!pit)", sent, re.I) or re.search(r"\b(?:forearm|upper arm|arms? length)", sent, re.I) \
-                    or not (len(named) <= 1):
+            if not re.search(r"\barms?\b(?!pit)", sent, re.I) or re.search(r"\b(?:forearm|upper arm|arms? length)", sent, re.I):
                 pass
             elif "forelegs" in self._feats_of(me) and "arms" not in self._feats_of(me) and re.search(
                     r"\b(?:her|its) (?:\w+ )?arms?\b", sent, re.I):
@@ -9410,7 +9448,7 @@ class Narrator:
                 f"to keep in (a whine through her teeth, a hiss, a cry she bites off) and whether she manages to"
                 + (" (by now she mostly can't)" if raw is not None and raw >= 2 else "")
                 + self._callback_clause(v, part)
-                + f"; she LOOKS at her own body too: down at the {part.lower()} (the fur or scales there, any swelling "
+                + f"; she LOOKS at her own body too: down at the {part.lower()} (her own covering there, any swelling "
                 f"or mark), her own paw or limb shaking, testing whether it still answers and watching it obey or not, "
                 f"what she makes of what she sees"
                 + f"; her thoughts, short and in her own voice; how she looks at {by or 'her opponent'} now. TRUE TO "
