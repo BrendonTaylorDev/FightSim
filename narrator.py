@@ -1469,6 +1469,10 @@ GOT_UP = re.compile(r"\b(?:got (?:back )?(?:up|to her feet|on(?:to)? her feet)|(
 # things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
 ARENA_LEAK = re.compile(r"\b(cave|stalactite|stalagmite)(?:s|'s)?(?: (?:walls?|floor|roof|ceiling|mouth))?\b", re.I)
 
+# words that put her in the air (a matchup line for a flyer who is up there)
+IN_AIR_WORDS = re.compile(r"\b(?:air|sky|skies|aloft|airborne|in flight|her flight|mid-?flight|wingbeats?|glide|"
+                          r"gliding|altitude|out of the (?:air|sky))\b", re.I)
+
 # the names a style sample written for any pair ({A}, {B}) is shown with: nobody in the roster
 SAMPLE_NAMES = ("Wren", "Sorrel")
 SAMPLE_NAME_RX = re.compile(r"\b(?:" + "|".join(SAMPLE_NAMES) + r")\b")    # (one copied into the story is cut)
@@ -3948,6 +3952,12 @@ class Narrator:
         return (f" It has NO EFFECT at all: {poss(d)} body ({mine}) simply doesn't take {t}. It passes through or "
                 f"off her and leaves nothing; show both of them seeing that.")
 
+    def _in_air(self, who):
+        """Is she in the air at any point of this beat (as it starts or ends)? Matchup lines about a flyer knocked out
+        of the sky are only for a flyer who really is up there."""
+        ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
+        return any("AIR" in str(x.get(who, "")).upper() for x in (ps, pe))
+
     def _effect_on(self, who, acts):
         """The strongest type matchup among the blows that LANDED on `who` this beat: (super/weak/none, move type)."""
         best = None
@@ -5622,7 +5632,9 @@ class Narrator:
             eff_ = self._effect_on(who, acts)
             if eff_:
                 self._offer_line(add, f"a finished line for {who}: the {eff_[1]} on a body like hers", "effect_take",
-                                 fmt={"part": worst_hit[1].lower(), "foe": by or foe}, exclude=too_big, effect=eff_[0],
+                                 fmt={"part": worst_hit[1].lower(), "foe": by or foe},
+                                 exclude=(list(too_big or []) + ([] if self._in_air(who) else [IN_AIR_WORDS])) or None,
+                                 effect=eff_[0],
                                  type=eff_[1], vs=set((getattr(self, "fighter_types", None) or {}).get(who, [])),
                                  has=feats(who), level=lv_w)
             self._offer_line(add, f"a finished line for {who} after the blow", "after_hit",
@@ -5642,11 +5654,13 @@ class Narrator:
                 vs = set((getattr(self, "fighter_types", None) or {}).get(who, []))
                 word = {"super": "SUPER EFFECTIVE on her", "weak": "NOT VERY EFFECTIVE on her",
                         "none": "NO EFFECT on her"}[eff[0]]
+                grounded = None if self._in_air(who) else IN_AIR_WORDS
                 add(f"how {who} knows it ({eff[1]}: {word})", B.pick(
-                    "effect_know", 1, effect=eff[0], type=eff[1], vs=vs, has=feats(who), fighter=who.lower()))
+                    "effect_know", 1, effect=eff[0], type=eff[1], vs=vs, has=feats(who), fighter=who.lower(),
+                    exclude=grounded))
                 add(f"what the {eff[1]} does to a body like {poss(who)}", B.pick(
                     "effect_body", 1, fmt={"part": worst_hit[1].lower()}, effect=eff[0], type=eff[1], vs=vs,
-                    zone=zone_w, has=feats(who), level=lv_w))
+                    zone=zone_w, has=feats(who), level=lv_w, exclude=grounded))
             mind(who, "receiver", by)
             if who not in (getattr(self, "pinned_now", None) or ()):
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
@@ -5685,9 +5699,10 @@ class Narrator:
                 add(f"{who} and the matchup ({eff[1]} on {target}: "
                     + {"super": "it works on her", "weak": "she is made for it", "none": "it can't touch her"}[eff[0]] + ")",
                     B.pick("effect_see", 1, fmt={"foe": target}, effect=eff[0], type=eff[1], vs=vs, has=feats(who),
-                           fighter=who.lower()))
+                           fighter=who.lower(), exclude=None if self._in_air(target) else IN_AIR_WORDS))
                 self._offer_line(add, f"a finished line for {who}: the {eff[1]} against {target}", "effect_act",
-                                 fmt={"foe": target}, effect=eff[0], type=eff[1], vs=vs, has=feats(who))
+                                 fmt={"foe": target}, effect=eff[0], type=eff[1], vs=vs, has=feats(who),
+                                 exclude=None if self._in_air(target) else IN_AIR_WORDS)
             return kinds
 
         if key in ("dwell", "watch", "read"):
