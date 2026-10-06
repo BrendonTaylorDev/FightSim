@@ -831,6 +831,8 @@
     "self_look": {"chance": 0.5},
     "_repeat_pass_comment": "repeat_pass: one short model pass over the finished beat that names sentences telling an event a second time (the same blow, slam or fall); the program cuts those it can confirm. It only names them, so it takes seconds. false turns it off.",
     "repeat_pass": true,
+    "_worn_phrases_comment": "worn_phrases: four-word phrases the story has used in min_beats or more beats of this fight (\"the breeze turned the leaves\", \"a stark contrast to\") are listed for the narrator before it writes, at most max_listed of them, so it finds fresh words. Words that describe the fighters, their moves and the arena are never counted. No extra model calls. enabled false = off.",
+    "worn_phrases": {"enabled": true, "min_beats": 3, "max_listed": 8},
     "_read_comment": "read: the other way round from watch. After a blow, when neither dwell nor watch is told, the one who was hurt may get an extra part studying the one who did it (her stance, breath, injuries, face, where her eyes go, what she plans), and what each sign tells her. Needs the blow to leave the part very painful or worse, or her strength at max_strength % or less.",
     "read": {
       "enabled": true,

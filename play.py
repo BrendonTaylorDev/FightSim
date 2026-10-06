@@ -327,6 +327,8 @@ HELP = """
   /timing [on|off|clear]   after each beat the program says how long it took, how fast the model wrote, and what
                       had to be written again. /timing alone: the averages so far, by narrator model (for
                       comparing two models: play some beats on each, then /timing).
+  /checks [clear]          which mistakes the narrator's checks keep finding, and how often the paragraph fixes for
+                      each kind work and what they cost (this fight, and all fights so far)
   /model [narrator|director] [name]   which Ollama model writes the story / picks what happens (this session).
                       /model narrator gemma4:31b   /model   (shows both)
   /repair on|off        on (default): a paragraph with a mistake is written again by itself and the rest of the
@@ -1264,6 +1266,10 @@ class Session:
             self.sync_narrator()
             args = (self.for_narrator(bundle), condition, self.notes(), self.eng.scene, self.recent_story())
             text = self._write_prose(args)
+            try:
+                self.narrator.save_check_tally(HERE)     # (/checks)
+            except Exception:
+                pass
             if text is not None:
                 self.out("\n" + text + "\n")
                 self.story.append(text)
@@ -2646,6 +2652,25 @@ def handle_command(s, line):
         saved = _save_rule_path(["narration", "style_sample_file"], pick)
         print(f"Style sample: {pick} " + ("(saved to rules.json)" if saved else "(this session only)")
               + ". It applies from the next beat."); return
+    if cmd == "checks":
+        path = os.path.join(HERE, Narrator.CHECKS_FILE)
+        if a and a[0].lower() in ("clear", "reset"):
+            try:
+                os.remove(path)
+            except OSError:
+                pass
+            s.narrator.check_tally = {}
+            print("Check counts cleared."); return
+        try:
+            with open(path, encoding="utf-8") as fh:
+                book = json.load(fh)
+        except (OSError, ValueError):
+            book = {}
+        print("What the narrator's checks found, and how the paragraph fixes went (drafts: times a draft had it; "
+              "fixes: paragraphs rewritten for it; worked: how many came back right; calls: model calls spent).\n"
+              "This fight:\n" + Narrator.checks_table(getattr(s.narrator, "check_tally", {}) or {})
+              + "\nAll fights so far (check_counts.json; /checks clear starts again):\n" + Narrator.checks_table(book))
+        return
     if cmd == "timing":
         cfg = s.eng.rules.setdefault("console", {})
         if a and a[0].lower() in ("on", "off"):

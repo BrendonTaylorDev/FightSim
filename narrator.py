@@ -8,6 +8,7 @@ Two things keep a mid-size local model writing well:
 How it writes (perspective, pins, tone) comes from story_prompt.txt and style_sample.txt.
 """
 import json
+import os
 import random
 import re
 
@@ -1763,6 +1764,30 @@ TAKEDOWN_WAYS = {
 }
 
 
+def _issue_label(i):
+    """A short name for what a check found (for the progress line and the /checks tally)."""
+    if i.startswith("a second reading says"):
+        m = re.search(r"contradicts what happened \(([^)]{1,40})\)", i)
+        return "second reading: " + (m.group(1) if m else "contradiction")
+    return _slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "stray beam" if "fired a beam" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
+                           else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
+                           else "missing escape" if "ESCAPE" in i
+                           else "missing escape blow" if "breaks free with" in i else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
+                           else "parts called useless too early" if "as useless" in i
+                           else "wrong strike count" if "ONE strike" in i
+                           else "invented bite" if "a bite that isn't" in i
+                           else "wrong weapon" if "wrong weapon" in i
+                           else "hurt part called fine" if "good or strong" in i
+                           else "invented escape" if "THE PIN HOLDS this beat" in i
+                           else "minor hurt made serious" if "serious injury that isn't there" in i
+                           else "invented get-up try" if "NO attempt to rise" in i
+                           else "numb pain" if "go numb" in i
+                           else "pin clock" if "time REMAINING" in i
+                           else "standing on a hand" if "her paws are her HANDS" in i
+                           else "anatomy from another species" if "nobody in this fight has" in i
+                           else "other")
+
+
 class Narrator:
     def __init__(self, model, rules, host="http://localhost:11434", style=""):
         self.model, self.rules, self.host, self.style = model, rules, host, style
@@ -2838,6 +2863,10 @@ class Narrator:
                          f"beat. It is PAIN crossing a line, not a bone: nothing breaks, snaps, gives way or caves in"
                          + ("" if any(_mentions_exact(part.lower(), b) for b in (getattr(self, "breakable", None) or []))
                             else " (this part can't break yet)") + ".")
+        worn = self.worn_phrases()
+        if worn:
+            lines.append("WORN OUT in this fight (each of these has been written in several beats already: don't use them "
+                         "again, find fresh words for the moment): " + "; ".join(f"\"{x}\"" for x in worn) + ".")
         if self.recent_lines:
             lines.append("ALREADY SAID in recent beats (do NOT reuse or echo these thoughts, lines, or sounds; write new "
                          "ones): " + "; ".join(f"\"{x}\"" for x in list(dict.fromkeys(self.recent_lines))[-14:]) + ".")
@@ -5160,6 +5189,47 @@ class Narrator:
         """Note the short sentences of beats already told (after a /load), so they aren't used word for word again."""
         for t in ([texts] if isinstance(texts, str) else texts or []):
             self._drop_seen(strip_pov(t))
+            self._note_worn(strip_pov(t))
+
+    def _note_worn(self, text):
+        """Every distinctive four-word run in a finished beat, and which beats used it (narration.worn_phrases)."""
+        book = self.__dict__.setdefault("phrase_beats", {})
+        self.__dict__["_phrase_beat"] = self.__dict__.get("_phrase_beat", 0) + 1
+        names = {w.lower() for w in (getattr(self, "strengths", None) or {})}
+        for para in (text or "").split("\n"):
+            for sent in _SENT.split(re.sub(r"[*_]", "", para)):
+                words = re.findall(r"[a-z']+", sent.lower())
+                for i in range(len(words) - 3):
+                    g = words[i:i + 4]
+                    if sum(1 for w in g if len(w) > 3 and w not in _PLAIN_WORDS and w not in names) < 2:
+                        continue
+                    seen = book.setdefault(" ".join(g), [])
+                    if not seen or seen[-1] != self._phrase_beat:
+                        seen.append(self._phrase_beat)
+
+    def worn_phrases(self, n=8):
+        """The phrases this fight keeps coming back to (in narration.worn_phrases.min_beats beats or more), most used
+        first, one of each family (overlapping runs shown once)."""
+        cfg = (self.rules.get("narration") or {}).get("worn_phrases") or {}
+        if cfg.get("enabled", True) is False:
+            return []
+        least = int(cfg.get("min_beats", 3))
+        book = getattr(self, "phrase_beats", None) or {}
+        hot = sorted(((g, len(b)) for g, b in book.items() if len(b) >= least), key=lambda x: -x[1])
+        out, used = [], []
+        ref = getattr(self, "_ref_words", None) or set()
+        for g, k in hot:
+            ws = set(g.split())
+            content = {w for w in ws if len(w) > 3 and w not in _PLAIN_WORDS}
+            if content and content <= ref:
+                continue      # "her sickle tail lashed": how she is made, not a worn phrase
+            if any(len(ws & u) >= 3 for u in used):
+                continue
+            used.append(ws)
+            out.append(g)
+            if len(out) >= int(cfg.get("max_listed", n)):
+                break
+        return out
 
     def _beat_weight(self, bundle):
         """How much this beat matters in the fight: ("ends" | "turning" | "tense" | "big" | "hard" | "ordinary", why)."""
@@ -7497,23 +7567,8 @@ class Narrator:
         if issues:
             # one rewrite with every problem spelled out; a local model follows concrete notes far better than rules
             if self.progress:
-                labels = [_slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "stray beam" if "fired a beam" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
-                           else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
-                           else "missing escape" if "ESCAPE" in i
-                           else "missing escape blow" if "breaks free with" in i else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
-                           else "parts called useless too early" if "as useless" in i
-                           else "wrong strike count" if "ONE strike" in i
-                           else "invented bite" if "a bite that isn't" in i
-                           else "wrong weapon" if "wrong weapon" in i
-                           else "hurt part called fine" if "good or strong" in i
-                           else "invented escape" if "THE PIN HOLDS this beat" in i
-                           else "minor hurt made serious" if "serious injury that isn't there" in i
-                           else "invented get-up try" if "NO attempt to rise" in i
-                           else "numb pain" if "go numb" in i
-                           else "pin clock" if "time REMAINING" in i
-                           else "standing on a hand" if "her paws are her HANDS" in i
-                           else "anatomy from another species" if "nobody in this fight has" in i
-                           else "other") for i in issues]
+                labels = [_issue_label(i) for i in issues]
+                self._tally_checks(labels)
                 self.progress("checking the draft: " + ("" if repair else "rewriting to fix ")
                               + ", ".join(dict.fromkeys(labels)))
             missing = [i for i in issues if any(m in i for m in MISSING_MARKS)]
@@ -7893,14 +7948,29 @@ class Narrator:
                 add(x, f"\"{m.group(0)}\" tells it instead of showing it: show it in her body and what she does"
                        + (" (for example: " + "; ".join(ideas) + ")" if ideas else "") + ", or leave it out")
         told = {}
-        for x in ((prior or "") + "\n" + text).split("\n"):
-            for s in _SENT.split(x.strip()):
-                if not s or not HURT_SAID.search(s):
+        dmg_by = getattr(self, "damage_by", None) or {}
+
+        def names_part(sl, w, p):
+            """Is this sentence about her p: by its full name, or the short way a story says it ("her right fin",
+            "the fin" when she has only one hurt part of that kind)?"""
+            if _mentions_exact(sl, p):
+                return True
+            words = p.lower().split()
+            noun = words[-1]
+            if words[0] in ("left", "right") and len(words) > 1:
+                if re.search(r"\b" + words[0] + r" " + re.escape(noun) + r"(?:s|es)?\b", sl):
+                    return True
+            same = [q for q in dmg_by.get(w, {}) if dmg_by[w][q] >= 30 and q.lower().split()[-1] == noun]
+            return len(same) == 1 and re.search(r"\b(?:her|the) " + re.escape(noun) + r"\b", sl) is not None
+        for s, whos, named in self._said((prior or "") + "\n" + text):
+            if not s or not HURT_SAID.search(s):
+                continue
+            for w, parts in dmg_by.items():
+                if whos and w not in whos:
                     continue
-                for w, parts in (getattr(self, "damage_by", None) or {}).items():
-                    for p in parts:
-                        if parts[p] >= 30 and _mentions_exact(s.lower(), p):
-                            told.setdefault((w, p), []).append(s)
+                for p in parts:
+                    if parts[p] >= 30 and names_part(s.lower(), w, p):
+                        told.setdefault((w, p), []).append(s)
         for (w, p), ss in told.items():
             limit = 4 if (getattr(self, "damage_by", None) or {}).get(w, {}).get(p, 0) >= 150 else 3
             for s in ss[limit:]:
@@ -8011,7 +8081,10 @@ class Narrator:
         fixed = 0
         for i in todo:
             reasons = list(found[i])[:4]
+            kinds = list(dict.fromkeys(_issue_label(r) for r in reasons))
+            ok, calls = False, 0
             for _ in range(tries):
+                calls += 1
                 new = self._rewrite_paragraph(user_msg, paras, i, reasons)
                 if not new:
                     continue
@@ -8022,7 +8095,10 @@ class Narrator:
                     continue
                 paras[i] = new
                 fixed += 1
+                ok = True
                 break
+            for k in kinds:     # (/checks: which kinds of fix work, and what they cost)
+                self._tally_checks([k], "fixed" if ok else "not fixed", calls / max(1, len(kinds)))
         if self.progress and fixed < len(todo):
             self.progress(f"{len(todo) - fixed} of them still came back wrong: only the wrong sentences get cut")
         return re.sub(r"\n{3,}", "\n\n", "\n".join(paras)).strip()
@@ -8502,6 +8578,52 @@ class Narrator:
         t0 = getattr(self, "_beat_t0", None)
         return bool(mins > 0 and t0 and _time.time() - t0 > mins * 60 * factor)
 
+    CHECKS_FILE = "check_counts.json"
+
+    def _tally_checks(self, labels, outcome="found", calls=0.0):
+        """Count what the checks find, and how the paragraph fixes for each kind turn out (/checks shows it): which
+        mistakes the model keeps making, and which fixes are worth their time. Kept for this fight and for good (in
+        check_counts.json next to the program)."""
+        for book in (self.__dict__.setdefault("check_tally", {}), self.__dict__.setdefault("_check_new", {})):
+            for k in labels:
+                row = book.setdefault(k, {"found": 0, "fixed": 0, "not fixed": 0, "calls": 0.0})
+                row[outcome] = row.get(outcome, 0) + 1
+                row["calls"] = round(row.get("calls", 0.0) + calls, 2)
+
+    def save_check_tally(self, folder):
+        """Add this beat's counts to check_counts.json (quietly: a file that can't be written changes nothing)."""
+        new = self.__dict__.pop("_check_new", None)
+        if not new:
+            return
+        path = os.path.join(folder, self.CHECKS_FILE)
+        try:
+            with open(path, encoding="utf-8") as fh:
+                book = json.load(fh)
+        except (OSError, ValueError):
+            book = {}
+        for k, row in new.items():
+            old = book.setdefault(k, {})
+            for f, v in row.items():
+                old[f] = round(old.get(f, 0) + v, 2)
+        try:
+            with open(path, "w", encoding="utf-8") as fh:
+                json.dump(book, fh, indent=1, ensure_ascii=False, sort_keys=True)
+        except OSError:
+            pass
+
+    @staticmethod
+    def checks_table(book, top=20):
+        rows = sorted(book.items(), key=lambda kv: -(kv[1].get("found", 0) + kv[1].get("fixed", 0)
+                                                      + kv[1].get("not fixed", 0)))[:top]
+        if not rows:
+            return "  (nothing yet)"
+        out = [f"  {'what the check found':34s} {'drafts':>6s} {'fixes':>6s} {'worked':>7s} {'calls':>6s}"]
+        for k, r in rows:
+            tried = r.get("fixed", 0) + r.get("not fixed", 0)
+            rate = f"{100 * r.get('fixed', 0) // tried}%" if tried else "-"
+            out.append(f"  {k[:34]:34s} {r.get('found', 0):6d} {tried:6d} {rate:>7s} {r.get('calls', 0):6.0f}")
+        return "\n".join(out)
+
     def beat_timing(self):
         """Where this beat's narration time went, by step: drafts, rewrites, paragraph fixes, the second reading...
         (added to the ⏱ line; narration.show_timing)."""
@@ -8546,6 +8668,7 @@ class Narrator:
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
         self.recent_reactions = (self.recent_reactions + [reactions_used(text)])[-3:]
         self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self._note_worn(text)
         self._beat_no += 1
         return self.pov_labels(text)
 
@@ -9084,6 +9207,8 @@ class Narrator:
     def _narrate_beat(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
         n = self.rules.get("narration", {})
         self._scene_text = str(scene or "")
+        # what the fighters and the place ARE (their looks, their moves, the arena): words a story rightly says again
+        self._ref_words = set(re.findall(r"[a-z']+", (str(fighter_notes or "") + " " + self._scene_text).lower()))
         words = int(n.get("words_per_beat", 500))
         pin_events = [e for e in bundle.get("also_this_beat", []) if e["type"] == "pin_progress"]
         forced = [a for a in (bundle.get("actions") or []) if a.get("type") == "pin_forced"]
