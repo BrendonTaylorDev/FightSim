@@ -2202,6 +2202,47 @@ class Narrator:
                 f"dead, heavy strangeness and a cold shock spreading round it; she can barely feel it. It is NOT healed "
                 f"and it is not over: it will come back. Show the eeriness of it, maybe a relief she doesn't trust")
 
+    # how big her reaction to a blow is: the PART's pain sets how much there is to react to, her OVERALL strength
+    # sets how much of it she can hold in. A wrecked part on a strong fighter: sharp, local, she fights on. The same
+    # part as she wears down: more and more of it gets out. A healthy part on a worn-out fighter: it hurts, but the
+    # part itself isn't that painful yet, so never the extreme reactions.
+    REACTION_SIZES = [
+        "small: a wince, a grunt or a sharp breath, and she goes on",
+        "clear: a hiss or a bitten-off sound, a flinch, she favors the spot for a moment",
+        "strong: a real cry, a stagger (a limp if it is a leg), she guards the part and is slower with it, the rest "
+        "of her still fighting",
+        "heavy: a scream or a broken cry, she sags or stumbles and shakes, a moment before she can act again",
+        "raw: past what she can hold in: her body curls round it, trembling she cannot stop, eyes streaming, a long "
+        "moment where there is nothing in her head but that part",
+    ]
+
+    def _health_band(self, h=None, who=None):
+        """0 strong, 1 worn, 2 low, 3 nearly spent: how much she has left (as the blow lands, when known)."""
+        who = who or (h or {}).get("defender")
+        left = None
+        if h:
+            top = h.get("max_health") or (getattr(self, "max_health", None) or {}).get(who)
+            if top and h.get("health_before") is not None:
+                left = 100.0 * float(h["health_before"]) / float(top)
+        if left is None:
+            left = float((getattr(self, "strengths", None) or {}).get(who, 100))
+        caps = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+        strong, mid = float(caps.get("strong_from", 70)), float(caps.get("mid_from", 40))
+        low = float(caps.get("low_from", 20))
+        return 0 if left >= strong else 1 if left >= mid else 2 if left >= low else 3
+
+    def _reaction_size(self, h, part_label, glancing=False):
+        part = {"minor": 0, "sore": 1, "hurting": 1, "very painful": 2, "excruciating": 3, "devastated": 4,
+                "numb with shock": 0}.get(part_label, 1)
+        band = self._health_band(h)
+        if band >= 2 and part <= 1:
+            part += 1                       # worn down, even a fresh hurt gets more out of her (never past "strong")
+        cap = {0: 2, 1: 3, 2: 4, 3: 4}[band]
+        size = min(part, cap)
+        if glancing:
+            size = min(size, max(1, size - 1))
+        return self.REACTION_SIZES[size]
+
     def _hit_line(self, h, n=None, how=None):
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
         if h.get("numb"):
@@ -2233,13 +2274,16 @@ class Narrator:
             # not a blow: something that stays on her and keeps working (the water of a charge that carries her)
             return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
                     f"{how}, {self._strength_key(h['damage_taken'])} in size"
-                    + (f" ({raw})" if raw else "") + f"; {change}{tough}{self._numb_note(h)}.")
+                    + (f" ({raw})" if raw else f" (her reaction: {self._reaction_size(h, after['label'])})")
+                    + f"; {change}{tough}{self._numb_note(h)}.")
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
                 f"{self._strength(h['damage_taken'])} blow "
                 f"(impact, e.g. {impact}; a hit here shows as "
                 f"{self._region_tell(h['part'], sum(map(ord, seed)))}"
                 + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
                    if self._voice_cue(h, after['label'], 0) else "")
+                + ("" if raw else f"; her reaction: "
+                   f"{self._reaction_size(h, after['label'], self._strength_key(h['damage_taken']) == 'glancing')}")
                 + f"); {change}{tough}{self._numb_note(h)}.")
 
     # a blow on a part that was ALREADY badly hurt. Three things set how raw the reaction is: how hurt the part was
@@ -2936,7 +2980,11 @@ class Narrator:
                              + ", ".join(used) + ".")
         if self._tiers_used:
             guide = [f"{t['label']} = {t['reaction']}" for t in pain_tiers(self.rules) if t["label"] in self._tiers_used]
-            lines.append("PAIN GUIDE (how each lasting pain level shows from now on):\n  " + "\n  ".join(guide))
+            lines.append("PAIN GUIDE (how each lasting pain level shows from now on):\n  " + "\n  ".join(guide)
+                         + "\n  These describe the PART at its worst. How much of it gets out of her (the size of a cry, "
+                           "whether her whole body joins in) follows her OVERALL strength: each hit's \"her reaction\" "
+                           "says how big. A strong fighter keeps even a wrecked part's pain in that part; it seeps "
+                           "further into her the more worn down she is.")
             caps = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
             strong, mid = float(caps.get("strong_from", 70)), float(caps.get("mid_from", 40))
             for who, left in (getattr(self, "strengths", None) or {}).items():
@@ -2953,8 +3001,8 @@ class Narrator:
                                  f"and fights on with everything else.")
                 else:
                     lines.append(f"MEASURED PAIN: {poss(who)} {what} {'is' if len(bad) == 1 else 'are'} that bad, and she "
-                                 f"is worn but not spent: a real cry, a moment to recover, the hurt part useless for now, "
-                                 f"but she does not collapse or writhe, and she fights on.")
+                                 f"is worn now, so more of it gets out: a real cry, a limp or a sag, a moment to recover, "
+                                 f"the hurt part close to useless, but she does not collapse or writhe, and she fights on.")
         lines.append("Impact examples are suggestions: pick reactions that fit each fighter's species (their TELLS) and "
                      "the moment, and never reuse the same reaction twice in a beat. Scale how fast each fighter recovers "
                      "to their OVERALL strength under CURRENT CONDITION: a strong fighter cries out, then fights on.")
