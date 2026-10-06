@@ -2790,7 +2790,7 @@ class Engine:
         for i, kind in enumerate(shown):
             if kind not in ("gives_out", "slips"):
                 continue
-            if not self._chance(chance, f"{f.name}'s drop back down hurting", "it jars her", "it doesn't hurt"):
+            if not self._chance(chance, f"{poss_word(f.name)} drop back down hurting", "it jars her", "it doesn't hurt"):
                 continue
             hurt = [p for p in worst if p.damage >= 30]
             part = (hurt[0].name if kind == "gives_out" and hurt else
@@ -4277,6 +4277,31 @@ class Engine:
             return "cold"
         return "blunt"
 
+    def covering(self, f):
+        """What her body is covered with, from her own description: fur, feathers, scales, or bare skin."""
+        t = f"{getattr(f, 'appearance', '') or ''} {getattr(f, 'description', '') or ''}".lower()
+        n = {"fur": len(re.findall(r"\bfur|\bpelt|\bcoat\b", t)),
+             "feathers": len(re.findall(r"feather|plumage|\bdown\b", t)),
+             "scales": len(re.findall(r"\bscale", t))}
+        best = max(n, key=n.get)
+        return best if n[best] else "skin"
+
+    _COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b", "plumage"), (r"\bhairs?\b", "feathers")],
+                   "scales": [(r"\bfur\b", "scales"), (r"\bcoat\b", "scales"), (r"\bhairs?\b", "scales"),
+                              (r"\bburnt hair\b", "scorched hide")],
+                   "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b", "hide"), (r"\bhairs?\b", "skin")]}
+
+    def in_her_covering(self, f, text):
+        """Wound and wear wording is written for fur: say it in feathers, scales or skin for a body that has those."""
+        swaps = self._COVER_SWAP.get(self.covering(f))
+        if not swaps or not text:
+            return text
+        for rx, word in swaps:
+            text = re.sub(rx, word, text)
+        return re.sub(r"\b(feathers|scales) (is|was|stands?|lies|parts)\b",
+                      lambda m: m.group(1) + " " + {"is": "are", "was": "were", "stands": "stand", "stand": "stand",
+                                                    "lies": "lie", "parts": "part"}[m.group(2)], text)
+
     def visible_marks(self, f, p):
         """What the damage to one part LOOKS like by now: the marks of what did it (claws, teeth, blows, grips,
         lightning, cold), how deep, and cartilage (ears, nose, fins) creased or bent out of shape for now."""
@@ -4291,7 +4316,7 @@ class Engine:
             marks.append(cart + " for now")
         if lvl == 2 and "swollen" not in " ".join(marks):
             marks.append("swollen")
-        return f"her {p.name.lower()}: " + ", ".join(marks)
+        return self.in_her_covering(f, f"her {p.name.lower()}: " + ", ".join(marks))
 
     def wear_text(self):
         """VISIBLE WEAR: how each fighter looks by now, so the narrator keeps it the same from beat to beat."""
@@ -4314,7 +4339,7 @@ class Engine:
             bits += [(self.visible_marks(f, p).split(", ")[0] if self._stale(f, p.name, ob) else self.visible_marks(f, p))
                      for p in bad]
             if bits:
-                rows.append(f"{f.name}: " + "; ".join(dict.fromkeys(bits)))
+                rows.append(f"{f.name}: " + self.in_her_covering(f, "; ".join(dict.fromkeys(bits))))
         return ("VISIBLE WEAR (how they look by now; keep it the same unless this beat changes it): "
                 + " | ".join(rows)) if rows else ""
 

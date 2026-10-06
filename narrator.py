@@ -1558,6 +1558,11 @@ def _clean(text, cut_off=None, open_end=False):
     # common model slips: a tail "hashing" is a tail lashing
     text = re.sub(r"(?i)\b(tails?\W+(?:\w+\W+){0,2}?)hash(ing|ed|es)\b", r"\1lash\2", text)
     text = re.sub(r"(?i)\bhash(ing|ed|es) (behind|back and forth|once|hard|side to side)", r"lash\1 \2", text)
+    # the markers that frame "the beat so far" in the prompt (<<< ... >>>), copied into the story
+    text = re.sub(r"[ \t]*(?:<{2,}|>{2,})[ \t]*", " ", text)
+    text = re.sub(r"(?m)^ +| +$", "", text)
+    # "Ripples's": a name ending in s takes a bare apostrophe, as everywhere else in the story
+    text = re.sub(r"\b([A-Z][a-z]+s)(['’])s\b", r"\1\2", text)
     # drop markdown scaffolding the model sometimes adds: headings, rules, perspective labels
     text = userprompt.strip_stats(text)  # invented stat lines never reach the reader
     text = "\n".join(l for l in text.split("\n")
