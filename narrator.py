@@ -1456,6 +1456,15 @@ GOT_UP = re.compile(r"\b(?:got (?:back )?(?:up|to her feet|on(?:to)? her feet)|(
                     r"climbed|pushed(?: herself)?|hauled herself|came|bounced|flipped|surged|rose|lurched|staggered) "
                     r"(?:back )?(?:up(?:right)?|to her feet|on(?:to)? her feet)|(?:back|up) on her feet|on her feet again|"
                     r"regained her feet|found her feet again|stood (?:back )?up|rose to (?:her|all four) (?:feet|paws))\b", re.I)
+# things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
+ARENA_LEAK = re.compile(r"\b(cave|stalactite|stalagmite)(?:s|'s)?(?: (?:walls?|floor|roof|ceiling|mouth))?\b", re.I)
+
+# a get-up told as a struggle ("she heaved herself up once more", "she finally managed to stand"): only for a fighter
+# who was really down
+STOOD_UP_AGAIN = re.compile(r"\b(?:heaved|hauled|dragged|levered) herself (?:back )?(?:up|upright|to her feet|off the "
+                            r"ground)|(?:finally |at last )?managed to (?:stand|get up|rise)|tried to (?:rise|stand|get up|"
+                            r"push herself up)|crashed (?:back )?down again|came (?:back )?down hard on (?:them|her (?:\w+ )?"
+                            r"(?:paws?|forepaws?|legs?|knees?))|got her (?:legs|feet|paws) under her (?:at last|again)", re.I)
 _UP_TRY = re.compile(r"\b(?:tried|trying|tries|try|struggl\w+|fought|fighting|wanted|want\w*|couldn't|could not|can't|cannot|"
                      r"failed|unable|before she could|if she|would|needed to|had to|meant to|began to|started to|half|"
                      r"halfway|almost|nearly|not|never|no)\b", re.I)
@@ -3828,6 +3837,12 @@ class Narrator:
             lines.append("  - It hurts nobody this time: a near thing, a shock, and both of them wary of the place now.")
         return lines
 
+    def _arena_name(self):
+        first = str(getattr(self, "_scene_text", "") or "").strip().split(".")[0]
+        if len(first) > 70:
+            first = first[:70].rsplit(" ", 1)[0].rstrip(",;")
+        return first.lower() or "another place"
+
     def _get_up_lines(self, e):
         """Getting up off the ground, try by try, so it reads as hard as the injuries make it."""
         who, grab = e["fighter"], e["grab"]
@@ -3846,6 +3861,13 @@ class Narrator:
             lines = [f"GETTING UP: {who} is on the ground and tries to rise; she {how}. Show each try in its own short "
                      f"paragraph, with the strain in her {hurt}. Exactly {e['tries'] if e['stands'] else 3} tries, no "
                      f"more:"]
+        others = [n for n in (getattr(self, "posture_start", None) or {}) if n != who
+                  and not str(self.posture_start[n]).upper().startswith(("ON THE GROUND", "OUT OF"))]
+        if others:
+            lines[0] = lines[0].rstrip(":") + (
+                f" (this is {poss(who)} get-up and nobody else's: {' and '.join(others)} "
+                f"{'is' if len(others) == 1 else 'are'} on {'her' if len(others) == 1 else 'their'} feet when it happens, "
+                f"so no part of it is told of {'her' if len(others) == 1 else 'them'}):")
         verb = "give" if " and " in hurt else "gives"
         fails = list(e.get("fails") or [])
         fail_way = lambda k, i: {
@@ -3858,23 +3880,23 @@ class Narrator:
                 "lean": f"she drags herself to {grab} and climbs it, leaning her weight on it",
                 "lurch": "she lurches up in one ugly heave, nearly overbalancing"}.get(e.get("rise"))
         if e["stands"] and e["tries"] == 1:
-            lines.append(f"  - First try: she makes it up, quickly, shaking it off" +
+            lines.append(f"  - First try ({who}): she makes it up, quickly, shaking it off" +
                          (", though her breathing is rough and she favors the hurt spots." if e.get("hurting") else ".")
                          + (f" This time {rise}." if rise else ""))
         elif e["stands"]:
-            lines.append(f"  - Try 1: {fail_way(None, 0)}.")
+            lines.append(f"  - Try 1 ({who}): {fail_way(None, 0)}.")
             if e["tries"] == 3:
-                lines.append(f"  - Try 2: she gets nearly all the way up, then {fail_way(None, 1).split(', ', 1)[-1]}.")
-            lines.append(f"  - Try {e['tries']}: she finally makes it onto her feet, unsteady: winded, wincing, sides "
+                lines.append(f"  - Try 2 ({who}): she gets nearly all the way up, then {fail_way(None, 1).split(', ', 1)[-1]}.")
+            lines.append(f"  - Try {e['tries']} ({who}): she finally makes it onto her feet, unsteady: winded, wincing, sides "
                          f"heaving, favoring her {hurt}, using {grab} for balance."
                          + (f" This time {rise}." if rise else ""))
         elif e.get("sits"):
-            lines.append(f"  - Three tries, each one shorter and weaker (the first: {fail_way(None, 0)}). Her {hurt} "
+            lines.append(f"  - Three tries by {who}, each one shorter and weaker (the first: {fail_way(None, 0)}). Her {hurt} "
                          f"won't hold her. She does NOT make it to her feet this beat, but she gets as far as SITTING "
                          f"UP: she ends the beat sitting on the ground, propped on what will still bear her, "
                          f"{Engine.FACING_LOOK['sitting up']}. Not standing, not crouched ready to spring.")
         else:
-            lines.append(f"  - Three tries, each one shorter and weaker (the first: {fail_way(None, 0)}). Her {hurt} "
+            lines.append(f"  - Three tries by {who}, each one shorter and weaker (the first: {fail_way(None, 0)}). Her {hurt} "
                          f"won't hold her. She does NOT make it up this beat: she ends on the ground, gathering herself "
                          f"for the next try.")
         for h in e.get("fall_hits") or []:
@@ -6835,6 +6857,26 @@ class Narrator:
                             r"\b(?:hit|struck|crashed|slammed|smashed|landed|dropped|went down|fell|thrown|threw|hurled|"
                             r"flung|tumbl\w+|skidd\w+)\b", sent, re.I)):
                         fell[w] = True      # from here on in the passage she is down
+        # on her feet from the first moment of the beat to the last, never knocked off them, and no get-up of her own:
+        # yet the passage has her lying there or hauling herself up (another fighter's get-up handed to her)
+        down_now = set(self.on_ground) | set(getattr(self, "_landed", set()) or ()) | set(getattr(self, "_slammed", set()) or ())
+        never_down = [w for w in self.strengths
+                      if ps.get(w) and pe.get(w) and not str(ps[w]).upper().startswith(("ON THE GROUND", "OUT OF"))
+                      and not str(pe[w]).upper().startswith(("ON THE GROUND", "OUT OF"))
+                      and w not in rising and w not in down_now and w not in pinned]
+        if never_down:
+            for w in never_down:
+                for sent, whos, named in self._said(text):
+                    if list(whos) != [w]:
+                        continue
+                    m = GOT_UP.search(sent) or STOOD_UP_AGAIN.search(sent) or GROUNDED.search(sent)
+                    if m and not _NOT_REALLY.search(sent[:m.start()]) and not _UP_TRY.search(sent[:m.start()]) \
+                            or (m and STOOD_UP_AGAIN.search(sent)):
+                        add(sent, f"it has {w} on the ground or getting back up (\"{m.group(0)}\"), but she is ON HER "
+                                  f"FEET the whole beat and never goes down"
+                                  + (f": the one getting up is {getattr(self, '_getup_who', None)}"
+                                     if getattr(self, "_getup_who", None) else ""))
+                        break
         # "Her flotation sac deflated" said of the fighter who has no such thing. Whose stretch it is: the last
         # sentence before it (at most five back) that OPENS with a fighter as its subject, or else whose side this
         # part of the beat is told from. That is sure enough to act on unless the owner of the thing was named in
@@ -7706,6 +7748,10 @@ class Narrator:
             m = PAIN_LABEL.search(x)
             if m:
                 add(x, f"a pain level used as a label (\"{m.group(0)}\"): say how it FEELS instead")
+            # the sample passages are set in a sea cave: their cave walls must not follow the fight to another arena
+            m = ARENA_LEAK.search(x)
+            if m and m.group(1).lower().rstrip("s") not in scene_low:
+                add(x, f"\"{m.group(0)}\" isn't in this arena (the fight is in {self._arena_name()}): use what is here")
             if TAIL_PROPEL.search(x) and not re.search(r"\b(water|lake|shallows|swim\w*|current|waves?)\b", x, re.I):
                 add(x, "her twin tails only drive her through water; on land they balance her")
             m = gore.search(x) if gore is not None else None

@@ -2597,6 +2597,59 @@ class Engine:
         for n in list(self.downed):
             self._settle_facing(n)
 
+    def check_state(self):
+        """The rules that must always hold between beats, checked without changing anything: a list of what is wrong
+        (empty when all is well). Health may run below zero (health.collapse), so that is never flagged."""
+        bad = []
+        fin = lambda x: isinstance(x, (int, float)) and math.isfinite(x)
+        active = {f.name for f in self.active()}
+        for f in self.fighters.values():
+            if not fin(f.health) or not fin(f.max_health) or f.max_health <= 0:
+                bad.append(f"{f.name}: health is {f.health}/{f.max_health}")
+            if not fin(f.energy) or not -0.01 <= f.energy <= 100.01:
+                bad.append(f"{f.name}: energy is {f.energy}")
+            for p in f.parts.values():
+                if not fin(p.damage) or p.damage < -0.01 or not fin(p.resistance):
+                    bad.append(f"{f.name}'s {p.name}: damage {p.damage}, resistance {p.resistance}")
+            for st, n in f.status.items():
+                if not isinstance(n, (int, float)) or n <= 0:
+                    bad.append(f"{f.name}: status {st} has {n} beats left")
+            if self.has(f, "airborne"):
+                if f.name in self.downed:
+                    bad.append(f"{f.name} is in the air and on the ground at once")
+                if self.pin_on(f.name) or self.pinning(f.name):
+                    bad.append(f"{f.name} is in the air and in a pin")
+            if f.eliminated and f.name in self.downed:
+                bad.append(f"{f.name} is out of the fight but still counted as knocked down")
+        for h in self.holds.values():
+            if h.attacker not in active or h.defender not in active:
+                bad.append(f"hold {h.id} ({h.attacker} on {h.defender}) involves someone out of the fight")
+            elif h.part not in self.get(h.defender).parts:
+                bad.append(f"hold {h.id} grips {h.defender}'s '{h.part}', a part she doesn't have")
+            if not fin(h.power) or h.power < 0:
+                bad.append(f"hold {h.id} has power {h.power}")
+        for key, p in self.pins.items():
+            d = p.get("defender")
+            if key != f"{p.get('attacker')}>{d}":
+                bad.append(f"pin '{key}' is filed under the wrong names ({p.get('attacker')} on {d})")
+            for m in self.pin_members(p):
+                if m not in active:
+                    bad.append(f"{m} is out of the fight but still pinning {d}")
+                elif not any(h.attacker == m and h.defender == d for h in self.holds.values()):
+                    bad.append(f"{m} is pinning {d} without pressing anything")
+                if self.pinned_by(m):
+                    bad.append(f"{m} is pinning {d} while pinned herself")
+            if d not in active:
+                bad.append(f"{d} is out of the fight but still pinned")
+            elif d not in self.downed:
+                bad.append(f"{d} is pinned but not on the ground")
+        for n in self.downed:
+            if n in active and self.facing.get(n) not in self.FACING_LOOK:
+                bad.append(f"{n} is down with no way she lies ({self.facing.get(n)})")
+        if len({p["defender"] for p in self.pins.values()}) < len(self.pins):
+            bad.append("one fighter is under two separate pins")
+        return bad
+
     def _guess_facing(self, name, parts=()):
         regions = [body_region(p) for p in parts]
         front = sum(r in self.FRONT_REGIONS for r in regions) + sum(
@@ -7188,12 +7241,32 @@ class Engine:
                 "broken_props": list(getattr(self, "broken_props", []) or []),
                 "chronicle": getattr(self, "chronicle", None) or self.new_chronicle(),
                 "setups": self.__dict__.get("setups") or [],
+                "more": self._saveable_extra(),
                 "extra": extra or {},
                 "fighters": {k: {**asdict(f), "parts": {n: asdict(p) for n, p in f.parts.items()}}
                              for k, f in self.fighters.items()},
                 "holds": {i: asdict(h) for i, h in self.holds.items()}}
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(data, fh, indent=2, ensure_ascii=False)
+
+    def _saveable_extra(self):
+        """The state kept outside the main fields (_SNAP_EXTRA: who is encouraged, how a fighter went out...) that
+        can go into a save as it is. Anything that can't is left out: a loaded fight simply starts without it."""
+        out = {}
+        for k in self._SNAP_EXTRA:
+            if k in self.__dict__:
+                try:
+                    json.dumps(self.__dict__[k])
+                    out[k] = self.__dict__[k]
+                except (TypeError, ValueError):
+                    pass
+        return out
+
+    @staticmethod
+    def _known(cls, d):
+        """Only the fields this build's dataclass has: a save from a newer build (or a hand-edited one) still loads."""
+        names = set(cls.__dataclass_fields__)
+        return {k: v for k, v in d.items() if k in names}
 
     def load(self, path):
         data = load_json(path)
@@ -7209,9 +7282,9 @@ class Engine:
         self._last_event = data.get("last_event")
         self.fighters = {}
         for k, fd in data["fighters"].items():
-            parts = {n: BodyPart(**p) for n, p in fd.pop("parts").items()}
-            self.fighters[k] = Fighter(**fd, parts=parts)
-        self.holds = {int(i): Hold(**h) for i, h in data["holds"].items()}
+            parts = {n: BodyPart(**self._known(BodyPart, p)) for n, p in fd.pop("parts").items()}
+            self.fighters[k] = Fighter(**self._known(Fighter, fd), parts=parts)
+        self.holds = {int(i): Hold(**self._known(Hold, h)) for i, h in data["holds"].items()}
         self.pins = data.get("pins", {})
         self.positions = data.get("positions", "")
         self.downed = data.get("downed", {})
@@ -7233,4 +7306,9 @@ class Engine:
         self.chronicle = {**self.new_chronicle(), **(data.get("chronicle") or {})}
         self.setups = list(data.get("setups") or [])
         self.pressed, self._pending_events, self.pin_window = {}, [], {}
+        for k in self._SNAP_EXTRA:      # put back what the save kept; drop what this fight had that the save didn't
+            if k in (data.get("more") or {}):
+                self.__dict__[k] = data["more"][k]
+            elif k != "broken_props":
+                self.__dict__.pop(k, None)
         return data.get("extra", {})

@@ -11,7 +11,10 @@ from engine import Engine
 from director import resolve_many, pin_shapes
 
 
-def _usable(eng, f, d):
+def _usable(eng, f, d, budget=None):
+    """The moves f could throw at d right now (rules on repeats, uses, energy, reach and flight all kept). budget: the
+    energy she has for it (less than she has when a take-off comes first)."""
+    budget = f.energy if budget is None else budget
     out = []
     mine = [m for who, m in eng.move_log if who == f.name][-2:]
     for m in f.moves:
@@ -19,7 +22,7 @@ def _usable(eng, f, d):
             continue
         if f.move_uses.get(m["name"], 1) <= 0 or m.get("target") == "hold":
             continue
-        if eng.energy_cost(m) > f.energy:
+        if eng.energy_cost(m) > budget or eng.busy_with(f, m):     # (her jaws can't bite while they hold)
             continue
         if m.get("carry") and not eng.has(f, "airborne"):
             continue
@@ -37,8 +40,10 @@ def _pick_action(eng, rng, f, d):
     a = {"attacker": f.name, "defender": d.name, "flavor": "", "_sim": True}
     if eng.pinned_by(f.name) or eng.pinning(f.name) or f.energy < 12:
         return dict(a, action="breather")
+    flying = eng.has(f, "airborne")
     # a submission opening (rarer than a pin, so offered first): usually taken, and now and then something free is used on her as well
-    if (getattr(eng, "sub_window", None) or {}).get(d.name) and f.name not in eng.downed and rng.random() < 0.7:
+    if (getattr(eng, "sub_window", None) or {}).get(d.name) and not flying and f.name not in eng.downed \
+            and rng.random() < 0.7:
         shapes = eng.submission_shapes(f.name, d.name)
         if shapes:
             return dict(a, action="submission", improvised_name=rng.choice(sorted(shapes)))
@@ -47,16 +52,24 @@ def _pick_action(eng, rng, f, d):
         return dict(a, action="breather")    # keeps cranking the submission
     ok, _ = eng.pin_allowed(d.name)
     # like the director: when there is an opening it is told to go for it, and usually does
-    if ok and f.name not in eng.downed and not eng.has(f, "reeling") and rng.random() < 0.85:
+    if ok and not flying and f.name not in eng.downed and not eng.has(f, "reeling") and rng.random() < 0.85:
         shapes = pin_shapes(eng, f, d)
         if shapes:
             look, contacts = rng.choice(list(shapes.values()))
             sev = ["crushing"] + ["firm"] * (len(contacts) - 1)
             return dict(a, action="pin", flavor=look[:80],
                         hits=[{"part": p, "severity": s, "with": w} for (p, w), s in zip(contacts, sev)])
+    budget = f.energy
     if not eng.has(f, "airborne") and eng.can_fly(f) and rng.random() < 0.3:     # any winged fighter, dragons too
-        a["reposition"] = "take off"
-    moves = _usable(eng, f, d)
+        cost = eng.takeoff_cost(f)
+        if f.energy - cost >= 12:     # only with breath left for a move once she is up (the take-off is paid first)
+            a["reposition"] = "take off"
+            budget = f.energy - cost
+    moves = _usable(eng, f, d, budget)
+    if a.get("reposition") == "take off":
+        # once up she can't reach a fighter on the ground with a plain close blow unless she dives: keep what works
+        moves = [m for m in moves if m.get("target") in ("status", "self") or eng.is_ranged(m)
+                 or m.get("target") == "targeted"] or moves
     if not moves:
         return dict(a, action="breather")
     m = rng.choice(moves)
@@ -68,6 +81,13 @@ def _pick_action(eng, rng, f, d):
         a["part"] = rng.choice(parts)
     if m.get("target") in ("targeted",) and not m.get("charge") and rng.random() < 0.1:
         a["feint"] = True
+    # as the director does now and then: a held stream or beam, or a pummel on a fighter with nowhere to go
+    if m.get("sustainable") and m.get("target") != "self" and rng.random() < 0.2:
+        a.update(action="combo", sustain=rng.choice([2, 3, 3, 4]))
+        a.setdefault("hits", [{"part": a.pop("part")}] if "part" in a else a.get("hits"))
+    elif m.get("target") == "targeted" and not eng.is_ranged(m) and not m.get("charge") and not a.get("feint") \
+            and not a.get("reposition") and eng.pummel_place(f.name, d.name) and rng.random() < 0.35:
+        a["count"] = rng.choice([2, 3, 3, 4])
     if eng.has(f, "airborne") and m.get("target") == "targeted" and not eng.is_ranged(m) and not m.get("charge") \
             and not m.get("carry") and eng.can_carry(f, d)[0] and rng.random() < 0.25:
         a["carry"] = True      # seize her and haul her up (one_fight may follow it with a blow as she falls)
@@ -78,6 +98,30 @@ def _pick_action(eng, rng, f, d):
         if props:
             a["charge_into"] = rng.choice(props)
     return a
+
+
+CHAIN_CHANCE = 0.12      # a strike now and then strings one or two more links on (director chains)
+GRAPPLE_CHANCE = 0.04    # now and then a grab first, and the strike becomes a pummel at point-blank
+
+
+def _chain_links(eng, rng, f, d, first):
+    """One or two more attacks by f on d after `first`, each a different move she can still afford."""
+    used = {first["move"]}
+    m0 = eng.find_move(f.name, first["move"])
+    spent = (eng.energy_cost(m0) if m0 else 0) + (eng.takeoff_cost(f) if first.get("reposition") == "take off" else 0)
+    out = []
+    for _ in range(rng.choice([1, 1, 2])):
+        opts = [m for m in _usable(eng, f, d, f.energy - spent) if m["name"] not in used
+                and m.get("target") == "targeted" and not m.get("charge")]
+        if not opts:
+            break
+        m = rng.choice(opts)
+        used.add(m["name"])
+        spent += eng.energy_cost(m)
+        last = (out or [first])[-1].get("part") or rng.choice(list(d.parts))
+        out.append({"attacker": f.name, "defender": d.name, "flavor": "", "_sim": True, "action": "strike",
+                    "move": m["name"], "part": last if rng.random() < 0.4 else rng.choice(list(d.parts))})
+    return out
 
 
 def one_fight(names, rules, scene, seed, max_beats=150):
@@ -108,6 +152,20 @@ def one_fight(names, rules, scene, seed, max_beats=150):
             nxt = _pick_action(eng, rng, f, d)
             if nxt.get("action") == "strike" and nxt.get("move") != act.get("move"):
                 acts.append(dict(nxt, carry=False, launch="none"))
+        elif act.get("action") == "strike" and not act.get("count") and not act.get("carry") \
+                and not act.get("launch") and not act.get("charge_into") \
+                and not (eng.find_move(f.name, act["move"]) or {}).get("charge") and rng.random() < CHAIN_CHANCE:
+            acts += _chain_links(eng, rng, f, d, act)
+        elif act.get("action") == "strike" and not act.get("reposition") and not eng.has(f, "airborne") \
+                and not eng.has(d, "airborne") and f.name not in eng.downed and d.name not in eng.downed \
+                and not eng.pinned_by(d.name) and not eng.regrab_wait(f, d) and rng.random() < GRAPPLE_CHANCE:
+            # a grab, then the held fighter worked over at point-blank (the move picked becomes the pummel)
+            m = eng.find_move(f.name, act["move"])
+            if m and m.get("target") == "targeted" and not eng.is_ranged(m) and not m.get("charge"):
+                grab = {"attacker": f.name, "defender": d.name, "action": "grapple", "flavor": "", "_sim": True,
+                        "part": rng.choice(list(d.parts)), "hits": [{"with": rng.choice(["her forepaw", "her jaws",
+                                                                                         "her tail"])}]}
+                acts = [grab, dict(act, count=rng.choice([2, 3, 3, 4]), launch="none")]
         try:
             results, started = resolve_many(eng, acts)
             stats["carries"] = stats.get("carries", 0) + sum(1 for r in results if isinstance(r, dict) and r.get("carried"))
@@ -117,6 +175,13 @@ def one_fight(names, rules, scene, seed, max_beats=150):
             if stats["pins"] and "first_pin" not in stats:
                 stats["first_pin"] = eng.turn     # how early in the fight the first pin came
             stats["subs"] += sum(1 for r in results if isinstance(r, dict) and r.get("submission"))
+            for r in results:
+                if not isinstance(r, dict):
+                    continue
+                for k, hit in (("chain_links", (r.get("chain") or {}).get("link", 1) > 1), ("pummels", r.get("pummel")),
+                               ("sustains", r.get("sustain")), ("grapples", r.get("type") == "grapple_start")):
+                    if hit:
+                        stats[k] = stats.get(k, 0) + 1
         except Exception:
             results = []
             stats["errors"] += 1
@@ -126,6 +191,11 @@ def one_fight(names, rules, scene, seed, max_beats=150):
             except Exception:
                 started = ()
         events = eng.beat(skip_hold_ids=started)
+        bad = eng.check_state()
+        if bad:     # a rule that must always hold was broken (engine.check_state): count it, keep the first few
+            stats["state_problems"] = stats.get("state_problems", 0) + len(bad)
+            stats.setdefault("state_examples", []).extend(f"beat {eng.turn}: {b}" for b in bad[:2])
+            eng.repair_state()
         eng.record_beat(results, events)
         for e in events:
             if e.get("struggle") == "escape":
@@ -164,6 +234,14 @@ def simulate(names, rules, scene, count=20, seed=None, max_beats=150):
            f"{avg('subs'):.2f} a fight",
            f"  worst single beat: {max(r['worst_beat'] for r in runs):.0f}% of max health "
            f"(average worst {avg('worst_beat'):.0f}%)"]
+    got = lambda k: sum(r.get(k, 0) for r in runs) / n
+    out.append(f"  per fight: chain links {got('chain_links'):.1f}, pummels {got('pummels'):.1f}, held streams "
+               f"{got('sustains'):.1f}, grapples {got('grapples'):.1f}, carries {got('carries'):.1f}, collapses "
+               f"{got('collapses'):.2f}")
+    probs = sum(r.get("state_problems", 0) for r in runs)
+    if probs:
+        ex = [x for r in runs for x in r.get("state_examples", [])][:3]
+        out.append(f"  STATE CHECK: {probs} broken rule(s) found and put right, e.g. " + "; ".join(ex))
     errs = sum(r["errors"] for r in runs)
     if errs:
         out.append(f"  ({errs} stand-in choices were refused by the rules and replaced by a breather)")
