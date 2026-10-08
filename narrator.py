@@ -878,6 +878,14 @@ PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|every (?:press|hi
                          r"(?:beat|part|passage|scene)\b|end of (?:the )?beat\b|shrug\w* much of it off in its own way|in its own way, and "
                          r"she knew it|(?:saw|sees) it fall short\b|has no answer for \w+ and react|the hurt part, and how "
                          r"she (?:is|was) holding it|glimpsed in passing|(?:the )?fur or scales|scales or fur)", re.I)
+# a guard said to come up (a raised arm taking the blow) when none did
+INVENTED_GUARD = re.compile(r"\b(?:(?:arm|forearm|fin|wing|paw|foreleg)s? (?:came|snapped|whipped|jerked|shot|went|flew) up|"
+                            r"(?:raised|lifted|threw up|brought up|got up|flung up) (?:her )?(?:left |right )?(?:upper )?"
+                            r"(?:arm|forearm|fin|wing|paw|foreleg|guard)s?\b(?: up)?(?: just in time| to (?:block|guard|shield|"
+                            r"catch|meet)| in (?:its|the) way)|kept (?:the|her) guard (?:up|in place)|caught the brunt|"
+                            r"(?:her )?guard (?:had been )?(?:slow to rise|came up|went up)|"
+                            r"block(?:ed|ing) (?:it|the (?:blow|strike|claws|bite))|braced (?:her )?(?:left |right )?"
+                            r"(?:upper )?(?:arm|forearm|fin) to catch)", re.I)
 # a whole-body breakdown from one hurt part: only for a fighter who is worn down overall
 OVERREACT = re.compile(r"\b(?:every muscle (?:in her (?:whole )?body )?(?:seized|locked|spasm\w*)|her (?:whole )?body (?:had )?"
                        r"stopped (?:listening|obeying|answering)|worse than anything|the pain was overwhelming|"
@@ -1749,10 +1757,12 @@ FILLER = re.compile(
     r"would not let (?:this|it|that|her) (?:end|beat|break|finish) her)", re.I)
 
 # present tense with a possessive subject: "Nocturne's weight presses down", "Her body trembles"
-PRESENT_POSS = re.compile(r"\b(?:[A-Z][a-z]+(?:'s|’s|'|’)|[Hh]er|[Tt]he Absol's|[Tt]he Buizel's)\s+(?:\w+\s+){0,2}?"
+PRESENT_POSS = re.compile(r"\b(?:[A-Z][a-z]+(?:'s|’s|'|’)|[Hh]er|[Tt]he Absol's|[Tt]he Buizel's|[Tt]he)\s+(?:\w+\s+){0,2}?"
                           r"(?:is|are|has|presses|comes|digs|rests|grips|clamps|works|twists|trembles|stutters|whirls|"
                           r"flares|heaves|sinks|burns|throbs|aches|pulses|holds|bites|drives|catches|shakes|tightens|"
-                          r"pounds|races|screams|stays|seeps|clings|drips|dig|press|tremble|stutter|whirl|flare|heave)\b")
+                          r"pounds|races|screams|stays|seeps|clings|drips|writhes|lolls|sprawls|laps|picks up|rises|"
+                          r"hangs|seems|spreads|drifts|slides|shifts|fades|watches|waits|blurs|"
+                          r"dig|press|tremble|stutter|whirl|flare|heave)\b")
 
 # a sentence about how a part hurts (for "the same hurt told again and again")
 HURT_SAID = re.compile(r"\b(?:throb\w*|ach(?:e|ed|es|ing)|burn\w*|sting\w*|pain\w*|hurt\w*|sore\w*|flar\w+|pulse\w*|"
@@ -4519,7 +4529,7 @@ class Narrator:
         finally:
             _PREFIX[0], self._beat_t0 = "", t0
         text = _balance_marks(self._drop_said_repeats(self._drop_seen(self._drop_sample_copies(
-            self._drop_repeats(text, story_so_far)))))
+            self._drop_self_repeats(self._drop_repeats(text, story_so_far))))))
         text = _italic_sounds(text)
         self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
         return text
@@ -8209,8 +8219,9 @@ class Narrator:
                    and not re.match(r'^\s*["“]', x)]
         present += [x for para in thoughtless.split("\n") for x in _SENT.split(para.strip())
                     if x and x not in present and PRESENT_POSS.search(x) and not re.match(r'^\s*["“]', x)]
-        if n.get("tense", "past") == "past" and len(present) >= 3:
-            for x in present:
+        if n.get("tense", "past") == "past" and (len(present) >= 3 or any(len(x.split()) >= 10 for x in present)):
+            # (a long sentence in the present tense is never a stray thought: an idea block copied as it was given)
+            for x in (present if len(present) >= 3 else [x for x in present if len(x.split()) >= 10]):
                 add(x, "present tense: the story is told in the PAST tense (\"she lunged\", not \"she lunges\")")
         for x in sents:
             m = PAIN_LABEL.search(x)
@@ -8402,6 +8413,70 @@ class Narrator:
             if m:
                 add(x, f"\"{m.group(0)}\" is a stock phrase: say the concrete thing instead (a sound, a movement, a "
                        f"detail of the place), or leave it out")
+        acts_ = list(getattr(self, "_acts_now", None) or [])
+        hurt_ = set(getattr(self, "_hurt_now", None) or ())
+        fighters_ = list(self.strengths or {})
+        # a guard that never came up: the blow landed where it is listed
+        guarded = {a.get("defender") for a in acts_ if (a.get("guard") or {}).get("kind")}
+        for sent, whos, named in self._said(text):
+            if len(whos) == 1 and whos[0] in hurt_ and whos[0] not in guarded and INVENTED_GUARD.search(sent):
+                add(sent, f"\"{INVENTED_GUARD.search(sent).group(0)}\": {whos[0]} got no guard up this beat; the blow "
+                          f"landed where it is listed, on the part it hit. Leave the block out")
+        # a fighter nothing touched this beat (she dodged it, or nobody went for her) being struck in the story
+        dodgers = {a.get("defender") for a in acts_ if a.get("dodged") and not a.get("hits")}
+        for x in fighters_:
+            if x in hurt_ or x not in dodgers:
+                continue
+            foes = [w for w in fighters_ if w != x]
+            rx1 = re.compile(r"\b(?:teeth|jaws|fangs|claws|horn|paw|blow|strike|fist|tail|bite)\s+(?:\w+\s+){0,2}?"
+                             r"(?:met|found|sank|bit|raked|struck|slammed|caught|landed|dug|tore|connected|clamped)\b"
+                             r"[^.!?]{0,40}\b(?:" + re.escape(x) + r"(?:'s|’s|'|’)?|her (?:\w+ ){0,2}(?:arm|forearm|fin|"
+                             r"wing|neck|throat|wound|shoulder|side|flank|leg|paw|face|cheek|head|chest|back))\b", re.I)
+            for sent, whos, named in self._said(text):
+                if (x in whos or x in sent) and any(f in sent for f in foes + ["Her", "her"]) and rx1.search(sent) \
+                        and not re.search(r"\bhad\b|\bwould\b|\bnearly\b|\balmost\b|\bmissed\b|\bwhere\b", sent, re.I):
+                    add(sent, f"{x} got out of the way: nothing touched her this beat. Show it missing her")
+        # jaws said to be on a part that something else is holding
+        bit_parts = {h["part"].lower() for a in acts_ for h in a.get("hits") or []
+                     if re.search(r"bite|crunch|fang|jaw|chomp", str((a.get("move") or {}).get("name", "")) + " "
+                                  + str((a.get("move") or {}).get("about", "")), re.I)}
+        for g in (getattr(self, "grips", None) or []):
+            holder, held, part, with_ = g[0], g[1], str(g[2]).lower(), str(g[3] or "")
+            if re.search(r"jaw|teeth|fang|mouth|bite", with_, re.I) or part in bit_parts:
+                continue
+            if any(str(o[2]).lower() == part and re.search(r"jaw|teeth|fang|mouth|bite", str(o[3] or ""), re.I)
+                   for o in (getattr(self, "grips", None) or [])):
+                continue
+            noun = part.split()[-1]
+            rxj = re.compile(r"\b(?:jaws?|teeth|fangs)\b[^.!?]{0,50}\b" + re.escape(noun) + r"\b|\b" + re.escape(noun)
+                             + r"\b[^.!?]{0,30}\b(?:under|in|between) (?:her|" + re.escape(holder) + r"(?:'s|’s)?) "
+                             r"(?:jaws|teeth|fangs)\b", re.I)
+            for sent in sents:
+                if rxj.search(sent) and (holder in sent or held in sent) and not re.search(r"\bhad\b", sent):
+                    add(sent, f"{poss(holder)} jaws are not on {poss(held)} {part}: she holds it with {with_ or 'her body'}. "
+                              f"Show that grip, not a bite")
+        # a fighter on two legs has no forelegs
+        bipeds = [w for w in fighters_ if "arms" in self._feats_of(w) and "forelegs" not in self._feats_of(w)]
+        quads = [w for w in fighters_ if "forelegs" in self._feats_of(w)]
+        for b_ in bipeds:
+            rxf = re.compile(re.escape(b_) + r"(?:'s|’s|'|’)\s+(?:left |right )?forelegs?\b", re.I)
+            for sent in sents:
+                if rxf.search(sent) or (quads and re.match(r"\s*Her (?:left |right )?forelegs?\b", sent)
+                                        and any(q in sent for q in quads) and b_ not in sent):
+                    add(sent, f"{b_} stands on two legs: she has arms and paws, not forelegs. Say her arm")
+        # a pinned fighter lying face-up has the pinner on her FRONT, face-down on her BACK
+        facing_ = getattr(self, "facing", {}) or {}
+        for x in set(getattr(self, "pinned_now", None) or ()):
+            fc = facing_.get(x)
+            if fc not in ("face-up", "face-down"):
+                continue
+            wrong = "back" if fc == "face-up" else "(?:chest|belly|stomach)"
+            rxw = re.compile(r"\b(?:on|against|into|across|onto)\s+" + re.escape(x) + r"(?:'s|’s|'|’)?\s+(?:upper |lower )?"
+                             + wrong + r"\b", re.I)
+            for sent in sents:
+                if rxw.search(sent):
+                    add(sent, f"it puts the pinner on the wrong side of {x}: she lies {fc}, so the weight is on her "
+                              f"{'front (chest, belly)' if fc == 'face-up' else 'back'}")
         caps_ = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
         strong_ = float(caps_.get("strong_from", 70))
         fresh = {w for w, v in (getattr(self, "strengths", None) or {}).items() if float(v) >= strong_}
@@ -8413,7 +8488,8 @@ class Narrator:
                   if re.search(r"\b(?:jaws?|teeth|fangs?|mouth|bite)\b", str(g[3] or ""), re.I)}
         for sent, whos, named in self._said(text):
             if len(whos) == 1 and whos[0] in biting and re.search(
-                    r"\b(?:lower(?:ed|s)? her head|horn (?:point|aim|level|angl)\w*|(?:point|aim|level)\w* her horn|"
+                    r"\b(?:lower(?:ed|s)? her head|horn (?:point|aim|level|angl|slash|swing|swung|strik|thrust|carv|scyth)\w*|"
+                    r"(?:point|aim|level|drove|drive|swung|swing)\w* her horn|"
                     r"opened her (?:mouth|jaws)|roar(?:ed|s)?\b|howl(?:ed|s)?\b|snapp?(?:ed)? at)", sent, re.I):
                 held, part = biting[whos[0]]
                 add(sent, f"{poss(whos[0])} jaws are clamped on {poss(held)} {part}: her head stays there, her mouth "
@@ -8907,6 +8983,28 @@ class Narrator:
         return _drop_hanging_leadins(self._call(msg, words))
 
     @staticmethod
+    def _drop_self_repeats(text):
+        """A sentence the same passage already said (word for word, or nearly: 75%+ of the same words, 7 words or
+        more) is cut the second time. Long passages (interludes) circle back on themselves."""
+        def key(s):
+            return WHITESPACE.sub(" ", re.sub(r"[^\w\s]", "", s.lower())).strip()
+        seen, sets, paras = set(), [], []
+        for para in (text or "").split("\n"):
+            kept = []
+            for s in re.split(r"(?<=[.!?…])\s+", para):
+                k = key(s)
+                w = set(k.split())
+                if len(k) > 15 and (k in seen or (len(w) >= 7 and any(len(w & e) / len(w | e) >= 0.75 for e in sets))):
+                    continue
+                if len(k) > 15:
+                    seen.add(k)
+                    if len(w) >= 7:
+                        sets.append(w)
+                kept.append(s)
+            paras.append(" ".join(kept).strip())
+        return re.sub(r"\n{3,}", "\n\n", "\n".join(paras)).strip()
+
+    @staticmethod
     def _drop_repeats(text, earlier):
         """Remove sentences that already appeared in recent beats (the model sometimes recycles paragraphs)."""
         def key(s):
@@ -9101,7 +9199,7 @@ class Narrator:
         text = self._drop_sample_copies(text)
         text = self._drop_seen(text)
         text = self._drop_said_repeats(text)
-        text = self._cut_retold(text)
+        text = self._cut_retold(self._drop_self_repeats(text))
         text = self._keep_subjects(raw, text)   # a cut can take the sentence that said who "she" is
         text = self._ensure_faint(self._ensure_getup(self._top_up(text, story_so_far)))
         text = _balance_marks(text)  # cuts above can split a thought: re-pair its marks
@@ -10035,9 +10133,13 @@ class Narrator:
         except Exception:
             return written
         todo = [i for i in issues if ("never showed" in i or "left out the tumble" in i or "meeting the attack" in i)
-                and "every attack listed" not in i][:cap]
+                and "every attack listed" not in i]
         if not todo:
             return written
+        # every missing thing gets told: past the cap, the rest are told together in the last pass (one call, so a
+        # beat with many gaps costs no more calls than narration.missing_event_passes)
+        if len(todo) > cap:
+            todo = todo[:cap - 1] + ["; and ".join(todo[cap - 1:])]
         at = next((k for k in range(len(written) - 1, -1, -1) if k < len(keys) and keys[k] == "take" and written[k]),
                   None)
         if at is None:
@@ -10050,11 +10152,12 @@ class Narrator:
         for issue in todo:
             seen = "\n\n".join(w for w in written if w)
             ask = (f"\n\nTHE PASSAGE SO FAR (already written; never repeat it):\n<<<\n{_tail(seen, 1500)}\n>>>\n\n"
-                   f"Something that happens in this beat is missing from the passage: {issue}. Write ONLY that, in 2 to "
-                   f"4 sentences in the same voice and tense as the passage, as it happens, with the body's reaction "
-                   f"sized to how hurt she is. Nothing else happens: no new attacks, falls or pins.")
+                   f"Something that happens in this beat is missing from the passage: {issue}. Write ONLY that, in "
+                   f"{'2 to 4' if '; and ' not in issue else '4 to 7'} sentences in the same voice and tense as the "
+                   f"passage, as it happens, with the body's reaction sized to how hurt she is. Nothing else happens: "
+                   f"no new attacks, falls or pins.")
             try:
-                text = self._generate(context + ask, 80)
+                text = self._generate(context + ask, 80 if "; and " not in issue else 150)
                 text = self._drop_repeats(text, seen) if text else ""
             except llm.LLMError:
                 text = ""
@@ -10094,7 +10197,7 @@ class Narrator:
         a big one (devastating, or leaving a part very painful or worse) never does."""
         acts_now = [a for a in (getattr(self, "_acts_now", None) or []) if a.get("type") == "instant"
                     and not a.get("environment") and a.get("hits") and (a.get("move") or {}).get("name")]
-        if len(acts_now) < 2 or not any(written):
+        if not acts_now or not any(written):
             return written
         seen = "\n".join(w for w in written if w)
         sents_all = [s_ for para in seen.split("\n") for s_ in _SENT.split(para.strip()) if s_]

@@ -5495,6 +5495,11 @@ class Engine:
             named = [p for p in names if re.search(r"\b" + re.escape(p) + r"\b", low)]
             if named and not any(p in jaw_parts for p in named):
                 wrong = True
+            # "jaws clamp around her right forelimb" with the jaws on her LEFT upper arm: the side is wrong
+            sides = set(re.findall(r"\b(left|right)\b", low))
+            jaw_sides = {s for jp in jaw_parts for s in re.findall(r"\b(left|right)\b", jp)}
+            if sides and jaw_sides and not (sides & jaw_sides):
+                wrong = True
         if not wrong:
             return text
         bits = [f"{st.get('with') or 'pressure'} on her {str(st['part']).lower()}" for st in started]
