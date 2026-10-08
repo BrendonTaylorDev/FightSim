@@ -72,6 +72,21 @@ def _pick_action(eng, rng, f, d):
         # once up she can't reach a fighter on the ground with a plain close blow unless she dives: keep what works
         moves = [m for m in moves if m.get("target") in ("status", "self") or eng.is_ranged(m)
                  or m.get("target") == "targeted"] or moves
+    lcfg = (eng.rules.get("flight") or {}).get("leap") or {}
+    if eng.has(d, "airborne") and not flying and f.name not in eng.downed and lcfg.get("enabled", True) \
+            and f.energy >= float(lcfg.get("energy", 10)) + 10 and eng.high_ground() \
+            and rng.random() < (0.5 if not any(eng.is_ranged(m) for m in moves) else 0.15):
+        # as the director is told: climb something high and leap at the flyer with a close strike
+        close = [m for m in f.moves if not eng.is_ranged(m) and m.get("target") == "targeted" and not m.get("charge")
+                 and not m.get("carry")
+                 and f.move_uses.get(m["name"], 1) > 0 and eng.energy_cost(m) + float(lcfg.get("energy", 10)) <= f.energy
+                 and not eng.busy_with(f, m)]
+        mine = [mm for who, mm in eng.move_log if who == f.name][-2:]
+        close = [m for m in close if not (len(mine) == 2 and all(x == m["name"] for x in mine))]
+        if close:
+            m = rng.choice(close)
+            return dict(a, action="strike", move=m["name"], part=rng.choice(list(d.parts)),
+                        leap_from=rng.choice(eng.high_ground()))
     if not moves:
         return dict(a, action="breather")
     m = rng.choice(moves)

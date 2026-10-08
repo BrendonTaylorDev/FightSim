@@ -3189,6 +3189,11 @@ class Narrator:
                         "her where she lies and sends her skidding, rolling, and tumbling across the ground")
             route = "; then ".join(("tumbling on: " if l.get("tumble") else "") + f"{l['surface']} ({', '.join(l['parts'])})"
                                    for l in a.get("landings", []))
+            if a.get("leap_fall"):
+                lines.append(f"{a['defender']} FALLS from {a['leap_fall']} after her leap missed, with nothing to catch "
+                             f"her, and lands badly, in this order: {route}. Each surface hits those body parts. "
+                             + self._ends_line(a))
+                return lines
             lines.append(f"{a['defender']} {verb} by that blow and crashes into the arena, in this order: {route}. "
                          f"Each surface hits those body parts. " + self._ends_line(a)
                          + " How she travels between the surfaces (skidding, tumbling, bouncing, spinning) is yours.")
@@ -3341,6 +3346,16 @@ class Narrator:
             if a.get("wary") and not turned:
                 way = (f"{way}; " if way else "") + ("she was already moving before it came: that move hurt her badly "
                                                      "before, and she flinches away from it early now")
+            lp = a.get("leap")
+            if lp:
+                lines.append(f"{a['attacker']} can't reach {who} up in the air from the ground, so she CLIMBS "
+                             f"{lp['from'].upper()} and LEAPS off it at her with {what}, but "
+                             + ("the leap FALLS SHORT: she can't get high enough, and her claws, teeth or blow close on "
+                                "empty air below the flyer" if a.get("leap_short") else
+                                f"{who} sees her coming and swerves out of the way in the air")
+                             + f". It does no damage to {who}. {a['attacker']} has nothing under her now: she FALLS "
+                               f"from the height and lands badly (the landing below).{intent}")
+                return lines
             lines.append(f"{a['attacker']} goes for {who} with {what}, but {who} "
                          + (f"{way}" if turned else "DODGES" + (f" (this time she {way})" if way else ""))
                          + ": it misses completely and "
@@ -3360,7 +3375,13 @@ class Narrator:
                                 if mc.get("down") else "but stays on her feet")
                              + f". Nobody else touches her: this is her own charge. It hurts her:")
                 lines += [self._hit_line(h) for h in mc["hits"]]
-            if a.get("counter_hits"):
+            if a.get("counter_hits") and a.get("dive_counter"):
+                lines.append(f"  - {who} SIDESTEPS THE DIVE and, as {a['attacker']} streaks past her, strikes at her going "
+                             f"by: {poss(a['attacker'])} own speed is in the blow. (A quick strike of {poss(who)} own, "
+                             f"separate from any attack she makes later in this beat; {a['attacker']} is the only one hurt "
+                             f"here. Show the flyer shooting past and the blow catching her side, wing or tail on the way.)")
+                lines += [self._hit_line(h) for h in a["counter_hits"]]
+            elif a.get("counter_hits"):
                 lines.append(f"  - Out of the dodge, {who} COUNTERS and catches {a['attacker']} (a quick strike of its own, "
                              f"separate from any attack {who} makes later in this beat; {a['attacker']} is the only one hurt here):")
                 lines += [self._hit_line(h) for h in a["counter_hits"]]
@@ -3492,11 +3513,41 @@ class Narrator:
                 if (a.get("move") or {}).get("extras") and any("speed of" in str(x) for x in a["move"].get("extras") or []):
                     lines.append(f"  - She has been building SPEED with every pass she makes and climbs back from: this "
                                  f"dive comes in faster than the last, and lands harder for it.")
+                pc = a.get("pass_counter")
+                if pc:
+                    lines.append(f"  - STRUCK AS SHE PASSES: {pc['by']} takes the dive, and still gets a blow of her own "
+                                 f"into {a['attacker']} as she streaks past (her own speed is in it). YOU MUST SHOW THIS: "
+                                 f"the dive lands, and in the same instant {pc['by']} answers it as the flyer goes by:")
+                    lines += [self._hit_line(h) for h in pc["hits"]]
                 if a.get("strafe"):
                     lines.append(f"  - A STRAFING PASS: as she climbs away, her own speed carries her round and she sweeps "
                                  f"back across {a['defender']} for one quicker, lighter blow on her "
                                  f"{a['strafe']['part'].lower()} (the last hit listed) before she is gone again, out of "
                                  f"reach. YOU MUST SHOW THIS: it is a second strike, fast and glancing, not the dive again.")
+            lp = a.get("leap")
+            if lp and lp.get("reached"):
+                lines.append(f"  - A LEAP FROM HIGH GROUND: {a['defender']} is up in the air, out of reach from the "
+                             f"ground, so {a['attacker']} CLIMBS {lp['from'].upper()} and LEAPS off it at her, and "
+                             f"reaches her: the blow lands in mid-air with all her weight behind it. YOU MUST SHOW the "
+                             f"climb, the jump and the blow in the air.")
+                if lp.get("dragged") or a.get("grounded"):
+                    lines.append(f"  - She DRAGS {a['defender']} DOWN out of the air with her: the flyer can't stay up "
+                                 f"under her weight and both come down (the flyer's landing below).")
+                else:
+                    lines.append(f"  - {a['defender']} stays up; {a['attacker']} drops away from her.")
+                if lp.get("landing_hits"):
+                    lines.append(f"  - {a['attacker']} comes down from the height ON HER FEET, hard: the landing jars her "
+                                 f"legs (she stays up):")
+                    lines += [self._hit_line(h) for h in lp["landing_hits"]]
+            if a.get("air_pass"):
+                lines.append(f"  - IN THE AIR, BOTH OF THEM: {a['attacker']} and {a['defender']} are both on the wing; "
+                             f"{a['attacker']} closes on her at speed and strikes as they cross, the speed of both in "
+                             f"the blow, then they are past each other and turning. Both stay up.")
+                ar = a.get("air_rake")
+                if ar:
+                    lines.append(f"  - AS THEY CROSS, {ar['by']} RAKES BACK at {a['attacker']} going by. YOU MUST SHOW "
+                                 f"THIS: a second, quick blow the other way, in the same instant:")
+                    lines += [self._hit_line(h) for h in ar["hits"]]
             if a.get("carried"):
                 lines.append(f"  - CARRIED UP: {a['attacker']} seizes her in her {self._grip_word(a['attacker'])} and hauls "
                              f"her up off the ground, {a['carried']['height']}, wings labouring, then LETS GO. "
@@ -5915,6 +5966,11 @@ class Narrator:
             if act and a.get("dive"):
                 side[0] = "act"
                 add(f"{poss(att_)} dive", B.pick("aerial", 1, moment={"dive"}))
+            if act and a.get("leap"):
+                side[0] = "act"
+                add(f"{poss(att_)} climb and leap", B.pick("aerial", 1, moment={"leap"}))
+            if act and (a.get("dive_counter") or a.get("pass_counter") or a.get("air_rake")):
+                add(f"the blow back as they pass", B.pick("aerial", 1, moment={"counter"}))
             if a.get("carried"):
                 side[0] = "take" if take else "act"
                 add(f"{dfn_}, carried up and dropped", B.pick("aerial", 1, moment={"carried"}, has=feats(att_)))
@@ -7687,7 +7743,13 @@ class Narrator:
                 elif parts:
                     steps.append(f"{poss(att)} {mv} lands on {poss(dfn)} {parts[0]}")
                 if a.get("counter_hits"):
-                    steps.append(f"{dfn} counters")
+                    steps.append(f"{dfn} counters" + (f" as {att} goes past" if a.get("dive_counter") else ""))
+                if a.get("pass_counter"):
+                    steps.append(f"{dfn} strikes {att} as she goes past")
+                if a.get("air_rake"):
+                    steps.append(f"{dfn} rakes back at {att} as they cross in the air")
+                if a.get("leap"):
+                    steps.insert(max(0, len(steps) - 1), f"{att} climbs {a['leap']['from']} and leaps at {dfn}")
             elif t in ("pin_start", "pin_forced"):
                 if a.get("taken_down"):
                     steps.append(f"{att} takes {dfn} down")

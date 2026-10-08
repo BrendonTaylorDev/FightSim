@@ -917,6 +917,21 @@ class Engine:
                                     round(dm * (1 + float(sp.get("per_pass", 0.1)) * n), 3))]
             else:
                 extras = extras + [("diving from above", dm)]
+        elif move.get("leap_from") and self.has(d, "airborne") and not self.has(a, "airborne"):
+            lcfg = (self.rules.get("flight") or {}).get("leap") or {}
+            extras = extras + [(f"leaping at her from {move['leap_from']}, all her weight in it",
+                                float(lcfg.get("mult", 1.2)))]
+        elif self.has(a, "airborne") and self.has(d, "airborne") and not self.is_ranged(move) \
+                and move.get("target") not in ("status", "hold", "self") and not move.get("carry") \
+                and (getattr(self, "_juggle", None) or {}).get("who") != d.name:
+            # two flyers closing on each other in the air (flight.air_pass): the speed of both is in the blow
+            ap = (self.rules.get("flight") or {}).get("air_pass") or {}
+            if ap.get("enabled", True):
+                n = self.air_speed(a)
+                sp = (self.rules.get("flight") or {}).get("speed") or {}
+                extras = extras + [("closing on her at speed in the air"
+                                    + (f", {n} pass{'es' if n != 1 else ''} of speed behind it" if n else ""),
+                                    round(float(ap.get("mult", 1.15)) * (1 + float(sp.get("per_pass", 0.1)) * n), 3))]
         if move.get("improvised"):
             stab = 1.0    # a technique she makes up on the spot isn't one of her own type's moves: no same-type bonus
         xm = 1.0
@@ -1020,10 +1035,27 @@ class Engine:
                              f"blast), or let her get up first")
         self._no_friendly_fire(a, [d], enforce)
         self._pinned_reach(a, [d.name], enforce)
+        leap = None
+        if move.get("leap_from") and self.has(d, "airborne") and not self.has(a, "airborne") \
+                and not self.is_ranged(move) and not move.get("carry") and move.get("target") not in ("status", "self", "hold"):
+            lcfg = (self.rules.get("flight") or {}).get("leap") or {}
+            if enforce and not lcfg.get("enabled", True):
+                raise ValueError("leaps from high ground are turned off (/set flight.leap.enabled true)")
+            if enforce and (a.name in self.downed or self.pinned_by(a.name) or self.pinning(a.name)):
+                raise ValueError(f"{a.name} has to be on her feet and free to climb and leap")
+            if enforce and a.energy < float(lcfg.get("energy", 10)):
+                raise ValueError(f"{a.name} is too worn out to climb and leap (needs {lcfg.get('energy', 10)} energy)")
+            leap = self._leap_spot(move.get("leap_from"))
+            if leap is None and enforce:
+                raise ValueError(f"there is nothing high enough in {self.scene_word('place', 'the arena')} to climb and "
+                                 f"leap from")
+            if leap:
+                move = dict(move, leap_from=leap)
         if enforce and self.has(d, "airborne") and not self.has(a, "airborne") and not self.is_ranged(move) \
-                and move.get("target") not in ("status", "self"):
+                and move.get("target") not in ("status", "self") and not leap:
             raise ValueError(f"{d.name} is IN THE AIR: {move['name']} can't reach her up there. Use a ranged move (a "
-                             f"beam, a blast, a stream), or wait for her to dive")
+                             f"beam, a blast, a stream), wait for her to dive, or climb high ground and leap at her "
+                             f"(\"leap_from\": one of: {', '.join(self.high_ground()) or 'nothing here is high enough'})")
         if enforce and move.get("carry") and not self.has(a, "airborne"):
             raise ValueError(f"{move['name']} carries her up into the air: {a.name} has to be in the air to do it "
                              f"(\"reposition\": \"take off\" first)")
@@ -1197,7 +1229,20 @@ class Engine:
         clash = self._clash(a, d, move, math) if enforce and not pum and not fed and not ending else None
         if clash and clash["outcome"] == "through":
             powers = [round(pw * clash["share"], 2) for pw in powers]
-        dodge = None if (clash or fed) else (self.dodge_roll(a, d, target, move["name"]) if enforce else None)
+        self._dive_now = bool(self.has(a, "airborne") and not self.has(d, "airborne") and not self.is_ranged(move)
+                              and move.get("target") not in ("status", "hold", "self") and not move.get("carry"))
+        short = None
+        if leap and enforce:
+            lcfg = (self.rules.get("flight") or {}).get("leap") or {}
+            reach = min(0.9, float(lcfg.get("reach", 0.55)) * (0.5 + 0.5 * max(0.0, min(1.0, self.strength(a) / 100.0))))
+            if not self._chance(reach, f"{a.name} reaching {d.name} with the leap from {leap}", "she reaches her",
+                                "falls short"):
+                short = {"dodged": True, "dodge_chance": round(1 - reach, 2), "counter_hits": [],
+                         "manner": "the leap falls short of her", "leap_short": True}
+        try:
+            dodge = short or (None if (clash or fed) else (self.dodge_roll(a, d, target, move["name"]) if enforce else None))
+        finally:
+            self._dive_now = False
         guard, dev = None, None
         if enforce and not clash and not dodge and not pum and not fed:
             guard = self._guard_roll(a, d, move, target)
@@ -1383,6 +1428,13 @@ class Engine:
                 self._after_dive(a, d, res, bool(hits))
                 if res.get("climbs") and hits and not res.get("dodged"):
                     self._strafe(a, d, res, math)
+        elif leap:
+            self._leap_after(a, d, res, leap, bool(hits) and not res.get("dodged"))
+        elif self.has(a, "airborne") and self.has(d, "airborne") and not self.is_ranged(move) \
+                and move.get("target") not in ("status", "hold", "self") and not move.get("carry") \
+                and (getattr(self, "_juggle", None) or {}).get("who") != d.name \
+                and ((self.rules.get("flight") or {}).get("air_pass") or {}).get("enabled", True):
+            self._air_pass(a, d, res, bool(hits) and not res.get("dodged"))
         if spiking and hits and not res.get("dodged"):
             res["spiked_down"] = True     # driven down into the ground (director: her landing is the harder for it)
         return res
@@ -1584,6 +1636,40 @@ class Engine:
         return self.scene_cfg.get(key) or default or {"place": "the arena", "ground": "the ground",
                                                        "rough": "the rough ground", "slick": "the ground",
                                                        "ambience": ""}.get(key, "")
+
+    HIGH_GROUND = re.compile(r"boulder|stalagmite|logjam|half-sunk rock|turbine housing|catwalk|basalt column|outcrop|"
+                             r"ice pillar|ice cliff|cliff|\boak\b|\bpine\b|\btree\b|trunk|derrick|crates|deckhouse|"
+                             r"pillar|statue|ore cart|crystal cluster|gear housing|bell frame|roof beam|barnacled rock|"
+                             r"groyne|altar stone|frozen boulder|timber prop", re.I)
+
+    def high_ground(self):
+        """Things in this arena a fighter on the ground can climb to leap at a flyer from (flight.leap): the scene's
+        own "high_ground" list if it has one, else its props and hazards that stand high enough."""
+        sc = self.scene_cfg or {}
+        if sc.get("high_ground"):
+            return list(sc["high_ground"])
+        names = list(sc.get("props") or []) + [h.get("name", "") for h in sc.get("hazards") or []]
+        out = []
+        for n in names:
+            if n and self.HIGH_GROUND.search(n) and n not in out:
+                out.append(n)
+        return out
+
+    def _leap_spot(self, want):
+        """The high ground named for a leap (the closest match among this arena's), or None."""
+        spots = self.high_ground()
+        if not spots:
+            return None
+        w = str(want or "").lower()
+        if w and w not in ("true", "yes"):
+            for s in spots:
+                if s.lower() in w or w in s.lower():
+                    return s
+            words = set(re.findall(r"[a-z]{3,}", w)) - {"the", "and", "from", "off", "top"}
+            for s in spots:
+                if words & set(re.findall(r"[a-z]{3,}", s.lower())):
+                    return s
+        return self.rng.choice(spots)
 
     def scene_props(self):
         """Solid things in this arena to be thrown or driven into, or to lean on getting up. One that has broken in
@@ -2485,12 +2571,21 @@ class Engine:
                 out["slipped"] = {"facing": self.knock_down(d.name, why=f"{d.name} slipped as she dodged")}
                 return out      # she gets out of its way and goes down: no counter from the ground
         cfg = self._cfg("evasion")
-        if not self.has(d, "flinched") and self._chance(float(cfg.get("counter_chance", 0.35)),
-                                                         f"{d.name} countering after the dodge", "she counters",
-                                                         "no counter"):
+        dc = ((self.rules.get("flight") or {}).get("dive_counter") or {})
+        dive = bool(getattr(self, "_dive_now", False)) and dc.get("enabled", True)
+        cch = float(dc.get("on_dodge", 0.45) if dive else cfg.get("counter_chance", 0.35))
+        if not self.has(d, "flinched") and self._chance(cch, f"{d.name} countering after the dodge"
+                                                             + (" as the dive goes past" if dive else ""),
+                                                         "she counters", "no counter"):
             reach = [p for p in a.parts if body_region(p) in ("head", "neck", "chest", "shoulder", "fore_up", "fore_low",
                                                               "belly")] or list(a.parts)
             power = self.power_for("instant", cfg.get("counter_severity", "solid"))
+            if dive:
+                # she steps aside and strikes as the flyer streaks past: the flyer's own speed is in the blow, and it
+                # finds whatever goes by (a wing, the belly, the tail) as much as the front of her
+                reach = [p for p in a.parts if not re.search(r"\bhead\b|horn|antenna|ear|eye|nose", p, re.I)] or reach
+                power = round(power * float(dc.get("momentum", 1.25)), 2)
+                out["dive_counter"] = True
             mine, self._source = self._source, f"{poss_word(d.name)} counter"  # her blow, not the attack she dodged
             out["counter_hits"] = [self._apply_damage(a, self.rng.choice(reach), power)]
             self._source = mine
@@ -4690,6 +4785,9 @@ class Engine:
             whose = f"{poss_word(dfn)} landing" if land else f"{poss_word(att)} {mv}"
             lost = deal(att, r.get("hits"), dfn)
             deal(dfn, r.get("counter_hits"), att)
+            deal(dfn, (r.get("pass_counter") or {}).get("hits"), att)
+            deal(dfn, (r.get("air_rake") or {}).get("hits"), att)
+            deal(dfn, (r.get("leap") or {}).get("landing_hits"), att)
             loss = pct(dfn, lost.get(dfn, 0.0))
             hits = r.get("hits") or []
             part = max(hits, key=lambda h: float(h.get("health_loss") or 0))["part"].lower() if hits else ""
@@ -5092,6 +5190,56 @@ class Engine:
         res["strafe"] = {"part": part, "power": power}
         a.energy = max(0.0, a.energy - float(cfg.get("energy", 3)))
 
+    def _leap_after(self, a, d, res, spot, landed):
+        """She climbed {spot} and leapt at the flyer (flight.leap). Reached: the blow lands with her weight in it, she
+        may drag the flyer down out of the air with her (drag_down), and she comes down hard on her feet (a light
+        landing on her legs). Fell short (or the flyer got out of the way): she drops from the height and lands badly
+        (the director adds the landing: leap_fall)."""
+        cfg = (self.rules.get("flight") or {}).get("leap") or {}
+        a.energy = max(0.0, a.energy - float(cfg.get("energy", 10)))
+        res["leap"] = {"from": spot, "reached": landed}
+        if not landed:
+            res["leap_fall"] = str(cfg.get("miss_landing", "heavy"))
+            return
+        if self.has(d, "airborne") and not d.eliminated and self._chance(
+                float(cfg.get("drag_down", 0.35)), f"{a.name} dragging {d.name} down out of the air with her",
+                "she drags her down", "no"):
+            d.status.pop("airborne", None)
+            self._set_air_speed(d, 0)
+            res["leap"]["dragged"] = True
+            res["grounded"] = True
+            res["auto_launch"], res["drop_severity"] = "launched", str(cfg.get("drag_landing", "solid"))
+        # her own landing, on her feet: it jars her legs
+        legs = [p for p in a.parts if body_region(p) in ("hind_up", "hind_low", "leg", "foot", "fore_low")
+                or re.search(r"foot|feet|paw|knee|hock|ankle|thigh|leg", p, re.I)] or list(a.parts)
+        sev = str(cfg.get("hit_landing", "light"))
+        power = self.power_for("instant", sev)
+        mine, self._source = self._source, f"the drop from {spot}"
+        res["leap"]["landing_hits"] = [self._apply_damage(a, p, power) for p in self.rng.sample(legs, min(2, len(legs)))]
+        self._source = mine
+
+    def _air_pass(self, a, d, res, landed):
+        """Two flyers meet in the air (flight.air_pass): they cross at speed, so the one struck may rake back at the
+        other as they pass (rake_back, more often while she is strong), and a pass that lands builds the attacker's
+        speed for the next one, as a dive does. Both stay up."""
+        cfg = (self.rules.get("flight") or {}).get("air_pass") or {}
+        res["air_pass"] = True
+        if landed:
+            self._set_air_speed(a, self.air_speed(a) + 1)
+            res["air_speed"] = self.air_speed(a)
+        if d.eliminated or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched")):
+            return
+        ch = float(cfg.get("rake_back", 0.3)) * self.flight_vigour(d, "strafe_mult", 1.0)
+        if not self._chance(min(0.8, ch), f"{d.name} raking back at {a.name} as they cross", "she rakes back", "no"):
+            return
+        reach = [p for p in a.parts if not re.search(r"\bhead\b|horn|antenna|ear|eye|nose", p, re.I)] or list(a.parts)
+        power = round(self.power_for("instant", self._cfg("evasion").get("counter_severity", "solid"))
+                      * float(cfg.get("momentum", 1.2)), 2)
+        mine, self._source = self._source, f"{poss_word(d.name)} blow as they crossed in the air"
+        res["air_rake"] = {"by": d.name, "hits": [self._apply_damage(a, self.rng.choice(reach), power)]}
+        self._source = mine
+        self.involved.add(d.name)
+
     def _after_dive(self, a, d, res, landed):
         """A dive is done: the defender may catch her as she comes in and drag her out of the air
         (flight.counter_grab); otherwise she climbs back up (flight.climb_chance) or comes down to land."""
@@ -5104,6 +5252,20 @@ class Engine:
             a.status.pop("airborne", None)
             res["dragged_down"] = {"by": d.name, "facing": self.knock_down(a.name, why=f"{a.name} was dragged out of the air")}
             return
+        dc = cfg.get("dive_counter") or {}
+        if (landed and dc.get("enabled", True) and d.name not in self.downed and not self.pinned_by(d.name)
+                and not d.eliminated
+                and not any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched", "constricted"))
+                and self._chance(float(dc.get("on_hit", 0.1)), f"{d.name} striking back as {a.name} goes past",
+                                 "she strikes back", "no")):
+            # she takes the dive and still gets a blow in as the flyer streaks by
+            reach = [p for p in a.parts if not re.search(r"\bhead\b|horn|antenna|ear|eye|nose", p, re.I)] or list(a.parts)
+            power = round(self.power_for("instant", self._cfg("evasion").get("counter_severity", "solid"))
+                          * float(dc.get("momentum", 1.25)), 2)
+            mine, self._source = self._source, f"{poss_word(d.name)} blow as {a.name} went past"
+            res["pass_counter"] = {"by": d.name, "hits": [self._apply_damage(a, self.rng.choice(reach), power)]}
+            self._source = mine
+            self.involved.add(d.name)
         climb = min(0.95, float(cfg.get("climb_chance", 0.55)) * self.flight_vigour(a, "climb_mult", 1.0))
         if self._chance(climb, f"{a.name} climbing back up after the dive", "back up", "she lands"):
             self.set_status(a, "airborne", max(a.status.get("airborne", 0), 2))
@@ -7283,8 +7445,9 @@ class Engine:
             if opn:
                 lines.append(f"   CAUGHT OPEN ({', '.join(opn)}): anything that lands on her now lands harder")
             if any("wing" in p.lower() for p in f.parts):
-                lines.append("   IN THE AIR (only ranged moves reach her; her close moves are dives; she can't be held "
-                             "or pinned)" if self.has(f, "airborne") else
+                lines.append("   IN THE AIR (only ranged moves reach her from the ground, but another flyer up there "
+                             "can strike her with close moves as they pass; her close moves on a fighter below are "
+                             "dives; she can't be held or pinned)" if self.has(f, "airborne") else
                              ("   can take off ('reposition': 'take off' on her own action)"
                               + (f", but her wing is badly hurt: it costs {self.takeoff_cost(f):.0f} energy and tears "
                                  f"worse every beat she stays up" if self.wing_damage(f) >= float(

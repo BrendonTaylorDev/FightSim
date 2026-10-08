@@ -70,6 +70,10 @@ BIG HITS MOVE BODIES. Pokemon moves are powerful: a solid hit rarely touches jus
   The higher she takes her, the harder she lands. As she falls, the NEXT links of the same CHAIN can catch her:
   slashes on the way down (from high up, more than one), or a SPIKE: a dive, a charge, or a held stream from
   ABOVE that drives her straight down into the ground faster than she'd fall (big damage, a far harder landing).
+  "leap_from" (usually ""): a fighter ON THE GROUND whose foe is IN THE AIR may climb something high in the arena (a
+  boulder, a tree, a pillar: the arena's high ground is listed in the notes) and LEAP at her with a close STRIKE: put
+  the thing she climbs here. The engine rolls whether she reaches her (she may drag the flyer down with her); if she
+  falls short she drops from the height and lands badly. It costs her energy; use it now and then, not every beat.
   A rare, big moment, not a habit. Flying is a winged
   fighter's strength: she takes to the air every few beats, not rarely. The other repositions: use one NOW AND THEN, rarely, when it serves the moment
   (rolling her to reach her throat or chest for a pin, flipping her face-down to press her back, sitting her up
@@ -362,12 +366,13 @@ def action_schema(engine):
             "flavor": {"type": "string"},
             "feint": {"type": "boolean"},
             "carry": {"type": "boolean"},
+            "leap_from": {"type": "string"},
         },
         # Every field is required: local models tend to skip optional ones.
         # Fields that don't apply to the chosen action are simply ignored by the engine.
         "required": ["intent", "action", "move", "improvised_name", "improvised_type", "attacker", "defender", "part", "severity",
                      "count", "hits", "launch", "reposition", "landing", "sustain", "pinned_against", "charge_into", "hold_id",
-                     "ramp", "flavor", "feint", "carry"],
+                     "ramp", "flavor", "feint", "carry", "leap_from"],
     }
 
 
@@ -843,6 +848,11 @@ def resolve(engine, b):
             and engine.can_carry(att, dfn)[0]):
         # she seizes her in her talons (feet, hands) on the way past and tries to haul her up: rolled (flight.carry)
         move = dict(move, grab_carry=True)
+    lf = str(b.get("leap_from") or "").strip()
+    if (move is not None and act == "strike" and lf and lf.lower() not in ("none", "false", "no", "")
+            and engine.has(engine.get(dfn), "airborne") and not engine.has(engine.get(att), "airborne")
+            and not engine.is_ranged(move)):
+        move = dict(move, leap_from=lf)
     if move is not None and act in ("strike", "combo"):
         hits = [h for h in (b.get("hits") or []) if h.get("part")]
         if manual and not hits and not b.get("part") and move.get("target") in ("targeted", "spread"):
@@ -875,7 +885,7 @@ def resolve(engine, b):
             count = 1  # a single charge or slash lands once; only flurry moves (Fury Swipes...) repeat
         results = [engine.move_attack(att, who, move["name"], parts, count, flavor,
                                       move=move if (move.get("improvised") or move.get("one_off")
-                                                     or move.get("grab_carry")) else None,
+                                                     or move.get("grab_carry") or move.get("leap_from")) else None,
                                       enforce=not manual,
                                       sustain=int(b.get("sustain") or 0), against=b.get("pinned_against") or "",
                                       charge_into=str(b.get("charge_into") or "").strip()
@@ -1581,6 +1591,16 @@ def resolve_many(engine, actions):
                 land = _landing(engine, b, res)
             if land:
                 results.append(land)
+            if isinstance(res, dict) and res.get("leap_fall") and res.get("attacker") \
+                    and not engine.get(res["attacker"]).eliminated:
+                # her leap fell short: she drops from the height she climbed and lands badly
+                fall = engine.land(res["attacker"], [(engine.scene_word("ground"), [], res["leap_fall"])],
+                                   credited="", thrown=False, can_recover=True,
+                                   how=f"falling from {(res.get('leap') or {}).get('from', 'the height')}: "
+                                       f"{short_phrase(engine.scene_word('ground'), default='the ground')}")
+                fall["launch"] = "fell"
+                fall["leap_fall"] = (res.get("leap") or {}).get("from")
+                results.append(fall)
             # a hard enough hit shakes loose whatever the fighter it lands on was holding with
             for r in ([res] + ([land] if land else [])):
                 if not isinstance(r, dict) or r.get("type") != "instant":
@@ -2691,7 +2711,10 @@ def flight_hint(engine, roll=None):
                             f"her (a second link can strike her as she falls, or SPIKE her down from above)"
                             if engine.can_carry(f, foe)[0] else "")
                          + f". {foe.name} can only reach her with "
-                         + (", ".join(reach) if reach else "nothing she has (no beams, blasts or streams)") + ".")
+                         + (", ".join(reach) if reach else "nothing she has (no beams, blasts or streams)")
+                         + (f", or by climbing {' or '.join(engine.high_ground()[:3])} and LEAPING at her with a close "
+                            f"strike (\"leap_from\")" if engine.high_ground() and foe.name not in engine.downed else "")
+                         + ".")
         elif engine.can_fly(f) and not engine.pinning(f.name) and not engine.pinned_by(f.name):
             vig = engine.flight_vigour(f, "takeoff_mult", 1.0)
             ch = min(0.95, float(cfg.get("flight_chance", 0.3)) * (1.5 if not reach else 1.0) * vig)

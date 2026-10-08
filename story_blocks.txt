@@ -1431,7 +1431,7 @@ a raw, broken sound goes on longer than she means it to, and stopping it costs h
 # ---------------------------------------------------------------------------------------------------------------
 # NEWER MOMENTS (build 113+): clashes, flight, guards, water in the mouth, coils, weather, the moment after an
 # escape. Offered only when that thing really happened this beat.
-#   moment: takeoff, dive, carried, lift_fail, falling, spiked, grounded (aerial)     block, reflect, catch, turn (guard)
+#   moment: takeoff, dive, carried, lift_fail, falling, spiked, grounded, leap, counter (aerial)     block, reflect, catch, turn (guard)
 #   weather: rain, sun, hail
 # ---------------------------------------------------------------------------------------------------------------
 == movement | kind: wing
@@ -7877,3 +7877,27 @@ the second blow is barely a blow at all, just her speed brushing past and leavin
 her opponent turns to follow her and is already too slow
 the wind of her passing hits a beat after she does
 she climbs away before the other can answer, already lining up the next run
+
+# build 154: a fighter on the ground climbs high ground and leaps at a flyer; blows struck back as a flyer passes
+== aerial | moment: leap
+up the side of it in three scrambling bounds, claws and feet finding every knot and ledge
+she reaches the top with the flyer still above her and doesn't stop: she uses the height and jumps
+a long gathering crouch on the top, and then everything she has goes into the jump
+for a moment she is in the air too, nothing under her, everything aimed at the flyer
+the flyer sees her coming a beat late and twists away too slowly
+the climb costs her breath she doesn't have, but the jump is all spring
+she leaves the top with a kick that makes the whole thing shudder behind her
+up there, level with the wings for once, she swings with everything
+the ground is a long way down, and she isn't thinking about it yet
+she comes down from the height on her feet, and the jolt runs up both legs into her hips
+she lands in a crouch that buckles nearly to the ground before it holds
+she misses, and for one long moment there is only air under her and the ground coming up
+== aerial | moment: counter
+she lets the dive come, steps aside at the last instant, and swings as it goes past
+the flyer's own speed is in the blow that meets her, more than either of them put there
+a quick strike at the wing going by, all timing, no wind-up
+she doesn't get out of the way entirely, but she gets something back as it passes
+for a heartbeat they are side by side, and then the flyer is gone, carrying the sting with her
+they cross so close that each takes something from the other
+the answering blow catches her flank as she streaks by, knocking her line crooked for a wingbeat
+she turns with the pass, reading it, and the counter is already on its way

@@ -507,7 +507,7 @@ class Display:
         """One-line stat summary, like: Chest 445→457 · Neck 304→310 · ❤️ Ripples 1003% → 990%"""
         hits = []
         for a in bundle.get("actions", []):
-            hits += a.get("hits", []) + a.get("counter_hits", [])
+            hits += a.get("hits", []) + a.get("counter_hits", []) + (a.get("pass_counter") or {}).get("hits", []) + (a.get("air_rake") or {}).get("hits", []) + (a.get("leap") or {}).get("landing_hits", [])
         for e in bundle.get("also_this_beat", []):
             if e["type"] == "hold_ongoing":
                 hits += e["hits"]
@@ -660,6 +660,10 @@ class Display:
                 out.append(f"🤚 **{who} turns {owner} {mv} aside** ({g['how']}; chance {g['chance'] * 100:.1f}%): nothing lands"
                            + (f" — **{a['attacker']} is off balance** (1 beat: slower to dodge, weaker next blow)"
                               if g.get("off_balance") else ""))
+            elif a.get("leap"):
+                out.append(f"🧗 **{a['attacker']} climbs {a['leap']['from']} and leaps at {who}**, but "
+                           + ("**the leap falls short**" if a.get("leap_short") else f"**{who} swerves out of the way**")
+                           + f" (miss chance {a.get('dodge_chance', 0) * 100:.0f}%): she drops from the height")
             else:
                 out.append(f"💨 **{who} dodges** {owner} {mv} (dodge chance {a.get('dodge_chance', 0) * 100:.0f}%"
                            f"{way('dodge', a.get('manner'))}" + ("; wary of it: it hurt her before" if a.get("wary") else "")
@@ -671,7 +675,8 @@ class Display:
             if a.get("move"):
                 out.append(self.move_line(a["move"]) + " (no hit)")
             if a.get("counter_hits"):
-                out.append(f"↩️ **{who} counters!**")
+                out.append(f"↩️ **{who} sidesteps the dive and strikes as {a['attacker']} goes past!**"
+                           if a.get("dive_counter") else f"↩️ **{who} counters!**")
                 out += self.hits_block(a["attacker"], a["counter_hits"])
             mc = a.get("missed_charge")
             if mc:
@@ -735,6 +740,24 @@ class Display:
                     else " — she climbs back up" if a.get("climbs") else " — she comes down to land")
                     + (f" · speed built: {a['air_speed']} pass{'es' if a['air_speed'] != 1 else ''} (her next dive lands harder)"
                        if a.get("air_speed") else ""))
+            if a.get("leap"):
+                lp = a["leap"]
+                out.append(f"🧗 **{a['attacker']} climbs {lp['from']} and leaps at {a['defender']}**"
+                           + (" — she reaches her" + (" and **drags her down out of the air**" if lp.get("dragged") else "")
+                              if lp.get("reached") else " — **she falls short** and drops from the height"))
+                if lp.get("landing_hits"):
+                    out.append("  her own landing, on her feet:")
+                    out += self.hits_block(a["attacker"], lp["landing_hits"])
+            if a.get("air_pass"):
+                out.append("🪽🪽 **Air-to-air pass**: both on the wing, closing at speed"
+                           + (f" · speed built: {a['air_speed']} pass{'es' if a['air_speed'] != 1 else ''}"
+                              if a.get("air_speed") else ""))
+            if a.get("air_rake"):
+                out.append(f"↩️ **{a['air_rake']['by']} rakes back at {a['attacker']} as they cross**")
+                out += self.hits_block(a["attacker"], a["air_rake"]["hits"])
+            if a.get("pass_counter"):
+                out.append(f"↩️ **{a['pass_counter']['by']} strikes {a['attacker']} as she goes past**")
+                out += self.hits_block(a["attacker"], a["pass_counter"]["hits"])
             if a.get("strafe"):
                 out.append(f"💨 **Strafing pass**: her speed carries her round for a second, quicker blow on "
                            f"{a['defender']}'s {a['strafe']['part']} (power {num(a['strafe']['power'])}, listed last)")
