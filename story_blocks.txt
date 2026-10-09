@@ -7901,3 +7901,27 @@ for a heartbeat they are side by side, and then the flyer is gone, carrying the 
 they cross so close that each takes something from the other
 the answering blow catches her flank as she streaks by, knocking her line crooked for a wingbeat
 she turns with the pass, reading it, and the counter is already on its way
+
+# build 160: knockouts and what comes after one
+== knockout
+the blow lands and her legs simply stop holding her, no stagger, no warning
+her eyes lose their focus mid-breath, as if someone has turned the light down behind them
+she tips sideways slowly, too slowly, and the ground takes her weight all at once
+one last twitch runs down her body from the shoulders to the tail, and then nothing
+her head lolls to one side and stays there, mouth slightly open, breath faint
+she goes down loose-limbed, the way a sleeper falls, nothing braced against it
+== knockout_watch
+she waits for the trick, weight still forward, and the trick never comes
+she nudges the still body once with a paw and gets no answer but the slow rise of its ribs
+the fight drains out of her own limbs now that there is nothing left to fight
+she stands over her a long moment, breathing hard, not trusting the quiet yet
+== aftermath_fallen
+the first thing to come back is sound: water, wind, her own breathing far away
+her eyes open on the sky without understanding it, then the ache arrives and explains everything
+she tries to lift her head and the world tilts, so she lets it rest again
+a paw twitches in the grass, testing, before the rest of her remembers it can move
+she comes round slowly, piece by piece, each hurt part announcing itself as she finds it
+== aftermath_winner
+the strength that carried her through the last blow leaves her all at once, and she sits down heavily
+she keeps her eyes on the still body as she backs away, as if it might rise behind her
+her own hurts start to speak now that the fight is over, one by one

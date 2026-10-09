@@ -1113,6 +1113,11 @@ She did not fall so much as stop holding herself up.
 Every muscle in her let go at once, and the ground took her.
 Her eyes stayed open a moment after she was gone, and then the lids slid down.
 She lay where she landed, loose and still, breathing slow and shallow from very far down.
+Her knees went first, then everything above them, and she folded down onto the ground without a sound.
+The last thing she did was try to stay up; her body had already decided otherwise.
+She went out between one breath and the next, her face slack, the fight gone out of it all at once.
+Her eyes rolled up and closed, and she sagged over onto her side and lay there.
+She fell like something cut loose, nothing reaching out to catch her.
 
 # ---------------------------------------------------------------------------------------------------------------
 # TYPE MATCHUPS (build 148): effect_take (the one hit) and effect_act (the one who threw it); effect, type, vs
