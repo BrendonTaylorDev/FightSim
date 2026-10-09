@@ -37,6 +37,12 @@ once into `images/`; put your own picture there as `<fighter name>.png` (`Ripple
 it instead. If a part's point sits in the wrong place, click its label and then click the picture where the part
 is: it is kept in `images/anchors.json`. Absol and Buizel come with their points placed; others start from a guess.
 
+**Saving a whole fight:** `/exportfight` writes the fight so far into the `exports` folder as a page you open in
+your browser: every beat's story and stat lines next to each fighter as she stood after that beat (picture, glow,
+health, energy, statuses, and every body part's damage and resistance), plus a `.json` file of the same data. A
+finished fight is saved there by itself. `/exportfight all` saves every fight this session; `/exportfight myname`
+picks the file name. The window has an Export button for it.
+
 At the `>` prompt:
 - **Press Enter**: the director decides what happens next.
 - **Type a direction**: e.g. `Ripples drags Nocturne away from the water`. The director follows it for the next beat.

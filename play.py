@@ -23,12 +23,12 @@ import sys
 
 from director import Director, resolve_many
 from display import Display
-from engine import Engine, BALANCE, body_region as body_region_of
+from engine import Engine, BALANCE, body_region as body_region_of, species_of
 from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-09 build 157 (only knockouts end a fight: a pin held to the end can't finish her (she kicks out at the last second), and knockouts grow likelier as health falls: none above 40% of full health, about 30% for a solid blow at 10% or less, more for big blows (/set finish.knockout_only false brings back the old finishes; finish.chance, start_pct, full_pct tune it). Build 156: a window: python window.py shows each fighter's picture with every body part's damage and resistance on lines out from it, hurt parts glowing on the picture, health, energy and statuses, with the story beside it; scroll back and the pictures show each beat as it stood. Build 155: fewer hits left out: a lone attack the drafts dropped gets its own short passage too, and every missing hit, landing or tumble is told, not just the first two; fixes from the Ripples vs Nocturne log: a guard that never came up, a bite or hit landing on a fighter who dodged, jaws on a part held by paws or weight, forelegs on a fighter who stands on two, the pinner on the wrong side of a fighter lying face-up, a horn swung while the jaws are clamped, and long present-tense lines are caught; a hold whose line names the wrong side is relabelled; an interlude or beat that repeats its own sentences has the repeats cut. Build 154: flyers can be answered and can fight each other: a dive can be sidestepped and struck as it goes past, or taken and answered (/set flight.dive_counter); two flyers in the air reach each other with close moves, crossing at speed, and the one struck may rake back (flight.air_pass); a fighter on the ground can climb high ground (a boulder, a tree, a pillar) and leap at a flyer: she may reach her and drag her down, or fall short and land badly (flight.leap). Build 153: pain reactions grow as she wears down: every hit says how big her reaction is, from how hurt the part is and how much she has left: a wrecked part on a strong fighter gets a cry and a limp, the same part later a scream, and only a worn-out fighter comes apart; a healthy part on a worn-out fighter hurts but never gets the extreme reactions. Build 152: crash fixed (a check on arms in the story); pain measured by overall strength: a strong fighter with one wrecked part feels it sharply there and fights on, with no whole-body seizing, writhing or \"overwhelming\" (caught if written); no ground footwork for a flyer diving; stock phrases (\"a symphony of\", \"palpable\") caught, in the opening too; \"fur or scales\" and \"glimpsed in passing\" note text caught; torn, ragged or bloody skin toned down. Build 151: a held stream on a fighter who is down or pinned no longer grinds her into a tree or wall she is not against; a hold whose line names jaws but uses none is relabelled from its grips; no footwork ideas for a fighter who has hold of her opponent; a head lowered or a horn aimed while the jaws are clamped is caught; a pressing hold no longer bends a joint unless it twists; bone showing through muscle and crushing vertebrae cut. Build 150: flyers use their speed: each dive that lands and climbs back builds speed for the next (harder dives, up to 3 passes), a healthy flyer may rake a second, lighter blow on the way past (a strafing pass), and they stay up longer (/set flight.speed, flight.strafe, flight.vigour); fixes from the Nocturne vs Ripples log: no matchup note on an attack turned back in a clash, no note text in the story, the other fighter's colours and arms on a four-legged body caught, director lines that give a fighter parts she lacks dropped, a brutal crack on a knee toned down. Build 149: winged fighters fly far more while they are strong: the director is told firmly to take off, they stay up longer and climb back after dives more often (/set flight.vigour); matchup lines about the air only for a flyer who is up there. Build 148: type matchups told: a super effective blow shows her body has no answer for it and she knows it, a resisted one shows her body shedding it; about 3,000 new story blocks, 1,170 new finished lines and 95 new sample passages, the new passages written for any pair of fighters. Build 147: fixes from the Ripples vs Swift log: a moment of breaking loose in a pin, failed get-up tries, an adrenaline surge and a grip knocked loose must all be told; an attack told by its weapon (jaws, a kick) is not told twice; the pin is not shown going on after an escape; no second get-up after \"made it onto her feet\"; no paws, hands or fur on a bird; an arena event never rolls with nobody to happen to. Build 146: body parts take damage in steadier steps: /scale default is 3, wear is slower and the curve gentler, health per damage point raised so fights run as long (your saved /scale and /length are converted once); /checks shows which narrator checks fire and how their fixes go; worn phrases of the fight listed for the narrator; a fall, blood, claws and cave words checked against the right fighter and arena. Build 145: a state check after every beat (state_check.log); saves keep more and load from any build; python sim/regress.py tests every kind of attack before a push; /simulate plays chains, pummels, held streams and grapples; a get-up is never handed to the fighter who stayed on her feet; cave words caught outside the cave. Build 144: /encourage <kind> [blows] [attacker] [defender] [beats]: point the director hard at one kind of attack for a few beats. Build 143: a plain blow with no move follows every rule a close move does (dives, who can reach a flyer, guards, feints, pummels); improvised moves are close unless they plainly cross the distance; a pummel always runs to its last blow before a knockout or a collapse, and the story says so. Build 142: pin escapes: about 30% an attempt at 30% health, 12% at 10%, and never below 5% however hurt she is (/set pin.struggle.escape_points, escape_floor). Build 141: a submission that becomes a pin is capped like any pin; submissions themselves get a looser cap on ruined parts (/set submissions.damage_cap). Build 140: failed get-up tries told before she stands; the aftermath knows who pinned whom; a move name left at the end of a sentence is caught. Build 139: very rarely a big beat knocks a fighter out cold, no pin (/set moves.knockout); a short pass cuts events told twice (/set narration.repeat_pass); a crumple or collapse must be shown; lines about her own hurts only once she has some; leftover thought tags mended; a label naming the wrong move or a hit that never landed is caught. Build 138: below zero she may collapse on her own; wrong-part memories caught; what hurt where in the notes. Build 137: wounds told in scales, feathers or skin; no prompt markers in the story. Build 136: a true soft cap on health per hit; stray beams, toothless bites and never-hit ankles caught. Build 135: more watching (/set narration.read, self_look); fixes from a live log. Build 134: flyers can seize a fighter on the ground and haul her up (\"carry\"), strike her as she falls, and SPIKE her straight down into the ground from above: /set flight.carry, flight.spike. Build 133: fight length presets: /length 30-60; fewer pins by default; faster wear with a steeper damage curve; submissions held long become pins; rare free blows in pins and submissions; 16 new fighters. Build 132: why they fight: /reason, from 50 reasons fitted to the arena; long interludes now and then: /interlude; no body part comes first unless /focus says so, with weak spots nudged now and then: /weakspots; /pins sets how often pins come; pins press from their first beat; a broken hold can't be re-grabbed at once; the escape blow must be told; a time budget per beat: /budget, and the ⏱ line says where the time went. Build 131: every attack in a busy beat must be told; a bare /pin builds a real pin; more present tense caught. Build 130: /move takes parts in separate quotes, and several blows go round the named parts. Build 129: no instruction text in the story; no sentence left hanging on a possessive. Build 128: /help is a short menu: /help <topic>, /help <command>, /help all. Build 127: no second drafts: big moments get more from the engine instead; the same hurt told again and again is trimmed; leg counts and mouth blood checked. Build 126: pins rarer early and rising with wear; strong fighters often spring back up; sounds always marked and coloured; event order stated. Build 125: a pin needs three points of contact; wording-only rewrites capped at 2 a part; blood, forelegs and takedowns checked. Build 124: a library of 937 finished sentences: offered word for word, and swapped in for cut filler. Build 123: 41 more sample passages rotating, sized to the blow; 759 pain-level blocks. Build 122: filler cut or shown instead of told; reactions above the pain limit never offered; samples sized to the blow. Build 121: the engine sets how big each fighter's pain reactions may be, whether her fur is wet or dry, and which earlier moves she can remember; attack labels naming the wrong weapon are dropped. Build 120: a phrase said twice in a beat is rewritten with another wording; scenery she hits must be shown; the throw is not told again after the landing; eye colours checked; no lightning in a throw. Build 119: thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
+VERSION = "2026-10-09 build 158 (the whole fight is kept beat by beat and can be saved: /exportfight writes a page for your browser with every beat's story and stats beside each fighter's picture, glow, health and every body part's damage and resistance as they stood after it (and a .json of the same); a finished fight is saved by itself to the exports folder (/set export.auto false stops it); the beats are kept in saves and through /undo; the window has an Export button. Knockout-only fights are now an option, off unless you turn them on: /set finish.knockout_only true. Build 157: only knockouts end a fight: a pin held to the end can't finish her (she kicks out at the last second), and knockouts grow likelier as health falls: none above 40% of full health, about 30% for a solid blow at 10% or less, more for big blows (/set finish.knockout_only false brings back the old finishes; finish.chance, start_pct, full_pct tune it). Build 156: a window: python window.py shows each fighter's picture with every body part's damage and resistance on lines out from it, hurt parts glowing on the picture, health, energy and statuses, with the story beside it; scroll back and the pictures show each beat as it stood. Build 155: fewer hits left out: a lone attack the drafts dropped gets its own short passage too, and every missing hit, landing or tumble is told, not just the first two; fixes from the Ripples vs Nocturne log: a guard that never came up, a bite or hit landing on a fighter who dodged, jaws on a part held by paws or weight, forelegs on a fighter who stands on two, the pinner on the wrong side of a fighter lying face-up, a horn swung while the jaws are clamped, and long present-tense lines are caught; a hold whose line names the wrong side is relabelled; an interlude or beat that repeats its own sentences has the repeats cut. Build 154: flyers can be answered and can fight each other: a dive can be sidestepped and struck as it goes past, or taken and answered (/set flight.dive_counter); two flyers in the air reach each other with close moves, crossing at speed, and the one struck may rake back (flight.air_pass); a fighter on the ground can climb high ground (a boulder, a tree, a pillar) and leap at a flyer: she may reach her and drag her down, or fall short and land badly (flight.leap). Build 153: pain reactions grow as she wears down: every hit says how big her reaction is, from how hurt the part is and how much she has left: a wrecked part on a strong fighter gets a cry and a limp, the same part later a scream, and only a worn-out fighter comes apart; a healthy part on a worn-out fighter hurts but never gets the extreme reactions. Build 152: crash fixed (a check on arms in the story); pain measured by overall strength: a strong fighter with one wrecked part feels it sharply there and fights on, with no whole-body seizing, writhing or \"overwhelming\" (caught if written); no ground footwork for a flyer diving; stock phrases (\"a symphony of\", \"palpable\") caught, in the opening too; \"fur or scales\" and \"glimpsed in passing\" note text caught; torn, ragged or bloody skin toned down. Build 151: a held stream on a fighter who is down or pinned no longer grinds her into a tree or wall she is not against; a hold whose line names jaws but uses none is relabelled from its grips; no footwork ideas for a fighter who has hold of her opponent; a head lowered or a horn aimed while the jaws are clamped is caught; a pressing hold no longer bends a joint unless it twists; bone showing through muscle and crushing vertebrae cut. Build 150: flyers use their speed: each dive that lands and climbs back builds speed for the next (harder dives, up to 3 passes), a healthy flyer may rake a second, lighter blow on the way past (a strafing pass), and they stay up longer (/set flight.speed, flight.strafe, flight.vigour); fixes from the Nocturne vs Ripples log: no matchup note on an attack turned back in a clash, no note text in the story, the other fighter's colours and arms on a four-legged body caught, director lines that give a fighter parts she lacks dropped, a brutal crack on a knee toned down. Build 149: winged fighters fly far more while they are strong: the director is told firmly to take off, they stay up longer and climb back after dives more often (/set flight.vigour); matchup lines about the air only for a flyer who is up there. Build 148: type matchups told: a super effective blow shows her body has no answer for it and she knows it, a resisted one shows her body shedding it; about 3,000 new story blocks, 1,170 new finished lines and 95 new sample passages, the new passages written for any pair of fighters. Build 147: fixes from the Ripples vs Swift log: a moment of breaking loose in a pin, failed get-up tries, an adrenaline surge and a grip knocked loose must all be told; an attack told by its weapon (jaws, a kick) is not told twice; the pin is not shown going on after an escape; no second get-up after \"made it onto her feet\"; no paws, hands or fur on a bird; an arena event never rolls with nobody to happen to. Build 146: body parts take damage in steadier steps: /scale default is 3, wear is slower and the curve gentler, health per damage point raised so fights run as long (your saved /scale and /length are converted once); /checks shows which narrator checks fire and how their fixes go; worn phrases of the fight listed for the narrator; a fall, blood, claws and cave words checked against the right fighter and arena. Build 145: a state check after every beat (state_check.log); saves keep more and load from any build; python sim/regress.py tests every kind of attack before a push; /simulate plays chains, pummels, held streams and grapples; a get-up is never handed to the fighter who stayed on her feet; cave words caught outside the cave. Build 144: /encourage <kind> [blows] [attacker] [defender] [beats]: point the director hard at one kind of attack for a few beats. Build 143: a plain blow with no move follows every rule a close move does (dives, who can reach a flyer, guards, feints, pummels); improvised moves are close unless they plainly cross the distance; a pummel always runs to its last blow before a knockout or a collapse, and the story says so. Build 142: pin escapes: about 30% an attempt at 30% health, 12% at 10%, and never below 5% however hurt she is (/set pin.struggle.escape_points, escape_floor). Build 141: a submission that becomes a pin is capped like any pin; submissions themselves get a looser cap on ruined parts (/set submissions.damage_cap). Build 140: failed get-up tries told before she stands; the aftermath knows who pinned whom; a move name left at the end of a sentence is caught. Build 139: very rarely a big beat knocks a fighter out cold, no pin (/set moves.knockout); a short pass cuts events told twice (/set narration.repeat_pass); a crumple or collapse must be shown; lines about her own hurts only once she has some; leftover thought tags mended; a label naming the wrong move or a hit that never landed is caught. Build 138: below zero she may collapse on her own; wrong-part memories caught; what hurt where in the notes. Build 137: wounds told in scales, feathers or skin; no prompt markers in the story. Build 136: a true soft cap on health per hit; stray beams, toothless bites and never-hit ankles caught. Build 135: more watching (/set narration.read, self_look); fixes from a live log. Build 134: flyers can seize a fighter on the ground and haul her up (\"carry\"), strike her as she falls, and SPIKE her straight down into the ground from above: /set flight.carry, flight.spike. Build 133: fight length presets: /length 30-60; fewer pins by default; faster wear with a steeper damage curve; submissions held long become pins; rare free blows in pins and submissions; 16 new fighters. Build 132: why they fight: /reason, from 50 reasons fitted to the arena; long interludes now and then: /interlude; no body part comes first unless /focus says so, with weak spots nudged now and then: /weakspots; /pins sets how often pins come; pins press from their first beat; a broken hold can't be re-grabbed at once; the escape blow must be told; a time budget per beat: /budget, and the ⏱ line says where the time went. Build 131: every attack in a busy beat must be told; a bare /pin builds a real pin; more present tense caught. Build 130: /move takes parts in separate quotes, and several blows go round the named parts. Build 129: no instruction text in the story; no sentence left hanging on a possessive. Build 128: /help is a short menu: /help <topic>, /help <command>, /help all. Build 127: no second drafts: big moments get more from the engine instead; the same hurt told again and again is trimmed; leg counts and mouth blood checked. Build 126: pins rarer early and rising with wear; strong fighters often spring back up; sounds always marked and coloured; event order stated. Build 125: a pin needs three points of contact; wording-only rewrites capped at 2 a part; blood, forelegs and takedowns checked. Build 124: a library of 937 finished sentences: offered word for word, and swapped in for cut filler. Build 123: 41 more sample passages rotating, sized to the blow; 759 pain-level blocks. Build 122: filler cut or shown instead of told; reactions above the pain limit never offered; samples sized to the blow. Build 121: the engine sets how big each fighter's pain reactions may be, whether her fur is wet or dry, and which earlier moves she can remember; attack labels naming the wrong weapon are dropped. Build 120: a phrase said twice in a beat is rewritten with another wording; scenery she hits must be shown; the throw is not told again after the landing; eye colours checked; no lightning in a throw. Build 119: thoughts and sounds in colour on screen; one strike told as one moment; sounds tied to who makes them. Build 118: /model is kept for next time and splits two commands pasted on one line; commands work at the arena question. Build 116: clash and takedown must be shown; pin labels match the grips; fewer false bite flags; /set narration.scene_intro false skips setting the scene. Build 115: fewer rewrites: the talk, electricity, bone and swearing limits are told before writing; phrases the notes use aren't counted as copied lines. Build 114: play as fighters with dice modes; resistance by condition, per-hit cap, pin pressure that builds; part damage that climbs slowly past 300% and numbness that wears off; 20k narrator window; second reading after the whole beat; fewer false rewrites. Build 113: Aqua Jet stays on her and costs more; pummels on the ground, in a pin and against the scenery; each blow picks its own spot; raw reactions on hurt parts. Build 112: body parts weigh on overall health by how vital they are: /vital; wear by damage: /wear; an ending broken off on purpose is kept. Build 111: fixes from a live test fight: paragraphs opening with Before/After are no longer deleted, nine kinds of needless rewrite gone, blocks that follow the moment; pain pass-out share, answered pummels, rarer sleeper. Build 110: mechanics. Build 109: story blocks)"
 
 HELP = """
 =============================================================================================
@@ -372,6 +372,8 @@ HELP = """
   /undo [n]             take back the last beat (or n beats): stats, story, pins, everything
   /reroll               rewrite the last beat's narration (stats unchanged)
   /export [file] [prose]    write every fight this session to a .md file ("prose" = story only)
+  /exportfight [file] [all] save this fight (or every fight: all) beat by beat, with each fighter's picture,
+                            health, and every body part's damage and resistance, as a page for your browser
   /settings             what you changed with commands (kept in my_settings.json; a new build doesn't reset it)
   /settings forget      drop them, so the next build's defaults apply
   /save [file]   /load [file]   (every beat autosaves: /load autosave)
@@ -437,6 +439,34 @@ def timing_summary(rows):
     return "\n".join(out)
 
 
+def fight_snapshot(s, label=None):
+    """Every fighter as she stands right now (plain data): health, energy, statuses, posture, and each body part's
+    damage and resistance. Kept for every beat (/exportfight, the window's history)."""
+    eng = s.eng
+    out = []
+    for f in eng.fighters.values():
+        down = f.name in eng.downed
+        try:
+            pinned_by, pinning = eng.pinned_by(f.name), eng.pinning(f.name)
+        except Exception:
+            pinned_by, pinning = [], []
+        try:
+            facing = eng.facing_of(f.name) if down else ""
+        except Exception:
+            facing = ""
+        posture = ("OUT" if f.eliminated else "in the air" if eng.has(f, "airborne") else
+                   f"pinned by {', '.join(pinned_by)}" if pinned_by else f"pinning {', '.join(pinning)}" if pinning else
+                   f"down ({facing})" if down else "on her feet")
+        out.append({
+            "name": f.name, "species": species_of(f.description, f.appearance), "types": list(f.types or []),
+            "health": round(float(f.health), 2), "max": float(f.max_health or 1), "energy": round(float(f.energy), 1),
+            "status": {k: v for k, v in (f.status or {}).items()}, "out": bool(f.eliminated), "posture": posture,
+            "parts": [(p.name, round(float(p.damage), 2), round(float(p.resistance), 2)) for p in f.parts.values()],
+        })
+    return {"turn": int(getattr(eng, "turn", 0) or 0), "fighters": out,
+            "label": label or f"after beat {getattr(eng, 'turn', 0)}"}
+
+
 class Session:
     def __init__(self, args):
         self.args = args
@@ -461,6 +491,8 @@ class Session:
         self.attacks = 0
         self.recent_attacks = []  # for the director's variety check
         self.transcript = []      # everything shown, for /export
+        self.beat_records = []    # every beat: its text and how each fighter stood after it (/exportfight)
+        self._export_paths = {}   # fight number -> where that fight was exported (re-written as it goes on)
         self.timings = []         # one row per beat: seconds, model calls, what was written again
         self.history = []         # snapshots for /undo
         self.last_narration = None  # what the last beat's prose was written from, for /reroll
@@ -496,9 +528,11 @@ class Session:
             del narrator_mod.CALL_LOG[:]     # (a beat stopped before its narration must not show the last one's steps)
         except Exception:
             pass
+        tlen = len(self.transcript)
         try:
             return self._play_beat(direction, manual, orders)
         finally:
+            self._record_beat(tlen)
             d = {k: llm.stats[k] - before.get(k, 0) for k in llm.stats}
             if d["calls"] > 0:
                 row = {"seconds": time.time() - t0, "narrator": self.narrator.model, "director": self.director.model,
@@ -508,6 +542,27 @@ class Session:
                 self.timings.append(row)
                 if self.eng.rules.get("console", {}).get("timing", True):
                     print(timing_line(row))
+
+    def _record_beat(self, tlen, label=None):
+        """Keep this beat for /exportfight: what was shown, and every fighter as she stands now. A finished fight
+        is exported by itself (rules export.auto), and again after each aftermath beat."""
+        text = "\n".join(self.transcript[tlen:])
+        if not text.strip() and label is None:
+            return
+        self.beat_records.append({"fight": self.fight_no, "lineup": self.lineup(), "turn": int(self.eng.turn or 0),
+                                  "label": label or f"beat {self.eng.turn}", "text": text,
+                                  "snapshot": fight_snapshot(self)})
+        self.beat_records = self.beat_records[-1500:]
+        if self.over and (self.eng.rules.get("export") or {}).get("auto", True):
+            try:
+                import fightexport
+                path = fightexport.write(self, self._export_paths.get(self.fight_no), fights=[self.fight_no])
+                if self.fight_no not in self._export_paths:
+                    print(f"(The whole fight, with every beat's pictures and stats, was saved to {path}; it is "
+                          f"updated as the aftermath goes on. /exportfight saves it again anywhere you like.)")
+                self._export_paths[self.fight_no] = path
+            except Exception as e:
+                print(f"[the fight could not be exported: {e}]")
 
     # ---------- playing as fighters (/play) ----------
     def play_order(self):
@@ -630,7 +685,7 @@ class Session:
     # ---------- undo / reroll / save ----------
     def _snapshot(self):
         return (self.eng.snapshot_state(), list(self.story), self.attacks, list(self.recent_attacks), self.over,
-                len(self.transcript), self.last_narration, self.pending)
+                len(self.transcript), self.last_narration, self.pending, len(self.beat_records))
 
     def push_history(self):
         self.history.append(self._snapshot())
@@ -639,7 +694,9 @@ class Session:
     def undo(self):
         if not self.history:
             raise ValueError("nothing to undo")
-        (eng, story, attacks, recent, over, tlen, last, pending) = self.history.pop()
+        (eng, story, attacks, recent, over, tlen, last, pending, *more) = self.history.pop()
+        if more:
+            self.beat_records = self.beat_records[:more[0]]
         self.eng.restore_state(eng)
         self.story, self.attacks, self.recent_attacks, self.over = story, attacks, recent, over
         self.transcript = self.transcript[:tlen]
@@ -728,7 +785,8 @@ class Session:
                 "transcript": self.transcript[-4000:], "attacks": self.attacks,
                 "recent_attacks": self.recent_attacks, "fight_no": self.fight_no, "results": self.results,
                 "story_before": self.story_before[-400:], "reason": getattr(self, "reason", None),
-                "reason_pick": getattr(self, "reason_pick", None), "reason_off": getattr(self, "reason_off", False)}
+                "reason_pick": getattr(self, "reason_pick", None), "reason_off": getattr(self, "reason_off", False),
+                "beat_records": self.beat_records[-400:]}
 
     # ---------- more than one fight ----------
     def lineup(self):
@@ -797,6 +855,7 @@ class Session:
             self.out(f"🏟️ Arena: {self.eng.scene_cfg.get('title', 'your own scene')} (/scene to change it, /hazards for what it does)")
         if variant_lines(self.eng):
             self.out(variant_lines(self.eng))
+        self._record_beat(len(self.transcript), label="the start")
         if plan.get("shape") or plan.get("winner"):
             self.out(f"(Story plan carried over: {plan.get('shape') or 'winner'}"
                      + (f", {plan['winner']} to win" if plan.get("winner") else "") + ". /plan off clears it.)")
@@ -854,6 +913,7 @@ class Session:
         self.story_before = extra.get("story_before", self.story_before)
         self.reason, self.reason_pick = extra.get("reason"), extra.get("reason_pick")
         self.reason_off = extra.get("reason_off", False)
+        self.beat_records = extra.get("beat_records", [])
         self.history, self.last_narration, self.pending = [], None, None
 
     def _write_prose(self, args):
@@ -1551,7 +1611,7 @@ HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the orde
     ("healing", "healing heal restore recover aftermath", "healing and after the match: /heal, /restore, /recover"),
     ("rules", "rules settings set get scale model sounds words style sample reader budget time slow timing", "rules and fighters: /set, /scale, /model, /sounds, /words, /sample..."),
     ("looking", "looking status health look", "looking around: /status, /health, /look"),
-    ("files", "files undo reroll save load export quit", "undo, files, quit: /undo, /reroll, /save, /load, /export"),
+    ("files", "files undo reroll save load export exportfight quit", "undo, files, quit: /undo, /reroll, /save, /load, /export, /exportfight"),
 ]
 
 HELP_QUICK = """
@@ -3116,6 +3176,15 @@ def handle_command(s, line):
         if not s.use_llm:
             raise ValueError("the narrator is off (--no-llm)")
         s.reroll(); return
+    if cmd == "exportfight":
+        import fightexport
+        every = any(x.lower() == "all" for x in a)
+        names = [x for x in a if x.lower() != "all"]
+        path = fightexport.write(s, (_path(names[0], ".html") if names else None),
+                                 fights=None if every else [s.fight_no])
+        print(f"Saved {'every fight this session' if every else 'this fight'}, beat by beat with each fighter's "
+              f"picture, health, and every body part's damage and resistance, to {path} (open it in a browser; the "
+              f"same data is in the .json file beside it)"); return
     if cmd == "export":
         prose_only = any(x.lower() == "prose" for x in a)
         names = [x for x in a if x.lower() != "prose"]

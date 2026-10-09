@@ -31,76 +31,16 @@ from tkinter import ttk
 import play
 from engine import species_of, body_region
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-IMG_DIR = os.path.join(HERE, "images")
-PIC = 300                      # picture box size (pixels)
+from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_color, text_on, short,
+                   glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
+                   columns, spread)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
 except Exception:              # pragma: no cover
     Image = ImageTk = None
 
-# the console's own colour steps (display.py legend)
-RES_STEPS = [(100.0001, "#3b82f6", "tough (over 100%)"), (70, "#22c55e", "70-100%"), (50, "#eab308", "50-70%"),
-             (30, "#f97316", "30-50%"), (-1e9, "#ef4444", "under 30%")]
-DMG_STEPS = [(300, "#1f2937", "devastated (300%+)"), (150, "#a855f7", "excruciating (150%+)"),
-             (90, "#ef4444", "very painful (90%+)"), (60, "#f97316", "hurting (60%+)"), (30, "#eab308", "sore (30%+)"),
-             (-1e9, "#22c55e", "minor")]
-
-
-def res_color(v):
-    return next(c for at, c, _ in RES_STEPS if v >= at)
-
-
-def dmg_color(v):
-    return next(c for at, c, _ in DMG_STEPS if v >= at)
-
-
-def text_on(bg):
-    """Black or white text, whichever reads on this fill."""
-    r, g, b = (int(bg[i:i + 2], 16) for i in (1, 3, 5))
-    return "#000000" if (0.299 * r + 0.587 * g + 0.114 * b) > 140 else "#ffffff"
-
-
-# where each body region sits on the picture (fractions of the box); left/right parts go to either side
-SPOTS = {"head": (0.5, 0.07), "neck": (0.5, 0.2), "shoulder": (0.5, 0.31), "chest": (0.5, 0.42),
-         "back_up": (0.5, 0.31), "fore_up": (0.5, 0.45), "fore_low": (0.5, 0.62), "belly": (0.5, 0.57),
-         "back_low": (0.5, 0.69), "hind_up": (0.5, 0.77), "hind_low": (0.5, 0.9), "tail": (0.5, 0.97),
-         "other": (0.5, 0.5)}
-SPREAD = {"shoulder": 0.3, "fore_up": 0.36, "fore_low": 0.38, "hind_up": 0.3, "hind_low": 0.32, "head": 0.3,
-          "chest": 0.25, "belly": 0.28, "back_up": 0.28, "neck": 0.2, "tail": 0.25, "back_low": 0.28, "other": 0.3}
-
-
-def short(part):
-    s = part.replace("Left ", "L ").replace("Right ", "R ").replace("Upper ", "Up ").replace("Lower ", "Lo ")
-    return s if len(s) <= 14 else s[:13] + "…"
-
-
-def snapshot(s, label=None):
-    """Everything the window shows about the fight right now (plain data: it is passed between threads)."""
-    eng = s.eng
-    out = []
-    for f in eng.fighters.values():
-        down = f.name in eng.downed
-        try:
-            pinned_by, pinning = eng.pinned_by(f.name), eng.pinning(f.name)
-        except Exception:
-            pinned_by, pinning = [], []
-        try:
-            facing = eng.facing_of(f.name) if down else ""
-        except Exception:
-            facing = ""
-        posture = ("OUT" if f.eliminated else "in the air" if eng.has(f, "airborne") else
-                   f"pinned by {', '.join(pinned_by)}" if pinned_by else f"pinning {', '.join(pinning)}" if pinning else
-                   f"down ({facing})" if down else "on her feet")
-        out.append({
-            "name": f.name, "species": species_of(f.description, f.appearance), "types": list(f.types or []),
-            "health": float(f.health), "max": float(f.max_health or 1), "energy": float(f.energy),
-            "status": {k: v for k, v in (f.status or {}).items()}, "out": bool(f.eliminated), "posture": posture,
-            "parts": [(p.name, float(p.damage), float(p.resistance)) for p in f.parts.values()],
-        })
-    return {"turn": int(getattr(eng, "turn", 0) or 0), "fighters": out,
-            "label": label or f"after beat {getattr(eng, 'turn', 0)}"}
+snapshot = play.fight_snapshot
 
 
 class GameThread(threading.Thread):
@@ -163,46 +103,10 @@ class GameThread(threading.Thread):
             out_q.put(("done", None))
 
 
-# National Pokédex numbers for the roster's species (the artwork is fetched by number; PokeAPI is only asked about
-# a species missing here)
-DEX = {"absol": 359, "arbok": 24, "arcanine": 59, "articuno": 144, "braviary": 628, "buizel": 418, "charizard": 6,
-       "dragonite": 149, "fennekin": 653, "floatzel": 419, "goodra": 706, "lucario": 448, "lycanroc": 745,
-       "milotic": 350, "moltres": 146, "ninetales": 38, "pidgeot": 18, "staraptor": 398, "swanna": 581,
-       "swellow": 277, "talonflame": 663, "thievul": 828, "unfezant": 521, "vulpix": 37}
-
-
 def fetch_picture(name, species, done):
-    """Bytes of a picture for this fighter (her own file, her species' file, or PokeAPI's artwork, saved to
-    images/ for next time), handed to done(bytes or None) on a worker thread."""
-    def work():
-        os.makedirs(IMG_DIR, exist_ok=True)
-        for base in (name, species, species.lower()):
-            for ext in (".png", ".gif"):
-                path = os.path.join(IMG_DIR, base + ext)
-                if base and os.path.exists(path):
-                    with open(path, "rb") as fh:
-                        return done(fh.read(), base == name)
-        key = re.sub(r"[^a-z0-9-]", "", species.lower().replace(" ", "-"))
-        if not key:
-            return done(None, False)
-        try:
-            pid = DEX.get(key)
-            if pid is None:
-                req = urllib.request.Request(f"https://pokeapi.co/api/v2/pokemon-species/{key}/",
-                                             headers={"User-Agent": "FightSim"})
-                with urllib.request.urlopen(req, timeout=15) as r:
-                    pid = json.load(r)["id"]
-            url = (f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/"
-                   f"official-artwork/{pid}.png")
-            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "FightSim"}),
-                                        timeout=20) as r:
-                data = r.read()
-            with open(os.path.join(IMG_DIR, species.lower() + ".png"), "wb") as fh:
-                fh.write(data)
-            done(data, False)
-        except Exception:
-            done(None, False)
-    threading.Thread(target=work, daemon=True).start()
+    """The picture (cards.picture_bytes), fetched on a worker thread and handed to done(bytes or None, own)."""
+    threading.Thread(target=lambda: done(*picture_bytes(name, species)), daemon=True).start()
+
 
 
 class Tip:
@@ -224,60 +128,6 @@ class Tip:
         if self.win is not None:
             self.win.destroy()
             self.win = None
-
-
-ANCHORS = os.path.join(IMG_DIR, "anchors.json")
-COL, ROW = 158, 17             # label column width, label row height
-GLOW = {"sore": "#facc15", "hurting": "#fb923c", "very": "#ef4444", "excruciating": "#a855f7",
-        "devastated": "#7f1d1d"}
-
-
-# where each part is on the official artwork (fractions of the picture), for the species played most; any other
-# species is placed by a guess until you place its points yourself (click a label, then the picture)
-ARTWORK_POINTS = {
-    "absol": {"Head": (.63, .22), "Horn": (.52, .10), "Left Ear": (.70, .22), "Right Ear": (.57, .23),
-              "Muzzle": (.64, .37), "Nose": (.66, .36), "Jaw": (.64, .42), "Neck": (.55, .44), "Throat": (.63, .47),
-              "Chest Ruff": (.47, .38), "Chest": (.60, .55), "Belly": (.45, .60), "Back": (.38, .45),
-              "Left Shoulder": (.70, .52), "Right Shoulder": (.50, .52), "Left Ribs": (.65, .60), "Right Ribs": (.42, .52),
-              "Left Flank": (.52, .63), "Right Flank": (.33, .52), "Left Upper Foreleg": (.67, .67),
-              "Right Upper Foreleg": (.56, .67), "Left Lower Foreleg": (.67, .77), "Right Lower Foreleg": (.57, .76),
-              "Left Forepaw": (.66, .89), "Right Forepaw": (.56, .82), "Left Hip": (.44, .55), "Right Hip": (.31, .55),
-              "Left Thigh": (.47, .66), "Right Thigh": (.27, .61), "Left Hock": (.50, .71), "Right Hock": (.25, .66),
-              "Left Hind Paw": (.47, .72), "Right Hind Paw": (.28, .70), "Tail Base": (.33, .40),
-              "Sickle Tail": (.25, .24)},
-    "buizel": {"Head": (.24, .40), "Left Ear": (.31, .31), "Right Ear": (.25, .34), "Muzzle": (.16, .48),
-               "Nose": (.12, .48), "Left Cheek": (.27, .50), "Right Cheek": (.19, .52), "Jaw": (.22, .54),
-               "Neck": (.37, .44), "Throat": (.30, .55), "Chest": (.40, .58), "Stomach": (.52, .60),
-               "Upper Back": (.50, .42), "Lower Back": (.62, .46), "Left Shoulder": (.40, .52),
-               "Right Shoulder": (.45, .45), "Left Upper Arm": (.24, .60), "Right Upper Arm": (.46, .62),
-               "Left Forearm Fin": (.14, .57), "Right Forearm Fin": (.50, .40), "Left Paw": (.08, .65),
-               "Right Paw": (.55, .67), "Left Hip": (.62, .60), "Right Hip": (.65, .50), "Left Thigh": (.66, .62),
-               "Right Thigh": (.60, .55), "Left Knee": (.69, .68), "Right Knee": (.55, .66), "Left Foot": (.73, .74),
-               "Right Foot": (.56, .69), "Tail Base": (.72, .45), "Twin Tails": (.82, .32)},
-}
-
-
-def glow_color(dmg):
-    """The colour a part glows on the picture: none while it is minor."""
-    return (GLOW["devastated"] if dmg >= 300 else GLOW["excruciating"] if dmg >= 150 else GLOW["very"] if dmg >= 90
-            else GLOW["hurting"] if dmg >= 60 else GLOW["sore"] if dmg >= 30 else None)
-
-
-def load_anchors():
-    try:
-        with open(ANCHORS, encoding="utf-8") as fh:
-            return json.load(fh)
-    except Exception:
-        return {}
-
-
-def save_anchors(book):
-    try:
-        os.makedirs(IMG_DIR, exist_ok=True)
-        with open(ANCHORS, "w", encoding="utf-8") as fh:
-            json.dump(book, fh, indent=1, sort_keys=True)
-    except Exception:
-        pass
 
 
 class FighterCard(ttk.Frame):
@@ -334,77 +184,15 @@ class FighterCard(ttk.Frame):
             self.draw(self.data)
 
     def anchors(self, f):
-        """Where each part is on the picture (picture pixels): your own placements (images/anchors.json) first, else
-        a guess from where that part sits on a body, fitted to the picture's outline."""
-        key = (f["name"] if self.own else f["species"] or f["name"]).lower()
-        book = dict({} if self.own or self.src is None else ARTWORK_POINTS.get(key, {}))
-        book.update(load_anchors().get(key, {}))
-        rx, ry, rw, rh = self.rect
-        x0, y0, x1, y1 = self.box or (40, 20, PIC - 40, PIC - 20)
-        alpha = self.src.getchannel("A") if (Image is not None and self.src is not None
-                                             and not isinstance(self.src, tk.PhotoImage)) else None
-        out = {}
-        groups = {}
-        for part, dmg, res in f["parts"]:
-            if part in book:
-                out[part] = (rx + book[part][0] * rw, ry + book[part][1] * rh)
-                continue
-            reg = body_region(part)
-            side = -1 if part.lower().startswith("left ") else 1 if part.lower().startswith("right ") else 0
-            groups.setdefault((reg, side), []).append(part)
-        for (reg, side), parts in groups.items():
-            fx, fy = SPOTS.get(reg, SPOTS["other"])
-            fx += side * SPREAD.get(reg, 0.3) * 0.6
-            if reg in ("back_up", "back_low") and not side:
-                fx += 0.2
-            for i, part in enumerate(parts):
-                x = x0 + fx * (x1 - x0)
-                y = y0 + (fy + (i - (len(parts) - 1) / 2) * 0.05) * (y1 - y0)
-                if alpha is not None:
-                    x, y = self._onto_body(alpha, x, y)
-                out[part] = (x, y)
-        return out
-
-    @staticmethod
-    def _onto_body(alpha, x, y):
-        """The nearest point of the body itself (not the empty background) to (x, y)."""
-        px = alpha.load()
-        xi, yi = int(min(PIC - 1, max(0, x))), int(min(PIC - 1, max(0, y)))
-        if px[xi, yi] > 40:
-            return x, y
-        for r in range(3, 90, 3):
-            for k in range(16):
-                a = 2 * math.pi * k / 16
-                xx, yy = int(xi + r * math.cos(a)), int(yi + r * math.sin(a))
-                if 0 <= xx < PIC and 0 <= yy < PIC and px[xx, yy] > 40:
-                    return xx, yy
-        return x, y
+        """Where each part is on the picture (cards.anchor_points)."""
+        pil = self.src if (Image is not None and self.src is not None and not isinstance(self.src, tk.PhotoImage)) else None
+        return anchor_points(f, pil, self.rect, self.box, self.own, has_picture=self.src is not None)
 
     def glowing(self, f, spots):
-        """The picture with each hurt part glowing in its damage colour, kept on the body (Pillow), else None."""
+        """The picture with each hurt part glowing (cards.glow_image), as a Tk photo; None without Pillow."""
         if Image is None or self.src is None or isinstance(self.src, tk.PhotoImage):
             return None
-        from PIL import ImageDraw, ImageFilter, ImageChops
-        layer = Image.new("RGBA", (PIC, PIC), (0, 0, 0, 0))
-        dr = ImageDraw.Draw(layer)
-        for part, dmg, res in sorted(f["parts"], key=lambda t: t[1]):
-            col = glow_color(dmg)
-            if not col or part not in spots:
-                continue
-            x, y = spots[part]
-            r = 16 + min(16, dmg / 25)
-            rgb = tuple(int(col[i:i + 2], 16) for i in (1, 3, 5))
-            dr.ellipse((x - r, y - r, x + r, y + r), fill=rgb + (190,))
-        layer = layer.filter(ImageFilter.GaussianBlur(9))
-        body = self.src.getchannel("A").point(lambda a: 255 if a > 40 else 0).filter(ImageFilter.GaussianBlur(2))
-        layer.putalpha(ImageChops.multiply(layer.getchannel("A"), body))
-        out = self.src.copy()
-        out.alpha_composite(layer)
-        if f["out"]:
-            grey = out.convert("LA").convert("RGBA")
-            grey.putalpha(out.getchannel("A"))
-            out = grey
-        return ImageTk.PhotoImage(out)
+        return ImageTk.PhotoImage(glow_image(self.src, f, spots))
 
     # ---- drawing ----
     def draw(self, f):
@@ -413,18 +201,7 @@ class FighterCard(ttk.Frame):
         self.head.configure(text=f["name"] + ("   — OUT" if f["out"] else ""))
         self.sub.configure(text=f"{f['species']}  ·  {' / '.join(f['types'])}")
         spots = self.anchors(f)
-        # each label on the side of the picture its point is on; if one side gets much longer, the points nearest
-        # the middle move over
-        cx = self.rect[0] + self.rect[2] / 2
-        left = [t for t in f["parts"] if spots[t[0]][0] < cx]
-        right = [t for t in f["parts"] if spots[t[0]][0] >= cx]
-        while abs(len(left) - len(right)) > 2:
-            big, small = (left, right) if len(left) > len(right) else (right, left)
-            t = min(big, key=lambda t: abs(spots[t[0]][0] - cx))
-            big.remove(t)
-            small.append(t)
-        left.sort(key=lambda t: spots[t[0]][1])
-        right.sort(key=lambda t: spots[t[0]][1])
+        left, right = columns(f, spots, self.rect)
         H = max(PIC, ROW * max(len(left), len(right)) + 12)
         top = (H - PIC) / 2
         c = self.canvas
@@ -450,7 +227,7 @@ class FighterCard(ttk.Frame):
                     c.create_oval(COL + x - r, top + y - r, COL + x + r, top + y + r, fill=col, outline="",
                                   stipple="gray50")
         for side, rows in (("L", left), ("R", right)):
-            ys = self._spread([top + spots[p[0]][1] for p in rows], H)
+            ys = spread([top + spots[p[0]][1] for p in rows], H)
             for (part, dmg, res), ly in zip(rows, ys):
                 x, y = spots[part]
                 ax, ay = COL + x, top + y
@@ -479,22 +256,6 @@ class FighterCard(ttk.Frame):
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
-
-    @staticmethod
-    def _spread(want, H):
-        """Label heights: each as near its part as it can be, never closer than a row to the next."""
-        ys, last = [], -1e9
-        for y in want:
-            y = max(y, last + ROW, 9)
-            ys.append(y)
-            last = y
-        over = (ys[-1] + 9 - H) if ys else 0
-        if over > 0:      # pushed off the bottom: slide the stack up, keeping the spacing
-            nxt = H - 9 + ROW
-            for i in range(len(ys) - 1, -1, -1):
-                ys[i] = min(ys[i], nxt - ROW)
-                nxt = ys[i]
-        return ys
 
     def _label(self, c, side, lx, ly, part, dmg, res, calib):
         name = short(part)
@@ -647,6 +408,7 @@ class App:
         ttk.Button(bottom, text="Next beat", command=lambda: self.send_line("")).pack(side="left", padx=2)
         ttk.Button(bottom, text="Auto 5", command=lambda: self.send_line("/auto 5")).pack(side="left", padx=2)
         ttk.Button(bottom, text="Undo", command=lambda: self.send_line("/undo")).pack(side="left", padx=2)
+        ttk.Button(bottom, text="Export", command=lambda: self.send_line("/exportfight")).pack(side="left", padx=2)
         self.entry.focus_set()
 
     # ---- input ----
