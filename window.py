@@ -43,64 +43,114 @@ except Exception:              # pragma: no cover
 snapshot = play.fight_snapshot
 
 
+# The game runs on its own thread, but print() and input() are shared by the whole program. They are routed, not
+# swapped: whatever the game's thread prints or asks goes to the window that is open now, and everything else (the
+# Spyder console, a window closed while its last beat was still finishing) keeps the real screen and keyboard. The
+# routing state lives on the builtins module so a second run in the same Spyder session takes it over cleanly.
+def _route():
+    return getattr(builtins, "_fightsim_route", None) or {}
+
+
+def _current_game():
+    """The game thread that should get this print or input, or None for the real console."""
+    t = threading.current_thread()
+    if t is threading.main_thread():
+        return None
+    game = _route().get("game")
+    if getattr(t, "fightsim_game", False):
+        return t if t is game else None      # an old window's thread, still finishing: back to the console
+    return game if game is not None and game.is_alive() else None
+
+
+class _Screen:
+    """Stands in for sys.stdout: the game's thread writes to its window, everyone else to the real screen."""
+
+    def __init__(self, real):
+        self._real = real
+        self._fightsim = True
+
+    def write(self, t):
+        g = _current_game()
+        if g is None:
+            return self._real.write(t)
+        if t:
+            g.out_q.put(("text", str(t)))
+        return len(t or "")
+
+    def flush(self):
+        if _current_game() is None:
+            try:
+                self._real.flush()
+            except Exception:
+                pass
+
+    def isatty(self):
+        return False if _current_game() is not None else getattr(self._real, "isatty", lambda: False)()
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+
+def _install_routing():
+    if not hasattr(builtins, "_fightsim_route"):
+        builtins._fightsim_route = {"game": None}
+    real_in = getattr(builtins.input, "_real", builtins.input)
+    real_out = getattr(sys.stdout, "_real", sys.stdout)
+
+    def routed_input(prompt=""):
+        g = _current_game()
+        return g.ask(prompt) if g is not None else real_in(prompt)
+    routed_input._real = real_in
+    builtins.input = routed_input
+    sys.stdout = _Screen(real_out)
+    beat = getattr(play.Session.play_beat, "_real", play.Session.play_beat)
+
+    def play_beat(sess, *a, **k):
+        try:
+            return beat(sess, *a, **k)
+        finally:
+            g = _current_game()
+            if g is not None:
+                g.out_q.put(("beat", snapshot(sess)))
+    play_beat._real = beat
+    play.Session.play_beat = play_beat
+
+
 class GameThread(threading.Thread):
-    """Runs the ordinary game loop (play._run) with its screen and keyboard pointed at the window."""
+    """Runs the ordinary game loop (play._run), its printing and asking routed to the window."""
 
     def __init__(self, args, out_q, in_q):
         super().__init__(daemon=True)
         self.args, self.out_q, self.in_q = args, out_q, in_q
         self.session = None
+        self.fightsim_game = True
+
+    def ask(self, prompt=""):
+        if self.session is not None:
+            self.out_q.put(("live", snapshot(self.session, "now")))
+        self.out_q.put(("prompt", str(prompt)))
+        line = self.in_q.get()
+        if line is None:
+            raise EOFError
+        self.out_q.put(("text", f"{prompt}{line}\n"))
+        return line
 
     def run(self):
-        out_q, in_q = self.out_q, self.in_q
-
-        class Screen:
-            encoding = "utf-8"
-
-            def write(self, t):
-                if t:
-                    out_q.put(("text", str(t)))
-                return len(t or "")
-
-            def flush(self):
-                pass
-
-            def isatty(self):
-                return False
-
-        def ask(prompt=""):
-            if self.session is not None:
-                out_q.put(("live", snapshot(self.session, "now")))
-            out_q.put(("prompt", str(prompt)))
-            line = in_q.get()
-            if line is None:
-                raise EOFError
-            out_q.put(("text", f"{prompt}{line}\n"))
-            return line
-
-        real_out, real_in = sys.stdout, builtins.input
-        sys.stdout, builtins.input = Screen(), ask
-        orig_beat = play.Session.play_beat
-
-        def play_beat(sess, *a, **k):
-            try:
-                return orig_beat(sess, *a, **k)
-            finally:
-                out_q.put(("beat", snapshot(sess)))
-        play.Session.play_beat = play_beat
+        _install_routing()
+        _route()["game"] = self
         try:
             self.session = play.Session(self.args)
-            out_q.put(("live", snapshot(self.session, "now")))
+            self.out_q.put(("live", snapshot(self.session, "now")))
             play._run(self.session, self.args)
         except EOFError:
             pass
         except Exception as e:      # shown in the window rather than lost
             import traceback
-            out_q.put(("text", "\n" + traceback.format_exc() + f"\n[the game stopped: {e}]\n"))
+            self.out_q.put(("text", "\n" + traceback.format_exc() + f"\n[the game stopped: {e}]\n"))
         finally:
-            play.Session.play_beat = orig_beat
-            sys.stdout, builtins.input = real_out, real_in
-            out_q.put(("done", None))
+            if _route().get("game") is self:
+                _route()["game"] = None
+            self.out_q.put(("done", None))
 
 
 def fetch_picture(name, species, done):
@@ -329,6 +379,8 @@ class App:
         self.game = GameThread(args, self.out_q, self.in_q)
         self.game.start()
         self.root.protocol("WM_DELETE_WINDOW", self.close)
+        self.root.report_callback_exception = lambda *exc: self.show_error(
+            "".join(__import__("traceback").format_exception(*exc)))
         self.root.after(50, self.pump)
 
     # ---- layout ----
@@ -422,11 +474,37 @@ class App:
         self.prompt.configure(text="…")
 
     def close(self):
+        if getattr(self, "_closed", False):
+            return
+        self._closed = True
         self.in_q.put(None)
         self.root.destroy()
 
     # ---- output ----
     def pump(self):
+        try:
+            self._pump()
+        except Exception:
+            import traceback
+            self.show_error(traceback.format_exc())
+        finally:
+            if not getattr(self, "_closed", False):
+                try:
+                    self.root.after(60, self.pump)
+                except Exception:
+                    pass
+
+    def show_error(self, tb):
+        """A drawing error is shown in the story pane instead of quietly stopping the window."""
+        try:
+            self.text.configure(state="normal")
+            self.text.insert("end", "\n[window error, the game goes on]\n" + tb + "\n", "progress")
+            self.text.configure(state="disabled")
+            self.text.see("end")
+        except Exception:
+            pass
+
+    def _pump(self):
         try:
             while True:
                 kind, data = self.out_q.get_nowait()
@@ -453,7 +531,6 @@ class App:
                     self.prompt.configure(text="(the game has ended: close the window)")
         except queue.Empty:
             pass
-        self.root.after(60, self.pump)
 
     def add_text(self, t):
         self.pending += t
