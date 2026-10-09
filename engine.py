@@ -6741,7 +6741,7 @@ class Engine:
                 esc_try *= buff
                 p["buff_beats"] -= 1
             sec_cfg = cfg.get("secure", {})
-            unmet = sec_cfg.get("enabled", False) and not self.pin_securable(dfn)[0]
+            unmet = (sec_cfg.get("enabled", False) and not self.pin_securable(dfn)[0]) or self.ko_only()
             if unmet:  # not worn down enough to be held: every escape attempt is likelier
                 esc_try *= float(sec_cfg.get("unmet_escape_mult", 2.0))
             if self.has(dfn, "paralyzed"):
@@ -6856,10 +6856,12 @@ class Engine:
                 ev.update(fade_mode=True, fade_from=round(f0, 1), fade_to=round(f0, 1), fade_gain=0.0, beats=p["beats"])
             done = (float(p.get("fade", 0.0)) >= 100.0) if fm else (p["seconds"] >= p["duration"])
             if (key in self.pins and done and unmet
-                    and self._chance(float(sec_cfg.get("final_kickout_chance", 0.85)),
+                    and self._chance(1.0 if self.ko_only() else float(sec_cfg.get("final_kickout_chance", 0.85)),
                                      f"{dfn.name} kicking out at the last second", "she kicks out", "no")):
                 # the pin can't be won yet: she kicks out at the last second
-                ev.update(struggle="escape", last_second=True, why_not=self.pin_securable(dfn)[1])
+                ev.update(struggle="escape", last_second=True,
+                          why_not="only a knockout ends a fight (finish.knockout_only)" if self.ko_only()
+                          else self.pin_securable(dfn)[1])
                 ev["hits_on_pinner"] = ev.get("hits_on_pinner", []) + self._escape_hit(self.rng.choice(crew), dfn)
                 for h in self._pin_holds(p):
                     self.holds.pop(h.id, None)
@@ -6902,6 +6904,31 @@ class Engine:
                 "defender_health": round(d.health, 2), "max_health": d.max_health, "counts": counts, "result": result,
                 "kicked_out_at": counts[-1]["count"] if result == "kickout" else None}
 
+    def ko_only(self):
+        """finish.knockout_only: a fight ends only when someone is KNOCKED OUT by a blow. A pin run to its end can't
+        finish her (she kicks out at the last second, spent), and knockouts come more often the lower she is."""
+        return bool((self.rules.get("finish") or {}).get("knockout_only", False))
+
+    def _ko_only_chance(self, d, loss, devastating):
+        """The knockout chance in knockout-only fights: nothing above finish.start_pct of her full health, rising
+        to finish.chance (for a decent blow: decent_loss_pct of her health at once) at full_pct and below; a bigger
+        blow more, a glancing one less; further below zero a little more still."""
+        cfg = (self.rules.get("finish") or {})
+        pct = self._health_pct(d)
+        start, full = float(cfg.get("start_pct", 40)), float(cfg.get("full_pct", 10))
+        if pct > start or loss <= 0:
+            return 0.0
+        low = 1.0 if pct <= full else (start - pct) / max(1e-9, start - full)
+        low = low ** 1.5                 # creeps in slowly at first, then quickly near the bottom
+        blow = max(0.15, min(1.6, loss / max(0.1, float(cfg.get("decent_loss_pct", 4)))))
+        deep = 1.0 + float(cfg.get("below_zero_per_50", 0.15)) * max(0.0, -pct) / 50.0
+        ch = float(cfg.get("chance", 0.30)) * low * blow * deep
+        if devastating:
+            ch *= float(cfg.get("devastating_mult", 1.5))
+        if self.has(d, "adrenaline"):
+            ch *= 0.5
+        return min(float(cfg.get("max", 0.6)), ch)
+
     def knockout_roll(self, name, lost, kinds, devastating=False):
         """Very rarely a big enough beat simply knocks her OUT, no pin needed (moves.knockout): only when she is
         already very low (max_health_pct of her full health or less), the beat cost her at least min_loss_pct of
@@ -6910,6 +6937,17 @@ class Engine:
         Returns the elimination result, or None."""
         cfg = (self.rules.get("moves") or {}).get("knockout") or {}
         d = self.get(name)
+        if self.ko_only() and not d.eliminated and d.max_health:
+            loss = lost / d.max_health * 100.0
+            ch = self._ko_only_chance(d, loss, devastating)
+            if ch <= 0:
+                return None
+            how = " and ".join(kinds) if kinds else "blow" if not devastating else "devastating blow"
+            if not self._chance(ch, f"{d.name} knocked out by the {how}", "KNOCKED OUT", "she stays conscious"):
+                return None
+            out = self.eliminate(d.name, f"knocked out cold by the {how}")
+            out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1))
+            return out
         if not cfg.get("enabled", True) or d.eliminated or not d.max_health or not (kinds or devastating):
             return None
         pct = self._health_pct(d)
@@ -7459,8 +7497,14 @@ class Engine:
                                      ((self.rules.get('flight') or {}).get('strain') or {}).get('from', 100)) else "")
                               ) if self.can_fly(f) else
                              f"   grounded: {self.can_fly(f, why=True)}")
+            if self.ko_only() and not f.eliminated:
+                kc = self._ko_only_chance(f, float((self.rules.get("finish") or {}).get("decent_loss_pct", 4)), False)
+                lines.append(f"   ONLY A KNOCKOUT ENDS THIS FIGHT: a pin wears her down but can't finish her"
+                             + (f"; she is low enough now that a hard blow may knock her out cold (about "
+                                f"{kc * 100:.0f}% for a solid hit)" if kc > 0 else
+                                "; she is too strong yet to be knocked out"))
             sec, why_not = self.pin_securable(f)
-            if not sec:
+            if not sec and not self.ko_only():
                 lines.append(f"   a pin on {f.name} probably can't be WON yet ({why_not}): she escapes far more easily "
                              f"and usually kicks out at the last second. "
                              f"Wear her down more (spread the damage) before pinning for the win.")

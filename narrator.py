@@ -4321,8 +4321,10 @@ class Narrator:
             self._struggle_kind = "escape"
             out.append(f"  - YOU MUST SHOW THIS: at the very last moment, "
                        + ("on the edge of passing out" if fm else "with the clock nearly run out") + f", {d} KICKS OUT "
-                       f"and breaks the pin. {a} had her, almost; she isn't beaten down enough yet to be held. "
-                       f"The pin is OVER.")
+                       f"and breaks the pin. {a} had her, almost; "
+                       + ("but a pin can't finish this fight: only a knockout can, and she drags herself out from "
+                          "under, spent, with nothing left but the will. " if "knockout" in str(e.get("why_not", ""))
+                          else "she isn't beaten down enough yet to be held. ") + "The pin is OVER.")
             out += self._escape_lines(e)
         elif s == "escape":
             self._must_struggle = f"{d} breaks free"

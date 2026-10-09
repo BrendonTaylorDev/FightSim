@@ -1070,6 +1070,9 @@ def resolve(engine, b):
                 raise ValueError(f"no active hold involving {att}. Active: {list(engine.holds)}")
             res = engine.release_between(pair[0], pair[1], flavor or "released")
     elif act == "eliminate":
+        if not manual and engine.ko_only():
+            raise ValueError("only a knockout ends a fight now (finish.knockout_only): no one is simply declared out. "
+                             "Keep fighting: a hard blow on a badly worn fighter can knock her out")
         res = engine.eliminate(dfn, flavor)
     elif act == "struggle":
         pinner = b.get("defender") if b.get("defender") and str(b.get("defender")).lower() != att.lower() else None
