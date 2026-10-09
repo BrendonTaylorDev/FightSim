@@ -27,6 +27,16 @@ cd C:\fightsim
 python play.py
 ```
 
+**In a window, with pictures:** `python window.py` (in Spyder: `%runfile window.py`). It takes the same options as
+`play.py`. On the left, each fighter's picture, with a line from every body part out to a label showing its damage
+(the coloured fill) and resistance (the coloured frame); hurt parts glow on the picture, yellow to orange to red to
+purple. Health, energy, statuses and posture sit underneath. On the right, the story and stat lines with the command
+box. Scroll back through the story and the pictures show each fighter as she was in the beat you are reading (or
+use the slider and arrows; "Follow the fight" jumps back to the latest beat). The official artwork is downloaded
+once into `images/`; put your own picture there as `<fighter name>.png` (`Ripples.png`) or `<species>.png` to use
+it instead. If a part's point sits in the wrong place, click its label and then click the picture where the part
+is: it is kept in `images/anchors.json`. Absol and Buizel come with their points placed; others start from a guess.
+
 At the `>` prompt:
 - **Press Enter**: the director decides what happens next.
 - **Type a direction**: e.g. `Ripples drags Nocturne away from the water`. The director follows it for the next beat.

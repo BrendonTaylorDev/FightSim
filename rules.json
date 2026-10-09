@@ -1508,7 +1508,7 @@
   },
   "scene": {
     "_comment": "The arena. current: which scene from scenes.json a run starts in (the start-of-run question and /scene set it). ask_at_start: ask which scene every time the program starts. events: whether the place does things by itself (a stalactite falls, a wave sweeps the deck). event_chance: the chance per beat that it does (0 = never; /hazards chance <n> changes it). event_gap: beats that must pass between two events. event_from_beat: no events before this beat. Events never happen while a pin or a hold is on. /hazard <name> [fighter] makes one happen.",
-    "current": "sea cave",
+    "current": "lakeside forest",
     "ask_at_start": true,
     "events": true,
     "event_chance": 0.05,
