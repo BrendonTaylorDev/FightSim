@@ -4033,7 +4033,7 @@ class Engine:
         cap = int(cfg.get("max_beats", 3))
         events, done = [], {}
         after = int(cfg.get("becomes_pin_after", 0) or 0)
-        if after > 0:
+        if after > 0 and not self.no_pins():      # (no pins: a submission stays a submission)
             subs = {}
             for h in self.holds.values():
                 if h.sub:
@@ -5440,6 +5440,9 @@ class Engine:
         need = int(cfg.get("attacks_between_pins", 0) or 0)
         got = self.since_pin.get(d.name, need)  # the rule is about the gap BETWEEN pins: no pin yet, no wait
         why = []
+        if self.no_pins():
+            return False, ("pins are off in this fight (knockout-only, with finish.no_pins): wear her down with "
+                           "blows, grapples and submissions, and knock her out")
         if self.has(d, "airborne"):
             why.append(f"{d.name} is in the air: she has to be brought down first")
         if self.pin_window.get(d.name, True) is False:
@@ -6650,6 +6653,9 @@ class Engine:
         for f in self.active():
             if self.pinned_by(f.name):
                 continue
+            if self.no_pins():
+                self.pin_window[f.name] = False     # no pins at all in this fight (finish.no_pins)
+                continue
             first = int((self.rules.get("pin") or {}).get("openings_from_beat", 2))
             if not open_all and self.turn + 1 < first:
                 self.pin_window[f.name] = False   # nobody has traded a blow yet: no opening to pin anyone
@@ -6903,6 +6909,11 @@ class Engine:
                 "holds_ended": released, "winner": self.winner(),
                 "defender_health": round(d.health, 2), "max_health": d.max_health, "counts": counts, "result": result,
                 "kicked_out_at": counts[-1]["count"] if result == "kickout" else None}
+
+    def no_pins(self):
+        """finish.no_pins (with finish.knockout_only): no pins at all, so the fight is won by a knockout blow."""
+        cfg = self.rules.get("finish") or {}
+        return bool(cfg.get("knockout_only", False) and cfg.get("no_pins", False))
 
     def ko_only(self):
         """finish.knockout_only: a fight ends only when someone is KNOCKED OUT by a blow. A pin run to its end can't
@@ -7499,7 +7510,9 @@ class Engine:
                              f"   grounded: {self.can_fly(f, why=True)}")
             if self.ko_only() and not f.eliminated:
                 kc = self._ko_only_chance(f, float((self.rules.get("finish") or {}).get("decent_loss_pct", 4)), False)
-                lines.append(f"   ONLY A KNOCKOUT ENDS THIS FIGHT: a pin wears her down but can't finish her"
+                lines.append(f"   ONLY A KNOCKOUT ENDS THIS FIGHT: "
+                             + ("no pins at all in this fight" if self.no_pins() else
+                                "a pin wears her down but can't finish her")
                              + (f"; she is low enough now that a hard blow may knock her out cold (about "
                                 f"{kc * 100:.0f}% for a solid hit)" if kc > 0 else
                                 "; she is too strong yet to be knocked out"))
