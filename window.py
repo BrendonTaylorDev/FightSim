@@ -439,10 +439,11 @@ class App:
                     self.flush_pending()
                     self.beats.append((self.text.index("end-1c"), data))
                     self.live = data
-                    self.slider.configure(to=len(self.beats))
                     if self.follow.get():
-                        self.slider.set(len(self.beats))
+                        self.set_slider(len(self.beats) + 1)
                         self.show(data, live=True)
+                    else:
+                        self.slider.configure(to=len(self.beats) + 1)
                 elif kind == "live":
                     self.live = data
                     if self.follow.get():
@@ -505,55 +506,86 @@ class App:
         self.text.insert("end", line[pos:], extra)
 
     # ---- which beat is shown ----
+    # Positions on the slider: 1..N are the beats (each as it stood when that beat ended), N+1 is "now".
+    def set_slider(self, pos):
+        """Move the slider without it acting as if you had dragged it (Tk calls its command on every set)."""
+        self._setting = True
+        try:
+            self.slider.configure(to=len(self.beats) + 1)
+            self.slider.set(pos)
+        finally:
+            self._setting = False
+
     def user_scroll(self, _e=None):
         self._user_scrolled = True
-        self.root.after(30, self.scrolled)
+        self.root.after(40, self.scrolled)
+
+    def beat_at(self, index):
+        """The beat whose text holds this text position (1-based), or None past the last beat."""
+        for k, (mark, snap) in enumerate(self.beats):
+            if self.text.compare(mark, ">", index):
+                return k + 1
+        return None
 
     def scrolled(self):
-        if getattr(self, "_writing", False) or not self.beats:
+        """You scrolled the story: show the beat you are reading (the line a third of the way down the view)."""
+        if getattr(self, "_writing", False) or getattr(self, "_navigating", False) or not self.beats:
             return
-        if self.follow.get():
-            if not getattr(self, "_user_scrolled", False) or self.text.yview()[1] >= 0.999:
-                return
+        if not getattr(self, "_user_scrolled", False):
+            return
         self._user_scrolled = False
-        top = self.text.index("@0,0")
-        for i, (mark, snap) in enumerate(self.beats):
-            if self.text.compare(mark, ">", top):
-                if self.text.yview()[1] < 0.999:
-                    self.follow.set(False)
-                self.slider.set(i + 1)
-                self.show(snap)
-                return
-        if self.live is not None:
-            self.show(self.live, live=True)
+        if self.text.yview()[1] >= 0.999 and self.follow.get():
+            return
+        self.follow.set(False)
+        h = max(1, self.text.winfo_height())
+        k = self.beat_at(self.text.index(f"@0,{h // 3}"))
+        if k is None:
+            self.set_slider(len(self.beats) + 1)
+            self.show(self.live or self.beats[-1][1], live=True)
+        else:
+            self.set_slider(k)
+            self.show(self.beats[k - 1][1], index=k)
 
     def slid(self, value):
-        i = int(round(float(value)))
-        if not self.beats:
+        """The slider or the arrows chose a beat: show it, and bring its text to the top of the story."""
+        if getattr(self, "_setting", False) or not self.beats:
             return
-        if i >= len(self.beats):
-            self.show(self.live or self.beats[-1][1], live=True)
+        k = int(round(float(value)))
+        self.go(k)
+
+    def go(self, k):
+        k = max(1, min(len(self.beats) + 1, k))
+        self.set_slider(k)
+        if k > len(self.beats):
+            self.follow.set(True)
+            self.follow_changed()
             return
-        i = max(1, i)
-        mark, snap = self.beats[i - 1]
-        self.show(snap)
-        start = self.beats[i - 2][0] if i >= 2 else "1.0"
-        if self.text.compare("@0,0", "<", start) or self.text.compare("@0,0", ">", mark):
-            self.text.see(start)
+        self.follow.set(False)
+        mark, snap = self.beats[k - 1]
+        self.show(snap, index=k)
+        start = self.beats[k - 2][0] if k >= 2 else "1.0"
+        # the beat's first line at the top of the view (as far as the story allows); the scrolling this causes
+        # must not choose a beat of its own
+        self._navigating = True
+        self.text.yview(start)
+        self.root.after(200, lambda: setattr(self, "_navigating", False))
 
     def step(self, d):
-        self.follow.set(False)
-        self.slider.set(max(1, min(len(self.beats), int(round(float(self.slider.get()))) + d)))
-        self.slid(self.slider.get())
+        cur = int(round(float(self.slider.get())))
+        if self.follow.get():
+            cur = len(self.beats) + 1
+        self.go(cur + d)
 
     def follow_changed(self):
         if self.follow.get():
-            self.slider.set(len(self.beats))
+            self.set_slider(len(self.beats) + 1)
+            self._navigating = True
             self.text.see("end")
+            self.root.after(200, lambda: setattr(self, "_navigating", False))
             if self.live:
                 self.show(self.live, live=True)
 
-    def show(self, snap, live=False):
+    def show(self, snap, live=False, index=None):
         self.shown = snap
         names = [f["name"] for f in snap["fighters"]]
         if list(self.cards) != names:
@@ -567,8 +599,9 @@ class App:
                 self.load_picture(card, f)
         for f in snap["fighters"]:
             self.cards[f["name"]].draw(f)
-        self.when.configure(text=("Now" if live else f"As it stood {snap['label']}")
-                            + (f"  ·  beat {snap['turn']}" if snap.get("turn") else ""))
+        self.when.configure(text=("Now" if live else
+                                  f"Beat {index} of {len(self.beats)}: as it stood {snap['label']}" if index else
+                                  f"As it stood {snap['label']}"))
 
     def load_picture(self, card, f):
         def done(data, own):
