@@ -3850,9 +3850,12 @@ class Narrator:
                              f"her conscious and hurting, her reactions growing weaker and slower from blow to blow. "
                              f"Only the LAST blow switches her off. Not one blow earlier.")
             lines.append(f"KNOCKOUT: the {a.get('how', 'blow')} above is the last thing {a['fighter']} takes. It does not "
-                         f"just hurt her: it switches her OFF. In the instant it lands, or the instant after, her body "
-                         f"gives up all at once: the eyes roll or go blank, every muscle lets go together, she drops "
-                         f"(or sags where she is held or lies) and does not move again. OUT COLD, still breathing; Pokemon "
+                         f"just hurt her: it switches her OFF. No long tally of her hurts and no struggle to stay up: "
+                         f"the blow, and then her going under, told from inside with room (sound draining away, the "
+                         f"light greying, the legs not answering, the ground coming up). Her body gives up all at "
+                         f"once: the eyes roll or go blank, every muscle lets go together, she drops (or sags where "
+                         f"she is held or lies) and does not move again. Shown from outside too: the fall itself, "
+                         f"before anyone looks down at her lying there. OUT COLD, still breathing; Pokemon "
                          f"faint, nobody dies. No pin and no count: this is how the fight ends. Then the silence, "
                          f"and {by}: what she sees, how her own body answers now it is over, what she does."
                          + (f" {a['fighter']} ends up {Engine.FACING_LOOK[a['facing']]}." if a.get("facing") in
@@ -9924,6 +9927,30 @@ class Narrator:
             plan = [(k, jobs.get(k, f), w) for k, f, w in plan]
             pin_plan = True
             going = gone
+        kos = [a for a in acts if a.get("type") == "eliminated" and a.get("knockout")]
+        if kos and not pin_plan and len(plan) >= 2 and any(k == "take" for k, _f, _w in plan):
+            # the knockout beat: her side is the blow and her going under, given room; the watcher's side picks up
+            # with her fall seen from outside, so the change of view doesn't jump from her standing to her lying
+            d_ = kos[0]["fighter"]
+            by = kos[0].get("by") or actor or "her opponent"
+            keys = [k for k, _f, _w in plan]
+            take_job = (f"{poss(d_)} side, picking up at the instant of contact (do not re-tell the attack): the listed "
+                        f"hits landing, briefly, and then the blow that ENDS it. Do NOT walk through every hurt part, and "
+                        f"do not have her fight to stay up for paragraphs: this blow switches her off. Give her GOING "
+                        f"UNDER room, from inside, over four to six sentences: the sound of the place draining away, the "
+                        f"light going grey and narrowing, her legs no longer answering her, the ground tilting up to "
+                        f"meet her, the last thing she feels against her (grass, sand, water) and then nothing. "
+                        + ("End this part the moment she goes out." if "after" in keys else
+                           f"Then a short paragraph from {poss(by)} side: {d_} dropping, seen from outside, and the "
+                           f"stillness after."))
+            after_job = (f"{poss(by)} side, picking up at the same moment: {d_} going DOWN, seen from outside: how she "
+                         f"drops, what she lands on, how she ends up lying. Then the stillness: {by} waiting for her to "
+                         f"move, the slow rise and fall of her ribs, and how {poss(by)} own body answers now it is over "
+                         f"(the shaking, the ache, the breath). Nothing new happens and nobody attacks.")
+            jobs = {"take": take_job, "after": after_job}
+            plan = [(k, jobs.get(k, f), w) for k, f, w in plan]
+            # no lingering inside her hurts afterwards: she is out
+            self._moments = [m for m in self._moments if m.get("key") != "dwell"]
         also_now = bundle.get("also_this_beat") or []
         if pin_plan and any(m["key"] == "dwell" for m in self._moments):
             # under a running pin her side of the beat is already what it does to her: the watcher is the new view

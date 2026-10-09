@@ -32,14 +32,29 @@ def _md(text):
     return re.sub(r"\*(?!\s)([^*\n]+?)\*", r"<i>\1</i>", t)
 
 
+# the game's own announcements ("*** Winner: Nocturne ***") and what it tells you to do next at the keyboard
+RESULT = re.compile(r"\*\*\*\s*(.+?)\s*\*\*\*")
+CONSOLE_HINT = re.compile(r"^\((?:The match is over|Stopped|rerolled|A previous fight)|^Still in the fight:|"
+                          r"Keep pressing Enter|^\(type /help\)|^Press Enter", re.I)
+
+
 def _split(text):
-    """A beat's text as (story paragraphs, stat lines)."""
-    story, mech = [], []
+    """A beat's text as (story paragraphs, stat lines, results): the game's announcements (who is out, who won)
+    come out as results, and its hints about what to type next are left out."""
+    story, mech, results = [], [], []
     para = []
     in_stats = False
     for line in (text or "").splitlines():
         s = line.strip()
         if PROGRESS.match(line):
+            continue
+        if RESULT.search(s) and not in_stats:
+            results += [m.group(1).strip() for m in RESULT.finditer(s)]
+            rest = CONSOLE_HINT.sub("", RESULT.sub("", s)).strip()
+            if rest and not CONSOLE_HINT.search(rest) and not rest.startswith("("):
+                mech.append(rest)
+            continue
+        if CONSOLE_HINT.search(s):
             continue
         if RULE.match(s):
             in_stats = not in_stats if s.startswith("-") else in_stats
@@ -61,7 +76,7 @@ def _split(text):
         para.append(s)
     if para:
         story.append(" ".join(para))
-    return story, mech
+    return story, mech, results
 
 
 def _card_img(f, pics):
@@ -127,6 +142,8 @@ pre{white-space:pre-wrap;font:12px/1.45 Consolas,monospace;color:var(--dim);marg
 table{border-collapse:collapse;width:100%;margin-top:6px}td,th{padding:2px 6px;border-bottom:1px solid var(--line);text-align:left}
 td.n{text-align:right}.chip{display:inline-block;min-width:58px;padding:0 4px;border-radius:3px;text-align:center;font-weight:600}
 .chip.res{border:2px solid;background:transparent;font-weight:400}
+.result{margin:14px 0 4px;padding:8px 12px;border-left:4px solid #b45309;background:var(--card);
+font:600 15px system-ui,sans-serif}
 """
 
 
@@ -155,11 +172,12 @@ def write(s, path=None, fights=None):
         label = r.get("label") or f"beat {r.get('turn')}"
         head = (f"Fight {fight}: " if fights is None or len(fights or []) > 1 else "") + label[:1].upper() + label[1:]
         nav.append(f'<a href="#b{k}">{html.escape(label)}</a>')
-        story, mech = _split(r.get("text", ""))
+        story, mech, results = _split(r.get("text", ""))
         st = "".join(f'<div class="pov">{html.escape(x[1])}</div>' if isinstance(x, tuple) else f"<p>{_md(x)}</p>"
                      for x in story)
-        mech_html = (f'<details><summary>stat lines and rolls</summary><pre>{_md(chr(10).join(mech))}</pre></details>'
-                     if mech else "")
+        res_html = "".join(f'<div class="result">{html.escape(x)}</div>' for x in results)
+        mech_html = res_html + (f'<details><summary>stat lines and rolls</summary><pre>{_md(chr(10).join(mech))}</pre>'
+                                f'</details>' if mech else "")
         side = ""
         for f in r["snapshot"]["fighters"]:
             img = _card_img(f, pics)
