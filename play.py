@@ -1014,6 +1014,8 @@ class Session:
         self.narrator.soaked_now = soaked
         self.narrator.water_types = {f.name for f in self.eng.fighters.values()
                                      if "water" in {str(t).lower() for t in (getattr(f, "types", None) or [])}}
+        self.narrator.rain_wet = (self.eng.scene_cfg.get("wets") or
+                                  ("the rain" if (getattr(self.eng, "weather", None) or {}).get("kind") == "rain" else None))
         if getattr(self.narrator, "_part_names_seen", None) != len(self.narrator.part_names):
             self.narrator._part_words_cache = None   # new fighters: their part names are not repeated phrases
             self.narrator._part_names_seen = len(self.narrator.part_names)

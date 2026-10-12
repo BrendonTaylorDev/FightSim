@@ -8243,15 +8243,16 @@ class Narrator:
         for allowed, who in groups.items():
             rows.append("how much it hurts: " + ", ".join(who) + f" at worst, so {allowed}")
         coats = []
+        rain = getattr(self, "rain_wet", None)    # (the arena's weather wets everyone: scenes.json wets, or Rain Dance)
         for w in (self.strengths or {}):
             if w in (getattr(self, "soaked_now", None) or set()) and w not in (getattr(self, "soaked_before", None) or set()):
-                coats.append(f"{w} DRY until this beat's water soaks her")
+                coats.append(f"{w} {'wet with ' + rain if rain else 'DRY'} until this beat's water soaks her")
             elif w in (getattr(self, "soaked_now", None) or set()):
                 coats.append(f"{w} soaked")
             elif w in (getattr(self, "soaked_before", None) or set()):
-                coats.append(f"{w} damp, drying")
+                coats.append(f"{w} wet with {rain}, no longer soaked" if rain else f"{w} damp, drying")
             elif w not in (getattr(self, "water_types", None) or set()):
-                coats.append(f"{w} DRY (nothing has wet her yet)")
+                coats.append(f"{w} wet with {rain} (wet, not soaked)" if rain else f"{w} DRY (nothing has wet her yet)")
         if coats and not getattr(self, "_wet_beat", False):
             rows.append("fur: " + ", ".join(coats))
         eyes = {w: c for w, c in (getattr(self, "eye_colors", None) or {}).items() if w in (self.strengths or {})}
