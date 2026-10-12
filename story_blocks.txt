@@ -24,6 +24,8 @@
 #   part:  jaw, nose, eye...                          a word of the body part's own name
 #   effect: super, weak, none                         how the attack's type meets her body (effect_* blocks only)
 #   type:  fire, water, electric, ice, ...            the attack's type        vs: her own type(s)
+#   shape: thrown, fall, rise, tomb                   a rock move's shape: stones thrown at her, rocks falling on her,
+#                                                      stone driven up out of the ground, boulders closing round her
 # In the text of a block, {part} is the body part in question ("left thigh") and {next} a part beside it.
 # Add as many lines as you like: more blocks means more variety. /blocks shows the counts.
 
@@ -3363,11 +3365,11 @@ the blast of wind flattens the grass in a long fan in front of her
 the air itself is the weapon: invisible until it lands, and then everywhere
 
 == movement | kind: rock
-stones lift from the ground around her and hang there for a heartbeat
-the rocks come in a ragged volley, some high, some skipping off the ground
-a jagged spike of stone erupts from the earth exactly where she means it to
-she throws her head and the stones fly from her mane like shrapnel | has: mane
-the rocks crack against each other in the air and come down in a hail of grit
+stones lift from the ground around her and hang there for a heartbeat | shape: thrown
+the rocks come in a ragged volley, some high, some skipping off the ground | shape: thrown
+a jagged spike of stone erupts from the earth exactly where she means it to | shape: rise
+she throws her head and the stones fly from her mane like shrapnel | has: mane | shape: thrown
+the rocks crack against each other in the air and come down in a hail of grit | shape: fall, thrown
 
 == movement | kind: wing
 she pivots on one foot and brings the wing across like a flail | has: wings
@@ -7886,12 +7888,20 @@ the wind slams into the other like a shove from a giant hand
 she sends the gust low along the ground, sweeping the other's legs
 
 == movement | kind: rock
-she hurls a boulder with a heave of her whole body
-stones burst up from the ground beneath the other
-she sends a hail of sharp stones at the target
-a slab of rock tilts up out of the ground and topples toward the other
-she slams the ground and the shock sends stones flying
-the stones spin as they fly, scattering grit everywhere
+she hurls a boulder with a heave of her whole body | shape: thrown
+stones burst up from the ground beneath the other | shape: rise
+she sends a hail of sharp stones at the target | shape: thrown
+a slab of rock tilts up out of the ground and topples toward the other | shape: tomb, rise
+she slams the ground and the shock sends stones flying | shape: thrown, rise
+the stones spin as they fly, scattering grit everywhere | shape: thrown
+rocks gather in the air high over the other and hang, and then they all come down at once | shape: fall
+the boulders come down on the other in a grinding, bouncing rush | shape: fall
+she rears and stamps, and the stones she called up overhead drop all together | shape: fall
+the first rocks land short and the rest come down where she meant them to | shape: fall
+boulders thud down round the other one after another, hemming her in | shape: tomb
+the stones close round the other's legs like a wall going up too fast to step out of | shape: tomb
+the ground splits under the other and a blade of stone stabs up out of it | shape: rise
+the stone points burst up in a ragged line, each one closer to the other than the last | shape: rise
 
 == movement
 she shifts her footing half a step before every move, so the angle is never the same twice

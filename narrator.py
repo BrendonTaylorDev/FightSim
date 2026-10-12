@@ -826,6 +826,12 @@ WEAPONS = (("claws", r"\bclaw|\btalon|\bscratch|\brak(?:e|es|ed|ing)\b|\bswipe")
            ("horn", r"\bhorn|\bgore"))
 WEAPON_SAY = {"claws": "her CLAWS", "teeth": "her TEETH", "tail": "her TAIL", "horn": "her HORN"}
 WEAPON_NOT = {"claws": "a claw swipe", "teeth": "a bite", "tail": "a tail strike"}
+# a weapon word whose object is the ground or the scenery ("rakes the ground", "her claws dug into the mud", "her tail
+# lashes the water"): not the weapon the blow lands with
+WEAPON_AT_SCENERY = re.compile(r"\b(?:claw\w*|talons?|scratch\w*|rak(?:e|es|ed|ing)|swip\w+|bit(?:e|es|ing)?|fangs?|teeth|"
+                               r"jaws?|tails?|horns?|gor(?:e|es|ed|ing))(?: \w+)?? (?:(?:at|into|across|through|up|along|"
+                               r"against|in|on) )?(?:the |a |some )?(?:\w+ )?(?:ground|earth|mud|dirt|soil|sand|floor|"
+                               r"grass|gravel|snow|rocks?|stones?|bark|trees?|trunk|log|wall|water|air)\b", re.I)
 # an attack with the teeth, as it happens (not "the teeth marks", not "bit down on a cry")
 BITING = re.compile(r"\b((?:fangs|teeth|jaws?|muzzle|mouth) (?:sank|sinking|sink|clamp\w*|clos\w+|lock\w*|snapp\w+|fasten\w+|"
                     r"latch\w+) (?:down |shut |hard |tight )*(?:on|onto|around|into|over)\b|(?:fangs|teeth) (?:sank|sinking|"
@@ -863,24 +869,73 @@ SEVERAL_BLOWS = re.compile(r"\b(?:two|three|four|several|both) (?:fast |quick |s
                            r"\bthe (?:real|true|actual) (?:one|bite|blow|strike|punch|chop|kick|swipe|rake)\b|"
                            r"\b(?:jabbed|jabs?|nipped|nips?|tapped|taps?) once\b|\bto measure\b|\bthen the (?:real|true)\b", re.I)
 
-# what each way of dodging the engine rolls looks like: a dodge idea that plainly shows another way is not offered
+# what each way of dodging the engine rolls looks like. Every dodge idea shows one of these (or more): "any" is one
+# that shows no way at all (she reads it early, it clips a few hairs), "jump" one no rolled way covers (a hop over a
+# sweep, lifting off the ground). For a known way, an idea is offered only if it shows that way (or no way); one
+# that shows another way, or fits no family at all, is not
 DODGE_WAYS = {
-    "sidestep": re.compile(r"\b(?:sidestep\w*|side-?steps?|skips? sideways|steps? round|slides? out|slips? to one side|"
-                           r"turns? side-on|sways? out of its line)\b", re.I),
-    "duck": re.compile(r"\b(?:drops? (?:low|flat|under)|ducks?|ducks under|goes over her|passes over her|whistles over|"
-                       r"legs fold)\b", re.I),
-    "spring_back": re.compile(r"\b(?:hop back|darts? back|springs? back|gives? ground|leans? back|out of (?:its )?reach)\b", re.I),
-    "twist": re.compile(r"\b(?:twists?|pivots?|rolls? out)\b", re.I),
+    "sidestep": re.compile(r"\b(?:sidestep\w*|side-?steps?|skips? sideways|steps? round|slides? out|slips? (?:to one side|"
+                           r"aside)|turns? side-on|sways? out of its line|ripples? aside|hop sideways|out of the way like)\b",
+                           re.I),
+    "duck": re.compile(r"\b(?:drops? (?:low|flat|under)|ducks?|ducks under|goes over her|passes (?:clean )?over|"
+                       r"whistles over|legs fold|goes over)\b", re.I),
+    "spring_back": re.compile(r"\b(?:hops? back|darts? back|springs? back|gives? ground|leans? back|out of (?:its )?reach|"
+                              r"rears back|draws? her head back|falls? (?:just )?short)\b", re.I),
+    "twist": re.compile(r"\b(?:twists?|pivots?|rolls? out|a lean|leans? (?:far )?out|leaning out|sways? from the hips|"
+                        r"bends? out of the way|spins? away|turns? her shoulder|jerks? her head aside)\b", re.I),
+    "turn_aside": re.compile(r"\b(?:slaps? the blow aside|knocks? it (?:aside|off))\b", re.I),
+    "jump": re.compile(r"\b(?:hops? (?:the|over)|hops her clear|jumps?|leaps?|lifts? off the ground|passes beneath her)\b",
+                       re.I),
+    "any": re.compile(r"\b(?:simply not there|reads? (?:it|the)|sees? it coming|already moving|clips a few hairs|"
+                      r"is gone|gone from where|flinches away|catch(?:es)? the (?:stir|blow coming)|dodge costs her)\b",
+                      re.I),
 }
-DODGE_WAYS["turn_aside"] = DODGE_WAYS["twist"]
+# (the engine's turn_aside is twisting her body out of its line or knocking it off it: both families are its own)
+DODGE_OWN = {"turn_aside": ("turn_aside", "twist"), "twist": ("twist", "turn_aside")}
+
+
+class WayFilter:
+    """An exclude pattern for B.pick: drops an idea that shows a way not in `ways` (`free` is the family that shows
+    no way at all and is always fine), or (strict) one that fits no family."""
+
+    def __init__(self, families, ways, free=(), strict=True):
+        self.families, self.ways, self.free, self.strict = families, set(ways), set(free), strict
+
+    def search(self, text):
+        shown = {k for k, rx in self.families.items() if rx.search(text)}
+        if not shown:
+            return self.strict
+        return bool(shown - self.ways - self.free) or not (shown & (self.ways | self.free))
 
 
 def dodge_exclude(manner):
-    """Patterns for dodge ideas that show a way of dodging other than the one rolled (none if it is unknown)."""
-    if manner not in DODGE_WAYS:
+    """The filter for dodge ideas: only those that show the way of dodging that was rolled (none if it is unknown)."""
+    if manner not in DODGE_WAYS or manner in ("any", "jump"):
         return None
-    mine = DODGE_WAYS[manner]
-    return [rx for m, rx in DODGE_WAYS.items() if rx is not mine] or None
+    return [WayFilter(DODGE_WAYS, DODGE_OWN.get(manner, (manner,)), free=("any",))]
+
+
+# how a blow that rocks her (the engine's "how it moves her") moves her: an idea that shows another movement for that
+# blow (her head turning, for a bite that drags her toward the biter) is not offered; one that shows none is
+ROCK_WAYS = {
+    "head": re.compile(r"\b(?:head|chin)\b[^,.;:]{0,25}?\b(?:turns?|turned|swings?|snaps?|rocks?|rolls?|lolls?|jerk\w*|"
+                       r"knock\w*|goes|circles|bends)\b|\b(?:turns?|rolls?|jerks?|pushes) her head\b", re.I),
+    "heels": re.compile(r"\b(?:heels|hips|shoved back|pressed back|rocks her back)\b", re.I),
+    "twist": re.compile(r"\b(?:twist\w*|untwists|quarter|half round|turns? her\b|turned half|spins? her)\b", re.I),
+    "pull": re.compile(r"\b(?:toward|tugs? her|drags? her|pulled toward)\b", re.I),
+    "sideways": re.compile(r"\b(?:sideways|side to side)\b", re.I),
+    "leg": re.compile(r"\b(?:knees?|legs?) (?:buckles?|soften|flex|gives?)\b|\bthat leg\b", re.I),
+    "forward": re.compile(r"\b(?:pushes|pushed|knocks?|jolts?) her forward\b", re.I),
+    "lean": re.compile(r"\b(?:lean\w*|tip\w*)\b", re.I),
+    "ground": re.compile(r"\b(?:along|across) the ground\b|\ba little way\b", re.I),
+}
+
+
+def rock_exclude(how):
+    """The filter for ideas of a blow rocking her: only those that move her the way the engine says it did (`how`,
+    the engine's words), or show no movement of their own. None when the engine's words show no way of their own."""
+    mine = {k for k, rx in ROCK_WAYS.items() if rx.search(str(how or ""))}
+    return [WayFilter(ROCK_WAYS, mine, strict=False)] if mine else None
 
 
 # an idea that needs the attack to be a beam, a stream or a breath crossing the space between them
@@ -975,6 +1030,9 @@ HEALTHY = re.compile(r"\b(still (?:good|strong|fine|whole|sound|working)|(?:was|
                      r"(?:her|his) good (?:paw|arm|leg|side|hand|foot|ear|eye)|unhurt|uninjured|undamaged|untouched)", re.I)
 # the move types an element's staging belongs to (a Normal body charge never gets fire)
 ELEMENT_TYPES = {"fire": ("fire",), "ice": ("ice",), "rock": ("rock", "ground"), "wind": ("flying",)}
+# the kinds that are a body part landing on her (a bite, a fist, a horn, a whole body charging): a move of one of
+# these that is not ranged is a blow, whatever element it carries
+CONTACT_KINDS = {"bite", "claw", "punch", "charge", "tail", "horn", "beak", "talon", "grab", "close"}
 CLAW_STRIKE = re.compile(r"\b(?:claws?|talons?)\b[^.!?,;—]{0,20}?\b(?:sank|sink\w*|rak\w+|tore|tear\w*|ripp\w+|"
                          r"slash\w*|dug|digging|bit|raked|scor\w+|gouged)\s+(?:in|into|across|through|deep)\b", re.I)
 TAIL_STRIKE = re.compile(r"\btails?(?: blade| tip)?\b[^.!?,;—]{0,30}?\b(?:struck|slashed|sliced|cut|smacked|slammed|cracked|"
@@ -3556,6 +3614,9 @@ class Narrator:
                 # what she gets away from is the other's ("tears free of the teeth", "out of the claws")
                 fl = re.sub(r"\b(?:free|clear|loose|out|away|off)(?: of| from)? (?:the|those|its|their|her opponent's) "
                             r"(?:\w+ )?(?:tails?|horns?|claws?|teeth|jaws?|fangs?|grip)\b", "", fl, flags=re.I)
+                # nor what she does to the ground or the scenery ("rakes the ground and a spike bursts up", "claws
+                # dug into the mud"): that is how she calls the move up, not what lands on her
+                fl = re.sub(WEAPON_AT_SCENERY, "", fl)
                 mine = {w for w, rx in WEAPONS
                         if re.search(rx, " ".join([fl, str(m.get("about") or ""), m["name"]]), re.I)}
                 if mine and len(mine) <= 2 and not a.get("dodged"):
@@ -3917,8 +3978,12 @@ class Narrator:
                 multi = len(shown_) > 1
                 lines += [self._hit_line(h, i + 1 if multi else None) for i, h in enumerate(shown_)]
             if m and m.get("target") == "spread" and len(a.get("hits") or []) > 1 and not a.get("sustain"):
-                lines.append(f"  - ONE blast that catches all of these parts at once, not separate shots one after "
-                             f"another.")
+                if Engine.is_ranged(m):
+                    lines.append(f"  - ONE blast that catches all of these parts at once, not separate shots one after "
+                                 f"another.")
+                else:      # a spread delivered close (Close Combat): a flurry, each blow on its own part
+                    lines.append(f"  - A FLURRY of close blows thrown fast, one landing on each of these parts in turn: "
+                                 f"no blast, nothing fired across the gap.")
             if a.get("charge") and a["charge"].get("skipped"):
                 lines.append(f"  - It is an ordinary hit: nobody is driven into the scenery ({a['charge']['skipped']}).")
             if a.get("target_against"):
@@ -6153,6 +6218,8 @@ class Narrator:
                         B.pick("moved", 1, how={"stagger" if st_ else "rock"}, kind=k_,
                                # a shock, a burn, a freeze, a psychic blow moves her its own way: only its own ideas
                                need=("kind",) if k_ in ("shock", "fire", "cold", "mind") else (),
+                               # (and only ideas that move her the way the engine's notes say this blow did)
+                               exclude=None if st_ else rock_exclude((rk_ or {}).get("how")),
                                where=(rk_ or {}).get("where") or "standing", has=feats(who)))
                     if st_:
                         self._offer_line(add, f"a finished line for {who} as she staggers", "stagger",
@@ -6176,8 +6243,12 @@ class Narrator:
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
             return True
 
+        def close_spread(a):      # a spread move thrown close (Close Combat): a flurry of blows, not a blast
+            mv = a.get("move") or {}
+            return mv.get("target") == "spread" and len(a.get("hits") or []) > 1 and not Engine.is_ranged(mv)
+
         def strike_blocks(who, target):      # staging a blow, from the one who throws it
-            kinds, close = set(), False
+            kinds, close, shapes = set(), False, set()
             for a in acts:
                 if a.get("attacker") != who or a.get("type") in ("pin_start", "pin_forced", "breather", "none"):
                     continue
@@ -6186,11 +6257,18 @@ class Narrator:
                 got = story_blocks.kind_of(mv.get("name", ""), mv.get("about", ""), a.get("with", ""),
                                            a.get("manhandle") or "", a.get("type") == "grapple_start",
                                            close=bool(a.get("pummel")),
-                                           ranged=str(mv.get("target", "")) in ("whole_body", "spread")
+                                           ranged=(str(mv.get("target", "")) in ("whole_body", "spread")
+                                                   and Engine.is_ranged(mv))
                                            or "ranged" in str(mv.get("range", "")) or bool(mv.get("ranged")))
                 mtype = str(mv.get("type") or "").lower()
                 if mtype:     # an element comes from the move's type, never from a stray word ("heat") in its text
                     got = {k for k in got if k not in ELEMENT_TYPES or mtype in ELEMENT_TYPES[k]}
+                if mv and not Engine.is_ranged(mv) and (got & CONTACT_KINDS or mv.get("charge")):
+                    # a blow that carries an element (Fire Fang, Ice Punch, Flame Wheel): the element's staging is
+                    # all discharge (a breath, a ball hurled, a stream poured out), so the blow stages as the blow
+                    got = {k for k in got if k not in ELEMENT_TYPES} or {"charge"}
+                if "rock" in got:      # falling boulders, a spike from the ground, a tomb: each its own staging
+                    shapes |= story_blocks.shape_of(mv.get("name", ""), mv.get("about", ""))
                 kinds |= got
             if close and "grab" not in kinds:
                 kinds = {"close"}
@@ -6216,17 +6294,19 @@ class Narrator:
                     + B.pick("movement", 1, kind={"close"}, need=("kind",), has=feats(who)))
             else:
                 # one blow is one blow: no staging ideas that throw two or three ("two fast ones", "three of them")
+                # (a spread thrown close, like Close Combat, is a flurry: several blows are what it is)
                 runs = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
-                                                         or a.get("combo")) for a in acts)
+                                                         or a.get("combo") or close_spread(a)) for a in acts)
                 one_ = ([] if runs else [SEVERAL_BLOWS]) + grip_x or None
-                add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, has=feats(who), exclude=one_) if kinds
+                add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, shape=shapes, has=feats(who),
+                                                          exclude=one_) if kinds
                     else B.pick("movement", 1, has=feats(who), exclude=one_))
             if kinds:
                 runs_ = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
                                                           or a.get("combo") or int(a.get("hit_count") or 0) > 1) for a in acts)
                 self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
                                  fmt={"foe": target or ""}, exclude=None if runs_ else [SEVERAL_BLOWS],
-                                 kind=kinds, has=feats(who), state=state(who), role="attacker")
+                                 kind=kinds, shape=shapes, has=feats(who), state=state(who), role="attacker")
             eff = self._effect_on(target, [a for a in acts if a.get("attacker") == who]) if target else None
             if eff:
                 vs = set((getattr(self, "fighter_types", None) or {}).get(target, []))

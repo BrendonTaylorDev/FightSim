@@ -1151,10 +1151,10 @@ She hurled the air itself at {foe}.
 The wind gathered round her, tearing at the grass, and then it went where she sent it.
 
 == before_strike | kind: rock
-Stones lifted from the ground around her and hung there.
-She threw her head and the rocks flew.
-The earth cracked under her and sharp stone thrust up toward {foe}.
-She sent the stones in a ragged volley, too many to dodge them all.
+Stones lifted from the ground around her and hung there. | shape: thrown
+She threw her head and the rocks flew. | shape: thrown
+The earth cracked under her and sharp stone thrust up toward {foe}. | shape: rise
+She sent the stones in a ragged volley, too many to dodge them all. | shape: thrown
 
 == landing
 She hit the ground still flapping, and the wings took the worst of it badly. | has: wings
@@ -2182,13 +2182,17 @@ She drew the air in tight around her and then flung it outward.
 Her feathers shivered in the wind she was raising. | has: feathers
 
 == before_strike | kind: rock
-She braced herself, and the stones she had raised lurched forward all at once.
-She struck the ground, and stones jumped up out of it.
-Jagged stones rose around her, turning slowly.
-She flung the stones one after another, aimed low at {foe}.
-The earth rumbled under her as she drew the rock up.
-She hurled a heavy slab with a grunt of effort.
-She sent the stones in a tight cluster, meant to hit together.
+She braced herself, and the stones she had raised lurched forward all at once. | shape: thrown
+She struck the ground, and stones jumped up out of it. | shape: rise
+Jagged stones rose around her, turning slowly. | shape: thrown, tomb
+She flung the stones one after another, aimed low at {foe}. | shape: thrown
+The earth rumbled under her as she drew the rock up. | shape: rise, tomb, thrown
+She hurled a heavy slab with a grunt of effort. | shape: thrown, tomb
+She sent the stones in a tight cluster, meant to hit together. | shape: thrown
+She called the rocks up high over {foe} and let them fall. | shape: fall
+Stones gathered in the air above {foe}, and she brought them down with a jerk of her head. | shape: fall
+She set the stones down round {foe} one heavy block after another. | shape: tomb
+She drove her weight into the ground, and a spike of stone answered under {foe}. | shape: rise
 
 == before_strike | state: fresh
 She went in quick and light, with strength to spare.
@@ -3322,10 +3326,10 @@ She beat the air into a rushing gust and drove it straight ahead.
 Gusts tugged at everything near her as she gathered the wind and threw it.
 
 == before_strike | kind: rock
-She dragged a jagged stone up out of the ground and hurled it.
-Rocks broke loose around her and flew in a rattling spray.
-She heaved a broad slab free and sent it skidding at {foe}.
-She stamped down, and a ridge of stone burst up along the ground toward {foe}.
+She dragged a jagged stone up out of the ground and hurled it. | shape: thrown
+Rocks broke loose around her and flew in a rattling spray. | shape: thrown
+She heaved a broad slab free and sent it skidding at {foe}. | shape: thrown, tomb
+She stamped down, and a ridge of stone burst up along the ground toward {foe}. | shape: rise
 
 == before_strike | kind: horn
 She shook her head once and drove in, horn first, with her whole weight behind it. | has: horn
@@ -3429,7 +3433,7 @@ She exhaled a long, pale stream of cold straight at {foe}.
 She threw the air forward with all her force, and the gust howled with it.
 
 == before_strike | kind: rock
-She hauled up a heavy stone and slung it hard at {foe}.
+She hauled up a heavy stone and slung it hard at {foe}. | shape: thrown
 
 # ===============================================================================================================
 # EFFECT_ACT BY TYPE: the attacker watching her element work on {foe}'s body, fall short on it, or find no hold.

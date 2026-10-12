@@ -953,7 +953,11 @@ class Engine:
                 "vs": f"{move['type']} vs {'/'.join(d.types) or 'typeless'}", "type_mult": tmult,
                 "target": target, "target_mult": aim, "stab": stab, "effective": effective,
                 "effectiveness": word, "about": move.get("about", ""), "improvised": bool(move.get("improvised")),
-                "extras": extras, "extra_mult": xm}
+                "extras": extras, "extra_mult": xm,
+                # (what is_ranged reads, so the record of a blow says ranged or close the way the move does: Close
+                # Combat is a spread delivered close, Flame Wheel a charge)
+                **({"ranged": move["ranged"]} if "ranged" in move else {}),
+                **({"charge": True} if move.get("charge") else {})}
 
     def _use_move(self, fighter, move):
         """Limited moves (fighters.json 'uses') run out. Raises if none are left; otherwise uses one."""
