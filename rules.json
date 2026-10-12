@@ -611,6 +611,7 @@
     "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
     "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
     "loss_per_damage_point": 0.46,
+    "after_win_drain": {"_comment": "Once the fight is won, the badly hurt parts drag at the winner less and less: the pain drain is multiplied by each for every beat since the win (0.5: half, then a quarter...). enabled false keeps the full drain.", "enabled": true, "each": 0.5},
     "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. One HIT costs at most about per_hit of the fighter's own full health (0.05 = 5%), rolled up or down by jitter (0.15 = plus or minus 15%) and smaller for a light knock (power under power_ref scales it down, to no less than power_floor of it): past that the extra levels off, adding at most room x that cap more however big the raw number. Everything that lands on her in one BEAT is softened the same way past per_beat. A devastating blow gets far looser limits (moves.devastating cap_mult, room_mult). The stat block shows 'softened from' when it applies.",
     "soft_cap": {
       "enabled": true,
@@ -682,6 +683,7 @@
     "reasons": {"enabled": false, "file": "fight_reasons.txt", "thought_chance": 0.25}
   },
   "narration": {
+    "old_memories": false, "_old_memories": "true lets story blocks and lines reach back before the fight (an old fight, training, a lesson, something long ago). Off by default: the story has no past before the fight.",
     "checklist": {"_comment": "Optional help for a small local model: each part of a beat also gets a short CHECKLIST of what it must contain (who uses what on whom, where each blow lands and how hard, how that part hurts now, who ends up where, a knockout), straight from the engine and kept apart from the colour ideas. Nothing in it is new: it is the notes in short. Off by default; try it on if the model skips hits or gets parts wrong, and turn it off again if the writing gets stiffer or list-like.", "enabled": false, "max_items": 8},
     "name_hits_from": 2.5,
     "every_hit_chance": 0.35,
@@ -1336,7 +1338,7 @@
     "_target_variety_comment": "target_variety: with no /focus set, the chance that a blow aimed at a region this attacker has just been hitting is moved to a part she has left alone (the less hurt, the likelier), and the chance per beat that the director is reminded what has not been touched yet. 0 = off.",
     "target_variety": 0.35,
     "_weak_spot_comment": "weak_spot_chance: with no /focus set, the chance per beat that the director is pointed at one of the opponent's weak spots (a soft part like the throat, or one already worn down), so weak spots are gone for sometimes but not all the time. 0 = never; /focus vulnerable or /focus injured makes them the aim.",
-    "weak_spot_chance": 0.2,
+    "weak_spot_chance": 0.2, "weak_spot_reach": 0.35, "_weak_spot_reach": "weak-spot hints pick the softest parts, a little less often the ones hard to reach (moves.aim: a throat, an ear, an eye): 0 = reach doesn't count, 1 = it counts fully",
     "_weak_spot_repeat_comment": "weak_spot_repeat: of those nudges, the share meant for a run of blows (a pummel, a combo, a chain, a grapple worked at): one weak spot hit again and again, a group of parts worked together (one side's foreleg top to bottom, the ribs), or a few weak spots in turn.",
     "weak_spot_repeat": 0.4,
     "grudge_chance": 0.15,

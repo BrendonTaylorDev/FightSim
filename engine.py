@@ -756,7 +756,7 @@ class Engine:
                               {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
 
     # engine state that lives outside the main snapshot tuple but must be undone with it
-    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim")
+    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn")
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -6346,6 +6346,10 @@ class Engine:
         events += self._scene_event_tick(busy=had_grip)
 
         fighters = {}
+        aw_cfg = (r["health"].get("after_win_drain") or {})
+        won_since = None
+        if self.winner() and aw_cfg.get("enabled", True):
+            won_since = self.__dict__.setdefault("won_turn", self.turn)
         for f in self.active():
             before = f.health
             tier_b = tier_for(self._health_pct(f), r["health_tiers"])["label"]
@@ -6355,6 +6359,10 @@ class Engine:
                 for d in r["health"]["pain_drain"]:
                     if p.damage >= d["min_damage"]:
                         drain += d["per_beat"] * self.part_weight(p.name)   # a ruined ear drains less than a ruined chest
+            if won_since is not None:
+                # the fight is over: the hurts still ache, but less and less drags at her as she settles
+                # (health.after_win_drain: the drain is multiplied by `each` for every beat since the win)
+                drain *= float(aw_cfg.get("each", 0.5)) ** (self.turn - won_since + 1)
             in_hold = any(f.name in (h.attacker, h.defender) for h in self.holds.values())
             tiring = f.name in self.involved or in_hold
             exhaustion = r["health"]["exhaustion_per_beat"] if tiring else 0.0

@@ -12,6 +12,12 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 HEAD = re.compile(r"^==+\s*(.+?)\s*=*\s*$")
 SLOT = re.compile(r"\{(\w+)\}")
 # engine body regions -> the zones a block can ask for
+# ideas that reach back before this fight (an old fight, training, a lesson, something long ago): offered only when
+# narration.old_memories is on (off by default: the story has no past before the fight unless you want one)
+PAST_MEMORY = re.compile(r"\b(?:old fights?|an? (?:old|earlier) (?:fight|battle|opponent)|other fights|every fight against|"
+                         r"training|taught|old lesson|a lesson|long ago|since she was (?:small|young|little)|grew up|"
+                         r"remembers? (?:a|whole|the) \w+ (?:from|of) long|as a (?:pup|kit|cub|hatchling))\b", re.I)
+
 ZONE_OF = {"head": "head", "neck": "neck", "chest": "chest", "belly": "belly", "back_up": "back", "back_low": "back",
            "shoulder": "arm", "fore_up": "arm", "fore_low": "arm", "hind_up": "leg", "hind_low": "leg", "tail": "tail"}
 
@@ -239,6 +245,8 @@ class Blocks:
                 continue
             if any(s not in fmt or not str(fmt[s]).strip() for s in SLOT.findall(text)):
                 continue       # a slot with nothing to fill it ("the instant  looked away"): not this one
+            if not getattr(self, "old_memories", True) and PAST_MEMORY.search(text):
+                continue       # a memory from before the fight, and those are off (narration.old_memories)
             if getattr(self, "scene_ban", None) is not None and self.scene_ban.search(text):
                 continue       # a thing this place doesn't have (stone walls to ring off, outside a cave)
             if exclude is not None and any(rx.search(text) for rx in (exclude if isinstance(exclude, (list, tuple))

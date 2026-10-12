@@ -549,7 +549,10 @@ def weak_spot_hint(engine):
     if not out:
         return ""
     f, foe = engine.rng.choice(out)
-    soft = sorted(foe.parts.values(), key=lambda p: p.resistance)[:4]
+    # the softest parts first, a little less for the ones hard to reach (moves.aim): a throat or an ear is soft, but a
+    # blow aimed at it often lands beside it (director.weak_spot_reach: 0 = reach doesn't count)
+    reach = float(cfg.get("weak_spot_reach", 0.35) or 0)
+    soft = sorted(foe.parts.values(), key=lambda p: p.resistance / (engine.aim_ease(p.name) ** reach if reach else 1))[:4]
     why = lambda p: "already worn down" if p.damage >= 30 else "soft and badly protected"
     if engine.rng.random() >= float(cfg.get("weak_spot_repeat", 0.4) or 0):
         p = engine.rng.choice(soft[:3])

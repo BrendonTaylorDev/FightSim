@@ -5878,6 +5878,7 @@ class Narrator:
         b.cfg = (self.rules.get("narration", {}) or {}).get("blocks", {}) or {}
         b.enabled = bool(b.cfg.get("enabled", True))
         b.scene_ban = self._scene_ban()
+        b.old_memories = bool((self.rules.get("narration", {}) or {}).get("old_memories", False))
         return b
 
     def _scene_ban(self):
@@ -5900,6 +5901,7 @@ class Narrator:
                  "fighter_boost": 2.5}
         b.enabled = bool(cfg.get("enabled", True))
         b.scene_ban = self._scene_ban()
+        b.old_memories = bool((self.rules.get("narration", {}) or {}).get("old_memories", False))
         return b
 
     def _offer_line(self, add, label, category, fmt=None, exclude=None, **ctx):
