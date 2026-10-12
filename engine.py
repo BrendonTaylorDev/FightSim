@@ -800,14 +800,17 @@ class Engine:
                      "spin_down": 2, "trip_back": 2, "pull_forward": 2, "ride_down": 2},
     }
 
-    def vary(self, key, skip=()):
+    def vary(self, key, skip=(), scale=None):
         """Pick HOW an already-decided outcome plays out (one of several ways that are all true to the result).
-        skip: ways that aren't true to it this time (rolling onto her front when she already lies on it)."""
+        skip: ways that aren't true to it this time (rolling onto her front when she already lies on it); scale:
+        weights multiplied for ways she is less able to do now (springing back on wrecked legs)."""
         table = dict(self.VARIETY.get(key, {}))
         over = self.rules.get("variety", {}).get(key)
         if isinstance(over, dict):
             table = {k: float(v) for k, v in over.items() if not str(k).startswith("_") and float(v) > 0} or table
         table = {k: v for k, v in table.items() if k not in skip} or table
+        if scale:
+            table = {k: v * float(scale.get(k, 1.0)) for k, v in table.items()}
         names = list(table)
         return self.rng.choices(names, [table[n] for n in names])[0]
 
@@ -2773,7 +2776,13 @@ class Engine:
         if not forced and (ch <= 0 or not self._chance(ch, f"{d.name} dodging {poss_word(a.name)} attack", "DODGED",
                                                        "it lands")):
             return None
-        out = {"dodged": True, "dodge_chance": ch, "counter_hits": [], "manner": self.vary("dodge"), "wary": wary}
+        # (the ways of dodging that need her legs, a step aside or a spring back, grow rarer as her legs are hurt;
+        # in the air she dodges on her wings)
+        ecfg = self._cfg("evasion")
+        legw = 0.0 if self.has(d, "airborne") else self._leg_worst(d)
+        legs_ok = 1.0 / (1.0 + legw / float(ecfg.get("leg_manner_halves_at", 80)))
+        manner = self.vary("dodge", scale={m: legs_ok for m in ecfg.get("leg_manners", ["spring_back", "sidestep"])})
+        out = {"dodged": True, "dodge_chance": ch, "counter_hits": [], "manner": manner, "wary": wary}
         if forced:
             out["chain_broken"] = True
         acfg = self.rules.get("arena") or {}

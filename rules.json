@@ -1156,7 +1156,13 @@
     "counter_chance": 0.35,
     "_chain_comment": "chain_mult: in a chain (two or three attacks by one fighter in one beat, each leading into the next) a link that lands leaves her rocked: her chance to dodge the next link is multiplied by this. A link she dodges ends the chain.",
     "chain_mult": 0.5,
-    "counter_severity": "solid"
+    "counter_severity": "solid",
+    "_leg_manners_comment": "leg_manners: the ways of dodging (rules.json variety.dodge) that need her legs. Their weight is divided by (1 + her worst-hurt leg's damage / leg_manner_halves_at), so a fighter on wrecked legs ducks or twists rather than springing back or stepping aside. Not in the air (she dodges on her wings).",
+    "leg_manners": [
+      "spring_back",
+      "sidestep"
+    ],
+    "leg_manner_halves_at": 80
   },
   "status_effects": {
     "_comment": "from_move_type: a move of that type that lands may give the target this status for this many beats. paralyzed: weaker attacks (paralyzed_power_mult), no dodging, worse pin escapes. chilled: half the dodge chance. soaked: Electric hits do soaked_electric_mult more (anyone the director places in water, or who lands in water, is soaked too). flinched: can't attack next beat.",
