@@ -6401,9 +6401,9 @@ class Narrator:
                 hb_, pb_ = self._dev_bands(a)
                 # the engine said she held her ground or only rocked (moves.stumble): no ideas that walk her off it
                 kept_ = [MOVES_HER] if a.get("moved") in ("still", "rock") else None
-                add("selling it", B.pick("devastating_sell", 1, health={hb_}, partlevel={pb_}, exclude=kept_,
-                                         fmt={"part": str(a["devastating"].get("part") or "the hurt").lower()}))
-                if take:
+                if take:      # (her body selling it: told on her side, not in the part of the one who hit her)
+                    add("selling it", B.pick("devastating_sell", 1, health={hb_}, partlevel={pb_}, exclude=kept_,
+                                             fmt={"part": str(a["devastating"].get("part") or "the hurt").lower()}))
                     add(f"{dfn_}, after it", B.pick("devastated_reaction", 1, has=feats(dfn_), state=state(dfn_),
                                                     fighter=(dfn_ or "").lower(), exclude=kept_))
                     add(f"{poss(dfn_)} thought", B.pick("devastated_thought", 1, state=state(dfn_),
