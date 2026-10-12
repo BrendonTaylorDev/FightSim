@@ -741,12 +741,17 @@ _SPEECH = re.compile(r"[\"“]([^\"”\n]{2,90})[\"”]")
 _SOUND = re.compile(r"\b((?:[HhNnGgRrAaUu])[hngrau]{3,}\w*!?)", re.I)
 
 
-def said_lines(text):
+def said_lines(text, names=()):
+    """The thoughts, spoken lines and pain sounds in a text. names: the fighters' names and species, never a line
+    ("Aura" reads as a sound to the pattern); nor is anything too short to be a phrase."""
     out = []
     for rx in (_THOUGHT, _SPEECH):
         out += [m.group(1).strip(" .…—-") for m in rx.finditer(text or "")]
     out += [m.group(1) for m in _SOUND.finditer(text or "") if re.fullmatch(r"[hngrau!]+", m.group(1).lower())]
-    return [x for x in out if x]
+    if not names:
+        return [x for x in out if x]
+    skip = {_norm_line(str(n)) for n in names if n}
+    return [x for x in out if len(_norm_line(x)) > 3 and _norm_line(x) not in skip]
 
 
 def _norm_line(s):
@@ -4697,7 +4702,7 @@ class Narrator:
         text = self._call(msg, words)
         text = _balance_marks(self._drop_said_repeats(self._drop_seen(self._drop_sample_copies(
             self._drop_repeats(text, story_so_far)))))
-        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         return text
 
     def interlude(self, condition, fighter_notes, scene, story_so_far, words=None, direction="", reason=""):
@@ -4770,7 +4775,7 @@ class Narrator:
         text = _balance_marks(self._drop_said_repeats(self._drop_seen(self._drop_sample_copies(
             self._drop_self_repeats(self._drop_repeats(text, story_so_far))))))
         text = _italic_sounds(text)
-        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         return text
 
     def _ends_line(self, a):
@@ -5905,6 +5910,11 @@ class Narrator:
             if name and any(v and k.lower().startswith(f"{name}|".lower()) for k, v in before.items()):
                 out.add(tag)
         return out
+
+    def _fighter_words(self):
+        """The fighters' names and species words (never a thought or a line someone said)."""
+        return set(self.strengths or {}) | set(self.posture_start or {}) | {x for kv in (self.aliases or {}).items()
+                                                                              for x in kv}
 
     def _scene_ban(self):
         """Ideas that need stone walls or a cave (a voice ringing off the stone) when this place has none."""
@@ -9693,7 +9703,7 @@ class Narrator:
         # "slammed into the wall—grunt—and the muscles spasmed": a reaction word from the notes left as a stage direction
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
         self.recent_reactions = (self.recent_reactions + [reactions_used(text)])[-3:]
-        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         self._note_worn(text)
         self._beat_no += 1
         return self.pov_labels(text)
@@ -9825,7 +9835,7 @@ class Narrator:
         except llm.LLMError:
             return text
         more = self._drop_said_repeats(self._drop_seen(self._drop_repeats(more, (story_so_far or "") + "\n" + text)))
-        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         return (text + "\n\n" + more).strip() if more else text
 
     def _drop_said_repeats(self, text):
