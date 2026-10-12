@@ -1305,14 +1305,15 @@ class Engine:
             # blows driven home with her back to something solid in this arena (held against it, or cornered): each
             # one grinds her into it, and it may give way under her. Only the blows really thrown count, not the
             # parts a single blow carries over to; something that isn't here, or has already broken, does nothing
-            ground = self._grind(a, d, behind, min(max(1, int(count or 1)) if pummel or int(count or 1) > 1 else 1, 4))
+            nb_ = min(max(1, int(count or 1)) if pummel or int(count or 1) > 1 else 1, 4)
+            ground = self._grind(a, d, behind, nb_, struck=list(plan[:nb_]))
             hits = hits + ground["hits"]
         gback = None
         if hits and not sustained and not charged and not ground and d.name in self.downed and target == "targeted":
             # lying on the ground, a blow driven down into her drives her into the ground too: what she lies on takes
             # a share of it (her back when she's face-up). moves.ground_back
-            gback = self._ground_back(a, d, move, hits, min(max(1, int(count or 1)) if pummel or int(count or 1) > 1
-                                                             else 1, 4))
+            nb_ = min(max(1, int(count or 1)) if pummel or int(count or 1) > 1 else 1, 4)
+            gback = self._ground_back(a, d, move, hits, nb_, struck=list(plan[:nb_]))
             if gback:
                 hits = hits + gback["hits"]
         self._attacked(a.name, [d.name], landed=bool(hits))
@@ -1482,7 +1483,10 @@ class Engine:
         distances = cfg.get("distances") or {"a few strides": 0.8, "a dozen strides": 1.0, "the whole way across": 1.25}
         dist = self.rng.choice(list(distances))
         struck = list(dict.fromkeys(plan))
-        back = self.landing_parts(d.name, 3, avoid=struck)
+        # her whole body hits it, but first what is behind the spot the charge struck (her back behind her chest,
+        # the struck arm itself...): _backing
+        behind_ = [x for x in self._backing(d, struck[0]) if x in d.parts]
+        back = (behind_ + self.landing_parts(d.name, 3, avoid=struck + behind_))[:3]
         # she is carried off across the arena: every grip on her and by her ends, and so does anything the charger held
         loose = (self._lose_grip(d.name, f"{d.name} was driven across the arena", on_her=True)
                  + self._lose_grip(a.name, f"{a.name} charged off after {d.name}"))
@@ -2009,10 +2013,65 @@ class Engine:
             events.append(ev)
         return events
 
-    def _ground_back(self, a, d, move, hits, blows):
-        """A blow driven down into a fighter who is lying on the ground drives her into the ground as well: the parts
-        she lies on take a light hit with each blow (her back when she is face-up, her chest and belly face-down, a
-        flank on her side), like a fighter held against a tree (_grind). Only blows that push down into her: a punch, a
+    # what a blow on each region drives into the surface behind her (standing against it, or lying face-up)
+    _BEHIND = {"chest": ("back_up", "back_low"), "belly": ("back_low", "back_up"), "neck": ("neck", "back_up"),
+               "shoulder": ("shoulder", "back_up"), "head": ("head",), "back_up": ("back_up",), "back_low": ("back_low",)}
+    # lying face-down, a blow from above lands on her back side and drives her front into the ground
+    _BEHIND_DOWN = {"back_up": ("chest", "belly"), "back_low": ("belly", "chest"), "neck": ("neck",),
+                    "head": ("head",), "shoulder": ("shoulder", "chest")}
+    _LIMB_IN = {"fore_low": "fore_up", "fore_up": "shoulder", "hind_low": "hind_up", "hind_up": "hind_up",
+                "tail": "back_low"}     # (a thigh hangs from the hip: the other hind_up part on that side)
+
+    def _backing(self, d, struck, facing=None):
+        """The parts a blow on `struck` drives into what is behind her (a tree, a wall, the ground she lies on): a
+        blow on her chest drives her upper back into it, her belly her lower back, her face the back of her head; a
+        blow on a limb MIGHT grind that limb into it, and might take the shoulder or hip it hangs from as well (dice:
+        moves.grind.limb_chance, limb_root_chance). On her side, the matching part on her other side."""
+        cfg = (self.rules.get("moves") or {}).get("grind") or {}
+        names = list(d.parts)
+        reg, side = body_region(struck), _side(struck)
+
+        def find(regions, same_side=True, not_self=False):
+            for r in regions:
+                c = [n for n in names if body_region(n) == r and not (not_self and n == struck)
+                     and (not same_side or not side or _side(n) in (None, side))]
+                if r == "head":
+                    c = [n for n in c if n.lower() == "head"] or c
+                if r == "neck":
+                    # the back of the neck goes into a tree or the ground behind her; her throat only face-down
+                    want = "throat" if facing == "face-down" else "neck"
+                    c = [n for n in c if want in n.lower()] or [n for n in c if "throat" not in n.lower()] or c
+                if c:
+                    return self.rng.choice(c)
+            return None
+        if facing == "on her side":
+            if side:
+                twin = re.sub(r"\b(Left|Right)\b", lambda m: "Right" if m.group(1) == "Left" else "Left", struck)
+                return [twin] if twin in d.parts else [struck]
+            if reg not in self._LIMB_IN:
+                return [struck]      # a blow down on her uppermost flank presses that same stretch of her into it
+        if (facing == "face-up" and reg in ("back_up", "back_low")) or (facing == "face-down" and (
+                reg in ("chest", "belly") or "throat" in struck.lower())):
+            return []                # that part is against the ground already: no blow comes down on it from above
+        table = self._BEHIND_DOWN if facing == "face-down" else self._BEHIND
+        if reg in table:
+            got = find(table[reg])
+            return [got] if got else []
+        out = []
+        # lying on the ground a limb is almost always against it; held against a tree or a wall, only maybe
+        if self.rng.random() < float(cfg.get("limb_chance_down" if facing else "limb_chance", 0.85 if facing else 0.6)):
+            out.append(struck)            # the limb itself ground into it
+        root = self._LIMB_IN.get(reg)
+        if root and self.rng.random() < float(cfg.get("limb_root_chance", 0.4)):
+            got = find((root,), not_self=True)
+            if got and got not in out:
+                out.append(got)
+        return out
+
+    def _ground_back(self, a, d, move, hits, blows, struck=None):
+        """A blow driven down into a fighter who is lying on the ground drives her into the ground as well: what lies
+        under the part it hit takes a light hit (her back under her chest when she is face-up, her chest under her
+        back face-down, the arm itself under an arm: _backing), like a fighter held against a tree (_grind). Only blows that push down into her: a punch, a
         kick, a tail, a slam of a paw, a blast; not a rake across her or a bite that pulls her up. Not while she is
         sitting up, or lying in deep water (it gives under her); shallow water softens it. moves.ground_back."""
         cfg = (self.rules.get("moves") or {}).get("ground_back") or {}
@@ -2026,8 +2085,8 @@ class Engine:
         water = self.in_water(d.name)
         if water == "deep":
             return None
-        under = self.underside_parts(d.name, 3)
-        struck = [h for h in hits if h.get("defender", d.name) == d.name and h["part"] not in under]
+        lying_on = {"face-up": ("back_up", "back_low"), "face-down": ("chest", "belly")}.get(facing, ())
+        struck = [s_ for s_ in (struck or [h["part"] for h in hits[:1]]) if body_region(s_) not in lying_on]
         if not struck:
             return None          # every blow fell on what's against the ground already: nothing to drive down
         table = self.rules["severity"].get("environment") or self.rules["severity"]["instant"]
@@ -2035,27 +2094,31 @@ class Engine:
             * (float(cfg.get("shallow_mult", 0.5)) if water == "shallow" else 1.0)
         ground = self.scene_word("ground")
         out = {"against": ground, "facing": facing, "blows": blows, "hits": [], "in_water": water}
-        for i in range(blows):
+        for s_ in struck[:blows]:
             self._source = f"being driven down into {ground}"
-            # one ground-side part a blow, the first blow two (the whole weight of her goes into it at once)
-            out["hits"] += [self._apply_damage(d, p_, power) for p_ in under[:1 + (i == 0)]]
-        return out
+            # what is under the part this blow hit (her back under her chest, the arm itself under an arm)
+            out["hits"] += [self._apply_damage(d, p_, power) for p_ in self._backing(d, s_, facing)]
+        return out if out["hits"] else None
 
-    def _grind(self, a, d, against, blows):
+    def _grind(self, a, d, against, blows, struck=None):
         """Blows landed while she is held or pressed against the scenery (a pummel against a tree, a strike that pins
         her to the wall): each one also drives her back into it (moves.grind: power, break_mult). If it breaks, a heavy
         extra hit and she goes down with it."""
         cfg = (self.rules.get("moves") or {}).get("grind") or {}
         against = short_phrase(against)
         table = self.rules["severity"].get("environment") or self.rules["severity"]["instant"]
-        back = self.landing_parts(d.name, 2)
+        back = self.landing_parts(d.name, 2)       # what goes through it if it breaks: her back, whatever was hit
+        struck = list(struck or [])
         brk = self.break_chance(against, ((self.rules.get("moves") or {}).get("sustain") or {}).get("break_chance", {})) \
             * float(cfg.get("break_mult", 0.5))
         out = {"against": against, "blows": blows, "hits": [], "surface_hits": [], "break_hits": [], "broke": False,
                "hazard_status": self.hazard_effects(d, [against])}
         for i in range(1, blows + 1):
             self._source = f"being driven into {against}"
-            sh = [self._apply_damage(d, p, float(table.get(cfg.get("power", "light"), 10))) for p in back[:1 + (i == 1)]]
+            # what THIS blow drives into it: what is behind the part it hit (her back behind her chest, an arm hit
+            # may grind the arm itself and its shoulder); with nothing known, her back as before
+            into = self._backing(d, struck[i - 1]) if i - 1 < len(struck) else back[:1 + (i == 1)]
+            sh = [self._apply_damage(d, p, float(table.get(cfg.get("power", "light"), 10))) for p in into]
             out["surface_hits"] += sh
             out["hits"] += sh
             if self._chance(brk, f"{against} breaking behind {d.name} (blow {i})", "it BREAKS", "it holds"):
@@ -2081,7 +2144,14 @@ class Engine:
         if against and self.is_broken(against):
             against = ""          # it already lies broken: nothing behind her to grind her into
         table = self.rules["severity"].get("environment") or self.rules["severity"]["instant"]
-        back = self.landing_parts(d.name, 3) if against else []
+        back = self.landing_parts(d.name, 3) if against else []     # what goes through it or slides down it
+        # what each pulse presses into it: what is behind the parts the stream hits (_backing), else her back
+        press = []
+        if against:
+            facing_ = self.facing_of(d.name) if d.name in self.downed else None
+            for s_ in dict.fromkeys(plan):
+                press += [x for x in self._backing(d, s_, facing_) if x not in press]
+            press = press[:3] or back[:1]
         brk = self.break_chance(against, cfg.get("break_chance", {}))
         out = {"against": against, "pulses": [], "broke": False, "planned": pulses, "knock_on": [],
                "was_down": d.name in self.downed,
@@ -2096,7 +2166,7 @@ class Engine:
             pulse = {"n": i, "hits": hits, "move_hits": list(hits), "surface_hits": [], "break_hits": []}
             if back:
                 self._source = f"being pressed into {against}"
-                sh = [self._apply_damage(d, p, float(table.get("solid", 15))) for p in back]
+                sh = [self._apply_damage(d, p, float(table.get("solid", 15))) for p in press]
                 pulse["surface_hits"] = sh
                 pulse["hits"] = hits + sh
                 if self._chance(brk, f"{against} breaking under {d.name} (pulse {i})", "it BREAKS", "it holds"):
