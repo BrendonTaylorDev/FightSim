@@ -42,7 +42,16 @@ def sample_sections(text):
     for i, m in enumerate(marks):
         body = text[m.end(): marks[i + 1].start() if i + 1 < len(marks) else len(text)]
         body = "\n".join(l for l in body.splitlines() if not l.lstrip().startswith("#")).strip()
-        tags = [t.strip().lower() for t in m.group(1).split(",") if t.strip()]
+        # "== strike take hard | has: wings | kind: fire": the tags, then conditions the fight must meet for the
+        # passage to be shown (kept among the tags as "has:wings,feathers", which no asked-for tag ever equals)
+        head, *conds = m.group(1).split("|")
+        tags = [t.strip().lower() for t in head.split(",") if t.strip()]
+        for c in conds:
+            if ":" in c:
+                k, v = c.split(":", 1)
+                vals = ",".join(x.strip().lower() for x in v.split(",") if x.strip())
+                if k.strip() and vals:
+                    tags.append(f"{k.strip().lower()}:{vals}")
         if body and tags:
             out.append((tags, body))
     return out
@@ -62,7 +71,21 @@ def sample_text(rules):
     return "\n\n".join(body for _, body in secs) if secs else raw.strip()
 
 
-def style_passages(rules, want=None, limit=None, rounds=None, skip=()):
+def section_fits(tags, have):
+    """True if a section's conditions ("has:wings", "kind:fire,ice") are met by `have` ({"has": {...}, "kind": {...}}:
+    what the fighters in this fight have, what kinds of attack this beat holds). A section with no conditions always
+    fits; with `have` unknown (None), only sections with no conditions do."""
+    for t in tags:
+        if ":" not in t:
+            continue
+        k, vals = t.split(":", 1)
+        got = (have or {}).get(k)
+        if not got or not (set(vals.split(",")) & set(got)):
+            return False
+    return True
+
+
+def style_passages(rules, want=None, limit=None, rounds=None, skip=(), have=None):
     """The passages of the style sample to show the narrator for the part it is about to write.
     A plain sample: its first style_sample_chars characters, as always. A sample in sections: the sections whose
     tags are asked for in `want` (in that order: the first is the one that fits best), as many as fit in
@@ -83,6 +106,7 @@ def style_passages(rules, want=None, limit=None, rounds=None, skip=()):
     if skip:
         rx = re.compile(r"\b(?:" + "|".join(re.escape(w) for w in skip if w) + r")\b")   # as a name: capitalized
         secs = [sec for sec in secs if not rx.search(sec[1])] or secs
+    secs = [sec for sec in secs if section_fits(sec[0], have)] or secs
     picked = []
     for w in [str(x).strip().lower() for x in (want or [])]:
         fits = [sec for sec in secs if w in sec[0] and sec not in picked]

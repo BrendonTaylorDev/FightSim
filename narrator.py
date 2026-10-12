@@ -886,6 +886,9 @@ def dodge_exclude(manner):
 # an idea that needs the attack to be a beam, a stream or a breath crossing the space between them
 BEAM_IDEA = re.compile(r"\b(?:beam|ray|stream|jet|gout|spray|breath of|rolls? out|ahead of the|crosses the (?:gap|space)|"
                        r"between them)\b", re.I)
+# an idea that needs her on her feet: not for a fighter who ends the blow on the ground
+ON_FEET_IDEA = re.compile(r"\b(?:sets? (?:the|her) (?:foot|feet|paw) down|her (?:feet|stance)|stance|planted|on her heels|"
+                          r"weight (?:off|onto) (?:it|the)|stands?|standing)\b", re.I)
 # an idea that sits or lays her down: not for a fighter the posture notes keep on her feet
 SITS_DOWN = re.compile(r"\b(?:sits?|sat|sitting|lowers? herself|lies? down|lay down|kneel\w*|sinks? (?:down|to)|"
                        r"onto her (?:haunches|side|knees|belly)|folds? (?:down|up)|collaps\w*)\b", re.I)
@@ -6078,17 +6081,40 @@ class Narrator:
                              fmt={"part": worst_hit[1].lower(), "foe": foe}, exclude=too_big, level=lv_w, zone=zone_w,
                              has=feats(who), state=state(who), role="receiver")
             raw = (getattr(self, "_raw_done", None) or {}).get(who)
+            still_ = any(a_.get("defender") == who and a_.get("moved") in ("still", "rock") for a_ in acts)
             if raw is not None:
                 # a blow on a part that was already badly hurt: a reaction as raw as she can no longer keep in
                 add(f"a reaction of that size from {who}", B.pick(
                     "raw", 1, fmt={"part": part.lower()}, raw=self.RAW_LEVELS[raw][0], has=feats(who))
-                    + B.pick("reaction", 1, size=self._strength_key(taken), has=feats(who)))
+                    + B.pick("reaction", 1, size=self._strength_key(taken), has=feats(who), state=state(who)))
             else:
-                still_ = any(a_.get("defender") == who and a_.get("moved") in ("still", "rock") for a_ in acts)
+                # (sized to the blow, and to how much of her is left: the same blow lands differently on a fresh
+                # fighter and a spent one)
                 add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who),
-                                                                   fighter=who.lower(),
+                                                                   fighter=who.lower(), state=state(who),
                                                                    exclude=(list(too_big or []) + [MOVES_HER]) if still_
                                                                    else too_big))
+            # what the blow visibly does to her body in the instant it lands (fur, skin, breath, the push of it), sized
+            # to the blow; nothing that moves her feet unless the engine moved her
+            kinds_ = set()
+            for a_ in acts:
+                if a_.get("defender") == who and a_.get("hits"):
+                    kinds_ |= story_blocks.kind_of(str((a_.get("move") or {}).get("name") or ""), "", str(a_.get("with") or ""))
+                    t_ = str((a_.get("move") or {}).get("type") or "").lower()
+                    if t_:
+                        kinds_.add(t_)       # (the move's type too: an impact idea can be written for electric, water...)
+            # (on the part the blow was aimed at and struck first, not on whatever the landing or the jarring hurt most)
+            main_ = next((h for a_ in acts if a_.get("defender") == who for h in (a_.get("hits") or [])
+                          if (h.get("defender") or who) == who and h.get("part")), None)
+            mp_ = str((main_ or {}).get("part") or worst_hit[1])
+            add(f"what the blow does to {poss(who)} body as it lands (one detail, seen from outside)",
+                B.pick("impact_mark", 1, fmt={"part": mp_.lower()}, size=self._strength_key(
+                           float((main_ or {}).get("damage_taken") or taken)),
+                       zone=story_blocks.ZONE_OF.get(body_region(mp_)),
+                       kind=kinds_ or None, has=feats(who), exclude=([MOVES_HER] if still_ or not any(
+                           a_.get("defender") == who and a_.get("moved") == "stagger" for a_ in acts) else [])
+                       # knocked down or lying there: nothing that needs her standing (a foot set down, her stance)
+                       + ([ON_FEET_IDEA] if who in (getattr(self, "on_ground", None) or ()) else []) or None))
             for a_ in acts:
                 st_ = next((s for s in a_.get("status_applied") or [] if s.get("stumble") and s.get("fighter") == who), None)
                 rk_ = a_.get("rocked") if (a_.get("rocked") or {}).get("fighter") == who else None
@@ -6840,6 +6866,15 @@ class Narrator:
                    for a in acts for h in (a.get("hits") or []))
         if any(a.get("environment") and a.get("launch") and not a.get("manhandle") for a in acts):
             add(None, "knockdown take")      # the blow puts her down: a passage where a hit really does floor her
+        # the one being hit is worn down overall (tired or spent): a passage where a blow lands on a body with little
+        # left to meet it, the size of it set by how much of her is left as much as by the part
+        hit_who = {h.get("defender") or a.get("defender") for a in acts for h in (a.get("hits") or [])} - {None}
+        # a blow on a fighter who cannot move with it (pinned, held, down): the shock has nowhere to go but through her
+        held_ = {g[1] for g in (getattr(self, "grips", None) or [])} | set(getattr(self, "on_ground", None) or ())
+        if hit_who & held_ and any(a.get("hits") and a.get("type") == "instant" for a in acts):
+            add(None, "pinned take")
+        if any(float((self.strengths or {}).get(w, 100) or 0) < 40 for w in hit_who):
+            add(None, "strike take worn")
         if hard:
             add(None, "strike take hard")
         elif hits and any(h for a in hits for h in (a.get("hits") or [])):
@@ -6952,7 +6987,7 @@ class Narrator:
         # a plain sample is one passage (its first style_sample_chars characters); a sample written in sections gives
         # the passage that shows the KIND of part about to be written (a pin from the pinner's side, a dodge, ...)
         passages, left = [], sample_chars
-        for sample in userprompt.style_passages(self.rules, getattr(self, "_sample_want", None),
+        for sample in userprompt.style_passages(self.rules, getattr(self, "_sample_want", None), have=self._sample_have(),
                                                 rounds=getattr(self, "_sample_rounds", None),
                                                 skip=[w for w in (getattr(self, "absent_words", None) or []) if w]):
             if no_sac and sample:
@@ -6989,6 +7024,37 @@ class Narrator:
         if extra:
             parts.append("MORE HARD RULES FOR THIS BEAT:\n" + "\n".join(extra))
         return "\n\n".join(parts)
+
+    def _sample_have(self):
+        """What a sample passage's conditions are checked against: the body features of the fighters in this fight
+        (has: wings, coils, horn, beak, talons, fins, tails, arms, forelegs, legs, scales, feathers, shell...) and the
+        kinds of attack in this beat (kind: bite, claw, punch, beam, fire, ice, ... and the move's type)."""
+        def feats_of(who):
+            body = list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys())
+            got = set(story_blocks.features(body))
+            low = " ".join(body).lower()
+            for word, feat in (("scale", "scales"), ("feather", "feathers"), ("shell", "shell"), ("coil", "coils"),
+                               ("wing", "wings"), ("tail", "tail"), ("mane", "mane"), ("spike", "spikes")):
+                if word in low:
+                    got.add(feat)
+            return got
+        has = set()
+        for who in (getattr(self, "damage_by", None) or {}):
+            has |= feats_of(who)
+        # has_a: the one who acts in the part (the sample's {A}); has_b: the one it happens to ({B})
+        cast = list(getattr(self, "_sample_cast", None) or [])
+        has_a = feats_of(cast[0]) if cast else set()
+        has_b = set().union(*(feats_of(w) for w in cast[1:])) if len(cast) > 1 else set()
+        kinds = set()
+        for a in getattr(self, "_acts_now", None) or []:
+            if isinstance(a, dict) and a.get("move"):
+                mv = a["move"]
+                kinds |= story_blocks.kind_of(str(mv.get("name") or ""), str(mv.get("about") or ""),
+                                              str(a.get("with") or ""))
+                t = str(mv.get("type") or "").lower()
+                if t:
+                    kinds.add(t)
+        return {"has": has, "has_a": has_a, "has_b": has_b, "kind": kinds}
 
     def _stray_electric(self, sent):
         """Electricity in a sentence of a beat whose moves have none. Not stray: sparks still on a fighter who is

@@ -99,6 +99,12 @@ def features(part_names):
         has.add("talons")
     if "hood" in low:
         has.add("hood")
+    if "scale" in low:
+        has.add("scales")
+    if "shell" in low or "carapace" in low:
+        has.add("shell")
+    if re.search(r"\bspikes?\b|\bquills?\b|\bspines\b", low):
+        has.add("spikes")       # a back of spikes or quills (not the spine itself)
     if re.search(r"thigh|hip|knee|hock|foot|hind paw|talon", low):
         has.add("legs")
     else:

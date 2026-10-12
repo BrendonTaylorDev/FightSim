@@ -2127,7 +2127,7 @@ there was no good way to land, and she found the worst one: every sore spot firs
 == devastated_reaction | state: fresh, winded
 the shock of it goes through her like cold water, and for a moment she can only stand there and take it
 a sharp cry is out before she can stop it, and then her jaw is clamped and she is breathing hard through her nose
-she staggers, catches herself, and her eyes have gone wide: she has never been hit like that
+she jolts from end to end, and her eyes have gone wide: nothing in this fight has hit her like that
 everything in her goes very still for a heartbeat, the way it does after a near fall, and then the ache arrives
 she shakes her head hard, as if she could shake it off, and knows she can't
 
@@ -7441,7 +7441,7 @@ her eyes go wide and empty, and the {part} jerks against her
 == devastated_reaction | state: fresh, winded
 she rocks back on her heels, staring, as if she cannot believe what just happened
 a hoarse cry is wrung out of her, and she bites down on the rest
-she stumbles back a step, shaking her head as if to clear it
+she rocks where she stands, shaking her head as if to clear it
 her body jerks rigid for a heartbeat, then she forces herself to breathe
 she presses against the pain with all her strength, jaw clenched, eyes wet
 she gasps, hunches, and then straightens with visible effort
@@ -7453,7 +7453,7 @@ she snarls through the pain, but there is fear in the snarl now
 she sinks to the ground and cannot get up at once
 she shakes so hard that she can barely stay upright
 it is too much; she gives a long, breaking cry and does not stop it
-she sways and goes down onto her knees, gasping | has: legs
+her knees dip under her and lock again, and she gasps | has: legs
 her eyes go blank for a moment, then fill with pain and fear
 she curls round the hurt and lies still, trembling
 she can only breathe, short and ragged, and nothing else
@@ -8043,3 +8043,327 @@ her body tightens around the cold spot, shrinking from it
 == moved | kind: mind
 her head snaps aside from nothing at all, as if struck by the air itself
 her body jerks once, and for a heartbeat she does not know which way is up
+
+# ===============================================================================================================
+# BUILD 176: SELLING THE HIT. The same blow lands differently on a fresh fighter and a spent one: reactions sized
+# to the blow AND to how much of her is left (state), what the blow visibly does to the body as it lands
+# (impact_mark), and how she struggles with a hurt part as the fight wears on (pain_show by state).
+# ===============================================================================================================
+
+== reaction | size: glancing | state: fresh, winded
+she barely blinks; her eyes never leave the other
+a flick of the ears, irritated, as if at a fly
+she lets it bounce off and is already moving again
+a short breath out through the nose, more scorn than pain
+her body takes it without asking her about it
+the sting registers, gets filed, and is forgotten
+
+== reaction | size: glancing | state: tired, spent
+even that much makes her eyes close for a moment
+the little blow lands on a body with no give left in it, and she feels all of it
+a soft grunt, and her head dips as if it had been heavier than it was
+she has to make herself lift her guard again afterwards, and it comes up slow
+a tremor runs out from the spot, small, and does not quite stop
+it is nothing, and she still needs a breath to get past it
+
+== reaction | size: solid | state: fresh
+a grunt, a quick re-set of her shoulders, and she is square again
+her lip curls back off her teeth, more anger than hurt
+she hisses once and her eyes go narrow and very bright
+the blow knocks the breath half out of her and she takes it straight back
+she rolls her shoulder once, testing, and finds it still hers
+the hit lands and the answer is already in her eyes
+
+== reaction | size: solid | state: winded
+the breath goes out of her harder than she would like
+she blinks twice, fast, clearing her head
+it takes her one breath longer than it would have earlier to come back to herself
+a hiss through her teeth, and a small hitch in her next breath
+her guard dips for a heartbeat and comes back up a little lower
+
+== reaction | size: solid | state: tired
+she grunts and has to plant herself before she can do anything else
+the blow takes some of the shape out of her stance
+her eyes close on the impact and open slowly
+a low groan she doesn't quite catch in time
+she sags a fraction round it, then makes herself straighten
+
+== reaction | size: solid | state: spent
+it lands, and for a moment there is nothing she can do but let it have landed
+a weak sound, half a breath, half a whimper
+her head drops forward with it and she has to lift it again by effort
+she shivers all over, a long, tired shudder that goes on after the blow is gone
+she takes it like a weight set down on her, with nothing left to push back with
+
+== reaction | size: heavy | state: fresh
+a sharp cry, cut off; her jaw sets hard behind it
+she rocks with it and comes back with her teeth bared
+the shock goes through her and she shakes it out of her shoulders like water
+for an instant her eyes go wide, then flat and furious
+a bark of pain, and she is already turning it into a snarl
+she clutches at the spot once and lets go, refusing to hold it
+
+== reaction | size: heavy | state: winded, tired
+a cry jumps out of her, higher than she wanted
+she folds a little round it and has to unfold herself by force
+her breath comes in two short gasps and then a long, shaking one
+her eyes squeeze shut and stay shut for a heartbeat too long
+she presses a paw or a shoulder to the place and leans into the pressure
+the pain sits on her face for everyone to see, and she cannot wipe it off
+
+== reaction | size: heavy | state: spent
+she makes a sound she has not made before in this fight, thin and breaking
+everything in her goes rigid, then slack, and she sways where she stands
+her mouth opens and stays open; nothing comes out at first
+tears spring and run, not from crying, only from the force of it
+she curls round it as far as her body will let her and shakes there
+her knees dip and lock again, the locking slow and trembling
+
+== reaction | size: tremendous | state: fresh
+the cry tears out of her whole, and then her teeth slam shut on the rest
+she is jolted to the core, and still, somehow, her eyes find the other again
+for a heartbeat she is simply stunned, then the strength floods back into her
+she shudders once from head to foot and plants herself against it
+the air goes out of her in a roar more than a scream
+she hunches over the hurt for one breath, two, and then makes herself stand tall
+
+== reaction | size: tremendous | state: winded, tired
+the scream comes and keeps coming, and she cannot find the end of it
+it drives a long, broken groan out of her as she curls round the place
+her whole body jerks and then hangs, breath sawing
+the shock leaves her blank-eyed for a moment, looking at nothing
+she hugs the hurt with everything she has and rocks once on her feet
+her teeth chatter, though she is not cold
+
+== reaction | size: tremendous | state: spent
+the sound that comes out of her is raw and small and does not stop
+she has nothing to brace with; it goes through all of her at once
+her eyes roll up and come back, slow, swimming
+every muscle she has jumps and then lets go, and she sways like a reed
+she gasps, and gasps again, and neither gasp brings any air
+she shakes so hard her teeth knock together
+
+# IMPACT MARK: what the blow visibly does to the body as it lands, seen from outside: fur, skin, breath, the push
+# of it. The engine decides whether her feet move; these never move her feet.
+== impact_mark | size: glancing
+the fur flattens in a line where it skimmed her, then lifts again
+a puff of dust or spray jumps off her coat where it touched
+the skin over the spot twitches, the way a horse's hide twitches at a fly
+the fur along {part} is ruffled the wrong way, standing up in a little crest
+a faint mark on the fur, already fading as she moves
+her coat ripples outward from the spot and settles
+the glancing blow turns her shoulder an inch, no more
+a few loose hairs drift down after it
+
+== impact_mark | size: solid
+the fur over {part} dents in under the blow and springs back slowly
+the force goes into her with a dull, meaty sound and the flesh round it jumps
+her whole coat shivers outward from where it hit
+the blow pushes her shoulder back a hand's width before she sets it again
+breath and spit are knocked out of her together in a short huff
+her head jerks with the force and comes back round, eyes blinking
+the fur at {part} is pressed flat and wet-looking where it struck
+she is pushed back onto her heels for half a heartbeat
+
+== impact_mark | size: heavy
+the blow drives in deep enough that the fur all round it ripples like water
+it shoves her whole body sideways an inch, her weight shifting to catch it
+the breath is punched out of her in one loud grunt
+her head snaps round with it and her ears flap with the force
+the flesh under {part} gives and stays given for a moment, a hollow where the blow went in
+spray or grit flies off her in a burst on the impact
+her body folds a fraction round the blow before she can stop it
+the fur at {part} is left standing up in a rough patch, the shape of what hit her
+
+== impact_mark | size: tremendous
+the impact goes through her so hard her whole coat stands up for a moment
+it drives into her and the force comes out the far side of her body; she jolts all over
+her head is knocked round so hard her ears fold and her eyes lose their focus
+everything loose on her flies: spray, dust, a few torn hairs
+the breath is slammed out of her in a single ugly sound
+her body bends round the blow like a branch in a gale and only slowly comes back
+for an instant her legs lock rigid under her from the shock of it
+the fur over {part} is crushed flat in a deep print that stays after the blow is gone
+
+== impact_mark | zone: head
+her head is turned by it, her chin going one way and her eyes the other
+her ears clamp flat to her skull on the impact
+her eyes squeeze shut on the blow and water when they open
+her jaw clacks shut with the force, teeth knocking
+her whiskers and the fur of her face are blown back flat
+
+== impact_mark | zone: neck
+her chin jerks down to cover her throat a heartbeat too late
+the muscles of her neck bunch hard against it and stand out under the fur
+she coughs on the impact, a dry, choked sound
+her head bobs on her neck like something loosely fastened
+
+== impact_mark | zone: chest
+the breath leaves her chest in a hard grunt
+her ribs heave once, twice, in short jerks
+the fur of her chest is flattened in a print the size of what hit her
+her shoulders roll forward round the blow before she can stop them
+
+== impact_mark | zone: belly
+she doubles a little round her middle, the breath driven out of her
+the blow sinks in soft and her stomach clenches tight behind it
+a hollow grunt comes out of her and her belly pulls in hard
+she hunches, her hind end tucking under as if to guard it
+
+== impact_mark | zone: back
+her spine flinches straight, every hair along it standing up
+the blow slaps across her back and the fur there ripples down its length
+her shoulder blades jerk together on the impact
+she arches away from it, too late
+
+== impact_mark | zone: arm
+the limb is knocked out of line and she pulls it back in
+her paw opens on the impact and closes again, slower
+the arm jolts and she shakes it once, hard, as if to shake the sting off
+her guard is batted aside and drifts back up
+
+== impact_mark | zone: leg
+the leg jolts under her and she shifts her weight off it at once
+her knee jerks with the blow, and she sets the foot down again carefully
+the leg trembles where it took it, a fine shiver under the fur
+her foot scrapes for a better grip as the leg takes the blow
+
+== impact_mark | zone: tail
+her tail jerks straight out and then curls in tight against her
+the fur of her tail bushes out all at once
+her tail lashes once, hard, as if it had been bitten
+
+== impact_mark | kind: bite
+the fur bunches up in the jaws and springs back rumpled when they let go
+the teeth leave a ring of dents in the fur, slow to smooth out
+the jaws drag the skin with them as they let go, and it settles back crooked
+a wet patch on the fur where the mouth was
+
+== impact_mark | kind: claw
+the claws part the fur in lines that show the skin underneath
+the fur stands up in ragged rows where the claws went through
+a sting along the lines, and the fur won't lie flat over them
+
+== impact_mark | kind: punch
+the fist leaves a round dent in the fur that fills back in slowly
+the blow lands with a flat smack and the flesh round it shudders
+the knuckles leave the fur pressed in a tight print
+
+== impact_mark | kind: beam
+the blast blows her fur flat and back along her whole side
+the force of it pushes her coat into ridges, like wind on grass
+her fur steams or crackles or drips where it struck, depending on what struck it
+
+== impact_mark | kind: charge
+the weight of the other body drives into her and her whole frame gives under it
+the collision knocks the fur flat across her chest and shoulder
+the breath is crushed out of her between the two bodies
+
+# STRUGGLING WITH A HURT PART, by how much of her is left: the same hurt shows smaller on a fighter who still has
+# her strength, and gets out more and more as she wears down.
+== pain_show | level: sore, hurting | state: fresh, winded
+her paw goes to {part} once, presses, and comes away
+she rolls the {part} as if working out a knot, and moves on
+a short breath through the teeth when the {part} takes weight, nothing more
+she glances down at the {part} once, then refuses to look again
+the {part} flinches on its own when she moves; she does not let the rest of her follow
+she squeezes her eyes shut for a blink, opens them, and they are steady again
+she breathes through it once, deliberately, and is done with it
+she favours the {part} by a hair, so little only an opponent would see
+
+== pain_show | level: sore, hurting | state: tired, spent
+the small hurt in her {part} is one more thing her body has no room for
+she holds the {part} close and trembles, though it is only sore
+her eyes close and stay closed a beat too long when the {part} twinges
+every movement of the {part} brings out a small, tired breath
+she leans her weight off the {part} and the leaning nearly takes her over
+a gasp at the {part}, and then a long, shaky breath out
+her paw drifts to the {part} and stays there, pressing, as if holding it together
+the ache in her {part} makes the rest of her shiver along with it
+
+== pain_show | level: very painful | state: fresh, winded
+she grips the {part} hard for a moment, teeth set, then makes herself let go
+a hiss each time the {part} moves; she moves it anyway
+her breath goes short and fast and she slows it down by force
+her ears flatten and stay flat, the only part of her that won't pretend
+she tucks the {part} in close and fights round it, guarded but sharp
+she presses her eyes shut, breathes, and opens them hard and bright
+a muscle by her jaw jumps every time the {part} is jarred
+she keeps the {part} back and turned away, and her stance changes shape to do it
+
+== pain_show | level: very painful | state: tired, spent
+she clutches the {part} and does not let go, her breath coming in ragged pulls
+a gasp catches in her throat every time the {part} shifts
+she trembles gently and steadily, from the {part} outward
+her eyes drift shut, and she drags them open again
+she bows over the {part}, breathing hard through her mouth
+small sounds come out of her with every breath, and she has stopped noticing them
+she rests her weight on whatever will hold it and lets the {part} hang
+the {part} throbs and she flinches with each throb, a small, tired flinch
+
+== pain_show | level: excruciating, devastated | state: fresh, winded
+she holds the {part} rigid and fights with everything else, jaw locked
+the pain is huge and she keeps it in one place: her face, her breath, the {part}
+she gasps once, hard, and turns the gasp into a snarl
+she clamps a paw over the {part} for a heartbeat and tears it away to fight
+her eyes are watering and she ignores them; they are not hers right now
+she breathes in short, controlled pulls round the {part}, counting them
+
+== pain_show | level: excruciating, devastated | state: tired
+she curls round the {part} and has to uncurl herself one muscle at a time
+her breath comes in gasps that catch and hitch, like a sob without the tears
+a shudder runs through her every few heartbeats, starting at the {part}
+she grips the {part} with both paws and rocks very slightly on the spot
+her eyes are squeezed shut; when they open, they swim
+she makes a low, steady sound on every breath out and cannot stop it
+her whole stance is built round keeping the {part} still now
+the trembling has reached her legs, and she stands with them wide to hold it
+
+== pain_show | level: excruciating, devastated | state: spent
+she can do nothing for a moment but hold the {part} and breathe
+her eyes slide shut and the lids flutter, trying to open
+a thin whine comes out of her, steady as breathing
+she shakes all over, a fine, constant trembling she has given up trying to stop
+her breaths are shallow and quick and never reach the bottom
+she sags round the {part}, head low, every line of her body bent toward it
+she sways, catches it, sways again
+when she tries to straighten, the {part} answers and she folds back over it with a gasp
+
+# MOVED (more): how a blow moves her body when the engine says it rocked or staggered her.
+== moved | how: rock | where: standing
+her head swings with it and her body leans after, then she rights herself
+the blow twists her at the waist and she untwists with a snarl
+her shoulders are shoved back and she drives them forward again
+she leans into the blow's direction for a moment, weight tipping, and catches it
+her chin is turned aside and for a heartbeat she is looking at the ground
+the hit turns her a quarter of the way round before she squares up
+her upper body rocks back on her hips and comes forward again
+the force sways her like a tree in a gust, roots holding
+her front end is knocked up and comes down hard on the same spot
+she is jolted sideways from the waist up, feet planted, and snaps back
+
+== moved | how: stagger
+she reels back a step, then another, arms out wide
+her legs carry her backward on their own, trying to catch up with her body
+she lurches sideways and her feet skitter under her
+she is driven back across the ground in short, stumbling steps
+her balance goes, and she staggers in a half-circle before she finds it
+she totters, one foot crossing the other, and nearly goes over
+she is knocked off her line and goes with it, steps scuffing, until her weight comes back
+she stumbles back into the space behind her, hunched, guard gone
+
+== moved | how: rock | where: down
+the blow bounces her against the ground and she settles back, groaning
+her body jerks where she lies and goes still again
+the ground under her takes the jolt and gives it straight back up into her
+her head lolls to one side with the force and comes slowly back
+
+# Ideas for the moment AFTER a hit when she is worn: holding herself together.
+== held_in | state: tired, spent
+she holds herself very still, as if any movement might shake something loose
+her eyes close, and her breath goes in and out in long, careful pulls
+a slow tremble starts in her shoulders and works its way down
+she grips the nearest hurt with one paw and does not let go
+a gasp, then another, smaller, then she has it back under her
+her chest heaves and her mouth hangs open; she does not care how it looks
+she lowers her head and breathes, and breathes, until the ground stops tilting

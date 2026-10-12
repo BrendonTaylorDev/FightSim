@@ -376,6 +376,85 @@ Her back would not bear her weight in any shape, and each new shape she tried br
 # ---------------------------------------------------------------------------------------------------------------
 # BEFORE_STRIKE: the attacker in the instant before the move lands, or as she commits to it
 # ---------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------
+# BUILD 176: AFTER_HIT by how much of her is left (state) as well as how the part hurts (level)
+# ---------------------------------------------------------------------------------------------------------------
+== after_hit | level: minor | state: tired, spent
+It was hardly a blow at all, and still her eyes closed for a moment after it.
+Even that little knock made her breath catch, and she hated that it did.
+The tap on her {part} was nothing; the tremble it set off in her was not.
+She took it with a small, tired grunt, the kind that costs more than it should.
+Once she would not have noticed it; now she had to wait for it to pass.
+Her {part} barely stung, but her whole body seemed to lean toward the sting.
+
+== after_hit | level: sore | state: fresh, winded
+She shook the sting out of her {part} with one flick and set herself again.
+A quick hiss, a quicker glare, and her {part} was just another thing she would deal with later.
+She rolled her {part} once, felt it answer, and was satisfied.
+The ache in her {part} sat there, small and sharp, and she fought straight past it.
+She let her breath out hard through her nose and that was the end of it.
+
+== after_hit | level: sore | state: tired, spent
+Her {part} throbbed, and the throb went on longer than it had any right to.
+She pressed against her {part} for a moment and felt her own trembling under her paw.
+It was only a sore {part}, and it still took her a breath to straighten.
+The new soreness found every old one and made a small chorus of them.
+She sucked in air through her teeth and held it, waiting for the {part} to stop insisting.
+Her eyes squeezed shut, and when they opened they were wet at the corners.
+
+== after_hit | level: hurting | state: fresh, winded
+She grimaced and worked the {part} once, the way you test a bruise you already know is there.
+Her {part} hurt now in a way she would have to fight around, and she started fighting around it at once.
+A hiss, a hard blink, and she was guarding the {part} without having decided to.
+She checked the {part} with a short, sharp movement, found it working, and stopped checking.
+Her ears went back for a moment, and then she made them come forward again.
+
+== after_hit | level: hurting | state: tired, spent
+She gripped her {part} and her breath went ragged under the grip.
+The hurt in her {part} made her whole body tremble, a fine, steady shiver she could not stop.
+She bent over her {part} for a moment, breathing hard, and had to be told by her own legs to stand.
+Each breath came in two pieces now, the second one catching on the {part}.
+Her eyes closed and stayed closed; behind them, the {part} pounded.
+She held the {part} still and the rest of her shook around it.
+
+== after_hit | level: very painful | state: fresh, winded
+She clamped down on the cry and it came out through her teeth anyway, a hiss she cut short.
+Her paw went to her {part}, hard, and she made herself take it away again.
+She was strong enough to fight on, and every line of her face said what it cost.
+Her breath came fast and shallow for a few heartbeats, and then she slowed it by force.
+The {part} would slow her now; she knew it, and set her jaw against it.
+
+== after_hit | level: very painful | state: tired, spent
+She curled round her {part}, gasping, her eyes screwed shut.
+A shaky whimper escaped her, and she did not have the strength to call it back.
+She held her {part} with both paws and rocked on the spot, breathing through her mouth.
+The pain in her {part} filled her up until there was very little room for anything else.
+Her legs trembled under her, and she spread them wide to keep standing.
+She gasped, and gasped again, as if she had forgotten how to take a full breath.
+
+== after_hit | level: excruciating | state: fresh, winded
+The scream got as far as her teeth and she locked it there, shaking with the effort.
+She was still strong, and that was the only reason she stayed on her feet.
+Her {part} was a white blaze of pain, and she kept it there, in that one place, by will alone.
+She gasped once, hard, and turned the gasp into a growl.
+She did not touch her {part}; she did not dare. She fought with everything else she had.
+
+== after_hit | level: excruciating | state: tired, spent
+She folded over her {part} and could not unfold, her breath coming in broken sobs of air.
+Her whole body shook, from the {part} outward, and her eyes swam with tears she was not crying.
+She clutched her {part} and made a sound she did not recognise as her own.
+She swayed where she stood, eyes closed, every breath a ragged little gasp.
+The pain in her {part} pressed on her until her head bowed under it.
+She held on to herself with both paws, as if that might keep her from coming apart.
+
+== after_hit | level: devastated | state: tired, spent
+She could not hold the {part} and could not let it go; her paw hovered over it, trembling.
+Her eyes rolled and found nothing, and slowly came back.
+She breathed in short, shallow gasps that never reached the bottom of her.
+A thin, broken sound came out of her on every breath and would not stop.
+Her body shook, gently and without end, like a leaf in a steady wind.
+She sagged round her {part} until her head was almost down at her knees.
+
 == before_strike | kind: claw
 Her claws slid out to their full length as she came in.
 She spread her toes wide, every claw bared, and reached.
@@ -2620,6 +2699,16 @@ It was meant for somewhere smaller; it found her {part} instead.
 She got her {part} in the way of it, more by luck than by design.
 The blow went looking for an opening and settled for her {part}.
 It landed a hand's width from where it had been sent.
+
+== stagger
+Her feet ran on without her for two steps before they caught up.
+She reeled back, guard flung wide, and only just kept herself from going over.
+The ground came at her sideways and she fought it, step by staggering step, until it went flat again.
+She stumbled, caught herself, and stood swaying, breathing hard.
+*Stay up. Stay up.* Her legs, somehow, listened.
+The blow carried her off her line and she went with it, scraping for footing.
+She lurched to a stop, half-crouched, every limb shaking. | state: tired, spent
+She came out of the stagger already setting her feet, eyes on {foe}. | state: fresh, winded
 
 == ground_back
 *Nowhere to go. There's nowhere to go.*

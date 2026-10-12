@@ -8,12 +8,18 @@
 # Edit freely, add sections, or give a section more tags (comma-separated). Lines starting with # are notes.
 # SEVERAL sections may answer to the same tag: the program takes turns among them, so the narrator is not shown
 # the same passage every time. A passage that names a fighter who is not in the current fight is skipped.
-# Tags the program asks for: opening; strike act, strike take, strike take light (the part ends minor or sore), strike take mid (hurting or very painful), strike take hard (a blow that leaves a part excruciating or worse), knockdown take (the blow puts her down); chain; breaking point; sustain take; grab, grab take;
+# Tags the program asks for: opening; strike act, strike take, strike take light (the part ends minor or sore), strike take mid (hurting or very painful), strike take hard (a blow that leaves a part excruciating or worse), strike take worn (the one hit is tired or spent overall), pinned take (a blow on a fighter who is pinned, held or down, with nowhere to go), knockdown take (the blow puts her down); chain; breaking point; sustain take; grab, grab take;
 # pummel; throw, throw take; getup; dodge; pin start, pin start take; pin hold, pin struggle; escape; faint;
 # aftermath, aftermath take; clash, clash take; dive, dive take; sputter take; coil, coil take; escape aftermath.
 # super effective act, super effective take (an attack her body has no answer for); resisted act, resisted take (one
 # her body is made to take, or that can't touch her).
 # A tag nothing answers to falls back to the next one asked for, then to the first section.
+# CONDITIONS (build 176): after the tags, "| has_b: wings" shows a passage only when the one it happens to has that
+# feature, "| has_a: coils" only when the one who acts has it, "| has: fins" when anyone in the fight has it, "| kind:
+# fire, ice" only when a move of that kind (or type) is in the beat. Features: wings, feathers, beak, talons, coils,
+# tail, tails, fins, horn, mane, scales, shell, spikes, arms, forelegs, legs, ears, crest, flame. Kinds: bite, claw,
+# punch, charge, tail, beam, horn, wing, beak, talon, throw, grab, fire, ice, wind, rock, and every move type
+# (electric, water, psychic, poison, dark, steel, fighting...). A passage with no conditions is shown in any fight.
 # {A} and {B} in a passage ({A} the one who acts in it, {B} the one it happens to) are shown as two names that belong
 # to no fighter (Wren and Sorrel), so such a passage is shown in EVERY fight, whoever is in it. Passages that name a
 # real fighter are shown only when she is in the fight.
@@ -3706,3 +3712,254 @@ Sorrel went for the throat. She had seen it, the pale fur under Wren's jaw, bare
 Wren's chin came down. Not a guard, not even a choice: her head just ducked, the way a head does when something comes at it, and Sorrel's teeth closed on the thick fur of her shoulder instead, a hand's width from where they had been sent.
 
 It still hurt. Wren yelped and wrenched away, and Sorrel let her go with a mouthful of fur and the taste of a chance that had been there and was gone.
+
+# ===============================================================================================================
+# BUILD 176: SELLING THE HIT, for every kind of body and attack. Blows on a fighter who cannot move with them
+# (pinned take), on a fighter who is worn down overall (strike take worn), and the body's struggle with a hurt
+# part afterwards. Conditions after the tags keep each passage to fights where its bodies and attacks exist.
+# ===============================================================================================================
+
+== pinned take
+{A}'s whole weight was on {B}'s shoulders, pressing her into the ground, and {B} had stopped trying to buck it off for the moment, only breathing, ribs working under the fur. She saw the strike coming in the corner of her eye and could do nothing about it. There was nowhere to go.
+
+It took her in the side, just under the ribs.
+
+On her feet she would have gone with it, rolled away, let the ground have half of it. Pinned, she had to take all of it. The blow went in and stopped in her, and the shock had nowhere to go but through: up her side, into her chest, along her spine to the back of her skull, a single jolt that lit every nerve on the way. Her body jerked against the weight holding it and the weight did not move.
+
+Her mouth fell open. No sound came out at first, only the gasp, long and dragging, the breath sucked in through her teeth as if the air had been punched out the other side of her. Her eyes squeezed shut so hard the fur round them creased.
+
+Then the sound came: a thin, strangled cry that cracked in the middle.
+
+She lay under {A} with her side burning and her flank twitching on its own, little jumps of the muscle under the fur where the blow had gone in. Every breath pulled at it. She took them short and shallow and fast, her mouth still open, her eyes still shut, and felt the next blow coming in the way {A}'s weight shifted on her back.
+
+== pinned take, jolted take | has_b: wings
+{B} lay on her front in the dirt with one wing pinned out flat beneath {A}'s foot and the other crushed against her own side, and she could feel the feathers of it bending under the weight.
+
+{A} drove down into her ribs.
+
+Pinned, there was no flinching from it. The blow struck her side and the force ran straight up through her body and out along the trapped wing, and every feather on it shuddered at once and then lay still. Her free wing jerked open on its own, a single convulsive beat that lifted dust off the ground and went nowhere, and folded back against her half-closed, the long feathers at its tip trembling.
+
+A gasp tore out of her, beak wide. Her eyes squeezed shut and stayed shut. Her crest flattened to her skull.
+
+*Up. Get up. Wings. Get the wings under you.*
+
+She tried. The pinned wing would not come; the weight on it was too much, and the effort only ground it harder into the dirt and sent a hot, wrenching ache along the joint where it met her shoulder. She stopped trying and lay panting, beak open, every breath a short, whistling rasp against the ground, while her flank shook in small, steady jerks where the blow had gone in.
+
+== pinned take, grab take | has_a: coils
+{A} had her wrapped twice round the middle and once round the shoulders, and the coils tightened every time {B} breathed out, so that each breath in was a little smaller than the last.
+
+{B} could not see the strike. She felt the coils shift against her ribs, the scales sliding as {A} drew her head back, and then the blow came down into her side, in the narrow gap between two loops of {A}'s body.
+
+She could not move with it. The coils held her as still as stone, and the whole force of it went into her and stayed there: through the ribs, into her belly, a deep, dull shock that rolled up into her chest and lodged under her breastbone. Her body tried to curl round the place and the coils would not let it, and the trying hurt nearly as much as the blow.
+
+Her mouth gaped. The gasp went in and came straight back out as a groan, squeezed out of her by the next tightening of the coils.
+
+She could feel her own heartbeat against {A}'s scales, fast and hard, and the side where she had been struck throbbing in time with it. She shut her eyes. Her paws scrabbled at the coils, found nothing to grip on the smooth scales, and fell still again, trembling.
+
+== pinned take | kind: electric
+{B} was down on her side, {A} kneeling on her shoulder and hip, and the first she knew of the charge was the smell of it: sharp, hot, like the air after lightning.
+
+{A} laid a crackling paw flat against her ribs and let go.
+
+Standing, she could have jumped from it; the current would have bitten and passed. Pinned, it had nowhere to go but into her. It came in through her side and went everywhere at once, along every limb to the tips of her toes, up her spine into her jaw, so that her teeth clamped together on their own and her whole body locked rigid under {A}'s weight. Every hair on her stood up and crackled. Her legs kicked out straight and shook there.
+
+It lasted a heartbeat. It felt much longer.
+
+When it let go of her she sagged into the ground, gasping, mouth wide, eyes screwed shut. Her muscles kept jumping on their own: a twitch in her shoulder, a flutter in her flank, her paw clenching and unclenching against the dirt. The place on her side where the paw had been burned and tingled, and her own heart felt wrong in her chest, stumbling and then catching up.
+
+She breathed, and breathed, and the smell of scorched fur came in with every breath.
+
+== pinned take | kind: fire
+{B} lay on her back with {A} standing over her, one heavy foot planted on her chest, and she could feel the heat coming off {A} before she saw the fire.
+
+It poured down onto her belly.
+
+On her feet she would have twisted from it, rolled through it, put it out against the ground. On her back, held, there was no rolling. The fire washed over her stomach and her flank and she could do nothing but feel it: the first shock of heat, then the deeper ache as it soaked in, then the sting that spread out across her side and kept spreading after the flames were gone.
+
+She arched up off the ground against the weight on her chest. It did not give. Her mouth opened on a cry that came out high and cracked, and her eyes squeezed shut against the light of the flames, and she turned her head away as if that could help.
+
+When it stopped, she lay panting with her mouth open, every breath shallow and quick, her belly fur singed and curling, her side twitching. A thin trembling had started in her legs and would not stop. She did not open her eyes. She could still feel the heat in her, under the skin, slowly going deeper.
+
+== strike take worn
+{B} had been hit so many times that the blows had started to arrive before she felt them.
+
+This one took her on the shoulder, not hard, not as hard as some, and still it nearly folded her. Her knees dipped. Her breath went out of her in a long, low groan that she would not have let out an hour ago, and her eyes slid shut on it.
+
+She had nothing left to meet it with. That was the difference. At the start of the fight her body had answered every blow with a blow of its own, a set of the shoulders, a snarl. Now it simply received them. The shock went in and found no resistance and spread out through her, a slow ripple that set her whole frame trembling.
+
+She put a paw to the shoulder and pressed. Under the fur she could feel her own pulse jumping.
+
+*Breathe.* She tried. The breath came in shallow and fast and caught at the top, and the next one did the same, and she stood there bent a little round her own shoulder, mouth open, panting, while the trembling in her legs went on and on.
+
+When she opened her eyes, the world swam for a moment before it came back. {A} was still there.
+
+== strike take worn | has_b: coils, scales
+{B}'s coils had lost their shape. Earlier in the fight she had held herself in tight, gleaming spirals, her head high above them, swaying. Now her body lay in loose, uneven loops on the ground, and her head had sunk until it was barely higher than {A}'s.
+
+The cold struck her full along the side.
+
+Her scales went white with frost where it touched, and the white spread, and her body, which should have whipped away from it, only shuddered. A long, slow ripple ran from the place it struck down the whole length of her, through every loop, to the very tip of her tail, which twitched once and lay still.
+
+A hiss came out of her, but it was a tired hiss, thin and leaking, with no fury left in it.
+
+She could feel the cold going in. It went under the scales and into the muscle and made the muscle slow and stiff, so that when she tried to draw her coils back in, they came slowly, grudgingly, as if they belonged to someone else. Her head dropped another hand's width. Her tongue flickered out, tasting the air, and drew back in.
+
+*Get up. Lift.* She lifted her head. It trembled on her neck, and the frost cracked in a fine web across her scales as she moved.
+
+== strike take worn | has_b: feathers, wings
+{B} had stopped trying to keep her feathers smooth. They stood out from her in ruffled tufts, out of place, broken here and there, and her wings hung half-open from her shoulders because folding them properly was more than she could manage.
+
+The blow caught her on the chest.
+
+It did not knock her down. She almost wished it had. Instead it went into her and stayed, and her whole body shook with it, every feather lifting and settling in a long shudder that ran out to the tips of her wings. She swayed. Her talons clenched on the ground to hold herself there.
+
+Her beak opened on a gasp, and stayed open. The next breath came in with a whistle in it, and the one after that.
+
+She drew her wings in round herself, slowly, as if for warmth, though she was not cold. Her eyes were half shut. Her crest, which had stood up proud all fight, lay flat and wet against her skull.
+
+*Still standing.* She held onto that. Her legs trembled under her, and she spread her toes wider on the ground, and stayed.
+
+== strike take light | has_b: horn
+{B} took the blow on the side of her head and barely moved.
+
+Her horn rang with it: a dull, hollow note that she felt in her teeth more than heard. That was all. She gave her head one short, hard shake, and the ringing went out of the horn and out of her skull, and she lowered her head again and looked at {A} along its length.
+
+A small sting stayed where the blow had landed, just under the base of the horn. She noticed it, and filed it away, and let it go.
+
+She was fresh and strong and angry, and a blow like that only told her where {A} was.
+
+== strike take light | has_b: wings
+It caught {B} on the trailing edge of her wing as she banked, and she felt it as a hard tug, as if something had grabbed a handful of her feathers and let go.
+
+She tilted, corrected, and was level again in two beats. A few loose feathers spun away beneath her and drifted down. The wing stung, and she flexed it once, opening and closing it in the air, feeling the long feathers fan out and fold back, and it answered her: a little stiff at the edge, nothing worse.
+
+*Close. Too close.* She climbed away, and her eyes stayed on {A} all the way up.
+
+== strike take mid | has_b: fins | kind: electric
+The charge hit {B} while she was still wet, and it went everywhere the water was.
+
+Her fins snapped out stiff from her body, every spine standing rigid, and trembled there. Her jaw clamped. For a long heartbeat she could not breathe, could not move, could only feel the current running through her, along her sides, over the wet surface of her skin, into the soft places at the base of her fins where it stung like nettles.
+
+Then it let go of her, and she gasped.
+
+Her fins folded back against her body slowly, one at a time, the right one last. It stayed half-raised and twitching, and when she tried to tuck it in it only shivered. Her side ached in a long stripe where the current had run. She breathed hard through her mouth, her gills or nose or whatever she breathed with flaring, and shook herself, and water flew off her in a spray.
+
+She was still strong. But the next time she would want to be dry, and she knew it.
+
+== strike take mid | has_b: shell
+The blow landed square on {B}'s shell with a hollow crack that echoed.
+
+Her shell held. It always held. But the force of it went through the shell into her, and the shell, built to keep things out, kept it in instead: the shock rattled round inside, through her back, her shoulders, her ribs, and she felt it in her teeth.
+
+She pulled her head in, half by instinct, and then forced it back out. Her breath came out in a short grunt. Her legs had braced wide on their own, claws digging into the ground.
+
+There was a deep, dull ache along her back now where the shell met her body, and when she shifted her weight she felt the shell shift with her, sore in its moorings. She hissed through her teeth, and shook her head, and lifted it again to look at {A}.
+
+== strike take hard | has_b: flame | kind: water
+The water hit {B} full in the chest and she screamed.
+
+It was not the force. It was what it did to her fire. The flame that burned along her back and at the tip of her tail shrank and guttered under the drenching, and she felt it go small and cold and frightened, the way a heart feels when it skips. Steam burst off her in a white cloud.
+
+Her legs went weak under her. Not from pain; from fear. She had never felt her own fire so small.
+
+She stood shaking in the steam with water running off her, her mouth open, panting, her eyes wide and white-ringed, and watched the flame on her tail flicker and catch and flicker again, and could not take her eyes off it. Her whole body was hunched round it, as if her body could keep it lit.
+
+It caught. It steadied. It was half the size it had been.
+
+She breathed out, a long, shaking breath, and her fire breathed with her.
+
+== strike take hard | kind: psychic
+Nothing touched {B}. That was the worst of it.
+
+There was no blow, no contact, only a pressure that came out of nowhere and closed round her skull from the inside, and then squeezed. Her head snapped back as if she had been struck in the face. Her eyes squeezed shut, and behind them there was light, white and painful, and a high ringing that filled her ears and drowned out everything.
+
+She grabbed at her head with both paws. There was nothing there to grab.
+
+The pressure built, and held, and let go all at once, and she staggered under the release of it as if a weight had been lifted off her that she had been leaning on. Her eyes opened. The clearing swam, doubled, and slowly came back into one.
+
+Her head throbbed. Not in one place: everywhere, all through it, a deep, sick ache that pulsed with her heart. She stood holding her skull, breathing in short gasps through her open mouth, and she could not tell, for a moment, which way was up.
+
+== stagger take | kind: horn, charge
+{A} came in head-down and the horn caught {B} in the shoulder, and the weight behind it was enormous.
+
+She was lifted half off her feet. Her forelegs left the ground and she was driven backward, her hind legs scrabbling, two steps, three, her claws tearing up the earth as she tried to stop. She did not stop. The ground went out from under one foot and she lurched, nearly went down, threw her weight the other way and caught it.
+
+She came to a halt crooked, half-turned, her shoulder screaming.
+
+Her breath was coming in great heaving gasps. She looked down at her own shoulder, at the fur parted and pressed flat where the horn had struck, and back up at {A}, and for a moment she did not know which way to move.
+
+Then her feet were under her again. She planted them, wide, and lowered her own head.
+
+== stagger take | has_b: wings | kind: wind, flying
+The gust caught {B} broadside with her wings half-open, and it took her like a leaf.
+
+She went sideways across the ground in a stumbling, flapping rush, her talons skidding, her wings thrown wide and useless, every feather on her blown back the wrong way. She hit a rock with her hip and spun half round it, and her wings snapped shut against her body on their own, and she crouched there, flattened against the stone, while the wind roared past her.
+
+When it dropped, she stayed crouched a moment longer.
+
+Her feathers were all on end. Her crest was blown flat sideways. Her heart was hammering so hard she could feel it in her throat, and her breath was coming short and sharp through her open beak.
+
+Slowly, carefully, as if she were testing ice, she straightened up. She shook herself, once, from head to tail, and the ruffled feathers lifted and fell back roughly into place, and she opened her wings to check them, and they opened.
+
+== jolted take | kind: bite
+{A}'s jaws were locked in the scruff of {B}'s neck, and {A} began to shake her.
+
+Side to side, short and hard. There was nothing {B} could do; the grip was behind her head, out of reach of her own teeth or paws, and her body went wherever the jaws took it: left, her legs scrabbling; right, her shoulder slamming the ground; left again.
+
+Every shake drove the teeth deeper. She felt each one as a fresh, wrenching burn at the back of her neck and a jolt that went all the way down her spine to her tail.
+
+She tried to brace. She could not brace. Her eyes were shut and her mouth was open and a sound was coming out of her with every shake, a short, choked cry knocked out of her by the force of it, the same cry over and over.
+
+When the shaking stopped, the jaws were still there. She hung in them, panting, her legs folded under her, feeling the teeth in her neck and the whole length of her body trembling.
+
+== dwell
+{B} stood very still and let the hurt find all of her.
+
+It started at her ribs, where the last blow had gone in. A deep, hot throb, steady as a heartbeat. Then her shoulder answered it, the old bruise from earlier waking up. Then her jaw. Then the small, sharp sting at the back of her leg that she had forgotten until now. One by one, they all spoke.
+
+She closed her eyes.
+
+Her breathing was the loudest thing in the world. In, short and careful, catching at the top where the ribs would not let it go further. Out, long and shaking. In again. She pressed one paw flat to her side and felt her own ribs move under it, and felt the trembling there too, a fine, constant shiver she had not noticed starting and could not make stop.
+
+*Just breathe. Just this one.*
+
+A gasp got away from her when the ribs caught. Then another, smaller. She swallowed, and opened her eyes, and the light was too bright, and she let them close halfway.
+
+Her legs were holding. She checked them, one at a time, the way you check that a door is locked. Still holding.
+
+== dwell | has: coils, scales
+{B} lay in a loose heap of coils, and every part of her that had been struck was talking at once.
+
+There was no one place to hold. The hurt was spread down the length of her: a deep ache where the blow had folded her middle, a sharp sting near her tail, a throbbing at the back of her head. She drew herself in tighter, slowly, coil over coil, as if pulling the pain into one place where she could watch it, and every loop that moved woke something else.
+
+She stopped moving. She lay with her head resting on her own coils, breathing.
+
+Her body breathed in long, slow swells, and each one ran from her head down through her middle and out to her tail like a wave, and in the middle of each wave there was a hitch, a small catch where the hurt was. Her tongue flickered out, tasting the air. Her eyes stayed half shut.
+
+A tremor ran down her length, scale by scale, and she let it run.
+
+== watch | has_b: wings
+{A} did not move. She stood a few lengths off and watched what the blow had done.
+
+{B} had drawn her wings in round herself, not folded neatly, just pulled close, the way you pull a blanket round you. Her feathers were standing out all over her in ruffled tufts. Her head was low. Every few breaths, a shiver ran through her and lifted all her feathers at once, and they settled again slowly, never quite flat.
+
+{A} watched the beak. It was open, and it stayed open, and the breath going in and out of it had a whistle in it.
+
+She watched the wings. The left one was not quite closed. Its long feathers trembled at the tip, as if in a wind, though there was no wind.
+
+*That one hurt. That one is going to stay hurt.*
+
+She waited to see if {B} would lift her head. After a long moment, {B} did, slowly, and her eyes found {A}'s, and there was nothing in them yet but tiredness. Then, behind the tiredness, the fight came back.
+
+== knockdown take | kind: rock
+The boulder took {B} in the chest and the ground left her.
+
+She did not fall so much as get thrown down: her feet went out from under her and her body slammed into the earth side-first, and the boulder rolled off her and away, and she lay where it had put her with the breath crushed out of her.
+
+For a long moment she could not breathe at all. Her mouth opened. Nothing went in. Her ribs strained and strained against the ache in her chest and would not lift, and the edges of her sight went grey, and she clawed at the ground with one paw as if the air were somewhere in the dirt.
+
+Then it came. One ragged, whooping gasp, and another, and her chest heaved.
+
+She lay on her side with her eyes squeezed shut, panting, her legs drawn up a little, one paw pressed to her chest. Dust settled on her fur. Every breath scraped. She could feel exactly where the boulder had hit, a broad, deep ache in the middle of her chest, and around it a slow tremble spreading out through her whole body, to the tips of her paws.
+
+She did not try to get up. Not yet.
