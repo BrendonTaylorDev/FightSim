@@ -1307,6 +1307,14 @@ class Engine:
             # parts a single blow carries over to; something that isn't here, or has already broken, does nothing
             ground = self._grind(a, d, behind, min(max(1, int(count or 1)) if pummel or int(count or 1) > 1 else 1, 4))
             hits = hits + ground["hits"]
+        gback = None
+        if hits and not sustained and not charged and not ground and d.name in self.downed and target == "targeted":
+            # lying on the ground, a blow driven down into her drives her into the ground too: what she lies on takes
+            # a share of it (her back when she's face-up). moves.ground_back
+            gback = self._ground_back(a, d, move, hits, min(max(1, int(count or 1)) if pummel or int(count or 1) > 1
+                                                             else 1, 4))
+            if gback:
+                hits = hits + gback["hits"]
         self._attacked(a.name, [d.name], landed=bool(hits))
         flavor = self._flavor_fits_move(flavor, move)
         res = {"type": "instant", "attacker": a.name, "defender": d.name, "defenders": [d.name],
@@ -1355,6 +1363,8 @@ class Engine:
             if ground:
                 res["ground_into"] = ground
                 res["knock_on"] = (res.get("knock_on") or []) + (ground.get("knock_on") or [])
+            if gback:
+                res["ground_back"] = gback
             if charged:
                 res["charge"] = charged
                 res["knock_on"] = (res.get("knock_on") or []) + (charged.get("knock_on") or [])
@@ -1411,8 +1421,8 @@ class Engine:
             if jolt:
                 res["status_applied"] = (res.get("status_applied") or []) + jolt
         if hits and not d.eliminated and not dodge and not (guard and guard.get("kind") == "block") \
-                and not any(res.get(k) for k in ("charge", "sustain", "ground_into", "into_mouth", "auto_launch",
-                                                  "grounded", "carried")):
+                and not any(res.get(k) for k in ("charge", "sustain", "ground_into", "ground_back", "into_mouth",
+                                                  "auto_launch", "grounded", "carried")):
             reel = self._stumble(a, d, move, hits)
             if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
                 res["moved"] = "stagger" if reel and reel.get("status") else "rock" if reel else "still"
@@ -1998,6 +2008,38 @@ class Engine:
             self._knock_on = []
             events.append(ev)
         return events
+
+    def _ground_back(self, a, d, move, hits, blows):
+        """A blow driven down into a fighter who is lying on the ground drives her into the ground as well: the parts
+        she lies on take a light hit with each blow (her back when she is face-up, her chest and belly face-down, a
+        flank on her side), like a fighter held against a tree (_grind). Only blows that push down into her: a punch, a
+        kick, a tail, a slam of a paw, a blast; not a rake across her or a bite that pulls her up. Not while she is
+        sitting up, or lying in deep water (it gives under her); shallow water softens it. moves.ground_back."""
+        cfg = (self.rules.get("moves") or {}).get("ground_back") or {}
+        if not cfg.get("enabled", True):
+            return None
+        facing = self.facing_of(d.name)
+        if facing not in ("face-up", "face-down", "on her side"):
+            return None
+        if self._blow_kind(move) not in ("blunt", "blast"):
+            return None
+        water = self.in_water(d.name)
+        if water == "deep":
+            return None
+        under = self.underside_parts(d.name, 3)
+        struck = [h for h in hits if h.get("defender", d.name) == d.name and h["part"] not in under]
+        if not struck:
+            return None          # every blow fell on what's against the ground already: nothing to drive down
+        table = self.rules["severity"].get("environment") or self.rules["severity"]["instant"]
+        power = float(table.get(cfg.get("power", "light"), 10)) * float(cfg.get("mult", 1.0)) \
+            * (float(cfg.get("shallow_mult", 0.5)) if water == "shallow" else 1.0)
+        ground = self.scene_word("ground")
+        out = {"against": ground, "facing": facing, "blows": blows, "hits": [], "in_water": water}
+        for i in range(blows):
+            self._source = f"being driven down into {ground}"
+            # one ground-side part a blow, the first blow two (the whole weight of her goes into it at once)
+            out["hits"] += [self._apply_damage(d, p_, power) for p_ in under[:1 + (i == 0)]]
+        return out
 
     def _grind(self, a, d, against, blows):
         """Blows landed while she is held or pressed against the scenery (a pummel against a tree, a strike that pins

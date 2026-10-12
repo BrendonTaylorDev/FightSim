@@ -1064,6 +1064,11 @@ class Display:
             out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{s['fighter']} is {self.sw(s['status'])}** ({s['beats']} beat{'s' if s['beats'] != 1 else ''}"
                        + (f"; from {s['hazard']}" if s.get("hazard") else "")
                        + (f": {s['stumble']['steps']} {s['stumble']['way']}" if s.get("stumble") else "") + ")")
+        if (a.get("ground_back") or {}).get("hits"):
+            gb = a["ground_back"]
+            parts_ = ", ".join(dict.fromkeys(h["part"] for h in gb["hits"]))
+            out.append(f"⬇️ Driven down into {gb['against']} ({gb['facing']}) with every blow: {parts_}"
+                       + (" (shallow water softens it)" if gb.get("in_water") == "shallow" else ""))
         if a.get("rocked"):
             rk = a["rocked"]
             out.append(f"↪️ {rk['fighter']} rocked by the {rk['part'].lower()} hit: {rk['how']}")

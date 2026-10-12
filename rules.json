@@ -70,6 +70,7 @@
     "_sustain_comment": "Sustained moves: a move marked \"sustainable\" (streams and beams like Hydro Pump, Flamethrower, Ice Beam) can be held for up to max_pulses pulses. Each extra pulse hits the same parts at pulse_mult power and costs energy_per_pulse. If the target is pressed against something, each pulse also slams her into it, and it may break (break_chance by surface): a heavy extra hit, the move ends early, and she goes down.",
     "_grind_comment": "grind: blows landed while she is held or pressed against something in the arena (a pummel against a tree, \"pinned_against\" on an ordinary strike) each drive her back into it too: power is the severity of that extra hit on her back, break_mult scales the thing's chance to break (from sustain.break_chance) for each blow.",
     "grind": {"power": "light", "break_mult": 0.5},
+    "ground_back": {"_comment": "A blow driven down into a fighter lying on the ground (face-up, face-down or on her side; not sitting up) drives her into the ground too: the parts she lies on take a light hit with each blow (power from severity.environment, x mult; x shallow_mult lying in shallow water; none in deep water). Blunt blows and blasts only, not rakes or bites. On top of moves.vulnerable.down.", "enabled": true, "power": "light", "mult": 1.0, "shallow_mult": 0.5},
     "sustain": {
       "max_pulses": 4,
       "pulse_mult": 0.6,

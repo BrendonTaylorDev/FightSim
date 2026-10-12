@@ -3206,7 +3206,8 @@ class Narrator:
     def _listed_hits(a):
         """The hits that get a line of their own: not the grinds into the scenery behind her (one line tells those)."""
         key = lambda h: (h.get("part"), round(float(h.get("damage_before", 0)), 3), round(float(h.get("damage_after", 0)), 3))
-        grind = {key(h) for h in ((a.get("ground_into") or {}).get("surface_hits") or [])}
+        grind = {key(h) for h in ((a.get("ground_into") or {}).get("surface_hits") or [])
+                 + ((a.get("ground_back") or {}).get("hits") or [])}
         return [h for h in a.get("hits") or [] if key(h) not in grind] if grind else list(a.get("hits") or [])
 
     def _describe_action_core(self, a):
@@ -3695,6 +3696,25 @@ class Narrator:
                 if gr.get("broke"):
                     lines.append(f"  - {gr['against'].upper()} BREAKS behind her: it cracks and gives way, and she goes "
                                  f"through and down with it (a heavy extra hit). She ends up on the ground.")
+            gb = a.get("ground_back")
+            if gb and gb.get("hits"):
+                per = {}
+                for h in gb["hits"]:
+                    per.setdefault(h["part"], []).append(h)
+                bits = []
+                for part_, hs in per.items():
+                    b_, f_ = self._pain(hs[0]["damage_before"]), self._pain(hs[-1]["damage_after"])
+                    self._tiers_used.add(f_["label"])
+                    bits.append(f"{part_} ({len(hs)} time{'s' if len(hs) > 1 else ''}; "
+                                + (f"{b_['label']} → {f_['label'].upper()}" if b_["label"] != f_["label"]
+                                   else f"still {f_['label']}") + ")")
+                lies = {"face-up": "on her back", "face-down": "face-down", "on her side": "on her side"}.get(gb["facing"], "down")
+                wet = " (shallow water under her takes a little of it)" if gb.get("in_water") == "shallow" else ""
+                lines.append(f"  - DRIVEN INTO {gb['against'].upper()}: {a['defender']} is lying {lies}, so every blow "
+                             f"from above drives her down into {gb['against']}{wet}, and what she lies on takes it too: "
+                             + "; ".join(bits) + ". Tell it as ONE thing under the blows (the ground meeting her each "
+                             "time, nowhere for her to go), not as separate hits with their own reactions.")
+                self._must_parts.append(gb["hits"][0]["part"])
             sus = a.get("sustain")
             if sus:
                 later = sum(len(p["hits"]) for p in sus["pulses"])
@@ -5980,6 +6000,11 @@ class Narrator:
             for a_ in acts:
                 st_ = next((s for s in a_.get("status_applied") or [] if s.get("stumble") and s.get("fighter") == who), None)
                 rk_ = a_.get("rocked") if (a_.get("rocked") or {}).get("fighter") == who else None
+                if a_.get("defender") == who and (a_.get("ground_back") or {}).get("hits"):
+                    add(f"how the ground takes it with {who} (one detail)", B.pick("moved", 1, how={"ground"},
+                                                                                     has=feats(who)))
+                    self._offer_line(add, f"a finished line for {who}, driven into the ground", "ground_back")
+                    break
                 if st_ or rk_:
                     k_ = (st_ or {}).get("stumble", {}).get("kind") or (rk_ or {}).get("kind") or "blunt"
                     add(f"how the blow moves {who} (one detail; the notes say which way)",

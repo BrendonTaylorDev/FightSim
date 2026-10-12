@@ -2614,3 +2614,7 @@ She got one foot under her, then the other, and only then did the world stop sli
 For two steps she belonged to the blow, not to herself.
 She came out of the stumble already turning, because {foe} would be coming. | state: fresh, winded
 Her legs argued with the ground and, barely, won. | state: tired, spent
+
+== ground_back
+*Nowhere to go. There's nowhere to go.*
+Every blow came twice: once from above, once from the ground.
