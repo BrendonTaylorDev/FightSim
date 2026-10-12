@@ -3430,3 +3430,666 @@ She threw the air forward with all her force, and the gust howled with it.
 
 == before_strike | kind: rock
 She hauled up a heavy stone and slung it hard at {foe}.
+
+# ===============================================================================================================
+# EFFECT_ACT BY TYPE: the attacker watching her element work on {foe}'s body, fall short on it, or find no hold.
+# ===============================================================================================================
+
+# fire
+== effect_act | effect: super | type: fire
+She saw the heat take hold of {foe} at once, smoke curling up from everywhere it touched.
+She watched {foe} shrink from the flames like dry leaves curling on a hearth.
+The fire caught on {foe} as if it had been waiting for her, and she pushed more heat after it.
+She smelled the scorch rising off {foe} and knew the burn had gone deep.
+
+== effect_act | effect: super | type: fire | vs: grass, bug
+She saw {foe} wilt under the heat, every soft green or brittle part of her curling from it.
+The flames ran over {foe} the way fire runs through a summer field, and she let them run.
+
+== effect_act | effect: super | type: fire | vs: ice
+She watched {foe}'s frost run off her in drips and steam, and the cold in her go slack.
+
+== effect_act | effect: super | type: fire | vs: steel
+She saw the heat soak into {foe}'s hard body and stay there, glowing dull under the skin of her.
+
+== effect_act | effect: weak | type: fire
+She watched the flames splash against {foe} and die back almost at once.
+Her fire guttered on {foe} like a candle in the rain, and she bared her teeth at it.
+She saw the heat roll off {foe} without catching on anything.
+The blaze she had put everything into only left {foe} warm, and she knew it.
+
+== effect_act | effect: weak | type: fire | vs: water
+She heard her flames hiss to nothing against {foe}'s wet body.
+
+== effect_act | effect: weak | type: fire | vs: rock
+She watched her fire wash over {foe}'s stony hide and leave it hardly blackened.
+
+# water
+== effect_act | effect: super | type: water
+She saw the water slam into {foe} and the strength go out of her under its weight.
+She watched {foe} come up from the drenching slow and sodden, half the fight washed out of her.
+The water found every crack in {foe} and poured in, and she kept it pouring.
+She saw {foe} choke and shudder in the flood and knew she had chosen right.
+
+== effect_act | effect: super | type: water | vs: rock, ground
+She watched {foe}'s hard edges soften under the water like a bank melting in a flood.
+She saw the water turn the dust on {foe} to mud, and {foe} sag under the weight of it.
+
+== effect_act | effect: weak | type: water
+She saw the water break harmlessly over {foe} and run away into the ground.
+Her torrent only rinsed {foe}, and she felt the waste of it.
+She watched {foe} shake the water off as if it were rain.
+The flood she sent seemed to sink into {foe} and simply vanish.
+
+== effect_act | effect: weak | type: water | vs: grass
+She saw {foe} drink the water down like a thirsty field and stand the greener for it.
+
+# electric
+== effect_act | effect: super | type: electric
+She saw the current light {foe} up and lock every limb she had.
+She watched {foe} jerk and seize, the shock running through her far better than through most.
+The bolt found a clean path through {foe}, and she felt it go all the way.
+She saw sparks still crawling over {foe} after the bolt had passed, and she smiled.
+
+== effect_act | effect: super | type: electric | vs: flying
+She saw the shock catch {foe} open, with nothing in her body to ground it.
+She watched the bolt run the whole length of {foe} and find no way out of her.
+
+== effect_act | effect: weak | type: electric
+She saw the bolt crackle across {foe} and fizzle out as it reached her.
+Her current spread thin over {foe} and found nowhere to go.
+She watched {foe} blink through the shock as if it were only a prickle.
+The bolt went into {foe} and seemed to lose itself there, and she cursed under her breath.
+
+== effect_act | effect: weak | type: electric | vs: grass
+She saw the current sink into {foe}'s rooted, leafy body and drain away into the ground.
+
+== effect_act | effect: none | type: electric
+She watched the bolt run straight down {foe} into the ground and leave her untouched.
+Her current hit {foe} and simply poured away into the earth beneath her.
+She saw {foe} stand in the middle of the crackle without so much as a twitch.
+She felt the bolt go to ground through {foe} as if {foe} were part of the dirt.
+
+# ice
+== effect_act | effect: super | type: ice
+She saw the frost spread over {foe} and her movements turn heavy and slow.
+She watched the cold sink into {foe} and stay, her breath coming out in white clouds.
+The ice gripped {foe} and wouldn't let go, and she drove more of it after.
+She saw {foe} shiver hard from the cold, and knew the chill would linger in her.
+
+== effect_act | effect: super | type: ice | vs: grass
+She watched {foe}'s leaves turn black and brittle under the frost.
+
+== effect_act | effect: super | type: ice | vs: dragon
+She saw the cold slow {foe} like a lizard on a frosty morning, the wild strength in her going sluggish.
+
+== effect_act | effect: super | type: ice | vs: ground
+She watched the frost lock the earth on {foe}'s body into a hard, cold crust.
+
+== effect_act | effect: weak | type: ice
+She saw the frost melt from {foe} almost as soon as it formed.
+Her cold broke over {foe} and left only a dusting she shook off.
+She watched {foe} take the chill without a shiver.
+The ice cracked and fell away from {foe}, and she felt the cold go out of her own strike.
+
+== effect_act | effect: weak | type: ice | vs: fire
+She saw her frost turn to steam on {foe} before it could even settle.
+
+# grass
+== effect_act | effect: super | type: grass
+She saw the vines and leaves bite into {foe} and drink the strength out of her.
+She watched {foe} sag under the green force as it drained her.
+The roots and leaves clung to {foe} and pulled, and she felt them pulling for her.
+She saw {foe} grow slower under it, as if something were drawing her dry.
+
+== effect_act | effect: super | type: grass | vs: water
+She watched the green force pull the wet out of {foe} until she looked parched and slow.
+
+== effect_act | effect: super | type: grass | vs: rock, ground
+She saw roots work into {foe}'s cracks and split her hardness from the inside.
+
+== effect_act | effect: weak | type: grass
+She saw her leaves wither against {foe} and fall away brown.
+The vines slid off {foe} without finding anything to take hold of.
+She watched {foe} brush the leaves aside like chaff.
+Her green force reached for {foe}'s strength and found none it could draw.
+
+== effect_act | effect: weak | type: grass | vs: fire
+She saw her leaves crisp and curl on {foe}'s hot body before they could do anything.
+
+# fighting
+== effect_act | effect: super | type: fighting
+She felt the blow land with all its craft behind it and drive straight to {foe}'s centre.
+She saw {foe} fold round the strike, and knew she had put it exactly where it would tell.
+Her trained blow found {foe} solid and unable to roll with it, and went right through.
+She felt the force of her strike go all the way into {foe} and not come back.
+
+== effect_act | effect: super | type: fighting | vs: normal
+She saw {foe}'s plain, honest body take the full weight of her skill with nothing to turn it.
+
+== effect_act | effect: super | type: fighting | vs: dark
+She saw all {foe}'s tricks fail against a blow so straight and clean.
+
+== effect_act | effect: super | type: fighting | vs: ice
+She felt {foe}'s cold, stiff body jar under the strike with no give to soak it.
+
+== effect_act | effect: weak | type: fighting
+She felt her strike land and lose its shape against {foe}.
+She saw {foe} roll with the blow as though she had expected it.
+Her best punch went into {foe} and came back as hardly a grunt.
+She felt the trained force of it scatter across {foe} and drain away.
+
+== effect_act | effect: weak | type: fighting | vs: psychic
+She saw {foe} read the blow before it landed and take only the edge of it.
+
+== effect_act | effect: weak | type: fighting | vs: fairy
+She saw her blow meet a strange, light force round {foe} and slow to nothing.
+
+== effect_act | effect: none | type: fighting
+Her fist went into {foe} and through her and came out the other side holding nothing.
+She saw her strike pass through {foe} like a hand through mist.
+She felt her blow land on nothing at all, though {foe} stood right there.
+
+# poison
+== effect_act | effect: super | type: poison
+She saw the venom take hold of {foe} and her face go grey and sickly.
+She watched the poison seep into {foe} and her breath grow ragged around it.
+The sting went in and spread, and she could see it working through {foe}.
+She saw {foe} gag and shudder, and knew the poison had found its way in.
+
+== effect_act | effect: super | type: poison | vs: grass
+She watched {foe}'s leaves droop and spot where the venom touched them.
+
+== effect_act | effect: super | type: poison | vs: fairy
+She saw {foe}'s bright shimmer dull and sicken under the venom.
+
+== effect_act | effect: weak | type: poison
+She saw her venom bead on {foe} and fail to sink in.
+The poison only seemed to make {foe} wrinkle her nose.
+She watched {foe} shrug off the sting as if it were nothing worse than a bad smell.
+Her venom spread over {foe} and dried there, doing almost nothing.
+
+== effect_act | effect: weak | type: poison | vs: ground, rock
+She saw the poison soak into the grit on {foe} and go no further.
+
+== effect_act | effect: none | type: poison
+Her venom slid off {foe}'s hard metal body without leaving so much as a stain.
+She saw the poison hiss on {foe}'s plating and run off in drops.
+She watched her sting skitter across {foe} and find no way in at all.
+
+# ground
+== effect_act | effect: super | type: ground
+She felt the earth heave up under {foe} and saw her shaken to the core.
+She watched the ground {foe} stood on turn against her and jolt her from below.
+The tremor went up through {foe} and she saw her teeth rattle with it.
+She saw {foe} buried in the burst of earth and come up battered.
+
+== effect_act | effect: super | type: ground | vs: electric
+She saw {foe}'s crackle die away into the earth, all her charge grounded out.
+
+== effect_act | effect: super | type: ground | vs: fire
+She watched the soil smother {foe}'s heat like dirt kicked over a campfire.
+
+== effect_act | effect: super | type: ground | vs: steel, rock
+She felt the ground hammer up into {foe}'s heavy body and saw it ring through her.
+
+== effect_act | effect: weak | type: ground
+She saw the earth shake under {foe} and {foe} barely notice it.
+The tremor spent itself on {foe} and left her still standing square.
+She watched the burst of earth shower over {foe} and slide off.
+She felt the ground's force break against {foe} and fade.
+
+== effect_act | effect: weak | type: ground | vs: grass
+She saw {foe}'s roots hold her steady while the ground bucked round her.
+
+== effect_act | effect: none | type: ground
+She watched the earth heave and its force pass {foe} by as though she were not there.
+She saw the tremor roll under {foe} and away, finding nothing in her to shake.
+The quake rattled everything round {foe} and left {foe} herself untouched.
+
+# flying
+== effect_act | effect: super | type: flying
+She saw {foe} struck from above and driven down hard, nothing in her braced for it.
+She felt the blow take {foe} square, the whole rush of her attack behind it.
+She saw {foe} flattened under the gust, unable to get a footing against it.
+The blow came down on {foe} from where she was not guarding, and she watched it tell.
+
+== effect_act | effect: super | type: flying | vs: grass, bug
+She watched {foe} bend and flatten under the wind like a stalk in a storm.
+
+== effect_act | effect: super | type: flying | vs: fighting
+She saw all {foe}'s grounded strength count for nothing against a blow from above.
+
+== effect_act | effect: weak | type: flying
+She saw the gust break on {foe} and spill round her.
+The dive landed and she felt it glance off, the force scattering.
+She watched {foe} stand firm while the wind did its best to move her.
+Her blow from above struck {foe} and bounced off, leaving her own talons stinging. | has: talons
+
+== effect_act | effect: weak | type: flying | vs: rock, steel
+She felt the dive jar against {foe}'s hard body and do more to her than to {foe}.
+
+# psychic
+== effect_act | effect: super | type: psychic
+She felt her mind close on {foe}'s and saw {foe}'s eyes go blank with the pressure.
+She watched {foe} clutch at her head, her face twisting from the force inside it.
+The pressure took hold of {foe}'s thoughts and squeezed, and she squeezed harder.
+She saw {foe} lose her bearings, struck from somewhere she could not defend.
+
+== effect_act | effect: super | type: psychic | vs: fighting, poison
+She saw {foe}'s body, strong as it was, falter under a force it could not punch.
+
+== effect_act | effect: weak | type: psychic
+She pushed at {foe}'s mind and felt it push back, hard and closed.
+She saw {foe} shake off the pressure like a bad dream.
+Her mind found {foe}'s and slid off a hard, smooth wall.
+She watched {foe} only blink, her thoughts barely disturbed.
+
+== effect_act | effect: weak | type: psychic | vs: steel
+She felt her mind's grip slip on {foe}'s cold, orderly thoughts.
+
+== effect_act | effect: none | type: psychic
+She reached for {foe}'s mind and found nothing but shadow where it should have been.
+She felt her pressure fall into {foe}'s darkness and disappear.
+She saw {foe} stand untouched, her mind shut tight against anything she could send.
+
+# bug
+== effect_act | effect: super | type: bug
+She saw the sting go home and {foe} flinch hard round it.
+She watched {foe} twitch and swat at the swarm of tiny stings.
+The bite and sting got under {foe}'s guard, and she saw it rattle her.
+She felt the stinger sink in and saw {foe}'s face crumple at the itch and burn.
+
+== effect_act | effect: super | type: bug | vs: grass
+She saw her stings riddle {foe}'s leaves like a blight.
+
+== effect_act | effect: super | type: bug | vs: psychic, dark
+She saw {foe}'s focus break under the crawling, buzzing nuisance of it.
+
+== effect_act | effect: weak | type: bug
+She saw her sting bounce off {foe} like a gnat off a stone.
+The swarm brushed {foe} and fell away, doing almost nothing.
+She watched {foe} flick the bite off as if swatting a fly.
+Her sting barely pricked {foe}, and she felt the smallness of it.
+
+== effect_act | effect: weak | type: bug | vs: fire
+She saw her stings shrivel in {foe}'s heat before they reached her.
+
+== effect_act | effect: weak | type: bug | vs: steel
+She felt her stinger skid off {foe}'s hard plating and blunt itself.
+
+# rock
+== effect_act | effect: super | type: rock
+She saw the stone slam into {foe} and the weight of it drag her down.
+She watched {foe} hunch under the rock, her hide scraped and grey with dust.
+The boulder hit {foe} with a dead, heavy thud and she saw it tell all through her.
+She saw {foe} buried in the rubble and fight her way out of it slower than before.
+
+== effect_act | effect: super | type: rock | vs: fire
+She watched the stone smother {foe}'s heat wherever it landed.
+
+== effect_act | effect: super | type: rock | vs: bug
+She saw the rock crush {foe}'s light, brittle body under its weight.
+
+== effect_act | effect: super | type: rock | vs: ice
+She watched the stone crack {foe}'s frost and shatter the cold off her.
+
+== effect_act | effect: weak | type: rock
+She saw the stone break apart against {foe} and fall in harmless pieces.
+The rock bounced off {foe} like a pebble off a shield.
+She watched {foe} brush the grit from her body and keep coming.
+She felt the stone's weight go nowhere against {foe}.
+
+== effect_act | effect: weak | type: rock | vs: steel
+She heard the rock clank off {foe}'s plating and saw only a dusty scuff left behind.
+
+# ghost
+== effect_act | effect: super | type: ghost
+She saw the shadow pass through {foe} and leave her shuddering and cold.
+She watched {foe}'s eyes go wide and glassy as the chill took hold.
+The ghostly touch sank into {foe} and she saw her flinch from the inside out.
+She saw {foe} grip at her own chest as the cold settled there.
+
+== effect_act | effect: super | type: ghost | vs: psychic
+She saw {foe}'s mind recoil from the shadow, unable to understand it.
+
+== effect_act | effect: super | type: ghost | vs: ghost
+She watched her shadow claw at {foe}'s shadow and saw {foe} shrink from her own kind of touch.
+
+== effect_act | effect: weak | type: ghost
+She saw her shadow wash over {foe} and slide off her.
+The cold touch barely made {foe} shiver.
+She watched {foe} stand in the dark she sent as if at home in it.
+Her chill seemed to settle on {foe} and then just leave.
+
+== effect_act | effect: weak | type: ghost | vs: dark
+She saw {foe} take in her shadow as if it were her own.
+
+# dragon
+== effect_act | effect: super | type: dragon
+She saw the wild force hit {foe} and the old strength in {foe} answer it and lose.
+She watched {foe} shudder under the power, as if her own blood had been turned against her.
+The dragon's force crashed into {foe} and she saw her shake from it.
+She felt the roar in her blow go into {foe} and saw it echo there.
+
+== effect_act | effect: weak | type: dragon
+She saw the wild force splash off {foe}'s hard body.
+Her fury struck {foe} and seemed to lose its heat.
+She watched {foe} stand firm while the power broke round her.
+She felt the ancient force of her strike blunted against {foe}.
+
+== effect_act | effect: none | type: dragon
+She saw her fury dissolve the moment it touched {foe}'s bright shimmer.
+The dragon's force struck {foe} and simply melted into the soft light round her.
+She watched {foe} stand untouched in the middle of her strongest blow.
+
+# dark
+== effect_act | effect: super | type: dark
+She saw the shadow sink into {foe} and her confidence crack.
+She watched {foe} flinch from a blow she never saw coming.
+The dark force struck {foe} where she was least sure of herself, and she saw it land.
+She saw {foe} look round wildly for the next one, and smiled.
+
+== effect_act | effect: super | type: dark | vs: psychic
+She saw {foe}'s mind go blank with fear under a blow it could not read.
+
+== effect_act | effect: super | type: dark | vs: ghost
+She watched {foe}'s shadow cower before her own deeper dark.
+
+== effect_act | effect: weak | type: dark
+She saw her sly blow land and {foe} only shrug.
+The shadow slid off {foe} and found nothing to frighten.
+She watched {foe} meet the dark with a calm she did not like.
+Her trick struck {foe} and {foe} seemed to see right through it.
+
+== effect_act | effect: weak | type: dark | vs: fighting
+She saw {foe} take the blow straight on, too honest to be fooled by it.
+
+# steel
+== effect_act | effect: super | type: steel
+She heard the metal ring against {foe} and saw her shudder from it.
+She watched {foe}'s body jar under the hard, cold edge.
+The steel bit into {foe} and she felt the clean, solid jolt of it all the way back.
+She saw {foe}'s whole frame jar under the weight of the metal.
+
+== effect_act | effect: super | type: steel | vs: rock, ice
+She heard {foe}'s hard body ring under the metal and saw chips fly from her.
+
+== effect_act | effect: super | type: steel | vs: fairy
+She saw {foe}'s bright shimmer dull under the cold metal.
+
+== effect_act | effect: weak | type: steel
+She heard the metal clang off {foe} and saw it barely scratch her.
+The steel struck {foe} and rang without biting.
+She watched {foe} take the blow as if struck by a stick.
+Her heavy blow felt light against {foe}.
+
+== effect_act | effect: weak | type: steel | vs: fire
+She saw the metal soften and glow on {foe}'s hot body before it bit.
+
+# fairy
+== effect_act | effect: super | type: fairy
+She saw the bright force sink into {foe} and {foe} shrink from it.
+She watched {foe} flinch from the light as if burned.
+The shimmer struck {foe} and she saw it unravel something in her.
+She saw {foe} gasp under the gentle-seeming touch as if it had stung her to the core.
+
+== effect_act | effect: super | type: fairy | vs: dragon
+She saw {foe}'s old fury falter before the clean light.
+
+== effect_act | effect: super | type: fairy | vs: dark
+She watched the shimmer cut through {foe}'s shadow and leave her bare.
+
+== effect_act | effect: super | type: fairy | vs: fighting
+She saw all {foe}'s strength count for nothing against something so light.
+
+== effect_act | effect: weak | type: fairy
+She saw her light splash off {foe} like a reflection on water.
+The shimmer broke against {foe} and faded.
+She watched {foe} shrug off the bright force.
+Her gentle force met {foe}'s body and stopped dead.
+
+== effect_act | effect: weak | type: fairy | vs: steel, poison
+She saw her light dull and go out on {foe}'s cold, sour body.
+
+# normal
+== effect_act | effect: weak | type: normal
+She felt her plain blow thud against {foe}'s hard body and stop.
+She saw {foe} take the honest hit without even blinking.
+Her ordinary strike rang off {foe} like a fist against a door.
+She watched {foe} take the blow as if it were a pat.
+
+== effect_act | effect: none | type: normal
+Her blow passed through {foe} like a hand through cold smoke.
+She saw her strike sink into {foe} and touch nothing.
+She felt her ordinary blow miss even as it landed square.
+She watched {foe} stand untouched, the blow simply not reaching her.
+
+# ===============================================================================================================
+# EFFECT_TAKE BY TYPE: her body meeting an element it cannot turn, one it shrugs off, or one that finds no hold.
+# ===============================================================================================================
+
+# dark
+== effect_take | effect: super | type: dark
+The shadow sank into her {part} and settled there like a bruise she couldn't see.
+The blow came out of nowhere, and her body flinched from it far too late.
+The darkness found the fear in her and twisted it, and her {part} went weak.
+She felt the shadow cut through her focus and leave her {part} cold.
+
+== effect_take | effect: super | type: dark | vs: psychic
+Her mind reached for the blow and found nothing to read, and it struck her blind.
+All her clear thinking fell away under the dark, and her {part} took the full weight of it.
+
+== effect_take | effect: super | type: dark | vs: ghost
+The deeper shadow swallowed her own, and she shivered in a cold she did not know.
+
+== effect_take | effect: weak | type: dark
+The shadow brushed her {part} and found no fear in her to feed on.
+She saw the trick coming, and her body met it square.
+The dark blow landed, and her {part} hardly noticed.
+Her calm stayed hers while the shadow broke round her.
+
+# normal
+== effect_take | effect: weak | type: normal
+The plain blow thudded against her {part} and went nowhere.
+Her hard body met the honest hit and gave nothing back.
+It was an ordinary blow, and her {part} took it the way a gatepost takes a kick.
+Her body barely registered the plain force of it.
+
+== effect_take | effect: none | type: normal
+The blow went through her as if she were made of mist.
+She felt nothing; the plain force could not find her.
+Her {part} was untouched, though the blow had landed square.
+The honest hit passed through her and found no body to strike.
+
+# ghost
+== effect_take | effect: super | type: ghost
+A cold went through her {part} that nothing on the outside of her could keep out.
+The shadow slid inside her and shuddered there, and she shuddered with it.
+It touched something deep in her, and her {part} went numb and prickling.
+She felt the ghostly chill settle into her bones, and her breath went thin.
+
+== effect_take | effect: super | type: ghost | vs: psychic
+Her mind reeled from the shadow, unable to grasp it, and her {part} went cold.
+
+== effect_take | effect: super | type: ghost | vs: ghost
+The shadow found her own shadow and clawed at it, and she felt it tear at her from the inside.
+
+== effect_take | effect: weak | type: ghost
+The cold touch passed over her {part} and left only a faint shiver.
+The shadow slid off her, too thin to take hold.
+Her dark body met the ghostly chill and drank it in.
+The chill reached her and faded before it got anywhere.
+
+# poison
+== effect_take | effect: super | type: poison
+The venom crept into her {part} and spread, hot and sickly.
+She felt the poison burn under her skin and her stomach turned with it.
+The sting sank deep, and her {part} began to throb and swell.
+She tasted bitterness in her mouth as the poison went to work in her.
+
+== effect_take | effect: super | type: poison | vs: grass
+The venom spotted her leaves and made them droop, and she felt it drain her.
+
+== effect_take | effect: super | type: poison | vs: fairy
+The poison dulled her shimmer, and she felt herself go sick and grey inside.
+
+== effect_take | effect: weak | type: poison
+The venom beaded on her {part} and dried there without biting.
+She felt the sting and then nothing; her body knew this poison.
+The poison sank into her and found nothing to work on.
+Her {part} stung briefly and then went quiet.
+
+== effect_take | effect: none | type: poison
+The poison slid off her hard body like water off glass.
+The venom hissed against her plating and never got in.
+She felt nothing from the sting; it could not find a way into her.
+Her {part} stayed clean and untouched under the poison.
+
+# ground
+== effect_take | effect: super | type: ground
+The earth heaved under her, and her {part} took the full jolt of it.
+She felt the ground itself slam up into her, and she had nothing to absorb it.
+The tremor rattled through her {part} and set every joint jarring.
+Her own footing became the blow, and she could not escape it.
+
+== effect_take | effect: super | type: ground | vs: electric
+Her charge drained into the earth and left her {part} heavy and dull.
+
+== effect_take | effect: super | type: ground | vs: fire
+The soil smothered her heat, and her {part} went cold and sluggish under it.
+
+== effect_take | effect: super | type: ground | vs: rock, steel
+The quake rang through her hard body, and her {part} shuddered with it.
+
+== effect_take | effect: weak | type: ground
+The ground shook, but her {part} rode it easily.
+The tremor broke against her and faded.
+The earth rose against her and she let it pass over her.
+Her body met the shaking ground and settled with it.
+
+== effect_take | effect: none | type: ground
+The earth heaved under her and its force never found her at all.
+She felt nothing from the quake; it rumbled beneath her and away.
+The ground shook all round her, and none of its force touched her.
+
+# bug
+== effect_take | effect: super | type: bug
+The sting went into her {part} and the burn and itch of it spread at once.
+She felt the swarm crawl across her and bite, and her {part} jerked from it.
+The stinger sank in deep, and her {part} throbbed hot and swollen round it.
+The buzzing pinch got under her guard and rattled her focus.
+
+== effect_take | effect: super | type: bug | vs: grass
+The stings riddled her leaves, and she felt the blight spread through her.
+
+== effect_take | effect: super | type: bug | vs: psychic, dark
+The crawling nuisance shattered her focus, and her {part} twitched helplessly.
+
+== effect_take | effect: weak | type: bug
+The sting bounced off her {part} like a gnat off a stone.
+The swarm brushed her and fell away, doing almost nothing.
+She hardly felt the bite through her tough hide.
+Her {part} itched for a moment, then forgot it.
+
+# psychic
+== effect_take | effect: super | type: psychic
+The pressure reached into her head, and her {part} jerked without her telling it to.
+She felt her thoughts being squeezed, and her body went slack with it.
+The unseen force gripped her mind and twisted, and her {part} went numb.
+She lost her bearings for a moment, struck from somewhere she could not defend.
+
+== effect_take | effect: super | type: psychic | vs: fighting
+All her strength meant nothing against a blow she could not punch, and her {part} gave.
+
+== effect_take | effect: super | type: psychic | vs: poison
+The pressure found her mind wide open and pressed in, and her {part} twitched under it.
+
+== effect_take | effect: weak | type: psychic
+The pressure brushed her mind and slid off.
+She felt her thoughts stay steady while the force pushed at them.
+Her mind was closed and orderly, and the push could not get in.
+The unseen force pressed on her {part} and faded.
+
+== effect_take | effect: none | type: psychic
+The pressure reached for her and found only her own dark.
+Her thoughts stayed shut and still, and the force went nowhere.
+She felt nothing at all; her mind was closed to it.
+
+# flying
+== effect_take | effect: super | type: flying
+The blow came down from above, and her {part} took the full weight of it.
+She could not brace against a blow from where she had never learned to guard.
+The rush of wind and weight drove into her {part} and flattened her.
+The strike from above hit her before she could look up.
+
+== effect_take | effect: super | type: flying | vs: grass, bug
+The wind bent and flattened her like a stalk in a storm.
+
+== effect_take | effect: super | type: flying | vs: fighting
+All her grounded strength meant nothing against a blow from above.
+
+== effect_take | effect: weak | type: flying
+The gust broke against her and spilled round her.
+The dive landed and glanced off her {part}.
+Her weight held while the wind did its best.
+The blow from above barely shifted her.
+
+== effect_take | effect: weak | type: flying | vs: rock, steel
+The diving blow jarred against her hard body and went no further.
+
+# dragon
+== effect_take | effect: super | type: dragon
+The wild force struck her {part}, and the same old strength in her rose to meet it and broke.
+She knew that power because it ran in her too, and that was why she could not stand against it.
+The fury of it went past her {part} and straight into her blood, and her blood shook.
+Her body had always been the strong one in any fight; against this, her {part} gave like a green branch.
+
+== effect_take | effect: weak | type: dragon
+The wild force came at her hard and met a body made of something colder and harder.
+The fury in the blow beat against her {part} and wore itself out there.
+Her {part} rang with it briefly, and then the old power simply had nothing more to give.
+She felt the heat of the force cool the moment it touched her.
+
+== effect_take | effect: none | type: dragon
+The fury of it melted away against her like frost in sunshine.
+She felt the wild force arrive and then not be there at all; it had nothing to say to a body like hers.
+Her {part} did not even tingle; whatever ancient power was in it had no claim on her.
+
+# fairy
+== effect_take | effect: super | type: fairy
+A soft, bright force settled on her {part}, and every hard thing in her seemed to loosen.
+The glitter stung her like nettles, and her {part} burned with a clean, strange heat.
+She shrank from the shimmer the way a shadow shrinks from a lamp.
+It looked like nothing, a gentle sparkle, and it went through her {part} like a needle.
+
+== effect_take | effect: super | type: fairy | vs: fighting
+All her muscle and grit had no answer to something so light, and her {part} sagged under it.
+
+== effect_take | effect: super | type: fairy | vs: dark
+The brightness poured into every shadow she had, and she flinched as if stripped bare.
+
+== effect_take | effect: weak | type: fairy
+The sparkle dusted her {part} and drifted off like pollen on a breeze.
+The bright force fizzled against her, sour and dull, and was gone.
+She blinked away the glitter and found nothing under it worth noticing.
+The soft light pressed on her {part} and could not get any further in.
+
+# steel
+== effect_take | effect: super | type: steel
+The hard edge came down on her {part} with a cold, dense weight she had nothing to meet with.
+Her {part} rang under the metal like a struck pot, and the ringing ran right through her.
+The steel bit into her and left a bruise that felt colder than the rest of her.
+It was only one blow, but it carried the dead weight of an anvil, and her {part} sank under it.
+
+== effect_take | effect: super | type: steel | vs: rock
+The metal chipped at her stony hide, and she felt grit shake loose from her {part}.
+
+== effect_take | effect: super | type: steel | vs: fairy
+Her shimmer went dull and grey where the cold metal touched her.
+
+== effect_take | effect: weak | type: steel
+The metal clanged off her {part} and left barely a scratch.
+The hard edge struck and rang, and her body soaked the ring out of it.
+For all its weight, the steel landed on her {part} like a stick thrown by a child.
+She felt the cold of the metal more than its force, and even the cold was gone quickly.

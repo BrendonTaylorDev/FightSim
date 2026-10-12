@@ -6317,7 +6317,9 @@ class Narrator:
                 sh = str((a.get("charge") or {}).get("sheath") or "").lower()
                 add(f"{dfn_}, crushed between {att_} and {(a.get('charge') or {}).get('into', 'it')}",
                     B.pick("crushed", 2, has=feats(dfn_), state=state(dfn_),
-                           kind={"fire" if "fire" in sh else "water" if "water" in sh else "body"}))
+                           kind={next((k for k, w in (("fire", "fire|flame"), ("water", "water"), ("electric", "electr|lightning|spark"),
+                                                       ("ice", "ice|frost|cold"), ("rock", "rock|stone"))
+                                       if sh and re.search(w, sh)), "body")}))
             if take and a.get("grounded"):
                 side[0] = "take"
                 # her own hurt wing failing her, or a blow knocking a sound flyer out of the sky
