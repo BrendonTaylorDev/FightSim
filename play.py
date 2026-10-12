@@ -1016,6 +1016,8 @@ class Session:
                                      if "water" in {str(t).lower() for t in (getattr(f, "types", None) or [])}}
         self.narrator.rain_wet = (self.eng.scene_cfg.get("wets") or
                                   ("the rain" if (getattr(self.eng, "weather", None) or {}).get("kind") == "rain" else None))
+        self.narrator.winners = ({f.name for f in self.eng.fighters.values() if not f.eliminated}
+                                 if self.eng.winner() else set())   # (the fight is won: they stand, they don't fade)
         if getattr(self.narrator, "_part_names_seen", None) != len(self.narrator.part_names):
             self.narrator._part_words_cache = None   # new fighters: their part names are not repeated phrases
             self.narrator._part_names_seen = len(self.narrator.part_names)

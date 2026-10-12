@@ -10021,8 +10021,9 @@ class Narrator:
         cfg = (self.rules.get("narration") or {}).get("fading_thoughts") or {}
         if not cfg.get("enabled", True):
             return ""
+        won = getattr(self, "winners", None) or set()     # a winner never fades, however low her health
         low = [w for w, st in (getattr(self, "strengths", None) or {}).items()
-               if st is not None and st < float(cfg.get("below_strength", 20))
+               if st is not None and st < float(cfg.get("below_strength", 20)) and w not in won
                and random.random() < float(cfg.get("chance", 0.4))]
         if not low:
             return ""
