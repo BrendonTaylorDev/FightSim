@@ -173,6 +173,67 @@ Craft:
 - Stop when this beat's events are fully told.
 """
 
+# narration.compact.craft_trim: the Craft section in fewer words (every rule kept; the style sample shows the rest)
+CRAFT_SHORT = """Craft:
+- Third person, PAST tense ("she lunged", not "she lunges"), every sentence; only italic thoughts may be in the
+  present.
+- Concrete words over stock phrases ("a symphony of", "palpable"). Concrete physical detail: exactly where contact
+  lands, weight, grip, texture, temperature, sound, breath, the quality of each pain (sharp, hot, deep, numb,
+  grinding). Show it, don't announce it. No filler ("she knows she has to", "she feels the pain", "she does not
+  falter"); never repeat a sentence, an image or a phrase.
+- RHYTHM: short, flat sentences for impacts and decisions; long, comma-linked ones for sensation, pressure and
+  exhaustion; the biggest moments get a short paragraph of their own. No refrains: never end two paragraphs or
+  parts on the same line or an echo of it, never string one-word sentences together ("Firm. Unbreakable.").
+- THE PLACE: small sensory touches that fit it now and then; no new landmarks, structures or creatures.
+- TELL EACH THING ONCE: an action or a blow happens once in a part; never tell the same hit again later.
+- PROPORTION: a light hit gets a wince and a line; only the worst gets a cry and a long passage. A blow on a part
+  that is ALREADY badly hurt hurts far more, and its note says how raw the reaction is: a fighter with most of her
+  strength fights to keep it in; a spent one cannot. Worn down, she is rawer only WHERE she is badly hurt: a blow
+  on an unhurt part still stings but is not agony. Screams, shaking and streaming eyes when the note asks; never
+  sobbing or weeping.
+- BODIES AS THEY ARE: each species as its APPEARANCE says.
+- INTENT: the attacker reads her opponent before striking (a guarded side, a limb held wrong, a part nothing has
+  touched yet) and picks her target for a reason.
+- CALLBACKS: when a hurt part is hit again or aches, recall in a few words where the hurt came from (CURRENT
+  CONDITION says "from ..."). Only real causes.
+- BODY INVENTORY: after a big hit, walk through how the worst parts feel NOW, each in its own words, escalating
+  with the pain level (a dull ache, a spreading pressure, sharp and hot, pounding and sick, past pain into numb,
+  wrong quiet). Words only, never levels or numbers.
+- CLEVERNESS: a fighter with no good options thinks: she uses the arena, her body (a tail, a coil, a horn) and her
+  opponent's injuries. Show the idea forming, then the attempt.
+- Stop when this beat's events are fully told.
+"""
+
+# narration.compact.rules_when_needed: hard rules only for beats that can use them (sent with the beat's own rules)
+RULE_THROAT = ("- NECK AND THROAT BITES are allowed and can be brutal: jaws clamping the neck or throat, teeth sinking in, "
+               "the attacker twisting and wrenching her head side to side, the choked gasp, the pain flaring through neck "
+               "and shoulders. Keep it within the TONE rule: nothing torn out, the neck never bends at a wrong angle or snaps.")
+RULE_BREATH = ("- BREATHING can be knocked out, choked off, or blocked by a hold, but only for a few seconds at a time: the "
+               "fighter always gets air again. Breathing never stops for good.")
+RULE_TAILS = "- BODIES AS THEY ARE: a Buizel's twin tails drive her through WATER; on land they only balance her."
+
+
+def _compact_fighters(notes):
+    """narration.compact.fighters_once: each fighter's line without her description (who she is, how she fights),
+    keeping her APPEARANCE, TELLS and VOICE, and every other line as it is."""
+    out = []
+    for line in str(notes or "").splitlines():
+        m = re.match(r"^([^:\n]{1,40}): .*? (APPEARANCE: .*)$", line)
+        out.append(f"{m.group(1)}: {m.group(2)}" if m else line)
+    return "\n".join(out)
+
+
+def _cut_bullet(text, start):
+    """The text without the bullet that starts with `start` (up to the next bullet, or the end of its section)."""
+    i = text.find("- " + start)
+    if i < 0:
+        return text
+    j, k = text.find("\n- ", i), text.find("\n\n", i)
+    if j >= 0 and (k < 0 or j < k):
+        return text[:i] + text[j + 1:]
+    return text[:i].rstrip("\n") + (text[k:] if k >= 0 else "\n")
+
+
 # EXTREME: always rewritten (unless gore_check is off): mutilation, exposed insides, broken bones, heavy blood,
 # death, swearing.
 # ways to show a hit landing besides naming the part and the pain (two are drawn for each beat)
@@ -1609,7 +1670,7 @@ TUMBLED = re.compile(r"\b(?:tumbl\w+|roll(?:ed|ing|s) (?:over|across|on|along|en
 
 PROMPT_LINE = re.compile(r"^\s*[*_\-\s]*(?:POSTURE THIS BEAT|WHAT HAPPENS IN THIS BEAT|CURRENT CONDITION|PREVIOUS BEATS|"
                          r"FIGHT SO FAR|POSITIONS(?: NOW)?\b|GETTING UP:|LINGER ON ONE MOMENT|MORE HARD RULES|STYLE SAMPLE|"
-                         r"THE AUTHOR'S INSTRUCTIONS|EXTRA STYLE NOTE|YOUR (?:PREVIOUS|LAST TWO) DRAFTS?|SCENE:|FIGHTERS:|"
+                         r"THE AUTHOR'S INSTRUCTIONS|EXTRA STYLE NOTE|YOUR (?:PREVIOUS|LAST TWO) DRAFTS?|SCENE:|FIGHTERS(?: \(as in part 1\))?:|SOUNDS(?: THEY MAKE)?:|"
                          r"OVERALL \d|STAY IN THIS MOMENT|THE STORY SO FAR)")
 
 
@@ -3114,6 +3175,7 @@ class Narrator:
                 bad = [p_ for p_, lv, _z in self._worst_parts(who, 3, floor="excruciating")]
                 if not bad or float(left) < mid:
                     continue
+                self.__dict__.setdefault("_measured", set()).add(who)
                 what = " and ".join(bad)
                 if float(left) >= strong:
                     lines.append(f"MEASURED PAIN: {poss(who)} {what} {'is' if len(bad) == 1 else 'are'} that bad, but she "
@@ -6919,7 +6981,18 @@ class Narrator:
                                          "then pounding and sick, then a pain so large it crowds out everything else.")
                         .replace("(sharp, hot, deep, numb, grinding)", "(sharp, hot, deep, sick, grinding)")
                         .replace("excruciating, devastated, numb with shock)", "excruciating, devastated)"))
+        cmp_ = self._compact()
         extra = []
+        if cmp_.get("rules_when_needed"):
+            # rules for things that happen only in some beats leave the fixed rules and come with the beat that needs them
+            # (the throat-bite rule stays: it is the ceiling every other attack is measured against)
+            parts[0] = _cut_bullet(_cut_bullet(parts[0], "BREATHING can be"), "BODIES AS THEY ARE")
+            need = self._rules_needed()
+            extra += [r for k, r in (("breath", RULE_BREATH), ("tails", RULE_TAILS)) if k in need]
+        if cmp_.get("craft_trim"):
+            i_ = parts[0].find("Craft:\n")
+            if i_ >= 0:
+                parts[0] = parts[0][:i_] + CRAFT_SHORT
         if self._no_clock and not getattr(self, "_pin_beat", False):
             extra.append(NO_PIN_RULE)
         elif self._no_clock and getattr(self, "_fade_pin", False):
@@ -6972,6 +7045,12 @@ class Narrator:
                 left -= len(sample)
             if sample:
                 passages.append(sample)
+        story = _story_sections(userprompt.story_prompt(self.rules), getattr(self, "_pin_beat", True))
+        if cmp_.get("beat_rules_in_message") and story:
+            # the author's instructions are the same every part: before the style sample, which changes part to part,
+            # so the longest possible start of the prompt stays the same and Ollama reuses its work on it
+            parts.append("THE AUTHOR'S INSTRUCTIONS (follow these too; the hard rules above still win):\n" + story)
+            story = ""
         if passages:
             sectioned = bool(userprompt.sample_sections(userprompt._read(
                 self.rules.get("narration", {}).get("style_sample_file", "style_sample.txt"))))
@@ -6983,12 +7062,45 @@ class Narrator:
                             "happened in this fight, so take its manner and none of its events, injuries or lines."
                             if sectioned else "")
                          + "\n<<<\n" + "\n>>>\nAnother passage in the same voice:\n<<<\n".join(passages) + "\n>>>")
-        story = _story_sections(userprompt.story_prompt(self.rules), getattr(self, "_pin_beat", True))
         if story:
             parts.append("THE AUTHOR'S INSTRUCTIONS (follow these too; the hard rules above still win):\n" + story)
-        if extra:
-            parts.append("MORE HARD RULES FOR THIS BEAT:\n" + "\n".join(extra))
+        self._beat_rules = ("MORE HARD RULES FOR THIS BEAT:\n" + "\n".join(extra)) if extra else ""
+        if extra and not cmp_.get("beat_rules_in_message"):
+            parts.append(self._beat_rules)
+            self._beat_rules = ""
         return "\n\n".join(parts)
+
+    def _compact(self):
+        """narration.compact: which of the shorter-notes changes are on ({} when compact is off)."""
+        c = (self.rules.get("narration", {}) or {}).get("compact") or {}
+        if not c.get("enabled", False):
+            return {}
+        return {k: bool(v) for k, v in c.items() if not str(k).startswith("_") and k != "enabled"}
+
+    def _rules_needed(self):
+        """Which of the beat-only hard rules this beat can use: a bite or a grip at the neck or throat ("throat"),
+        anything that can take her breath (a grip, a pin, a hold, a blow that winds her: "breath"), a Buizel or
+        Floatzel in the fight ("tails")."""
+        out = set()
+        acts = [a for a in (getattr(self, "_acts_now", None) or []) if isinstance(a, dict)]
+        neck = re.compile(r"\b(?:neck|throat|nape|scruff)\b", re.I)
+        for a in acts:
+            if any(neck.search(str(h.get("part") or "")) for h in (a.get("hits") or [])):
+                out.add("throat")
+            if a.get("type") in ("hold_start", "grapple_start", "pin_start", "pin_forced", "hold_ongoing", "submission") \
+                    or a.get("point_blank") or a.get("pummel"):
+                out.add("breath")
+            if any(s.get("status") in ("breathless", "doubled_over") for s in (a.get("status_applied") or [])):
+                out.add("breath")
+        if getattr(self, "grips", None) or getattr(self, "_pin_beat", False):
+            out.add("breath")
+            if any(neck.search(str(g[2] if len(g) > 2 else g)) for g in (self.grips or [])):
+                out.add("throat")
+        notes = " ".join(str(x) for x in ((getattr(self, "damage_by", None) or {}).keys()))
+        bodies = " ".join(" ".join(b.keys()) for b in (getattr(self, "damage_by", None) or {}).values())
+        if re.search(r"\btwin tails\b", bodies, re.I):
+            out.add("tails")
+        return out
 
     def _stray_electric(self, sent):
         """Electricity in a sentence of a beat whose moves have none. Not stray: sparks still on a fighter who is
@@ -8157,7 +8269,10 @@ class Narrator:
                 f" except in {', '.join(p.title() for p in ok)}, which can now break" if ok else
                 ": bones bruise and ache only"))
         groups = {}
+        merged = self._compact().get("checks_merged")
         for w in (self.strengths or {}):
+            if merged and w in (getattr(self, "_measured", None) or set()):
+                continue       # the MEASURED PAIN note above already says how much may get out of her
             ceil = self._pain_ceiling(w)
             if ceil:
                 groups.setdefault(ceil[3], []).append(f"{w} {ceil[4]}")
@@ -9278,6 +9393,10 @@ class Narrator:
         limit = int(n.get("context_window", 8192)) - 150
         answer = int(words * 1.8) + 80
         system = self._system()
+        if getattr(self, "_beat_rules", ""):
+            # (narration.compact.beat_rules_in_message: this beat's own rules ride at the top of the message, so the
+            # system prompt stays the same from beat to beat)
+            user_msg = self._beat_rules + "\n\n" + user_msg
         steps = [("PREVIOUS BEATS (already told; context only, do NOT retell):\n", "\n\n", 900, True),
                  ("PREVIOUS BEATS (already told; context only, do NOT retell):\n", "\n\n", 0, True),
                  ("never repeat or rephrase it):\n<<<\n", "\n>>>", 1500, True),
@@ -10168,6 +10287,7 @@ class Narrator:
         acts = bundle.get("actions") or []
         self._pin_age = {e.get("defender"): int(e.get("beats") or 0) for e in pin_events if e.get("defender")}
         self._acts_now = list(acts)
+        self._measured = set()      # fighters a MEASURED PAIN note covers this beat (narration.compact.checks_merged)
         self._pin_beat = bool(windows or "PIN:" in condition_summary or any(
             a.get("type") in ("pin_start", "pin_forced", "struggle_request") for a in acts))
         if pin_events and not any(e.get("complete") or e["struggle"] == "escape" for e in pin_events):
@@ -10201,7 +10321,11 @@ class Narrator:
                        + "\n\nCURRENT CONDITION (after this beat):\n" + condition_summary
                        # the story behind the fight is true too: thinking of it is not an invented past
                        + ("\n\nBACKGROUND (true, from before the fight): " + why.group(0) if why else ""))
-        context += self._sound_note() + self._fading_thoughts_note() + self._checked_note() + self._order_note(acts)
+        cmp_ = self._compact()
+        self._sounds_full = self._sound_note()
+        # (narration.compact.sounds_where_hit: the full sound rules go with the part where the blows land, a line elsewhere)
+        context += ("" if cmp_.get("sounds_where_hit") else self._sounds_full) + self._fading_thoughts_note() \
+            + self._checked_note() + self._order_note(acts)
         if any(a.get("devastating") for a in acts):
             words += int(((n.get("devastating") or {}).get("extra_words", 150)))
             if self.progress:
@@ -10415,10 +10539,19 @@ class Narrator:
             self._sample_cast = [actor] + list(receivers or []) if actor else list(receivers or [])
             ask += self._blocks_for(key, acts, pin_events, also_now, actor, receivers, i == 1, i == len(plan))
             ask += self._checklist(key, acts, actor, receivers)
+            if cmp_.get("sounds_where_hit") and self._sounds_full:
+                ask += ("\n\n" + self._sounds_full.strip() if key in ("take", "all", "after") or i == len(plan) else
+                        "\n\nSOUNDS: every pained sound is described (what it is, where it comes from, its shape), never "
+                        "just 'a sound'; the full rules for sounds come with the part where the blows land.")
             ask += self._camera_note(key)
             ask += self._talk_note(so_far)
             n_def = len(self._deferred)
-            part = self._call(context + ask, seg_words, coverage=check, prior=so_far)
+            ctx_ = context
+            if i > 1 and cmp_.get("fighters_once"):
+                # the fighters in full in part 1; after that, how they look, show pain and sound, without the rest
+                ctx_ = context.replace(f"FIGHTERS:\n{fighter_notes}\n\n",
+                                       f"FIGHTERS (as in part 1):\n{_compact_fighters(fighter_notes)}\n\n", 1)
+            part = self._call(ctx_ + ask, seg_words, coverage=check, prior=so_far)
             written.append(self._drop_repeats(part, so_far) if so_far else part)  # no re-telling earlier parts
             part_msgs.append(self._deferred[-1] if len(self._deferred) > n_def else None)
             part_leads.append(self._lead_now)
