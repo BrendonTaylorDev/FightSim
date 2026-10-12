@@ -6940,6 +6940,40 @@ class Engine:
             ch *= 0.5
         return min(float(cfg.get("max", 0.6)), ch)
 
+    KO_STYLES = ("instant", "scream", "crumple", "fade")
+
+    def knockout_style(self, d, loss, kinds, devastating):
+        """How she goes out (the dice pick, weighted by what happened; rules finish.styles): "instant" (lights out on
+        the impact, before or as she lands: more likely from a slam into the scenery, a charge, a spike or a
+        devastating blow), "scream" (a raw cry from the blow, cut off as she goes: a big blow), "crumple" (her knees
+        fold, she tries once to stay up, then sags out: still on her feet but barely), "fade" (going under slowly,
+        from inside: a lighter last blow, or already down or held)."""
+        cfg = ((self.rules.get("finish") or {}).get("styles") or {})
+        w = {k: float(cfg.get(k, 1.0)) for k in self.KO_STYLES}
+        hard = set(kinds or ()) & {"slam", "charge", "spike", "drop", "blow in mid-air"}
+        if hard:
+            w["instant"] *= 3.0
+        if devastating:
+            w["instant"] *= 2.0
+            w["scream"] *= 1.5
+        if loss >= 6:
+            w["scream"] *= 2.0
+        down = d.name in self.downed or bool(self.pinned_by(d.name))
+        if down:
+            w["crumple"] *= 0.2
+            w["fade"] *= 2.0
+        else:
+            w["crumple"] *= 1.5
+        if set(kinds or ()) & {"held stream", "pummel"} or loss < 3:
+            w["fade"] *= 1.8
+        total = sum(w.values()) or 1.0
+        roll = self.rng.random() * total
+        for k in self.KO_STYLES:
+            roll -= w[k]
+            if roll <= 0:
+                return k
+        return "fade"
+
     def knockout_roll(self, name, lost, kinds, devastating=False):
         """Very rarely a big enough beat simply knocks her OUT, no pin needed (moves.knockout): only when she is
         already very low (max_health_pct of her full health or less), the beat cost her at least min_loss_pct of
@@ -6956,8 +6990,9 @@ class Engine:
             how = " and ".join(kinds) if kinds else "blow" if not devastating else "devastating blow"
             if not self._chance(ch, f"{d.name} knocked out by the {how}", "KNOCKED OUT", "she stays conscious"):
                 return None
+            style = self.knockout_style(d, loss, kinds, devastating)
             out = self.eliminate(d.name, f"knocked out cold by the {how}")
-            out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1))
+            out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1), style=style)
             return out
         if not cfg.get("enabled", True) or d.eliminated or not d.max_health or not (kinds or devastating):
             return None
@@ -6975,8 +7010,9 @@ class Engine:
         how = " and ".join(kinds) if kinds else "devastating blow"
         if not self._chance(ch, f"{d.name} knocked out by the {how}", "KNOCKED OUT", "she stays conscious"):
             return None
+        style = self.knockout_style(d, loss, kinds, devastating)
         out = self.eliminate(d.name, f"knocked out cold by the {how}")
-        out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1))
+        out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1), style=style)
         return out
 
     def eliminate(self, name, reason=""):

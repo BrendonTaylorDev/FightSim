@@ -878,6 +878,16 @@ PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|every (?:press|hi
                          r"(?:beat|part|passage|scene)\b|end of (?:the )?beat\b|shrug\w* much of it off in its own way|in its own way, and "
                          r"she knew it|(?:saw|sees) it fall short\b|has no answer for \w+ and react|the hurt part, and how "
                          r"she (?:is|was) holding it|glimpsed in passing|(?:the )?fur or scales|scales or fur)", re.I)
+# how a knockout goes, by the engine's pick (finish.styles)
+KO_HOW = {
+    "instant": "INSTANTLY, on the impact itself: lights out mid-motion, before or as she lands (if the blow drives her "
+               "into something, she is out the moment she hits it). No slow fade, no last thoughts, no fighting it.",
+    "scream": "with a SCREAM: the blow tears a raw cry out of her, and the cry is cut off halfway as she goes out.",
+    "crumple": "in a CRUMPLE: her knees fold, she tries ONCE to stay up or push herself back up, and then she sags "
+               "all the way down and goes out.",
+    "fade": "SLOWLY, from inside: the sound draining away, the light greying and narrowing, her legs not answering, "
+            "the ground coming up to meet her, then nothing.",
+}
 # a guard said to come up (a raised arm taking the blow) when none did
 INVENTED_GUARD = re.compile(r"\b(?:(?:arm|forearm|fin|wing|paw|foreleg)s? (?:came|snapped|whipped|jerked|shot|went|flew) up|"
                             r"(?:raised|lifted|threw up|brought up|got up|flung up) (?:her )?(?:left |right )?(?:upper )?"
@@ -3849,15 +3859,12 @@ class Narrator:
                 lines.append(f"THE PUMMEL TO THE END: {a['fighter']} takes every blow of it AWAKE, each one landing on "
                              f"her conscious and hurting, her reactions growing weaker and slower from blow to blow. "
                              f"Only the LAST blow switches her off. Not one blow earlier.")
+            how_out = KO_HOW.get(a.get("style") or "fade", KO_HOW["fade"])
             lines.append(f"KNOCKOUT: the {a.get('how', 'blow')} above is the last thing {a['fighter']} takes. It does not "
-                         f"just hurt her: it switches her OFF. No long tally of her hurts and no struggle to stay up: "
-                         f"the blow, and then her going under, told from inside with room (sound draining away, the "
-                         f"light greying, the legs not answering, the ground coming up). Her body gives up all at "
-                         f"once: the eyes roll or go blank, every muscle lets go together, she drops (or sags where "
-                         f"she is held or lies) and does not move again. Shown from outside too: the fall itself, "
-                         f"before anyone looks down at her lying there. OUT COLD, still breathing; Pokemon "
-                         f"faint, nobody dies. No pin and no count: this is how the fight ends. Then the silence, "
-                         f"and {by}: what she sees, how her own body answers now it is over, what she does."
+                         f"just hurt her: it switches her OFF. This time she goes out like this: {how_out} Every muscle "
+                         f"lets go together and she does not move again: OUT COLD, still breathing; Pokemon faint, nobody "
+                         f"dies. No pin and no count: this is how the fight ends. Then the silence, and {by}: what she "
+                         f"sees, how her own body answers now it is over, what she does."
                          + (f" {a['fighter']} ends up {Engine.FACING_LOOK[a['facing']]}." if a.get("facing") in
                             Engine.FACING_LOOK else ""))
             if a.get("winner"):
@@ -6247,8 +6254,9 @@ class Narrator:
             if a.get("knockout") and (take or last or key in ("all",)):
                 who = a["fighter"]
                 side[0] = "take"
-                add(f"how {who} goes out", B.pick("knockout", 2, has=feats(who)))
-                self._offer_line(add, f"a finished line for {who} knocked out", "knockout", has=feats(who))
+                sty = {a.get("style") or "fade"}
+                add(f"how {who} goes out", B.pick("knockout", 2, has=feats(who), moment=sty))
+                self._offer_line(add, f"a finished line for {who} knocked out", "knockout", has=feats(who), moment=sty)
                 if a.get("by"):
                     add(f"what {a['by']} sees", B.pick("knockout_watch", 1, has=feats(a["by"])))
         for e in also or ():
@@ -9934,16 +9942,31 @@ class Narrator:
             d_ = kos[0]["fighter"]
             by = kos[0].get("by") or actor or "her opponent"
             keys = [k for k, _f, _w in plan]
+            style = kos[0].get("style") or "fade"
+            going = {
+                "instant": (f"the blow (or whatever it drives her into: the ground, a tree, a rock) and she is OUT ON "
+                            f"THE IMPACT: one hard sentence or two, the light going out mid-motion, "
+                            f"nothing slow about it. She does not feel herself fall"),
+                "scream": (f"the blow tearing a raw scream out of her, and the scream CUT OFF as she goes: the sound "
+                           f"stopping halfway, then nothing. Two to four sentences"),
+                "crumple": (f"her knees folding under her, ONE try to stay up or push back up (a paw on the ground, a "
+                            f"shove that goes nowhere), and then she sags all the way down and goes out. Three to five "
+                            f"sentences"),
+                "fade": (f"her GOING UNDER, given room, from inside, over four to six sentences: the sound of the place "
+                         f"draining away, the light going grey and narrowing, her legs no longer answering her, the "
+                         f"ground tilting up to meet her, the last thing she feels against her and then nothing"),
+            }[style]
             take_job = (f"{poss(d_)} side, picking up at the instant of contact (do not re-tell the attack): the listed "
                         f"hits landing, briefly, and then the blow that ENDS it. Do NOT walk through every hurt part, and "
-                        f"do not have her fight to stay up for paragraphs: this blow switches her off. Give her GOING "
-                        f"UNDER room, from inside, over four to six sentences: the sound of the place draining away, the "
-                        f"light going grey and narrowing, her legs no longer answering her, the ground tilting up to "
-                        f"meet her, the last thing she feels against her (grass, sand, water) and then nothing. "
+                        f"do not have her fight to stay up for paragraphs: this blow switches her off. Show {going}. "
                         + ("End this part the moment she goes out." if "after" in keys else
                            f"Then a short paragraph from {poss(by)} side: {d_} dropping, seen from outside, and the "
                            f"stillness after."))
-            after_job = (f"{poss(by)} side, picking up at the same moment: {d_} going DOWN, seen from outside: how she "
+            after_job = (f"{poss(by)} side, picking up at the same moment: {d_} going DOWN, seen from outside"
+                         + (" (sudden: there and then gone, dropping like a cut string)" if style == "instant" else
+                            " (the scream stopping short)" if style == "scream" else
+                            " (the knees going, the one try, the sag)" if style == "crumple" else "")
+                         + f": how she "
                          f"drops, what she lands on, how she ends up lying. Then the stillness: {by} waiting for her to "
                          f"move, the slow rise and fall of her ribs, and how {poss(by)} own body answers now it is over "
                          f"(the shaking, the ache, the breath). Nothing new happens and nobody attacks.")

@@ -976,7 +976,9 @@ class Display:
         elif t == "eliminated" and a.get("knockout"):
             out.append(f"💥 **KNOCKOUT: {a['fighter']} is out cold** — the {a.get('how', 'blow')} (it cost her "
                        f"{a.get('loss_pct', 0):.0f}% of her full health; knockout chance {a.get('chance', 0) * 100:.1f}%)"
-                       + (f" (lying {a['facing']})" if a.get("facing") else ""))
+                       + (f" (lying {a['facing']})" if a.get("facing") else "")
+                       + ({"instant": " · out on the impact", "scream": " · a scream, cut off",
+                           "crumple": " · she crumples", "fade": " · she fades out"}.get(a.get("style"), "")))
             if a.get("holds_ended"):
                 out.append(f"- 🔓 Holds ended: {', '.join('#' + str(i) for i in a['holds_ended'])}")
             if a.get("winner"):

@@ -1118,6 +1118,14 @@ The last thing she did was try to stay up; her body had already decided otherwis
 She went out between one breath and the next, her face slack, the fight gone out of it all at once.
 Her eyes rolled up and closed, and she sagged over onto her side and lay there.
 She fell like something cut loose, nothing reaching out to catch her.
+She was out before the impact had finished with her, limp as she hit. | moment: instant
+She dropped mid-stride, gone in an instant, and the ground took all of her at once. | moment: instant
+The scream tore out of her and stopped halfway, and so did she. | moment: scream
+Her cry broke off short, and she went down in the silence it left. | moment: scream
+Her knees folded; she pushed once against the ground, and then she let it have her. | moment: crumple
+She sagged by stages, fighting each one, until there was nothing left to fight with. | moment: crumple
+The world drew away from her down a long grey tunnel, and she went with it. | moment: fade
+Sound went first, then light, and then the ground was simply there under her cheek. | moment: fade
 
 # ---------------------------------------------------------------------------------------------------------------
 # TYPE MATCHUPS (build 148): effect_take (the one hit) and effect_act (the one who threw it); effect, type, vs
