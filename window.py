@@ -13,7 +13,11 @@ you are reading. The slider at the top does the same; "Follow the fight" snaps b
 
 Pictures: put your own in the images folder as <fighter name>.png (Ripples.png) or <species>.png (buizel.png).
 Otherwise the official artwork is fetched once from PokeAPI and kept there; with no internet, a plain badge is
-drawn instead."""
+drawn instead. Each fighter also gets a picture from behind, under the first one, carrying her back, lower back and
+tails (<name>_back.png or <species>_back.png, else the PokeAPI back sprite, else her outline), so the front isn't
+crowded; click a part's label, then either picture, to place it there. As she weakens her pictures show it: your own
+<name>_worn.png, _hurt, _down and _out (and _back_hurt and so on) if you have them, else her picture fades, slumps,
+or tips over. "Back view" and "Weakened look" on the bar above the cards turn each off (rules.json "window")."""
 import builtins
 import io
 import json
@@ -33,7 +37,7 @@ from engine import species_of, body_region
 
 from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_color, text_on, short,
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
-                   columns, spread)
+                   columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -153,6 +157,18 @@ class GameThread(threading.Thread):
             self.out_q.put(("done", None))
 
 
+def fetch_book(name, species, opts, done):
+    """Her pictures (cards.PictureBook: front, back, weakened ones), found or fetched on a worker thread and handed to
+    done(book)."""
+    def work():
+        book = PictureBook(name, species, opts)
+        book.base("front")
+        if opts.get("back_view", True):
+            book.base("back")
+        done(book)
+    threading.Thread(target=work, daemon=True).start()
+
+
 def fetch_picture(name, species, done):
     """The picture (cards.picture_bytes), fetched on a worker thread and handed to done(bytes or None, own)."""
     threading.Thread(target=lambda: done(*picture_bytes(name, species)), daemon=True).start()
@@ -193,6 +209,10 @@ class FighterCard(ttk.Frame):
         self.rect = (4, 4, PIC - 8, PIC - 8)   # where the picture itself sits: (x, y, width, height)
         self.own = False         # your own picture (images/<name>.png): the built-in points don't fit it
         self.data = None
+        self.book = None         # every picture she has (cards.PictureBook): front, back, weakened
+        self.cache = {}          # pictures already prepared for a view and a look
+        self.panels = []         # what is on the canvas now, top to bottom (cards.card_panels), with where each sits
+        self.photos = []
         top = ttk.Frame(self)
         top.pack(fill="x")
         self.head = ttk.Label(top, font=("Segoe UI", 12, "bold"))
@@ -246,6 +266,73 @@ class FighterCard(ttk.Frame):
 
     # ---- drawing ----
     def draw(self, f):
+        if self.book is not None and Image is not None:
+            return self.draw_panels(f)
+        return self.draw_one(f)
+
+    def draw_panels(self, f):
+        """Her pictures stacked (front, then her back), each part's label beside the picture it is on."""
+        self.data = f
+        pct = 100.0 * f["health"] / f["max"]
+        calib_here = bool(self.app.calib and self.app.calib[0] is self)
+        panels = card_panels(f, self.book, self.app.card_opts(), plain=calib_here, cache=self.cache)
+        st = panels[0]["state"] if panels else None
+        self.head.configure(text=f["name"] + ("   — OUT" if f["out"] else f"   ({STATE_CAPTION[st]})" if st else ""))
+        self.sub.configure(text=f"{f['species']}  ·  {' / '.join(f['types'])}")
+        gap = 16
+        H = sum(pn["height"] for pn in panels) + gap * (len(panels) - 1)
+        c = self.canvas
+        c.configure(height=H)
+        c.delete("all")
+        self.photos, self.panels = [], []
+        top = 0
+        for pn in panels:
+            ox, oy = panel_origin(pn, top)
+            self.panels.append(dict(pn, top=top, ox=ox, oy=oy))
+            if pn["pic"] is not None:
+                ph = ImageTk.PhotoImage(pn["pic"])
+                self.photos.append(ph)
+                c.create_image(ox, oy, image=ph, anchor="nw")
+            cap = VIEW_CAPTION.get(pn["view"], "")
+            if cap:
+                c.create_text(COL + PIC / 2, top - 3, text=cap, anchor="s", font=("Segoe UI", 7), fill="#6b7280")
+            spots = pn["spots"]
+            for side, rows in (("L", pn["left"]), ("R", pn["right"])):
+                ys = spread([oy + spots[q[0]][1] for q in rows], top + pn["height"])
+                for (part, dmg, res), ly in zip(rows, ys):
+                    x, y = spots[part]
+                    ax, ay = ox + x, oy + y
+                    lx = COL - 4 if side == "L" else COL + PIC + 4
+                    calib = self.app.calib == (self, part)
+                    c.create_line(lx, ly, ax, ay, fill="#2563eb" if calib else "#9ca3af", width=2 if calib else 1)
+                    c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline="#111827")
+                    self._label(c, side, lx, ly, part, dmg, res, calib)
+            top += pn["height"] + gap
+        if f["out"]:
+            c.create_text(COL + PIC / 2, 14, text="OUT", font=("Segoe UI", 14, "bold"), fill="#991b1b")
+        if calib_here:
+            c.create_text(COL + PIC / 2, H - 8, font=("Segoe UI", 8, "italic"), fill="#2563eb",
+                          text=f"click either picture where her {self.app.calib[1].lower()} is"
+                               + (" (the back picture moves it there)" if len(panels) > 1 else ""))
+        self._bars(f, pct)
+
+    def _bars(self, f, pct):
+        w = PIC + 2 * COL
+        self.hp.delete("all")
+        share = max(0.0, min(1.0, pct / 100.0))
+        col = "#22c55e" if pct >= 60 else "#eab308" if pct >= 35 else "#f97316" if pct >= 15 else "#ef4444"
+        self.hp.create_rectangle(0, 0, w * share, 18, fill=col, outline="")
+        self.hp.create_text(6, 9, anchor="w", text=f"Health {f['health']:.0f}%   ({pct:.0f}% of full)",
+                            font=("Segoe UI", 9, "bold"))
+        self.en.delete("all")
+        self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill="#60a5fa", outline="")
+        self.en.create_text(6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7))
+        sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
+                        k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
+        self.state.configure(text=f"{f['posture']}  ·  {sts}")
+
+    def draw_one(self, f):
+        """Without Pillow (or before her pictures are in): one picture, every part on it."""
         self.data = f
         pct = 100.0 * f["health"] / f["max"]
         self.head.configure(text=f["name"] + ("   — OUT" if f["out"] else ""))
@@ -347,6 +434,8 @@ class FighterCard(ttk.Frame):
     def clicked(self, e):
         if not self.app.calib or self.app.calib[0] is not self or not self.data:
             return
+        if self.panels:
+            return self._clicked_panel(e)
         H = int(self.canvas.cget("height"))
         top = (H - PIC) / 2
         x, y = e.x - COL, e.y - top
@@ -357,6 +446,28 @@ class FighterCard(ttk.Frame):
         key = (self.data["name"] if self.own else self.data["species"] or self.data["name"]).lower()
         rx, ry, rw, rh = self.rect
         book.setdefault(key, {})[part] = [round((x - rx) / max(1, rw), 4), round((y - ry) / max(1, rh), 4)]
+        save_anchors(book)
+        self.app.calib = None
+        self.draw(self.data)
+
+
+    def _clicked_panel(self, e):
+        """A click on one of her pictures while a part is picked: its point goes there, on that picture (so a part
+        clicked onto the back picture moves to the back, and the other way round)."""
+        pn = next((q for q in self.panels if q["oy"] <= e.y <= q["oy"] + q["size"]
+                   and q["ox"] <= e.x <= q["ox"] + q["size"]), None)
+        if pn is None:
+            return
+        part = self.app.calib[1]
+        rx, ry, rw, rh = pn["rect"]
+        x, y = e.x - pn["ox"], e.y - pn["oy"]
+        book = load_anchors()
+        book.setdefault(pn["key"], {})[part] = [round((x - rx) / max(1, rw), 4), round((y - ry) / max(1, rh), 4)]
+        for q in self.panels:
+            if q is not pn and self.book is not None:
+                base = self.book.base(q["view"])
+                for k in {q["key"], base[2] if base else None} - {None, pn["key"]}:
+                    (book.get(k) or {}).pop(part, None)       # it lives on one picture at a time
         save_anchors(book)
         self.app.calib = None
         self.draw(self.data)
@@ -401,6 +512,12 @@ class App:
         top.pack(fill="x")
         self.when = ttk.Label(top, text="Waiting for the fight…", font=("Segoe UI", 10, "bold"))
         self.when.pack(side="left")
+        o = opts_of(self._rules())
+        self.back_view = tk.BooleanVar(value=bool(o.get("back_view", True)))
+        self.weak_look = tk.BooleanVar(value=bool(o.get("weak_look", True)))
+        ttk.Checkbutton(top, text="Back view", variable=self.back_view, command=self.redraw_cards).pack(side="right")
+        ttk.Checkbutton(top, text="Weakened look", variable=self.weak_look,
+                        command=self.redraw_cards).pack(side="right")
         self.follow = tk.BooleanVar(value=True)
         ttk.Checkbutton(top, text="Follow the fight", variable=self.follow, command=self.follow_changed).pack(side="right")
         ttk.Button(top, text="▶", width=3, command=lambda: self.step(1)).pack(side="right")
@@ -680,10 +797,43 @@ class App:
                                   f"Beat {index} of {len(self.beats)}: as it stood {snap['label']}" if index else
                                   f"As it stood {snap['label']}"))
 
+    def _rules(self):
+        s = getattr(getattr(self, "game", None), "session", None)
+        if s is not None:
+            return s.eng.rules
+        try:
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "rules.json"), encoding="utf-8") as fh:
+                return json.load(fh)
+        except Exception:
+            return {}
+
+    def card_opts(self):
+        """The card settings (rules.json "window"), with the two switches on the bar above the cards."""
+        o = opts_of(self._rules())
+        o["back_view"] = bool(self.back_view.get())
+        o["weak_look"] = bool(self.weak_look.get())
+        return o
+
+    def redraw_cards(self):
+        for card in self.cards.values():
+            if card.data:
+                card.draw(card.data)
+
     def load_picture(self, card, f):
         def done(data, own):
             self.root.after(0, lambda: self.make_photo(card, data, own))
         fetch_picture(f["name"], f["species"] or f["name"], done)
+
+        def got(book):
+            self.root.after(0, lambda: self.set_book(card, book))
+        fetch_book(f["name"], f["species"] or f["name"], opts_of(self._rules()), got)
+
+    def set_book(self, card, book):
+        if card.winfo_exists() and book.base("front") is not None:
+            card.book = book
+            card.cache = {}
+            if card.data:
+                card.draw(card.data)
 
     def make_photo(self, card, data, own=False):
         if data and card.winfo_exists():

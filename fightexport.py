@@ -2,8 +2,8 @@
 
 Writes two files into the exports folder (or where you say):
   <name>.html  a page for your browser: every beat's story and stat lines, and beside it each fighter as she stood
-               after that beat (her picture with each hurt part glowing, a line from every part to its damage and
-               resistance, health and energy), plus a table of every part.
+               after that beat (her pictures, front and back, looking as worn as she was, with each hurt part glowing
+               and a line from every part to its damage and resistance, health and energy), plus a table of every part.
   <name>.json  the same data, plain (the text of each beat and every fighter's numbers)."""
 import base64
 import datetime
@@ -79,9 +79,8 @@ def _split(text):
     return story, mech, results
 
 
-def _card_img(f, pics):
-    data, own = pics.get(f["name"], (None, False))
-    img = cards.render_card(f, data, own)
+def _card_img(f, books, opts=None):
+    img = cards.render_card(f, book=books.get(f["name"]), opts=opts)
     if img is None:
         return ""
     buf = io.BytesIO()
@@ -159,11 +158,12 @@ def write(s, path=None, fights=None):
         tag = f"fight{recs[0].get('fight')}" if fights and len(fights) == 1 else "fights"
         path = os.path.join(OUT_DIR, f"{tag}_{names}_{stamp}.html")
     base = os.path.splitext(path)[0]
+    opts = cards.opts_of(getattr(getattr(s, "eng", None), "rules", None))
     pics = {}
     for r in recs:
         for f in r["snapshot"]["fighters"]:
             if f["name"] not in pics:
-                pics[f["name"]] = cards.picture_bytes(f["name"], f.get("species") or f["name"])
+                pics[f["name"]] = cards.PictureBook(f["name"], f.get("species") or f["name"], opts)
     title = " vs ".join(recs[0].get("lineup") or [])
     arena = (getattr(s.eng, "scene_cfg", None) or {}).get("title", "")
     nav, body = [], []
@@ -180,7 +180,7 @@ def write(s, path=None, fights=None):
                                 f'</details>' if mech else "")
         side = ""
         for f in r["snapshot"]["fighters"]:
-            img = _card_img(f, pics)
+            img = _card_img(f, pics, opts)
             sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool)
                             else k.replace("_", " ") for k, v in (f.get("status") or {}).items()) or "no statuses"
             side += (f'<div class="fighter">{img}<div class="dim">{html.escape(f.get("posture", ""))} · '

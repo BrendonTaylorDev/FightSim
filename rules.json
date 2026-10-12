@@ -1,4 +1,5 @@
 {
+  "window": {"_comment": "The fighter pictures in the window (python window.py) and in exported fights. back_view: a second picture of her from behind, with her back, lower back and tails on it (back_regions; click a label, then either picture, to move a part); back_size its size. The back picture: images/<name>_back.png or <species>_back.png if you have one, else the PokeAPI back sprite (back_download), else her outline. weak_look: she looks as worn as she is: your own images/<name>_worn.png (under worn_below % health), _hurt (under hurt_below), _down (on the ground or pinned), _out (and _back_worn and so on for the back), else her picture faded, slumped or tipped over.", "back_view": true, "back_download": true, "back_regions": ["back_up", "back_low", "tail"], "back_size": 220, "weak_look": true, "worn_below": 60, "hurt_below": 30},
   "export": {
     "_comment": "auto: a finished fight is saved by itself to the exports folder, beat by beat with every fighter's picture, health and each body part's damage and resistance (an .html page and a .json file), and saved again after each aftermath beat. /exportfight does it any time.",
     "auto": true
