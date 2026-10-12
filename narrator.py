@@ -6583,7 +6583,7 @@ class Narrator:
                 add(f"how {who} collapses", B.pick("collapse", 2, has=feats(who), state=state(who)))
                 add(f"{who} looking at her own body as it fails her",
                     self._self_look(who, "legs", has=feats(who), state=state(who)))
-                self._offer_line(add, f"a finished line for {who} collapsing", "collapse", has=feats(who))
+                self._offer_line(add, f"a finished line for {who} collapsing", "collapse", has=feats(who), state=state(who))
         memory = self._memory_line([w for w in targets if hits.get(w)], hits) if take else None
         return self._blocks_plan(lines, key, first, last, actor or (doers or [None])[0],
                                  receivers[0] if len(receivers) == 1 else (targets[0] if len(targets) == 1 else None), memory)
