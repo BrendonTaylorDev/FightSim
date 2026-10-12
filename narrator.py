@@ -5893,7 +5893,18 @@ class Narrator:
         b.enabled = bool(b.cfg.get("enabled", True))
         b.scene_ban = self._scene_ban()
         b.old_memories = bool((self.rules.get("narration", {}) or {}).get("old_memories", False))
+        b.earlier = self._blk_earlier(None)      # (empty on the first blow: nothing "the last blow" left yet)
         return b
+
+    def _blk_earlier(self, who, other=None):
+        """'earlier:' for an idea about her (who) and the other: a blow landed in an earlier beat, and which of them
+        still carries a hurt from one (the injury log as it stood before this beat)."""
+        before = getattr(self, "_injury_prev", None) or {}
+        out = {"blows"} if any(before.values()) else set()
+        for name, tag in ((who, "hurt"), (other, "hurt_other")):
+            if name and any(v and k.lower().startswith(f"{name}|".lower()) for k, v in before.items()):
+                out.add(tag)
+        return out
 
     def _scene_ban(self):
         """Ideas that need stone walls or a cave (a voice ringing off the stone) when this place has none."""
@@ -5916,6 +5927,7 @@ class Narrator:
         b.enabled = bool(cfg.get("enabled", True))
         b.scene_ban = self._scene_ban()
         b.old_memories = bool((self.rules.get("narration", {}) or {}).get("old_memories", False))
+        b.earlier = self._blk_earlier(None)      # (empty on the first blow: nothing "the last blow" left yet)
         return b
 
     def _offer_line(self, add, label, category, fmt=None, exclude=None, **ctx):
@@ -6694,7 +6706,8 @@ class Narrator:
             return ""
         take_only = key == "take"
         if first and not take_only and cfg.get("open_and_end", True):
-            for p in B.pick("open_on", 1, posture=self._blk_posture(lead) if lead else {"standing"}):
+            for p in B.pick("open_on", 1, posture=self._blk_posture(lead) if lead else {"standing"},
+                            earlier=self._blk_earlier(lead, other)):
                 if not (reactions_used(p) & worn):
                     steps.insert(0, f"OPEN this part on{f' (from {poss(lead)} side)' if lead else ''}: {p}")
         if first:

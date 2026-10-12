@@ -24,6 +24,8 @@
 #   part:  jaw, nose, eye...                          a word of the body part's own name
 #   effect: super, weak, none                         how the attack's type meets her body (effect_* blocks only)
 #   type:  fire, water, electric, ice, ...            the attack's type        vs: her own type(s)
+#   earlier: blows, hurt, hurt_other                  a blow landed in an earlier beat; she (hurt) or the other
+#                                                     (hurt_other) still carries a hurt from one (none on the first blow)
 # In the text of a block, {part} is the body part in question ("left thigh") and {next} a part beside it.
 # Add as many lines as you like: more blocks means more variety. /blocks shows the counts.
 
@@ -1327,7 +1329,7 @@ what she is looking at
 a thought, short, before the body catches up
 the ground under her feet | posture: standing
 the other's face
-the part of her that hurts most
+the part of her that hurts most | earlier: hurt
 stillness: the held moment before
 a small thing out of place: a hair, a drop, a shadow
 the distance between them, measured
@@ -1342,7 +1344,7 @@ the weight on each of her feet, and which one she trusts | posture: standing
 the one sound the other is making
 a colour: of the light, of the other's fur, of what is on the ground
 how far her next breath has to go
-the feel of the air on the place that hurts
+the feel of the air on the place that hurts | earlier: hurt
 her own shadow, and the other's, and the gap between them
 a muscle she did not tell to tighten
 the thing she will not look at
@@ -5513,7 +5515,7 @@ she sees a tremor in the other's stance after the effort, there for a moment and
 she watches the way the other turns to keep her in view, and sees it is slower on one side
 the other's guard has relaxed by a fraction, and she wonders if that is a mistake or bait
 she sees the other glance away for half a heartbeat and marks it like a gap in a fence
-she notes the dust on the other's body, and where it is, and what that says about the last exchange
+she notes the dust on the other's body, and where it is, and what that says about the last exchange | earlier: blows
 she watches the other shake out a limb that must have jarred on the blow
 she listens to the other's breathing and finds a small catch in it, like a stitch
 she sees the other's eyes are fixed, intent, already thinking two moves ahead
@@ -5679,7 +5681,7 @@ she takes a breath, then another, and on the third she moves | state: tired, spe
 # ---------------------------------------------------------------------------------------------------------------
 == open_on
 the sound of her own breath catching, and the silence just after
-the place where the last blow still stings
+the place where the last blow still stings | earlier: hurt
 the other's weight shifting, before anything else moves
 a smell carried across the space between them
 a small adjustment of her stance that only she would notice | posture: standing
@@ -5689,10 +5691,10 @@ something that has changed since the last moment: a stance, a gaze, a distance
 a sound from the far edge of the place, and neither of them turning to it
 the stillness of her own body as she waits for it to obey
 a question she asks herself and does not answer
-the dust still hanging in the air from the last exchange
+the dust still hanging in the air from the last exchange | earlier: blows
 how dry her mouth has become
 the place her eyes go first, and why
-an ache she had forgotten, coming back
+an ache she had forgotten, coming back | earlier: hurt
 the moment she stops waiting
 the other's shadow touching hers
 the grit under her, pressing into her side | posture: down, pinned
@@ -7055,7 +7057,7 @@ her eyes are open and steady, and that is the worrying part
 # BREATH: how she is breathing, by her condition
 == breath | state: fresh
 she breathes easily, the air going all the way down
-a steady rhythm in and out, unbroken by the last exchange
+a steady rhythm in and out, unbroken by the last exchange | earlier: blows
 her nostrils barely move; she breathes like a sleeper
 she takes a breath and holds it, wound tight, before the move
 her breath is quiet enough that she can hear her opponent's
@@ -11877,7 +11879,7 @@ the sound of the place, before either moves
 the other's eyes, and what they are fixed on
 a twitch in her own limbs, before she means it
 the weight of her own body, and how heavy it has become
-the ache in the hurt place, sharp and fresh
+the ache in the hurt place, sharp and fresh | earlier: hurt
 the way the light falls between them
 the taste of dust and salt in her mouth
 a small sound, from her or from the other
@@ -11894,18 +11896,18 @@ the stillness, stretched thin
 the ground, and how it feels under her
 her eyes, narrowing
 the other's limb, drawing back
-the pain, settling into a new shape
+the pain, settling into a new shape | earlier: hurt
 the sound of her own breath, ragged
 something she notices about the other for the first time
 how tired she is, measured honestly
 how much she has left
 the place she means to hit next
-a tremor in her hurt part
+a tremor in her hurt part | earlier: hurt
 the chill or the warmth of the air
 her own stubbornness
 the moment before she moves
 something the other has not noticed yet
-the place where the other is hurt
+the place where the other is hurt | earlier: hurt_other
 her own gaze, steady or wandering
 the dust stirring at her feet | posture: standing
 her weight, shifting to the balls of her feet | posture: standing
@@ -11928,14 +11930,14 @@ the moment her eyes clear
 the edge of her vision, dimming or sharp
 what her body does before she asks it to
 a word in her head, short and hard
-the last blow, felt again
+the last blow, felt again | earlier: hurt
 the next breath, and whether it will hurt
 a sound from far off
 her own trembling, and whether it shows
-the other's hurt place, and how it is held
+the other's hurt place, and how it is held | earlier: hurt_other
 the other's weight, settling
 the moment the other looks away
-the space where the last blow fell
+the space where the last blow fell | earlier: blows
 a flicker of hope
 a flicker of doubt
 her limbs, gathering
