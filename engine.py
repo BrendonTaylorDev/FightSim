@@ -1410,6 +1410,16 @@ class Engine:
             jolt = self._jolts(d, hits)
             if jolt:
                 res["status_applied"] = (res.get("status_applied") or []) + jolt
+        if hits and not d.eliminated and not dodge and not (guard and guard.get("kind") == "block") \
+                and not any(res.get(k) for k in ("charge", "sustain", "ground_into", "into_mouth", "auto_launch",
+                                                  "grounded", "carried")):
+            reel = self._stumble(a, d, move, hits)
+            if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
+                res["moved"] = "stagger" if reel and reel.get("status") else "rock" if reel else "still"
+            if reel and reel.get("status"):
+                res["status_applied"] = (res.get("status_applied") or []) + [reel]
+            elif reel:
+                res["rocked"] = reel
         if hits and not move.get("improvised"):
             rc = self._recoil(a, move, math)
             if rc:
@@ -2186,6 +2196,8 @@ class Engine:
             out.append(("choking on water", float(cfg.get("sputtering_power_mult", 0.9))))
         if self.has(a, "off_balance"):
             out.append(("off balance", float(cfg.get("off_balance_power_mult", 0.85))))
+        if self.has(a, "staggered"):
+            out.append(("still staggering", float(cfg.get("staggered_power_mult", 0.85))))
         if self.has(a, "fury"):
             out.append(("fury after the pin", float(cfg.get("fury_power_mult", 1.15))))
         if self.has(a, "breathless"):
@@ -2475,6 +2487,7 @@ class Engine:
                (float(sc.get("bound_dodge_mult", 0.75)) if self.has(d, "bound") else 1.0) * \
                (float(sc.get("sputtering_dodge_mult", 0.8)) if self.has(d, "sputtering") else 1.0) * \
                (float(sc.get("off_balance_dodge_mult", 0.6)) if self.has(d, "off_balance") else 1.0) * \
+               (float(sc.get("staggered_dodge_mult", 0.6)) if self.has(d, "staggered") else 1.0) * \
                (float(sc.get("dazed_dodge_mult", 0.4)) if self.has(d, "dazed") else 1.0) * \
                (float(sc.get("doubled_over_dodge_mult", 0.5)) if self.has(d, "doubled_over") else 1.0)
         s = max(0.0, min(1.0, self.strength(d) / 100))
@@ -4291,6 +4304,7 @@ class Engine:
             opts.append(("caught open by the feint", float(cfg.get("feinted", 1.25))))
         for st, label, key, dflt in (("doubled_over", "doubled over in pain", "doubled_over", 1.2),
                                      ("off_balance", "caught off balance", "off_balance", 1.2),
+                                     ("staggered", "caught staggering", "staggered", 1.2),
                                      ("dazed", "dazed, slow to react", "dazed", 1.15),
                                      ("flinched", "caught flinching", "flinched", 1.15)):
             if self.has(d, st):
@@ -4378,6 +4392,139 @@ class Engine:
             return {"left": "right", "right": "left"}[side]
         g = body_region(guarded)
         return "back" if g in self.FRONT_GUARD else "front" if g in self.BACK_GUARD else ""
+
+    # which way a blow sends her: away from the side it lands on, back from the front, forward from behind
+    _REEL_DIR = {"head": "back", "neck": "back", "chest": "back", "belly": "back", "shoulder": "back", "fore_up": "back",
+                 "back_up": "forward", "back_low": "forward", "hind_up": "sideways", "hind_low": "sideways",
+                 "fore_low": "sideways", "tail": "sideways"}
+
+    def _blow_kind(self, move):
+        """How a move moves a body: blunt (pushes her away), claw (twists her away from the rake), bite (wrenches her
+        toward the biter), blast (drives her back along its line), shock (locks her rigid), fire (she recoils from the
+        heat), cold (she flinches and stiffens), mind (the head snaps back with nothing touching it)."""
+        name = f"{move.get('name') or ''} {move.get('about') or ''}".lower()
+        t = move.get("type")
+        if re.search(r"bite|fang|crunch|jaws", name):
+            return "bite"
+        if re.search(r"slash|claw|swipe|scratch|rake|cut|cutter|scythe", name):
+            return "claw"
+        if t == "Electric":
+            return "shock"
+        if t == "Psychic" and self.is_ranged(move):
+            return "mind"
+        if t == "Fire":
+            return "fire"
+        if t == "Ice" and self.is_ranged(move):
+            return "cold"
+        return "blast" if self.is_ranged(move) else "blunt"
+
+    def _stumble(self, a, d, move, hits):
+        """How a hard blow moves her body, fitted to the blow and to where she is. Standing and free: her head snaps
+        round with a blow to the head and she can be knocked a step or more the way the blow was going (STAGGERED for
+        a beat: slower to dodge, the next blow lands harder, her own blows weaker), or just rocked where she stands.
+        Down, held or pinned: she can't be knocked anywhere, but the blow still jars her where she is (rocked).
+        Returns a staggered status record, a rocked record, or None. moves.stumble."""
+        cfg = (self.rules.get("moves") or {}).get("stumble") or {}
+        if not cfg.get("enabled", True) or not move or move.get("target") in ("status", "self", "hold"):
+            return None
+        mine = [h for h in hits if h.get("defender", d.name) == d.name]
+        if not mine or self.has(d, "airborne"):
+            return None
+        big = max(mine, key=lambda h: h.get("damage_taken", 0))
+        dmg, low = float(big.get("damage_taken", 0)), float(cfg.get("min_damage", 40))
+        reg = body_region(big["part"])
+        away = {"left": "right", "right": "left"}.get(_side(big["part"]))
+        kind = self._blow_kind(move)
+        held = self.pinned_by(d.name) or any(h.defender == d.name for h in self.holds.values())
+        holding = any(h.attacker == d.name for h in self.holds.values())
+        if d.name in self.downed or held or holding or dmg < low or kind in ("shock", "cold", "mind"):
+            return self._rocked(a, d, big, dmg, cfg, reg, away, kind, held, holding)
+        ch = (float(cfg.get("base", 0.12)) + float(cfg.get("per_damage", 0.004)) * (dmg - low)
+              + float(cfg.get("weak", 0.25)) * (1 - max(0.0, min(100.0, self.strength(d))) / 100))
+        ch *= float((cfg.get("kind_mult") or {}).get(kind, {"blunt": 1.3, "blast": 1.2, "claw": 0.7, "bite": 0.5,
+                                                            "fire": 0.6}.get(kind, 1.0)))
+        ch *= float((cfg.get("region_mult") or {}).get(reg, {"head": 1.3, "hind_low": 1.2, "fore_low": 0.4,
+                                                             "tail": 0.3}.get(reg, 1.0)))
+        if self.has(d, "staggered"):
+            ch *= float(cfg.get("again_mult", 1.3))     # still staggering from the last one: easier to send again
+        if not self._chance(min(float(cfg.get("max", 0.75)), ch), f"{d.name} knocked staggering by the blow to her {big['part']}",
+                            "she stumbles", "she holds her ground"):
+            return self._rocked(a, d, big, dmg, cfg, reg, away, kind, held, holding)
+        if kind == "bite":
+            way = f"toward {a.name}, dragged by the jaws"
+        elif kind == "blast":
+            way = "backward along the line of the blast"
+        elif kind == "fire":
+            way = "back from the heat"
+        elif away and reg not in ("back_up", "back_low"):
+            way = f"to her {away}"
+        else:
+            way = {"back": "backward", "forward": "forward", "sideways": "sideways"}[self._REEL_DIR.get(reg, "back")]
+        head = None
+        if reg == "head":
+            head = ("her head is wrenched round with the bite" if kind == "bite" else
+                    f"her head snaps round to the {away}" if away else "her head snaps back")
+        elif reg == "neck":
+            head = f"her head whips {'round to the ' + away if away else 'back'} with it"
+        steps = ("a single step" if dmg < low * 1.6 or reg in ("fore_low", "tail") else "two or three steps"
+                 if dmg < low * 2.6 else "several steps, close to going down")
+        self.set_status(d, "staggered", 1)
+        return {"fighter": d.name, "status": "staggered", "beats": 1,
+                "stumble": {"part": big["part"], "way": way, "head": head, "steps": steps,
+                            "legs": reg in ("hind_low", "hind_up"), "kind": kind}}
+
+    def _rocked(self, a, d, big, dmg, cfg, reg, away, kind, held=False, holding=False):
+        """Less than a stumble: the blow turns her head or moves her body with it, and her feet (or the rest of her)
+        stay where they are. Only how it looks (no status); rolled so not every hit gets it (rock_chance)."""
+        if dmg < float(cfg.get("rock_from", 15)) or (reg in ("tail", "fore_low") and kind not in ("shock",)):
+            return None
+        if not self._chance(float(cfg.get("rock_chance", 0.55)), f"{d.name} rocked by the blow to her {big['part']}",
+                            "it moves her", "she takes it where she is"):
+            return None
+        down = d.name in self.downed
+        side = f" to the {away}" if away else ""
+        if kind == "shock":
+            how = "her whole body jerks rigid, limbs locking straight for an instant, and lets go"
+        elif kind == "mind":
+            how = "her head snaps back as if struck, with nothing touching her"
+        elif kind == "cold":
+            how = "she flinches in on herself from the cold, muscles going tight around the spot"
+        elif kind == "fire":
+            how = "she recoils from the heat, twisting the burning spot away"
+        elif kind == "bite" and (held or down):
+            how = "the jaws wrench at her and her body goes with them as far as it can"
+        elif kind == "claw" and (held or down):
+            how = f"she twists{side} away from the rake, as far as she can" + (" against the ground" if down else "")
+        elif held:
+            how = (f"her head is knocked{side or ' back'} against the ground, and she can't go with it any further"
+                   if down and reg in ("head", "neck") else
+                   f"her head snaps{side or ' back'} as far as the hold lets it, and the holder feels it" if reg in ("head", "neck")
+                   else "her body jerks in the hold with the blow, and the grip on her has to take it")
+        elif down:
+            how = (f"her head is knocked{side or ' back'} against the ground" if reg in ("head", "neck") else
+                   "it shoves her a little way along the ground where she lies" if kind in ("blunt", "blast") else
+                   "her body jerks where she lies")
+        elif kind == "bite":
+            how = f"the jaws drag her toward {a.name} before they let go"
+        elif kind == "claw":
+            how = f"she twists{side or ''} away from the rake as it goes across her"
+        elif holding:
+            how = f"it rocks her{side or ' back'}, but she keeps her grip"
+        elif reg == "head":
+            how = f"her head turns{side} with the blow" if away else "her head rocks back"
+        elif reg == "neck":
+            how = f"her head is jerked{side or ' back'} and her shoulders follow"
+        elif reg in ("hind_low", "hind_up"):
+            how = "that leg buckles a little and her weight shifts off it, but it holds"
+        elif reg in ("back_up", "back_low"):
+            how = "it pushes her forward a little, her back arching away from it"
+        elif kind == "blast":
+            how = "it pushes her back on her heels, her feet bracing against it"
+        else:
+            how = (f"her body twists away{side} with it" if away else
+                   "it rocks her back on her heels" if reg in ("chest", "belly") else "it leans her body away from it")
+        return {"fighter": d.name, "part": big["part"], "how": how, "kind": kind,
+                "where": "held" if held else "down" if down else "holding" if holding else "standing"}
 
     def _jolts(self, d, hits):
         """What a hard hit can do beyond the damage: the wind knocked out of her (chest or belly), dazed (head), or
@@ -7276,6 +7423,8 @@ class Engine:
         "breathless": "the WIND KNOCKED OUT of her: she can't get a full breath; every movement is short of air",
         "dazed": "DAZED from the blow to the head: her vision swims, sounds come late, she is slow to react",
         "doubled_over": "DOUBLED OVER by the pain: folded round the hurt, guard down for a moment",
+        "staggered": "STAGGERED: knocked a step or more by the last blow and still finding her feet; slow to dodge, open "
+                   "to the next one, her own blows weaker",
         "off_balance": "OFF BALANCE: her last blow was turned aside and she is still recovering her footing; slower to "
                        "dodge, weaker on the next strike",
         "protecting": "behind a PROTECT barrier (Protect/Detect): braced and shielded; the next attack on her stops "
@@ -7531,7 +7680,8 @@ class Engine:
                 lines.append(f"   GUARDING her {gw[0]} (blows there land lighter)"
                              + (f"; her {ow}{' side' if ow in ('left', 'right') else ''} is open (blows there land harder)"
                                 if ow else ""))
-            opn = [st.replace("_", " ") for st in ("doubled_over", "off_balance", "dazed", "flinched") if self.has(f, st)]
+            opn = [st.replace("_", " ") for st in ("doubled_over", "off_balance", "staggered", "dazed", "flinched")
+                   if self.has(f, st)]
             if opn:
                 lines.append(f"   CAUGHT OPEN ({', '.join(opn)}): anything that lands on her now lands harder")
             if any("wing" in p.lower() for p in f.parts):

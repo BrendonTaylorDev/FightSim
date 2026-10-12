@@ -401,6 +401,21 @@
       "covered_mult": 0.85,
       "open_mult": 1.1
     },
+    "stumble": {
+      "_comment": "A hard blow (min_damage part damage or more) on a fighter who is standing and free can knock her staggering: her head snaps round with a blow to the head, and she stumbles a step or more the way the blow was going (away from the side it hit; back from a front hit; forward from behind; sideways from a leg sweep). STAGGERED for a beat: dodging x status_effects.staggered_dodge_mult, the next blow lands x the caught-open bonus, her own blows x staggered_power_mult. Chance: base + per_damage per point over min_damage + weak x how worn she is, times kind_mult (blunt blows move her most) and region_mult, again_mult if she is still staggering, up to max.",
+      "enabled": true,
+      "min_damage": 40,
+      "base": 0.12,
+      "per_damage": 0.004,
+      "weak": 0.25,
+      "kind_mult": {"blunt": 1.3, "claw": 0.7, "bite": 0.5},
+      "region_mult": {"head": 1.3, "hind_low": 1.2, "fore_low": 0.4, "tail": 0.3},
+      "again_mult": 1.3,
+      "max": 0.75,
+      "_rock_comment": "Less than a stumble: a blow of rock_from damage or more that doesn't stagger her can still turn her head or lean her body with it (rock_chance), her feet staying put. How it looks only.",
+      "rock_from": 15,
+      "rock_chance": 0.55
+    },
     "jolts": {
       "_comment": "What a hard hit (min_damage part damage or more) can do for a beat: breathless (chest or belly left very painful or worse), dazed (head left excruciating or worse), doubled_over (a part that was already devastated). Chances per hit.",
       "enabled": true,

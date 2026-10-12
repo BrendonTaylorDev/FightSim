@@ -49,7 +49,7 @@ class Display:
         self.rules = rules
         self.heart = rules["health"].get("icon", "❤️")
 
-    STATUS_WORD = {"fury": "furious", "doubled_over": "doubled over", "off_balance": "off balance",
+    STATUS_WORD = {"fury": "furious", "doubled_over": "doubled over", "off_balance": "off balance", "staggered": "staggered",
                    "protecting": "protected", "countering": "set to counter", "mirroring": "coated in a mirror sheen"}
 
     @staticmethod
@@ -67,7 +67,7 @@ class Display:
         """A status as words ("doubled over", not "doubled_over")."""
         return self.STATUS_WORD.get(status, str(status).replace("_", " "))
 
-    STATUS_ICON = {"bound": "🪢", "fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
+    STATUS_ICON = {"bound": "🪢", "fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "staggered": "🥴", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
 

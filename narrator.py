@@ -2574,6 +2574,8 @@ class Narrator:
             return ""
         if a.get("landings") or a.get("launch") or a.get("dodged") or a.get("pummel") or a.get("point_blank"):
             return ""
+        if a.get("moved"):
+            return ""   # the engine decided how this blow moved her (moves.stumble): its own notes tell it
         dfn = a.get("defender")
         if dfn in (getattr(self, "pinned_now", None) or ()) or a.get("target_against"):
             return ""
@@ -3979,14 +3981,43 @@ class Narrator:
                              f"falls, or injuries. Fighters reposition, breathe, size each other up, and feel what "
                              f"they already have.{what}{intent}")
 
+        rk = a.get("rocked")
+        if rk:
+            stay = {"standing": "her feet stay where they are, no stumble", "holding": "her feet stay planted",
+                    "down": "she stays down where she is", "held": "the hold keeps her where she is"}.get(rk.get("where"), "")
+            lines.append(f"  - HOW IT MOVES HER (the {rk['part'].lower()} hit): {rk['how']}"
+                         + (f"; {stay}" if stay else "") + ". One clause inside the hit, not a sentence of its own.")
         for s in a.get("status_applied") or []:
             if s.get("hazard"):
                 lines += self._arena_status_lines([s])
                 continue
             look = Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
             lines.append(f"  - This leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
+            if s.get("stumble"):
+                lines.append("    " + self._stumble_line(s))
             lines += self._status_story(s, a.get("attacker") if s.get("fighter") == a.get("defender") else a.get("defender"))
         return lines or [f"({t})"]
+
+    def _stumble_line(self, s):
+        """How the blow moves her: the head turning with a blow to the head, the stumble the way the blow was going,
+        and where that leaves her. Varied by the dice so no two stumbles read alike."""
+        st, who = s["stumble"], s["fighter"]
+        rng = random.Random(f"{self._beat_no}{who}{st.get('part')}")
+        if st.get("legs"):
+            body = rng.choice(["a leg knocked out from under her, she hops and lurches to catch it",
+                               "her footing goes on that side and she staggers to find it again"])
+        else:
+            body = rng.choice(["her body follows the blow", "the force of it turns her and carries her",
+                               "she is knocked off her line", "her weight goes with the hit before she can stop it"])
+        land = rng.choice(["her paws scraping and skidding for grip", "one paw dragging as she catches herself",
+                           "she ends half-turned, her side to her opponent", "she has to put a hand or paw down to stop",
+                           "her guard swings wide as she rights herself", "she ends somewhere she didn't choose to be"])
+        head = f"{st['head']}; " if st.get("head") else ""
+        tail = (" She is very close to going down: show her nearly falling and only just not." if "close to going down"
+                in st.get("steps", "") else "")
+        return (f"HOW IT MOVES HER (the {st['part'].lower()} hit): {head}{body}, {st['steps']} {st['way']}, {land}. "
+                f"She stays ON HER FEET; she is out of place and her guard is late for a moment.{tail} Show the "
+                f"stumble as part of the hit, in the same breath, not as a separate event.")
 
     # what a status looks like, how she takes it, and what her opponent reads in it (an opening, mostly): told when it
     # lands, so it is never just a word. {who} = the one it is on, {other} = her opponent
@@ -3997,6 +4028,9 @@ class Narrator:
         "dazed": ("her eyes lose their focus, she blinks and shakes her head and the world won't settle",
                   "she can't find {other} properly; everything is a beat late",
                   "{other} sees the glazed eyes and the late reactions: she is slow now"),
+        "staggered": ("the blow carries her with it, her feet scrambling under her to catch up with where her body went",
+                    "she knows she is a step out of place and slow, and that she needs her feet back NOW",
+                    "{other} sees her knocked out of her stance: a moment to follow her in"),
         "off_balance": ("she stumbles past her own blow, weight on the wrong foot, arms out to catch herself",
                         "she knows she is wide open while she gets her feet back",
                         "{other} sees her stagger and the open side she can't cover"),
@@ -4035,6 +4069,7 @@ class Narrator:
         "flinched": "the freeze lets go of her and she can move again; {other} sees her come back",
         "dazed": "the world settles back into one piece; she finds {other} again, sharp and single",
         "off_balance": "she gets her feet back under her and her guard back up",
+        "staggered": "her feet catch up with her and she plants them, square again, guard back where it belongs",
         "doubled_over": "she makes herself straighten, slowly, the hurt still there",
         "breathless": "breath finally comes back into her, ragged but real",
         "sputtering": "she gets the last of the water out and can breathe clean again",
@@ -5895,6 +5930,19 @@ class Narrator:
             else:
                 add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who),
                                                                    fighter=who.lower(), exclude=too_big))
+            for a_ in acts:
+                st_ = next((s for s in a_.get("status_applied") or [] if s.get("stumble") and s.get("fighter") == who), None)
+                rk_ = a_.get("rocked") if (a_.get("rocked") or {}).get("fighter") == who else None
+                if st_ or rk_:
+                    k_ = (st_ or {}).get("stumble", {}).get("kind") or (rk_ or {}).get("kind") or "blunt"
+                    add(f"how the blow moves {who} (one detail; the notes say which way)",
+                        B.pick("moved", 1, how={"stagger" if st_ else "rock"}, kind=k_,
+                               where=(rk_ or {}).get("where") or "standing", has=feats(who)))
+                    if st_:
+                        self._offer_line(add, f"a finished line for {who} as she staggers", "stagger",
+                                         fmt={"foe": by or next((w for w in (self.strengths or {}) if w != who), "")},
+                                         state=state(who))
+                    break
             eff = self._effect_on(who, acts)
             if eff:
                 vs = set((getattr(self, "fighter_types", None) or {}).get(who, []))
@@ -6503,6 +6551,10 @@ class Narrator:
             add(None, "sputter take")
         if any(a.get("manhandle") in ("throw", "slam") for a in acts):
             add("throw", "throw take")
+        if any(any(s.get("stumble") for s in a.get("status_applied") or []) for a in acts):
+            add(None, "stagger take")
+        elif any((a.get("rocked") or {}).get("where") in ("held", "down") for a in acts):
+            add(None, "jolted take")
         if (take or both) and getattr(self, "_breaking", None):
             tags.append("breaking point")
         if any(t in ("grapple_start", "hold_start") for t in types) or any(a.get("point_blank") for a in acts) \

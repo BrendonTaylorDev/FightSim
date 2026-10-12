@@ -7953,3 +7953,53 @@ the sounds of the place draw away from her, as if down a long tunnel
 grey creeps in at the edges of her sight and keeps coming
 her legs stop answering, politely, one and then the other
 the ground tilts up to meet her, slow and soft, and then there is nothing
+
+# ---------------------------------------------------------------------------------------------------------------
+# MOVED: how a blow moves a body (a stagger: knocked a step or more; a rock: moved where she stands, lies or is held)
+# ---------------------------------------------------------------------------------------------------------------
+== moved | how: stagger
+her feet scramble under her to catch up with where the blow put her
+she skids, one paw sliding out wide before it finds purchase
+the ground tilts and she goes with it, two quick steps that aren't hers
+she ends up turned half away, her guard hanging open on the wrong side
+she catches herself on a back foot, arms or tail swinging wide for balance
+for a moment she isn't fighting at all, only trying not to fall
+she lurches, overcorrects, and has to plant both feet to stop | stage: middle, late, end
+her tails whip out to the side, fighting for balance | has: tails
+her coils slide and bunch under her as she rights herself | has: coils
+her wings flare half open on their own to steady her | has: wings
+
+== moved | how: rock | where: standing
+her head turns with it and comes back slowly, as if it has to be talked into it
+her weight rocks onto her heels and back
+her shoulders give with the blow and then set again
+the blow turns her a quarter-turn before she squares up
+her chin goes with the hit; her eyes take a moment to follow
+her body sways like something hung on a line, but her feet don't move
+
+== moved | how: rock | where: down
+she is shoved a little way along the ground, grit gathering under her
+her head rolls with it, cheek against the ground
+her body shifts on the ground, a limb flopping wide before she pulls it back
+the blow rocks her where she lies, and the ground gives her nowhere to go
+
+== moved | how: rock | where: held
+she jerks in the grip, and it doesn't give
+her head snaps as far as the hold lets it and stops hard
+the hold takes the blow with her: neither can go anywhere
+her body bucks once against whatever is holding her
+
+== moved | how: rock | where: holding
+it rocks her, but she doesn't let go
+her grip slips an inch and she drags it back
+
+== moved | kind: shock
+every muscle locks at once and then lets go, all of her jerking with it
+her limbs go straight and stiff for one terrible instant
+
+== moved | kind: fire
+she twists the burning place away from the heat before she can think about it
+she flinches back from it, the heat chasing her
+
+== moved | kind: cold
+her body tightens around the cold spot, shrinking from it

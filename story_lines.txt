@@ -2604,3 +2604,13 @@ Her coils unwound and lay slack. | has: coils
 Her ears went slack against her head as she fell. | has: ears
 Her flame shrank to a low, quiet glow as she lay there. | has: flame
 Her tail dropped to the ground and lay quiet. | has: tail
+
+== stagger
+*Feet. Find your feet.*
+*Not down. Not yet.*
+*Where is {foe}? Where did she go?*
+*Stay up. Whatever else, stay up.*
+She got one foot under her, then the other, and only then did the world stop sliding.
+For two steps she belonged to the blow, not to herself.
+She came out of the stumble already turning, because {foe} would be coming. | state: fresh, winded
+Her legs argued with the ground and, barely, won. | state: tired, spent
