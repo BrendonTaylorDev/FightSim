@@ -1,11 +1,13 @@
-"""Check new story material against the library's rules. usage: python3 validate.py blocks|lines|samples FILE"""
+"""Check story material against the library's rules before adding it (gore, memories before the fight, feet moving
+in categories where only the engine moves her, unknown conditions or slots, duplicates, species and game words).
+    python3 sim/check_library.py blocks|lines|samples FILE"""
 import sys, re, json, collections
-sys.path.insert(0, "/home/user/FightSim")
+sys.path.insert(0, __import__("os").path.dirname(__import__("os").path.dirname(__import__("os").path.abspath(__file__))))
 import blocks, narrator, userprompt
 kind, path = sys.argv[1], sys.argv[2]
-names = [f["name"] for f in json.load(open("/home/user/FightSim/fighters.json"))["fighters"]]
+names = [f["name"] for f in json.load(open(__import__("os").path.join(sys.path[0], "fighters.json")))["fighters"]]
 species = set()
-for f in json.load(open("/home/user/FightSim/fighters.json"))["fighters"]:
+for f in json.load(open(__import__("os").path.join(sys.path[0], "fighters.json")))["fighters"]:
     m = re.match(r"\s*(?:An?|The)\s+(?:female\s+|male\s+)?([A-Z][\w'-]+)", f.get("description", ""))
     if m: species.add(m.group(1))
 NAMES = re.compile(r"\b(?:Pok[eé]mon|" + "|".join(map(re.escape, sorted(set(names) | species))) + r")\b")
@@ -21,7 +23,7 @@ def bad(why, where):
         print(f"  [{why}] {where[:170]}")
 if kind in ("blocks", "lines"):
     B = blocks.Blocks({"narration": {"blocks": {"file": path}}})
-    base = blocks.Blocks({"narration": {"blocks": {"file": "/home/user/FightSim/story_" + ("blocks" if kind == "blocks" else "lines") + ".txt"}}})
+    base = blocks.Blocks({"narration": {"blocks": {"file": __import__("os").path.join(sys.path[0], "story_") + ("blocks" if kind == "blocks" else "lines") + ".txt"}}})
     have = {(c, t.lower()) for c, _, t in base.entries}
     keys_by_cat = collections.defaultdict(set)
     for c, co, _ in base.entries:
