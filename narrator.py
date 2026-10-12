@@ -826,6 +826,12 @@ WEAPONS = (("claws", r"\bclaw|\btalon|\bscratch|\brak(?:e|es|ed|ing)\b|\bswipe")
            ("horn", r"\bhorn|\bgore"))
 WEAPON_SAY = {"claws": "her CLAWS", "teeth": "her TEETH", "tail": "her TAIL", "horn": "her HORN"}
 WEAPON_NOT = {"claws": "a claw swipe", "teeth": "a bite", "tail": "a tail strike"}
+# a weapon word whose object is the ground or the scenery ("rakes the ground", "her claws dug into the mud", "her tail
+# lashes the water"): not the weapon the blow lands with
+WEAPON_AT_SCENERY = re.compile(r"\b(?:claw\w*|talons?|scratch\w*|rak(?:e|es|ed|ing)|swip\w+|bit(?:e|es|ing)?|fangs?|teeth|"
+                               r"jaws?|tails?|horns?|gor(?:e|es|ed|ing))(?: \w+)?? (?:(?:at|into|across|through|up|along|"
+                               r"against|in|on) )?(?:the |a |some )?(?:\w+ )?(?:ground|earth|mud|dirt|soil|sand|floor|"
+                               r"grass|gravel|snow|rocks?|stones?|bark|trees?|trunk|log|wall|water|air)\b", re.I)
 # an attack with the teeth, as it happens (not "the teeth marks", not "bit down on a cry")
 BITING = re.compile(r"\b((?:fangs|teeth|jaws?|muzzle|mouth) (?:sank|sinking|sink|clamp\w*|clos\w+|lock\w*|snapp\w+|fasten\w+|"
                     r"latch\w+) (?:down |shut |hard |tight )*(?:on|onto|around|into|over)\b|(?:fangs|teeth) (?:sank|sinking|"
@@ -3550,6 +3556,9 @@ class Narrator:
                 # what she gets away from is the other's ("tears free of the teeth", "out of the claws")
                 fl = re.sub(r"\b(?:free|clear|loose|out|away|off)(?: of| from)? (?:the|those|its|their|her opponent's) "
                             r"(?:\w+ )?(?:tails?|horns?|claws?|teeth|jaws?|fangs?|grip)\b", "", fl, flags=re.I)
+                # nor what she does to the ground or the scenery ("rakes the ground and a spike bursts up", "claws
+                # dug into the mud"): that is how she calls the move up, not what lands on her
+                fl = re.sub(WEAPON_AT_SCENERY, "", fl)
                 mine = {w for w, rx in WEAPONS
                         if re.search(rx, " ".join([fl, str(m.get("about") or ""), m["name"]]), re.I)}
                 if mine and len(mine) <= 2 and not a.get("dodged"):
