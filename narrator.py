@@ -1854,6 +1854,9 @@ PRESENT_POSS = re.compile(r"\b(?:[A-Z][a-z]+(?:'s|’s|'|’)|[Hh]er|[Tt]he Abso
 HURT_SAID = re.compile(r"\b(?:throb\w*|ach(?:e|ed|es|ing)|burn\w*|sting\w*|pain\w*|hurt\w*|sore\w*|flar\w+|pulse\w*|"
                        r"pulsing|tender|agony|fire|protest\w*)\b", re.I)
 
+# an idea of blood or a cut on her: only on a part a claw, a blade or teeth have marked
+CUT_IDEA = re.compile(r"\bblood|\bbleed|\bbled\b|\bscratch", re.I)
+
 # blood in her mouth, a trickle, a coppery taste: only for a fighter something has really hurt
 BLOOD_SAID = re.compile(r"\b(?:taste of (?:her own )?blood|blood (?:in|filled|filling) her mouth|trickle of blood|"
                         r"blood (?:ran|dripp\w*|trickl\w*|welled|seeped|beaded|oozed)|bled|bleeding|copper(?:y)?|metallic "
@@ -5977,6 +5980,12 @@ class Narrator:
         if part == "legs":
             z = "leg"
         unseen = z in ("neck", "back", "head") or bool(re.search(r"\b(?:back|throat|nape|spine)\b", str(part), re.I))
+        # blood or a scratch only where a claw, a blade or teeth went in (the engine's wound kinds): not after a punch
+        logs = getattr(self, "wound_kinds", None) or {}
+        mine = [v for k, v in logs.items() if k.lower().startswith(f"{who}|".lower())
+                and (part in ("wound", "legs") or k.lower() == f"{who}|{part}".lower())]
+        if not set().union(*mine) & {"claw", "bite"}:
+            ctx["exclude"] = CUT_IDEA
         return self._blocks().pick("self_look", 1, fmt={"part": part}, zone=z, need=("zone",) if unseen else (), **ctx)
 
     def _worst_parts(self, who, n=2, floor="hurting", skip=(), before=None):
