@@ -858,11 +858,45 @@ PRESENT_TENSE = re.compile(r"\b(?:[Ss]he|[Hh]e|[Ii]t)\s+(?:is|has|does|(?!was\b|
                            r"almost\b|nearly\b|thus\b)[a-z]{2,}(?<![su])s)\b(?!['’])")
 # staging that throws more than one blow ("two fast ones and a slow hard one", "three of them before...")
 SEVERAL_BLOWS = re.compile(r"\b(?:two|three|four|several|both) (?:fast |quick |short |hard |light )*(?:ones|of them|blows|"
-                           r"strikes|jabs|punches|chops|hits)\b|\bone-two\b|\bflurry\b|\bcombination\b|\bagain and again\b", re.I)
+                           r"strikes|jabs|punches|chops|hits)\b|\bone-two\b|\bflurry\b|\bcombination\b|\bagain and again\b|"
+                           # a first blow thrown to set up "the real one": a second blow the engine never threw
+                           r"\bthe (?:real|true|actual) (?:one|bite|blow|strike|punch|chop|kick|swipe|rake)\b|"
+                           r"\b(?:jabbed|jabs?|nipped|nips?|tapped|taps?) once\b|\bto measure\b|\bthen the (?:real|true)\b", re.I)
+
+# what each way of dodging the engine rolls looks like: a dodge idea that plainly shows another way is not offered
+DODGE_WAYS = {
+    "sidestep": re.compile(r"\b(?:sidestep\w*|side-?steps?|skips? sideways|steps? round|slides? out|slips? to one side|"
+                           r"turns? side-on|sways? out of its line)\b", re.I),
+    "duck": re.compile(r"\b(?:drops? (?:low|flat|under)|ducks?|ducks under|goes over her|passes over her|whistles over|"
+                       r"legs fold)\b", re.I),
+    "spring_back": re.compile(r"\b(?:hop back|darts? back|springs? back|gives? ground|leans? back|out of (?:its )?reach)\b", re.I),
+    "twist": re.compile(r"\b(?:twists?|pivots?|rolls? out)\b", re.I),
+}
+DODGE_WAYS["turn_aside"] = DODGE_WAYS["twist"]
+
+
+def dodge_exclude(manner):
+    """Patterns for dodge ideas that show a way of dodging other than the one rolled (none if it is unknown)."""
+    if manner not in DODGE_WAYS:
+        return None
+    mine = DODGE_WAYS[manner]
+    return [rx for m, rx in DODGE_WAYS.items() if rx is not mine] or None
+
+
+# an idea that needs the attack to be a beam, a stream or a breath crossing the space between them
+BEAM_IDEA = re.compile(r"\b(?:beam|ray|stream|jet|gout|spray|breath of|rolls? out|ahead of the|crosses the (?:gap|space)|"
+                       r"between them)\b", re.I)
+# an idea that sits or lays her down: not for a fighter the posture notes keep on her feet
+SITS_DOWN = re.compile(r"\b(?:sits?|sat|sitting|lowers? herself|lies? down|lay down|kneel\w*|sinks? (?:down|to)|"
+                       r"onto her (?:haunches|side|knees|belly)|folds? (?:down|up)|collaps\w*)\b", re.I)
+# an idea that needs a grip on her (or the two of them held together): not for blows with no grip
+GRIP_IDEA = re.compile(r"\b(?:grip\w*|grab\w*|hold(?:ing)? on|clinch\w*|between their two bodies|from underneath)\b", re.I)
 
 # a reaction that moves her feet: the engine's call now, not a reaction's
 MOVES_HER = re.compile(r"\b(?:steps?|stagger\w*|stumbl\w*|reel\w*|knocked back|sway\w*|totter\w*|lurch\w*|"
-                       r"rocked back|backward|off (?:her|its) feet|buckl\w*|wobbl\w*)\b", re.I)
+                       r"rocked back|backward|off (?:her|its) feet|buckl\w*|wobbl\w*|lifts? her|drops? her|sends? her|"
+                       r"carri(?:es|ed) her|flung|thrown back|knocked (?:her )?(?:away|aside|over)|skid\w*|"
+                       r"(?:an? )?(?:arm's|body's|tail's) length away|spun round|spins? her)\b", re.I)
 
 # memories from before this fight: the story has none
 INVENTED_PAST = re.compile(r"\b(?:just like (?:that|the) (?:time|day)|(?:remembered|recalled|thought of) the (?:last|first) "
@@ -1527,6 +1561,9 @@ GOT_UP = re.compile(r"\b(?:got (?:back )?(?:up|to her feet|on(?:to)? her feet)|(
                     r"climbed|pushed(?: herself)?|hauled herself|came|bounced|flipped|surged|rose|lurched|staggered) "
                     r"(?:back )?(?:up(?:right)?|to her feet|on(?:to)? her feet)|(?:back|up) on her feet|on her feet again|"
                     r"regained her feet|found her feet again|stood (?:back )?up|rose to (?:her|all four) (?:feet|paws))\b", re.I)
+# ideas that need stone around her: not offered where there is none (narrator._scene_ban)
+STONE_ONLY = re.compile(r"\b(?:off the (?:stone|rock|walls?)|stone floor|rock floor|(?:cave|stone|rock) walls?|echo\w* back at her|"
+                        r"cave|stalactite|stalagmite)\b", re.I)
 # things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
 ARENA_LEAK = re.compile(r"\b(cave|stalactite|stalagmite)(?:s|'s)?(?: (?:walls?|floor|roof|ceiling|mouth))?\b", re.I)
 
@@ -3185,8 +3222,10 @@ class Narrator:
                              f"{poss(dfn)} reactions change from the first blows to the last (sharp at first, then "
                              f"rawer, then she can't keep anything in), and what it costs {att} to keep it up.")
             if a["pummel"].get("answer"):
+                from_ = {"grab": "from where she is held", "pin": "from under her",
+                         "down": "from where she lies", "against": "from where she is pressed"}.get(where, "from where she is")
                 lines.append(f"  - {poss(dfn)} answering blow lands on {att} (a paw, an elbow, her head: whatever she can "
-                             f"reach with from where she is held):")
+                             f"reach with {from_}):")
                 lines += [self._hit_line(h) for h in a["pummel"]["answer"]]
         if a.get("point_blank") and att and dfn:
             holder = a["point_blank"]
@@ -3495,6 +3534,9 @@ class Narrator:
                             "", str(a.get("flavor") or ""), flags=re.I)
                 fl = re.sub(r"\b(?:the other's|her opponent's|[A-Z][a-z]+'s?)\s+(?:\w+\s+)?(?:tails?|horns?|claws?|teeth|"
                             r"jaws?|fangs?)\b", "", fl)
+                # what she gets away from is the other's ("tears free of the teeth", "out of the claws")
+                fl = re.sub(r"\b(?:free|clear|loose|out|away|off)(?: of| from)? (?:the|those|its|their|her opponent's) "
+                            r"(?:\w+ )?(?:tails?|horns?|claws?|teeth|jaws?|fangs?|grip)\b", "", fl, flags=re.I)
                 mine = {w for w, rx in WEAPONS
                         if re.search(rx, " ".join([fl, str(m.get("about") or ""), m["name"]]), re.I)}
                 if mine and len(mine) <= 2 and not a.get("dodged"):
@@ -3563,6 +3605,13 @@ class Narrator:
                 lines.append(f"  - {a['attacker']} is so {'tired' if worn else 'out of breath'} she OVERCOMMITS: the blow is "
                              f"sloppy, badly timed, half its "
                              f"usual force, and she overbalances on it and has to catch herself (OFF BALANCE after it).")
+            if a.get("aim"):
+                am = a["aim"]
+                lines.append(f"  - OFF TARGET: {a['attacker']} aims it at {poss(a['defender'])} {am['aimed'].lower()}, "
+                             f"but it is a small or hard place to reach and it does not land there: it lands on her "
+                             f"{am['landed'].lower()} instead (a twist, a tucked chin, a raised limb, or just a hair "
+                             f"off). The hit below is on the {am['landed'].lower()}; the "
+                             f"{am['aimed'].lower()} is not touched.")
             if a.get("last_stand"):
                 lines.append(f"  - LAST STAND: {a['attacker']} is nearly spent, and she puts EVERYTHING she has left into "
                              f"this one blow: it is harder than anything she has thrown in a while, and afterwards she "
@@ -4051,7 +4100,8 @@ class Narrator:
         if rk:
             stay = {"standing": "her feet stay where they are, no stumble", "holding": "her feet stay planted",
                     "down": "she stays down where she is", "held": "the hold keeps her where she is"}.get(rk.get("where"), "")
-            lines.append(f"  - HOW IT MOVES HER (the {rk['part'].lower()} hit): {rk['how']}"
+            whole = (a.get("move") or {}).get("target") == "whole_body"
+            lines.append(f"  - HOW IT MOVES HER ({'the ' + (a.get('move') or {}).get('name', 'move') + ', all through her' if whole else 'the ' + rk['part'].lower() + ' hit'}): {rk['how']}"
                          + (f"; {stay}" if stay else "") + ". One clause inside the hit, not a sentence of its own.")
         for s in a.get("status_applied") or []:
             if s.get("hazard"):
@@ -4060,11 +4110,12 @@ class Narrator:
             look = Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
             lines.append(f"  - This leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
             if s.get("stumble"):
-                lines.append("    " + self._stumble_line(s))
+                lines.append("    " + self._stumble_line(s, whole=(a.get("move") or {}).get("name")
+                                                         if (a.get("move") or {}).get("target") == "whole_body" else None))
             lines += self._status_story(s, a.get("attacker") if s.get("fighter") == a.get("defender") else a.get("defender"))
         return lines or [f"({t})"]
 
-    def _stumble_line(self, s):
+    def _stumble_line(self, s, whole=None):
         """How the blow moves her: the head turning with a blow to the head, the stumble the way the blow was going,
         and where that leaves her. Varied by the dice so no two stumbles read alike."""
         st, who = s["stumble"], s["fighter"]
@@ -4088,7 +4139,8 @@ class Narrator:
             tail += " She is still strong: she rights herself fast, angry more than shaken."
         elif s_ is not None and s_ < 30:
             tail += " She is worn thin: getting her feet back takes everything, and it shows."
-        return (f"HOW IT MOVES HER (the {st['part'].lower()} hit): {head}{body}, {st['steps']} {st['way']}, {land}. "
+        what = f"the {whole}, all through her" if whole else f"the {st['part'].lower()} hit"
+        return (f"HOW IT MOVES HER ({what}): {head}{body}, {st['steps']} {st['way']}, {land}. "
                 f"She stays ON HER FEET; she is out of place and her guard is late for a moment.{tail} Show the "
                 f"stumble as part of the hit, in the same breath, not as a separate event.")
 
@@ -4333,11 +4385,18 @@ class Narrator:
 
     def _get_up_lines(self, e):
         """Getting up off the ground, try by try, so it reads as hard as the injuries make it."""
-        who, grab = e["fighter"], e["grab"]
-        how = {"biped": f"grabs onto {grab} and hauls herself up with her arms",
-               "quadruped": f"gets her legs under her, leaning her weight against {grab}",
-               "serpent": f"braces her coils against {grab} and lifts her body",
-               "avian": f"beats her wings against the ground and pushes up off {grab} onto her talons"}[e["plan"]]
+        who, grab = e["fighter"], e.get("grab")
+        ground = e.get("ground") or "the ground"
+        if grab:      # she lies at the foot of something: she uses it
+            how = {"biped": f"grabs onto {grab} and hauls herself up with her arms",
+                   "quadruped": f"gets her legs under her, leaning her weight against {grab}",
+                   "serpent": f"braces her coils against {grab} and lifts her body",
+                   "avian": f"beats her wings against the ground and pushes up off {grab} onto her talons"}[e["plan"]]
+        else:         # out in the open: nothing to hold but the ground she is on
+            how = {"biped": f"plants her hands on {ground} and pushes herself up",
+                   "quadruped": f"gets her legs under her, pushing up off {ground}",
+                   "serpent": f"braces her coils against {ground} and lifts her body",
+                   "avian": f"beats her wings against {ground} and pushes up onto her talons"}[e["plan"]]
         hurt = " and ".join(p.lower() for p in e.get("hurting", [])) or "battered body"
         self._getup_tries = e["tries"] if e["stands"] else None
         self._getup_who = who if e["stands"] else None
@@ -4360,12 +4419,13 @@ class Narrator:
         fails = list(e.get("fails") or [])
         fail_way = lambda k, i: {
             "gives_out": f"partway up, her {hurt} {verb} out and she drops back down hard",
-            "slips": f"what she pushes off with skids on {self._sw('slick', 'the ground')} and she goes down again",
+            "slips": f"what she pushes off with skids under her and she goes down again",
             "dizzy": "she gets partway up, everything tilts around her, and she sinks back down",
             "breath": "she gets partway up, has no air for it, and folds back down, gasping",
         }.get(fails[i] if i < len(fails) else None, f"partway up, her {hurt} {verb} out and she drops back down hard")
         rise = {"roll": "she rolls onto her front first, gathers herself under her, and pushes up",
-                "lean": f"she drags herself to {grab} and climbs it, leaning her weight on it",
+                "lean": (f"she drags herself to {grab} and climbs it, leaning her weight on it" if grab else
+                         "she gets as far as her knees first, rests there a breath, and goes the rest of the way"),
                 "lurch": "she lurches up in one ugly heave, nearly overbalancing"}.get(e.get("rise"))
         if e["stands"] and e["tries"] == 1:
             lines.append(f"  - First try ({who}): she makes it up, quickly, shaking it off" +
@@ -4376,7 +4436,7 @@ class Narrator:
             if e["tries"] == 3:
                 lines.append(f"  - Try 2 ({who}): she gets nearly all the way up, then {fail_way(None, 1).split(', ', 1)[-1]}.")
             lines.append(f"  - Try {e['tries']} ({who}): she finally makes it onto her feet, unsteady: winded, wincing, sides "
-                         f"heaving, favoring her {hurt}, using {grab} for balance."
+                         f"heaving, favoring her {hurt}" + (f", using {grab} for balance." if grab else ".")
                          + (f" This time {rise}." if rise else ""))
         elif e.get("sits"):
             lines.append(f"  - Three tries by {who}, each one shorter and weaker (the first: {fail_way(None, 0)}). Her {hurt} "
@@ -5602,14 +5662,14 @@ class Narrator:
         if not e or not text or not self.rules.get("narration", {}).get("accuracy_check", True) \
                 or self._shown_standing(text):
             return text
-        who, grab = e["fighter"], e["grab"]
+        who, grab = e["fighter"], e.get("grab")
         if self.progress:
             self.progress(f"the passage never ended with {who} on her feet: adding the get-up")
         held = "; ".join(f"{poss(g['by'])} grip on her {g['part']} is still on" for g in e.get("held") or [])
         ask = (getattr(self, "_last_context", "")
                + f"The beat so far (already written; never repeat or rephrase it):\n<<<\n{_tail(text, 2500)}\n>>>\n\n"
                  f"One thing is still missing: {who} finally getting up. Write ONLY that, as one closing paragraph of 40 "
-                 f"to 70 words that names {who}: her last try succeeds, using {grab}, and she ends ON HER FEET, unsteady "
+                 f"to 70 words that names {who}: her last try succeeds{', using ' + grab if grab else ''}, and she ends ON HER FEET, unsteady "
                  f"and hurting" + (f" ({held})" if held else "") + ". No attack, no fall, no speech, nothing else happens.")
         more = ""
         try:
@@ -5619,9 +5679,12 @@ class Narrator:
         if more and len(more.split()) <= 130 and self._shown_standing(more) \
                 and not any(sent in more for sent in self._bad_sentences(text + "\n\n" + more, "")):
             return text.rstrip() + "\n\n" + more
-        plain = {"biped": f"{who} got her feet under her at last and stood, swaying, one paw braced against {grab}.",
-                 "quadruped": f"{who} got her legs under her at last and stood, swaying, her shoulder against {grab}.",
-                 "serpent": f"{who} braced her coils against {grab} at last and rose, swaying.",
+        prop = grab or e.get("ground") or "the ground"
+        plain = {"biped": (f"{who} got her feet under her at last and stood, swaying, one paw braced against {grab}." if grab
+                           else f"{who} got her feet under her at last and stood, swaying."),
+                 "quadruped": (f"{who} got her legs under her at last and stood, swaying, her shoulder against {grab}." if grab
+                               else f"{who} got her legs under her at last and stood, swaying."),
+                 "serpent": f"{who} braced her coils against {prop} at last and rose, swaying.",
                  "avian": f"{who} beat her wings hard at last and pushed up onto her talons, swaying."}[e.get("plan", "biped")]
         return text.rstrip() + "\n\n" + plain
 
@@ -5814,7 +5877,15 @@ class Narrator:
             b = self._block_store = story_blocks.Blocks(self.rules)
         b.cfg = (self.rules.get("narration", {}) or {}).get("blocks", {}) or {}
         b.enabled = bool(b.cfg.get("enabled", True))
+        b.scene_ban = self._scene_ban()
         return b
+
+    def _scene_ban(self):
+        """Ideas that need stone walls or a cave (a voice ringing off the stone) when this place has none."""
+        scene_low = (str(getattr(self, "_scene_text", "") or "") + " " + str(getattr(self, "scene_words", "") or "")).lower()
+        if not scene_low.strip() or re.search(r"\b(?:cave|cavern|stone|rock|cliff|wall|canyon|ruin|quarry|tunnel)", scene_low):
+            return None
+        return STONE_ONLY
 
     def _lines(self):
         """The library of finished sentences (story_lines.txt): the same format and conditions as the blocks, but
@@ -5828,6 +5899,7 @@ class Narrator:
         b.cfg = {"cooldown_beats": int(cfg.get("cooldown_beats", 40)), "remember": bool(cfg.get("remember", True)),
                  "fighter_boost": 2.5}
         b.enabled = bool(cfg.get("enabled", True))
+        b.scene_ban = self._scene_ban()
         return b
 
     def _offer_line(self, add, label, category, fmt=None, exclude=None, **ctx):
@@ -5853,6 +5925,15 @@ class Narrator:
     def _feats_of(self, who):
         """What a fighter's body has (tails, fins, horn, arms...), from her own part names."""
         return story_blocks.features(list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()))
+
+    def _self_look(self, who, part, **ctx):
+        """A self-look idea for her own part. One she can't see (her neck, her back, her own face) gets only the
+        ideas written for that zone, which feel it rather than watch it; a part she can see gets any."""
+        z = story_blocks.ZONE_OF.get(body_region(part)) if part and part not in ("wound", "legs") else None
+        if part == "legs":
+            z = "leg"
+        unseen = z in ("neck", "back", "head") or bool(re.search(r"\b(?:back|throat|nape|spine)\b", str(part), re.I))
+        return self._blocks().pick("self_look", 1, fmt={"part": part}, zone=z, need=("zone",) if unseen else (), **ctx)
 
     def _worst_parts(self, who, n=2, floor="hurting", skip=(), before=None):
         """Her n worst-hurt parts at `floor` or worse: [(part name in lower case, level, zone)]. before: {part:
@@ -6018,6 +6099,8 @@ class Narrator:
                     k_ = (st_ or {}).get("stumble", {}).get("kind") or (rk_ or {}).get("kind") or "blunt"
                     add(f"how the blow moves {who} (one detail; the notes say which way)",
                         B.pick("moved", 1, how={"stagger" if st_ else "rock"}, kind=k_,
+                               # a shock, a burn, a freeze, a psychic blow moves her its own way: only its own ideas
+                               need=("kind",) if k_ in ("shock", "fire", "cold", "mind") else (),
                                where=(rk_ or {}).get("where") or "standing", has=feats(who)))
                     if st_:
                         self._offer_line(add, f"a finished line for {who} as she staggers", "stagger",
@@ -6059,6 +6142,16 @@ class Narrator:
                 kinds |= got
             if close and "grab" not in kinds:
                 kinds = {"close"}
+            # close blows with no grip at all (a pummel on her where she lies, or against a tree): no ideas that
+            # use a grip or come up between two bodies held together
+            no_grip = ("grab" not in kinds and who not in {g[0] for g in (getattr(self, "grips", None) or [])}
+                       and not any(a.get("attacker") == who and (a.get("pummel") or {}).get("where") in ("grab", "pin")
+                                   for a in acts))
+            grip_x = [GRIP_IDEA] if no_grip else []
+            if "beam" not in kinds and kinds & {"bite", "claw", "punch", "charge", "tail", "horn", "beak", "talon",
+                                                 "grab", "close"}:
+                # an element's ideas for a beam or a breath don't fit a bite or a punch carrying it (Ice Fang)
+                grip_x.append(BEAM_IDEA)
             if self._in_air(who) or any(a.get("attacker") == who and a.get("dive") for a in acts):
                 pass        # in the air or diving: the dive's own ideas cover it; no footwork on the ground
             elif who in {g[0] for g in (getattr(self, "grips", None) or [])}:
@@ -6073,12 +6166,15 @@ class Narrator:
                 # one blow is one blow: no staging ideas that throw two or three ("two fast ones", "three of them")
                 runs = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
                                                          or a.get("combo")) for a in acts)
-                one_ = None if runs else [SEVERAL_BLOWS]
+                one_ = ([] if runs else [SEVERAL_BLOWS]) + grip_x or None
                 add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, has=feats(who), exclude=one_) if kinds
                     else B.pick("movement", 1, has=feats(who), exclude=one_))
             if kinds:
+                runs_ = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
+                                                          or a.get("combo") or int(a.get("hit_count") or 0) > 1) for a in acts)
                 self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
-                                 fmt={"foe": target or ""}, kind=kinds, has=feats(who), state=state(who), role="attacker")
+                                 fmt={"foe": target or ""}, exclude=None if runs_ else [SEVERAL_BLOWS],
+                                 kind=kinds, has=feats(who), state=state(who), role="attacker")
             eff = self._effect_on(target, [a for a in acts if a.get("attacker") == who]) if target else None
             if eff:
                 vs = set((getattr(self, "fighter_types", None) or {}).get(target, []))
@@ -6105,8 +6201,8 @@ class Narrator:
                                                                 state=state(by_)))
                     add(f"what {who} can see of {by_}", B.pick("tell", 1, has=feats(by_), state=state(by_)))
                 add(f"{poss(who)} thought", B.pick("read_thought", 1, state=state(who), fighter=who.lower()))
-                add(f"{who} checking her own body", B.pick("self_look", 1, fmt={"part": m.get("part") or "wound"},
-                                                           has=feats(who), state=state(who)))
+                add(f"{who} checking her own body", self._self_look(who, m.get("part") or "wound",
+                                                                          has=feats(who), state=state(who)))
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
                 for p, lv, z in self._worst_parts(who, 1, "very painful"):
                     add(f"how the hurt in {poss(who)} {p} feels as she watches", B.pick(
@@ -6129,8 +6225,8 @@ class Narrator:
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who))
                     + B.pick("dwell_breath", 1, state=state(who)))
                 p0 = m.get("part") or "wound"
-                add(f"{who} looking at her own {p0}", B.pick("self_look", 1, fmt={"part": p0}, has=feats(who),
-                                                              state=state(who)))
+                add(f"{who} looking at her own {p0}", self._self_look(who, p0, has=feats(who),
+                                                                             state=state(who)))
                 mind(who, "receiver", other)
                 return self._blocks_plan(lines, "take", False, last, who, other)
             side[0] = "act"
@@ -6143,8 +6239,9 @@ class Narrator:
                                                                has=feats(victim), state=state(victim),
                                                                posture=posture(victim, end=True)))
                 add(f"what {who} can see of {victim}", B.pick("tell", 1, has=feats(victim), state=state(victim)))
-            add(f"{poss(who)} thought", B.pick("watch_thought", 1, state=state(victim) if victim else None,
-                                                 fighter=who.lower()))
+            add(f"{poss(who)} thought", B.pick("collapse_thought", 1) if m.get("collapse") else
+                # (her opponent going down on her own is not choosing anything: no thoughts about her tactics)
+                B.pick("watch_thought", 1, state=state(victim) if victim else None, fighter=who.lower()))
             add(f"what {who} feels", B.pick("emotion", 1, role={"attacker"}, stage=stage, fighter=who.lower(),
                                             standing=standing(who, victim) if victim else {"level"}))
             add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
@@ -6244,6 +6341,13 @@ class Narrator:
                                                         fighter=(dfn_ or "").lower()))
                 if act and a["devastating"].get("reason") != "ground":
                     add(f"{poss(att_)} thought", B.pick("devastating_thought", 1, fighter=(att_ or "").lower()))
+            if a.get("aim") and a.get("hits"):
+                side[0] = "take" if take else "act"
+                add("off target" if act else f"{dfn_}, keeping it from landing true",
+                    B.pick("off_target" if act else "off_target_take", 1))
+                if take:
+                    self._offer_line(add, f"a finished line for {dfn_} as it lands off target", "off_target",
+                                     fmt={"part": a["aim"]["landed"].lower(), "foe": att_ or ""})
             if act and (a.get("pummel") or {}).get("frenzy"):
                 side[0] = "act"
                 add(f"{poss(att_)} frenzy", B.pick("frenzy", 1))
@@ -6285,7 +6389,10 @@ class Narrator:
             win = next((a.get("winner") for a in acts if a.get("winner")), None)
             if act and win:
                 side[0] = "act"
-                add(f"{win}, afterwards", B.pick("aftermath_winner", 3, has=feats(win), state=state(win)))
+                # the posture notes keep her ON HER FEET: no ideas that sit her down or lay her out
+                up_ = win not in (getattr(self, "on_ground", None) or ())
+                add(f"{win}, afterwards", B.pick("aftermath_winner", 3, has=feats(win), state=state(win),
+                                                 exclude=[SITS_DOWN] if up_ else None))
                 for p, lv, z in self._worst_parts(win, 1, "very painful"):
                     add(f"how {poss(win)} {p} feels now", B.pick("sensation", 1, fmt={"part": p}, level=lv, zone=z,
                                                                 has=feats(win), part=set(re.findall(r"[a-z]+", p))))
@@ -6427,10 +6534,10 @@ class Narrator:
                                                          .get("chance", 0.5)):
                         # she looks at her own body: the wound, the shaking, whether the limb still answers
                         p, lv, z = worst[0]
-                        add(f"{who} looking at her own {p}", B.pick("self_look", 1, fmt={"part": p}, zone=z,
-                                                                     has=feats(who), state=state(who)))
+                        add(f"{who} looking at her own {p}", self._self_look(who, p, has=feats(who), state=state(who)))
                 elif any(a.get("defender") == who for a in dodged):
-                    add(f"how {who} gets out of the way", B.pick("dodge", 2, has=feats(who)))
+                    mn_ = next((a.get("manner") for a in dodged if a.get("defender") == who), None)
+                    add(f"how {who} gets out of the way", B.pick("dodge", 2, has=feats(who), exclude=dodge_exclude(mn_)))
         for a in acts:
             if a.get("knockout") and (take or last or key in ("all",)):
                 who = a["fighter"]
@@ -6447,7 +6554,7 @@ class Narrator:
                 side[0] = "take"
                 add(f"how {who} collapses", B.pick("collapse", 2, has=feats(who), state=state(who)))
                 add(f"{who} looking at her own body as it fails her",
-                    B.pick("self_look", 1, fmt={"part": "legs"}, has=feats(who), state=state(who)))
+                    self._self_look(who, "legs", has=feats(who), state=state(who)))
                 self._offer_line(add, f"a finished line for {who} collapsing", "collapse", has=feats(who))
         memory = self._memory_line([w for w in targets if hits.get(w)], hits) if take else None
         return self._blocks_plan(lines, key, first, last, actor or (doers or [None])[0],
@@ -6578,6 +6685,68 @@ class Narrator:
                 "touched. They are jotted in the present tense: the story puts them in the past (\"her head snaps "
                 "back\" becomes \"her head snapped back\").\n" + "\n".join(f" {i}. {t}" for i, t in enumerate(steps, start=1)))
 
+    def _checklist(self, key, acts, actor=None, receivers=()):
+        """narration.checklist (off by default): a short list of what this part MUST contain, straight from the engine,
+        apart from the colour ideas: who does what, where each blow lands and how hard, how each part hurts now, who
+        ends where. A plain list is easier for a small local model to keep hold of than facts spread through long
+        notes; the notes stay as they are."""
+        cfg = (self.rules.get("narration", {}) or {}).get("checklist") or {}
+        if not cfg.get("enabled", False):
+            return ""
+        cap = int(cfg.get("max_items", 8))
+        items = []
+        acting = key in ("act", "all", "setup")
+        taking = key in ("take", "all", "after")
+        if key in ("dwell", "watch", "read"):
+            m = next((x for x in getattr(self, "_moments", []) if x["key"] == key), None)
+            if m:
+                items.append(f"Told from {poss(m['who'])} side. No new attack and no new injury: only what is already there.")
+        for a in acts:
+            att, dfn = a.get("attacker"), a.get("defender")
+            mv = (a.get("move") or {}).get("name")
+            if acting and att and mv and a.get("type") == "instant":
+                aim = a.get("aim")
+                if a.get("dodged"):
+                    how = f": {dfn} DODGES it ({a.get('manner') or 'gets out of the way'}), nothing lands"
+                elif (a.get("guard") or {}).get("kind") == "block":
+                    how = f": {dfn} BLOCKS it with her {a['guard']['part'].lower()}"
+                elif aim:
+                    how = f", aimed at her {aim['aimed'].lower()}; it lands on her {aim['landed'].lower()} instead"
+                else:
+                    how = ""
+                items.append(f"{att} uses {mv} on {dfn}{how}.")
+            if taking and a.get("hits") and not a.get("dodged"):
+                by_def = {}
+                for h in a["hits"]:
+                    by_def.setdefault(h.get("defender") or dfn, []).append(h)
+                for who, hs in by_def.items():
+                    seen = []
+                    for h in hs:
+                        p = str(h.get("part") or "").lower()
+                        if not p or p in seen:
+                            continue
+                        seen.append(p)
+                        taken = sum(float(x.get("damage_taken") or 0) for x in hs if str(x.get("part") or "").lower() == p)
+                        now = (self.damage_by.get(who) or {}).get(p)
+                        lv = f", now {self._pain(now)['label']}" if now is not None else ""
+                        items.append(f"{poss(who)} {p}: {self._strength_key(taken)} hit{lv}.")
+        ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
+        if taking or key == "all":
+            for who, end in pe.items():
+                if ps.get(who) and ps.get(who) != end:
+                    items.append(f"{who}: starts {ps[who]}, ends {end}.")
+        if acting or taking:
+            for a in acts:
+                if a.get("knockout") or a.get("type") == "knockout":
+                    items.append(f"{a.get('fighter') or a.get('defender')} is knocked OUT.")
+        items = list(dict.fromkeys(items))
+        if not items:
+            return ""
+        more = len(items) - cap
+        items = items[:cap] + ([f"(and {more} more, as in the notes above)"] if more > 0 else [])
+        return ("\n\nCHECKLIST for this part (each item must be in it, in your own words; nothing here is new, it is "
+                "the notes above in short):\n" + "\n".join(f"- {x}" for x in items))
+
     def _blocks_note(self, lines):
         cap = int(((self.rules.get("narration", {}) or {}).get("blocks", {}) or {}).get("per_part", 10))
         lines = [x for x in lines if x][:cap]
@@ -6644,6 +6813,8 @@ class Narrator:
             add(None, "stagger take")
         elif any((a.get("rocked") or {}).get("where") in ("held", "down") for a in acts):
             add(None, "jolted take")
+        if any(a.get("aim") and a.get("hits") for a in acts):
+            add("off target", "off target")
         if (take or both) and getattr(self, "_breaking", None):
             tags.append("breaking point")
         if any(t in ("grapple_start", "hold_start") for t in types) or any(a.get("point_blank") for a in acts) \
@@ -9821,7 +9992,8 @@ class Narrator:
             by = next((o for o in (self.strengths or {}) if o != v and o not in out_now), None)
             if by:
                 self.__dict__.setdefault("_moment_last", {})["watch"] = getattr(self, "_beat_no", 0)
-                return [{"key": "watch", "who": by, "part": "legs", "words": int(wcfg.get("words", 220)), "focus": (
+                return [{"key": "watch", "who": by, "part": "legs", "words": int(wcfg.get("words", 220)), "collapse": v,
+                         "focus": (
                     f"{poss(by)} side: she WATCHES {v} collapse on her own, with nobody touching her. She stays where "
                     f"she is. What she sees first (a knee going, a sway, the eyes losing her), how {v} goes down and "
                     f"how she lies, every twitch and breath after; what it tells {by} (how far gone {v} is, whether "
@@ -10209,6 +10381,7 @@ class Narrator:
             self._sample_cast = [actor] + list(receivers or []) if actor else list(receivers or [])
             return self._call(context + f"Write this beat in about {words} words. {DETAIL}"
                               + self._blocks_for("all", acts, pin_events, also_now, actor, receivers, True, True)
+                              + self._checklist("all", acts, actor, receivers)
                               + self._talk_note(""),
                               words, coverage=True)
 
@@ -10239,6 +10412,7 @@ class Narrator:
             self._sample_want = self._sample_tags(key, acts, pin_events, also_now)
             self._sample_cast = [actor] + list(receivers or []) if actor else list(receivers or [])
             ask += self._blocks_for(key, acts, pin_events, also_now, actor, receivers, i == 1, i == len(plan))
+            ask += self._checklist(key, acts, actor, receivers)
             ask += self._camera_note(key)
             ask += self._talk_note(so_far)
             n_def = len(self._deferred)

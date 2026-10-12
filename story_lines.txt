@@ -1439,7 +1439,7 @@ The water broke over her, and she moved through it as through her own home.
 It beaded on her and fell away, water off a body that lived in water.
 
 == effect_take | effect: weak | type: fire | vs: water
-Her soaked skin smothered the heat before it could catch.
+The heat met a body made for water and could not catch.
 
 == effect_take | effect: weak | type: fighting | vs: flying
 She rolled away from the ground-bound blow on a beat of her wings and took only the tail of it. | has: wings
@@ -1545,8 +1545,8 @@ She saw steam roll off {foe} and the heat in her sputter under the drenching.
 She watched the water smother {foe}'s warmth and knew the fire in her was fighting to stay lit.
 
 == effect_act | effect: super | type: electric | vs: water
-She felt the current find the wet in {foe} and spread through all of it at once.
-She saw {foe} go rigid as the shock ran through every soaked part of her.
+She felt the current find the water in {foe}'s body and spread through all of it at once.
+She saw {foe} go rigid as the shock ran through all of her at once.
 
 == effect_act | effect: super | type: ice | vs: flying
 She watched the cold stiffen {foe} and saw her movements turn slow and laboured.
@@ -2614,6 +2614,12 @@ She got one foot under her, then the other, and only then did the world stop sli
 For two steps she belonged to the blow, not to herself.
 She came out of the stumble already turning, because {foe} would be coming. | state: fresh, winded
 Her legs argued with the ground and, barely, won. | state: tired, spent
+
+== off_target
+It was meant for somewhere smaller; it found her {part} instead.
+She got her {part} in the way of it, more by luck than by design.
+The blow went looking for an opening and settled for her {part}.
+It landed a hand's width from where it had been sent.
 
 == ground_back
 *Nowhere to go. There's nowhere to go.*

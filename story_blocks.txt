@@ -626,7 +626,7 @@ counting what she has left: breath, legs, one good trick | stage: middle, late, 
 the thing she does not want the other to work out
 a flicker of something like regret, dismissed
 what she would do in the other's place, and how to punish it
-the memory of the last time this move worked, or did not | stage: middle, late, end
+whether anything she has thrown so far today has really landed, and what that tells her | stage: middle, late, end
 a decision to stop being careful
 admiration for the other's nerve, kept to herself
 
@@ -2080,6 +2080,21 @@ the same place, again, again, until the spot is all there is
 somewhere in it the blows stop being a choice and become a rhythm
 she hears herself panting in time with it and doesn't stop
 the first blows were aimed; the last ones are just hers, falling where the others fell
+
+# OFF TARGET (moves.aim): a blow aimed at a small or hard to reach part lands on the part beside it instead.
+== off_target
+she picks her spot and the spot moves; the blow lands a hand's width off it
+the place she wanted is tucked away behind a chin or a shoulder, and she hits what is in front of it
+she sees the opening, and by the time she gets there it has closed; she takes what is there instead
+it goes where she sent it, near enough; just not quite where she meant
+a small target, moving; she gets the part beside it
+she adjusts in the last instant and it is not enough; the blow skids off onto the next thing over
+== off_target_take
+she tucks it away just in time, and the blow finds the part beside it instead
+a twist, a dip of the head, and the blow that was meant for one place lands on another
+she does not save herself the hit; she only moves where it lands
+the blow comes for something small and finds something bigger
+she gives up the bigger part to keep the smaller one safe, without thinking
 
 # ---------------------------------------------------------------------------------------------------------------
 # DEVASTATING BLOWS (very rare: moves.devastating). Why this one is so much worse, and how both of them feel it.
@@ -4666,7 +4681,7 @@ a hunter's calm settles on her; she has found the soft place
 she watches the other try to shake it off, and fail
 she can tell from the other's face that this one went deep
 her opponent seems to shrink from it, and she presses forward
-she has seen it in other fights: once this starts working, it keeps working
+she can feel it already: once this starts working, it keeps working
 she lets herself feel it for a moment: the fight just tilted her way
 there is no need to be clever now, only to keep doing this
 the other's breathing changes after it lands, shorter and warier
@@ -5046,7 +5061,7 @@ a flash of doubt about her footing, settled with one look down
 
 == thought | role: receiver
 a quick check that her balance is still her own
-the memory of a worse hit, used as a measuring stick
+the worst hit of this fight so far, used as a measuring stick | stage: middle, late, end
 anger at herself, short and practical, then let go
 a plain question to her body, and an honest answer
 the shape of the blow, replayed so she will know it next time
@@ -5055,7 +5070,7 @@ that the other overreached, and how close it came to being her chance
 a stubborn little count of the things that do not hurt yet
 whether the ringing in her head is getting louder or softer | stage: middle, late, end
 a decision not to touch the place, not even to look
-that she has taken worse from lesser opponents
+that she has taken worse than this already today, and is still here | stage: middle, late, end
 irritation at how easily she was read
 *Fine. Fine. Move.*
 *Where did that even come from?*
@@ -5304,6 +5319,19 @@ she watches the feathers stand out, ruffled and unsettled, refusing to lie smoot
 she sees the antennae droop and twitch, tasting nothing | has: antennae
 she watches the mane hang damp and flattened along the other's neck | has: mane
 she watches the ruff stay raised long after the blow | has: ruff
+
+# COLLAPSE_THOUGHT: the one watching her opponent go down on her own, with nobody touching her.
+== collapse_thought
+*Is that it? Is she done?*
+*Don't go in yet. Wait.*
+*Stay down. Please, just stay down.*
+*That's not a trick. Nobody falls like that on purpose.*
+*I did that. All of that was me.*
+*Get up and I'll have nothing left for you.*
+a cold, careful patience: let her body finish what was started
+a flicker of something like pity, and then the fight comes back into her
+she counts the other's breaths, waiting for one that doesn't come as hard
+she does not trust it, not yet; she has seen her come back before in this fight
 
 == watch_thought
 *She's thinking about it now. Every time she moves.*
@@ -8011,3 +8039,7 @@ she flinches back from it, the heat chasing her
 
 == moved | kind: cold
 her body tightens around the cold spot, shrinking from it
+
+== moved | kind: mind
+her head snaps aside from nothing at all, as if struck by the air itself
+her body jerks once, and for a heartbeat she does not know which way is up

@@ -237,8 +237,10 @@ class Blocks:
         for cat, conds, text in self.entries:
             if cat != category or not self._fits(conds, ctx) or any(k not in conds for k in need):
                 continue
-            if any(s not in fmt for s in SLOT.findall(text)):
-                continue
+            if any(s not in fmt or not str(fmt[s]).strip() for s in SLOT.findall(text)):
+                continue       # a slot with nothing to fill it ("the instant  looked away"): not this one
+            if getattr(self, "scene_ban", None) is not None and self.scene_ban.search(text):
+                continue       # a thing this place doesn't have (stone walls to ring off, outside a cave)
             if exclude is not None and any(rx.search(text) for rx in (exclude if isinstance(exclude, (list, tuple))
                                                                        else [exclude])):
                 continue       # bigger than this fighter's injuries allow (the engine's pain ceiling)

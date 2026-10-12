@@ -761,6 +761,9 @@ class Display:
             if a.get("strafe"):
                 out.append(f"💨 **Strafing pass**: her speed carries her round for a second, quicker blow on "
                            f"{a['defender']}'s {a['strafe']['part']} (power {num(a['strafe']['power'])}, listed last)")
+            if a.get("aim"):
+                out.append(f"🎯 Off target: aimed at {a['defender']}'s {a['aim']['aimed']}, lands on her "
+                           f"{a['aim']['landed']} (moves.aim)")
             if a.get("carried"):
                 out.append(f"🦅 **{a['attacker']} carries {a['defender']} up** ({a['carried']['height']}) and drops her")
             if a.get("grounded"):
@@ -1029,7 +1032,7 @@ class Display:
                 out.append(f"- {self.heart} {a['fighter']} Health: {pct(a['health_before'])} → **{pct(a['health_after'])}**")
         elif t == "get_up":
             ordinal = {1: "first", 2: "second", 3: "third"}.get(a["tries"], str(a["tries"]))
-            out.append(f"🧗 **{a['fighter']} gets up** on the {ordinal} try (using {a['grab']})")
+            out.append(f"🧗 **{a['fighter']} gets up** on the {ordinal} try" + (f" (using {a['grab']})" if a.get("grab") else ""))
         elif t == "aftermath":
             out.append(f"🌅 **Aftermath** (the match is over; {a.get('winner')} won)"
                        + (f": {a['flavor']}" if a.get("flavor") else ""))
@@ -1178,7 +1181,7 @@ class Display:
                     grips = [f"{g['by']}'s grip on her {g['part']} stays on" for g in e.get("held") or []]
                     if grips:
                         roll += ("\n      " if self.clear() else " · ") + "; ".join(grips)
-                out.append((f"🧗 **{e['fighter']} gets up** on the {ordinal} try (using {e['grab']}{way('getup_rise', e.get('rise'), '; ')})"
+                out.append((f"🧗 **{e['fighter']} gets up** on the {ordinal} try (using {e.get('grab') or e.get('ground') or 'the ground'}{way('getup_rise', e.get('rise'), '; ')})"
                             if e["stands"] else
                             f"🧗 **{e['fighter']} can't get up** this beat, but **gets as far as sitting up** "
                             f"({e['tries']} tries; down {e['beats_down']} beat{'s' if e['beats_down'] != 1 else ''})" if e.get("sits") else

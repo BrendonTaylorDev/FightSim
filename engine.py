@@ -1107,6 +1107,7 @@ class Engine:
                 res["status_applied"] = self._status_from_move(d, move, force_roll=True)
                 res["missed"] = not res["status_applied"]
             return res
+        self._aim_miss = None
         if target == "whole_body":
             plan = list(d.parts)
         else:
@@ -1117,6 +1118,13 @@ class Engine:
                     names.append(n)
             if not names:
                 raise ValueError(f"{move['name']} needs a body part to hit")
+            if enforce and target == "targeted" and len(names) == 1 and not pummel:
+                # one part aimed at: the smaller or harder to reach it is, the likelier the blow lands beside it
+                # instead (moves.aim). A path of parts (a rake from cheek to hip) is not an aim: every part is hit
+                landed = self._aim(a, d, names[0])
+                if landed != names[0]:
+                    self._aim_miss = {"aimed": names[0], "landed": landed}
+                    names = [landed]
             k_ = max(1, int(count or 1))
             # several blows over several named parts: they go round the parts in order, the count in all
             plan = ([names[i % len(names)] for i in range(k_)] if k_ > 1 and len(names) > 1 else [names[0]] * k_) \
@@ -1327,6 +1335,8 @@ class Engine:
             res["clash"] = clash
         if hits and dev:
             res["devastating"] = dev
+        if hits and self._aim_miss and any(h.get("part") == self._aim_miss["landed"] for h in hits):
+            res["aim"] = dict(self._aim_miss)      # aimed at one part, landed on the one beside it (moves.aim)
         if fe:
             res["feint"] = fe
         if self._overcommit_now:
@@ -2074,6 +2084,59 @@ class Engine:
             if got and got not in out:
                 out.append(got)
         return out
+
+    # how easy each part of a body is to land a blow on where it was aimed (moves.aim): the torso is the big, near
+    # target; limbs move; the neck hides under the jaw and between the shoulders; small things (ears, nose, eyes,
+    # paws, fins) are small
+    AIM_EASE = {"chest": 0.95, "belly": 0.95, "back_up": 0.9, "back_low": 0.9, "shoulder": 0.85, "hind_up": 0.85,
+                "fore_up": 0.8, "head": 0.75, "tail": 0.7, "hind_low": 0.7, "fore_low": 0.65, "neck": 0.55,
+                "other": 0.8}
+    AIM_SMALL = (("throat", 0.8), ("ear", 0.7), ("eye", 0.6), ("nose", 0.75), ("muzzle", 0.9), ("jaw", 0.9),
+                 ("cheek", 0.9), ("paw", 0.85), ("hand", 0.85), ("foot", 0.85), ("fin", 0.8), ("horn", 0.85),
+                 ("knee", 0.9), ("hock", 0.85))
+
+    def aim_ease(self, part, cfg=None):
+        """0-1: how likely a blow aimed at this part lands on it (before who is moving and who is held)."""
+        cfg = cfg if cfg is not None else ((self.rules.get("moves") or {}).get("aim") or {})
+        reg = body_region(part)
+        ease = float((cfg.get("regions") or {}).get(reg, self.AIM_EASE.get(reg, 0.8)))
+        low = part.lower()
+        for w, m in (cfg.get("small") or self.AIM_SMALL):
+            if re.search(r"(?:\b|(?<=fore)|(?<=hind))" + re.escape(w), low):   # a forepaw is a paw
+                ease *= float(m)
+                break
+        return max(0.05, min(1.0, ease))
+
+    def _aim(self, a, d, part):
+        """Where a blow aimed at `part` really lands: the part itself, or (missing the small or hard to reach thing it
+        was aimed at) one beside it, the bigger and easier the likelier. Easier on a fighter who is down, held,
+        pinned or reeling; harder for an attacker who is dazed or off balance. moves.aim"""
+        cfg = (self.rules.get("moves") or {}).get("aim") or {}
+        if not cfg.get("enabled", True) or self.has(d, "airborne") and not self.has(a, "airborne"):
+            return part
+        miss = 1.0 - self.aim_ease(part, cfg)
+        if d.name in self.downed or self.pinned_by(d.name):
+            miss *= float(cfg.get("down_mult", 0.5))
+        if any(h.defender == d.name for h in self.holds.values()):
+            miss *= float(cfg.get("held_mult", 0.5))
+        if any(self.has(d, st) for st in ("staggered", "dazed", "doubled_over", "off_balance", "flinched", "frozen",
+                                           "asleep", "paralyzed")):
+            miss *= float(cfg.get("open_mult", 0.6))
+        if any(self.has(a, st) for st in ("dazed", "off_balance", "confused")):
+            miss *= float(cfg.get("shaky_mult", 1.3))
+        miss *= float(cfg.get("scale", 1.0))
+        if miss <= 0 or not self._chance(min(0.9, miss), f"{poss_word(a.name)} blow landing on the {part} it was aimed at",
+                                         "it lands beside it", "on target"):
+            return part
+        same, near = neighbor_parts(list(d.parts), part)
+        facing = self.facing_of(d.name)
+        hidden = {"face-up": ("back_up", "back_low"), "face-down": ("chest", "belly")}.get(facing, ())
+        cands = [p for p in dict.fromkeys(near + same) if body_region(p) not in hidden] or [part]
+        # the bigger and easier the likelier; a part harder to reach than the one she missed seldom takes it instead
+        mine = self.aim_ease(part, cfg)
+        weights = [e * e * (1.0 if e >= mine else float(cfg.get("harder_mult", 0.3)))
+                   for e in (self.aim_ease(p, cfg) for p in cands)]
+        return self.rng.choices(cands, weights)[0]
 
     def _ground_back(self, a, d, move, hits, blows, struck=None):
         """A blow driven down into a fighter who is lying on the ground drives her into the ground as well: what lies
@@ -3228,9 +3291,11 @@ class Engine:
             props = self.scene_props()
             grab = self.rng.choice(props)
             # (the dice are rolled as before; but a fighter lying at the foot of something uses THAT to get up)
-            grab = (getattr(self, "lying_at", None) or {}).get(name) or grab
+            # (and nobody lying out in the open has a prop to hand: a prop only where she lies at the foot of one)
+            grab = (getattr(self, "lying_at", None) or {}).get(name) or None
             natural = next((i + 1 for i, c in enumerate(cuts) if score >= c), None)
-            ev = {"type": "get_up", "fighter": name, "plan": plan, "grab": grab, "beats_down": beats,
+            ev = {"type": "get_up", "fighter": name, "plan": plan, "grab": grab, "ground": self.scene_word("ground"),
+                  "beats_down": beats,
                   "score": round(score, 2), "cuts": list(cuts), "forced": natural is None and tries is not None,
                   "tries": tries or len(cuts), "stands": tries is not None,
                   "hurting": [p.name for p in worst if p.damage >= 30][:2],
