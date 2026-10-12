@@ -3010,7 +3010,7 @@ def handle_command(s, line):
                  "dodge": "how an attack is avoided", "hold_break": "how a hold is broken",
                  "hold_strain": "how a held fighter fights a grip that stays on",
                  "struggle": "what a pinned fighter tries", "getup_fail": "how a try at getting up fails",
-                 "getup_rise": "how she finally rises"}
+                 "getup_rise": "how she finally rises", "bite_rock": "how a bite rocks her where she stands"}
         for k, table in s.eng.VARIETY.items():
             cfg.setdefault(k, dict(table))
         def row(k):

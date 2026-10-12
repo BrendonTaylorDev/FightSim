@@ -796,6 +796,7 @@ class Engine:
                      "power": 1},
         "getup_fail": {"gives_out": 4, "slips": 2, "dizzy": 2, "breath": 2},
         "getup_rise": {"push": 4, "roll": 2, "lean": 3, "lurch": 2},
+        "bite_rock": {"drag": 3, "shake": 2, "yank": 2, "wrench_free": 2},
         "takedown": {"tackle": 3, "leg_hook": 3, "sweep": 3, "hip_throw": 3, "shoulder_drive": 2, "drag_down": 2,
                      "spin_down": 2, "trip_back": 2, "pull_forward": 2, "ride_down": 2},
     }
@@ -4756,7 +4757,11 @@ class Engine:
                    "it shoves her a little way along the ground where she lies" if kind in ("blunt", "blast") else
                    "her body jerks where she lies")
         elif kind == "bite":
-            how = f"the jaws drag her toward {a.name} before they let go"
+            how = {"drag": f"the jaws drag her toward {a.name} before they let go",
+                   "shake": "the jaws shake her where she stands, once, hard, and open",
+                   "yank": f"the bite yanks her off her line, half a step toward {a.name}, and lets go",
+                   "wrench_free": "she wrenches back against the teeth and her body jerks with them as she pulls free",
+                   }[self.vary("bite_rock")]
         elif kind in ("claw", "blade"):
             how = f"she twists{side or ''} away from the {'cut' if kind == 'blade' else 'rake'} as it goes across her"
         elif holding:
