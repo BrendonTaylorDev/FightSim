@@ -4383,6 +4383,8 @@ class Narrator:
         """The strongest type matchup among the blows that LANDED on `who` this beat: (super/weak/none, move type)."""
         best = None
         rank = {"super": 3, "none": 2, "weak": 1}
+        order = [t["label"] for t in pain_tiers(self.rules)]
+        cap = str(((self.rules.get("narration", {}) or {}).get("blocks", {}) or {}).get("light_effect_max_level", "sore"))
         for a in acts or ():
             m = a.get("move") or {}
             e = self.EFFECT_KEY.get(m.get("effectiveness"))
@@ -4392,6 +4394,10 @@ class Narrator:
                 continue
             if not (a.get("hits") or e == "none"):
                 continue
+            ends = [self._pain(h.get("damage_after", 0))["label"] for h in a.get("hits") or []
+                    if (h.get("defender") or who) == who]
+            if e != "super" and cap in order and any(order.index(x) > order.index(cap) for x in ends if x in order):
+                continue       # it left a part HURTING or worse: no "it hardly marks her" ideas for it
             if best is None or rank[e] > rank[best[0]]:
                 best = (e, str(m.get("type") or "").lower())
         return best
