@@ -1337,6 +1337,8 @@ def _knockouts(engine, results, hp0):
                 kinds.append("drop" if r.get("carried") or r.get("drop_severity") else "slam")
             if r.get("manhandle") == "slam":
                 kinds.append("slam")
+            if r.get("grounded") and not r.get("carried"):
+                kinds.append("fall out of the sky")     # struck down from flying height: a drop, as much as a carry is
         dev = any(h.get("devastating") for r in mine for h in (r.get("hits") or []))
         ko = engine.knockout_roll(f.name, hp0.get(f.name, f.health) - f.health, list(dict.fromkeys(kinds)), dev)
         if ko:
@@ -2208,11 +2210,11 @@ def pin_shapes(engine, pinner, target, skip=()):
     thigh = rng.choice(thighs) if thighs else thigh
     hips = [n for n in sp["thigh"] if "hip" in n.lower()][:2]
     if t.get("jaws") and neck and front:
-        out["throat_bite"] = (f"jaws clamped on her {neck} as the choke, her weight on her {front}"
+        out["throat_bite"] = (f"{t['jaws'].replace('her ', '', 1)} clamped on her {neck} as the choke, her weight on her {front}"
                               + (f", {t['hind']} on her hips" if t.get("hind") and hips else ""),
                               [(neck, t["jaws"]), (front, t["weight"])] + [(h, t.get("hind", "")) for h in hips if t.get("hind")])
     if t.get("jaws") and arm and neck and t.get("fore"):
-        out["trapped_arm"] = (f"jaws clamped on her {arm}, pinning that limb to the ground, while {t['fore']} bars across her "
+        out["trapped_arm"] = (f"{t['jaws'].replace('her ', '', 1)} clamped on her {arm}, pinning that limb to the ground, while {t['fore']} bars across her "
                               f"{neck} as the choke" + (f" and her weight settles on her {front}" if front else ""),
                               [(arm, t["jaws"]), (neck, t["fore"])] + ([(front, t["weight"])] if front else []))
     if t.get("coil") and neck:

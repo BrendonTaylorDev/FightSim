@@ -13,7 +13,7 @@ Each case plays a few scripted beats over several seeds. A case passes when, on 
     and plays on;
 and, on at least one seed, what the case is for actually happened (a pummel ran, a carry lifted her, a pin
 started...). Exit code 0 when everything passed."""
-import contextlib, io, json, os, sys, tempfile, time, traceback
+import atexit, contextlib, io, json, os, shutil, sys, tempfile, time, traceback
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -198,6 +198,7 @@ def _state(eng):
 
 def _round_trip(s, names, problems):
     tmp = tempfile.mkdtemp(prefix="fightsim_regress_")
+    atexit.register(shutil.rmtree, tmp, True)      # (cleared away when the run ends)
     path = os.path.join(tmp, "save.json")
     s.eng.save(path, s._extra())
     e2 = Engine(seed=0, only=names)

@@ -6,6 +6,8 @@ SRC = os.path.dirname(HERE)
 # work in a throwaway copy, so settings commands never touch your rules.json or my_settings.json
 # (a folder of its own for every run, so runs side by side don't wipe each other's copy)
 ROOT = os.path.join(tempfile.mkdtemp(prefix="fightsim_simrun_"), "repo")
+import atexit
+atexit.register(shutil.rmtree, os.path.dirname(ROOT), True)     # (and gone again when the run ends)
 shutil.copytree(SRC, ROOT, ignore=shutil.ignore_patterns("sim", ".git", "__pycache__", "my_settings.json",
                                                          "blocks_memory.json", "autosave.json"))
 sys.path.insert(0, ROOT)
