@@ -6275,7 +6275,7 @@ class Narrator:
                     add(f"how the hurt in {poss(who)} {p} feels as she watches", B.pick(
                         "sensation", 1, fmt={"part": p}, level=lv, zone=z, has=feats(who),
                         part=set(re.findall(r"[a-z]+", p))))
-                return self._blocks_plan(lines, "take", False, last, who, by_)
+                return self._blocks_plan(lines, "take", False, last, by_, who)     # (her side: she took the blow)
             if key == "dwell":
                 side[0] = "take"
                 for p, lv, z in self._worst_parts(who, 2, "very painful"):
@@ -6295,7 +6295,7 @@ class Narrator:
                 add(f"{who} looking at her own {p0}", self._self_look(who, p0, has=feats(who),
                                                                              state=state(who)))
                 mind(who, "receiver", other)
-                return self._blocks_plan(lines, "take", False, last, who, other)
+                return self._blocks_plan(lines, "take", False, last, other, who)   # (her side: she took the blow)
             side[0] = "act"
             victim = next((x[0] for x in sorted(((v_, sum(d for w_, _, d, _, _ in self._linger_pool if w_ == v_))
                                                   for v_ in {x[0] for x in self._linger_pool}), key=lambda t: -t[1])),
