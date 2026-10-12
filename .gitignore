@@ -10,3 +10,4 @@ lines_memory.json
 check_counts.json
 images/
 exports/
+.claude/worktrees/
