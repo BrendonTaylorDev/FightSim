@@ -800,12 +800,14 @@ class Engine:
                      "spin_down": 2, "trip_back": 2, "pull_forward": 2, "ride_down": 2},
     }
 
-    def vary(self, key):
-        """Pick HOW an already-decided outcome plays out (one of several ways that are all true to the result)."""
+    def vary(self, key, skip=()):
+        """Pick HOW an already-decided outcome plays out (one of several ways that are all true to the result).
+        skip: ways that aren't true to it this time (rolling onto her front when she already lies on it)."""
         table = dict(self.VARIETY.get(key, {}))
         over = self.rules.get("variety", {}).get(key)
         if isinstance(over, dict):
             table = {k: float(v) for k, v in over.items() if not str(k).startswith("_") and float(v) > 0} or table
+        table = {k: v for k, v in table.items() if k not in skip} or table
         names = list(table)
         return self.rng.choices(names, [table[n] for n in names])[0]
 
@@ -3318,8 +3320,8 @@ class Engine:
                               for h in self.holds.values() if h.attacker == name]}
             if tries is not None:
                 del self.downed[name]
-                self.facing.pop(name, None)
-                ev["rise"] = self.vary("getup_rise")
+                lay = self.facing.pop(name, None)
+                ev["rise"] = self.vary("getup_rise", ("roll",) if lay == "face-down" else ())  # (already on her front)
                 ev["fails"] = [self.vary("getup_fail") for _ in range(max(0, tries - 1))]
             else:
                 ev["fails"] = [self.vary("getup_fail") for _ in range(3)]
