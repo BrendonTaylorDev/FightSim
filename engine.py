@@ -1305,14 +1305,15 @@ class Engine:
             # blows driven home with her back to something solid in this arena (held against it, or cornered): each
             # one grinds her into it, and it may give way under her. Only the blows really thrown count, not the
             # parts a single blow carries over to; something that isn't here, or has already broken, does nothing
-            nb_ = min(max(1, int(count or 1)) if pummel or int(count or 1) > 1 else 1, 4)
+            # as many grinds as blows really thrown (a pummel the dice ended early drives her in fewer times)
+            nb_ = min(int(pum["count"]) if pum else max(1, int(count or 1)) if int(count or 1) > 1 else 1, 4)
             ground = self._grind(a, d, behind, nb_, struck=list(plan[:nb_]))
             hits = hits + ground["hits"]
         gback = None
         if hits and not sustained and not charged and not ground and d.name in self.downed and target == "targeted":
             # lying on the ground, a blow driven down into her drives her into the ground too: what she lies on takes
             # a share of it (her back when she's face-up). moves.ground_back
-            nb_ = min(max(1, int(count or 1)) if pummel or int(count or 1) > 1 else 1, 4)
+            nb_ = min(int(pum["count"]) if pum else max(1, int(count or 1)) if int(count or 1) > 1 else 1, 4)
             gback = self._ground_back(a, d, move, hits, nb_, struck=list(plan[:nb_]))
             if gback:
                 hits = hits + gback["hits"]
@@ -2022,6 +2023,12 @@ class Engine:
     _LIMB_IN = {"fore_low": "fore_up", "fore_up": "shoulder", "hind_low": "hind_up", "hind_up": "hind_up",
                 "tail": "back_low"}     # (a thigh hangs from the hip: the other hind_up part on that side)
 
+    def _backing_mult(self, part, struck):
+        """A part driven into the surface that is the struck part itself (her arm ground into the bark, the back of her
+        neck into the tree): only the side of it we don't track takes this, so it takes a lighter share
+        (moves.grind.self_mult)."""
+        return float(((self.rules.get("moves") or {}).get("grind") or {}).get("self_mult", 0.5)) if part == struck else 1.0
+
     def _backing(self, d, struck, facing=None):
         """The parts a blow on `struck` drives into what is behind her (a tree, a wall, the ground she lies on): a
         blow on her chest drives her upper back into it, her belly her lower back, her face the back of her head; a
@@ -2097,7 +2104,8 @@ class Engine:
         for s_ in struck[:blows]:
             self._source = f"being driven down into {ground}"
             # what is under the part this blow hit (her back under her chest, the arm itself under an arm)
-            out["hits"] += [self._apply_damage(d, p_, power) for p_ in self._backing(d, s_, facing)]
+            out["hits"] += [self._apply_damage(d, p_, power * self._backing_mult(p_, s_))
+                            for p_ in self._backing(d, s_, facing)]
         return out if out["hits"] else None
 
     def _grind(self, a, d, against, blows, struck=None):
@@ -2117,8 +2125,10 @@ class Engine:
             self._source = f"being driven into {against}"
             # what THIS blow drives into it: what is behind the part it hit (her back behind her chest, an arm hit
             # may grind the arm itself and its shoulder); with nothing known, her back as before
-            into = self._backing(d, struck[i - 1]) if i - 1 < len(struck) else back[:1 + (i == 1)]
-            sh = [self._apply_damage(d, p, float(table.get(cfg.get("power", "light"), 10))) for p in into]
+            hit_ = struck[i - 1] if i - 1 < len(struck) else None
+            into = self._backing(d, hit_) if hit_ else back[:1 + (i == 1)]
+            sh = [self._apply_damage(d, p, float(table.get(cfg.get("power", "light"), 10)) * self._backing_mult(p, hit_))
+                  for p in into]
             out["surface_hits"] += sh
             out["hits"] += sh
             if self._chance(brk, f"{against} breaking behind {d.name} (blow {i})", "it BREAKS", "it holds"):
@@ -2150,8 +2160,9 @@ class Engine:
         if against:
             facing_ = self.facing_of(d.name) if d.name in self.downed else None
             for s_ in dict.fromkeys(plan):
-                press += [x for x in self._backing(d, s_, facing_) if x not in press]
-            press = press[:3] or back[:1]
+                press += [(x, self._backing_mult(x, s_)) for x in self._backing(d, s_, facing_)
+                          if x not in [q[0] for q in press]]
+            press = press[:3] or [(x, 1.0) for x in back[:1]]
         brk = self.break_chance(against, cfg.get("break_chance", {}))
         out = {"against": against, "pulses": [], "broke": False, "planned": pulses, "knock_on": [],
                "was_down": d.name in self.downed,
@@ -2166,7 +2177,7 @@ class Engine:
             pulse = {"n": i, "hits": hits, "move_hits": list(hits), "surface_hits": [], "break_hits": []}
             if back:
                 self._source = f"being pressed into {against}"
-                sh = [self._apply_damage(d, p, float(table.get("solid", 15))) for p in press]
+                sh = [self._apply_damage(d, p, float(table.get("solid", 15)) * m) for p, m in press]
                 pulse["surface_hits"] = sh
                 pulse["hits"] = hits + sh
                 if self._chance(brk, f"{against} breaking under {d.name} (pulse {i})", "it BREAKS", "it holds"):
@@ -4415,13 +4426,15 @@ class Engine:
             opts.append(("caught helpless in the air", float(cfg.get("juggled", 1.3))))
         if getattr(self, "_feint_open", None) == d.name:
             opts.append(("caught open by the feint", float(cfg.get("feinted", 1.25))))
+        # in a pummel every blow gets it, so each gets a share of it (like down_pummel): pummel_share of the bonus
+        share = float(cfg.get("pummel_share", 0.5)) if getattr(self, "_pummel_now", False) else 1.0
         for st, label, key, dflt in (("doubled_over", "doubled over in pain", "doubled_over", 1.2),
                                      ("off_balance", "caught off balance", "off_balance", 1.2),
                                      ("staggered", "caught staggering", "staggered", 1.2),
                                      ("dazed", "dazed, slow to react", "dazed", 1.15),
                                      ("flinched", "caught flinching", "flinched", 1.15)):
             if self.has(d, st):
-                opts.append((label, float(cfg.get(key, dflt))))
+                opts.append((label, 1 + (float(cfg.get(key, dflt)) - 1) * share))
         holders = {h.attacker for h in self.holds.values() if h.defender == d.name}
         locked = any(h.defender == d.name and h.sub for h in self.holds.values())
         if locked and not self.pinned_by(d.name):
@@ -4524,7 +4537,7 @@ class Engine:
         if re.search(r"bite|fang|crunch|jaws", name):
             return "bite"
         if re.search(r"slash|claw|swipe|scratch|rake|cut|cutter|scythe", name):
-            return "claw"
+            return "blade" if self.is_ranged(move) else "claw"     # a blade thrown from afar (Psycho Cut, Air Slash)
         if t == "Electric":
             return "shock"
         if t == "Psychic" and self.is_ranged(move):
@@ -4558,7 +4571,7 @@ class Engine:
             return self._rocked(a, d, big, dmg, cfg, reg, away, kind, held, holding)
         ch = (float(cfg.get("base", 0.12)) + float(cfg.get("per_damage", 0.004)) * (dmg - low)
               + float(cfg.get("weak", 0.25)) * (1 - max(0.0, min(100.0, self.strength(d))) / 100))
-        ch *= float((cfg.get("kind_mult") or {}).get(kind, {"blunt": 1.3, "blast": 1.2, "claw": 0.7, "bite": 0.5,
+        ch *= float((cfg.get("kind_mult") or {}).get(kind, {"blunt": 1.3, "blast": 1.2, "claw": 0.7, "blade": 0.7, "bite": 0.5,
                                                             "fire": 0.6}.get(kind, 1.0)))
         ch *= float((cfg.get("region_mult") or {}).get(reg, {"head": 1.3, "hind_low": 1.2, "fore_low": 0.4,
                                                              "tail": 0.3}.get(reg, 1.0)))
@@ -4634,8 +4647,9 @@ class Engine:
             how = "she recoils from the heat, twisting the burning spot away"
         elif kind == "bite" and (held or down):
             how = "the jaws wrench at her and her body goes with them as far as it can"
-        elif kind == "claw" and (held or down):
-            how = f"she twists{side} away from the rake, as far as she can" + (" against the ground" if down else "")
+        elif kind in ("claw", "blade") and (held or down):
+            how = (f"she twists{side} away from the {'cut' if kind == 'blade' else 'rake'}, as far as she can"
+                   + (" against the ground" if down else ""))
         elif held:
             how = (f"her head is knocked{side or ' back'} against the ground, and she can't go with it any further"
                    if down and reg in ("head", "neck") else
@@ -4647,8 +4661,8 @@ class Engine:
                    "her body jerks where she lies")
         elif kind == "bite":
             how = f"the jaws drag her toward {a.name} before they let go"
-        elif kind == "claw":
-            how = f"she twists{side or ''} away from the rake as it goes across her"
+        elif kind in ("claw", "blade"):
+            how = f"she twists{side or ''} away from the {'cut' if kind == 'blade' else 'rake'} as it goes across her"
         elif holding:
             how = f"it rocks her{side or ' back'}, but she keeps her grip"
         elif reg == "head":

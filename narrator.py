@@ -2594,6 +2594,8 @@ class Narrator:
             return ""
         if a.get("moved"):
             return ""   # the engine decided how this blow moved her (moves.stumble): its own notes tell it
+        if (a.get("charge") and not a["charge"].get("skipped")) or a.get("sustain") or a.get("ground_into"):
+            return ""   # carried off by a charge, held by a stream, ground into the scenery: that is the movement
         dfn = a.get("defender")
         if dfn in (getattr(self, "pinned_now", None) or ()) or a.get("target_against"):
             return ""
@@ -3487,8 +3489,14 @@ class Narrator:
                 kind = "an improvised move" if m.get("improvised") else f"{m['type']}-type move"
                 on = ("" if m.get("target") == "self" else f" on {a['defender']}") + (f", {aim}" if aim else "")
                 lines.append(f"{a['attacker']} uses {m['name'].upper()} ({kind}: {m['about']}){on}.{eff}{intent}")
+                # the director's flavor can name a weapon that isn't this blow's ("out of tail range", "under
+                # Nocturne's horn"): those don't count
+                fl = re.sub(r"\b(?:tails?|horns?|claws?|teeth|jaws?|fangs?)[- ](?:range|reach|length|distance|swing)\b",
+                            "", str(a.get("flavor") or ""), flags=re.I)
+                fl = re.sub(r"\b(?:the other's|her opponent's|[A-Z][a-z]+'s?)\s+(?:\w+\s+)?(?:tails?|horns?|claws?|teeth|"
+                            r"jaws?|fangs?)\b", "", fl)
                 mine = {w for w, rx in WEAPONS
-                        if re.search(rx, " ".join([str(a.get("flavor") or ""), str(m.get("about") or ""), m["name"]]), re.I)}
+                        if re.search(rx, " ".join([fl, str(m.get("about") or ""), m["name"]]), re.I)}
                 if mine and len(mine) <= 2 and not a.get("dodged"):
                     nots = [WEAPON_NOT[w] for w in ("claws", "teeth", "tail") if w not in mine]
                     lines.append("  (Delivered with " + " or ".join(WEAPON_SAY[w] for w, _ in WEAPONS if w in mine)
@@ -3689,7 +3697,8 @@ class Narrator:
                                    else f"still {f_['label']}") + ")")
                 lines.append(f"  - HER BACK TO {gr['against'].upper()}: {a['defender']} is held or driven against "
                              f"{gr['against']} with nowhere to give, so every blow also grinds her back into it: "
-                             + "; ".join(bits) + f". Tell it as ONE thing running under the blows (the {gr['against']} "
+                             + "; ".join(bits) + f". Tell it as ONE thing running under the blows ("
+                             f"{re.sub(r'^(?:a|an|the) ', 'the ', gr['against'], flags=re.I) if re.match(r'(?:a|an|the) ', gr['against'], re.I) else 'the ' + gr['against']} "
                              f"jarring into her back each time, her body with nowhere to go), not as separate hits with "
                              f"their own reactions; the blows in front are where the words go.")
                 self._must_parts.append(gr["surface_hits"][0]["part"])

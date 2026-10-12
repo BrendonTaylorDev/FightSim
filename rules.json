@@ -70,7 +70,7 @@
     "max_same_move_in_a_row": 2,
     "_sustain_comment": "Sustained moves: a move marked \"sustainable\" (streams and beams like Hydro Pump, Flamethrower, Ice Beam) can be held for up to max_pulses pulses. Each extra pulse hits the same parts at pulse_mult power and costs energy_per_pulse. If the target is pressed against something, each pulse also slams her into it, and it may break (break_chance by surface): a heavy extra hit, the move ends early, and she goes down.",
     "_grind_comment": "grind: blows landed while she is held or pressed against something in the arena (a pummel against a tree, \"pinned_against\" on an ordinary strike) each drive her back into it too: power is the severity of that extra hit on her back, break_mult scales the thing's chance to break (from sustain.break_chance) for each blow.",
-    "grind": {"_comment": "Blows on a fighter held or driven against the scenery: each also drives what is behind the part it hit into it (her upper back behind her chest, lower back behind her belly, the back of her head behind her face); a blow on a limb grinds the limb itself in limb_chance of the time (limb_chance_down lying on the ground, where a limb is nearly always against it), and the shoulder or hip it hangs from limb_root_chance (the same for moves.ground_back on the ground). power from severity.environment.", "power": "light", "break_mult": 0.5, "limb_chance": 0.6, "limb_chance_down": 0.85, "limb_root_chance": 0.4},
+    "grind": {"_comment": "Blows on a fighter held or driven against the scenery: each also drives what is behind the part it hit into it (her upper back behind her chest, lower back behind her belly, the back of her head behind her face); a blow on a limb grinds the limb itself in limb_chance of the time (limb_chance_down lying on the ground, where a limb is nearly always against it), and the shoulder or hip it hangs from limb_root_chance; when what is driven in is the struck part itself (the arm, the back of the neck), it takes self_mult of the surface's power (the same for moves.ground_back on the ground). power from severity.environment.", "power": "light", "break_mult": 0.5, "limb_chance": 0.6, "limb_chance_down": 0.85, "limb_root_chance": 0.4, "self_mult": 0.5},
     "ground_back": {"_comment": "A blow driven down into a fighter lying on the ground (face-up, face-down or on her side; not sitting up) drives her into the ground too: the parts she lies on take a light hit with each blow (power from severity.environment, x mult; x shallow_mult lying in shallow water; none in deep water). Blunt blows and blasts only, not rakes or bites. On top of moves.vulnerable.down.", "enabled": true, "power": "light", "mult": 1.0, "shallow_mult": 0.5},
     "sustain": {
       "max_pulses": 4,
@@ -383,6 +383,8 @@
       "staggered": 1.2,
       "rocked": 1.05,
       "rigid": 1.1,
+      "pummel_share": 0.5,
+      "_pummel_comment": "In a pummel every blow gets the bonus for being caught open (doubled over, off balance, staggering, dazed, flinching), so each gets pummel_share of it (x1.2 becomes x1.1 a blow).",
       "_moved_comment": "staggered: knocked a step or more by a blow (moves.stumble) and still finding her feet, this beat and the next (no guard comes up either). rocked: the next blow in the SAME beat after one that turned her head or leaned her (not on a strong, fresh fighter); rigid: the same after lightning locked her."
     },
     "feint": {

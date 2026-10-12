@@ -472,14 +472,16 @@ def _apply_variety(engine, att, dfn, b):
     v = float(engine.rules.get("director", {}).get("target_variety", 0.35) or 0)
     recent = [p for who, p in log[-3:] if who == d.name]
     lately = {body_region(p) for p in recent}
-    if (v > 0 and not engine.focus_for(att) and name not in (getattr(engine, "weak_aim", None) or ())
+    runs = int(b.get("count") or 1) > 1     # a pummel or a flurry picks its own spots blow by blow: not re-aimed
+    if (v > 0 and not runs and not engine.focus_for(att) and name not in (getattr(engine, "weak_aim", None) or ())
             and body_region(name) in lately and not engine.pinned_by(a.name)
             and a.name not in engine.downed and not engine.grab_between(a.name, d.name)
             and engine.rng.random() < v):
         fresh = [p for p in d.parts if body_region(p) not in lately]
         if d.name in engine.downed and fresh:     # only what is turned toward her attacker
             fitted, _ = engine.fit_to_facing(d.name, fresh)
-            fresh = [p for p in dict.fromkeys(fitted) if body_region(p) not in lately]
+            # (and not her tail: lying down, she is on it or it is out behind her, not under her attacker's hands)
+            fresh = [p for p in dict.fromkeys(fitted) if body_region(p) not in lately and body_region(p) != "tail"]
         if fresh:
             # the less a part has been hurt so far, the likelier she goes for it
             new = engine.rng.choices(fresh, [1.0 / (1.0 + d.parts[p].damage / 60.0) for p in fresh])[0]
@@ -681,6 +683,9 @@ def _as_stream(engine, b, move):
 def resolve(engine, b):
     """Validate a director beat and apply it. Returns (result_dict, ids_of_holds_started_now).
     Raises ValueError with a readable message if the beat is invalid."""
+    if isinstance(b.get("hits"), list) and any(isinstance(h, str) for h in b["hits"]):
+        # a part named plainly ("Left Thigh") instead of {"part": "Left Thigh"}: read it as that
+        b["hits"] = [{"part": h} if isinstance(h, str) else h for h in b["hits"]]
     act = b.get("action")
     if act in ("ally", "ally_end"):  # your /ally command: a temporary alliance begins or ends (a story beat)
         if act == "ally":
@@ -1202,6 +1207,14 @@ def _landing(engine, b, res):
         if not explicit:
             return None  # already on the ground: there's nowhere further to fall
         in_place = True  # already down: smashed against what's beside her, not knocked down again
+    if not in_place:
+        # knocked off her feet: that is how the blow moved her, so no rock or stagger on top of it (moves.stumble)
+        res.pop("rocked", None)
+        if res.get("moved"):
+            res["moved"] = "launch"
+        if res.get("status_applied"):
+            res["status_applied"] = [x for x in res["status_applied"] if not (x.get("stumble") and x.get("fighter") == who)]
+        engine.get(who).status.pop("staggered", None)
     force, spiked = 1.0, bool(res.get("spiked_by") and res.get("spike"))
     if not impacts and res.get("spiked_by"):
         # knocked up into the air and smashed back down out of it by the next blow: the landing is a hard one. From
