@@ -1062,7 +1062,11 @@ class Display:
 
         for s in a.get("status_applied", []) or []:
             out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{s['fighter']} is {self.sw(s['status'])}** ({s['beats']} beat{'s' if s['beats'] != 1 else ''}"
-                       + (f"; from {s['hazard']}" if s.get("hazard") else "") + ")")
+                       + (f"; from {s['hazard']}" if s.get("hazard") else "")
+                       + (f": {s['stumble']['steps']} {s['stumble']['way']}" if s.get("stumble") else "") + ")")
+        if a.get("rocked"):
+            rk = a["rocked"]
+            out.append(f"↪️ {rk['fighter']} rocked by the {rk['part'].lower()} hit: {rk['how']}")
         if a.get("launch_blocked"):
             out.append(f"- (no knockdown or throw: {a['launch_blocked']})")
         out += self.knock_on_lines(list(a.get("knock_on") or [])

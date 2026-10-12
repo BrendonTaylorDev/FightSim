@@ -856,6 +856,10 @@ OVERBLOWN = re.compile(r"\b(scream\w*|shriek\w*|howl\w*|agon\w+|white-hot|explod
 # present-tense narration ("she lunges", "Nocturne shifts"): the story is told in the past
 PRESENT_TENSE = re.compile(r"\b(?:[Ss]he|[Hh]e|[Ii]t)\s+(?:is|has|does|(?!was\b|has\b|is\b|always\b|perhaps\b|"
                            r"almost\b|nearly\b|thus\b)[a-z]{2,}(?<![su])s)\b(?!['’])")
+# a reaction that moves her feet: the engine's call now, not a reaction's
+MOVES_HER = re.compile(r"\b(?:steps?|stagger\w*|stumbl\w*|reel\w*|knocked back|sway\w*|totter\w*|lurch\w*|"
+                       r"rocked back|backward|off (?:her|its) feet|buckl\w*|wobbl\w*)\b", re.I)
+
 # memories from before this fight: the story has none
 INVENTED_PAST = re.compile(r"\b(?:just like (?:that|the) (?:time|day)|(?:remembered|recalled|thought of) the (?:last|first) "
                            r"time (?:she|they|someone|an opponent)\b|years of (?:fighting|training|battles?|sparring)|"
@@ -888,6 +892,7 @@ NUMB = re.compile(r"\b(numb(?:ed|ing|ness)?|past (?:pain|feeling|hurting)|beyond
                   r"(?:couldn't|could not|can't) feel (?:it|her|his|the))\b", re.I)
 # the instructions' own wording turning up as prose
 PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|continue with the next part\b|"
+                         r"(?:took|takes|was dealt) an? (?:glancing|solid|heavy|tremendous) blow: |"
                          r"can know it by the way\b|every (?:press|hit|part|grip) listed\b|must appear in the "
                          r"(?:prose|story|passage)\b|in the prose\b|(?:the )?notes (?:above|below|say)\b|word for word\b|"
                          r"this (?:part|beat) (?:must|should)\b|separate from any (?:other )?(?:move|attack|strike)\b|past (?:excruciating|very painful|devastated)\b|seconds \d+ (?:to|through|until|–|—|-) ?\d+\b|"
@@ -2215,6 +2220,9 @@ class Narrator:
     def _impact(self, taken, seed=""):
         """A suggested moment-of-impact reaction, varied from hit to hit."""
         options = self.IMPACTS[self._strength_key(taken)]
+        if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
+            # the engine decides whether a blow moves her (moves.stumble): no step or stagger slipped in here
+            options = [o for o in options if not MOVES_HER.search(o)] or options
         return options[sum(map(ord, seed)) % len(options)]
 
     def _hold_word(self, power):
@@ -4015,6 +4023,13 @@ class Narrator:
         head = f"{st['head']}; " if st.get("head") else ""
         tail = (" She is very close to going down: show her nearly falling and only just not." if "close to going down"
                 in st.get("steps", "") else "")
+        s_ = st.get("strength")
+        if st.get("bad_legs"):
+            tail += " Her hurt legs are why it carries her so far: they won't brace, and she feels exactly where."
+        if s_ is not None and s_ > 70:
+            tail += " She is still strong: she rights herself fast, angry more than shaken."
+        elif s_ is not None and s_ < 30:
+            tail += " She is worn thin: getting her feet back takes everything, and it shows."
         return (f"HOW IT MOVES HER (the {st['part'].lower()} hit): {head}{body}, {st['steps']} {st['way']}, {land}. "
                 f"She stays ON HER FEET; she is out of place and her guard is late for a moment.{tail} Show the "
                 f"stumble as part of the hit, in the same breath, not as a separate event.")
@@ -5928,8 +5943,11 @@ class Narrator:
                     "raw", 1, fmt={"part": part.lower()}, raw=self.RAW_LEVELS[raw][0], has=feats(who))
                     + B.pick("reaction", 1, size=self._strength_key(taken), has=feats(who)))
             else:
+                still_ = any(a_.get("defender") == who and a_.get("moved") in ("still", "rock") for a_ in acts)
                 add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who),
-                                                                   fighter=who.lower(), exclude=too_big))
+                                                                   fighter=who.lower(),
+                                                                   exclude=(list(too_big or []) + [MOVES_HER]) if still_
+                                                                   else too_big))
             for a_ in acts:
                 st_ = next((s for s in a_.get("status_applied") or [] if s.get("stumble") and s.get("fighter") == who), None)
                 rk_ = a_.get("rocked") if (a_.get("rocked") or {}).get("fighter") == who else None
@@ -6488,7 +6506,8 @@ class Narrator:
                 "above are ALL told, in their own order; these steps are the colour between and around them. Follow "
                 "the order where the events allow, put each in your own words, and skip one that does not fit. They are "
                 "never new events: no extra hit, fall, wound, grip or escape comes from them, and nobody else is "
-                "touched.\n" + "\n".join(f" {i}. {t}" for i, t in enumerate(steps, start=1)))
+                "touched. They are jotted in the present tense: the story puts them in the past (\"her head snaps "
+                "back\" becomes \"her head snapped back\").\n" + "\n".join(f" {i}. {t}" for i, t in enumerate(steps, start=1)))
 
     def _blocks_note(self, lines):
         cap = int(((self.rules.get("narration", {}) or {}).get("blocks", {}) or {}).get("per_part", 10))
@@ -6498,7 +6517,8 @@ class Narrator:
         return ("\n\nBUILDING BLOCKS for this part: ideas the program picked because they fit the fight as it stands "
                 "(none has been offered lately). Work in the ones that fit, in your own words; leave the rest. They are "
                 "colour for the events listed above, never new events: no extra hit, fall, wound, grip or escape comes "
-                "from them, and nobody else is touched.\n" + "\n".join(lines))
+                "from them, and nobody else is touched. They are jotted in the present tense: the story puts them in the past "
+                "(\"her head snaps back\" becomes \"her head snapped back\").\n" + "\n".join(lines))
 
     def _sample_tags(self, key, acts, pin_events, also=()):
         """What kind of passage this part of the beat is, as tags a sectioned style sample can answer to, best first
@@ -9334,6 +9354,7 @@ class Narrator:
         text = _balance_marks(text)  # cuts above can split a thought: re-pair its marks
         text = _italic_sounds(text)  # "she hissed, hss, and..." -> "*hss*": the sound shown (and coloured) as a sound
         text = _drop_hanging_leadins(text)
+        text = self._last_scrub(text)
         text = _mend_orphans(text)
         # "slammed into the wall—grunt—and the muscles spasmed": a reaction word from the notes left as a stage direction
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
@@ -9342,6 +9363,18 @@ class Narrator:
         self._note_worn(text)
         self._beat_no += 1
         return self.pov_labels(text)
+
+    def _last_scrub(self, text):
+        """What the rewrites let through, mended without another call: a stock "a symphony of pain" says "pain"; a short
+        bare curse standing as its own sentence ("Damn this.") goes; a line copied from the notes ("Continue with the next
+        part.") goes. Only when swearing is off (narration.swearing) for the curse."""
+        n = self.rules.get("narration", {}) or {}
+        text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        text = re.sub(r"(?m)(^|(?<=[.!?…]\s))\*?(?:Continue with the next part|Next part)[.!]?\*?\s*", r"\1", text)
+        if str(n.get("swearing", "rare")).lower() in ("none", "off", "false", "never", "no", "0"):
+            text = re.sub(r"(?:(?<=^)|(?<=[.!?…]\s)|(?<=\n))\*?(?:Damn|Dammit|Damn it|Damn this|Damn her|Damn you)[^.!?\n]{0,20}[.!?]+\*?\s*",
+                          "", text)
+        return text
 
     def _cut_retold(self, text):
         """One short model pass over the finished beat: which sentences tell an event AGAIN that the passage already
@@ -10257,6 +10290,17 @@ class Narrator:
         return [sent for sent, why in self._bad_sentences(text, prior).items()
                 if any("present tense" in w for w in (why if isinstance(why, (list, tuple, set)) else [why]))]
 
+    def _is_block_copy(self, sent):
+        """A present-tense sentence that is one of the story blocks copied in (they are jotted in the present)."""
+        words = set(re.findall(r"[a-z']+", sent.lower()))
+        if len(words) < 6:
+            return False
+        for _, _, t in self._blocks().entries:
+            bw = set(re.findall(r"[a-z']+", t.lower()))
+            if len(bw) >= 6 and len(bw & words) >= 0.8 * len(bw):
+                return True
+        return False
+
     def _fix_tense(self, text, prior=""):
         """Present tense that survived the paragraph rewrites: one small copy-editing call puts the passage into the
         past tense, changing only the verbs (an easy job even for a small model). Kept only if it really is better
@@ -10264,7 +10308,7 @@ class Narrator:
         if self.rules.get("narration", {}).get("tense", "past") != "past" or not text:
             return text
         before = self._present_sents(text, prior)
-        if len(before) < 2:
+        if len(before) < 2 and not any(self._is_block_copy(s) for s in before):
             return text
         n = self.rules.get("narration", {})
         if self.progress:

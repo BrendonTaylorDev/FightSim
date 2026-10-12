@@ -377,7 +377,11 @@
       "down": 1.1,
       "down_pummel": 1.08,
       "held": 1.1,
-      "submission": 1.25
+      "submission": 1.25,
+      "staggered": 1.2,
+      "rocked": 1.05,
+      "rigid": 1.1,
+      "_moved_comment": "staggered: knocked a step or more by a blow (moves.stumble) and still finding her feet, this beat and the next (no guard comes up either). rocked: the next blow in the SAME beat after one that turned her head or leaned her (not on a strong, fresh fighter); rigid: the same after lightning locked her."
     },
     "feint": {
       "_comment": "A fake before the real blow (the director's \"feint\": true). Costs energy. chance the defender bites (higher when she is worn down; seen_mult per feint she has already seen from this attacker). If she bites, no dodge, clash or guard, and the blow lands at vulnerable.feinted.",
@@ -414,7 +418,15 @@
       "max": 0.75,
       "_rock_comment": "Less than a stumble: a blow of rock_from damage or more that doesn't stagger her can still turn her head or lean her body with it (rock_chance), her feet staying put. How it looks only.",
       "rock_from": 15,
-      "rock_chance": 0.55
+      "rock_chance": 0.55,
+      "_body_comment": "Her body decides too: legs at bad_legs_at damage or more (sore_legs_at a little) can't brace, so staggers come easier (x bad_legs_mult / sore_legs_mult) and carry further; a blow on a spot already that hurt x hurt_spot_mult; under weak_below strength a stagger carries her further and lighter blows rock her more; over strong_above she catches it sooner and a middling blow moves her less.",
+      "bad_legs_at": 150,
+      "bad_legs_mult": 1.35,
+      "sore_legs_at": 90,
+      "sore_legs_mult": 1.15,
+      "hurt_spot_mult": 1.15,
+      "weak_below": 30,
+      "strong_above": 75
     },
     "jolts": {
       "_comment": "What a hard hit (min_damage part damage or more) can do for a beat: breathless (chest or belly left very painful or worse), dazed (head left excruciating or worse), doubled_over (a part that was already devastated). Chances per hit.",

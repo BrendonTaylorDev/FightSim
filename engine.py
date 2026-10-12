@@ -4263,9 +4263,10 @@ class Engine:
             return None   # her limbs are busy holding someone down
         if (d.name in self.downed or self.pinned_by(d.name) or self.grab_between(a.name, d.name)
                 or any(h.defender == d.name for h in self.holds.values())
-                or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched", "constricted", "airborne"))
+                or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched", "constricted", "airborne",
+                                                  "staggered"))
                 or (self.pressed.get(d.name) or {}).get("surface")):
-            return None
+            return None       # (staggering, she is busy finding her feet: no guard comes up)
         fresh = 0.4 + 0.6 * max(0.0, min(1.0, self.strength(d) / 100))
         ranged = self.is_ranged(move)
         plan = self.body_plan(d)
@@ -4319,6 +4320,10 @@ class Engine:
             # a pummel on the ground lands blow after blow: each one gets its own, smaller bonus (down_pummel)
             opts.append(("down, nowhere to roll with it",
                          float(cfg.get("down_pummel", 1.04) if getattr(self, "_pummel_now", False) else cfg.get("down", 1.1))))
+        ro = (getattr(self, "_rock_open", None) or {}).get(d.name)
+        if ro and ro[0] == self.turn:
+            # the blow before this one, this same beat, turned her head or locked her rigid: a sliver of an opening
+            opts.append((ro[1], float(cfg.get("rigid" if ro[2] else "rocked", 1.1 if ro[2] else 1.05))))
         opts = [o for o in opts if o[1] != 1.0]
         return max(opts, key=lambda o: o[1]) if opts else None
 
@@ -4447,6 +4452,12 @@ class Engine:
                                                              "tail": 0.3}.get(reg, 1.0)))
         if self.has(d, "staggered"):
             ch *= float(cfg.get("again_mult", 1.3))     # still staggering from the last one: easier to send again
+        # what she stands on: legs that are badly hurt can't brace against it, and a hurt place gives more
+        legw = self._leg_worst(d)
+        ch *= (float(cfg.get("bad_legs_mult", 1.35)) if legw >= float(cfg.get("bad_legs_at", 150)) else
+               float(cfg.get("sore_legs_mult", 1.15)) if legw >= float(cfg.get("sore_legs_at", 90)) else 1.0)
+        if float(big.get("damage_before", 0)) >= float(cfg.get("bad_legs_at", 150)):
+            ch *= float(cfg.get("hurt_spot_mult", 1.15))
         if not self._chance(min(float(cfg.get("max", 0.75)), ch), f"{d.name} knocked staggering by the blow to her {big['part']}",
                             "she stumbles", "she holds her ground"):
             return self._rocked(a, d, big, dmg, cfg, reg, away, kind, held, holding)
@@ -4466,19 +4477,37 @@ class Engine:
                     f"her head snaps round to the {away}" if away else "her head snaps back")
         elif reg == "neck":
             head = f"her head whips {'round to the ' + away if away else 'back'} with it"
-        steps = ("a single step" if dmg < low * 1.6 or reg in ("fore_low", "tail") else "two or three steps"
-                 if dmg < low * 2.6 else "several steps, close to going down")
+        tiers = ("a single step", "two or three steps", "several steps, close to going down")
+        t = 0 if dmg < low * 1.6 or reg in ("fore_low", "tail") else 1 if dmg < low * 2.6 else 2
+        s = self.strength(d)
+        if s < float(cfg.get("weak_below", 30)) or legw >= float(cfg.get("bad_legs_at", 150)):
+            t += 1        # worn out, or on legs that won't brace: the same blow carries her further
+        elif s > float(cfg.get("strong_above", 75)):
+            t -= 1        # strong and fresh: she catches it sooner
+        steps = tiers[max(0, min(2, t))]
         self.set_status(d, "staggered", 1)
         return {"fighter": d.name, "status": "staggered", "beats": 1,
                 "stumble": {"part": big["part"], "way": way, "head": head, "steps": steps,
-                            "legs": reg in ("hind_low", "hind_up"), "kind": kind}}
+                            "legs": reg in ("hind_low", "hind_up"), "kind": kind, "strength": round(s),
+                            "bad_legs": legw >= float(cfg.get("bad_legs_at", 150))}}
+
+    def _leg_worst(self, d):
+        """The worst-hurt part she stands on (her hind legs; a four-legged fighter's forelegs too)."""
+        feet = ("hind_up", "hind_low") + (("fore_low",) if self.body_plan(d) == "quadruped" else ())
+        return max([p.damage for p in d.parts.values() if body_region(p.name) in feet] or [0.0])
 
     def _rocked(self, a, d, big, dmg, cfg, reg, away, kind, held=False, holding=False):
         """Less than a stumble: the blow turns her head or moves her body with it, and her feet (or the rest of her)
         stay where they are. Only how it looks (no status); rolled so not every hit gets it (rock_chance)."""
         if dmg < float(cfg.get("rock_from", 15)) or (reg in ("tail", "fore_low") and kind not in ("shock",)):
             return None
-        if not self._chance(float(cfg.get("rock_chance", 0.55)), f"{d.name} rocked by the blow to her {big['part']}",
+        s = self.strength(d)
+        rc = float(cfg.get("rock_chance", 0.55))
+        if s > float(cfg.get("strong_above", 75)) and dmg < float(cfg.get("min_damage", 40)):
+            rc *= 0.7     # strong and fresh: a middling blow doesn't move her much
+        elif s < float(cfg.get("weak_below", 30)) or self._leg_worst(d) >= float(cfg.get("bad_legs_at", 150)):
+            rc = min(0.9, rc * 1.35)   # worn out, or on bad legs: even lighter blows move her
+        if not self._chance(rc, f"{d.name} rocked by the blow to her {big['part']}",
                             "it moves her", "she takes it where she is"):
             return None
         down = d.name in self.downed
@@ -4523,7 +4552,15 @@ class Engine:
         else:
             how = (f"her body twists away{side} with it" if away else
                    "it rocks her back on her heels" if reg in ("chest", "belly") else "it leans her body away from it")
-        return {"fighter": d.name, "part": big["part"], "how": how, "kind": kind,
+        if not down and not held and kind not in ("shock", "mind"):
+            how += (", more than a blow that size should" if s < float(cfg.get("weak_below", 30)) else
+                    ", and she is square again at once" if s > float(cfg.get("strong_above", 75)) else "")
+        if not down and not held and (kind == "shock" or s <= float(cfg.get("strong_above", 75))):
+            if not hasattr(self, "_rock_open"):
+                self._rock_open = {}
+            self._rock_open[d.name] = (self.turn, "caught locked rigid" if kind == "shock" else
+                                       "caught with her head still turned", kind == "shock")
+        return {"fighter": d.name, "part": big["part"], "how": how, "kind": kind, "strength": round(s),
                 "where": "held" if held else "down" if down else "holding" if holding else "standing"}
 
     def _jolts(self, d, hits):
@@ -6107,8 +6144,13 @@ class Engine:
         events += self._submission_tick()
         events += self._free_blow_tick(skip_hold_ids)
         events += self._wing_strain_tick()
-        events += self._crumple_tick()
-        events += self._collapse_tick()
+        if not self.winner():
+            # once the fight is decided nothing drives her any more: she can sit or lie down in the story, but her
+            # body doesn't give out on its own behind it (a collapse the aftermath never told)
+            events += self._crumple_tick()
+            events += self._collapse_tick()
+        else:
+            self.pressed.clear()
         events += self.get_up_tick()
         events += self._scene_event_tick(busy=had_grip)
 
@@ -6205,7 +6247,7 @@ class Engine:
             elif self.has(f, "breathless"):     # winded: half the breath comes back (resting still helps)
                 regen *= float(cfg_s.get("breathless_regen_mult", 0.5))
             f.energy = max(0.0, min(100.0, f.energy + regen))
-            if (ad.get("enabled", True) and not f.adrenaline_used
+            if (ad.get("enabled", True) and not f.adrenaline_used and not self.winner()
                     and self.strength(f) < float(ad.get("below_strength", 25))):
                 f.adrenaline_used = True
                 self.set_status(f, "adrenaline", ad.get("beats", 3))
