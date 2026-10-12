@@ -274,7 +274,7 @@ a queasy shiver goes through her middle and she gags once
 the venom mats her feathers together in a sticky clump | has: feathers
 
 == impact_mark | kind: poison | size: heavy, tremendous
-the poison sinks in deep and her {part} throbs with a sick, spreading heat that makes her retch
+the poison sinks in deep and her {part} throbs with a sick, spreading heat that turns her stomach
 
 # ground
 == impact_mark | kind: ground
