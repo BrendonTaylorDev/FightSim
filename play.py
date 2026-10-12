@@ -1014,6 +1014,10 @@ class Session:
         self.narrator.soaked_now = soaked
         self.narrator.water_types = {f.name for f in self.eng.fighters.values()
                                      if "water" in {str(t).lower() for t in (getattr(f, "types", None) or [])}}
+        self.narrator.rain_wet = (self.eng.scene_cfg.get("wets") or
+                                  ("the rain" if (getattr(self.eng, "weather", None) or {}).get("kind") == "rain" else None))
+        self.narrator.winners = ({f.name for f in self.eng.fighters.values() if not f.eliminated}
+                                 if self.eng.winner() else set())   # (the fight is won: they stand, they don't fade)
         if getattr(self.narrator, "_part_names_seen", None) != len(self.narrator.part_names):
             self.narrator._part_words_cache = None   # new fighters: their part names are not repeated phrases
             self.narrator._part_names_seen = len(self.narrator.part_names)
@@ -3010,7 +3014,7 @@ def handle_command(s, line):
                  "dodge": "how an attack is avoided", "hold_break": "how a hold is broken",
                  "hold_strain": "how a held fighter fights a grip that stays on",
                  "struggle": "what a pinned fighter tries", "getup_fail": "how a try at getting up fails",
-                 "getup_rise": "how she finally rises"}
+                 "getup_rise": "how she finally rises", "bite_rock": "how a bite rocks her where she stands"}
         for k, table in s.eng.VARIETY.items():
             cfg.setdefault(k, dict(table))
         def row(k):

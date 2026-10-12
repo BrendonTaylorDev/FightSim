@@ -796,16 +796,22 @@ class Engine:
                      "power": 1},
         "getup_fail": {"gives_out": 4, "slips": 2, "dizzy": 2, "breath": 2},
         "getup_rise": {"push": 4, "roll": 2, "lean": 3, "lurch": 2},
+        "bite_rock": {"drag": 3, "shake": 2, "yank": 2, "wrench_free": 2},
         "takedown": {"tackle": 3, "leg_hook": 3, "sweep": 3, "hip_throw": 3, "shoulder_drive": 2, "drag_down": 2,
                      "spin_down": 2, "trip_back": 2, "pull_forward": 2, "ride_down": 2},
     }
 
-    def vary(self, key):
-        """Pick HOW an already-decided outcome plays out (one of several ways that are all true to the result)."""
+    def vary(self, key, skip=(), scale=None):
+        """Pick HOW an already-decided outcome plays out (one of several ways that are all true to the result).
+        skip: ways that aren't true to it this time (rolling onto her front when she already lies on it); scale:
+        weights multiplied for ways she is less able to do now (springing back on wrecked legs)."""
         table = dict(self.VARIETY.get(key, {}))
         over = self.rules.get("variety", {}).get(key)
         if isinstance(over, dict):
             table = {k: float(v) for k, v in over.items() if not str(k).startswith("_") and float(v) > 0} or table
+        table = {k: v for k, v in table.items() if k not in skip} or table
+        if scale:
+            table = {k: v * float(scale.get(k, 1.0)) for k, v in table.items()}
         names = list(table)
         return self.rng.choices(names, [table[n] for n in names])[0]
 
@@ -2311,6 +2317,8 @@ class Engine:
         fighter who falls asleep on her feet slumps to the ground. What that knocked loose is left in _knock_on."""
         f.status[status] = max(f.status.get(status, 0), int(beats))
         self._fresh_status.add((f.name, status))
+        if status == "chilled":
+            (getattr(self, "_slow_not_cold", None) or set()).discard(f.name)   # (cold, unless the move says otherwise)
         self._knock_on = []
         if status in ("asleep", "frozen") and not f.eliminated:
             word = "fell asleep" if status == "asleep" else "froze solid"
@@ -2377,7 +2385,7 @@ class Engine:
         mult = next((m for at, m in steps if worst.damage >= at), None)
         if mult is None or mult >= 1:
             return None
-        return (f"her hurt {worst.name.lower()}", mult)
+        return (f"{poss_word(a.name)} hurt {worst.name.lower()}", mult)   # (named: "her" reads as the defender's)
 
     def power_extras(self, a, d, move_type):
         """Status multipliers on a move's power: (label, multiplier) pairs."""
@@ -2429,8 +2437,15 @@ class Engine:
             if self._chance(float(eff.get("chance", 0)), f"{d.name} {eff['status']} by {move.get('name', 'the move')}",
                             eff["status"], "no"):
                 self.set_status(d, eff["status"], eff.get("beats", 2))
-                out.append({"fighter": d.name, "status": eff["status"], "beats": int(eff.get("beats", 2)),
-                            "knock_on": self._knock_on})
+                rec = {"fighter": d.name, "status": eff["status"], "beats": int(eff.get("beats", 2)),
+                       "knock_on": self._knock_on}
+                if eff["status"] == "chilled" and move.get("type") != "Ice":
+                    # (the slow of a move that isn't cold, Rock Tomb's boulders or String Shot's silk, isn't frost)
+                    if not hasattr(self, "_slow_not_cold"):
+                        self._slow_not_cold = set()
+                    self._slow_not_cold.add(d.name)
+                    rec["look"] = self.status_look(d.name, "chilled")
+                out.append(rec)
                 self._knock_on = []
         return out
 
@@ -2771,7 +2786,13 @@ class Engine:
         if not forced and (ch <= 0 or not self._chance(ch, f"{d.name} dodging {poss_word(a.name)} attack", "DODGED",
                                                        "it lands")):
             return None
-        out = {"dodged": True, "dodge_chance": ch, "counter_hits": [], "manner": self.vary("dodge"), "wary": wary}
+        # (the ways of dodging that need her legs, a step aside or a spring back, grow rarer as her legs are hurt;
+        # in the air she dodges on her wings)
+        ecfg = self._cfg("evasion")
+        legw = 0.0 if self.has(d, "airborne") else self._leg_worst(d)
+        legs_ok = 1.0 / (1.0 + legw / float(ecfg.get("leg_manner_halves_at", 80)))
+        manner = self.vary("dodge", scale={m: legs_ok for m in ecfg.get("leg_manners", ["spring_back", "sidestep"])})
+        out = {"dodged": True, "dodge_chance": ch, "counter_hits": [], "manner": manner, "wary": wary}
         if forced:
             out["chain_broken"] = True
         acfg = self.rules.get("arena") or {}
@@ -3318,8 +3339,8 @@ class Engine:
                               for h in self.holds.values() if h.attacker == name]}
             if tries is not None:
                 del self.downed[name]
-                self.facing.pop(name, None)
-                ev["rise"] = self.vary("getup_rise")
+                lay = self.facing.pop(name, None)
+                ev["rise"] = self.vary("getup_rise", ("roll",) if lay == "face-down" else ())  # (already on her front)
                 ev["fails"] = [self.vary("getup_fail") for _ in range(max(0, tries - 1))]
             else:
                 ev["fails"] = [self.vary("getup_fail") for _ in range(3)]
@@ -4745,7 +4766,11 @@ class Engine:
                    "it shoves her a little way along the ground where she lies" if kind in ("blunt", "blast") else
                    "her body jerks where she lies")
         elif kind == "bite":
-            how = f"the jaws drag her toward {a.name} before they let go"
+            how = {"drag": f"the jaws drag her toward {a.name} before they let go",
+                   "shake": "the jaws shake her where she stands, once, hard, and open",
+                   "yank": f"the bite yanks her off her line, half a step toward {a.name}, and lets go",
+                   "wrench_free": "she wrenches back against the teeth and her body jerks with them as she pulls free",
+                   }[self.vary("bite_rock")]
         elif kind in ("claw", "blade"):
             how = f"she twists{side or ''} away from the {'cut' if kind == 'blade' else 'rake'} as it goes across her"
         elif holding:
@@ -4975,7 +5000,8 @@ class Engine:
             if self.has(f, "burned"):
                 bits.append("singed patches in her fur")
             if self.has(f, "chilled"):
-                bits.append("frost in her fur, shivering")
+                bits.append("moving stiff and heavy" if f.name in (getattr(self, "_slow_not_cold", None) or ())
+                            else "frost in her fur, shivering")
             bad = sorted((p for p in f.parts.values() if p.damage >= 90), key=lambda p: -p.damage)[:4]
             # a mark on a part nobody has touched for a while is given in short: the first thing that shows
             ob = self._decay("origin_beats", 4)
@@ -7750,8 +7776,19 @@ class Engine:
                       "than she should be able to",
     }
 
+    # the same status from a move that is not cold: CHILLED is the engine's word for any slowing
+    STATUS_LOOK_NOT_COLD = {
+        "chilled": "SLOWED: her limbs heavy and stiff, slow to answer, every movement a beat behind",
+    }
+
+    def status_look(self, name, status):
+        """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
+        if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
+            return self.STATUS_LOOK_NOT_COLD[status]
+        return self.STATUS_LOOK.get(status, status.upper())
+
     def status_words(self, f):
-        bits = [self.STATUS_LOOK.get(s, s.upper()) + f" ({n} beat{'s' if n != 1 else ''})" for s, n in f.status.items()]
+        bits = [self.status_look(f.name, s) + f" ({n} beat{'s' if n != 1 else ''})" for s, n in f.status.items()]
         e = f.energy
         tired = float(self._cfg("energy").get("tired_below", 25))
         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
