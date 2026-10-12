@@ -12003,3 +12003,34 @@ the gap, measured
 her readiness
 her doubt
 her resolve
+
+# A badly hurt part struck on a fighter who still has her strength: the pain is real and it shows, but she keeps
+# most of it in (a cry bitten off, a hard flinch, the part guarded); and the same on a fighter who is worn down,
+# where more of it gets out. (Reactions see the struck part's pain level as well as the blow and her strength.)
+== reaction | level: excruciating, devastated | state: fresh, winded
+a cry jumps out of her and her teeth slam shut on the end of it
+her whole face clenches round it for a heartbeat, then she makes it smooth
+she snatches the hurt place back so hard it jerks the rest of her, and says nothing
+the breath hisses in through her teeth and she holds it there until the worst passes
+her eyes squeeze shut and open again already hard, refusing to let it be seen
+a sound starts in her throat and she swallows it whole; only her ears give her away
+she flinches deep, and covers the flinch by squaring her shoulders
+her jaw works once, silently, as she bites down on everything she wants to let out
+
+== reaction | level: excruciating, devastated | state: tired, spent
+the cry gets out before she can catch it, and the next one with it
+she curls round the hurt place and cannot uncurl for a long moment
+her eyes stream and her breath breaks into short, helpless gasps
+she sags over it, trembling, and makes a low sound she cannot stop
+she clutches the hurt place with everything she has and rocks on the spot
+the pain goes through what is left of her and there is nothing in the way to stop it
+
+== reaction | level: hurting, very painful | state: fresh
+she hisses and keeps her eyes on the other, the hurt shoved to the back of her
+a short grunt, a quick re-set of her guard over the place, and she is ready
+her lip curls off her teeth, as much anger as pain
+
+== reaction | level: hurting, very painful | state: tired, spent
+the hurt place makes her gasp, and the gasp turns into a shaky breath out
+she presses against the place and her whole body trembles round her paw | has: arms
+her head drops and she breathes through it with her eyes shut

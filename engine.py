@@ -1023,6 +1023,7 @@ class Engine:
         if move.get("target") == "hold":
             raise ValueError(f"{move['name']} is a hold; use it to start a hold or pin")
         self._can_act(a, enforce)
+        d_up = self.has(d, "airborne")    # (before the blow: knocking her out of the sky must not make it a dive)
         busy = self.busy_with(a, move)
         if enforce and busy:
             raise ValueError(f"{poss_word(a.name)} {busy[0]} are clamped on {poss_word(busy[1])} {busy[2].lower()}: she "
@@ -1391,9 +1392,12 @@ class Engine:
                                      + list((res.get("charge") or {}).get("hazard_status") or [])
                                      + list((res.get("sustain") or {}).get("hazard_status") or []))
             launch = self._launch_from_move(move)
+            fcfg = self.rules.get("flight") or {}
+            if launch and self.has(d, "airborne") and not d.eliminated and not move.get("grab_carry") \
+                    and not move.get("carry") and self._rights_herself(d, move, launch, fcfg):
+                res["righted"], launch = launch, None
             if launch:
                 res["auto_launch"] = launch
-            fcfg = self.rules.get("flight") or {}
             grab = move.get("grab_carry") and not move.get("carry") and not d.eliminated
             if grab:
                 # a winged fighter in the air seizes her with whatever she grips with and tries to haul her up:
@@ -1418,9 +1422,17 @@ class Engine:
                 res["auto_launch"], res["drop_severity"] = "launched", h[1]
             kfa = fcfg.get("knock_from_air") or {}
             fall = (min(float(kfa.get("max", 0.9)), float(kfa.get("base", 0.25))
-                        + float(kfa.get("per_damage", 0.004)) * sum(h.get("damage_taken", 0) for h in hits)
+                        + float(kfa.get("per_damage", 0.004)) * self._fall_damage(hits, float(kfa.get("spread_share", 0.3)))
                         + float(kfa.get("per_wing_damage", 0.0025)) * self.wing_damage(d))
                     if self.has(d, "airborne") and not res.get("carried") and not d.eliminated else 0.0)
+            hm = kfa.get("health_mult") or {}
+            if fall > 0 and hm:
+                # a strong flyer rides out a blow that would bring a worn one down (knock_from_air.health_mult: at full
+                # strength, at half, and at nothing left, eased between)
+                pct = max(0.0, min(100.0, self._health_pct(d)))
+                full, half, empty = (float(hm.get(k, v)) for k, v in (("full", 1.0), ("half", 1.0), ("empty", 1.0)))
+                m = half + (full - half) * (pct - 50) / 50 if pct >= 50 else empty + (half - empty) * pct / 50
+                fall = min(float(kfa.get("max", 0.9)), fall * m)
             if fall > 0 and self._chance(fall, f"{d.name} knocked out of the air", "she falls", "she stays up"):
                 # hit in the air with nothing under her: the blow knocks her out of the sky (harder, the more it hurt
                 # and the worse her wings are: flight.knock_from_air)
@@ -1434,7 +1446,7 @@ class Engine:
                 res["status_applied"] = (res.get("status_applied") or []) + jolt
         if hits and not d.eliminated and not dodge and not (guard and guard.get("kind") == "block") \
                 and not any(res.get(k) for k in ("charge", "sustain", "ground_into", "ground_back", "into_mouth",
-                                                  "auto_launch", "grounded", "carried")):
+                                                  "auto_launch", "grounded", "carried", "righted")):
             reel = self._stumble(a, d, move, hits)
             if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
                 res["moved"] = "stagger" if reel and reel.get("status") else "rock" if reel else "still"
@@ -1452,7 +1464,7 @@ class Engine:
                 res["reflected"] = back
         if res.get("carried"):
             self.set_status(a, "airborne", max(a.status.get("airborne", 0), 2))   # she is up there with her
-        elif self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
+        elif self.has(a, "airborne") and not self.is_ranged(move) and not d_up \
                 and move.get("target") not in ("status", "hold") and not move.get("carry"):
             if (getattr(self, "_juggle", None) or {}).get("who") == d.name:
                 res["dive"], res["climbs"] = True, True    # she struck her in the air: there is no one to catch her
@@ -1462,7 +1474,7 @@ class Engine:
                     self._strafe(a, d, res, math)
         elif leap:
             self._leap_after(a, d, res, leap, bool(hits) and not res.get("dodged"))
-        elif self.has(a, "airborne") and self.has(d, "airborne") and not self.is_ranged(move) \
+        elif self.has(a, "airborne") and d_up and not self.is_ranged(move) \
                 and move.get("target") not in ("status", "hold", "self") and not move.get("carry") \
                 and (getattr(self, "_juggle", None) or {}).get("who") != d.name \
                 and ((self.rules.get("flight") or {}).get("air_pass") or {}).get("enabled", True):
@@ -3750,7 +3762,15 @@ class Engine:
             return False
         if "ranged" in move:   # moves.json can say so outright ("ranged": false for a close flurry like Close Combat)
             return bool(move["ranged"])
-        return move.get("target") in ("spread", "whole_body")
+        if move.get("target") in ("spread", "whole_body"):
+            return True
+        # a single-target move that is thrown, shot or fired across the gap (Ice Shard, "a fast-flung chunk of ice"),
+        # never one delivered by a fist, a fang or a body ("Bullet Punch")
+        words = f"{move.get('name', '')} {move.get('about', '')}".lower()
+        return bool(re.search(r"\b(?:flung|fling|shards?|shot|shoots?|bullets?|spits?|spat|hurl\w*|thrown|needles?|"
+                              r"missiles?|darts?|gun|beams?|rays?|bolts?|blasts?|pulse|spheres?|orbs?|spray|jets? of)\b", words)
+                    and not re.search(r"\b(?:punch|fist|fang|bite|claw|kick|tackle|slam|strike with|headbutt|tail)\b",
+                                      words))
 
     def _clash(self, a, d, move, math):
         """A ranged attack met head-on by one of the defender's own (moves.clash): the two meet in the air between
@@ -3775,7 +3795,7 @@ class Engine:
         if not options:
             return None
         if not self._chance(float(cfg.get("chance", 0.15)), f"{d.name} meeting {poss_word(a.name)} {move['name']} "
-                            f"with one of her own", "CLASH", "no"):
+                            f"with an attack of her own", "CLASH", "no"):
             return None
         # how much force a move puts out, all told: a whole-body discharge spreads its power over every part, so
         # it is weighed by how much of her it covers, not by one part's share
@@ -5593,6 +5613,30 @@ class Engine:
         res["leap"]["landing_hits"] = [self._apply_damage(a, p, power) for p in self.rng.sample(legs, min(2, len(legs)))]
         self._source = mine
 
+    def _rights_herself(self, d, move, launch, fcfg):
+        """A flyer the blow would hurl (a launch effect) may catch herself on her wings before she hits the ground
+        (flight.air_recover): likelier the stronger she is and the sounder her wings. A move that always throws (a
+        launch at 100%, a seize-and-throw) can't be ridden out."""
+        cfg = fcfg.get("air_recover") or {}
+        if not cfg.get("enabled", True) or any(e.get("launch") == launch and float(e.get("chance", 1)) >= 1
+                                               for e in move.get("effects", [])):
+            return False
+        pct = max(0.0, min(100.0, self._health_pct(d)))
+        hm = cfg.get("by_strength") or {}
+        full, half, empty = (float(hm.get(k, v)) for k, v in (("full", 0.6), ("half", 0.3), ("empty", 0.0)))
+        ch = half + (full - half) * (pct - 50) / 50 if pct >= 50 else empty + (half - empty) * pct / 50
+        ch /= 1.0 + self.wing_damage(d) / float(cfg.get("wing_halves_at", 300))
+        return ch > 0 and self._chance(min(0.9, ch), f"{d.name} catching herself on her wings", "she rights herself",
+                                       "she falls")
+
+    @staticmethod
+    def _fall_damage(hits, share):
+        """How hard a blow's hits shake a flyer, for knock_from_air: the worst hit in full and the rest at `share`
+        (a gust over her whole body is not a blow that crushes one wing), each as it would be at the default scale
+        of 3 (a higher /scale makes every number bigger, and must not by itself bring flyers down more often)."""
+        dmg = sorted((h.get("damage_taken", 0) * 3.0 / max(0.5, float(h.get("scale") or 3)) for h in hits), reverse=True)
+        return (dmg[0] + share * sum(dmg[1:])) if dmg else 0.0
+
     def _air_pass(self, a, d, res, landed):
         """Two flyers meet in the air (flight.air_pass): they cross at speed, so the one struck may rake back at the
         other as they pass (rake_back, more often while she is strong), and a pass that lands builds the attacker's
@@ -5602,8 +5646,8 @@ class Engine:
         if landed:
             self._set_air_speed(a, self.air_speed(a) + 1)
             res["air_speed"] = self.air_speed(a)
-        if d.eliminated or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched")):
-            return
+        if d.eliminated or res.get("grounded") or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched")):
+            return     # (knocked out of the sky by it, she is falling, not crossing)
         ch = float(cfg.get("rake_back", 0.3)) * self.flight_vigour(d, "strafe_mult", 1.0)
         if not self._chance(min(0.8, ch), f"{d.name} raking back at {a.name} as they cross", "she rakes back", "no"):
             return
@@ -7883,8 +7927,7 @@ class Engine:
                         fx.append(f"{x['status'] if x.get('status') else x.get('launch')} {x.get('chance', 1) * 100:.0f}%")
                     learned = ", lent for this fight" if m.get("learned") else ""
                     rng_word = ("on herself or the arena" if m.get("target") == "self" else
-                                "close" if (m.get("target", "targeted") in ("targeted", "hold") and not m.get("ranged"))
-                                or m.get("ranged") is False else "ranged")
+                                "ranged" if self.is_ranged(m) else "close")
                     if m.get("carry"):
                         rng_word += ", needs her in the air"
                     if m.get("sustainable"):

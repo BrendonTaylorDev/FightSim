@@ -3705,6 +3705,10 @@ class Narrator:
                              f"her up off the ground, {a['carried']['height']}, wings labouring, then LETS GO. "
                              + (f"{a['defender']} falls, and the next blow catches her before she reaches the ground."
                                 if a.get("juggled_up") else f"{a['defender']} falls and hits the ground (the landing below)."))
+            if a.get("righted"):
+                lines.append(f"  - the blow FLINGS {a['defender']} tumbling through the air, out of her wingbeat, but she "
+                             f"CATCHES HERSELF on her wings before the ground and levels out: she is STILL IN THE AIR. "
+                             f"Show the tumble and the recovery (wings snapping open, the hard beats that hold her).")
             if a.get("grounded"):
                 lines.append(f"  - the blow KNOCKS {a['defender']} OUT OF THE AIR"
                              + (": her hurt wing can't catch her" if a.get("grounded_wing") else ": it throws her off her "
@@ -6091,7 +6095,7 @@ class Narrator:
                 # (sized to the blow, and to how much of her is left: the same blow lands differently on a fresh
                 # fighter and a spent one)
                 add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who),
-                                                                   fighter=who.lower(), state=state(who),
+                                                                   fighter=who.lower(), state=state(who), level=lv_w,
                                                                    exclude=(list(too_big or []) + [MOVES_HER]) if still_
                                                                    else too_big))
             # what the blow visibly does to her body in the instant it lands (fur, skin, breath, the push of it), sized

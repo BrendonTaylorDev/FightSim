@@ -6182,3 +6182,252 @@ She opened the folded wing again a body's length lower, and the air caught her, 
 Her heart was pounding. Her shoulder ached from the sudden snap of the fold. She looked back and saw {B} trying to turn, wide and clumsy, carried on past by her own speed, losing height.
 
 {A} beat hard and rose above her. Her breath was quick through her open mouth, and her wings felt light and strong and hers. She banked into a slow circle and watched {B} come round, and waited for her to try again.
+
+# --- the one who strikes: reading the other, gathering, the blow, the contact coming back (strike act) ---
+== strike act | has_a: wings | kind: wing
+{A} watched the way {B} stood on the wet shingle, weight sunk onto the right side, the left shoulder carried a little high and stiff where the last exchange had caught it. Every breath {B} took came in short over the top of the chest and stopped before it was full.
+
+*That shoulder. It won't come up fast enough.*
+
+She did not hurry. She let her wings spread to their full span, slow, so the wind off the water filled them and pushed at her, and she leaned into the push until her whole body was a drawn bow. Then she came in low across the stones, close enough to hear the shingle rattle under {B}, and at the last stride she brought her right wing round from behind her like a flail.
+
+The leading edge hit the left shoulder flat and hard. The sound was a heavy slap, then a grunt from {B} that was half breath and half surprise. The shock ran back through the bones of her wing and into her own shoulder joint, a deep dull jolt that rattled through her whole frame, and she felt the stiff place under the blow give a little, the way packed sand gives under a heel.
+
+She let the wing ride on past and fold, already turning, the leading edge ruffled and stinging where it had struck. Her wing ached from wrist to root. She did not mind it. {B} had gone a half step sideways with the shoulder dropped, and the breath that came after was ragged and loud over the hiss of the surf.
+
+== strike act | has_a: beak | kind: beak
+The scrub on the hilltop was thin and dry, and {B} had backed into the last of it with the chin tucked low, guarding the throat and the face. That left the top of the head and the back of the neck open, and {A} saw it at once. She saw something else too: every few heartbeats {B}'s eyes flicked away toward the slope, measuring the way out.
+
+*Look away once more.*
+
+She drew her head back on her neck until the muscles there stood out tight, beak closed, the point lined up on the spot just behind {B}'s ear. She kept very still. The cicadas went on shrilling in the heat. Then {B}'s eyes went to the slope again and she struck.
+
+Her whole body went in behind the beak, from her planted stance up through her hips and chest and neck in one straight line, and the point drove down like a pick into earth. It met hard skull under a thin cover, glanced a finger's width, and bit. There was a sharp knock, wood on stone, and the impact came back up the beak into her own head, a ringing jar behind her eyes that blurred the brush for an instant.
+
+She pulled back at once. {B} had flinched hard, head jerking down and away, a small sharp sound forced out. Where her beak had landed there was a bright scrape and a thin line of red starting, no wider than a grass blade. Her own beak throbbed at the tip, and she clacked it once, testing it, and found it whole.
+
+== strike act | has_a: talons | has_a: wings | kind: talon
+From above the quarry floor looked like a scatter of pale blocks, and {B} was the one thing on it that moved. {A} held herself on the updraft that came off the warm rock, wings barely trimming, and watched. {B} kept turning to track her and each turn came a beat late, the head swinging round after the body, the back left uncovered for that one beat.
+
+*There. Every time.*
+
+She tipped one wing and slid down the air in a long slant, not straight at {B} but across, so that she would come from behind on the next late turn. The wind rose in her ears to a thin whistle. At the bottom of the slant she swung her legs forward and opened her talons wide, every hooked point spread.
+
+{B} turned. Late again. Her talons met the back high across the shoulders and she raked them through as she passed, gripping only for the length of the stroke. The feel of it came up her legs in a run of separate tugs, the points catching and dragging and catching, and a scraping hiss like a rake drawn over gravel. Her own weight wrenched at her hips for that heartbeat, and then she was through and climbing, beating hard, the quarry dropping away.
+
+She looked back over her wing. {B} had gone down onto the forequarters with the back hunched, and across it ran a set of long scratches, raw and pink, one of them beading red along its length. Her talons felt warm and gritty. She circled once and waited for the next turn.
+
+== strike act | has_a: horn | kind: horn
+The meadow grass came up to her chest and hid the ground, but {A} did not need to see the ground. She needed to see {B}, standing broadside a long run off, chest heaving, the right flank turned toward her because the left was the sore one and {B} was keeping it back. Nothing protected the right side but a held breath.
+
+*Stay sideways. Just like that.*
+
+She lowered her head until the horn lay level with the grass tops and pointed straight at the middle of that flank. She set herself. She felt the earth under her, soft and damp, and pushed against it once, again, testing, and on the next push she went.
+
+The grass parted around her with a long ripping swish. Seeds sprayed up. Her strides drummed and the drumming climbed into one continuous roll, and she saw {B} start to turn, start to bring the shoulder round, too slow. She did not swerve. At the last instant she drove her neck forward and up.
+
+The horn hit the flank just behind the ribs. She felt it as a single solid shock that went up the horn into her skull and down her spine and stopped her dead, her own weight slamming forward against it, her neck taking all of it at once. There was a hollow thud and a gasp punched out of {B} like air from a bellows. The horn held, a dull bruising contact, no point sinking in. She shoved through it with her shoulders and felt {B} lift and slide off the end of it into the grass.
+
+== strike act | has_a: tail | kind: tail
+The cave floor was slick with old drip-water, and {A} had felt how {B} placed every step on it: carefully, testing, the weight never fully committed. Now {B} stood braced too high, too upright, watching her face and nothing lower, trying to read the next attack in her eyes.
+
+*Keep looking at my eyes.*
+
+She let her gaze hold on {B}'s and did not move her head at all. Behind her, out of sight, her tail swung slowly to the left, gathering, the long muscles along it bunching one after the other from the root to the tip. Water ticked somewhere in the dark. She felt the tail reach the end of its swing and hang there, loaded.
+
+Then she turned her hips and let it go.
+
+It came round low and flat, barely clear of the stone, with a hissing sound that rose to a whip-crack whistle at the end. It struck {B} low, just above the ground, and the contact was a broad heavy smack that she felt all along her tail at once, a shudder from the tip back into her own hips that twisted her half a step round on the wet rock. Her tail stung where it had hit, a hot band across the underside.
+
+{B}'s footing went. There was a scrape and a sharp startled grunt and a heavy slap of a body meeting the cave floor sideways. {A} brought her tail back round behind her and set her own weight, the sting pulsing in it, and looked down at {B} sprawled in the shallow puddle, the echo of the fall still going round the walls.
+
+== strike act | has_a: legs | kind: fighting
+The rooftop was tar and gravel, soft from the afternoon sun, and {B} had stopped moving on it. {A} watched the stance settle: weight back, guard drawn up tight around the head. A good guard for the head. But each breath dragged the belly in and pushed it out, and the belly was open under that guard.
+
+*Up top they're ready. Down low they aren't.*
+
+She bounced once on the balls of her feet to feel the give of the tar and shifted her weight onto her left leg, letting her right knee lift a little, loose, as if she meant nothing by it. {B}'s eyes went to the knee. She waited for the next breath out, the one where the belly hollowed and the guard drifted a hair higher.
+
+It came, and she kicked.
+
+The knee snapped up and the leg drove straight out from the hip, her whole body leaning back to give it length, her planted foot screwing round on the gravel with a gritty crunch. The sole of her foot met the middle of {B}'s belly with a deep, soft thump, the sound a sack of grain makes dropped from a height. The force came back up her leg into her knee and hip, a solid jarring stop, and she felt the belly give in under her foot and then push back as {B} folded over it.
+
+The air left {B} in one long rough cough. She drew her leg back fast, set it down, and felt the ache settle into her knee. {B} was bent nearly double over the place she had hit, guard forgotten, and the gravel crunched as {B} staggered back.
+
+== strike act | has_a: scales | kind: poison
+Steam came up off the marsh in slow sheets, and {A} lay low in the reeds with her scales dull with mud, watching {B} wade through the shallows toward where she had been a moment before. {B} was breathing through an open mouth, quick and shallow, and the face was turned toward her hiding place without seeing it.
+
+*Breathe in. Go on.*
+
+She felt the poison gather at the back of her throat, a sour pressure that made her jaw ache and her eyes water. Her scales tightened along her neck. She drew in air slowly through her nose, filled herself, and held it, the bitterness swelling on her tongue until she could hardly keep it in.
+
+{B} turned toward the reeds. She rose and spat.
+
+It left her in a hard sputtering jet, thick and dark green, with a wet hiss like fat thrown on a fire. The force of it pushed her head back on her neck. The spray took {B} full across the face and chest, and she heard it land, a spattering patter and the sound of {B} choking on a half-taken breath. The reek of it filled the air at once, sharp and rotten, and her own mouth burned where it had passed, her tongue numb and fizzing.
+
+{B} reeled back through the water, shaking the head hard, coughing in short wet barks. Where the spray had struck, the face was already going blotched and swollen, angry purple welts rising. {A} sank back into the reeds, swallowing against the bitter sting in her throat, and watched the coughing go on.
+
+== strike act | has_a: tails | kind: ghost
+The ruined chapel had no roof left, only broken arches and long blue shadows thrown across the flagstones by the low moon. {A} let herself sink into the deepest of them, and her tails thinned and went grey at the edges until they were no more than smoke drifting along the floor. {B} stood in the middle of the nave, turning slowly, head cocked, listening. The breath came in little clouds, fast. Afraid, and trying not to be.
+
+*You can't hear me. Nobody can hear the dark.*
+
+She slid along the base of the wall, shadow to shadow, until she was behind {B}. The cold gathered in her as she went. She felt it pooling in her tails, a deep stillness like a winter pond, so cold it made her own breath stop. She let one tail reach out of the shadow, long and pale and soundless, toward the back of {B}'s neck.
+
+It did not strike. It touched.
+
+The tip of her tail passed into {B} just below the skull, and for a heartbeat she felt the warmth there, a living pulse against the cold of her, and the cold flowing out of her and into it like water poured from a jug. Her tail went numb and then light, emptied. There was no sound of impact at all. There was only {B}'s gasp, high and thin, and a shudder that ran the whole length of the body she touched.
+
+She drew back into the dark. {B} had gone stiff, frost blooming in a pale ring at the nape of the neck, breath shaking out in ragged white puffs. Her tail tingled as the feeling crept back into it.
+
+== strike act | has_a: spikes | kind: dragon
+The canyon floor was red dust and baked stone, and the walls threw every sound back twice. {B} had circled to keep a boulder between them, and now stood half behind it, peering round, head low. {A} could see the shoulders heaving. Tired. Not hiding well enough.
+
+*The rock won't save you from this.*
+
+She dropped her head and filled her chest. The breath went down deeper than breath should, down into her belly, and something answered it there: a heat that was not quite fire, a pressure that pushed up against her ribs and made the spikes along her back lift and rattle against each other, one after another from neck to hips, like a row of spears raised. Her throat swelled. Her eyes stung.
+
+She opened her jaws and roared.
+
+What came out was a torrent of blue-violet light and noise together, a howling bellow that shook dust off the canyon walls. It poured out of her so hard it pushed her back on her haunches and scorched the back of her throat raw. The blast hit the boulder and split round it and struck {B} on both sides at once, and she felt the impact through the stream itself, a shove that came back down the beam and into her chest like a fist.
+
+She shut her jaws. The roar went on bouncing off the walls a moment longer. Her spikes settled one by one with soft clicks. {B} was crouched behind the boulder with the shoulders and flanks scorched and smoking, coughing hard in the drifting dust, eyes squeezed shut against the glare that was no longer there.
+
+== strike act | has_a: forelegs | kind: ground
+The riverbed had been dry for a long time, cracked into plates of hard clay that clicked under every step. {B} stood out in the open middle of it, rocking a little, weight shifting from one side to the other as if the ground were not quite steady. {A} watched the sway. Dizzy, or close to it, and planted on nothing but cracked mud.
+
+*The ground under you is mine.*
+
+She reared up. Her forelegs rose high, the muscles of her chest and shoulders pulling tight, and for one long breath she hung there with her whole weight balanced back on her haunches, feeling the deep slow pulse of the earth beneath the clay, finding it. Then she brought her forelegs down together with everything she had.
+
+The impact went into the ground like a hammer onto an anvil. The jolt came straight back up through her forelegs into her shoulders and spine, a hard numbing shock that rattled her vision and made her ears ring. Beneath her the clay answered with a deep groan. The cracks ran away from her in jagged lines, racing toward {B}, and where they reached, the riverbed heaved upward, slabs of dried mud tilting and lifting with a grinding roar.
+
+{B} was thrown off balance as the ground bucked, staggering, then struck from below by a rising slab that slammed up into the chest with a dull crack of clay breaking on a body. Dust boiled up between them. {A} stayed where she was, forelegs still braced, the ache throbbing in both of them, and heard {B}'s breath come out in a heavy, winded grunt somewhere in the cloud.
+
+== strike act | has_a: legs | kind: grass
+The garden was choked with growth, the beds lost and the paths half buried, and every patch of soil in it was thick with roots. {A} could feel them through the soles of her feet. {B} was across the old fountain from her, keeping the dry basin between them, and favouring one side, stepping short on it, a hitch in every stride.
+
+*Stand still for a breath. That's all I need.*
+
+She set her legs wide, sank her weight down into them, and pressed. She felt the roots under the soil wake to her, slow at first, then all at once, a green tug running out from her through the earth in every direction like ripples from a dropped stone. Her legs trembled with the strain of holding it. The smell of crushed sap rose round her.
+
+{B} stopped to catch breath at the far rim of the fountain. She drove her heel down.
+
+The vines burst out of the soil beside {B} with a sound like a sheet being torn, thick as rope and lashing. She felt each one go as if it were a part of her, the snap of it leaving the ground, the whip of it through the air, and the moment they struck, a stinging slap she felt as a faint answering sting in her own legs. They cracked across {B}'s shoulders and side, once, twice, again, and then the last wrapped tight and yanked.
+
+{B} went down onto the fountain's rim with a hard grunt, raw red welts striping the shoulders where the vines had struck. {A} let them sag back into the soil, her legs shaking, sap-scent thick in the air.
+
+== strike act | has_a: arms | kind: psychic
+The library was all tall shelves and drifting dust, and the only light came in through a high cracked window in long slanting bars. {B} had gone still between two of the stacks, chest working, eyes darting from shadow to shadow. {A} could feel the mind behind those eyes from where she stood. It was loud. It was frightened and furious and stretched thin, and in the middle of it there was a soft place, a spot where the thinking kept snagging and slipping, like a frayed thread.
+
+*There. Right there.*
+
+She lifted her arms slowly, held them open, and closed her eyes. The room fell away. She felt for the frayed thread and found it, and took hold of it with her own mind, and the pressure began to build behind her brow, a hot tightness that pressed against the inside of her skull as if her head were filling with water. Her arms shook. The dust in the light-bars stopped drifting and hung.
+
+She pushed.
+
+There was no sound but a sudden ringing hum, felt more in the bones than heard. The strike went out of her like a breath let go and she felt it land, felt the soft place crumple under it. For an instant she was inside the blow as it struck and the shock came straight back through her own head, a white flash behind her eyes and a sharp spike of pain in her temples that made her gasp.
+
+She opened her eyes. {B} had staggered into a shelf with the head bowed hard, and books were tumbling down around them with flat thuds. A thin trickle of red had started from {A}'s own nose. She wiped it away with the back of her arm.
+
+== strike act | has_a: wings | has_a: feathers | kind: ice
+Snow lay deep across the high pass and the air was so cold it hurt to breathe. {A} beat her wings slowly above it, feathers fluffed out against the chill, and looked down at {B}, struggling through a drift below. Every stride sank to the belly. Every breath came out as a thick white cloud and was snatched away by the wind.
+
+*Slow. You're already slow.*
+
+She drew the cold in. She took it in through her open mouth and down into her chest, deep, and felt it settle in her and go deeper still, colder than the air around her, until her whole chest ached with it and her feathers bristled stiff with frost from the inside out. Her wings kept her aloft but she barely felt them now. Her breath stopped in her throat, heavy, waiting.
+
+She stooped lower, wings half folded, and breathed out.
+
+The breath poured down in a glittering blue-white stream, hissing, crackling, freezing the falling snow into hard grains that rattled ahead of it. It struck {B} across the back and the side and she felt the cold leave her in a rush, her chest emptying, warmth flooding back into her so fast it almost hurt. Frost raced over {B}'s back in a white crust that creaked and crackled as it spread.
+
+She swept up and away and looked back. {B} had stopped moving in the drift, hunched under a skin of rime, shaking hard. {A}'s own face was rimed white, and she shook the frost from her feathers as she climbed.
+
+== strike act | has_a: wings | has_a: scales | kind: fire
+The volcano's flank was black glass and ash, and heat shimmered off it so that {B}, crouched in a hollow among the rocks below, wavered like something seen through water. {A} hung above on broad wings, scales hot from the sun and the stone. She could see {B}'s head turning to keep her in sight, and the way the body stayed pressed into the hollow. Dug in. Waiting for her to come close.
+
+*I don't have to come close.*
+
+She beat her wings once, hard, to rise higher, and in the top of that climb she let the fire wake. It started low in her chest, a glow she could feel spreading outward under her scales, rising up her throat in a pressure so hot her eyes watered and the air in front of her face rippled. Her scales ticked as they heated. The smell of scorched stone rose round her.
+
+She tipped forward over {B} and let it out.
+
+The flame left her in a roaring sheet, orange at the edges and white at the heart, so loud it drowned out the wind. The force of it pushed her backward and she had to beat her wings hard to stay over the hollow. She felt the heat go out of her chest in one long pour, the fire dragging the breath with it until she was empty and her throat burned and her sight swam. Below, the flame struck the hollow and spilled through it, and she heard {B}'s cry above the roar.
+
+She closed her jaws and the fire cut off. Smoke boiled up from the hollow. {B} was flattened in the ash, singed and blackened along the back and shoulders, rolling to smother a smouldering patch. Her own scales ached with leftover heat.
+
+== strike act | has_a: tail | kind: electric
+The storm had not broken yet, but the air over the open plain tasted of it, sharp and metallic, and every blade of grass stood slightly on end. {A} felt it everywhere on her. {B} was close, near enough to hear the breathing, which had gone wet and rasping, and {B} kept shifting backward, trying to get out of reach, never quite making it.
+
+*Stay where you are. Just a moment more.*
+
+She lifted her tail. The charge built at the tip first, a faint prickle, then a fizz, then a crackling buzz she could hear over the wind, and it ran up through her tail and into her spine and out along every nerve she had until her whole body hummed with it. Little blue threads danced across her tail. Her jaw ached. The air between them smelled of scorched copper.
+
+{B} took one more backward step. She swung her tail forward and struck.
+
+The tip of her tail hit {B}'s chest with a small flat tap, and then the charge leapt. A crack like a dry branch breaking, a flash so bright she saw it through her shut eyes, and she felt everything she had built go out of her in one jolt, a hard spasm that ran from her tail-tip back through her whole body and left her muscles twitching and her limbs weak. A smell of scorching filled the air.
+
+When she opened her eyes, {B} had gone rigid, then slumped back a stride, smoking faintly at the chest, every muscle still twitching in little jumps. Her own tail was numb and buzzing at the tip.
+
+== strike act | has_a: fins | kind: water
+The tide pools on the reef flat were warm and shallow, and between them the rock lay bare and slick with weed. {A} lay in the deepest pool with only her eyes above the surface, fins fanning slowly to hold her place. {B} was crossing the open rock toward her, picking footing with care, and every few steps the footing slid on the weed and {B} lurched to catch the balance.
+
+*Slippery out there. Let's make it worse.*
+
+She sank lower and drew water in through her mouth, gulping it, filling herself until her body swelled tight and heavy and her fins spread stiff to hold the weight. The pressure built against her ribs, cold and solid. The pool around her went still. She watched {B} take one more careful step onto the weed, weight balanced on it, and she surged up out of the water.
+
+The jet left her with a deep pounding roar, a column of water thick as a trunk, and the recoil drove her back down into the pool so hard her fins slapped the rock below. She felt the water rush out of her, her body shrinking back, and the coolness leaving her in a long hard push that made her whole body shudder.
+
+It hit {B} square in the chest with a sound like a wave breaking on a seawall. Spray went everywhere. {B}'s footing went on the weed and the whole body was knocked back and down onto the wet rock with a heavy splashing slap. {A} rose again to the surface, fins trembling with the effort, and blew out a fine mist as {B} sputtered and coughed.
+
+== strike act | has_a: wings | kind: flying
+She was so high the forest below was only a green carpet, and {B} was a small dark shape in a clearing, turning in slow circles, head tipped back, searching the sky. {A} rode the cold upper air with her wings spread wide and still. She knew she was hard to see against the glare. She watched the head turn and turn, and she watched for the moment it turned away.
+
+*Look north. There's nothing north.*
+
+{B} looked north. She folded her wings tight against her body and dropped.
+
+The fall took her breath. The wind hammered at her face and roared in her ears and rose to a howl, and the green carpet swelled into trees and the trees into branches and the clearing rushed up at her. She held her wings shut against the pull of the air until her shoulders burned, aiming her whole body like a thrown spear at the middle of {B}'s back. At the last instant she flared her wings wide and brought her body down onto {B} with all the speed of the fall behind it.
+
+The impact was enormous. It slammed up through her chest and shoulders in one jarring blow that knocked the breath out of her and made her vision flash white. There was a deep thud and a huff of air driven out of {B}, and she felt the body beneath her give and sag, flattened toward the grass.
+
+She sprang off and beat up into the air, gasping, chest aching, every bone in her still ringing with it. Below her {B} lay sprawled in the flattened grass, struggling to drag in a breath.
+
+== strike act | has_a: wings | has_b: wings | kind: flying
+They had been circling each other over the sea cliffs for some time, two dark shapes wheeling on the wind, and {A} had learned the rhythm of {B}'s wingbeats. Strong on the downstroke. A small hitch on the up, on the left side, where something was stiff. Every time {B} banked left, the turn came wide and a little slow.
+
+*Bank left once more. Come round to me.*
+
+She let herself drop a little lower, as if tiring, and {B} saw it and came for her, banking. Left. Wide and slow. She beat hard twice, rising, and swung in from the inside of that turn, wings driving, the gulls scattering screaming from the cliff face below. {B} saw her late and turned to meet her, and they came at each other head-on over the open water, closing fast, the wind shrieking between them.
+
+They struck in passing. She drove her shoulder and wing edge into {B}'s left side as {B}'s wing lashed across her back, and for one heartbeat the two of them were tangled in a single crash of wings and bodies. She felt her blow land solidly, the jolt slamming back into her shoulder, and she felt {B}'s blow land too, a hot stinging smack across her back that knocked her sideways in the air and drove the breath from her in a bark.
+
+Then they were past, wrenched apart. She tumbled, caught the wind, beat hard and came level. Behind her {B} was lurching through the air, the left wing beating short and ragged. Her own back burned where she had been hit.
+
+== strike act | has_a: coils | kind: grab
+The jungle floor was dim and green and loud with insects, and {A} lay among the roots of a great tree with her coils piled loose around her, the colour of shadow and leaf litter. {B} had come close looking for her, too close, and was standing just beyond the first loop of her body, turning, breathing hard and fast through the mouth, listening to the wrong side of the tree.
+
+*Closer. One more step.*
+
+{B} took it. She moved.
+
+Her coils came up off the ground in a smooth rippling surge and swept round {B} in a single loop, then another, then another, faster than {B} could turn. She felt the warmth of the body pressed against her, the frantic heave of the breathing, the hard bunch of muscle as {B} realised and tried to throw her off. The leaves crackled and hissed under them. She did not let go.
+
+She squeezed.
+
+The effort ran along her whole length at once, every muscle in her coils drawing tight from her neck to the last loop, and she felt {B}'s chest press in against her, felt the breath stop halfway, felt the struggling go hard and then slower under the pressure. She held it, her own body aching with the strain, her coils trembling. A strangled wheeze came out of {B}, the only sound in the clearing now that the insects had gone quiet.
+
+She held the squeeze a few heartbeats longer, then eased off just enough to let {B} drag in a ragged gasp. Her coils stayed wrapped and ready, burning with the effort.
+
+== strike act | has_a: mane | has_a: forelegs | kind: bite
+The savanna grass was gold and waist-high, and the sun was low enough to throw long shadows through it. {A} moved through the grass with her mane flattened and her forelegs placing each step without a sound. {B} was ahead of her in a trampled patch near a lone thorn tree, head low, panting, favouring the right side, every step on it short and careful.
+
+*Hurt there. Every step costs you.*
+
+She crept closer, belly low, until she could smell {B}: dust and sweat and the sharp tang of fear. Her mane began to rise of its own accord, prickling along her neck. She gathered her forelegs under her, felt the muscles of her shoulders bunch and tighten like a spring being wound, and waited for {B} to shift weight onto the sore side.
+
+{B} shifted. She sprang.
+
+She burst out of the grass in one long bound, mane flaring out around her head, and her jaws opened wide as she came down. She aimed for the shoulder on the hurt side and her teeth closed on it with all the force of her landing behind them. She felt the bite go in, the give of the hide and the hard muscle beneath resisting her, and the jolt of the impact ran back up through her jaws into her skull and down her neck.
+
+{B} let out a sharp cry and wrenched away. She let go and dropped back, her jaws aching from the force of it. On {B}'s shoulder there was a ring of deep pinpricks, beading with small drops of red. Her mane stood bristling round her face, and the thorn tree rattled in the wind.
