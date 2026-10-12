@@ -2234,6 +2234,9 @@ class Narrator:
                 "mid" if level in ("hurting", "very painful") else "low")
         if left < 30 and tier == "low":
             tier = "mid"
+        # (capped by how much of her is left, as the reaction is: a strong fighter bites back what a spent one screams)
+        band = self._health_band(h)
+        tier = min(tier, {0: "mid", 1: "high"}.get(band, "raw"), key=["low", "mid", "high", "raw"].index)
         opts = self.VOICE[tier][self._voice_family(who)]
         desc, written = opts[seed % len(opts)]
         return f"{desc} (*{written}*)"
@@ -2311,6 +2314,10 @@ class Narrator:
         "moment where there is nothing in her head but that part",
     ]
 
+    REACTION_HIDDEN = ("pained, half hidden: the part is badly hurt but she is still strong, so it shows and she won't "
+                       "let it: a cry bitten off, a hitch in her breath, her guard closing over the spot, and she makes "
+                       "herself go on (never a raw scream or a collapse)")
+
     def _health_band(self, h=None, who=None):
         """0 strong, 1 worn, 2 low, 3 nearly spent: how much she has left (as the blow lands, when known)."""
         who = who or (h or {}).get("defender")
@@ -2336,6 +2343,8 @@ class Narrator:
         size = min(part, cap)
         if glancing:
             size = min(size, max(1, size - 1))
+        if band == 0 and part >= 3 and size == 2:
+            return self.REACTION_HIDDEN        # a part far worse off than she is: it hurts, and she hides how much
         return self.REACTION_SIZES[size]
 
     def _hit_line(self, h, n=None, how=None):
@@ -6093,15 +6102,19 @@ class Narrator:
                              has=feats(who), state=state(who), role="receiver")
             raw = (getattr(self, "_raw_done", None) or {}).get(who)
             still_ = any(a_.get("defender") == who and a_.get("moved") in ("still", "rock") for a_ in acts)
+            # (a badly hurt part on a fighter still strong: only the reactions written for exactly that, half hidden)
+            hid = ("level", "state") if lv_w in ("excruciating", "devastated") \
+                and set(state(who) or ()) & {"fresh", "winded"} else ()
             if raw is not None:
                 # a blow on a part that was already badly hurt: a reaction as raw as she can no longer keep in
                 add(f"a reaction of that size from {who}", B.pick(
                     "raw", 1, fmt={"part": part.lower()}, raw=self.RAW_LEVELS[raw][0], has=feats(who))
-                    + B.pick("reaction", 1, size=self._strength_key(taken), has=feats(who), state=state(who)))
+                    + B.pick("reaction", 1, need=hid, size=self._strength_key(taken), has=feats(who), state=state(who),
+                             level=lv_w))
             else:
                 # (sized to the blow, and to how much of her is left: the same blow lands differently on a fresh
                 # fighter and a spent one)
-                add(f"a reaction of that size from {who}", B.pick("reaction", 2, size=self._strength_key(taken), has=feats(who),
+                add(f"a reaction of that size from {who}", B.pick("reaction", 2, need=hid, size=self._strength_key(taken), has=feats(who),
                                                                    fighter=who.lower(), state=state(who), level=lv_w,
                                                                    exclude=(list(too_big or []) + [MOVES_HER]) if still_
                                                                    else too_big))
