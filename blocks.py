@@ -167,6 +167,20 @@ def kind_of(move_name="", about="", with_part="", manhandle="", grab=False, clos
     return kinds
 
 
+# the shape a rock move takes, for 'shape:' (read off its name and about): stones thrown at her, rocks falling on
+# her from above, stone driven up out of the ground under her, boulders closing round her
+ROCK_SHAPES = (("rise", r"spike|edge|erupt|pillar|stab"), ("fall", r"slide|fall|avalanche|drop|rain"),
+               ("tomb", r"tomb|pin\b|trap|ring of|wall"),
+               ("thrown", r"hurl|throw|thrown|fling|flung|volley|sling|stone that|blast"))
+
+
+def shape_of(move_name="", about=""):
+    """The shapes of a rock move ({'fall'} for Rock Slide, {'rise'} for Stone Edge); none for a move whose text
+    says no shape (a ray of gemstone light), which then gets no rock-shaped staging at all."""
+    t = f"{move_name} {about}".lower()
+    return {k for k, rx in ROCK_SHAPES if re.search(rx, t)}
+
+
 class Blocks:
     def __init__(self, rules, path=None, memory=None, rng=None):
         cfg = (rules.get("narration", {}) or {}).get("blocks", {}) or {}

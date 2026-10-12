@@ -6167,7 +6167,7 @@ class Narrator:
             return True
 
         def strike_blocks(who, target):      # staging a blow, from the one who throws it
-            kinds, close = set(), False
+            kinds, close, shapes = set(), False, set()
             for a in acts:
                 if a.get("attacker") != who or a.get("type") in ("pin_start", "pin_forced", "breather", "none"):
                     continue
@@ -6185,6 +6185,8 @@ class Narrator:
                     # a blow that carries an element (Fire Fang, Ice Punch, Flame Wheel): the element's staging is
                     # all discharge (a breath, a ball hurled, a stream poured out), so the blow stages as the blow
                     got = {k for k in got if k not in ELEMENT_TYPES} or {"charge"}
+                if "rock" in got:      # falling boulders, a spike from the ground, a tomb: each its own staging
+                    shapes |= story_blocks.shape_of(mv.get("name", ""), mv.get("about", ""))
                 kinds |= got
             if close and "grab" not in kinds:
                 kinds = {"close"}
@@ -6213,14 +6215,15 @@ class Narrator:
                 runs = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
                                                          or a.get("combo")) for a in acts)
                 one_ = ([] if runs else [SEVERAL_BLOWS]) + grip_x or None
-                add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, has=feats(who), exclude=one_) if kinds
+                add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, shape=shapes, has=feats(who),
+                                                          exclude=one_) if kinds
                     else B.pick("movement", 1, has=feats(who), exclude=one_))
             if kinds:
                 runs_ = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
                                                           or a.get("combo") or int(a.get("hit_count") or 0) > 1) for a in acts)
                 self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
                                  fmt={"foe": target or ""}, exclude=None if runs_ else [SEVERAL_BLOWS],
-                                 kind=kinds, has=feats(who), state=state(who), role="attacker")
+                                 kind=kinds, shape=shapes, has=feats(who), state=state(who), role="attacker")
             eff = self._effect_on(target, [a for a in acts if a.get("attacker") == who]) if target else None
             if eff:
                 vs = set((getattr(self, "fighter_types", None) or {}).get(target, []))
