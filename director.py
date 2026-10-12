@@ -1323,6 +1323,14 @@ def _knockouts(engine, results, hp0):
         if ko:
             ko["by"] = next((r.get("attacker") for r in reversed(mine) if r.get("attacker") != f.name), None)
             out.append(ko)
+            # out cold on that blow: she doesn't stagger or rock on her feet after it (moves.stumble)
+            f.status.pop("staggered", None)
+            for r in mine:
+                if r.get("status_applied"):
+                    r["status_applied"] = [x for x in r["status_applied"]
+                                           if not (x.get("fighter") == f.name and x.get("stumble"))]
+                if (r.get("rocked") or {}).get("fighter") == f.name:
+                    r.pop("rocked", None)
     return out
 
 

@@ -856,6 +856,10 @@ OVERBLOWN = re.compile(r"\b(scream\w*|shriek\w*|howl\w*|agon\w+|white-hot|explod
 # present-tense narration ("she lunges", "Nocturne shifts"): the story is told in the past
 PRESENT_TENSE = re.compile(r"\b(?:[Ss]he|[Hh]e|[Ii]t)\s+(?:is|has|does|(?!was\b|has\b|is\b|always\b|perhaps\b|"
                            r"almost\b|nearly\b|thus\b)[a-z]{2,}(?<![su])s)\b(?!['’])")
+# staging that throws more than one blow ("two fast ones and a slow hard one", "three of them before...")
+SEVERAL_BLOWS = re.compile(r"\b(?:two|three|four|several|both) (?:fast |quick |short |hard |light )*(?:ones|of them|blows|"
+                           r"strikes|jabs|punches|chops|hits)\b|\bone-two\b|\bflurry\b|\bcombination\b|\bagain and again\b", re.I)
+
 # a reaction that moves her feet: the engine's call now, not a reaction's
 MOVES_HER = re.compile(r"\b(?:steps?|stagger\w*|stumbl\w*|reel\w*|knocked back|sway\w*|totter\w*|lurch\w*|"
                        r"rocked back|backward|off (?:her|its) feet|buckl\w*|wobbl\w*)\b", re.I)
@@ -2255,13 +2259,14 @@ class Narrator:
     # how big her reaction to a blow is: the PART's pain sets how much there is to react to, her OVERALL strength
     # sets how much of it she can hold in. A wrecked part on a strong fighter: sharp, local, she fights on. The same
     # part as she wears down: more and more of it gets out. A healthy part on a worn-out fighter: it hurts, but the
-    # part itself isn't that painful yet, so never the extreme reactions.
+    # part itself isn't that painful yet, so never the extreme reactions. (Pain only: whether the blow knocks her a
+    # step or more is the engine's call, moves.stumble, told in its own note.)
     REACTION_SIZES = [
         "small: a wince, a grunt or a sharp breath, and she goes on",
         "clear: a hiss or a bitten-off sound, a flinch, she favors the spot for a moment",
-        "strong: a real cry, a stagger (a limp if it is a leg), she guards the part and is slower with it, the rest "
-        "of her still fighting",
-        "heavy: a scream or a broken cry, she sags or stumbles and shakes, a moment before she can act again",
+        "strong: a real cry, her knees dipping under it (a limp if it is a leg), she guards the part and is slower "
+        "with it, the rest of her still fighting",
+        "heavy: a scream or a broken cry, she sags where she is and shakes, a moment before she can act again",
         "raw: past what she can hold in: her body curls round it, trembling she cannot stop, eyes streaming, a long "
         "moment where there is nothing in her head but that part",
     ]
@@ -2344,8 +2349,8 @@ class Narrator:
         ("contained", "it hurts far more than a blow like that should, because the part was already hurt: a sharp hiss "
                       "through her teeth, the part snatched away from it, a flinch she cannot hide, then she sets her "
                       "jaw and keeps it in"),
-        ("cry", "a cry she cannot keep in, bitten off as soon as it is out; the part jerked away, a hard shudder through "
-                "her, and she makes herself go on, which costs her and shows"),
+        ("cry", "a cry she cannot keep in, bitten off as soon as it is out; the part jerked away in a hard flinch she "
+                "can't stop, and she makes herself go on, which costs her and shows"),
         ("scream", "a real scream, her whole body jerking round the hurt part; she shakes afterwards, her breath comes in "
                    "ragged pulls, and it is a moment before she can do anything at all"),
         ("raw", "a raw scream that cracks in the middle, all of her clenching round the hurt; her body reacts on its own "
@@ -2414,6 +2419,11 @@ class Narrator:
         self._raw_done[who] = level
         self._raw_parts[who] = h["part"]
         name, text = self.RAW_LEVELS[level]
+        if dev and cond_score == 0 and name == "scream":
+            # strong as she still is, a devastating blow gets one real scream out of her, but the pain stays in the
+            # part (MEASURED PAIN): no whole-body jerking or shaking afterwards
+            text = ("a real scream torn out of her, short and sharp, the hurt part snatched away from it; then she "
+                    "clamps down, and the rest of her is still hers")
         lead = {"glancing": ("only a brush, but on a part this ruined even a touch is agony: "
                              if before_label == "devastated" else "only a brush, on a part that is already "
                              f"{before_label}: smaller than a full blow there would be, but "),
@@ -3192,6 +3202,13 @@ class Narrator:
                          f"where they are.")
         return lines + self._knock_on_lines(events)
 
+    @staticmethod
+    def _listed_hits(a):
+        """The hits that get a line of their own: not the grinds into the scenery behind her (one line tells those)."""
+        key = lambda h: (h.get("part"), round(float(h.get("damage_before", 0)), 3), round(float(h.get("damage_after", 0)), 3))
+        grind = {key(h) for h in ((a.get("ground_into") or {}).get("surface_hits") or [])}
+        return [h for h in a.get("hits") or [] if key(h) not in grind] if grind else list(a.get("hits") or [])
+
     def _describe_action_core(self, a):
         lines = []
         t = a["type"]
@@ -3658,12 +3675,23 @@ class Narrator:
                              f"it is drowning. It leaves her SPUTTERING (short of breath for a little while).")
             gr = a.get("ground_into")
             if gr:
-                parts = ", ".join(dict.fromkeys(h["part"] for h in gr["surface_hits"]))
-                lines.append(f"  - HER BACK TO {gr['against'].upper()}: {a['defender']} is held or driven against "
-                             f"{gr['against']} with nowhere to give, so every blow also grinds her back into it ({parts}): "
-                             f"the bark, stone or wall behind her as much a part of each hit as the blow itself.")
+                # one line for all of it (not a Hit line per grind): per part, how its pain went over the whole run
+                per = {}
                 for h in gr["surface_hits"]:
-                    self._must_parts.append(h["part"])
+                    per.setdefault(h["part"], []).append(h)
+                bits = []
+                for part_, hs in per.items():
+                    b_, f_ = self._pain(hs[0]["damage_before"]), self._pain(hs[-1]["damage_after"])
+                    self._tiers_used.add(f_["label"])
+                    bits.append(f"{part_} ({len(hs)} time{'s' if len(hs) > 1 else ''}; "
+                                + (f"{b_['label']} → {f_['label'].upper()}" if b_["label"] != f_["label"]
+                                   else f"still {f_['label']}") + ")")
+                lines.append(f"  - HER BACK TO {gr['against'].upper()}: {a['defender']} is held or driven against "
+                             f"{gr['against']} with nowhere to give, so every blow also grinds her back into it: "
+                             + "; ".join(bits) + f". Tell it as ONE thing running under the blows (the {gr['against']} "
+                             f"jarring into her back each time, her body with nowhere to go), not as separate hits with "
+                             f"their own reactions; the blows in front are where the words go.")
+                self._must_parts.append(gr["surface_hits"][0]["part"])
                 if gr.get("broke"):
                     lines.append(f"  - {gr['against'].upper()} BREAKS behind her: it cracks and gives way, and she goes "
                                  f"through and down with it (a heavy extra hit). She ends up on the ground.")
@@ -3781,11 +3809,12 @@ class Narrator:
                 else:
                     lines.append(f"  - {a['defender']} is still UPRIGHT, held against {last} by {poss(a['attacker'])} "
                                  f"weight. Whether she falls once that weight comes off is listed further down.")
-            elif len(a["hits"]) > 8 and len({h["part"] for h in a["hits"]}) == len(a["hits"]):
-                lines += self._many_hits(a["hits"])
+            elif len(self._listed_hits(a)) > 8 and len({h["part"] for h in self._listed_hits(a)}) == len(self._listed_hits(a)):
+                lines += self._many_hits(self._listed_hits(a))
             else:
-                multi = len(a["hits"]) > 1
-                lines += [self._hit_line(h, i + 1 if multi else None) for i, h in enumerate(a["hits"])]
+                shown_ = self._listed_hits(a)
+                multi = len(shown_) > 1
+                lines += [self._hit_line(h, i + 1 if multi else None) for i, h in enumerate(shown_)]
             if m and m.get("target") == "spread" and len(a.get("hits") or []) > 1 and not a.get("sustain"):
                 lines.append(f"  - ONE blast that catches all of these parts at once, not separate shots one after "
                              f"another.")
@@ -6007,8 +6036,12 @@ class Narrator:
                 add(f"a way {who} might stage it", B.pick("movement", 1, kind={"grab"}, need=("kind",), has=feats(who))
                     + B.pick("movement", 1, kind={"close"}, need=("kind",), has=feats(who)))
             else:
-                add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, has=feats(who)) if kinds
-                    else B.pick("movement", 1, has=feats(who)))
+                # one blow is one blow: no staging ideas that throw two or three ("two fast ones", "three of them")
+                runs = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
+                                                         or a.get("combo")) for a in acts)
+                one_ = None if runs else [SEVERAL_BLOWS]
+                add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, has=feats(who), exclude=one_) if kinds
+                    else B.pick("movement", 1, has=feats(who), exclude=one_))
             if kinds:
                 self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
                                  fmt={"foe": target or ""}, kind=kinds, has=feats(who), state=state(who), role="attacker")
@@ -6166,11 +6199,13 @@ class Narrator:
                 add("why it is so severe", B.pick("devastating", 2, reason={a["devastating"].get("reason", "angle")},
                                                   fmt={"part": str(a["devastating"].get("part") or "the hurt").lower()}))
                 hb_, pb_ = self._dev_bands(a)
-                add("selling it", B.pick("devastating_sell", 1, health={hb_}, partlevel={pb_},
+                # the engine said she held her ground or only rocked (moves.stumble): no ideas that walk her off it
+                kept_ = [MOVES_HER] if a.get("moved") in ("still", "rock") else None
+                add("selling it", B.pick("devastating_sell", 1, health={hb_}, partlevel={pb_}, exclude=kept_,
                                          fmt={"part": str(a["devastating"].get("part") or "the hurt").lower()}))
                 if take:
                     add(f"{dfn_}, after it", B.pick("devastated_reaction", 1, has=feats(dfn_), state=state(dfn_),
-                                                    fighter=(dfn_ or "").lower()))
+                                                    fighter=(dfn_ or "").lower(), exclude=kept_))
                     add(f"{poss(dfn_)} thought", B.pick("devastated_thought", 1, state=state(dfn_),
                                                         fighter=(dfn_ or "").lower()))
                 if act and a["devastating"].get("reason") != "ground":
