@@ -1468,7 +1468,7 @@ The heavy metal struck her chilled {part}, and the cold in it gave way all at on
 # --- weak, by the attack's nature ---
 == effect_take | effect: weak | type: fire
 The fire washed over her, and her body drank it as a hearth drank dry wood.
-Heat was her own element, and it only warmed her.
+Heat was her own element, and it only warmed her. | vs: fire
 The flames licked across her {part} and found nothing they could burn.
 
 == effect_take | effect: weak | type: water
@@ -4047,7 +4047,7 @@ The diving blow jarred against her hard body and went no further.
 The wild force struck her {part}, and the same old strength in her rose to meet it and broke.
 She knew that power because it ran in her too, and that was why she could not stand against it.
 The fury of it went past her {part} and straight into her blood, and her blood shook.
-Her body had always been the strong one in any fight; against this, her {part} gave like a green branch.
+Her body was built to be the strong one; against this, her {part} gave like a green branch.
 
 == effect_take | effect: weak | type: dragon
 The wild force came at her hard and met a body made of something colder and harder.

@@ -977,6 +977,8 @@ class Session:
                         where.setdefault((mv, who), []).append(part.lower())
         self.narrator.move_victims, self.narrator.move_parts = hit, where
         self.narrator.injury_log = {k: list(v) for k, v in self.eng.injury_log.items()}   # for one memory a beat
+        # what kind of wound each part carries (claw, bite, blunt, grip, shock, cold): blood needs a claw or a bite
+        self.narrator.wound_kinds = {k: {self.eng._mark_kind(c) for c in v if c} for k, v in self.eng.injury_log.items()}
         self.narrator.first_hurt = {f.name: dict(f.learned.get("first_hurt") or {}) for f in self.eng.fighters.values()}
         self.narrator.beat_now = self.eng.turn + 1
         self.narrator.voices = {f.name: getattr(f, "voice", "") for f in self.eng.fighters.values()}

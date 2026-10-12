@@ -256,6 +256,8 @@ class Blocks:
         if not self.enabled or n <= 0:
             return []
         fmt = fmt or {}
+        if "earlier" not in ctx and getattr(self, "earlier", None):
+            ctx["earlier"] = self.earlier      # what earlier beats left behind (a blow landed): for every pick
         ctx = {k: ({str(x).lower() for x in v} if isinstance(v, (set, frozenset, list, tuple)) else {str(v).lower()})
                for k, v in ctx.items() if v}
         cool = int(self.cfg.get("cooldown_beats", 8))

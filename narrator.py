@@ -741,12 +741,17 @@ _SPEECH = re.compile(r"[\"“]([^\"”\n]{2,90})[\"”]")
 _SOUND = re.compile(r"\b((?:[HhNnGgRrAaUu])[hngrau]{3,}\w*!?)", re.I)
 
 
-def said_lines(text):
+def said_lines(text, names=()):
+    """The thoughts, spoken lines and pain sounds in a text. names: the fighters' names and species, never a line
+    ("Aura" reads as a sound to the pattern); nor is anything too short to be a phrase."""
     out = []
     for rx in (_THOUGHT, _SPEECH):
         out += [m.group(1).strip(" .…—-") for m in rx.finditer(text or "")]
     out += [m.group(1) for m in _SOUND.finditer(text or "") if re.fullmatch(r"[hngrau!]+", m.group(1).lower())]
-    return [x for x in out if x]
+    if not names:
+        return [x for x in out if x]
+    skip = {_norm_line(str(n)) for n in names if n}
+    return [x for x in out if len(_norm_line(x)) > 3 and _norm_line(x) not in skip]
 
 
 def _norm_line(s):
@@ -1906,6 +1911,9 @@ PRESENT_POSS = re.compile(r"\b(?:[A-Z][a-z]+(?:'s|’s|'|’)|[Hh]er|[Tt]he Abso
 # a sentence about how a part hurts (for "the same hurt told again and again")
 HURT_SAID = re.compile(r"\b(?:throb\w*|ach(?:e|ed|es|ing)|burn\w*|sting\w*|pain\w*|hurt\w*|sore\w*|flar\w+|pulse\w*|"
                        r"pulsing|tender|agony|fire|protest\w*)\b", re.I)
+
+# an idea of blood or a cut on her: only on a part a claw, a blade or teeth have marked
+CUT_IDEA = re.compile(r"\bblood|\bbleed|\bbled\b|\bscratch", re.I)
 
 # blood in her mouth, a trickle, a coppery taste: only for a fighter something has really hurt
 BLOOD_SAID = re.compile(r"\b(?:taste of (?:her own )?blood|blood (?:in|filled|filling) her mouth|trickle of blood|"
@@ -4452,6 +4460,8 @@ class Narrator:
         """The strongest type matchup among the blows that LANDED on `who` this beat: (super/weak/none, move type)."""
         best = None
         rank = {"super": 3, "none": 2, "weak": 1}
+        order = [t["label"] for t in pain_tiers(self.rules)]
+        cap = str(((self.rules.get("narration", {}) or {}).get("blocks", {}) or {}).get("light_effect_max_level", "sore"))
         for a in acts or ():
             m = a.get("move") or {}
             e = self.EFFECT_KEY.get(m.get("effectiveness"))
@@ -4461,6 +4471,10 @@ class Narrator:
                 continue
             if not (a.get("hits") or e == "none"):
                 continue
+            ends = [self._pain(h.get("damage_after", 0))["label"] for h in a.get("hits") or []
+                    if (h.get("defender") or who) == who]
+            if e != "super" and cap in order and any(order.index(x) > order.index(cap) for x in ends if x in order):
+                continue       # it left a part HURTING or worse: no "it hardly marks her" ideas for it
             if best is None or rank[e] > rank[best[0]]:
                 best = (e, str(m.get("type") or "").lower())
         return best
@@ -4771,7 +4785,7 @@ class Narrator:
         text = self._call(msg, words)
         text = _balance_marks(self._drop_said_repeats(self._drop_seen(self._drop_sample_copies(
             self._drop_repeats(text, story_so_far)))))
-        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         return text
 
     def interlude(self, condition, fighter_notes, scene, story_so_far, words=None, direction="", reason=""):
@@ -4844,7 +4858,7 @@ class Narrator:
         text = _balance_marks(self._drop_said_repeats(self._drop_seen(self._drop_sample_copies(
             self._drop_self_repeats(self._drop_repeats(text, story_so_far))))))
         text = _italic_sounds(text)
-        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         return text
 
     def _ends_line(self, a):
@@ -5967,7 +5981,23 @@ class Narrator:
         b.enabled = bool(b.cfg.get("enabled", True))
         b.scene_ban = self._scene_ban()
         b.old_memories = bool((self.rules.get("narration", {}) or {}).get("old_memories", False))
+        b.earlier = self._blk_earlier(None)      # (empty on the first blow: nothing "the last blow" left yet)
         return b
+
+    def _blk_earlier(self, who, other=None):
+        """'earlier:' for an idea about her (who) and the other: a blow landed in an earlier beat, and which of them
+        still carries a hurt from one (the injury log as it stood before this beat)."""
+        before = getattr(self, "_injury_prev", None) or {}
+        out = {"blows"} if any(before.values()) else set()
+        for name, tag in ((who, "hurt"), (other, "hurt_other")):
+            if name and any(v and k.lower().startswith(f"{name}|".lower()) for k, v in before.items()):
+                out.add(tag)
+        return out
+
+    def _fighter_words(self):
+        """The fighters' names and species words (never a thought or a line someone said)."""
+        return set(self.strengths or {}) | set(self.posture_start or {}) | {x for kv in (self.aliases or {}).items()
+                                                                              for x in kv}
 
     def _scene_ban(self):
         """Ideas that need stone walls or a cave (a voice ringing off the stone) when this place has none."""
@@ -5990,6 +6020,7 @@ class Narrator:
         b.enabled = bool(cfg.get("enabled", True))
         b.scene_ban = self._scene_ban()
         b.old_memories = bool((self.rules.get("narration", {}) or {}).get("old_memories", False))
+        b.earlier = self._blk_earlier(None)      # (empty on the first blow: nothing "the last blow" left yet)
         return b
 
     def _offer_line(self, add, label, category, fmt=None, exclude=None, **ctx):
@@ -6023,6 +6054,12 @@ class Narrator:
         if part == "legs":
             z = "leg"
         unseen = z in ("neck", "back", "head") or bool(re.search(r"\b(?:back|throat|nape|spine)\b", str(part), re.I))
+        # blood or a scratch only where a claw, a blade or teeth went in (the engine's wound kinds): not after a punch
+        logs = getattr(self, "wound_kinds", None) or {}
+        mine = [v for k, v in logs.items() if k.lower().startswith(f"{who}|".lower())
+                and (part in ("wound", "legs") or k.lower() == f"{who}|{part}".lower())]
+        if not set().union(*mine) & {"claw", "bite"}:
+            ctx["exclude"] = CUT_IDEA
         return self._blocks().pick("self_look", 1, fmt={"part": part}, zone=z, need=("zone",) if unseen else (), **ctx)
 
     def _worst_parts(self, who, n=2, floor="hurting", skip=(), before=None):
@@ -6340,7 +6377,7 @@ class Narrator:
                     add(f"how the hurt in {poss(who)} {p} feels as she watches", B.pick(
                         "sensation", 1, fmt={"part": p}, level=lv, zone=z, has=feats(who),
                         part=set(re.findall(r"[a-z]+", p))))
-                return self._blocks_plan(lines, "take", False, last, who, by_)
+                return self._blocks_plan(lines, "take", False, last, by_, who)     # (her side: she took the blow)
             if key == "dwell":
                 side[0] = "take"
                 for p, lv, z in self._worst_parts(who, 2, "very painful"):
@@ -6360,7 +6397,7 @@ class Narrator:
                 add(f"{who} looking at her own {p0}", self._self_look(who, p0, has=feats(who),
                                                                              state=state(who)))
                 mind(who, "receiver", other)
-                return self._blocks_plan(lines, "take", False, last, who, other)
+                return self._blocks_plan(lines, "take", False, last, other, who)   # (her side: she took the blow)
             side[0] = "act"
             victim = next((x[0] for x in sorted(((v_, sum(d for w_, _, d, _, _ in self._linger_pool if w_ == v_))
                                                   for v_ in {x[0] for x in self._linger_pool}), key=lambda t: -t[1])),
@@ -6466,9 +6503,9 @@ class Narrator:
                 hb_, pb_ = self._dev_bands(a)
                 # the engine said she held her ground or only rocked (moves.stumble): no ideas that walk her off it
                 kept_ = [MOVES_HER] if a.get("moved") in ("still", "rock") else None
-                add("selling it", B.pick("devastating_sell", 1, health={hb_}, partlevel={pb_}, exclude=kept_,
-                                         fmt={"part": str(a["devastating"].get("part") or "the hurt").lower()}))
-                if take:
+                if take:      # (her body selling it: told on her side, not in the part of the one who hit her)
+                    add("selling it", B.pick("devastating_sell", 1, health={hb_}, partlevel={pb_}, exclude=kept_,
+                                             fmt={"part": str(a["devastating"].get("part") or "the hurt").lower()}))
                     add(f"{dfn_}, after it", B.pick("devastated_reaction", 1, has=feats(dfn_), state=state(dfn_),
                                                     fighter=(dfn_ or "").lower(), exclude=kept_))
                     add(f"{poss(dfn_)} thought", B.pick("devastated_thought", 1, state=state(dfn_),
@@ -6534,7 +6571,11 @@ class Narrator:
                 side[0] = "take"
                 fallen = [w for w in list(getattr(self, "out_names", None) or []) + list(self.damage_by) if w != win]
                 for who in list(dict.fromkeys(fallen))[:1]:
-                    add(f"{who}, lying there", B.pick("aftermath_fallen", 2, has=feats(who) or None))
+                    # coming round only when the engine says so: a recovery stage this beat, or STIRRING already
+                    waking = any(e_.get("type") == "recovery" and e_.get("fighter") == who for e_ in also or ()) or \
+                        re.search(rf"\b{re.escape(who)}: lost the match\. Now STIRRING\b", getattr(self, "_condition_now", ""))
+                    add(f"{who}, lying there", B.pick("aftermath_fallen", 2, has=feats(who) or None,
+                                                      waking={"yes"} if waking else None))
             return self._blocks_plan(lines, key, False, False)
         # --- a pin: going on, closing, escaped, or held to the end
         pin_now = [a for a in acts if a.get("type") in ("pin_start", "pin_forced")]
@@ -6787,7 +6828,8 @@ class Narrator:
             return ""
         take_only = key == "take"
         if first and not take_only and cfg.get("open_and_end", True):
-            for p in B.pick("open_on", 1, posture=self._blk_posture(lead) if lead else {"standing"}):
+            for p in B.pick("open_on", 1, posture=self._blk_posture(lead) if lead else {"standing"},
+                            earlier=self._blk_earlier(lead, other)):
                 if not (reactions_used(p) & worn):
                     steps.insert(0, f"OPEN this part on{f' (from {poss(lead)} side)' if lead else ''}: {p}")
         if first:
@@ -9774,7 +9816,7 @@ class Narrator:
         # "slammed into the wall—grunt—and the muscles spasmed": a reaction word from the notes left as a stage direction
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
         self.recent_reactions = (self.recent_reactions + [reactions_used(text)])[-3:]
-        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         self._note_worn(text)
         self._beat_no += 1
         return self.pov_labels(text)
@@ -9906,7 +9948,7 @@ class Narrator:
         except llm.LLMError:
             return text
         more = self._drop_said_repeats(self._drop_seen(self._drop_repeats(more, (story_so_far or "") + "\n" + text)))
-        self.recent_lines = (self.recent_lines + said_lines(text))[-24:]
+        self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         return (text + "\n\n" + more).strip() if more else text
 
     def _drop_said_repeats(self, text):
@@ -10328,6 +10370,7 @@ class Narrator:
     def _narrate_beat(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
         n = self.rules.get("narration", {})
         self._scene_text = str(scene or "")
+        self._condition_now = str(condition_summary or "")     # (who is out cold, who stirring: the aftermath ideas)
         # what the fighters and the place ARE (their looks, their moves, the arena): words a story rightly says again
         self._ref_words = set(re.findall(r"[a-z']+", (str(fighter_notes or "") + " " + self._scene_text).lower()))
         words = int(n.get("words_per_beat", 500))

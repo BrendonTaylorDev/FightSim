@@ -26,6 +26,9 @@
 #   type:  fire, water, electric, ice, ...            the attack's type        vs: her own type(s)
 #   shape: thrown, fall, rise, tomb                   a rock move's shape: stones thrown at her, rocks falling on her,
 #                                                      stone driven up out of the ground, boulders closing round her
+#   earlier: blows, hurt, hurt_other                  a blow landed in an earlier beat; she (hurt) or the other
+#                                                     (hurt_other) still carries a hurt from one (none on the first blow)
+#   waking: yes                                       after the match: she is coming round (the engine says stirring)
 # In the text of a block, {part} is the body part in question ("left thigh") and {next} a part beside it.
 # Add as many lines as you like: more blocks means more variety. /blocks shows the counts.
 
@@ -1329,7 +1332,7 @@ what she is looking at
 a thought, short, before the body catches up
 the ground under her feet | posture: standing
 the other's face
-the part of her that hurts most
+the part of her that hurts most | earlier: hurt
 stillness: the held moment before
 a small thing out of place: a hair, a drop, a shadow
 the distance between them, measured
@@ -1344,7 +1347,7 @@ the weight on each of her feet, and which one she trusts | posture: standing
 the one sound the other is making
 a colour: of the light, of the other's fur, of what is on the ground
 how far her next breath has to go
-the feel of the air on the place that hurts
+the feel of the air on the place that hurts | earlier: hurt
 her own shadow, and the other's, and the gap between them
 a muscle she did not tell to tighten
 the thing she will not look at
@@ -3806,7 +3809,6 @@ a small voice that has always been there says this is how she loses
 she knows from experience that this hurt will not stay where it landed
 the urge to hide the weakness, too late now that it has been found
 a sick recognition, like hearing a lock turn to the right key
-she remembers being warned about this, and how lightly she took the warning
 her body knows its one soft door, and something has just walked through it
 a flash of anger at her own make: why this, of all things
 
@@ -3814,7 +3816,7 @@ a flash of anger at her own make: why this, of all things
 she knows before it lands that it will not amount to much
 her body was made for this, and it shrugs almost bored
 contempt, cool and quiet: is that really all the other has
-the old confidence of a body that has taken this a hundred times
+the easy confidence of a body built to take exactly this
 she almost wants to tell her opponent to try something else
 the kind of blow she was born half-armoured against
 a flicker of amusement at being hit with the one thing she does not fear
@@ -3833,7 +3835,6 @@ a surge of nerve: if this is the other's best, the fight is hers
 she knows the feel of this blow and knows it has no teeth for her
 an old lesson pays off: let that kind of hit come, it cannot reach far
 she was ready to be hurt and is faintly insulted not to be
-like being struck with the very stuff she grew up in
 if the other had anything better, she thinks, it would have come by now
 a slow, satisfied breath: the matchup is hers and her body says so
 
@@ -3872,12 +3873,11 @@ the drinking pull of it is something she has felt before and hated
 she has always hated the cold, and now it is inside her wing | has: wings
 her body was never made to keep warm against this, and she knows it
 the cold she has always run from has finally caught up with her
-she remembers a winter that nearly stopped her, and this is that winter again
+the cold reaches into her like a long winter, and it means to stay
 
 == effect_know | effect: super | type: fighting
 against a trained fighter's blow her body has always folded, and it folds now
 there is no trick in her that turns a strike this honest
-she remembers sparring with fighters and always coming away sore for days
 
 == effect_know | effect: super | type: flying
 she has always feared what comes down out of the sky
@@ -3921,7 +3921,7 @@ an old wariness of the sparkling ones, proved right in a single touch
 
 == effect_know | effect: super | type: steel
 she knows hard metal will always be harder than she is
-she remembers how metal once rang through her, and her body remembers too
+the metal rings through her, and her whole body rings with it
 the cold edge of steel is the one thing her body cannot refuse
 
 == effect_know | effect: super | type: poison
@@ -4042,7 +4042,7 @@ every flyer fears the storm, and she has always feared it more than most
 
 == effect_know | effect: super | type: ice | vs: flying
 she knows the cold high air, and how it locks a wing mid-beat | has: wings
-she remembers frost on her feathers once, and how long she could not fly | has: feathers
+frost on her feathers, and the sudden fear of not flying | has: feathers
 
 == effect_know | effect: super | type: ice | vs: dragon
 she knows her body cannot make heat enough to fight this off
@@ -5515,7 +5515,7 @@ she sees a tremor in the other's stance after the effort, there for a moment and
 she watches the way the other turns to keep her in view, and sees it is slower on one side
 the other's guard has relaxed by a fraction, and she wonders if that is a mistake or bait
 she sees the other glance away for half a heartbeat and marks it like a gap in a fence
-she notes the dust on the other's body, and where it is, and what that says about the last exchange
+she notes the dust on the other's body, and where it is, and what that says about the last exchange | earlier: blows
 she watches the other shake out a limb that must have jarred on the blow
 she listens to the other's breathing and finds a small catch in it, like a stitch
 she sees the other's eyes are fixed, intent, already thinking two moves ahead
@@ -5681,7 +5681,7 @@ she takes a breath, then another, and on the third she moves | state: tired, spe
 # ---------------------------------------------------------------------------------------------------------------
 == open_on
 the sound of her own breath catching, and the silence just after
-the place where the last blow still stings
+the place where the last blow still stings | earlier: hurt
 the other's weight shifting, before anything else moves
 a smell carried across the space between them
 a small adjustment of her stance that only she would notice | posture: standing
@@ -5691,10 +5691,10 @@ something that has changed since the last moment: a stance, a gaze, a distance
 a sound from the far edge of the place, and neither of them turning to it
 the stillness of her own body as she waits for it to obey
 a question she asks herself and does not answer
-the dust still hanging in the air from the last exchange
+the dust still hanging in the air from the last exchange | earlier: blows
 how dry her mouth has become
 the place her eyes go first, and why
-an ache she had forgotten, coming back
+an ache she had forgotten, coming back | earlier: hurt
 the moment she stops waiting
 the other's shadow touching hers
 the grit under her, pressing into her side | posture: down, pinned
@@ -7057,7 +7057,7 @@ her eyes are open and steady, and that is the worrying part
 # BREATH: how she is breathing, by her condition
 == breath | state: fresh
 she breathes easily, the air going all the way down
-a steady rhythm in and out, unbroken by the last exchange
+a steady rhythm in and out, unbroken by the last exchange | earlier: blows
 her nostrils barely move; she breathes like a sleeper
 she takes a breath and holds it, wound tight, before the move
 her breath is quiet enough that she can hear her opponent's
@@ -7960,7 +7960,7 @@ she waits for the trick, weight still forward, and the trick never comes
 she nudges the still body once with a paw and gets no answer but the slow rise of its ribs
 the fight drains out of her own limbs now that there is nothing left to fight
 she stands over her a long moment, breathing hard, not trusting the quiet yet
-== aftermath_fallen
+== aftermath_fallen | waking: yes
 the first thing to come back is sound: water, wind, her own breathing far away
 her eyes open on the sky without understanding it, then the ache arrives and explains everything
 she tries to lift her head and the world tilts, so she lets it rest again
@@ -11887,7 +11887,7 @@ the sound of the place, before either moves
 the other's eyes, and what they are fixed on
 a twitch in her own limbs, before she means it
 the weight of her own body, and how heavy it has become
-the ache in the hurt place, sharp and fresh
+the ache in the hurt place, sharp and fresh | earlier: hurt
 the way the light falls between them
 the taste of dust and salt in her mouth
 a small sound, from her or from the other
@@ -11904,18 +11904,18 @@ the stillness, stretched thin
 the ground, and how it feels under her
 her eyes, narrowing
 the other's limb, drawing back
-the pain, settling into a new shape
+the pain, settling into a new shape | earlier: hurt
 the sound of her own breath, ragged
 something she notices about the other for the first time
 how tired she is, measured honestly
 how much she has left
 the place she means to hit next
-a tremor in her hurt part
+a tremor in her hurt part | earlier: hurt
 the chill or the warmth of the air
 her own stubbornness
 the moment before she moves
 something the other has not noticed yet
-the place where the other is hurt
+the place where the other is hurt | earlier: hurt_other
 her own gaze, steady or wandering
 the dust stirring at her feet | posture: standing
 her weight, shifting to the balls of her feet | posture: standing
@@ -11938,14 +11938,14 @@ the moment her eyes clear
 the edge of her vision, dimming or sharp
 what her body does before she asks it to
 a word in her head, short and hard
-the last blow, felt again
+the last blow, felt again | earlier: hurt
 the next breath, and whether it will hurt
 a sound from far off
 her own trembling, and whether it shows
-the other's hurt place, and how it is held
+the other's hurt place, and how it is held | earlier: hurt_other
 the other's weight, settling
 the moment the other looks away
-the space where the last blow fell
+the space where the last blow fell | earlier: blows
 a flicker of hope
 a flicker of doubt
 her limbs, gathering

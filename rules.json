@@ -709,8 +709,10 @@
       "cooldown_beats": 8,
       "remember": true,
       "plan": true,
-      "open_and_end": true
+      "open_and_end": true,
+      "light_effect_max_level": "sore"
     },
+    "_light_effect_max_level_comment": "blocks.light_effect_max_level: a not-very-effective (or no-effect) blow gets its matchup ideas (it hardly marks her, it breaks against her, she shrugs it off) only while every part it hit ends this beat at this pain level or lower (minor, sore, hurting, very painful, excruciating, devastated). A weak blow that still leaves a part hurting is told by its hurt, not by the matchup.",
     "_lines_comment": "lines: the library of finished sentences (story_lines.txt, same format as the blocks). One that fits is offered to the narrator per part, to use word for word if it fits; a bare line of told resolve the program cuts (\"She would not be defeated.\") is replaced by one that shows it. cooldown_beats: how long before the same line can come back. Used lines are remembered in lines_memory.json.",
     "_style_repairs_comment": "style_repairs_max: how many paragraphs a part may be written again for WORDING alone (filler, a phrase already used this beat, a stray label, a sound standing alone). Mistakes about what happened, reactions bigger than her injuries and wrong anatomy are always fixed. Lower it for speed, raise it for polish.",
     "style_repairs_max": 2,
