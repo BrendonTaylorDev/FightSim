@@ -473,7 +473,10 @@ def _apply_variety(engine, att, dfn, b):
     recent = [p for who, p in log[-3:] if who == d.name]
     lately = {body_region(p) for p in recent}
     runs = int(b.get("count") or 1) > 1     # a pummel or a flurry picks its own spots blow by blow: not re-aimed
-    if (v > 0 and not runs and not engine.focus_for(att) and name not in (getattr(engine, "weak_aim", None) or ())
+    # a blow whose flavor already tells where it lands ("cracks her wing across the head") is meant there: moving it
+    # would leave the narrator two places for one blow
+    said = re.search(r"\b%s\b" % re.escape(name.lower().split()[-1]), str(b.get("flavor") or "").lower())
+    if (v > 0 and not runs and not said and not engine.focus_for(att) and name not in (getattr(engine, "weak_aim", None) or ())
             and body_region(name) in lately and not engine.pinned_by(a.name)
             and a.name not in engine.downed and not engine.grab_between(a.name, d.name)
             and engine.rng.random() < v):

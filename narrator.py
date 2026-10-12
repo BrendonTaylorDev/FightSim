@@ -3368,10 +3368,17 @@ class Narrator:
         if t == "weather_end":
             return [f"The {a['kind']} eases off and clears over the arena."]
         if t == "take_off":
-            return [f"{a['fighter']} TAKES TO THE AIR: wings snap open and beat hard, dust and spray kicked up, and she "
-                    f"climbs out of reach above the arena. Show her rising and her opponent left on the ground looking up."]
+            ps = getattr(self, "posture_start", {}) or {}
+            up = [n for n, x in ps.items() if n != a["fighter"] and "AIR" in str(x).upper()]
+            return [f"{a['fighter']} TAKES TO THE AIR: wings snap open and beat hard, loose grit kicked up, and she "
+                    f"climbs " + (f"up to meet {up[0]} where she flies." if up else
+                                  "out of reach. Show her rising and her opponent left on the ground looking up.")]
+        if t == "take_off_failed":
+            return [f"{a['fighter']} TRIES TO TAKE OFF AND CAN'T: she is too spent. Her wings beat, hard and ragged, and "
+                    f"lift her a little or not at all, and she comes back down onto the ground where she was. She is "
+                    f"still ON THE GROUND."]
         if t == "land_flight":
-            return [f"{a['fighter']} comes DOWN out of the air by choice: wings flared, she drops and lands on her talons."]
+            return [f"{a['fighter']} comes DOWN out of the air by choice: wings flared, she drops and lands on her feet."]
         if t == "reposition":
             if a.get("resisted"):
                 verb = {"pick up": "haul her up off the ground", "stand her up": "drag her up onto her feet",

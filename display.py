@@ -1047,6 +1047,9 @@ class Display:
             out.append(f"🌤️ The {a['kind']} clears")
         elif t == "take_off":
             out.append(f"🪽 **{a['fighter']} takes to the air** (up for {a['beats']} beats; only ranged attacks reach her)")
+        elif t == "take_off_failed":
+            out.append(f"🪶 **{a['fighter']} tries to take off and can't**: too spent, her wings beat but don't lift her "
+                       f"(flight.weak_takeoff)")
         elif t == "land_flight":
             out.append(f"🪶 **{a['fighter']} comes down** out of the air and lands")
         elif t == "reposition" and a.get("resisted"):

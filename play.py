@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-12 build 177 (hit reactions weigh the hurt part as well as her overall strength: a badly hurt part on a strong fighter gets a pained, half-hidden reaction, never a raw one; flyers stay up longer while strong: a blow knocks a healthy flyer out of the sky far less often (a worn one still falls easily), a blow over her whole body counts less than one crushing blow, and a flyer a blow would hurl may catch herself on her wings; thrown and shot moves count as ranged; a blow that knocks a flyer out of the sky is no longer treated as a dive; 20 new attacker-side sample passages)"
+VERSION = "2026-10-12 build 178 (hit reactions weigh the hurt part as well as her overall strength: a badly hurt part on a strong fighter gets a pained, half-hidden reaction, never a raw one; flyers stay up longer while strong: a blow knocks a healthy flyer out of the sky far less often (a worn one still falls easily), a blow over her whole body counts less than one crushing blow, and a flyer a blow would hurl may catch herself on her wings; thrown and shot moves count as ranged; a blow that knocks a flyer out of the sky is no longer treated as a dive; flyers can always take off (below 10% strength it is a hard roll), hurt wings no longer snowball or ground them for good; a blow is not re-aimed away from the part its flavor names; 20 new attacker-side sample passages)"
 
 HELP = """
 =============================================================================================
