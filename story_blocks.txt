@@ -26,6 +26,7 @@
 #   type:  fire, water, electric, ice, ...            the attack's type        vs: her own type(s)
 #   earlier: blows, hurt, hurt_other                  a blow landed in an earlier beat; she (hurt) or the other
 #                                                     (hurt_other) still carries a hurt from one (none on the first blow)
+#   waking: yes                                       after the match: she is coming round (the engine says stirring)
 # In the text of a block, {part} is the body part in question ("left thigh") and {next} a part beside it.
 # Add as many lines as you like: more blocks means more variety. /blocks shows the counts.
 
@@ -7949,7 +7950,7 @@ she waits for the trick, weight still forward, and the trick never comes
 she nudges the still body once with a paw and gets no answer but the slow rise of its ribs
 the fight drains out of her own limbs now that there is nothing left to fight
 she stands over her a long moment, breathing hard, not trusting the quiet yet
-== aftermath_fallen
+== aftermath_fallen | waking: yes
 the first thing to come back is sound: water, wind, her own breathing far away
 her eyes open on the sky without understanding it, then the ache arrives and explains everything
 she tries to lift her head and the world tilts, so she lets it rest again

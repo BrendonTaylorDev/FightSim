@@ -6478,7 +6478,11 @@ class Narrator:
                 side[0] = "take"
                 fallen = [w for w in list(getattr(self, "out_names", None) or []) + list(self.damage_by) if w != win]
                 for who in list(dict.fromkeys(fallen))[:1]:
-                    add(f"{who}, lying there", B.pick("aftermath_fallen", 2, has=feats(who) or None))
+                    # coming round only when the engine says so: a recovery stage this beat, or STIRRING already
+                    waking = any(e_.get("type") == "recovery" and e_.get("fighter") == who for e_ in also or ()) or \
+                        re.search(rf"\b{re.escape(who)}: lost the match\. Now STIRRING\b", getattr(self, "_condition_now", ""))
+                    add(f"{who}, lying there", B.pick("aftermath_fallen", 2, has=feats(who) or None,
+                                                      waking={"yes"} if waking else None))
             return self._blocks_plan(lines, key, False, False)
         # --- a pin: going on, closing, escaped, or held to the end
         pin_now = [a for a in acts if a.get("type") in ("pin_start", "pin_forced")]
@@ -10271,6 +10275,7 @@ class Narrator:
     def _narrate_beat(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
         n = self.rules.get("narration", {})
         self._scene_text = str(scene or "")
+        self._condition_now = str(condition_summary or "")     # (who is out cold, who stirring: the aftermath ideas)
         # what the fighters and the place ARE (their looks, their moves, the arena): words a story rightly says again
         self._ref_words = set(re.findall(r"[a-z']+", (str(fighter_notes or "") + " " + self._scene_text).lower()))
         words = int(n.get("words_per_beat", 500))
