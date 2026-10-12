@@ -3911,8 +3911,12 @@ class Narrator:
                 multi = len(shown_) > 1
                 lines += [self._hit_line(h, i + 1 if multi else None) for i, h in enumerate(shown_)]
             if m and m.get("target") == "spread" and len(a.get("hits") or []) > 1 and not a.get("sustain"):
-                lines.append(f"  - ONE blast that catches all of these parts at once, not separate shots one after "
-                             f"another.")
+                if Engine.is_ranged(m):
+                    lines.append(f"  - ONE blast that catches all of these parts at once, not separate shots one after "
+                                 f"another.")
+                else:      # a spread delivered close (Close Combat): a flurry, each blow on its own part
+                    lines.append(f"  - A FLURRY of close blows thrown fast, one landing on each of these parts in turn: "
+                                 f"no blast, nothing fired across the gap.")
             if a.get("charge") and a["charge"].get("skipped"):
                 lines.append(f"  - It is an ordinary hit: nobody is driven into the scenery ({a['charge']['skipped']}).")
             if a.get("target_against"):
@@ -6166,6 +6170,10 @@ class Narrator:
                 add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
             return True
 
+        def close_spread(a):      # a spread move thrown close (Close Combat): a flurry of blows, not a blast
+            mv = a.get("move") or {}
+            return mv.get("target") == "spread" and len(a.get("hits") or []) > 1 and not Engine.is_ranged(mv)
+
         def strike_blocks(who, target):      # staging a blow, from the one who throws it
             kinds, close, shapes = set(), False, set()
             for a in acts:
@@ -6176,7 +6184,8 @@ class Narrator:
                 got = story_blocks.kind_of(mv.get("name", ""), mv.get("about", ""), a.get("with", ""),
                                            a.get("manhandle") or "", a.get("type") == "grapple_start",
                                            close=bool(a.get("pummel")),
-                                           ranged=str(mv.get("target", "")) in ("whole_body", "spread")
+                                           ranged=(str(mv.get("target", "")) in ("whole_body", "spread")
+                                                   and Engine.is_ranged(mv))
                                            or "ranged" in str(mv.get("range", "")) or bool(mv.get("ranged")))
                 mtype = str(mv.get("type") or "").lower()
                 if mtype:     # an element comes from the move's type, never from a stray word ("heat") in its text
@@ -6212,8 +6221,9 @@ class Narrator:
                     + B.pick("movement", 1, kind={"close"}, need=("kind",), has=feats(who)))
             else:
                 # one blow is one blow: no staging ideas that throw two or three ("two fast ones", "three of them")
+                # (a spread thrown close, like Close Combat, is a flurry: several blows are what it is)
                 runs = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
-                                                         or a.get("combo")) for a in acts)
+                                                         or a.get("combo") or close_spread(a)) for a in acts)
                 one_ = ([] if runs else [SEVERAL_BLOWS]) + grip_x or None
                 add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, shape=shapes, has=feats(who),
                                                           exclude=one_) if kinds
