@@ -1,0 +1,33 @@
+HAS-FEATURE coverage in hit-selling block categories (count of blocks conditioned on that feature):
+  wings     total= 42  reaction=5 pain_show=27 tell=2 moved=1 landing=1 getup=1 dodge=1 watch=2 struggle=1 pin_under=1
+  feathers  total= 18  reaction=5 pain_show=9 tell=3 watch=1
+  beak      total= 26  reaction=6 pain_show=13 tell=2 held_in=5
+  talons    total= 11  reaction=4 pain_show=7
+  coils     total= 26  reaction=9 pain_show=6 tell=3 moved=1 landing=1 getup=2 dodge=1 watch=1 struggle=1 pin_under=1
+  tail      total= 28  reaction=5 pain_show=18 self_look=2 getup=1 watch=2
+  tails     total= 34  reaction=9 pain_show=19 sensation=1 tell=3 moved=1 watch=1
+  fins      total= 23  reaction=5 pain_show=18
+  horn      total= 19  reaction=1 pain_show=18
+  mane      total= 11  reaction=4 pain_show=5 tell=1 watch=1
+  ruff      total= 22  reaction=3 pain_show=18 watch=1
+  hood      total=  1  watch=1
+  antennae  total=  8  reaction=1 pain_show=6 watch=1
+  crest     total= 16  reaction=5 pain_show=8 tell=2 watch=1
+  flame     total= 21  reaction=6 pain_show=9 tell=3 held_in=2 watch=1
+  arms      total= 42  reaction=8 pain_show=21 sensation=5 tell=4 getup=1 watch=1 struggle=1 pin_under=1
+  forelegs  total= 29  reaction=3 pain_show=20 sensation=1 tell=2 landing=1 getup=2
+  legs      total= 52  reaction=11 pain_show=21 tell=7 landing=1 getup=6 dodge=2 watch=2 struggle=1 devastated_reaction=1
+  ears      total= 27  reaction=5 pain_show=19 dodge=1 watch=2
+
+KIND coverage (blocks conditioned on kind), per category:
+  movement: charge=24, beam=23, claw=22, punch=20, bite=19, tail=16, fire=16, throw=15, grab=14, close=13, wing=13, talon=12, ice=12, horn=11, beak=11, wind=11, rock=11
+  crushed: fire=1, water=1, ice=1, rock=1
+  moved: shock=2, fire=2, mind=2, cold=1
+  impact_mark: bite=4, claw=3, punch=3, beam=3, charge=3
+
+TYPE coverage (type: condition) per category:
+  effect_know: fire=12, ice=12, electric=11, fighting=11, water=10, psychic=9, rock=9, fairy=9, ghost=8, dragon=8, steel=8, poison=8, grass=7, dark=7, flying=6, normal=4, ground=3, bug=3
+  effect_body: fire=34, fighting=32, electric=29, ice=27, water=26, grass=19, rock=19, fairy=19, psychic=18, steel=18, dragon=15, flying=14, dark=13, poison=13, ghost=12, normal=11, ground=6, bug=5
+  effect_see: fire=14, electric=11, water=11, ice=11, fighting=11, psychic=9, rock=9, fairy=9, grass=8, ghost=8, dragon=8, steel=8, poison=8, flying=7, dark=7, normal=4, ground=3, bug=3
+  effect_take: water=15, ice=15, fighting=15, fire=13, electric=11, rock=8, grass=7, steel=7, fairy=6, dragon=5, psychic=5, flying=5, ground=3, dark=2, normal=2, ghost=2, poison=2
+  effect_act: water=3, electric=2, ice=2, rock=2, fighting=2, fire=1, psychic=1, ghost=1, poison=1
