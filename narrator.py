@@ -2704,7 +2704,7 @@ class Narrator:
             if b_ != a_ and a_ in ("excruciating", "devastated", "numb with shock"):
                 self._breaking.append((h["defender"], h["part"], a_))
         lines.append("  - Hardest hit: " + ", ".join(f"{h['part']} ({self._strength(h['damage_taken'])} blow)" for h in worst))
-        tough = [h for h in hits if h["damage_taken"] < 5]
+        tough = [h for h in hits if h["damage_taken"] < 5 and h not in worst]   # (a light surge: the hardest-hit stay out)
         if tough:
             lines.append("  - Barely felt: " + ", ".join(h["part"] for h in tough[:6]))
         for h in changed[:6]:
