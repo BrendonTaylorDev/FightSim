@@ -975,6 +975,9 @@ HEALTHY = re.compile(r"\b(still (?:good|strong|fine|whole|sound|working)|(?:was|
                      r"(?:her|his) good (?:paw|arm|leg|side|hand|foot|ear|eye)|unhurt|uninjured|undamaged|untouched)", re.I)
 # the move types an element's staging belongs to (a Normal body charge never gets fire)
 ELEMENT_TYPES = {"fire": ("fire",), "ice": ("ice",), "rock": ("rock", "ground"), "wind": ("flying",)}
+# the kinds that are a body part landing on her (a bite, a fist, a horn, a whole body charging): a move of one of
+# these that is not ranged is a blow, whatever element it carries
+CONTACT_KINDS = {"bite", "claw", "punch", "charge", "tail", "horn", "beak", "talon", "grab", "close"}
 CLAW_STRIKE = re.compile(r"\b(?:claws?|talons?)\b[^.!?,;—]{0,20}?\b(?:sank|sink\w*|rak\w+|tore|tear\w*|ripp\w+|"
                          r"slash\w*|dug|digging|bit|raked|scor\w+|gouged)\s+(?:in|into|across|through|deep)\b", re.I)
 TAIL_STRIKE = re.compile(r"\btails?(?: blade| tip)?\b[^.!?,;—]{0,30}?\b(?:struck|slashed|sliced|cut|smacked|slammed|cracked|"
@@ -6178,6 +6181,10 @@ class Narrator:
                 mtype = str(mv.get("type") or "").lower()
                 if mtype:     # an element comes from the move's type, never from a stray word ("heat") in its text
                     got = {k for k in got if k not in ELEMENT_TYPES or mtype in ELEMENT_TYPES[k]}
+                if mv and not Engine.is_ranged(mv) and (got & CONTACT_KINDS or mv.get("charge")):
+                    # a blow that carries an element (Fire Fang, Ice Punch, Flame Wheel): the element's staging is
+                    # all discharge (a breath, a ball hurled, a stream poured out), so the blow stages as the blow
+                    got = {k for k in got if k not in ELEMENT_TYPES} or {"charge"}
                 kinds |= got
             if close and "grab" not in kinds:
                 kinds = {"close"}
