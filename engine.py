@@ -2383,7 +2383,7 @@ class Engine:
         mult = next((m for at, m in steps if worst.damage >= at), None)
         if mult is None or mult >= 1:
             return None
-        return (f"her hurt {worst.name.lower()}", mult)
+        return (f"{poss_word(a.name)} hurt {worst.name.lower()}", mult)   # (named: "her" reads as the defender's)
 
     def power_extras(self, a, d, move_type):
         """Status multipliers on a move's power: (label, multiplier) pairs."""
