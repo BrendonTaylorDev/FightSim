@@ -3806,7 +3806,6 @@ a small voice that has always been there says this is how she loses
 she knows from experience that this hurt will not stay where it landed
 the urge to hide the weakness, too late now that it has been found
 a sick recognition, like hearing a lock turn to the right key
-she remembers being warned about this, and how lightly she took the warning
 her body knows its one soft door, and something has just walked through it
 a flash of anger at her own make: why this, of all things
 
@@ -3814,7 +3813,7 @@ a flash of anger at her own make: why this, of all things
 she knows before it lands that it will not amount to much
 her body was made for this, and it shrugs almost bored
 contempt, cool and quiet: is that really all the other has
-the old confidence of a body that has taken this a hundred times
+the easy confidence of a body built to take exactly this
 she almost wants to tell her opponent to try something else
 the kind of blow she was born half-armoured against
 a flicker of amusement at being hit with the one thing she does not fear
@@ -3833,7 +3832,6 @@ a surge of nerve: if this is the other's best, the fight is hers
 she knows the feel of this blow and knows it has no teeth for her
 an old lesson pays off: let that kind of hit come, it cannot reach far
 she was ready to be hurt and is faintly insulted not to be
-like being struck with the very stuff she grew up in
 if the other had anything better, she thinks, it would have come by now
 a slow, satisfied breath: the matchup is hers and her body says so
 
@@ -3872,12 +3870,11 @@ the drinking pull of it is something she has felt before and hated
 she has always hated the cold, and now it is inside her wing | has: wings
 her body was never made to keep warm against this, and she knows it
 the cold she has always run from has finally caught up with her
-she remembers a winter that nearly stopped her, and this is that winter again
+the cold reaches into her like a long winter, and it means to stay
 
 == effect_know | effect: super | type: fighting
 against a trained fighter's blow her body has always folded, and it folds now
 there is no trick in her that turns a strike this honest
-she remembers sparring with fighters and always coming away sore for days
 
 == effect_know | effect: super | type: flying
 she has always feared what comes down out of the sky
@@ -3921,7 +3918,7 @@ an old wariness of the sparkling ones, proved right in a single touch
 
 == effect_know | effect: super | type: steel
 she knows hard metal will always be harder than she is
-she remembers how metal once rang through her, and her body remembers too
+the metal rings through her, and her whole body rings with it
 the cold edge of steel is the one thing her body cannot refuse
 
 == effect_know | effect: super | type: poison
@@ -4042,7 +4039,7 @@ every flyer fears the storm, and she has always feared it more than most
 
 == effect_know | effect: super | type: ice | vs: flying
 she knows the cold high air, and how it locks a wing mid-beat | has: wings
-she remembers frost on her feathers once, and how long she could not fly | has: feathers
+frost on her feathers, and the sudden fear of not flying | has: feathers
 
 == effect_know | effect: super | type: ice | vs: dragon
 she knows her body cannot make heat enough to fight this off
