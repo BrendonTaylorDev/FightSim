@@ -2317,6 +2317,8 @@ class Engine:
         fighter who falls asleep on her feet slumps to the ground. What that knocked loose is left in _knock_on."""
         f.status[status] = max(f.status.get(status, 0), int(beats))
         self._fresh_status.add((f.name, status))
+        if status == "chilled":
+            (getattr(self, "_slow_not_cold", None) or set()).discard(f.name)   # (cold, unless the move says otherwise)
         self._knock_on = []
         if status in ("asleep", "frozen") and not f.eliminated:
             word = "fell asleep" if status == "asleep" else "froze solid"
@@ -2435,8 +2437,15 @@ class Engine:
             if self._chance(float(eff.get("chance", 0)), f"{d.name} {eff['status']} by {move.get('name', 'the move')}",
                             eff["status"], "no"):
                 self.set_status(d, eff["status"], eff.get("beats", 2))
-                out.append({"fighter": d.name, "status": eff["status"], "beats": int(eff.get("beats", 2)),
-                            "knock_on": self._knock_on})
+                rec = {"fighter": d.name, "status": eff["status"], "beats": int(eff.get("beats", 2)),
+                       "knock_on": self._knock_on}
+                if eff["status"] == "chilled" and move.get("type") != "Ice":
+                    # (the slow of a move that isn't cold, Rock Tomb's boulders or String Shot's silk, isn't frost)
+                    if not hasattr(self, "_slow_not_cold"):
+                        self._slow_not_cold = set()
+                    self._slow_not_cold.add(d.name)
+                    rec["look"] = self.status_look(d.name, "chilled")
+                out.append(rec)
                 self._knock_on = []
         return out
 
@@ -4991,7 +5000,8 @@ class Engine:
             if self.has(f, "burned"):
                 bits.append("singed patches in her fur")
             if self.has(f, "chilled"):
-                bits.append("frost in her fur, shivering")
+                bits.append("moving stiff and heavy" if f.name in (getattr(self, "_slow_not_cold", None) or ())
+                            else "frost in her fur, shivering")
             bad = sorted((p for p in f.parts.values() if p.damage >= 90), key=lambda p: -p.damage)[:4]
             # a mark on a part nobody has touched for a while is given in short: the first thing that shows
             ob = self._decay("origin_beats", 4)
@@ -7766,8 +7776,19 @@ class Engine:
                       "than she should be able to",
     }
 
+    # the same status from a move that is not cold: CHILLED is the engine's word for any slowing
+    STATUS_LOOK_NOT_COLD = {
+        "chilled": "SLOWED: her limbs heavy and stiff, slow to answer, every movement a beat behind",
+    }
+
+    def status_look(self, name, status):
+        """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
+        if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
+            return self.STATUS_LOOK_NOT_COLD[status]
+        return self.STATUS_LOOK.get(status, status.upper())
+
     def status_words(self, f):
-        bits = [self.STATUS_LOOK.get(s, s.upper()) + f" ({n} beat{'s' if n != 1 else ''})" for s, n in f.status.items()]
+        bits = [self.status_look(f.name, s) + f" ({n} beat{'s' if n != 1 else ''})" for s, n in f.status.items()]
         e = f.energy
         tired = float(self._cfg("energy").get("tired_below", 25))
         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")

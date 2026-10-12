@@ -3437,7 +3437,7 @@ class Narrator:
                          f"It does no damage. " + ("It WORKS." if got else f"It doesn't take hold: {a['defender']} "
                                                    f"resists or shakes it off.") + intent)
             for s in got:
-                lines.append(f"  - This leaves {s['fighter']} {Engine.STATUS_LOOK.get(s['status'], s['status'].upper())} "
+                lines.append(f"  - This leaves {s['fighter']} {s.get('look') or Engine.STATUS_LOOK.get(s['status'], s['status'].upper())} "
                              f"(for the next {s['beats']} beat(s)). Show it taking hold.")
                 lines += self._status_story(s, a.get("attacker") if s.get("fighter") == a.get("defender") else a.get("defender"))
             return lines
@@ -4121,7 +4121,7 @@ class Narrator:
             if s.get("hazard"):
                 lines += self._arena_status_lines([s])
                 continue
-            look = Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
+            look = s.get("look") or Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
             lines.append(f"  - This leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
             if s.get("stumble"):
                 lines.append("    " + self._stumble_line(s, whole=(a.get("move") or {}).get("name")
@@ -4248,7 +4248,7 @@ class Narrator:
         """What the arena did to a fighter who landed on or was driven into one of its hazards."""
         out = []
         for s in statuses or []:
-            look = Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
+            look = s.get("look") or Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
             src = s.get("hazard")
             if src:
                 out.append(f"  - {src[:1].upper() + src[1:]} does more than hit her ({s.get('about') or 'see the SCENE'}): it "
@@ -4274,7 +4274,7 @@ class Narrator:
                  + ("them" if len(who) > 1 else "her") + ". It knocks nobody down and moves nobody; the fight goes on."]
         lines += [self._hit_line(h, i + 1 if len(e.get("hits") or []) > 1 else None) for i, h in enumerate(e.get("hits") or [])]
         for s in e.get("status_applied") or []:
-            look = Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
+            look = s.get("look") or Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
             lines.append(f"  - It leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
             lines += self._status_story(s)
         if not e.get("hits") and not e.get("status_applied"):
