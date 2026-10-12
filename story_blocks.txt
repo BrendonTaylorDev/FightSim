@@ -691,6 +691,13 @@ anger at being made to work this hard, in the set of her ears | stage: middle, l
 a grim patience, shoulders low, in no hurry at all
 something close to enjoyment, quickly hidden | standing: winning, level
 wariness: she strikes and is already out of reach again
+a flicker of doubt at how much the other has left, pushed down at once | standing: level, losing
+cold focus on one spot, the rest of the fight gone quiet around it
+pride she won't let reach her face | standing: winning
+relief that the blow worked, close behind it the worry that it won't next time | standing: level, losing
+impatience: she wants this over, and it shows in how soon she moves again | stage: late, end
+a hunter's stillness, nothing wasted between one move and the next
+a sting of guilt at the sound the other makes, gone before it can slow her | standing: winning
 
 == emotion | role: receiver
 humiliation, hot behind her eyes, worse than the hurt

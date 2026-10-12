@@ -175,6 +175,21 @@ Craft:
 
 # EXTREME: always rewritten (unless gore_check is off): mutilation, exposed insides, broken bones, heavy blood,
 # death, swearing.
+# ways to show a hit landing besides naming the part and the pain (two are drawn for each beat)
+HURT_WAYS = (
+    "through what she can no longer do (a paw that won't take weight, a breath she can't finish)",
+    "through the sound of it, the impact heard before it is felt",
+    "from the attacker's side: what the blow felt like going IN, the give under it",
+    "through the scenery: the bark, mud or water taking the blow with her",
+    "as one long breathless sentence carrying the whole flurry",
+    "through the delay: a beat of nothing, then the pain arriving all at once",
+    "by the new pain finding the old one, the two hurts becoming one",
+    "through her guard: the way her body curls or turns to keep the next one off that spot",
+    "through her face and eyes rather than the wound itself",
+    "with the part left unnamed: only where on her it was (high, low, along one side)",
+)
+
+
 GORE = re.compile(
     r"\b(gore|gory|guts|entrails|organs?|ruptur\w*|bone[- ]ends?|exposed bone|"
     r"sever(?:ed|ing|s)?|"
@@ -209,7 +224,7 @@ MILD_GORE = re.compile(
     r"\b(blood\w*|bleed\w*|bloody|wounds?|wounded|punctur\w*|lacerat\w*|cuts?|split (?:lip|skin)|"
     r"seep\w*|ooz\w*|weeping|fluid|froth\w*|taste[sd]? (?:of )?(?:copper|iron|blood)|copper(?:y)? taste|metallic tang|"
     r"tang of (?:copper|iron)|smell of iron|(?:into|through) (?:the )?(?:soft |tender |raw )?flesh|skin (?:split\w*|tore|torn)|"
-    r"blister\w*|(?:audible|sickening|wet) (?:crack|pop|snap|sound)|audible pops?|"
+    r"blister\w*|(?:audible|sickening|wet) (?:crack|pop|snap|sound|squelch)|squelch\w*|audible pops?|"
     r"(?:brutal|loud|sharp|awful|terrible) crack(?: of| in| from| at)? (?:her |the |its )?(?:knee|joint|elbow|ankle|hip|hock|shoulder)s?\b|"
     r"torn and bloody|(?:skin|hide|flesh) (?:\w+ )?(?:torn|ragged|in tatters)|ragged (?:skin|flesh|hide)|"
     r"(?:knee|joint|elbow|ankle|hock)s? (?:was|were|came) next, (?:a|with a) (?:brutal|loud|sharp|awful|terrible|heavy) crack|"
@@ -747,6 +762,7 @@ THOUGHT_ANGLES = ["a quick tactical plan", "a sharp read on the opponent's weakn
 
 # stat leakage: percentages, and colors used as pain levels
 GAME_TERMS = re.compile(
+    r"\b(?:camel clutch|crossface|boston crab|armbar|arm-bar|full nelson|half nelson|sleeper hold|submission hold)\b|"
     r"\b(?:a|an) (?:real|heavy|tremendous|solid|DEVASTATING) blow on a part that was already\b|"
     # the notes' own instructions copied into the story
     r"\b(?:is|are|as) listed\b|\blisted (?:further|below|above|next)\b|\bit hurts (?-i:NOW)\b|\bnot a separate strike\b|"
@@ -840,6 +856,11 @@ OVERBLOWN = re.compile(r"\b(scream\w*|shriek\w*|howl\w*|agon\w+|white-hot|explod
 # present-tense narration ("she lunges", "Nocturne shifts"): the story is told in the past
 PRESENT_TENSE = re.compile(r"\b(?:[Ss]he|[Hh]e|[Ii]t)\s+(?:is|has|does|(?!was\b|has\b|is\b|always\b|perhaps\b|"
                            r"almost\b|nearly\b|thus\b)[a-z]{2,}(?<![su])s)\b(?!['’])")
+# memories from before this fight: the story has none
+INVENTED_PAST = re.compile(r"\b(?:just like (?:that|the) (?:time|day)|(?:remembered|recalled|thought of) the (?:last|first) "
+                           r"time (?:she|they|someone|an opponent)\b|years of (?:fighting|training|battles?|sparring)|"
+                           r"(?:all )?those (?:years|seasons) (?:of|in|at|on)\b|back (?:home|in the day)\b|"
+                           r"when she was (?:young|little|a kit|a pup|smaller))", re.I)
 STOCK_PHRASE = re.compile(r"\b(?:a symphony of|symphony of (?:nature|sound)|(?:vast )?canvas of|tension (?:was|is|hung|hangs)"
                           r"(?: thick)?(?: and)? palpable|palpable tension|(?:the|a) (?:clearing|world|air|forest) held its "
                           r"breath|like a sleeping giant|ready to clash|palpable|time (?:seemed to )?st(?:ood|ands) still|a dance "
@@ -866,7 +887,8 @@ TRY_UP = re.compile(r"\b((?:tried|trying|tries|struggl\w+|fought|fighting|attemp
 NUMB = re.compile(r"\b(numb(?:ed|ing|ness)?|past (?:pain|feeling|hurting)|beyond pain|no feeling (?:left|at all)|"
                   r"(?:couldn't|could not|can't) feel (?:it|her|his|the))\b", re.I)
 # the instructions' own wording turning up as prose
-PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|every (?:press|hit|part|grip) listed\b|must appear in the "
+PROMPT_ECHO = re.compile(r"\b((?:don't|do not|never) mention\b|continue with the next part\b|"
+                         r"can know it by the way\b|every (?:press|hit|part|grip) listed\b|must appear in the "
                          r"(?:prose|story|passage)\b|in the prose\b|(?:the )?notes (?:above|below|say)\b|word for word\b|"
                          r"this (?:part|beat) (?:must|should)\b|separate from any (?:other )?(?:move|attack|strike)\b|past (?:excruciating|very painful|devastated)\b|seconds \d+ (?:to|through|until|–|—|-) ?\d+\b|"
                          r"sore squeezes?\b|(?:a|an|the|in a wild,?) improvisational\b|from (?:minor|sore|hurting|very painful|excruciating) to (?:sore|hurting|very painful|"
@@ -2280,7 +2302,7 @@ class Narrator:
         if before["label"] != after["label"] and after["label"] in ("excruciating", "devastated", "numb with shock"):
             self._breaking.append((h["defender"], h["part"], after["label"]))
         seed = f"{h['defender']}{h['part']}{h['damage_after']:.1f}"
-        self._must_parts.append(h["part"])
+        self._name_part(h, before, after)
         self._strike_parts.append(h["part"])
         self._hurt_now.add(h["defender"])
         self._linger_pool.append((h["defender"], h["part"], h["damage_taken"], after["label"], "blow"))
@@ -2408,13 +2430,26 @@ class Narrator:
         return (lead + text + "." + held + " It is pain, nothing more: nothing breaks or tears unless listed, she "
                 "stays conscious, and there is no sobbing or weeping")
 
+    def _hurt_all(self):
+        """The dice's call for this beat: go through every hit one by one (some beats), or group them (most)."""
+        chance = float((self.rules.get("narration", {}) or {}).get("every_hit_chance", 0.35))
+        return random.Random(f"every{self._beat_no}{id(self)}").random() < chance
+
+    def _name_part(self, h, before, after):
+        """The hits the prose has to put on their own body part: the big ones and the ones that push a part to a worse
+        pain. A light hit that changes nothing can go in with the rest of the flurry, or with no part named at all."""
+        small = float((self.rules.get("narration", {}) or {}).get("name_hits_from", 2.5))
+        if self._hurt_all() or float(h.get("damage_taken") or 0) >= small or before["label"] != after["label"] \
+                or not self._must_parts:
+            self._must_parts.append(h["part"])
+
     def _pressure_line(self, h, with_=""):
         """One compact line per pin/hold contact, so long pins don't drown the beat in repetition."""
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
         if h.get("numb"):
             before = after = self._numb_tier()
         self._tiers_used.add(after["label"])
-        self._must_parts.append(h["part"])
+        self._name_part(h, before, after)
         self._hurt_now.add(h["defender"])
         self._linger_pool.append((h["defender"], h["part"], h["damage_taken"], after["label"], "pressure"))
         change = (f"{before['label']} → {after['label'].upper()}" if before["label"] != after["label"]
@@ -3005,6 +3040,15 @@ class Narrator:
                            "whether her whole body joins in) follows her OVERALL strength: each hit's \"her reaction\" "
                            "says how big. A strong fighter keeps even a wrecked part's pain in that part; it seeps "
                            "further into her the more worn down she is.")
+            ways = random.Random(f"{self._beat_no}{''.join(people)}").sample(HURT_WAYS, 2)
+            lines.append(("TELLING THE HURT: this beat, go through the hits one by one, each on its own spot, but never "
+                          "the same way twice in a row (not a list: each one shown differently). "
+                          if self._hurt_all() else
+                          "TELLING THE HURT: not every hit needs its own paragraph or even its body part. Hits that "
+                          "come in one rush are told as one rush (a single sentence can carry three of them), light ones "
+                          "can go unnamed (\"the rest of the flurry\", \"somewhere along her side\"), and the words go to "
+                          "the hits that matter. ")
+                         + "Vary HOW it is shown; this beat try: " + "; ".join(ways) + ".")
             caps = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
             strong, mid = float(caps.get("strong_from", 70)), float(caps.get("mid_from", 40))
             for who, left in (getattr(self, "strengths", None) or {}).items():
@@ -3783,7 +3827,8 @@ class Narrator:
             lines.append(f"{a['attacker']} {kind} {a['defender']}{mv}: {a.get('flavor', '')}{intent}")
             sub = a.get("submission")
             if sub:
-                lines.append(f"  - A SUBMISSION HOLD: a {sub['name'].upper()}, {sub['look']}. It is NOT a pin: there is "
+                lines.append(f"  - A SUBMISSION HOLD: a {sub['name'].upper()} (a wrestling name for you; the story shows "
+                             f"what it does to her body, never the name), {sub['look']}. It is NOT a pin: there is "
                              f"no clock, nobody is counting, and she will not pass out from it. It is about the STRAIN: "
                              f"{sub['strain']}, more every beat it stays on. Show exactly how their bodies lock together, "
                              f"and the first wrench of it. {a['defender']} can't get up while it's on. {a['attacker']} "
@@ -5967,7 +6012,8 @@ class Narrator:
                 add(f"what {who} can see of {victim}", B.pick("tell", 1, has=feats(victim), state=state(victim)))
             add(f"{poss(who)} thought", B.pick("watch_thought", 1, state=state(victim) if victim else None,
                                                  fighter=who.lower()))
-            add(f"what {who} feels", B.pick("emotion", 1, role={"attacker"}, stage=stage))
+            add(f"what {who} feels", B.pick("emotion", 1, role={"attacker"}, stage=stage, fighter=who.lower(),
+                                            standing=standing(who, victim) if victim else {"level"}))
             add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
             return self._blocks_plan(lines, "act", False, last, who, victim)
         types = [a.get("type") for a in acts]
@@ -6316,7 +6362,7 @@ class Narrator:
                 return (f"one memory, touched once and in passing (a clause, not a retelling): {poss(who)} "
                         f"{part.lower()} was already hurt before this beat, by {causes[0]}"
                         + (f" and then {causes[-1]}" if len(causes) > 1 and causes[-1] != causes[0] else "")
-                        + ". She can know it by the way this new pain finds the old one")
+                        + ". Let the new pain find the old one (in your own words, not these)")
         return None
 
     def _arena_detail(self):
@@ -8192,6 +8238,14 @@ class Narrator:
             after = after.replace(fix[0], fix[1], 1)
         return after
 
+    def _same_species(self, sp):
+        """Are two or more fighters here of this species (so "the other Buizel" is one of them)?"""
+        n = 0
+        for f in (self.strengths or {}):
+            if sp.lower() == str((getattr(self, "species_of", None) or {}).get(f, "")).lower():
+                n += 1
+        return n > 1 or not getattr(self, "species_of", None)
+
     def _bad_sentences(self, text, prior=""):
         """Every sentence the program can pin a mistake on: {sentence: what is wrong}. These are the same findings
         the cuts at the end of _call act on (plus the milder ones that only ever asked for a rewrite)."""
@@ -8421,6 +8475,16 @@ class Narrator:
         for sent in self._arena_leaks(text):
             m = ARENA_LEAK.search(sent)
             add(sent, f"\"{m.group(0)}\" isn't in this arena (the fight is in {self._arena_name()}): use what is here")
+        for x in sents:
+            m = INVENTED_PAST.search(x)
+            if m:
+                add(x, f"\"{m.group(0)}\" is a past that isn't in this story: this fight is all they have, so no earlier "
+                       f"fights, years of training or 'that time' memories; use something from THIS fight, or leave it out")
+            for m in re.finditer(r"\bthe other ([A-Z][a-z]+)\b", x):
+                sp = m.group(1)
+                if sp in (self.aliases or {}) and not self._same_species(sp):
+                    add(x, f"\"the other {sp}\": only one fighter here is a {sp}, so nobody is 'the other' one. Say "
+                           f"\"the {sp}\" or her name")
         for x in sents:
             m = STOCK_PHRASE.search(x)
             if m:
@@ -10313,7 +10377,7 @@ class Narrator:
                         f"leave how it lands and how it feels to {who} (and any fall that is listed) for the next "
                         f"part.", 1.0),
                 "take": (f"{poss(who)} side, picking up at the instant of contact (do not re-tell the attack): what "
-                         f"it feels like to receive it, body part by body part, the fall or landing ONLY if one is "
+                         f"it feels like to receive it (hits that come together are told together, the worst ones on their spot), the fall or landing ONLY if one is "
                          f"listed for this beat (otherwise she keeps her feet), the exact quality of each pain, breath, "
                          f"thoughts, and the immediate reaction.", 1.1),
                 "after": (f"the aftermath: how {actor} and {who} now move, breathe, guard injuries, and reassess; "
@@ -10325,7 +10389,7 @@ class Narrator:
             focus = {
                 "act": ("the actions as they happen, in order, from the attackers' bodies.", 1.0),
                 "take": ("picking up at the instant of contact (do not re-tell the attacks): what each fighter who is "
-                         "actually HIT feels, body part by body part, and their reactions. Anyone who dodged or wasn't "
+                         "actually HIT feels (hits that come together are told together, the worst ones on their spot) and their reactions. Anyone who dodged or wasn't "
                          "hit takes NO damage: no cuts, no blood, no new pain for them.", 1.1),
                 "after": ("the aftermath: positions, breathing, guarded injuries, what each one plans next. "
                           "No new attacks.", 0.8),

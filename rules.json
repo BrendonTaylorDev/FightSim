@@ -647,6 +647,9 @@
     "reasons": {"enabled": false, "file": "fight_reasons.txt", "thought_chance": 0.25}
   },
   "narration": {
+    "name_hits_from": 2.5,
+    "every_hit_chance": 0.35,
+    "_hits_comment": "Telling the hits: a hit under name_hits_from damage that changes no pain level can be grouped with the rest or left with no body part named; every_hit_chance of beats go through every hit one by one instead (each told a different way).",
     "_comment": "story_prompt.txt holds your plain-English storytelling instructions. style_sample_file is writing for the narrator to imitate: a plain file is shown from its start, up to style_sample_chars characters; a file written in sections (lines starting with ==, like style_sample_scenes.txt) gives the narrator the passage that fits the part it is about to write. /sample lists the samples in the folder and switches between them; your earlier ones are style_sample.txt, style_sample_previous.txt and style_sample_intense.txt. sample_copy_check: a sentence copied word for word from the sample is cut. max_words caps each response. context_window is the model's working memory in tokens: raise it for longer stories if your GPU has room, lower it if responses get slow.",
     "story_prompt_file": "story_prompt.txt",
     "style_sample_file": "style_sample_scenes.txt",
