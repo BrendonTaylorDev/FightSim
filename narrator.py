@@ -967,8 +967,8 @@ NOT_CHOP = re.compile(r"\b(?:fists?|hooks? (?:up|round)|a hook\b|jabs?\b|knuckle
 # the word beam, for a move that is a jet, a stream or a pulse (Water Gun, Water Pulse): not a beam of light
 BEAM_WORD = re.compile(r"\bbeams?\b", re.I)
 # an impact example that has her cry out: not for a hit whose reaction is small or clear
-CRY_IMPACT = re.compile(r"\b(?:yelp\w*|yowl\w*|cry|cries|scream\w*|shriek\w*|howl\w*|wail\w*|keen\w*|bark|"
-                        r"bellow\w*|tears?)\b", re.I)
+CRY_IMPACT = re.compile(r"\b(?:yelp\w*|yowl\w*|whin(?:e|es|ed|ing)|whimper\w*|squeal\w*|cry|cries|scream\w*|"
+                        r"shriek\w*|howl\w*|wail\w*|keen\w*|bark|bellow\w*|tears?)\b", re.I)
 # a blow aimed at an old wound: only for one that lands on a part an earlier blow had already hurt
 OLD_WOUND = re.compile(r"\bold (?:wound|hurt|injury)\b", re.I)
 # a stagger that carries her further than one step (round in a half-circle, back across the ground, step after step)
@@ -6654,12 +6654,16 @@ class Narrator:
             else:
                 # (sized to the blow, and to how much of her is left: the same blow lands differently on a fresh
                 # fighter and a spent one)
+                # (a part that ends the blow only sore or so, on a fighter still strong: her reaction note says a
+                # wince or a hiss, so no idea that has her cry out, however bad another part of her is)
+                quiet_ = self._reaction_size({"defender": who}, lv_w).startswith(("small", "clear"))
                 add(f"a reaction of that size from {who}", B.pick("reaction", 2, need=hid,
                                                                    size=self._size_capped(self._strength_key(taken), lv_w),
                                                                    has=feats(who),
                                                                    fighter=who.lower(), state=state(who), level=lv_w,
-                                                                   exclude=(list(too_big or []) + [MOVES_HER]) if still_
-                                                                   else too_big))
+                                                                   exclude=(list(too_big or []) + ([MOVES_HER] if still_
+                                                                                                   else [])
+                                                                            + ([CRY_IMPACT] if quiet_ else [])) or None))
             # what the blow visibly does to her body in the instant it lands (fur, skin, breath, the push of it), sized
             # to the blow; nothing that moves her feet unless the engine moved her
             kinds_, said_ = set(), ""
