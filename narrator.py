@@ -878,7 +878,10 @@ SEVERAL_BLOWS = re.compile(r"\b(?:two|three|four|several|both) (?:fast |quick |s
                            r"\bshort (?:bursts?|pulses?)\b|\bto find the range\b|\bdouble (?:strike|slap)\b|"
                            r"\bboth wings at once\b|\b(?:struck|strikes?|went|comes?|came|bites?|rakes?|jabbed) "
                            r"(?:\w+ )?(?:twice|again)\b|\bthe second time\b|\bthen another, then\b|\bfeint(?:s|ed|ing)?\b|"
-                           r"\bstruck true\b", re.I)
+                           r"\bstruck true\b|"
+                           # close work told as a run of blows (a pummel is its own action, not one blow at no distance)
+                           r"\bblow after blow\b|\bpummel\w*|\bshort,? sharp blows\b|\bevery blow\b|\bone after another\b|"
+                           r"\b(?:went|goes|go) to work\b", re.I)
 
 # what each way of dodging the engine rolls looks like. Every dodge idea shows one of these (or more): "any" is one
 # that shows no way at all (she reads it early, it clips a few hairs), "jump" one no rolled way covers (a hop over a
@@ -961,9 +964,14 @@ SITS_DOWN = re.compile(r"\b(?:sits?|sat|sitting|lowers? herself|lies? down|lay d
 # an idea that needs a grip on her (or the two of them held together): not for blows with no grip
 GRIP_IDEA = re.compile(r"\b(?:grip\w*|grab\w*|hold(?:ing)? on|clinch\w*|between their two bodies|from underneath)\b", re.I)
 
+# close work that is a run of blows, or thrown with whatever is nearest (a head, a hip): not for ONE blow at no
+# distance with the move's own weapon (a slash inside a grab)
+CLOSE_RUN = re.compile(r"\beach (?:one|of them)\b|\bof each\b|\bthe blows\b|\brhythm\b|\bbutts?\b|"
+                       r"\bwhatever is nearest\b", re.I)
 # a chop (Brick Break, Karate Chop): the edge of the paw coming down, not a fist hooking or jabbing
 CHOP = re.compile(r"\b(?:chop\w*|brick break|karate|edge of (?:her|the) (?:paw|hand))\b", re.I)
-NOT_CHOP = re.compile(r"\b(?:fists?|hooks? (?:up|round)|a hook\b|jabs?\b|knuckles?|looping|uppercut|straight blow)", re.I)
+NOT_CHOP = re.compile(r"\b(?:fists?|hooks? (?:up|round)|a hook\b|jabs?\b|knuckles?|looping|uppercut|straight blow|"
+                      r"hard knot)", re.I)
 # the word beam, for a move that is a jet, a stream or a pulse (Water Gun, Water Pulse): not a beam of light
 BEAM_WORD = re.compile(r"\bbeams?\b", re.I)
 # an impact example that has her cry out: not for a hit whose reaction is small or clear
@@ -1949,7 +1957,8 @@ INTENSE_IDEAS = INTENSE + (
     (90, re.compile(r"\b(?:eyes go wet|tears? (?:start|run|spill)|screams?\b|\bher (?:\w+ )?screams)", re.I)),
     # a cry of any kind, and tears: past "no crying out" (a grunt, a hiss, a wince is what is left)
     (90, re.compile(r"\b(?:yelp\w*|yowl\w*|yips?|cry|cries|wail\w*|keen\w*|bellow\w*|"
-                     r"tears\b(?! (?:through|into|at|across|free|open|loose|away|off))|(?:a )?tear (?:runs|starts|spills|squeezes))\b", re.I)),
+                     r"tears\b(?! (?:through|into|at|across|free|open|loose|away|off))|"
+                     r"(?:a )?tear (?:runs|starts|spills|squeezes))\b", re.I)),
     # the whole of her undone by it (spit hanging, eyes rolling white): only past a strong fighter's covering
     (150, re.compile(r"\b(?:spit|drool\w*|white all round|see nothing|eyes roll\w*)\b", re.I)),
 )
@@ -6761,12 +6770,12 @@ class Narrator:
                 if "rock" in got:      # falling boulders, a spike from the ground, a tomb: each its own staging
                     shapes |= story_blocks.shape_of(mv.get("name", ""), mv.get("about", ""))
                 kinds |= got
+            own_ = set(kinds)       # (the blow's own kinds: what the finished line throws it with, even at no distance)
             if close and "grab" not in kinds:
                 kinds = {"close"}
             # what her blow is, in its own words: a chop is no hooked fist, and a jet or a pulse of water is no beam
-            said_ = " ".join(" ".join([str((a.get("move") or {}).get("name") or ""), str((a.get("move") or {}).get("about")
-                                                                                       or ""), own_flavor(a.get("flavor"))])
-                             for a in acts if a.get("attacker") == who)
+            said_ = " ".join(f"{(a.get('move') or {}).get('name') or ''} {(a.get('move') or {}).get('about') or ''} "
+                             f"{own_flavor(a.get('flavor'))}" for a in acts if a.get("attacker") == who)
             not_move = ([NOT_CHOP] if CHOP.search(said_) else []) + (
                 [BEAM_WORD] if "beam" in kinds and not re.search(r"\b(?:beam|ray|laser|light)", said_, re.I) else [])
             # (an old wound to go for only when her blow lands on a part an earlier one had already hurt)
@@ -6785,11 +6794,14 @@ class Narrator:
                 grip_x.append(BEAM_IDEA)
             if self._in_air(who) or any(a.get("attacker") == who and a.get("dive") for a in acts):
                 pass        # in the air or diving: the dive's own ideas cover it; no footwork on the ground
-            elif who in {g[0] for g in (getattr(self, "grips", None) or [])}:
-                # she has hold of her: no footwork ideas (giving ground, circling) for a fighter pressed on top of
-                # her opponent, only ones made for close work
+            elif close or who in {g[0] for g in (getattr(self, "grips", None) or [])}:
+                # she has hold of her, or strikes inside a grab at no distance: no footwork ideas (giving ground,
+                # circling) for a fighter pressed against her opponent, only ones made for close work (and one blow
+                # is one blow unless it is a pummel)
+                pum_ = any(a.get("attacker") == who and a.get("pummel") for a in acts)
                 add(f"a way {who} might stage it", B.pick("movement", 1, kind=(kinds & {"grab", "close"}) or {"close"},
-                                                          need=("kind",), has=feats(who)))
+                                                          need=("kind",), has=feats(who),
+                                                          exclude=None if pum_ else [SEVERAL_BLOWS, CLOSE_RUN]))
             elif {"grab", "close"} <= kinds:      # a grab and then blows inside it: an idea for each
                 add(f"a way {who} might stage it", B.pick("movement", 1, kind={"grab"}, need=("kind",), has=feats(who))
                     + B.pick("movement", 1, kind={"close"}, need=("kind",), has=feats(who)))
@@ -6813,7 +6825,7 @@ class Narrator:
                            for a in acts)    # (a part only jarred beside the blow is not a second blow)
                 self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
                                  fmt={"foe": target or ""}, exclude=([] if runs_ else [SEVERAL_BLOWS]) + not_move or None,
-                                 kind=kinds, shape=shapes, has=feats(who), state=state(who), role="attacker")
+                                 kind=(own_ & (CONTACT_KINDS - {"close", "charge"})) or kinds, shape=shapes, has=feats(who), state=state(who), role="attacker")
             eff = self._effect_on(target, [a for a in acts if a.get("attacker") == who]) if target else None
             if eff:
                 vs = set((getattr(self, "fighter_types", None) or {}).get(target, []))
