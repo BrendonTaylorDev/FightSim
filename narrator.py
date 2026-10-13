@@ -5110,7 +5110,8 @@ class Narrator:
         for a in actions:
             aimed = a.get("defenders") or ([a["defender"]] if a.get("defender") else [])
             # a clash that drives the attack back: the one it lands on is the one who receives it, not its target
-            landed = list(dict.fromkeys(h.get("defender") for h in (a.get("hits") or []) if h.get("defender")))
+            landed = list(dict.fromkeys(h.get("defender") for h in (a.get("hits") or [])
+                                        + ((a.get("clash") or {}).get("hits_on_attacker") or []) if h.get("defender")))
             if landed and not set(landed) & set(aimed):
                 aimed = landed
             for r in aimed:
@@ -10445,7 +10446,9 @@ class Narrator:
             last["watch"] = beat_no
             grip = (f" Her grip and her weight stay exactly as they are: she watches from where she holds her."
                     if holding else f" She does not close in or start anything: she watches from where she "
-                    + ("is, in the air." if self._aloft(by) else "stands."))
+                    + ("is, in the air." if self._aloft(by) else
+                       "lies, on the ground (she does not get up in this part)." if "GROUND" in str(
+                           (getattr(self, "posture_end", None) or {}).get(by, "")).upper() else "stands."))
             moments.append({"key": "watch", "who": by, "part": part.lower(), "words": int(wcfg.get("words", 220)), "focus": (
                 f"{poss(by)} side: she WATCHES what she has just done to {v}.{grip} She studies {v} closely, the "
                 f"way her own nature has her do it (cold, curious, hungry, wary, pitiless, almost gentle): every "
