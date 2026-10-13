@@ -1298,6 +1298,9 @@ class Engine:
                 hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
             finally:
                 self._dev_active = None
+            for h in hits[1:]:
+                if h["part"] in (math.get("auto_spill_parts") or ()):
+                    h["jarred"] = True     # only knocked by a blow aimed beside it (sized as such in the notes)
             if hits and not move.get("improvised"):    # she remembers what has landed on her (learning)
                 felt = d.learned.setdefault("moves", {})
                 felt[f"{a.name}|{move['name']}"] = felt.get(f"{a.name}|{move['name']}", 0) + 1

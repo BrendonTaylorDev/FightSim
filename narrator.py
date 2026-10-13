@@ -2350,9 +2350,19 @@ class Narrator:
     def _strength(self, taken):
         return "a " + self._strength_key(taken)
 
-    def _impact(self, taken, seed="", who=None):
+    def _hit_size(self, h):
+        """The size of one hit: what it did, but a part only JARRED by a blow aimed beside it (a fraction of its power)
+        is never sized above narration.jarred_size_cap, however much it hurt an already worn part."""
+        k = self._strength_key(h.get("damage_taken", 0))
+        order = ["glancing", "solid", "heavy", "tremendous"]
+        cap = str(self.rules.get("narration", {}).get("jarred_size_cap", "solid"))
+        if h.get("jarred") and cap in order and order.index(k) > order.index(cap):
+            return cap
+        return k
+
+    def _impact(self, taken, seed="", who=None, size=None):
         """A suggested moment-of-impact reaction, varied from hit to hit."""
-        options = self._fit_body(self.IMPACTS[self._strength_key(taken)], who)
+        options = self._fit_body(self.IMPACTS[size or self._strength_key(taken)], who)
         if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
             # the engine decides whether a blow moves her (moves.stumble): no step or stagger slipped in here
             options = [o for o in options if not MOVES_HER.search(o)] or options
@@ -2458,7 +2468,8 @@ class Narrator:
         self._strike_parts.append(h["part"])
         self._hurt_now.add(h["defender"])
         self._linger_pool.append((h["defender"], h["part"], h["damage_taken"], after["label"], "blow"))
-        impact = self._impact(h["damage_taken"], seed, h["defender"])
+        size = self._hit_size(h)
+        impact = self._impact(h["damage_taken"], seed, h["defender"], size)
         if after["label"] == "numb with shock" and before["label"] == "numb with shock":
             impact = "a dull, sickening jolt she barely feels as pain, then a lurch of nausea and shallow breath"
         raw = None if h.get("numb") else self._raw_reaction(h, before["label"])
@@ -2467,17 +2478,17 @@ class Narrator:
         if how:
             # not a blow: something that stays on her and keeps working (the water of a charge that carries her)
             return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
-                    f"{how}, {self._strength_key(h['damage_taken'])} in size"
+                    f"{how}, {size} in size"
                     + (f" ({raw})" if raw else f" (her reaction: {self._reaction_size(h, after['label'])})")
                     + f"; {change}{tough}{self._numb_note(h)}.")
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
-                f"{self._strength(h['damage_taken'])} blow "
-                f"(impact, e.g. {impact}; a hit here shows as "
+                f"a {size} " + ("knock (jarred by the blow beside it) " if h.get("jarred") else "blow ")
+                + f"(impact, e.g. {impact}; a hit here shows as "
                 f"{self._region_tell(h['part'], sum(map(ord, seed)), h['defender'])}"
                 + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
                    if self._voice_cue(h, after['label'], 0) else "")
                 + ("" if raw else f"; her reaction: "
-                   f"{self._reaction_size(h, after['label'], self._strength_key(h['damage_taken']) == 'glancing')}")
+                   f"{self._reaction_size(h, after['label'], size == 'glancing')}")
                 + f"); {change}{tough}{self._numb_note(h)}.")
 
     # a blow on a part that was ALREADY badly hurt. Three things set how raw the reaction is: how hurt the part was
@@ -2507,7 +2518,7 @@ class Narrator:
                                                    and not dev):
             return None
         who = h["defender"]
-        size = self._strength_key(h["damage_taken"])
+        size = self._hit_size(h)
         part_score = {"very painful": 0, "excruciating": 1, "devastated": 2}.get(before_label, 1)
         size_score = {"glancing": -2, "solid": 0, "heavy": 1, "tremendous": 2}[size]
         # how much she has left as THIS blow lands (not at the end of the beat: in a long pummel the first blow
