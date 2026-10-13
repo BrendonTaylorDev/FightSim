@@ -1909,6 +1909,13 @@ INTENSE_IDEAS = INTENSE + (
     (90, re.compile(r"\b(?:eyes go wet|tears? (?:start|run|spill)|screams?\b|\bher (?:\w+ )?screams)", re.I)),
 )
 
+# an off-target blow told as a lucky one: it slid onto the sound part, not the hurt one (only true when it did)
+LUCKY_PLACING = re.compile(r"\b(?:glad|meaty side|healthy one|still sound|instead of the hurt|not on the sore place|only "
+                           r"stung|something worse|hard part beside|other flank|muscle next to it|soft middle)\b", re.I)
+# coming round or under a guard: not when the blow lands on the very part she is guarding
+ROUND_GUARD = re.compile(r"\b(?:round|around|under|past|over) (?:the outside of )?(?:the|her) guard\b|guarding least|"
+                         r"the open side|slips the guard", re.I)
+
 # filler: resolve or drama TOLD instead of shown ("She would not be defeated.", "a steely resolve", "every muscle
 # screamed"). A short sentence that is nothing else is cut; a longer one is written again with ideas to show it.
 FILLER = re.compile(
@@ -6435,7 +6442,11 @@ class Narrator:
                 # (a spread thrown close, like Close Combat, is a flurry: several blows are what it is)
                 runs = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
                                                          or a.get("combo") or close_spread(a)) for a in acts)
-                one_ = ([] if runs else [SEVERAL_BLOWS]) + grip_x or None
+                # (a blow that lands on the very part she is guarding went into the guard, not round it)
+                into_guard = any(a.get("attacker") == who and (a.get("guarding") or {}).get("part")
+                                 and any(h.get("part") == a["guarding"]["part"] for h in a.get("hits") or [])
+                                 for a in acts)
+                one_ = ([] if runs else [SEVERAL_BLOWS]) + grip_x + ([ROUND_GUARD] if into_guard else []) or None
                 add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, shape=shapes, has=feats(who),
                                                           exclude=one_) if kinds
                     else B.pick("movement", 1, has=feats(who), exclude=one_))
@@ -6617,11 +6628,22 @@ class Narrator:
                     add(f"{poss(att_)} thought", B.pick("devastating_thought", 1, fighter=(att_ or "").lower()))
             if a.get("aim") and a.get("hits"):
                 side[0] = "take" if take else "act"
+                aimed_, landed_ = str(a["aim"].get("aimed") or ""), str(a["aim"].get("landed") or "")
+                # (it slid onto a part that was already the worse hurt: no "glad of the bad placing", no "the meaty
+                # side instead of the hurt one"; and no throat or jaw this blow never went near)
+                dmg_ = (getattr(self, "damage_by", None) or {}).get(dfn_) or {}
+                was_ = next((float(h.get("damage_before") or 0) for h in a["hits"] if h.get("part") == landed_), 0.0)
+                worse_ = was_ >= float(dmg_.get(aimed_.lower(), dmg_.get(aimed_, 0)) or 0)
+                words_ = f"{aimed_} {landed_}".lower()
+                far_ = [w for w in ("throat", "jaw", "chin", "shoulder", "middle") if w not in words_
+                        and not (w == "middle" and re.search(r"chest|belly", words_))]
+                aim_x = (([LUCKY_PLACING] if worse_ else [])
+                         + ([re.compile(r"\b(?:" + "|".join(far_) + r")\b", re.I)] if far_ else [])) or None
                 add("off target" if act else f"{dfn_}, keeping it from landing true",
-                    B.pick("off_target" if act else "off_target_take", 1))
+                    B.pick("off_target" if act else "off_target_take", 1, exclude=aim_x))
                 if take:
                     self._offer_line(add, f"a finished line for {dfn_} as it lands off target", "off_target",
-                                     fmt={"part": a["aim"]["landed"].lower(), "foe": att_ or ""})
+                                     fmt={"part": landed_.lower(), "foe": att_ or ""}, exclude=aim_x)
             if act and (a.get("pummel") or {}).get("frenzy"):
                 side[0] = "act"
                 add(f"{poss(att_)} frenzy", B.pick("frenzy", 1))
