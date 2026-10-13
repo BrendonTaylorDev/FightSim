@@ -2147,7 +2147,7 @@ class Engine:
         if any(self.has(a, st) for st in ("dazed", "off_balance", "confused")):
             miss *= float(cfg.get("shaky_mult", 1.3))
         miss *= float(cfg.get("scale", 1.0))
-        if miss <= 0 or not self._chance(min(0.9, miss), f"{poss_word(a.name)} blow landing on the {part} it was aimed at",
+        if miss <= 0 or not self._chance(min(0.9, miss), f"{poss_word(a.name)} blow sliding off the {part} it was aimed at",
                                          "it lands beside it", "on target"):
             return part
         same, near = neighbor_parts(list(d.parts), part)
