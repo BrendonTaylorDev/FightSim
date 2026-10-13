@@ -1269,6 +1269,8 @@
   "director": {
     "_comment": "initiative: once one fighter has made initiative_after attacks in a row (and an opponent still has at least initiative_min_strength % of full strength), each beat there's a chance the director is told to shift the momentum: initiative_chance at first, +initiative_step for every extra attack in the streak, up to initiative_max. Streaks can run long, just not usually. With /plan dominate, the winner's streaks shift only initiative_dominate_factor as often. initiative_after 0 turns it off.",
     "initiative_after": 3,
+    "_flavor_words_comment": "flavor_words: the author's or director's one-line direction for an action is kept to at most this many words (a label, not a paragraph); a longer one is cut there (an order cut mid-sentence reads wrong, so keep this generous).",
+    "flavor_words": 32,
     "initiative_min_strength": 35,
     "_pin_urge_comment": "How often there is an OPENING for a new pin on a fighter, rolled each beat before the director chooses (the director can only start a pin where there is one; your /commands and typed directions always can). standing: on her feet with at least weak_below % of her strength (rare, but a pin can come at any point). downed: knocked down, same strength. weak_standing / weak_downed: under weak_below % of her strength; these then climb toward max as she nears 0. helpless: asleep or frozen. When there is an opening and you just press Enter, the director is told to go for it.",
     "pin_urge": {

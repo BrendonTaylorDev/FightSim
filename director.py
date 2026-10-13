@@ -708,7 +708,8 @@ def resolve(engine, b):
     if act not in ACTIONS and act not in ("quickpin", "pin_success", "pin_escape", "land", "down", "getup", "heal"):
         raise ValueError(f"action must be one of {ACTIONS}")
     att = b.get("attacker")
-    flavor = short_phrase(b.get("flavor", ""), 24)  # keep it a label, not a paragraph (never ending on "and")
+    flavor = short_phrase(b.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
+    # (keep it a label, not a paragraph, never ending on "and")
     intent = b.get("intent", "")
     was_involved = engine.get(att).name in engine.involved
     engine.get_active(att)
