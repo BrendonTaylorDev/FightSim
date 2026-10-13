@@ -594,7 +594,8 @@
     "smooth": {
       "_comment": "A gradient instead of thresholds: a part's damage mult and health mult slide smoothly with its resistance, along straight lines between these anchor points [resistance, damage mult, health mult] (flat beyond the first and last). The anchors sit in the middle of each bracket, so the overall pace stays close to the brackets'; the brackets themselves still give the labels and icons. enabled false = the old thresholds.",
       "enabled": true,
-      "points": [[15, 1.6, 2.6], [40, 1.0, 1.9], [60, 0.5, 1.2], [80, 0.28, 0.8], [95, 0.17, 0.62], [120, 0.1, 0.47]]
+      "_points_comment": "build 183: the low end flattened (a ruined part took x1.6 and a worn one x1.0; now x0.9 and x0.6), so a hurt part still takes several times what a fresh one does but no longer swallows nearly every later blow; health loss per damage point went up to keep fights the same length",
+      "points": [[15, 0.9, 2.6], [40, 0.6, 1.9], [60, 0.4, 1.2], [80, 0.27, 0.8], [95, 0.17, 0.62], [120, 0.1, 0.47]]
     },
     "max_loss_per_hit": 35,
     "_max_loss_per_hit_comment": "max_loss_per_hit: the most resistance (in points) one blow can take off a part, however devastating, the soft cap's extra wear included. 0 = no limit.",
@@ -612,7 +613,7 @@
     "minimum": null,
     "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
     "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
-    "loss_per_damage_point": 1.472,
+    "loss_per_damage_point": 1.84,
     "after_win_drain": {"_comment": "Once the fight is won, the badly hurt parts drag at the winner less and less: the pain drain is multiplied by each for every beat since the win (0.5: half, then a quarter...). enabled false keeps the full drain.", "enabled": true, "each": 0.5},
     "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. One HIT costs at most about per_hit of the fighter's own full health (0.05 = 5%), rolled up or down by jitter (0.15 = plus or minus 15%) and smaller for a light knock (power under power_ref scales it down, to no less than power_floor of it): past that the extra levels off, adding at most room x that cap more however big the raw number. Everything that lands on her in one BEAT is softened the same way past per_beat. A devastating blow gets far looser limits (moves.devastating cap_mult, room_mult). The stat block shows 'softened from' when it applies.",
     "soft_cap": {
@@ -1723,11 +1724,11 @@
     "default": "40",
     "base": {"loss_per_damage_point": 0.46, "resistance_scale": 1.0},
     "presets": {
-      "30": {"health_loss": 7.2, "wear": 0.7, "_measured": "28 beats, 0.7 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
-      "35": {"health_loss": 5.4, "wear": 0.7, "_measured": "34 beats, 0.9 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
-      "40": {"health_loss": 3.2, "wear": 0.7, "_measured": "40 beats, 1.0 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
-      "45": {"health_loss": 2.6, "wear": 0.7, "_measured": "43 beats, 1.2 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
-      "50": {"health_loss": 2.1, "wear": 0.7, "_measured": "47 beats, 1.5 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "30": {"health_loss": 9.0, "wear": 0.7, "_measured": "28 beats, 0.4 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "35": {"health_loss": 6.75, "wear": 0.7, "_measured": "32 beats, 0.7 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "40": {"health_loss": 4.0, "wear": 0.7, "_measured": "38 beats, 0.7 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "45": {"health_loss": 3.25, "wear": 0.7, "_measured": "44 beats, 0.8 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "50": {"health_loss": 2.1, "wear": 0.7, "_measured": "50 beats, 1.1 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
       "60": {"health_loss": 1.0, "wear": 1.0, "_measured": "64 beats, 5.9 pins, Nocturne wins 58% (build 146)"}
     }
   },

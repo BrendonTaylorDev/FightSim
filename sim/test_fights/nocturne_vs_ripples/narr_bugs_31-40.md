@@ -43,3 +43,15 @@
 - **37:** Nocturne gets a reaction that doesn't fit her: "she whimpers under her breath with the effort". Her VOICE says she "growls and hisses rather than cries out" and "rarely admits pain", and she still has 55% of her strength.
 - **37 (numbers):** The throat climbs from minor to very painful under nothing but a laid tail: 12.35 → 114.83 over six pin beats, +17 to +18 per beat by the end. The "pin cap" (×0.45) does not stop it, because pin damage ramps up to ×0.8.
 - **37:** The stale BLOCK fix-up is still in the rewrite reports and in its own fix-up call.
+- **38:** Part 1 block 2 gets the position wrong: "she is propped on one elbow and the elbow is shaking". She is flat on her back and pinned.
+- **38:** The stomach reaction is too big for her state: "every press tears a scream out of her and her legs kick wildly". The same notes say she is "barely moving, her eyes sliding shut".
+- **38:** The gore-edge LOOKS line from 35 repeats on the stomach: "pressed in so the flesh rolls up round it in a thick fold".
+- **38:** The INJURY REPORT names a move that never happened: "her stomach, from Nocturne's blinding flash of light". No such move was used. Her stomach was hit by Night Slash, Dark Pulse and Slash. The throat line, "Nocturne's strong electric blast ... did her throat", is doubtful too.
+- **38:** The FIGHT SUMMARY gets her strength wrong: "the pain (chest) put her out at 0% strength". The console has her at -869%.
+- **39:** The stale BLOCK fix-up turns up even in the aftermath, where nothing happens: "YOUR PREVIOUS DRAFT had problems: it never showed the BLOCK".
+- **39:** Part 2 block 2 gets the position wrong: "she lies curled round her worst hurt, even now". CURRENT CONDITION has her flat on her back, face-up.
+- **39:** The throat VISIBLE WEAR is an electric look the pin couldn't make: "her throat: the coat crackling, every hair on end". The throat was hurt by a tail pressing on it.
+- **39:** The VISIBLE WEAR for the stomach copies the chest word for word ("a great dark bruise spreading under the coat, the shape of the part gone puffy...").
+- **39:** Her stamina is wrong just after a seven-beat pin: "Nocturne ... Stamina: fresh breath". The same notes call her "OVERALL 55% ... (tired)".
+- **40:** The stale BLOCK fix-up appears once more. Otherwise the condition is identical to 39, which is correct.
+- **40:** Part 2 block 2 is mildly off: "her ears twitch at the sounds round her but she does not wake". CURRENT CONDITION says "unresponsive". I kept it to one small flick.

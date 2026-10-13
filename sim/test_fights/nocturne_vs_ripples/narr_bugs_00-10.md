@@ -34,3 +34,15 @@
 - Beat 7: Hit 1 (Right Paw, sore, reaction "clear") impact example "a choking cry, the head jerking back and forth" — too big, and against CHECKED "no crying out".
 - Beat 7: Part 1 block "her teeth find the old wound and close on it deliberately" — there is no old wound on the fin or the paw, and the bite lands off target.
 - Beat 7: Part 2 block "aimed at the place that hurts most and lands ... on the part that hurts least" is wrong: it was aimed at an untouched fin and landed on the (then untouched) paw. Block "her body bends round the blow like a branch in a gale" too big for a sore hand; "her limbs do not know which of them should hold her" (a paw doesn't hold her up).
+- Beat 8: CHECKED "Nocturne's fur DRY until this beat's water soaks her" — she was already drenched by the beat 4 Water Pulse; the engine never set SOAKED for that hit, so wet/dry tracking misses Water Pulse.
+- Beat 8: Part 1 block "she gives ground on purpose, drawing the other onto worse footing" and Part 2 block "she spins half round with the force and has to find her opponent again" invent movement (console: "she takes it where she is").
+- Beat 8: Hit 3 (Right Flank, minor) "a sick sway, a paw pressed to the belly" — a quadruped pressing a paw to the belly, and too big for minor.
+- Beat 9: damage piling — Ripples' Stomach 59.95% → 105.8% (+45.85, sore → VERY PAINFUL) from one spread Dark Pulse (power 35.67, multiplier 0.43 vs 0.25 for the Night Slash that made the wound with power 79.7). Overall drops 90% → 82% (-145 health, more than double any earlier blow). The weakened-part multiplier looks too steep.
+- Beat 9: Part 2 block "her head drops and hangs between her shoulders, mouth open, stringing spit" is too raw for a fighter at 82% (fresh); Part 3 block "her tails are fanned and lifted, each one moving with its own lazy life" doesn't fit a doubled-over, breathless Ripples.
+- Beat 9: Part 1 block "the guilt of a clean hit on someone already hurt" is off-voice for Nocturne ("contempt for weakness"); block "how long she can keep this up, estimated honestly" doesn't fit a fresh fighter at 88%.
+- Beat 9: "(Delivered with her HORN, as the move says: not a claw swipe...)" — Dark Pulse is an aura blast; "as the move says" mislabels it.
+- Beat 10: Part 1 block "reluctant respect, in the distance she now keeps" contradicts the close-in bite; block "she comes in low, under the centre of weight, to lift as well as hit" invents a lift.
+- Beat 10: Part 1 place block "a vine swaying where nothing touched it" repeats beat 2's place block word for word (and "dust sifting down from the top of a pillar" repeats between beats 1 and 9).
+- Beat 10: Part 2 block "a single word, repeated, to get herself through the next breath" is far too big for three minor, not-very-effective bites on a fighter at 87%.
+- Beat 10: TELLING THE HURT again offers "through the scenery: what she is driven against or lands on" (nobody moves).
+- Beat 10 (outline, not notes): the events line reads just "knocked out of her)" — a truncated fragment.

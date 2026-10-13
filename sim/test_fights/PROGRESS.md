@@ -9,7 +9,8 @@ Nothing. The three bug-sweep branches (body, structure, labels) were merged into
 1. (Done in build 180) The sweep was merged. The notes were regenerated and spot-checked, and the fight replays with the same rolls.
 2. (Done in build 181) A strike counts the limb she actually uses (`moves.limb_limits.struck_limb`). The user said twitches while out cold are fine. The idea cooldown is now 14 beats.
 3. (Done in build 182) Faster fights with damage spread out are now the default: about 40 beats, wear 0.7, health loss x3.2, with the /length presets re-tuned. Weak-spot hints now offer a menu of hurt and soft parts. Nocturne vs Ripples now comes out about 43/56 (60 fights; it was 55-62% Nocturne): watch it.
-4. Older pending tasks:
+4. (Done in build 183) Test fight 4, Nocturne vs Ripples: narrated and exported. Its bug list (about 180 notes) is in nocturne_vs_ripples/bugs_found.md and NOT yet fixed. Rebalance: Brick Break 28. The resistance curve's low end is flattened.
+5. Older pending tasks:
    - The card view chooser: Front / Back / Both (side by side), set per card.
    - Dice-rolled attacker assessment lines: how long she'll last, focus, wear her down, surprise that she keeps going.
    - The trial branch `claude/kind-bell-r5ehx4-shorter-notes` (shorter notes) is waiting for the user's test with mistral.

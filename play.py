@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-13 build 182 (faster fights with the damage spread out: the default is now about 40 beats (was about 54), parts soften more slowly (wear 0.7) and health drops faster, so about 1 part per fighter ends devastated instead of 2.4; the /length presets are re-tuned the same way; a weak-spot hint now offers a short list to choose from (a badly hurt part or two, some only hurt, a soft untouched place) instead of one spot, and the hit-the-same-spot-again version is rarer)"
+VERSION = "2026-10-13 build 183 (damage spread wider still: a worn part now takes about x0.6 of a blow and a ruined one x0.9, down from x1.0 and x1.6, so a hurt part still pays to hit but no longer swallows every later blow; health loss raised to keep fights about 40 beats (about 0.7 devastated parts per fighter, down from 2.4 two builds ago); Nocturne vs Ripples rebalanced: Ripples' Brick Break power 35 to 28, about 50/50 under both random and sensible play)"
 
 HELP = """
 =============================================================================================

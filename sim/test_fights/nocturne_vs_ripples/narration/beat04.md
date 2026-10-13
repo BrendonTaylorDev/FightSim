@@ -24,7 +24,7 @@ She heard it coming as a hissing roar of spray, and then it was on her.
 
 It broke against the side of her head and the top of her neck at once, one heavy slap of cold that burst into spray, and the ringing note inside it went straight through her skull. Her head snapped back. Her eyes streamed. Water went up her nose and ran down under her ruff, and the white fur across her face and neck went flat and dark and dripping in a single instant.
 
-She hated it. She hated it with everything in her. The cold of it, the weight of it on her fur, the way it clung.
+She hated it, the cold and the weight and the cling of it.
 
 A low growl came up out of her chest, *grr*, and the hit to her neck caught it halfway and turned it into a short, dry, hacking cough. Her shoulders hunched up round her neck before she could stop them. Her whole coat shivered outward from where it had hit, every hair trying to shed the wet.
 

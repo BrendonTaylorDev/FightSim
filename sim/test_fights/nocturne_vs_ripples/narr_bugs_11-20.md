@@ -24,3 +24,17 @@
 - Beat 16: part 1 block "her clawed hand closes into a fist as it travels and lands like a hammer" and part 2 block "where the fist went in": Brick Break is the chopping edge of a webbed paw, not a clawed fist.
 - Beat 16: TELLING THE HURT suggests "through the scenery: what she is driven against or lands on", but she "takes it where she is"; nothing moves her.
 - Beat 16: "Right Paw (sore; from Nocturne's Bite, then the burn)": the burn listed as a cause on a part the wisp never touched (see the burn-hopping bullet).
+- Beat 17: the counter again has no move or weapon named ("a quick strike of its own"), and "LINGER ON ONE MOMENT" on Nocturne's nose is put in part 2, which is "Ripples' side ... what it feels like to receive it". Ripples isn't hit; Nocturne is. Same POV mismatch as beat 12.
+- Beat 17: Nocturne's nose hit "a heavy blow (impact, e.g. a snarl of pain, balance lost and found again ...)" at minor pain (0 → 26.8) with "her reaction: small".
+- Beat 18: the grab is on Nocturne's Neck (console "takes hold of Nocturne (her Neck)", damage on Neck), but the notes carry the order's staging in the same line: "she seizes her Neck ... (she darts in low and whips her twin tails round the white hind legs to tie them)". Neck or legs? I followed the console (arms round the neck). Beats 20-21 orders keep "tails locked round the white legs" / "legs tied".
+- Beat 18: part 2 (Nocturne receiving the grab) has no building blocks at all.
+- Beat 18: part 3 says "she watches from where she stands. She does not close in" and block "caution that keeps her a step further away than she needs to be", but the two are LOCKED TOGETHER at point-blank by the grab.
+- Beat 18: part 3 block "irritation at a blow that landed short": there was no blow, only a grip.
+- Beat 19 (damage piling): Ripples' chest 128.7 → 228.1 from one Night Slash (+99.3, ×0.46), very painful to excruciating; with beats 12-13 that is 41.5 → 228 in three Nocturne blows. Overall 69% → 60%.
+- Beat 19: chest hit "a real scream, her whole body jerking ... She is too worn to hold all of it in", but she is "OVERALL 60% (winded) ... still fast and dangerous". The brief says a high pain level on a fighter still strong overall should be half hidden.
+- Beat 19: part 1 block "she works the body, close in, blow after blow" against "This is ONE strike, not several". Finished line "She stepped inside Ripples's reach" while they are already locked together; also "Ripples's" spelling.
+- Beat 19: part 3 block "she breathes high in her chest to keep from moving her belly at all": her chest is the excruciating part; breathing high in it is the opposite of sparing it.
+- Beat 19: the hit breaks the grip, but the beat 20 order says "she keeps her tails locked round the white legs" and beat 21's says "legs tied". No hold exists after beat 19 (and the beat 18 hold was on the neck, not the legs).
+- Beat 20: the notes contradict themselves: HOLDS says "none ... earlier bites let go", and the event line says "she keeps her tails locked round the white legs and gulps air". The console has no hold (broken in beat 19). I wrote no hold; the beat 21 writer also wrote the tails "shaken off".
+- Beat 20: "Ripples shakes off being flinched", but the notes give no breathless status ("the claws have knocked the breath out of her") and beat 19 rolled "breathless ... → no". The breathlessness comes only from the order text.
+- Beats 11-20 (general): the "Stamina" line often disagrees with OVERALL: Nocturne is "winded" overall with "Stamina: fresh breath" in beats 16-20.

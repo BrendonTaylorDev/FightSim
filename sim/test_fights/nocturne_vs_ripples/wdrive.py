@@ -22,6 +22,13 @@ import atexit
 atexit.register(shutil.rmtree, os.path.dirname(ROOT), True)
 shutil.copytree(SRC, ROOT, ignore=shutil.ignore_patterns(".git", "__pycache__", "my_settings.json", "blocks_memory.json",
                                                          "lines_memory.json", "autosave.json", "exports", "sim"))
+# PLAYED_BEFORE_REBALANCE: this fight was played with Ripples' Brick Break at power 35 (build 182); keep it so
+# the window replays the same fight the narration was written for
+_fj = os.path.join(ROOT, "fighters.json")
+_t = open(_fj).read()
+_i = _t.index('"name": "Ripples"'); _j = _t.index('"name": "Brick Break"', _i)
+_k = _t.index('"power": 28', _j)
+open(_fj, "w").write(_t[:_k] + '"power": 35' + _t[_k + len('"power": 28'):])
 sys.path.insert(0, ROOT)
 os.chdir(ROOT)
 
