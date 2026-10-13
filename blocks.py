@@ -16,7 +16,8 @@ SLOT = re.compile(r"\{(\w+)\}")
 # narration.old_memories is on (off by default: the story has no past before the fight unless you want one)
 PAST_MEMORY = re.compile(r"\b(?:old fights?|an? (?:old|earlier) (?:fight|battle|opponent)|other fights|every fight against|"
                          r"training|taught|old lesson|a lesson|long ago|since she was (?:small|young|little)|grew up|"
-                         r"remembers? (?:a|whole|the) \w+ (?:from|of) long|as a (?:pup|kit|cub|hatchling))\b", re.I)
+                         r"remembers? (?:a|whole|the) \w+ (?:from|of) long|as a (?:pup|kit|cub|hatchling)|"
+                         r"(?:has|have|had) always|always (?:has|had|have))\b", re.I)
 
 # sobbing and weeping: the narrator's hard rules forbid them (pain shows as cries, shaking and streaming eyes)
 NO_SOB = re.compile(r"\bsob(?:s|bed|bing)?\b|\bweep(?:s|ing)?\b|\bwept\b", re.I)

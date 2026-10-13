@@ -706,6 +706,10 @@
     "raw_reactions": true,
     "_jarred_size_cap_comment": "jarred_size_cap: a part only jarred by a blow aimed beside it (moves.auto_spill, a fraction of the power) is sized in the notes as at most this (glancing, solid, heavy or tremendous), however much it hurt a worn part. Words only.",
     "jarred_size_cap": "solid",
+    "_arena_detail_uses_comment": "arena_detail_uses: how many times in one fight each of the scene's details (scenes.json: details) may be offered to the narrator as 'the place, glimpsed in passing'. Once every detail has had its turns, the parts go without one (the place is still in the scene text). 0 = no limit.",
+    "arena_detail_uses": 2,
+    "_size_cap_by_pain_comment": "size_cap_by_pain: a blow is sized in the notes (and its impact examples and reaction ideas picked) as at most this when the part it hit ends the blow at that lasting pain level: a blow that leaves the part minor is at most solid, sore at most heavy (no 'heavy blow' with a cry torn out of her on a part that barely hurts). Levels not listed are not capped. Words only.",
+    "size_cap_by_pain": {"minor": "solid", "sore": "heavy"},
     "_blocks_comment": "Story building blocks (story_blocks.txt): a large file of ideas (reactions, sensations, how a hurt spreads, breath, what an opponent can see of an injury, ways to stage a move, thoughts, feelings, takedowns, pins, getting up, landings, aftermath). Before each part of a beat the program offers the narrator up to per_part of them that FIT the fight as it stands (the size of the blow, how much each part hurts now, who is fresh or spent, what her body has), preferring the least-offered and never one offered in the last cooldown_beats beats. They are suggestions to reword, never new events. remember: what was offered is kept between fights in blocks_memory.json. /blocks shows the counts; /blocks off turns them off.",
     "blocks": {
       "enabled": true,
@@ -721,8 +725,8 @@
     "_lines_comment": "lines: the library of finished sentences (story_lines.txt, same format as the blocks). One that fits is offered to the narrator per part, to use word for word if it fits; a bare line of told resolve the program cuts (\"She would not be defeated.\") is replaced by one that shows it. cooldown_beats: how long before the same line can come back. Used lines are remembered in lines_memory.json.",
     "_style_repairs_comment": "style_repairs_max: how many paragraphs a part may be written again for WORDING alone (filler, a phrase already used this beat, a stray label, a sound standing alone). Mistakes about what happened, reactions bigger than her injuries and wrong anatomy are always fixed. Lower it for speed, raise it for polish.",
     "style_repairs_max": 2,
-    "_reaction_caps_comment": "reaction_caps: how big a fighter's reactions may be, from her overall health AND her worst part. strong_from % or more: covered pain (a sharp cry at most, even on a ruined part; a devastating blow one step up, a brief scream). mid_from to strong_from: screams, no writhing or convulsing. Below mid_from: no limit, raw.",
-    "reaction_caps": {"strong_from": 70, "mid_from": 40},
+    "_reaction_caps_comment": "reaction_caps: how big a fighter's reactions may be, from her overall health AND her worst part. strong_from % or more: covered pain (a sharp cry at most, even on a ruined part; a devastating blow one step up, a brief scream). mid_from to strong_from: screams, no writhing or convulsing. Below mid_from: no limit, raw. strong_from matches where the notes stop calling her 'winded' (60%: still fast and dangerous), so a fighter told as still strong never gets 'too worn to hold it in'.",
+    "reaction_caps": {"strong_from": 60, "mid_from": 40},
     "lines": {
       "enabled": true,
       "file": "story_lines.txt",
