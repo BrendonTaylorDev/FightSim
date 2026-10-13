@@ -149,10 +149,14 @@ def body_bans(has):
             bans += [r"\bher (?:\w+ )?claws?\b", r"\bhind\b"]
     if "legs" not in has:
         bans += [r"\blegs?\b", r"\bfeet\b", r"\bfoot\b", r"\bknees?\b", r"\btoes\b", r"\bhind\b"]
-    if "aloft" in has:      # in the air all beat: nothing that needs ground under her
+    if has & {"aloft", "unfooted"}:
+        # in the air, or off her feet (lying, pinned, on top of a pin): nothing that needs her standing
         bans += [r"\bstand(?:s|ing)?\b", r"\bstood\b", r"\bknees?\b", r"\bstance\b", r"\bstagger\w*",
-                 r"\bstumbl\w*", r"\b(?:sits?|sat|sitting|kneel\w*|haunches)\b", r"\bon the ground\b",
-                 r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplanted\b", r"\bfooting\b"]
+                 r"\bstumbl\w*", r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplant(?:s|ed)\b",
+                 r"\bfooting\b", r"\bshifts? her weight\b", r"\bballs of her feet\b", r"\ba step\b", r"\bsteps?\b",
+                 r"\bset firm\b", r"\bgives? ground\b"]
+    if "aloft" in has:      # in the air all beat: no ground under her at all
+        bans += [r"\b(?:sits?|sat|sitting|kneel\w*|haunches)\b", r"\bground\b", r"\bdust\b", r"\bat her feet\b"]
     return re.compile("|".join(bans), re.I) if bans else None
 
 

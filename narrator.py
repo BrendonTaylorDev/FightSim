@@ -4577,7 +4577,11 @@ class Narrator:
                    "quadruped": f"gets her legs under her, pushing up off {ground}",
                    "serpent": f"braces her coils against {ground} and lifts her body",
                    "avian": f"beats her wings against {ground} and pushes up onto her talons"}[e["plan"]]
-        hurt = " and ".join(p.lower() for p in e.get("hurting", [])) or "battered body"
+        hurting = list(e.get("hurting", []))
+        if "arms" in self._feats_of(who):
+            # she pushes up on her arms and legs: a winged dragon's wings don't hold her up, so they can't give out
+            hurting = [p for p in hurting if "wing" not in p.lower()]
+        hurt = " and ".join(p.lower() for p in hurting) or "battered body"
         self._getup_tries = e["tries"] if e["stands"] else None
         self._getup_who = who if e["stands"] else None
         self._getup_event = e if e["stands"] else None
@@ -6209,7 +6213,13 @@ class Narrator:
             cache[who] = set(story_blocks.features(parts)) | ({"hurts"} if any(d >= 30 for d in parts.values()) else set()) \
                 | self._coat_feat(who)
         # "aloft": in the air all beat long (no ground under her for any idea to stand, sit or kneel on)
-        return cache.get(who, set()) | ({"aloft"} if self._aloft(who) else set())
+        # "unfooted": in the air for part of the beat (knocked out of it, or taking off), or off her feet all beat
+        # (lying, sitting, pinned, or lying on top of a pin): nothing that needs her standing (a stance, a step, knees)
+        ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
+        lying = bool(ps.get(who)) and bool(pe.get(who)) and all(
+            re.match(r"(?:ON THE GROUND|ON TOP|LOCKED ONTO|OUT)", str(x.get(who, "")).upper()) for x in (ps, pe))
+        return cache.get(who, set()) | ({"aloft"} if self._aloft(who) else {"unfooted"}
+                                        if self._in_air(who) or lying else set())
 
     def _aloft(self, who):
         """In the air as the beat begins AND as it ends (a fighter knocked down out of it lands, and is then on the
@@ -6219,13 +6229,16 @@ class Narrator:
 
     def _blk_posture(self, who, end=False):
         """standing | down | pinned: as the beat begins (what an opponent sees before she acts), or as it ends."""
+        # ("air": up in the air, on her wings: no idea written for a fighter standing on the ground)
         if end:
             if who in (getattr(self, "pinned_now", None) or ()):
                 return {"pinned"}
-            return {"down"} if who in (getattr(self, "out_names", None) or ()) or "GROUND" in str(
-                (getattr(self, "posture_end", None) or {}).get(who, "")).upper() else {"standing"}
+            end_ = str((getattr(self, "posture_end", None) or {}).get(who, "")).upper()
+            return {"down"} if who in (getattr(self, "out_names", None) or ()) or "GROUND" in end_ else \
+                {"air"} if "AIR" in end_ else {"standing"}
         start = str((getattr(self, "posture_start", None) or {}).get(who, "")).upper()
-        return {"pinned"} if "PINNED" in start else {"down"} if ("ON THE GROUND" in start or "OUT" in start[:8]) else {"standing"}
+        return {"pinned"} if "PINNED" in start else {"down"} if ("ON THE GROUND" in start or "OUT" in start[:8]) else \
+            {"air"} if "AIR" in start else {"standing"}
 
     def _blk_stage(self):
         st = str((getattr(self, "story_state", None) or {}).get("stage", ""))
@@ -6266,7 +6279,8 @@ class Narrator:
             st = standing(who, other) if other else {"level"}
             add(f"{poss(who)} thought", B.pick("thought", 1, role={role} | (st - {"level"}), stage=stage, standing=st,
                                                  fighter=who.lower(), **dict({"has": feats(who)}, **more)))
-            add(f"what {who} feels", B.pick("emotion", 1, role={role}, stage=stage, standing=st, fighter=who.lower(), **more))
+            add(f"what {who} feels", B.pick("emotion", 1, role={role}, stage=stage, standing=st, fighter=who.lower(),
+                                            **dict({"has": feats(who)}, **more)))
 
         def hits_on(who):        # [(damage taken, part, damage BEFORE its first hit this beat, damage after, action index)]
             out, first_b4 = [], {}
@@ -6543,7 +6557,7 @@ class Narrator:
                 # (her opponent going down on her own is not choosing anything: no thoughts about her tactics)
                 B.pick("watch_thought", 1, state=state(victim) if victim else None, fighter=who.lower()))
             add(f"what {who} feels", B.pick("emotion", 1, role={"attacker"}, stage=stage, fighter=who.lower(),
-                                            standing=standing(who, victim) if victim else {"level"}))
+                                            standing=standing(who, victim) if victim else {"level"}, has=feats(who)))
             add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
             return self._blocks_plan(lines, "act", False, last, who, victim)
         types = [a.get("type") for a in acts]
@@ -6960,7 +6974,7 @@ class Narrator:
         take_only = key == "take"
         if first and not take_only and cfg.get("open_and_end", True):
             for p in B.pick("open_on", 1, posture=self._blk_posture(lead) if lead else {"standing"},
-                            earlier=self._blk_earlier(lead, other)):
+                            earlier=self._blk_earlier(lead, other), has=self._blk_feats(lead) if lead else None):
                 if not (reactions_used(p) & worn):
                     steps.insert(0, f"OPEN this part on{f' (from {poss(lead)} side)' if lead else ''}: {p}")
         if first:
@@ -6977,7 +6991,8 @@ class Narrator:
             steps.insert(max(1, len(steps) - 1) if steps else 0, memory)
         if last and cfg.get("open_and_end", True) and steps:
             who = other if key in ("take", "all", "after") else lead
-            for p in B.pick("end_on", 1, posture=self._blk_posture(who, end=True) if who else {"standing"}):
+            for p in B.pick("end_on", 1, posture=self._blk_posture(who, end=True) if who else {"standing"},
+                            has=self._blk_feats(who) if who else None):
                 if "does not finish" in p:
                     self._open_end = True     # an ending left open was asked for: it is not trimmed as a cut-off
                 if not (reactions_used(p) & worn):
