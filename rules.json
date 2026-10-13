@@ -759,10 +759,11 @@
     "swearing_gap": 5,
     "_numb_tier_comment": "true: parts at 1000%+ damage go 'numb with shock' (⚪). false: they stay 'devastated' (⚫). Toggle with /numb on|off or /set narration.numb_tier false",
     "numb_tier": false,
-    "_bone_break_comment": "Bones may always crack or bruise. Broken, fractured, or shattered bones are allowed only on a part with at least min_part_damage damage, on a fighter whose health is below max_health.",
+    "_bone_break_comment": "Bones may always crack or bruise. Broken, fractured, or shattered bones are allowed only on a part with at least min_part_damage damage, on a fighter whose health is below max_health. boneless: words of part names with no bone in them to break (a stomach, a throat, a fin); those parts are never listed as able to break.",
     "bone_break": {
       "min_part_damage": 300,
-      "max_health": 0
+      "max_health": 0,
+      "boneless": ["stomach", "belly", "midsection", "flank", "throat", "ruff", "mane", "ear", "fin", "sac", "hood", "fan", "scales"]
     },
     "_accuracy_comment": "accuracy_check: if a draft skips a listed hit (never mentions that body part) or skips a pin struggle it was told to show, the narrator rewrites it once with the gaps flagged.",
     "accuracy_check": true,
@@ -1202,6 +1203,8 @@
         "beats": 1
       }
     },
+    "_from_move_type_always_comment": "statuses from from_move_type that a move of that type gives even when it has effects of its own (a Water Pulse that may confuse still soaks her): the plain facts of the element, not a side effect.",
+    "from_move_type_always": ["soaked"],
     "paralyzed_power_mult": 0.75,
     "_stiff_comment": "stiff (after breaking out of a pin) and cramped (after holding a long one): power and dodge multipliers.",
     "stiff_power_mult": 0.85,
@@ -1257,8 +1260,9 @@
     "regen_per_beat": 5,
     "rest_bonus": 10,
     "tired_below": 25,
-    "_fresh_breath_min_strength_comment": "The notes' stamina line says 'fresh breath' (energy 70+) only while her overall strength is at least this %; below it (an adrenaline refill on a spent body) it says her breath is back but not her strength. Labels only.",
-    "fresh_breath_min_strength": 40
+    "_fresh_breath_min_strength_comment": "The notes' stamina line says 'fresh breath' (energy 70+) only while her overall strength is at least fresh_breath_min_strength % (the 'fresh' tier: a winded or tired fighter reads 'breathing hard'); below breath_back_below_strength (an adrenaline refill on a spent body) it says her breath is back but not her strength. Past her limit (below 0%) it always reads gasping, and while the wind is knocked out of her it says so. Labels only.",
+    "fresh_breath_min_strength": 80,
+    "breath_back_below_strength": 40
   },
   "adrenaline": {
     "_comment": "The first time a fighter's strength drops below below_strength %, she gets one surge for this many beats: power_mult on her attacks, escape_mult on pin escapes, better dodging, and an energy refill.",

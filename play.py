@@ -1026,6 +1026,9 @@ class Session:
             self.narrator.soaked_before = set(self.narrator.soaked_before) | set(self.narrator._soaked_last)
             self.narrator._soaked_last = soaked
         self.narrator.soaked_now = soaked
+        # confused or dazed now: her world swims (no 'the world doesn't blur', no steady, unmoved ideas for her)
+        self.narrator.dizzy = {f.name for f in self.eng.fighters.values()
+                               if any(self.eng.has(f, st) for st in ("confused", "dazed"))}
         self.narrator.water_types = {f.name for f in self.eng.fighters.values()
                                      if "water" in {str(t).lower() for t in (getattr(f, "types", None) or [])}}
         self.narrator.rain_wet = (self.eng.scene_cfg.get("wets") or

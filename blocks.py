@@ -182,6 +182,10 @@ def body_bans(has):
                  r"\bstumbl\w*", r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplant(?:s|ed)\b",
                  r"\bfooting\b", r"\bshifts? her weight\b", r"\bballs of her feet\b", r"\ba step\b", r"\bsteps?\b",
                  r"\bset firm\b", r"\bgives? ground\b"]
+    if "dizzy" in has:      # confused or dazed: nothing that has her steady, square and untouched by it
+        bans += [r"\bunmoved\b", r"\bsquares? up again\b", r"\bsteady as before\b", r"\bher rhythm doesn't change\b",
+                 r"\b(?:is|was) set again\b", r"\bwithout hurry\b", r"\bher focus stays fixed\b", r"\bsharp and single\b",
+                 r"\bdoesn't even look\b", r"\bnothing in her movement changes\b", r"\bsteady\b"]
     if "aloft" in has:      # in the air all beat: no ground under her at all
         bans += [r"\b(?:sits?|sat|sitting|kneel\w*|haunches)\b", r"\bground\b", r"\bdust\b", r"\bat her feet\b"]
     return re.compile("|".join(bans), re.I) if bans else None
