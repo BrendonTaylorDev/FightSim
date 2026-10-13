@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-13 build 183 (damage spread wider still: a worn part now takes about x0.6 of a blow and a ruined one x0.9, down from x1.0 and x1.6, so a hurt part still pays to hit but no longer swallows every later blow; health loss raised to keep fights about 40 beats (about 0.7 devastated parts per fighter, down from 2.4 two builds ago); Nocturne vs Ripples rebalanced: Ripples' Brick Break power 35 to 28, about 50/50 under both random and sensible play)"
+VERSION = "2026-10-13 build 184 (a sweep of about 190 bug notes from the Nocturne vs Ripples test fight: a grab takes the part its order names; water moves always soak; a burn stays where the fire touched; the notes fit each body, posture and voice (arms, twin tails, a fighter flat on her back, growlers that do not whimper); ideas match the move and the engine's movement; a blow is never told bigger than the pain it leaves; no memories, fewer repeats; the injury report and fight summary tell the truth)"
 
 HELP = """
 =============================================================================================
