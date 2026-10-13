@@ -937,6 +937,9 @@ class Session:
         self.narrator.damage_by = {f.name: {part.name.lower(): part.damage for part in f.parts.values()}
                                    for f in self.eng.active()}
         self.narrator.strengths = {f.name: self.eng.strength(f) for f in self.eng.active()}
+        # parts gone NUMB for now (numbness): the story may show them dull, and must not give them fresh agony
+        self.narrator.numb_parts = {(f.name, part.name.lower()) for f in self.eng.fighters.values()
+                                    for part in f.parts.values() if int(getattr(part, "numb", 0) or 0) > 0}
         sc = getattr(self.eng, "scene_cfg", None) or {}
         self.narrator.scene_words = " ".join([str(sc.get("text") or ""), str(sc.get("ambience") or ""),
                                               str(sc.get("acoustics") or "")] + [str(x) for x in sc.get("details") or []])

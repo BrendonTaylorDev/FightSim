@@ -4343,7 +4343,11 @@ class Engine:
                       and a.move_uses.get(m["name"], 1) > 0 and a.energy >= self.energy_cost(m)]
             gripped = [h.part for h in self.holds.values() if h.attacker == an and h.defender == dn]
             same, near = neighbor_parts(list(d.parts), self.rng.choice(gripped)) if gripped else ([], [])
-            spots = [x for x in same + near if x not in gripped] or [x for x in d.parts if x not in gripped] or list(d.parts)
+            # never the side she is lying on: a fighter pinned face-up has her back against the ground
+            hidden = {"face-up": ("back_up", "back_low"), "face-down": ("chest", "belly")}.get(self.facing_of(dn), ())
+            spots = ([x for x in same + near if x not in gripped and body_region(x) not in hidden]
+                     or [x for x in d.parts if x not in gripped and body_region(x) not in hidden]
+                     or [x for x in d.parts if x not in gripped] or list(d.parts))
             part = self.rng.choice(spots)
             if usable:
                 move = self.rng.choice(usable)
@@ -4881,7 +4885,7 @@ class Engine:
                    "singed bare in spots, the skin shiny and red beneath"]),
         "cold": (["frost-stiff fur", "the fur rimed white and crunchy", "a patch of fur stiff with ice"],
                  ["frost-burned patches, the fur dull and stiff", "the coat frozen into stiff spikes, the skin pale "
-                  "beneath", "cold-burned patches gone numb and white"],
+                  "beneath", "cold-burned patches gone white and stiff"],
                  ["frost-burned patches gone red and raw-looking under stiff fur", "the skin blotched red and white "
                   "from the cold, the fur brittle", "cold-burned and swollen, the fur frozen into clumps"]),
     }
@@ -4993,7 +4997,8 @@ class Engine:
     def wear_text(self):
         """VISIBLE WEAR: how each fighter looks by now, so the narrator keeps it the same from beat to beat."""
         rows = []
-        for f in self.active():
+        # after the match the one who lost is still there to be seen (the aftermath shows how she lies): her wear stays
+        for f in (list(self.fighters.values()) if self.winner() else self.active()):
             # small surface details (grit in her coat, a scuff) fade from the notes after a few beats: the fight has
             # moved on and the fur has moved with it (narration.notes_decay.wear_beats)
             wb, wt = self._decay("wear_beats", 6), f.learned.get("wear_turn") or {}
@@ -7880,7 +7885,10 @@ class Engine:
                     return f"; the worst of it from {big[0]}" if big else ""
                 src = self.injury_log.get(f"{f.name}|{p.name}", [])
                 return f"; from {', then '.join(src[-2:])}" if src else ""
-            hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}{_origin(p)})"
+            # a part gone NUMB (numbness) is still wrecked, but for now she barely feels it: the story must know
+            hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}"
+                    + (", but NUMB for now: she can barely feel it, and the pain will come back" if int(getattr(p, "numb", 0) or 0) > 0 else "")
+                    + f"{_origin(p)})"
                     for p in sorted(f.parts.values(), key=lambda p: -p.damage) if p.damage >= 30]
             fresh = [p.name for p in f.parts.values() if p.damage < 10]
             words, ht = self.strength_words(f)
@@ -7900,7 +7908,11 @@ class Engine:
             if breakable:
                 ground += (f" Past her limit, so these devastated parts CAN BREAK (broken bones allowed): "
                            f"{', '.join(breakable)}.")
-            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {ht['reaction']}{ground}\n"
+            react = ht['reaction']
+            if self.winner():
+                # the match is over: what could still put her out in the fight no longer applies
+                react = re.sub(r"\s*Only a completed pin puts her out\.", "", react)
+            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {react}{ground}\n"
                          f"   painful parts (they hurt and get favored, but do NOT override overall strength): "
                          f"{', '.join(hurt[:10]) or 'nothing serious'}"
                          + (f"\n   barely touched so far: {', '.join(fresh[:6 if self._decay('origin_beats', 4) else 12])}" if hurt and fresh else "")
