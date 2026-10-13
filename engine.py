@@ -4913,14 +4913,14 @@ class Engine:
                   "a few scratches, the fur split along them"],
                  ["raked furrows through the fur, the skin red beneath", "claw lines scored through the coat, red and "
                   "raised", "parallel scratches cutting the fur into tufts, the skin angry beneath"],
-                 ["deep raked lines, the fur torn away in strips", "the coat clawed ragged, whole tufts gone and the skin "
-                  "welted", "gouged furrows, the fur hanging in torn clumps round them"]),
+                 ["deep raked lines, the fur scraped thin along them", "the coat clawed ragged, whole tufts gone and the skin "
+                  "welted", "deep claw furrows, the fur matted and parted round them, the skin welted"]),
         "bite": (["tooth marks pressed into the fur", "a crescent of dents where teeth closed",
                   "the fur pinched up in a line of small tooth prints"],
                  ["a ring of tooth marks, puffy and red round each one", "bite marks swollen into a raised ring",
                   "a double row of tooth prints, the skin round them puffed"],
-                 ["deep tooth marks, the fur matted and clumped round them", "a ragged bite mark, the fur torn and the "
-                  "flesh round it swollen tight", "deep tooth marks gone dark, the fur round them stiff and matted"]),
+                 ["deep tooth marks, the fur matted and clumped round them", "a deep bite mark, the fur matted and the "
+                  "skin round it swollen tight", "deep tooth marks gone dark, the fur round them stiff and matted"]),
         "blunt": (["the fur ruffled up the wrong way", "the coat scuffed and standing up in a patch",
                    "a faint flattened patch where it struck"],
                   ["bruising showing dark through the fur wherever it parts", "a purpling under the coat you can see "
@@ -4934,7 +4934,7 @@ class Engine:
                  ["the fur crushed and matted, the flesh beneath bruised dark and puffy", "deep grip marks, the coat "
                   "mashed flat and the flesh round them swollen", "the shape of the hold bruised into her, fur crushed "
                   "into the skin"]),
-        "shock": (["the fur frizzed and standing up", "the coat crackling, every hair on end",
+        "shock": (["the fur frizzed and standing up", "the coat frizzed, every hair on end",
                    "a static-fluffed patch of fur"],
                   ["the fur singed and frizzed", "scorched tips to the fur, smelling of burnt hair",
                    "the coat frizzed and darkened at the ends"],
@@ -4950,12 +4950,12 @@ class Engine:
     MARKS_MORE = {
         "claw": (["a light scoring of claw marks", "shallow nicks in the coat, the fur parted in thin lines"],
                  ["claw furrows crossing each other, the fur ragged", "long red scratches showing through the parted fur"],
-                 ["deep claw tracks, the coat shredded round them", "the fur raked off in strips, the skin beneath "
-                  "raw-looking"]),
+                 ["deep claw tracks, the coat ragged round them", "the fur raked thin in stripes, the skin beneath "
+                  "red and welted"]),
         "bite": (["small dents in the coat where fangs pressed", "a faint arc of bite marks"],
                  ["bite marks raised and reddened", "the fur bunched and wet round a ring of tooth marks"],
                  ["a crushing bite mark, the flesh round it swollen out", "deep fang marks, the coat round them clumped "
-                  "and torn"]),
+                  "and matted"]),
         "blunt": (["the coat mussed where it landed", "a dull patch where the fur was knocked flat"],
                   ["a bruise blooming under the coat, plain when the fur lifts", "the fur raised over a bruised swelling"],
                   ["bruised deep and swollen tight, the fur standing up over it", "the swelling pushing the fur apart, "
@@ -4965,7 +4965,7 @@ class Engine:
                   "through the flattened fur"],
                  ["the fur ground flat and the flesh puffed up dark round the grip lines", "crushed and swollen where "
                   "the hold was, the coat matted down hard"]),
-        "shock": (["the fur puffed out and twitching", "hairs standing up in a crackling halo"],
+        "shock": (["the fur puffed out and twitching", "hairs standing up in a frizzy halo"],
                   ["a burnt smell off the frizzed fur", "the fur curled and singed at the tips"],
                   ["the fur crisped away in patches", "scorched streaks through the coat, the skin hot and red"]),
         "cold": (["frost glittering in the coat", "the fur crusted white at the tips"],
@@ -7767,6 +7767,7 @@ class Engine:
                 bits.append(f"she has been put on the ground {downs} times")
             lost = float(before.get(f.name, me)) - me
             fade = float((pinned.get(f.name) or {}).get("fade", 0) or 0)
+            fade = max(fade, 55 if me <= 5 else 30 if me < 25 else 0)     # (her own strength counts: fade_words)
             mood = ("pinned_fading" if f.name in pinned and fade >= 55 else
                     "pinned_weakening" if f.name in pinned and fade >= 30 else
                     "pinned_fighting" if f.name in pinned else
@@ -7939,7 +7940,10 @@ class Engine:
         if f.eliminated or f.health >= float(cfg.get("max_health", 0)):
             return []
         need = float(cfg.get("min_part_damage", 300))
-        return [p.name for p in f.parts.values() if p.damage >= need]
+        return [p.name for p in f.parts.values() if p.damage >= need and not self.BONELESS.search(p.name)]
+
+    # parts with no bone in them to break (soft belly, the throat's cartilage, ears, fins, a nose)
+    BONELESS = re.compile(r"\b(?:belly|stomach|midsection|throat|ears?|eyes?|nose|fins?|lips?|sac|wattle)\b", re.I)
 
     def condition_summary(self):
         """Words-plus-numbers summary for the narrator. Overall strength is relative to each fighter's own max,

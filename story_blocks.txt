@@ -1808,7 +1808,7 @@ easy breathing still, but she is paying attention to it now
 she takes a deep breath through her nose and lets it out slow, steadying
 
 == breath | zone: belly
-she breathes high in her chest to keep from moving her belly at all
+she breathes shallow and careful, keeping her belly as still as she can
 every breath presses her stomach out against the hurt, so she keeps them small
 
 == breath | zone: chest
@@ -1968,7 +1968,7 @@ she watches with her flotation sac puffed and a grin she can't quite keep down
 she bounces on her toes as she watches, cocky, tails whirring
 
 == watch_thought | fighter: nocturne
-*Weak. Get up, then. Show me.*
+*Weak. Get up, then. Show me.* | posture: down
 *There. That's where she breaks.*
 *Not so quick now.*
 *I warned you about the dry ground.*
@@ -6426,7 +6426,7 @@ she clutches at the place with her free hand and her face twists | has: arms
 == reaction | size: tremendous
 the scream catches somewhere in her chest and comes out as a hoarse bark
 her body throws itself away from the blow before her mind has caught up
-for a moment her limbs do not know which of them should hold her
+for a moment her legs do not know whether to hold her | has: legs
 a strangled howl, and then the ragged sucking for air after it
 she reels, eyes rolling, and the cry follows a heartbeat late
 she clenches so hard round the hurt that she shakes like a drawn bow
@@ -7294,7 +7294,7 @@ she lands hard enough to jolt a grunt out of her and drive her into the dirt
 
 == dodge
 she pivots on the spot and the blow brushes past her back
-she drops flat and it whistles over
+she drops low and it whistles over
 she skips sideways and lets it go by
 she twists her head aside and feels the air of it on her face
 she leans back just far enough, and not a whisker more
@@ -9627,7 +9627,7 @@ her ruff puffs out round her neck at the touch and slowly smooths | size: glanci
 the ruff at her throat is pressed flat by the blow and springs up rumpled | size: solid
 her ruff flares out round her face like a collar thrown open | size: heavy
 the force drives through her ruff and it stands out all round her, thick and stiff | size: tremendous
-the blow sinks into the thick ruff at her chest and the breath goes out of her behind it | zone: chest, neck
+the blow sinks into her thick ruff and the breath goes out of her behind it | zone: chest, neck
 
 == sensation | has: ruff
 under her ruff her {part} aches, a pressure she feels every time she lowers her chin | level: sore, hurting
@@ -9914,7 +9914,7 @@ her arms fly out from her sides with the shock, fingers spread wide | size: trem
 the blow numbs her forearm and her paw opens on its own, fingers splayed | zone: arm
 
 == sensation | has: arms
-the ache in her {part} has settled into her arms, a dull weight she feels when she raises her guard | level: sore, hurting
+the ache in her {part} has settled in, a dull weight she feels when she raises her guard | zone: arm | level: sore, hurting
 every time she raises her arms the hurt in her {part} goes sharp, so she keeps them low | level: hurting, very painful
 her arms feel too heavy to raise; the throb in her {part} has drained the grip out of her paws | level: excruciating, devastated
 
@@ -10012,7 +10012,7 @@ her legs go rigid as posts with the shock, toes digging into the ground | size: 
 the blow jars her knee sideways and the leg shivers before she sets it | zone: leg
 
 == sensation | has: legs
-the ache in her {part} has settled into her legs, a stiffness each time she shifts her weight | level: sore, hurting
+the ache in her {part} has settled in, a stiffness each time she shifts her weight | zone: leg | level: sore, hurting
 her legs throb with the hurt in her {part}, and she keeps them locked to hide it | level: very painful, excruciating
 her legs feel hollow, the throb in her {part} pulling the strength out of them | level: excruciating, devastated
 
