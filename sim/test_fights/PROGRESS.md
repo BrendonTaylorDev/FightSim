@@ -1,6 +1,6 @@
 # Work in progress (kept in the repo so nothing is lost if a session stops)
 
-Last updated: 2026-10-13, build 179+ on branch `claude/kind-bell-r5ehx4`.
+Last updated: 2026-10-13, build 186 on branch `claude/kind-bell-r5ehx4`.
 
 ## Running now
 Nothing. Sweep 2 (engine, body2, ideas2) was merged into build 184.
@@ -15,6 +15,19 @@ Nothing. Sweep 2 (engine, body2, ideas2) was merged into build 184.
    - Dice-rolled attacker assessment lines: how long she'll last, focus, wear her down, surprise that she keeps going.
    - The trial branch `claude/kind-bell-r5ehx4-shorter-notes` (shorter notes) is waiting for the user's test with mistral.
    - The old Aura vs Dusk script no longer replays past beat 27 on build 179: the dice changed, and beat 28 fails with "Aura already has hold of Dusk".
+
+6. (Build 186) The user's lakeside log (Nocturne vs Glacia, build 184), fixed:
+   - a director launch on a flyer rolls air_recover;
+   - "THE END" lines are cut;
+   - memories of past fights are cut;
+   - a driven-into landing skips the part just struck;
+   - an unaffordable move is swapped instead of a pause beat;
+   - wound and blood claims are dropped from the direction;
+   - "her horns" becomes "horn" when nobody has two.
+   Still open:
+   - speed (notes grow to 49k characters; up to 10 minutes a beat);
+   - species names in prose ("the Absol"): asked the user;
+   - invented facts and body slips in "Both" parts.
 
 ## Done in this stretch (builds 177-179 and after)
 - Hit reactions weigh the hurt part as well as overall strength. A strong fighter with a ruined part gets a half-hidden reaction, a capped voice, and only concealed ideas.

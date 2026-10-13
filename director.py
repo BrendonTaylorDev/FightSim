@@ -1269,6 +1269,12 @@ def _landing(engine, b, res):
         return None
     who = engine.get(who).name
     manual = bool(b.get("_manual"))
+    if not manual and not res.get("auto_launch") and not res.get("spiked_by") and engine.has(engine.get(who), "airborne") \
+            and engine._rights_herself(engine.get(who), {}, launch, engine.rules.get("flight") or {}):
+        # the director's launch on a flyer still in the air: she may catch herself on her wings, as she would from a
+        # move that launches (flight.air_recover)
+        res["righted"] = launch
+        return None
     thrown = launch in ("thrown", "launched")
     explicit = bool(impacts)
     in_place = False
@@ -1292,6 +1298,18 @@ def _landing(engine, b, res):
         if not explicit:
             return None  # already on the ground: there's nowhere further to fall
         in_place = True  # already down: smashed against what's beside her, not knocked down again
+    if in_place and impacts:
+        # driven into what she lies on: the blow and the drive are one impact, so the part the blow struck isn't
+        # struck a second time; what meets the ground is what she lies on (her underside)
+        struck = {h.get("part") for h in res.get("hits") or [] if h.get("defender", who) == who}
+        under = [p for p in engine.underside_parts(who, 4) if p not in struck]
+        fixed = []
+        for x in impacts:
+            ps = [p for p in (x.get("parts") or []) if str(p).title() not in struck and p not in struck]
+            if x.get("parts") and len(ps) < len(x["parts"]):
+                ps += [p for p in under if p not in ps][:len(x["parts"]) - len(ps)]
+            fixed.append(dict(x, parts=ps))
+        impacts = fixed
     if not in_place:
         # knocked off her feet: that is how the blow moved her, so no rock or stagger on top of it (moves.stumble)
         res.pop("rocked", None)
@@ -1954,7 +1972,7 @@ class Director:
             if story else "")
         messages = [{"role": "system", "content": system},
                     {"role": "user", "content": user}]
-        last_err = None
+        last_err, last_actions = None, None
         bump = 0.0
         for _ in range(self.retries):
             raw = llm.chat(self.model, messages, host=self.host, temperature=min(1.2, self.temperature + bump),
@@ -1992,6 +2010,8 @@ class Director:
                 return actions, results, started
             except (ValueError, KeyError, TypeError, json.JSONDecodeError) as e:
                 last_err = e
+                if "too worn out for" in str(e) and isinstance(actions, list):
+                    last_actions = actions
                 messages += [{"role": "assistant", "content": raw},
                              {"role": "user", "content": f"That beat is invalid: {e}. Return a corrected beat."}]
         if direction or any(v and v != "WAIT" for v in players.values()):
@@ -2001,12 +2021,57 @@ class Director:
                                  f"it differently, or use a /command for direct control")
             raise ValueError(f"the director couldn't turn that direction into a valid beat ({last_err}). "
                              f"Try wording it differently, or use a /command")
+        if last_actions and "too worn out for" in str(last_err):
+            # it kept choosing a move she can't afford: keep its beat, with the nearest move she can (the same kind
+            # of attack if she has one, else her strongest), rather than stall the story with a pause
+            try:
+                swapped = _afford(engine, last_actions)
+                if swapped:
+                    results, started = resolve_many(engine, swapped)
+                    print(f"[director kept choosing a move she couldn't afford ({last_err}); "
+                          f"using {', '.join(str(b.get('move')) for b in swapped if isinstance(b, dict) and b.get('move'))}]")
+                    return swapped, results, started
+            except (ValueError, KeyError, TypeError) as e:
+                last_err = e
         # Don't stall the story: fall back to a quiet beat (holds still tick) and say why.
         print(f"[director made {self.retries} invalid choices ({last_err}); continuing with a pause beat]")
         fallback = {"action": "breather", "attacker": engine.active()[0].name,
                     "flavor": "the fighters reset, circling and catching their breath", "intent": "reset"}
         results, started = resolve_many(engine, [fallback])
         return [fallback], results, started
+
+
+def _afford(engine, actions):
+    """The director's beat with each move its attacker can't afford swapped for one she can: the same kind of attack
+    (blocks.kind_of) if she has one, else one that reaches as far, else her strongest. None when nothing needed (or could take) a swap."""
+    out, changed = [], False
+    for b in actions:
+        if not isinstance(b, dict) or b.get("action") not in ("strike", "combo") or not b.get("attacker"):
+            out.append(b)
+            continue
+        try:
+            f = engine.get(b["attacker"])
+            mv = engine.find_move(f.name, b.get("move"))
+        except (ValueError, KeyError, AttributeError):
+            out.append(b)
+            continue
+        if not mv or engine.energy_cost(mv) <= f.energy:
+            out.append(b)
+            continue
+        can = [m for m in f.moves if engine.energy_cost(m) <= f.energy and f.move_uses.get(m["name"], 1) > 0
+               and m.get("target") not in ("self",) and m.get("power")]
+        if not can:
+            return None
+        kind = kind_of(mv["name"], mv.get("about", ""))
+        same = ([m for m in can if kind & kind_of(m["name"], m.get("about", ""))]
+                or [m for m in can if engine.is_ranged(m) == engine.is_ranged(mv)])   # (a flyer is out of reach of the rest)
+        pick = max(same or can, key=lambda m: float(m.get("power") or 0))
+        nb = {k: v for k, v in b.items() if k not in ("flavor", "sustain", "with")
+              and not (k == "charge_into" and "charge" not in kind_of(pick["name"], pick.get("about", "")))}
+        nb["move"] = pick["name"]
+        out.append(nb)
+        changed = True
+    return out if changed else None
 
 
 def repair_json(raw):

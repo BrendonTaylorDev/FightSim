@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-13 build 185 (a rake across several parts no longer skips the aim roll: an eye, an ear or the throat on the path can still slide onto the part beside it; the director's direction keeps its sentences about the one struck, minus any claim about how she takes the blow, and no longer loses everything over her feathers)"
+VERSION = "2026-10-13 build 186 (a director throw on a flyer still in the air lets her catch herself on her wings; a beat driven into the ground no longer hits the part just struck twice; a move she cannot afford is swapped for one she can instead of a pause beat; stray THE END lines, memories of past fights and blood claims in the direction are cut; one horn stays one horn)"
 
 HELP = """
 =============================================================================================

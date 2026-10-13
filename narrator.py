@@ -345,6 +345,9 @@ HURT_NEW = re.compile(r"\b(felt (?:the|those) (?:claws?|teeth|fangs|tips|talons|
 OUTCOME_CLAIM = re.compile(r"\b(?:flinch\w*|stagger\w*|stumbl\w*|reel\w*|recoil\w*|crumpl\w*|collaps\w*|falls?|fell|"
                            r"drops?|dodg\w*|sidestep\w*|cr(?:y|ies|ied) out|scream\w*|yelp\w*|howl\w*|gasp\w*|"
                            r"knocked (?:back|down|off)|goes down|went down|buckl\w*|doubles? over)\b", re.I)
+# the direction claiming a wound ("Each cut leaves a trail of blood that drips down her face"): how a blow marks her
+# is the engine's (her pain level, the injury look), so the sentence goes
+WOUND_CLAIM = re.compile(r"\b(?:blood\w*|bleed\w*|bled|gash\w*|wounds?|trickl\w* down|drips? down|dripping)\b", re.I)
 ELECTRIC = re.compile(r"\b(electric\w*|electrif\w*|lightning|voltage|volts?|static (?:charge|crackl\w*)|current (?:pour|surg|crackl|ran|"
                       r"flood)\w*|sparks? (?:flew|danced|crackl\w*|arced)|crackl\w* with (?:power|energy|charge))\b", re.I)
 
@@ -1745,7 +1748,15 @@ TUMBLED = re.compile(r"\b(?:tumbl\w+|roll(?:ed|ing|s) (?:over|across|on|along|en
 PROMPT_LINE = re.compile(r"^\s*[*_\-\s]*(?:POSTURE THIS BEAT|WHAT HAPPENS IN THIS BEAT|CURRENT CONDITION|PREVIOUS BEATS|"
                          r"FIGHT SO FAR|POSITIONS(?: NOW)?\b|GETTING UP:|LINGER ON ONE MOMENT|MORE HARD RULES|STYLE SAMPLE|"
                          r"THE AUTHOR'S INSTRUCTIONS|EXTRA STYLE NOTE|YOUR (?:PREVIOUS|LAST TWO) DRAFTS?|SCENE:|FIGHTERS:|"
-                         r"OVERALL \d|STAY IN THIS MOMENT|THE STORY SO FAR)")
+                         r"OVERALL \d|STAY IN THIS MOMENT|THE STORY SO FAR|THE END\b|END OF (?:THE )?(?:PART|BEAT|PASSAGE|SCENE)\b)")
+
+
+# a fighter remembering fights before this one ("She had faced worse than this", "the one she had battled earlier"):
+# the hard rules forbid memories from before the fight, so the sentence goes
+PAST_FIGHTS = re.compile(r"\b(?:ha[ds]|have) (?:faced|fought|battled|beaten|survived|seen off) (?:worse|tougher|stronger|"
+                         r"bigger|harder|fiercer|deadlier|better)\b|\b(?:battled|fought|faced) (?:earlier|before|long ago)\b|"
+                         r"\b(?:in|from|of) (?:her|his|their) (?:past|previous|earlier|other|old|many) (?:fights|battles|"
+                         r"opponents|rivals)\b", re.I)
 
 
 def _mend_orphans(text):
@@ -1865,6 +1876,8 @@ def _clean(text, cut_off=None, open_end=False):
             key = WHITESPACE.sub(" ", re.sub(r"[^\w\s]", "", s.lower())).strip()
             if key in seen and (len(key) > 12 or (len(key) > 4 and len(sentences) == 1)):
                 continue  # a repeated sentence, or a repeated one-line beat like "*Damn it.*" / "Nothing moved."
+            if PAST_FIGHTS.search(s):
+                continue  # a memory from before this fight (the hard rules forbid them; nothing in the notes backs it)
             seen.add(key)
             kept.append(s)
         out_paras.append(" ".join(kept).strip())
@@ -4762,9 +4775,9 @@ class Narrator:
             if dfn and x.lower().startswith(dfn.lower()):
                 if not OUTCOME_CLAIM.search(x):
                     theirs.append(x)
-            else:
-                mine.append(x)
-        att = " ".join(mine)
+            elif not WOUND_CLAIM.search(x):
+                mine.append(x)      # (a wound it claims, blood running from the cut, is the engine's to show)
+        att = re.sub(r",?\s+(?:tearing|ripping)[.!]?$", ".", " ".join(mine)) if mine else ""
         feats = self._feats_of(who)
         if feats and att:
             parts = " ".join(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()).lower()
@@ -10504,6 +10517,10 @@ class Narrator:
         part.") goes. Only when swearing is off (narration.swearing) for the curse."""
         n = self.rules.get("narration", {}) or {}
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        horns = [sum(1 for p in parts if re.search(r"\bhorn\b", p, re.I))
+                 for parts in (getattr(self, "damage_by", None) or {}).values()]
+        if horns and max(horns) == 1:   # one horn in the whole fight: "the roots of her horns" is her horn
+            text = re.sub(r"\b((?:her|its|the) (?:\w+ )?)horns\b", r"\1horn", text)
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))\*?(?:Continue with the next part|Next part)[.!]?\*?\s*", r"\1", text)
         if str(n.get("swearing", "rare")).lower() in ("none", "off", "false", "never", "no", "0"):
             text = re.sub(r"(?:(?<=^)|(?<=[.!?…]\s)|(?<=\n))\*?(?:Damn|Dammit|Damn it|Damn this|Damn her|Damn you)[^.!?\n]{0,20}[.!?]+\*?\s*",
