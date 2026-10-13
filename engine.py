@@ -5029,6 +5029,15 @@ class Engine:
             return None
         return a.name
 
+    def _wing_way(self, f, p):
+        """How a hurt wing shows in the way she moves: in the air she still flies on it, on the ground she holds it."""
+        name, bad = p.name.lower(), p.damage >= 300
+        if self.has(f, "airborne"):
+            return (f"flies lopsided, her {name} labouring, every stroke of it ragged and short" if bad else
+                    f"favours her {name} in the air, its strokes a little short and careful")
+        return (f"her {name} hangs half-folded and trailing, held off the rock" if bad else
+                f"keeps her {name} folded close, guarding it")
+
     def movement_text(self):
         """HOW THEY MOVE NOW: what each fighter's injuries do to the way she moves (favouring a leg, an arm held in),
         repeated every beat so the story keeps it up."""
@@ -5039,7 +5048,9 @@ class Engine:
                 if p.damage < 150 or len(bits) >= 3:
                     continue
                 reg = body_region(p.name)
-                if reg in ("hind_low", "hind_up") or (reg in ("fore_low", "fore_up") and self.body_plan(f) == "quadruped"):
+                if "wing" in p.name.lower():
+                    bits.append(self._wing_way(f, p))
+                elif reg in ("hind_low", "hind_up") or (reg in ("fore_low", "fore_up") and self.body_plan(f) == "quadruped"):
                     bits.append(f"favours her {p.name.lower()}, keeping weight off it (a limp when she moves)")
                 elif reg in ("fore_low", "fore_up"):
                     bits.append(f"keeps her {p.name.lower()} tucked in and uses it as little as she can")
@@ -7808,7 +7819,9 @@ class Engine:
             biped = any("arm" in x.lower() for x in f.parts)  # upright fighters guard arms instead of limping
             arm = biped and region in ("fore_up", "fore_low", "shoulder")
             name = p.name.lower()
-            if region == "tail":
+            if "wing" in name:
+                out.append(self._wing_way(f, p))
+            elif region == "tail":
                 out.append(f"keeps her {name} stiff and close" if p.damage < 300 else f"her {name} drags, barely moving")
             elif p.damage < 150:
                 out.append(f"favors her {name}" + (" (guards it close)" if arm else " (a slight limp)"))

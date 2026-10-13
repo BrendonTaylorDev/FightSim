@@ -2079,7 +2079,6 @@ A charge crackled faintly along the edges of her, and she aimed it.
 == before_strike | kind: punch
 She stepped in, set her feet, and threw from the ground up. | has: arms
 Her fist came round in a short hook, her shoulder rolling in behind it. | has: arms
-She jabbed once to measure, then threw the real one. | has: arms
 She dropped her weight and drove upward, aiming beneath {foe}'s guard.
 Her forepaw lifted, hung, and came down hard with everything above it. | has: forelegs
 She led with her shoulder so the blow would arrive with all of her behind it.

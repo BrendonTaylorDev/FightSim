@@ -2271,12 +2271,26 @@ class Narrator:
             return " (her leg: she stands on it)"
         return ""
 
-    def _region_tell(self, part, seed=0):
+    # (an idea that needs ground under her: not for a fighter struck in the air)
+    GROUND_TELL = re.compile(r"\b(?:knees?|stagger\w*|stumbl\w*|stance|step|steps|hop|lurch\w* sideways|off the ground|"
+                             r"sets? it down|limp\w*|off balance|knocked off balance|balance lost)\b", re.I)
+
+    def _fit_body(self, opts, who):
+        """Keep only the ideas her body and place allow: no teeth on a beak, no fur on feathers (story_blocks.body_bans),
+        and nothing that needs ground under her while she is in the air. Falls back to all of them if none is left."""
+        if not who:
+            return opts
+        ban = story_blocks.body_bans(self._feats_of(who))
+        air = self._in_air(who)
+        keep = [o for o in opts if not (ban and ban.search(o)) and not (air and self.GROUND_TELL.search(o))]
+        return keep or opts
+
+    def _region_tell(self, part, seed=0, who=None):
         p = part.lower()
         groups = ["ear", "face", "neck", "chest", "belly", "back", "limb", "tail"]
         for (keys, tell), g in zip(self.REGION_TELLS, groups):  # whole words: "forearm" must not count as an "ear"
             if any(re.search(r"\b\w*" + re.escape(k) + r"(?:s|es)?\b", p) for k in keys):
-                opts = [tell] + self.REGION_TELLS_MORE.get(g, [])
+                opts = self._fit_body([tell] + self.REGION_TELLS_MORE.get(g, []), who)
                 return opts[seed % len(opts)]
         return "a flinch away from the spot"
 
@@ -2330,9 +2344,9 @@ class Narrator:
     def _strength(self, taken):
         return "a " + self._strength_key(taken)
 
-    def _impact(self, taken, seed=""):
+    def _impact(self, taken, seed="", who=None):
         """A suggested moment-of-impact reaction, varied from hit to hit."""
-        options = self.IMPACTS[self._strength_key(taken)]
+        options = self._fit_body(self.IMPACTS[self._strength_key(taken)], who)
         if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
             # the engine decides whether a blow moves her (moves.stumble): no step or stagger slipped in here
             options = [o for o in options if not MOVES_HER.search(o)] or options
@@ -2411,7 +2425,11 @@ class Narrator:
             size = min(size, max(1, size - 1))
         if band == 0 and part >= 3 and size == 2:
             return self.REACTION_HIDDEN        # a part far worse off than she is: it hurts, and she hides how much
-        return self.REACTION_SIZES[size]
+        out = self.REACTION_SIZES[size]
+        if self._in_air(h.get("defender")):     # (no knees to dip in the air: her flight answers for them)
+            out = (out.replace("her knees dipping under it (a limp if it is a leg)", "her flight dipping under it")
+                   .replace("she sags where she is", "she falters in the air"))
+        return out
 
     def _hit_line(self, h, n=None, how=None):
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
@@ -2434,7 +2452,7 @@ class Narrator:
         self._strike_parts.append(h["part"])
         self._hurt_now.add(h["defender"])
         self._linger_pool.append((h["defender"], h["part"], h["damage_taken"], after["label"], "blow"))
-        impact = self._impact(h["damage_taken"], seed)
+        impact = self._impact(h["damage_taken"], seed, h["defender"])
         if after["label"] == "numb with shock" and before["label"] == "numb with shock":
             impact = "a dull, sickening jolt she barely feels as pain, then a lurch of nausea and shallow breath"
         raw = None if h.get("numb") else self._raw_reaction(h, before["label"])
@@ -2449,7 +2467,7 @@ class Narrator:
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
                 f"{self._strength(h['damage_taken'])} blow "
                 f"(impact, e.g. {impact}; a hit here shows as "
-                f"{self._region_tell(h['part'], sum(map(ord, seed)))}"
+                f"{self._region_tell(h['part'], sum(map(ord, seed)), h['defender'])}"
                 + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
                    if self._voice_cue(h, after['label'], 0) else "")
                 + ("" if raw else f"; her reaction: "
@@ -6085,7 +6103,14 @@ class Narrator:
         if parts:
             # "hurts": some part of her really is hurt (lines about her own hurts need it: has: hurts)
             cache[who] = set(story_blocks.features(parts)) | ({"hurts"} if any(d >= 30 for d in parts.values()) else set())
-        return cache.get(who, set())
+        # "aloft": in the air all beat long (no ground under her for any idea to stand, sit or kneel on)
+        return cache.get(who, set()) | ({"aloft"} if self._aloft(who) else set())
+
+    def _aloft(self, who):
+        """In the air as the beat begins AND as it ends (a fighter knocked down out of it lands, and is then on the
+        ground like anyone)."""
+        ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
+        return all("AIR" in str(x.get(who, "")).upper() for x in (ps, pe))
 
     def _blk_posture(self, who, end=False):
         """standing | down | pinned: as the beat begins (what an opponent sees before she acts), or as it ends."""
@@ -8389,7 +8414,14 @@ class Narrator:
             elif w not in (getattr(self, "water_types", None) or set()):
                 coats.append(f"{w} wet with {rain} (wet, not soaked)" if rain else f"{w} DRY (nothing has wet her yet)")
         if coats and not getattr(self, "_wet_beat", False):
-            rows.append("fur: " + ", ".join(coats))
+            # (named for what each of them is covered in: feathers and scales get wet too, but they are not fur)
+            def _coat(c):
+                w = next((n for n in (self.strengths or {}) if c.startswith(n + " ")), None)
+                f = self._feats_of(w) if w else set()
+                cw = ((getattr(self, "coats", None) or {}).get(w) or
+                      ("feathers" if "feathers" in f else "scales" if "scales" in f else "fur"))
+                return c if not w else f"{w}'s {cw}{c[len(w):]}"
+            rows.append("wet or dry: " + ", ".join(_coat(c) for c in coats))
         eyes = {w: c for w, c in (getattr(self, "eye_colors", None) or {}).items() if w in (self.strengths or {})}
         if len(set(eyes.values())) > 1:
             rows.append("eyes: " + ", ".join(f"{w} {c}" for w, c in eyes.items()))
@@ -10175,8 +10207,8 @@ class Narrator:
             close = True
         else:
             close = random.random() >= float(cfg.get("wide_chance", 0.35))
-        return ("\nCAMERA for this part: CLOSE. Stay tight on bodies: one paw, one breath, an eye, the fur over a "
-                "wound, the smallest movements." if close else
+        return ("\nCAMERA for this part: CLOSE. Stay tight on bodies: one limb, one breath, an eye, the fur, feathers "
+                "or scales over a wound, the smallest movements." if close else
                 "\nCAMERA for this part: WIDE. Pull back: both bodies at once, the distance and angle between them, "
                 "the place around them, then come in for the detail that matters.")
 
@@ -10294,7 +10326,8 @@ class Narrator:
         if watch_ok and ready("watch", wcfg, True):
             last["watch"] = beat_no
             grip = (f" Her grip and her weight stay exactly as they are: she watches from where she holds her."
-                    if holding else f" She does not close in or start anything: she watches from where she stands.")
+                    if holding else f" She does not close in or start anything: she watches from where she "
+                    + ("is, in the air." if self._aloft(by) else "stands."))
             moments.append({"key": "watch", "who": by, "part": part.lower(), "words": int(wcfg.get("words", 220)), "focus": (
                 f"{poss(by)} side: she WATCHES what she has just done to {v}.{grip} She studies {v} closely, the "
                 f"way her own nature has her do it (cold, curious, hungry, wary, pitiless, almost gentle): every "
@@ -10892,10 +10925,12 @@ class Narrator:
             parts = list(dict.fromkeys(h["part"].lower() for h in a["hits"]))
             worst = max(float(h.get("damage_after", h.get("damage_taken", 0)) or 0) for h in a["hits"])
             big = bool(a.get("devastating") or any(h.get("devastating") for h in a["hits"]) or worst >= 90)
+            dev = bool(a.get("devastating") or any(h.get("devastating") for h in a["hits"]))
             ask = (f"\n\nTHE PASSAGE SO FAR (already written; never repeat it):\n<<<\n{_tail(seen, 1500)}\n>>>\n\n"
                    f"One attack from this beat is missing from the passage: {poss(att)} {mv['name']} "
                    f"({mv.get('about', '')}) striking {dfn} on the {', '.join(parts[:3])}"
-                   + (", a terrible, devastating blow" if big else "") + ". Write ONLY that attack, in "
+                   + (", a terrible, devastating blow" if dev else ", a heavy blow" if big else "")
+                   + ". Write ONLY that attack, in "
                    f"{'4 to 6' if big else '2 or 3'} sentences in the same voice and tense as the passage: {att} "
                    f"throwing it and it landing on those parts, and {dfn}'s first reaction. It comes right after "
                    f"the passage's last attack. Nothing else happens: no new falls, no other attacks, no pin.")

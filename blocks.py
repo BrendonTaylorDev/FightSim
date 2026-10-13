@@ -130,6 +130,10 @@ def body_bans(has):
         bans += [r"\bpaws?\b", r"\bhands?\b", r"\bfists?\b", r"\bfingers?\b", r"\bforelegs?\b", r"\bknuckles?\b"]
     if "legs" not in has:
         bans += [r"\blegs?\b", r"\bfeet\b", r"\bfoot\b", r"\bknees?\b", r"\btoes\b", r"\bhind\b"]
+    if "aloft" in has:      # in the air all beat: nothing that needs ground under her
+        bans += [r"\bstand(?:s|ing)?\b", r"\bstood\b", r"\bknees?\b", r"\bstance\b", r"\bstagger\w*",
+                 r"\bstumbl\w*", r"\b(?:sits?|sat|sitting|kneel\w*|haunches)\b", r"\bon the ground\b",
+                 r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplanted\b", r"\bfooting\b"]
     return re.compile("|".join(bans), re.I) if bans else None
 
 

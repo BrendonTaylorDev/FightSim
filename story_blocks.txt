@@ -1223,7 +1223,6 @@ she tracks her target with it, steady as a pointing paw
 it takes everything out of her lungs and she lets it
 
 == movement | kind: punch
-a jab to the face to bring the paws up, and the real one under the ribs | has: arms
 she turns her hip into it and the paw is only the end of the movement | has: arms
 quick, light, and three of them before the other can count one | has: arms
 
@@ -5304,7 +5303,6 @@ she studies the {part} the way she might study a lock: where it is weak, how it 
 she watches the other's mouth, the tight line it has become
 she notices the smell of the other has changed, sharper, with fear or effort in it
 every flinch she sees she adds to a slow, careful tally
-she sees the other glance at the ground, measuring a fall that has not come yet
 she keeps her eyes on the {part}, where the muscles are still settling around the hurt
 she watches the other's breathing and matches her own to it without meaning to
 the other's eyes find hers and drop, and she takes note of who looked away
@@ -7766,7 +7764,6 @@ the cold of the hail seeps into her and stiffens her movements
 she slashes on the way out, so the cut lands as she retreats
 two strokes crossing, one high and one low, the second where the first drove her opponent
 the claws hook in at the end of the swing and pull her opponent half a step forward
-a swipe at the face to make her blink, and then the real rake across the body
 she reaches long, further than she seemed able, and only the tips of the claws catch
 she strikes as she lands from a leap, the whole drop behind the stroke
 a flurry of short scratches, quick and stinging, to break the other's rhythm

@@ -1001,6 +1001,13 @@ class Session:
             if m:
                 eyes[f.name] = m.group(1).lower()
         self.narrator.eye_colors = eyes
+        # what each of them is covered in, for the notes that say whether she is wet ("Glacia's feathers DRY")
+        self.narrator.coats = {}
+        for f in self.eng.fighters.values():
+            look = " ".join(str(getattr(f, k, "") or "") for k in ("description", "appearance")).lower()
+            self.narrator.coats[f.name] = next((w for rx, w in ((r"feather|plumage", "feathers"), (r"\bscal", "scales"),
+                                                                 (r"\bfur\b|\bpelt\b|\bcoat\b", "fur"),
+                                                                 (r"\bskin\b|\bhide\b", "skin")) if re.search(rx, look)), "")
         self.narrator.body_colors = {f.name: set(re.findall(
             r"\b(red|black|blue|green|gold(?:en)?|amber|yellow|brown|violet|purple|pink|white|grey|gray|silver|orange|"
             r"cream|tan|crimson|scarlet|teal|navy)\b", " ".join(str(getattr(f, k, "") or "") for k in (
