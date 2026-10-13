@@ -1449,6 +1449,7 @@ class Engine:
                 d.status.pop("airborne", None)
                 res["grounded"] = True
                 res["grounded_wing"] = self.wing_damage(d) >= float((fcfg.get("strain") or {}).get("from", 100))
+                res["fell_from_air"] = not res.get("auto_launch")   # no throw rolled: she just fell (labels only)
                 res["auto_launch"], res["drop_severity"] = res.get("auto_launch") or "thrown", res.get("drop_severity") or "solid"
         if hits and not d.eliminated:
             jolt = self._jolts(d, hits)

@@ -3412,6 +3412,7 @@ class Narrator:
         if t == "instant" and a.get("environment"):
             how = a.get("launch") or "knocked down"
             verb = {"launched": "is LAUNCHED through the air", "thrown": "is THROWN",
+                    "knocked out of the air": "is KNOCKED OUT OF THE AIR (not thrown: she falls)",
                     "knocked down": "is KNOCKED DOWN"}.get(how, "goes down")
             if a.get("spiked_by"):
                 verb = (f"is SMASHED BACK DOWN out of the air by {poss(a['spiked_by'])} blow (she never landed from the "
