@@ -5929,10 +5929,22 @@ class Narrator:
                or a.get("pummel") for a in acts) \
                 or sum(1 for a in acts if a.get("chain") and a.get("hits")) >= 3:
             return "big", ["one of the big moves of the fight"]
+        # out of the sky: a blow knocks her down out of the air, or she is caught and dragged down out of it
+        fell = [str(a.get("attacker") if a.get("dragged_down") else a.get("defender")) for a in acts
+                if a.get("grounded") or a.get("dragged_down")]       # (the diver caught is the one dragged down)
+        if fell:
+            return "big", [f"{' and '.join(dict.fromkeys(fell))} comes down out of the sky"]
         worst = [(w, p) for w, p, lv in (getattr(self, "_breaking", None) or []) if lv in ("devastated", "numb with shock")]
         if worst:
             who = sorted({w for w, _ in worst})
             return "hard", [f"a part of {' and '.join(who)} is hurt past bearing for the first time"]
+        low = [f"{n} drops to {str(f.get('now')).upper()}" for e in also if e.get("type") == "fatigue_shift"
+               for n, f in (e.get("fighters") or {}).items() if str(f.get("now")) in ("spent", "past the limit")]
+        if low:
+            return "hard", low
+        if acts and all(a.get("type") in ("breather", "none", "take_off", "land_flight", "time_passes") for a in acts) \
+                and not any(e.get("type") == "pin_progress" for e in also):
+            return "quiet", []
         return "ordinary", []
 
     def _story_note(self, bundle):
@@ -5957,6 +5969,8 @@ class Narrator:
             "big": "This beat holds a big moment (" + "; ".join(why) + "): give it size and weight, and tell it in order.",
             "hard": "A hard moment (" + "; ".join(why) + "): that one thing gets its full weight. The rest of the "
                     "beat is told plainly round it.",
+            "quiet": "Nobody attacks in this beat: it is a pause in the fight. Tell it in full detail, close and "
+                     "unhurried, with no more drama than it carries.",
             "ordinary": "This beat is an ordinary exchange in the run of the fight: tell it in full detail, with no "
                         "more drama than it carries. Keep the largest reactions for the moments that change something.",
         }[kind]
@@ -10557,7 +10571,7 @@ class Narrator:
             pin_plan = True     # (these parts stand as written: no 'the attack has already been shown' after part one)
         others = [x for x in (getattr(self, "strengths", None) or {}) if x != actor]
         if (actor and not receivers and not pin_plan and len(plan) >= 2 and len(others) == 1 and acts
-                and all(a.get("type") in ("breather", "none") for a in acts)
+                and all(a.get("type") in ("breather", "none", "take_off", "land_flight") for a in acts)
                 and not [e for e in pin_events if e.get("complete") and e.get("elimination")]):
             # nobody is hit (she catches her breath, or circles): still both sides, one part each, same length
             o_ = others[0]
@@ -10723,7 +10737,13 @@ class Narrator:
                     # the attack part already showed every hit landing (or the miss): the next part must not retell it
                     k2, _, w2 = plan[i]
                     done = ("Every hit has ALREADY been shown landing above" if self._must_parts
-                            else "The attack has ALREADY been shown above, miss and all")
+                            else "The attacks have ALREADY been shown above, meeting and cancelling out"
+                            if any(x.get("clash") for x in acts)
+                            else "The attack has ALREADY been shown above, miss and all"
+                            if any(x.get("dodged") for x in acts)
+                            else "The attack has ALREADY been shown above"
+                            if any(x.get("type") == "instant" for x in acts)
+                            else "What happens this beat has ALREADY been told above")
                     pinned_now = next((x for x in acts if x.get("type") == "pin_start" and not x.get("continuing")), None)
                     if pinned_now and not strikes:
                         d_ = pinned_now["defender"]
