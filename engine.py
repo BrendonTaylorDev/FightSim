@@ -4343,7 +4343,11 @@ class Engine:
                       and a.move_uses.get(m["name"], 1) > 0 and a.energy >= self.energy_cost(m)]
             gripped = [h.part for h in self.holds.values() if h.attacker == an and h.defender == dn]
             same, near = neighbor_parts(list(d.parts), self.rng.choice(gripped)) if gripped else ([], [])
-            spots = [x for x in same + near if x not in gripped] or [x for x in d.parts if x not in gripped] or list(d.parts)
+            # never the side she is lying on: a fighter pinned face-up has her back against the ground
+            hidden = {"face-up": ("back_up", "back_low"), "face-down": ("chest", "belly")}.get(self.facing_of(dn), ())
+            spots = ([x for x in same + near if x not in gripped and body_region(x) not in hidden]
+                     or [x for x in d.parts if x not in gripped and body_region(x) not in hidden]
+                     or [x for x in d.parts if x not in gripped] or list(d.parts))
             part = self.rng.choice(spots)
             if usable:
                 move = self.rng.choice(usable)
