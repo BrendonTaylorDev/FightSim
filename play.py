@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-13 build 184 (a sweep of about 190 bug notes from the Nocturne vs Ripples test fight: a grab takes the part its order names; water moves always soak; a burn stays where the fire touched; the notes fit each body, posture and voice (arms, twin tails, a fighter flat on her back, growlers that do not whimper); ideas match the move and the engine's movement; a blow is never told bigger than the pain it leaves; no memories, fewer repeats; the injury report and fight summary tell the truth)"
+VERSION = "2026-10-13 build 185 (a rake across several parts no longer skips the aim roll: an eye, an ear or the throat on the path can still slide onto the part beside it; the director's direction keeps its sentences about the one struck, minus any claim about how she takes the blow, and no longer loses everything over her feathers)"
 
 HELP = """
 =============================================================================================

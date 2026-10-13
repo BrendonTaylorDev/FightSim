@@ -1189,6 +1189,19 @@ class Engine:
                 if landed != names[0]:
                     self._aim_miss = {"aimed": names[0], "landed": landed}
                     names = [landed]
+            elif enforce and target == "targeted" and len(names) > 1 and not pummel:
+                # a path of parts is not an aim, but a small, hard-to-reach part on it (an eye, an ear, the throat)
+                # is still no sure thing: each of those is rolled like an aim, and lands beside itself if it misses
+                # (moves.aim.path_below: parts at or below this ease are rolled; 0 = never)
+                below = float(((self.rules.get("moves") or {}).get("aim") or {}).get("path_below", 0.6))
+                out = []
+                for nm in names:
+                    landed = self._aim(a, d, nm) if self.aim_ease(nm) <= below else nm
+                    if landed != nm and not getattr(self, "_aim_miss", None):
+                        self._aim_miss = {"aimed": nm, "landed": landed}
+                    if landed not in out:
+                        out.append(landed)
+                names = out
             k_ = max(1, int(count or 1))
             # several blows over several named parts: they go round the parts in order, the count in all
             plan = ([names[i % len(names)] for i in range(k_)] if k_ > 1 and len(names) > 1 else [names[0]] * k_) \
