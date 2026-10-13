@@ -872,7 +872,13 @@ SEVERAL_BLOWS = re.compile(r"\b(?:two|three|four|several|both) (?:fast |quick |s
                            r"strikes|jabs|punches|chops|hits)\b|\bone-two\b|\bflurry\b|\bcombination\b|\bagain and again\b|"
                            # a first blow thrown to set up "the real one": a second blow the engine never threw
                            r"\bthe (?:real|true|actual) (?:one|bite|blow|strike|punch|chop|kick|swipe|rake)\b|"
-                           r"\b(?:jabbed|jabs?|nipped|nips?|tapped|taps?) once\b|\bto measure\b|\bthen the (?:real|true)\b", re.I)
+                           r"\b(?:jabbed|jabs?|nipped|nips?|tapped|taps?) once\b|\bto measure\b|\bthen the (?:real|true)\b|"
+                           # one shot told as several (a burst to find the range, pulses, a double strike), or a
+                           # feint the engine never decided
+                           r"\bshort (?:bursts?|pulses?)\b|\bto find the range\b|\bdouble (?:strike|slap)\b|"
+                           r"\bboth wings at once\b|\b(?:struck|strikes?|went|comes?|came|bites?|rakes?|jabbed) "
+                           r"(?:\w+ )?(?:twice|again)\b|\bthe second time\b|\bthen another, then\b|\bfeint(?:s|ed|ing)?\b|"
+                           r"\bstruck true\b", re.I)
 
 # what each way of dodging the engine rolls looks like. Every dodge idea shows one of these (or more): "any" is one
 # that shows no way at all (she reads it early, it clips a few hairs), "jump" one no rolled way covers (a hop over a
@@ -6410,7 +6416,9 @@ class Narrator:
                     else B.pick("movement", 1, has=feats(who), exclude=one_))
             if kinds:
                 runs_ = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
-                                                          or a.get("combo") or int(a.get("hit_count") or 0) > 1) for a in acts)
+                                                          or a.get("combo") or sum(1 for h in a.get("hits") or []
+                                                                                   if not h.get("jarred")) > 1)
+                           for a in acts)    # (a part only jarred beside the blow is not a second blow)
                 self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
                                  fmt={"foe": target or ""}, exclude=None if runs_ else [SEVERAL_BLOWS],
                                  kind=kinds, shape=shapes, has=feats(who), state=state(who), role="attacker")
