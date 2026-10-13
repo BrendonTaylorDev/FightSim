@@ -1,7 +1,7 @@
 From 5f7686424cd82ab4d596edca19f2f05a1b0b6f35 Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Tue, 13 Oct 2026 03:27:18 +0000
-Subject: [PATCH 4/4] Fix: a part only jarred by a blow beside it is sized as a
+Subject: [PATCH 4/5] Fix: a part only jarred by a blow beside it is sized as a
  knock (at most narration.jarred_size_cap), not 'a tremendous blow'
 
 ---

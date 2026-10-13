@@ -1,0 +1,136 @@
+From c231c70df52fbbf7c7717e44d31b47da5c805dd2 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 13 Oct 2026 11:07:42 +0000
+Subject: [PATCH 5/5] WIP: unfinished edits saved when the session hit its
+ usage limit
+
+---
+ narrator.py      | 20 ++++++++++++--------
+ story_blocks.txt | 10 +++++-----
+ story_lines.txt  |  2 +-
+ 3 files changed, 18 insertions(+), 14 deletions(-)
+
+diff --git a/narrator.py b/narrator.py
+index ca90e12..8d39141 100644
+--- a/narrator.py
++++ b/narrator.py
+@@ -180,7 +180,7 @@ HURT_WAYS = (
+     "through what she can no longer do (a paw that won't take weight, a breath she can't finish)",
+     "through the sound of it, the impact heard before it is felt",
+     "from the attacker's side: what the blow felt like going IN, the give under it",
+-    "through the scenery: the bark, mud or water taking the blow with her",
++    "through the scenery: what she is driven against or lands on taking the blow with her",
+     "as one long breathless sentence carrying the whole flurry",
+     "through the delay: a beat of nothing, then the pain arriving all at once",
+     "by the new pain finding the old one, the two hurts becoming one",
+@@ -1633,7 +1633,8 @@ SCENE_THINGS = ((r"\b(?:grass|grasses|turf|meadow)\b", r"\b(?:grass|meadow|turf|
+                 (r"\b(?:leaves|leaf|leaf-?litter|undergrowth|ferns?|brambles?)\b",
+                  r"\b(?:lea(?:f|ves)|forest|wood|woods|jungle|undergrowth|fern|bramble|bush|thicket|tree)"),
+                 (r"\b(?:mud|muddy|mire)\b", r"\b(?:mud|muddy|mire|marsh|swamp|bog|rain|creek|river|bank|shore)"),
+-                (r"\b(?:sand|sandy|dune)\b", r"\b(?:sand|dune|beach|desert|shore)"))
++                (r"\b(?:sand|sandy|dune)\b", r"\b(?:sand|dune|beach|desert|shore)"),
++                (r"\b(?:trees|forest|woods|bark|canopy)\b", r"\b(?:trees?|forest|wood|woods|jungle|grove|orchard|thicket)\b"))
+ STONE_ONLY = re.compile(r"\b(?:off the (?:stone|rock|walls?)|stone floor|rock floor|(?:cave|stone|rock) walls?|echo\w* back at her|"
+                         r"cave|stalactite|stalagmite)\b", re.I)
+ # things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
+@@ -2335,7 +2336,8 @@ class Narrator:
+                 "water" if m.get("type") == "Water" else
+                 "blast" if m.get("target") in ("spread", "whole_body") else "blunt")
+         import zlib
+-        opts = self.BLOW_SOUND[kind]
++        ban = self._scene_ban()
++        opts = [o for o in self.BLOW_SOUND[kind] if not (ban and ban.search(o))] or self.BLOW_SOUND[kind]
+         return opts[zlib.crc32(f"{getattr(self, 'beat_now', 0)}|{m.get('name')}".encode()) % len(opts)]
+ 
+     def _relative(self, taken):
+@@ -3455,8 +3457,8 @@ class Narrator:
+                     + (f"What happens (the author's direction): {a['flavor']}. " if a.get("flavor") else "")
+                     + "Keep each fighter at their listed recovery stage unless a change is listed below. Keep the full "
+                     "detail of a fight beat, but find NEW things to show each time instead of circling back: a different "
+-                    "injury flaring or stiffening, a sense not used yet (" + self._sw("ambience", "a smell, a sound, the light") + "; an "
+-                    "echo, the light shifting), small changes in breathing or posture, a new thought or memory of a "
++                    "injury flaring or stiffening, a sense not used yet (" + self._sw("ambience", "a smell, a sound, the light") + "; "
++                    "the light shifting), small changes in breathing or posture, a new thought or memory of a "
+                     "specific moment of the fight, how the winner's own wounds are settling in."]
+         if t == "heal":
+             parts = [c["part"] for c in a.get("parts", [])]
+@@ -4860,8 +4862,8 @@ class Narrator:
+             "what each of them makes of the other now: her strength, her tells, the way she is favouring a hurt part",
+             "a plan forming in one fighter's head, worked through step by step, and doubts about it",
+             "the body taking stock, part by part: what still works, what throbs, what she is hiding from her opponent",
+-            "the place in detail: what has changed since the fight began (trampled ground, a broken branch, water "
+-            "clouded, the light moved), the animals and weather carrying on as if nothing were happening",
++            "the place in detail: what has changed since the fight began (the marks the fight has left, what has been "
++            "knocked loose, the light moved), the weather carrying on as if nothing were happening",
+             "breath and heartbeat slowing, sweat or water cooling on fur or skin, the ache arriving where the shock was",
+             "small involuntary things: a tail twitching, an ear turning to a sound, a paw testing its weight",
+             "pride, fear, anger, grudging respect, or stubbornness, each shown through what she does, not named",
+@@ -6063,6 +6065,8 @@ class Narrator:
+         for thing, has in SCENE_THINGS:
+             if not re.search(has, scene_low):
+                 bans.append(thing)
++        if re.search(r"\bnothing echoes|\bno echo", scene_low):
++            bans.append(r"\becho\w*")       # open air where sound is torn away (the scene's acoustics say so)
+         return re.compile("|".join(f"(?:{b})" for b in bans), re.I) if bans else None
+ 
+     def _lines(self):
+@@ -10576,7 +10580,7 @@ class Narrator:
+                            f"starts and nobody is touched.",
+                     "take": "the fallen and the place: how each fighter who is down or out lies (exactly as CURRENT "
+                             "CONDITION says: no change unless one is listed for this beat), her breathing, what the "
+-                            "winner notices of her, the water, the light and the sounds of the place. End on "
++                            "winner notices of her, the light, the air and the sounds of the place. End on "
+                             "stillness."}
+             plan = [(k, jobs.get(k, f), w) for k, f, w in plan]
+             pin_plan = True     # (these parts stand as written: no 'the attack has already been shown' after part one)
+diff --git a/story_blocks.txt b/story_blocks.txt
+index e1f8393..2b126a0 100644
+--- a/story_blocks.txt
++++ b/story_blocks.txt
+@@ -1376,7 +1376,7 @@ the way she carries the hurt place, guarding it without thinking
+ silence, and what is in it
+ the taste in her mouth
+ what she can hear of the other's breathing
+-something in the place settling: dust, water, an echo dying
++something in the place settling: grit, a loose stone, the air
+ a look that passes between them and what it does not say
+ the smallest sign that she is not finished
+ her shadow, her reflection, the mark she has left on the ground
+@@ -3273,7 +3273,7 @@ the talons sink in and the ground drops away, and every wingbeat takes it furthe
+ she kicks at nothing; her feet find only air | has: legs
+ the grip around her is the only solid thing in the world, and it is going to let go
+ she can feel each wingbeat above her as a lurch upward
+-the arena below wheels slowly, the trees small, the water a bright coin
++the arena below wheels slowly, everything in it small and far away
+ for one long moment at the top of the climb neither of them moves at all
+ 
+ == aerial | moment: carried
+@@ -9541,9 +9541,9 @@ the impact jars right down her horn into her skull, and her eyes close for an in
+ the strike lands squarely on her horn and it hums, a deep vibration she feels inside her head | zone: head
+ 
+ == sensation | has: horn
+-the ache in her {part} sits at the base of her horn, a dull pressure behind her eyes | level: sore, hurting
+-the weight of her horn has become a burden, every turn of her head tugging at her {part} | level: very painful, excruciating
+-her horn feels enormous, the throb in her {part} pulling her head down toward the ground | level: excruciating, devastated
++the ache in her {part} sits at the base of her horn, a dull pressure behind her eyes | level: sore, hurting | zone: head, neck
++the weight of her horn has become a burden, every turn of her head tugging at her {part} | level: very painful, excruciating | zone: head, neck
++her horn feels enormous, the throb in her {part} pulling her head down toward the ground | level: excruciating, devastated | zone: head, neck
+ 
+ == tell | has: horn
+ her head is up and her horn tracks every move her opponent makes | state: fresh
+diff --git a/story_lines.txt b/story_lines.txt
+index 20e2516..b998019 100644
+--- a/story_lines.txt
++++ b/story_lines.txt
+@@ -3316,7 +3316,7 @@ She leaned forward and let the fire roll out in a low, rolling sheet.
+ Rime crept across her own lips before the blast left her.
+ She narrowed her stance as frost gathered around her, sharp and white.
+ The cold built in her chest until her breath turned to glittering mist.
+-She hurled the cold forward in a sharp, freezing gust.
++She sent the cold out at {foe}, sharp and freezing.
+ 
+ == before_strike | kind: wind
+ She pushed the air out before her in one hard, buffeting wall.
+-- 
+2.43.0
+

@@ -1,7 +1,7 @@
 From 5506b108f64f8eb9e0cbd8158b246ad28f2396f5 Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Tue, 13 Oct 2026 03:21:13 +0000
-Subject: [PATCH 2/4] Fix: OFF BALANCE after an overcommit no longer says the
+Subject: [PATCH 2/5] Fix: OFF BALANCE after an overcommit no longer says the
  blow was turned aside; no 'fresh breath' on a worn-out body
 
 ---
