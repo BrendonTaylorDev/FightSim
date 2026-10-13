@@ -39,7 +39,7 @@ def _chat(*args, **kw):
         CALL_LOG.append((who, _time.time() - t, size))
 
 import userprompt
-from engine import tier_for, pain_tiers, Engine, body_region
+from engine import tier_for, pain_tiers, Engine, body_region, in_covering
 
 CRAFT_RULES = """You are the narrator of a fight story. A rules engine has ALREADY decided what happens.
 You turn WHAT HAPPENS IN THIS BEAT into prose.
@@ -1554,7 +1554,7 @@ WHITESPACE = re.compile(r"\s+")
 
 DETAIL = ("Slow time down and spend the words on concrete detail: exactly where each contact lands and with what, "
           "weight, grip, texture, temperature, sound, breath, the specific quality of each pain, and small physical "
-          "tells (ears, tails, fins, claws, eyes). Detail, not filler: no summarizing, no repeating.")
+          "tells (the eyes, the breath, the set of the head, a limb, the tail). Detail, not filler: no summarizing, no repeating.")
 
 
 def poss(name):
@@ -2120,7 +2120,7 @@ class Narrator:
                 "other": [("a grunt", "Hff"), ("a hiss", "Hss"), ("a sharp breath", "Hk")]},
         "mid": {"growl": [("a snarl dragged through the teeth", "Rrnngh"), ("a hiss that turns into a growl", "Hssrrr"),
                           ("a sharp bark of pain", "Ahk"), ("a groan from deep in the chest", "Nnngh"),
-                          ("a yowl bitten off short", "Yahh")],
+                          ("a roar bitten off short", "Rrah")],
                 "chirp": [("a high yelp", "Yip"), ("a pained chittering", "Ki-ki"), ("a squeal through the teeth",
                           "Eeeh"), ("a yowl that cracks", "Yaah"), ("a string of sharp barks", "Ack, ack")],
                 "other": [("a cry", "Ahh"), ("a yelp", "Yip"), ("a groan", "Nngh")]},
@@ -2157,6 +2157,8 @@ class Narrator:
                   "a sharp hiss of sparks", "a thunderclap at no distance", "a crackling sizzle that dies away"],
         "cold": ["a crisp crackle of frost", "the tinkle of ice forming", "a cold, sharp snap", "a creak of freezing "
                  "fur"],
+        "wind": ["a thin, rising whistle and the hiss of cut air", "the shriek of air sliced past", "a sharp crack of "
+                 "wind, like a whip", "a keening rush of air that ends in a slap"],
     }
 
     HOLD_REACT = {
@@ -2198,7 +2200,7 @@ class Narrator:
                           ("a long, hoarse wail with no breath behind it", "Hhaaaaa")]),
         ("raw", "chirp", [("a cracked, squealing cry", "Eeeyaaah"), ("a hoarse, breathless shriek", "Hhhiiieee"),
                           ("a broken string of yelps", "Yip-yip-yaaah"), ("a thin, wavering wail", "Iiiiih")]),
-        ("high", "growl", [("a bellow forced out through the teeth", "Hrrraah"), ("a sharp, splitting yowl",
+        ("high", "growl", [("a bellow forced out through the teeth", "Hrrraah"), ("a sharp, splitting roar",
                            "Yaaarrgh"), ("a groan that rises to a shout", "Nnnngh-AH")]),
         ("high", "chirp", [("a frantic, high squeal", "Kyiii"), ("a sharp, splitting yelp", "Yaaip"),
                            ("a wavering cry that jumps up in pitch", "Aaah-eeh")]),
@@ -2206,6 +2208,16 @@ class Narrator:
         ("mid", "chirp", [("a sharp, startled yelp", "Yeep"), ("a squeak bitten off short", "Ik")]),
     ]:
         VOICE[_tier][_fam].extend(_more)
+    # a bird's own sounds, through a beak: no yelps, yowls or barks, nothing through the teeth
+    for _tier, _more in (("low", [("a sharp click of the beak", "Tchk"), ("a short hiss through the beak", "Hss"),
+                                  ("a clipped, startled call", "Kek"), ("a sharp breath", "Hk")]),
+                         ("mid", [("a harsh, cracking cry", "Kraa"), ("a hiss that rises into a call", "Hsss-ah"),
+                                  ("a thin, piping cry", "Kiih"), ("a cry cut off with a snap of the beak", "Kah")]),
+                         ("high", [("a piercing screech", "Kreeee"), ("a shrill cry that breaks", "Kyaah"),
+                                   ("a thin, cracking wail", "Iiiiah")]),
+                         ("raw", [("a raw, splitting screech", "KRRAAAH"), ("a broken, shrill wail", "Eeeeiiah"),
+                                  ("a hoarse, ragged shriek with no breath behind it", "Hhkyaaah")])):
+        VOICE[_tier]["beak"] = _more
 
     for _lvl, _more in {
         "minor": ["she tests the weight with a shove, then another", "a flex of the shoulders to see what gives",
@@ -2268,6 +2280,8 @@ class Narrator:
         parts = " ".join((getattr(self, "damage_by", {}) or {}).get(defender, {}))
         if "arm" not in parts:
             return ""
+        if re.search(r"\bwing", part.lower()):
+            return " (a WING, on her back: not her arm)"      # a winged dragon's wings are not her arms
         region = body_region(part)
         if region in ("fore_up", "fore_low"):
             hand = re.search(r"\b(paw|hand)\b", part.lower())
@@ -2302,6 +2316,8 @@ class Narrator:
 
     def _voice_family(self, who):
         v = str((getattr(self, "voices", None) or {}).get(who) or "").lower()
+        if "beak" in self._feats_of(who):
+            return "beak"           # a bird: her cries come through a beak
         if re.search(r"chitter|squeak|chirp|peep|bark", v):
             return "chirp"
         if re.search(r"growl|hiss|snarl", v):
@@ -2327,15 +2343,21 @@ class Narrator:
         desc, written = opts[seed % len(opts)]
         return f"{desc} (*{written}*)"
 
-    def _blow_sound(self, m):
+    def _blow_sound(self, m, a=None):
         name = f"{m.get('name', '')} {m.get('about', '')}".lower()
-        kind = ("claw" if re.search(r"slash|claw|swipe|scratch|rake|cut", name) else
+        # blades or a wall of wind (Air Slash) are no claws: they sound like cut air
+        wind = "wind" in story_blocks.kind_of(m.get("name", ""), m.get("about", "")) and not re.search(r"\bclaws?\b", name)
+        kind = ("wind" if wind else
+                "claw" if re.search(r"slash|claw|swipe|scratch|rake|cut", name) else
                 "bite" if re.search(r"bite|fang|crunch|jaws", name) else
                 "shock" if m.get("type") == "Electric" else "cold" if m.get("type") == "Ice" else
                 "water" if m.get("type") == "Water" else
                 "blast" if m.get("target") in ("spread", "whole_body") else "blunt")
         import zlib
-        opts = self.BLOW_SOUND[kind]
+        # (her covering: no fur parting on feathers or scales; no trees to roll through on a bare shelf)
+        opts = self._fit_body(self.BLOW_SOUND[kind], (a or {}).get("defender"))
+        ban = getattr(self._blocks(), "scene_ban", None)
+        opts = [o for o in opts if not (ban is not None and ban.search(o))] or opts
         return opts[zlib.crc32(f"{getattr(self, 'beat_now', 0)}|{m.get('name')}".encode()) % len(opts)]
 
     def _relative(self, taken):
@@ -2631,7 +2653,7 @@ class Narrator:
 
     def _hold_react(self, h, level):
         import zlib
-        opts = self.HOLD_REACT.get(level) or self.HOLD_REACT["minor"]
+        opts = self._fit_body(self.HOLD_REACT.get(level) or self.HOLD_REACT["minor"], h.get("defender"))
         return opts[(zlib.crc32(h["part"].encode()) + int(getattr(self, "beat_now", 0) or 0)) % len(opts)]
 
     PRESS_LOOK = {
@@ -2788,7 +2810,7 @@ class Narrator:
             look += "; " + self.JOINT_LOOK[seed % len(self.JOINT_LOOK)]
         elif reg == "neck" and k != "light":
             look += "; " + self.THROAT_LOOK[seed % len(self.THROAT_LOOK)]
-        return look
+        return self._in_coat(look, h.get("defender"))      # (written for fur: the feathers or scales she has)
 
     def _many_hits(self, hits):
         """Whole-body attacks: summarize instead of listing 30+ lines."""
@@ -3536,7 +3558,7 @@ class Narrator:
                          f"It does no damage. " + ("It WORKS." if got else f"It doesn't take hold: {a['defender']} "
                                                    f"resists or shakes it off.") + intent)
             for s in got:
-                lines.append(f"  - This leaves {s['fighter']} {s.get('look') or Engine.STATUS_LOOK.get(s['status'], s['status'].upper())} "
+                lines.append(f"  - This leaves {s['fighter']} {s.get('look') or self._status_look(s)} "
                              f"(for the next {s['beats']} beat(s)). Show it taking hold.")
                 lines += self._status_story(s, a.get("attacker") if s.get("fighter") == a.get("defender") else a.get("defender"))
             return lines
@@ -4038,7 +4060,7 @@ class Narrator:
                      "pin damage": f"it is delivered from on top of the pin, short and cramped"
                      }.get(label, label) for label, _ in m["extras"]) + ".")
             if a.get("hits") and not a.get("environment") and m:
-                lines.append(f"  - THE SOUND OF THE BLOW: {self._blow_sound(m)}.")
+                lines.append(f"  - THE SOUND OF THE BLOW: {self._blow_sound(m, a)}.")
             mv_line = self._impact_motion(a)
             if mv_line:
                 lines.append(mv_line)
@@ -4227,7 +4249,7 @@ class Narrator:
             if s.get("hazard"):
                 lines += self._arena_status_lines([s])
                 continue
-            look = s.get("look") or Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
+            look = s.get("look") or self._status_look(s)
             lines.append(f"  - This leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
             if s.get("stumble"):
                 lines.append("    " + self._stumble_line(s, whole=(a.get("move") or {}).get("name")
@@ -4354,7 +4376,7 @@ class Narrator:
         """What the arena did to a fighter who landed on or was driven into one of its hazards."""
         out = []
         for s in statuses or []:
-            look = s.get("look") or Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
+            look = s.get("look") or self._status_look(s)
             src = s.get("hazard")
             if src:
                 out.append(f"  - {src[:1].upper() + src[1:]} does more than hit her ({s.get('about') or 'see the SCENE'}): it "
@@ -4380,7 +4402,7 @@ class Narrator:
                  + ("them" if len(who) > 1 else "her") + ". It knocks nobody down and moves nobody; the fight goes on."]
         lines += [self._hit_line(h, i + 1 if len(e.get("hits") or []) > 1 else None) for i, h in enumerate(e.get("hits") or [])]
         for s in e.get("status_applied") or []:
-            look = s.get("look") or Engine.STATUS_LOOK.get(s["status"], s["status"].upper())
+            look = s.get("look") or self._status_look(s)
             lines.append(f"  - It leaves {s['fighter']} {look} (for the next {s['beats']} beat(s)). Show it.")
             lines += self._status_story(s)
         if not e.get("hits") and not e.get("status_applied"):
@@ -4623,8 +4645,8 @@ class Narrator:
             f"the pinner's side: {poss(a)} own effort, her injuries under the strain, how she shifts and keeps the pin",
             f"one body part of {poss(d)} at a time: pick the worst-pressed spot and stay with exactly how it feels",
             f"breath and sound: {poss(d)} breathing against the weight, the noises both make, the place around them",
-            f"what {d} tries, small and specific: a paw working for purchase, a twist of the hips, testing each contact",
-            f"what each one sees in the other up close: eyes, teeth, fur, trembling, a look that passes between them",
+            f"what {d} tries, small and specific: a limb working for purchase, a twist of the hips, testing each contact",
+            f"what each one sees in the other up close: eyes, breath, trembling, a look that passes between them",
             f"the ground under them: what it is made of against {poss(d)} body, what's within reach, what slips",
         ]
         step = (int(e.get("beats") or 0) if fm else
@@ -4837,11 +4859,19 @@ class Narrator:
         self._story_tail = _tail(story_so_far, 6000)
         if self.progress:
             self.progress(f"an interlude: the fight draws breath (about {words} words)")
+        pe_ = getattr(self, "posture_end", None) or {}
+        feet_ = [w for w in self.strengths if str(pe_.get(w, "")).upper().startswith("ON HER FEET")]
+        air_ = [w for w in self.strengths if "AIR" in str(pe_.get(w, "")).upper()]
         pin = (" A pin is running: it holds exactly as it is the whole time, the pinned one held down, the pinner "
                "bearing down; no seconds are marked or counted, no escape attempt, no new press. The lull is inside "
                "the pin: two bodies locked together, breathing." if self._pin_beat else
-               " If both are on their feet they may circle a little, weight shifting, each waiting for the other to "
-               "move, but nobody closes in, strikes, or grabs, and they end about where they were.")
+               # (only two who are both standing can circle: one up in the air holds herself there, on her wings)
+               " They may circle a little, weight shifting, each waiting for the other to move, but nobody closes in, "
+               "strikes, or grabs, and they end about where they were." if len(feet_) == len(self.strengths) >= 2 else
+               " Nobody closes in, strikes, or grabs, and they end where they were.")
+        if air_:
+            pin += (f" {' and '.join(air_)} stays up in the air the whole time, holding herself there on her wings "
+                    f"(every wingbeat costs her): she does not land.")
         why = (f"\nWHY THEY ARE FIGHTING (what each of them can think about, remember of the last few minutes, or "
                f"want): {reason}" if reason else "")
         ideas = random.sample([
@@ -4850,8 +4880,8 @@ class Narrator:
             "the body taking stock, part by part: what still works, what throbs, what she is hiding from her opponent",
             "the place in detail: what has changed since the fight began (trampled ground, a broken branch, water "
             "clouded, the light moved), the animals and weather carrying on as if nothing were happening",
-            "breath and heartbeat slowing, sweat or water cooling on fur or skin, the ache arriving where the shock was",
-            "small involuntary things: a tail twitching, an ear turning to a sound, a paw testing its weight",
+            "breath and heartbeat slowing, the ache arriving where the shock was",
+            "small involuntary things: a tail twitching, the head turning to a sound, a limb testing its weight",
             "pride, fear, anger, grudging respect, or stubbornness, each shown through what she does, not named",
             "what she is fighting for, and whether it is still worth this",
             "the sounds of the place filling the silence between them, and the sounds of their own breathing",
@@ -6077,8 +6107,23 @@ class Narrator:
         return "talons" if "talon" in parts else "hands" if "hand" in parts else "feet" if ("foot" in parts or "feet" in parts) else "grip"
 
     def _feats_of(self, who):
-        """What a fighter's body has (tails, fins, horn, arms...), from her own part names."""
-        return story_blocks.features(list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()))
+        """What a fighter's body has (tails, fins, horn, arms...), from her own part names, and what she is covered
+        in (feathers, scales, skin or fur, from her description: no fur on a dragon's scales)."""
+        has = story_blocks.features(list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()))
+        return has | self._coat_feat(who) if has else has      # (no body known: nothing to add a covering to)
+
+    def _coat_feat(self, who):
+        """{'scales'}, {'feathers'}, {'skin'} or {'fur'}: her covering, as play.py read it off her description."""
+        c = (getattr(self, "coats", None) or {}).get(who)
+        return {c} if c else set()
+
+    def _in_coat(self, text, who):
+        """Wording written for fur, said in her own covering ('the fur parting' on a dragon: 'the scales parting')."""
+        return in_covering((getattr(self, "coats", None) or {}).get(who), text)
+
+    def _status_look(self, s):
+        """How a status looks on her (Engine.STATUS_LOOK), in her own covering."""
+        return self._in_coat(Engine.STATUS_LOOK.get(s["status"], s["status"].upper()), s.get("fighter"))
 
     def _self_look(self, who, part, **ctx):
         """A self-look idea for her own part. One she can't see (her neck, her back, her own face) gets only the
@@ -6117,7 +6162,8 @@ class Narrator:
         parts = self.damage_by.get(who) or {}
         if parts:
             # "hurts": some part of her really is hurt (lines about her own hurts need it: has: hurts)
-            cache[who] = set(story_blocks.features(parts)) | ({"hurts"} if any(d >= 30 for d in parts.values()) else set())
+            cache[who] = set(story_blocks.features(parts)) | ({"hurts"} if any(d >= 30 for d in parts.values()) else set()) \
+                | self._coat_feat(who)
         # "aloft": in the air all beat long (no ground under her for any idea to stand, sit or kneel on)
         return cache.get(who, set()) | ({"aloft"} if self._aloft(who) else set())
 
@@ -9009,6 +9055,7 @@ class Narrator:
                     st = story_blocks.state_of((self.strengths or {}).get(who, 100))
                     feats_w = story_blocks.features(list((getattr(self, "damage_by", None) or {}).get(who, {}) or [])
                                                     or [p for p in (getattr(self, "part_names", None) or [])])
+                    feats_w = feats_w | self._coat_feat(who) if feats_w else feats_w
                     ideas = B.pick("resolve_shown", 2, has=feats_w, state=st)
                 add(x, f"\"{m.group(0)}\" tells it instead of showing it: show it in her body and what she does"
                        + (" (for example: " + "; ".join(ideas) + ")" if ideas else "") + ", or leave it out")
@@ -10166,8 +10213,11 @@ class Narrator:
                         if re.search(r"growl|hiss|chitter|squeak|bark|cr(?:y|ies)|whine|yelp|snarl|screech|chirp", s, re.I)), "")
             if bit:
                 voices.append(f"{name}: {bit.rstrip('.;, ')}")
+        # (the mouths in this fight: a bird hisses through her beak, not her teeth)
+        beaks = {"beak" in self._feats_of(n) for n in list((getattr(self, "strengths", None) or {}))[:4]}
+        mouth = "teeth or beak" if beaks == {True, False} else "beak" if beaks == {True} else "teeth"
         how = {"always": "Every hit, grip or squeeze that hurts gets a sound out of her, even a small one held behind "
-                          "her teeth, and the badly hurt places get loud ones.",
+                         f"her {mouth}, and the badly hurt places get loud ones.",
                "often": "Most hits that hurt get a sound out of her; the badly hurt places always do.",
                "sometimes": "Some hits get a sound out of her; others she takes in silence; the badly hurt places "
                             "always do.",
@@ -10178,14 +10228,14 @@ class Narrator:
                  "rarely": "Once in a while write a sound out as it sounds",
                  "never": ""}.get(str(cfg.get("write_out", "often")), "")
         return out + ("SOUNDS THEY MAKE: " + how + " Never just 'a small sound' or 'a noise'. Every pained sound is "
-                      "described: what it is (a hiss through the teeth, a whine high in the nose, a choked gasp, a yelp, a "
+                      f"described: what it is (a hiss through the {mouth}, a whine high in the nose, a choked gasp, a "
                       "growl ground out, a ragged cry that cracks in the middle), where it comes from (throat, chest, nose, "
-                      "teeth), and its shape and pitch (short, cut off, dragged out, rising, wet, rasping). The worse it "
+                      f"{mouth}), and its shape and pitch (short, cut off, dragged out, rising, wet, rasping). The worse it "
                       "hurts, the bigger and less controlled the sound."
                       + (f" {write}, as ONE italic word inside a sentence that makes clear it is HER sound and what kind "
                          f"({self._sound_examples()}), never "
                          f"standing alone between sentences, never in quotes and never ending a paragraph: *Hhk*, "
-                         f"*Nngh*, *Hss*, *Ahh*, *Kh-hah*, *Yip*." if write else
+                         f"*Nngh*, *Hss*, *Ahh*, *Kh-hah*." if write else
                          " Describe the sounds; don't write them out.")
                       + " Sounds only: no words, no sobbing or weeping."
                       + " BODY IN MOTION: whenever she shakes, trembles, jerks, thrashes or writhes, say WHERE and HOW: "
@@ -10193,7 +10243,7 @@ class Narrator:
                       "the motion itself (short scrapes of the claws at the ground, a limb stretched out and clawing at "
                       "the dirt again and again, twisting at the hips, the back arching off the ground), and how hard "
                       "and fast. Never just 'she shook' or 'her body jerked'. The LOOKS notes on each press and the "
-                      "VISIBLE WEAR are the picture to show (fur, flesh, joints, marks): show it in your own words, "
+                      "VISIBLE WEAR are the picture to show (her covering, flesh, joints, marks): show it in your own words, "
                       "don't copy the notes."
                       + (" Fit them to who makes them: " + "; ".join(voices) + "." if voices else "") + "\n\n")
 
@@ -10319,13 +10369,15 @@ class Narrator:
                 f"{poss(v)} side, AFTER the {what} (it has been told above: do not tell it landing again). Slow time "
                 f"right down and stay inside her body with what that {what} to her {part.lower()} has DONE to her: the "
                 f"hurt arriving, spreading and settling, the {part.lower()} first and then what it drags with it; what "
-                f"her body does on its own (shaking, curling round it, a limb that won't answer, muscles jumping, cold "
-                f"sweat under the fur); her breathing, heavy and ragged, catching where it hurts; the sounds she tries "
-                f"to keep in (a whine through her teeth, a hiss, a cry she bites off) and whether she manages to"
+                f"her body does on its own (shaking, curling round it, a limb that won't answer, muscles jumping, "
+                + self._in_coat("cold sweat under the fur", v) + "); her breathing, heavy and ragged, catching where it "
+                f"hurts; the sounds she tries to keep in (a whine through her "
+                + ("beak" if "beak" in self._feats_of(v) else "teeth") + ", a hiss, a cry she bites off) and whether "
+                f"she manages to"
                 + (" (by now she mostly can't)" if raw is not None and raw >= 2 else "")
                 + self._callback_clause(v, part)
                 + f"; she LOOKS at her own body too: down at the {part.lower()} (her own covering there, any swelling "
-                f"or mark), her own paw or limb shaking, testing whether it still answers and watching it obey or not, "
+                f"or mark), a limb of her own shaking, testing whether it still answers and watching it obey or not, "
                 f"what she makes of what she sees"
                 + f"; her thoughts, short and in her own voice; how she looks at {by or 'her opponent'} now. TRUE TO "
                 f"SIZE: her {part.lower()} is now {label} and she has about {strength:.0f}% of her strength left; the "

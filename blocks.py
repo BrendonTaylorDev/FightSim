@@ -18,6 +18,13 @@ PAST_MEMORY = re.compile(r"\b(?:old fights?|an? (?:old|earlier) (?:fight|battle|
                          r"training|taught|old lesson|a lesson|long ago|since she was (?:small|young|little)|grew up|"
                          r"remembers? (?:a|whole|the) \w+ (?:from|of) long|as a (?:pup|kit|cub|hatchling))\b", re.I)
 
+# sobbing and weeping: the narrator's hard rules forbid them (pain shows as cries, shaking and streaming eyes)
+NO_SOB = re.compile(r"\bsob(?:s|bed|bing)?\b|\bweep(?:s|ing)?\b|\bwept\b", re.I)
+
+# what a wing is not: an arm with a hand on it, or a leg she stands and limps on
+WING_NOT = re.compile(r"\b(?:fore)?arms?\b|\bpaws?\b|\bhands?\b|\bfingers?\b|\bfists?\b|\bknuckles?\b|\bgrip\b|"
+                      r"\bforelegs?\b|\bplant(?:s|ed|ing)?\b|\blimp\w*|\bweight (?:on|off)\b|\bstep\w*", re.I)
+
 ZONE_OF = {"head": "head", "neck": "neck", "chest": "chest", "belly": "belly", "back_up": "back", "back_low": "back",
            "shoulder": "arm", "fore_up": "arm", "fore_low": "arm", "hind_up": "leg", "hind_low": "leg", "tail": "tail"}
 
@@ -122,12 +129,24 @@ def body_bans(has):
     if "beak" in has:
         bans += [r"\bteeth\b", r"\btooth\b", r"\bfangs?\b", r"\bjaws?\b", r"\blips?\b", r"\bmuzzle", r"\bsnout",
                  r"\bwhiskers?\b", r"\bgums?\b", r"\bcheeks?\b"]
-    if "feathers" in has:
-        bans += [r"\bfur\b", r"\bhackles\b", r"\bpelt\b", r"\bscruff\b"]
+    if has & {"feathers", "scales", "skin"} and "fur" not in has:
+        # (her covering is not fur: no coat, pelt or hairs on feathers, a dragon's scales or smooth skin)
+        bans += [r"\bfur(?:red|ry)?\b", r"\bhackles\b", r"\bpelt\b", r"\bscruff\b", r"\bcoat\b(?! of)", r"\bhairs\b",
+                 r"\btufts?\b"]
+    if has & {"beak", "scales"}:
+        # a dog's or a cat's noises: no yelping bird and no yowling dragon (a bird doesn't growl or whimper either)
+        bans += [r"\byowl\w*", r"\byelp\w*", r"\byips?\b", r"\*yip\*", r"\bwhimper\w*"]
+        if "beak" in has:
+            bans += [r"\bgrowl\w*", r"\bsnarl\w*", r"(?<!the )\bbark(?:s|ed|ing)?\b", r"\bwhine[sd]?\b"]
     if "ears" not in has:
         bans += [r"\bears?\b"]
     if "arms" not in has and "forelegs" not in has:
         bans += [r"\bpaws?\b", r"\bhands?\b", r"\bfists?\b", r"\bfingers?\b", r"\bforelegs?\b", r"\bknuckles?\b"]
+        if "wings" in has:
+            bans += [r"\b(?:fore)?arms?\b"]        # a bird's wings are not arms
+        if "talons" in has:
+            # a bird's feet carry talons, not claws (the other's claws on her are fine), and she has no other legs
+            bans += [r"\bher (?:\w+ )?claws?\b", r"\bhind\b"]
     if "legs" not in has:
         bans += [r"\blegs?\b", r"\bfeet\b", r"\bfoot\b", r"\bknees?\b", r"\btoes\b", r"\bhind\b"]
     if "aloft" in has:      # in the air all beat: nothing that needs ground under her
@@ -265,6 +284,11 @@ class Blocks:
             ctx["earlier"] = self.earlier      # what earlier beats left behind (a blow landed): for every pick
         ctx = {k: ({str(x).lower() for x in v} if isinstance(v, (set, frozenset, list, tuple)) else {str(v).lower()})
                for k, v in ctx.items() if v}
+        if re.search(r"\bwings?\b", " ".join([str(fmt.get("part") or "")] + sorted(ctx.get("part") or ()))):
+            # the part is a wing: a block for a hurt arm (a paw that opens, a grip, a limb planted or limped on) is
+            # not for it, even when she has arms too (a winged dragon)
+            exclude = [WING_NOT] + (list(exclude) if isinstance(exclude, (list, tuple)) else [exclude] if exclude
+                                    is not None else [])
         cool = int(self.cfg.get("cooldown_beats", 8))
         pool = []
         for cat, conds, text in self.entries:
@@ -272,6 +296,8 @@ class Blocks:
                 continue
             if any(s not in fmt or not str(fmt[s]).strip() for s in SLOT.findall(text)):
                 continue       # a slot with nothing to fill it ("the instant  looked away"): not this one
+            if NO_SOB.search(text):
+                continue       # the hard rules allow no sobbing or weeping, so no idea offers it
             if not getattr(self, "old_memories", True) and PAST_MEMORY.search(text):
                 continue       # a memory from before the fight, and those are off (narration.old_memories)
             if getattr(self, "scene_ban", None) is not None and self.scene_ban.search(text):

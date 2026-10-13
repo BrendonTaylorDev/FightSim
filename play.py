@@ -1006,7 +1006,7 @@ class Session:
         for f in self.eng.fighters.values():
             look = " ".join(str(getattr(f, k, "") or "") for k in ("description", "appearance")).lower()
             self.narrator.coats[f.name] = next((w for rx, w in ((r"feather|plumage", "feathers"), (r"\bscal", "scales"),
-                                                                 (r"\bfur\b|\bpelt\b|\bcoat\b", "fur"),
+                                                                 (r"\bfur\b|\bpelt\b|\bcoat\b(?! of)", "fur"),
                                                                  (r"\bskin\b|\bhide\b", "skin")) if re.search(rx, look)), "")
         self.narrator.body_colors = {f.name: set(re.findall(
             r"\b(red|black|blue|green|gold(?:en)?|amber|yellow|brown|violet|purple|pink|white|grey|gray|silver|orange|"

@@ -168,6 +168,27 @@ def body_region(part):
     return "other"
 
 
+_COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b(?! of)", "plumage"), (r"\bhairs?\b(?!'s)", "feathers")],
+               "scales": [(r"\bburnt hair\b", "scorched hide"), (r"\bfur\b", "scales"), (r"\bcoat\b(?! of)", "scales"),
+                          (r"\bhairs?\b(?!'s)", "scales"), (r"\bwhole tufts\b", "whole patches"),
+                          (r"\btufts?\b", "ragged patches")],
+               "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b(?! of)", "hide"), (r"\bhairs?\b(?!'s)", "skin"),
+                        (r"\btufts?\b", "ragged patches")]}
+
+
+def in_covering(cover, text):
+    """Wording written for fur, said in her own covering (feathers, scales or skin): 'the fur parting' on a dragon
+    becomes 'the scales parting'. Fur, or a covering not known, leaves it as it is."""
+    swaps = _COVER_SWAP.get(cover)
+    if not swaps or not text:
+        return text
+    for rx, word in swaps:
+        text = re.sub(rx, word, text)
+    return re.sub(r"\b(feathers|scales) (is|was|stands?|lies|parts)\b",
+                  lambda m: m.group(1) + " " + {"is": "are", "was": "were", "stands": "stand", "stand": "stand",
+                                                "lies": "lie", "parts": "part"}[m.group(2)], text)
+
+
 def _side(part):
     w = part.lower().split()
     return "left" if "left" in w else "right" if "right" in w else None
@@ -4958,21 +4979,9 @@ class Engine:
         best = max(n, key=n.get)
         return best if n[best] else "skin"
 
-    _COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b", "plumage"), (r"\bhairs?\b", "feathers")],
-                   "scales": [(r"\bfur\b", "scales"), (r"\bcoat\b", "scales"), (r"\bhairs?\b", "scales"),
-                              (r"\bburnt hair\b", "scorched hide")],
-                   "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b", "hide"), (r"\bhairs?\b", "skin")]}
-
     def in_her_covering(self, f, text):
         """Wound and wear wording is written for fur: say it in feathers, scales or skin for a body that has those."""
-        swaps = self._COVER_SWAP.get(self.covering(f))
-        if not swaps or not text:
-            return text
-        for rx, word in swaps:
-            text = re.sub(rx, word, text)
-        return re.sub(r"\b(feathers|scales) (is|was|stands?|lies|parts)\b",
-                      lambda m: m.group(1) + " " + {"is": "are", "was": "were", "stands": "stand", "stand": "stand",
-                                                    "lies": "lie", "parts": "part"}[m.group(2)], text)
+        return in_covering(self.covering(f), text)
 
     def visible_marks(self, f, p):
         """What the damage to one part LOOKS like by now: the marks of what did it (claws, teeth, blows, grips,
@@ -7750,7 +7759,7 @@ class Engine:
 
     STATUS_LOOK = {
         "paralyzed": "PARALYZED: muscles locking up, sparks crawling over her, stiff and jerky, slow to react",
-        "chilled": "CHILLED: frost in her fur or on her scales, shivering, limbs stiff and slow",
+        "chilled": "CHILLED: frost in her fur, shivering, limbs stiff and slow",
         "bound": "BOUND: a limb wrapped tight and held: it goes numb and tingling, weak and slow to answer, and she can't "
                  "move freely; the rest of her is untouched",
         "constricted": "CONSTRICTED: coils wound round her, tightening, cutting off her circulation: her trapped limbs go "
@@ -7800,7 +7809,9 @@ class Engine:
         """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
         if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
             return self.STATUS_LOOK_NOT_COLD[status]
-        return self.STATUS_LOOK.get(status, status.upper())
+        f = (getattr(self, "fighters", None) or {}).get(name)
+        look = self.STATUS_LOOK.get(status, status.upper())
+        return self.in_her_covering(f, look) if f is not None else look     # (frost in her feathers, on her scales)
 
     def status_words(self, f):
         bits = [self.status_look(f.name, s) + f" ({n} beat{'s' if n != 1 else ''})" for s, n in f.status.items()]
