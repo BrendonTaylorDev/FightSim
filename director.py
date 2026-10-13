@@ -501,6 +501,10 @@ def _apply_focus(engine, att, dfn, b):
     return b
 
 
+# where a charge (Take Down, an Aqua Jet ram) can be moved to: the trunk, which a body slamming into her catches
+CHARGE_REGIONS = ("chest", "shoulder", "belly", "back_up", "back_low", "hind_up")
+
+
 def _apply_variety(engine, att, dfn, b):
     """With no /focus set: a blow aimed at a region this attacker has just been hitting is moved, some of the time,
     to a part she has left alone (director.target_variety; 0 = never). What she aimed at is remembered either way."""
@@ -525,6 +529,10 @@ def _apply_variety(engine, att, dfn, b):
             and a.name not in engine.downed and not engine.grab_between(a.name, d.name)
             and engine.rng.random() < v):
         fresh = [p for p in d.parts if body_region(p) not in lately]
+        mv = engine.find_move(a.name, b.get("move")) if b.get("move") else None
+        if mv and mv.get("charge"):
+            # a full-body ram lands on the body, not on a fin or a paw: it is moved only onto another part of the trunk
+            fresh = [p for p in fresh if body_region(p) in CHARGE_REGIONS]
         if d.name in engine.downed and fresh:     # only what is turned toward her attacker
             fitted, _ = engine.fit_to_facing(d.name, fresh)
             # (and not her tail: lying down, she is on it or it is out behind her, not under her attacker's hands)
