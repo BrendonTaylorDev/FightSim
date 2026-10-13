@@ -5156,9 +5156,20 @@ class Engine:
             return f"{who} struggling"
         if low in self.SUBMISSIONS:
             return f"{who} {low}"
-        mv = self.dex_move(what)
-        about = str((mv or {}).get("about") or "")
-        if about[:2].lower() in ("a ", "an") or about[:4].lower() == "the ":
+        # her own move first (the fighter's file), then the move list only under that very name: a near miss in the
+        # list is another move ('Slash' is not 'Flash, a blinding flash of light')
+        try:
+            own = self.find_move(re.sub(r"(?:'s|')$", "", who), what)
+        except ValueError:
+            own = None
+        dex = self.dex_move(what)
+        if dex and " ".join(dex["name"].lower().replace("-", " ").split()) != " ".join(low.replace("-", " ").split()):
+            dex = None
+        mv = own or dex
+        art = re.compile(r"(?:an?|the)\s", re.I)
+        about = next((str(m.get("about") or "") for m in (own, dex) if m and art.match(str(m.get("about") or ""))),
+                     "" if not own or re.match(r"\w+s\b", str(own.get("about") or "")) else str(own.get("about") or ""))
+        if about:
             noun = re.split(r"\s+(?:across|into|from|that|with|to|which)\b|[,:;(]", about, maxsplit=1)[0].strip()
             noun = re.sub(r"^(?:a|an|the)\s+", "", noun, flags=re.I)
         else:
@@ -5447,7 +5458,8 @@ class Engine:
                       f"{fin['seconds']} seconds" if fin.get("seconds") else "")
             rows.append(f"  Finish: {win} pinned {lose}" + (f" for {length}" if length else "") + f"; {how}"
                         + (f" ({fin['part']})" if fin.get("part") else "") + " put her out at "
-                        + (f"{max(0.0, fin['strength']):.0f}% strength" if fin.get("strength") is not None else "the end"))
+                        + ((f"{fin['strength']:.0f}% strength" + (", past her limit" if fin["strength"] < 0 else ""))
+                           if fin.get("strength") is not None else "the end"))
         if tp:
             rows.append(f"  Turning point: beat {tp['beat']} — {win} took the lead for good"
                         + (f" ({tp['win']:.0f}% vs {tp['lose']:.0f}%)" if tp.get("win") is not None else ""))
@@ -7869,8 +7881,15 @@ class Engine:
         e = f.energy
         tired = float(self._cfg("energy").get("tired_below", 25))
         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
-        if e >= 70 and self.strength(f) < float(self._cfg("energy").get("fresh_breath_min_strength", 40)):
+        s = self.strength(f)
+        if s < 0:
+            stamina = "gasping, running out of energy"   # past her limit: her breath never reads better than this
+        elif any(self.has(f, st) for st in ("breathless", "sputtering", "constricted")):
+            stamina = "no breath in her right now"       # (the wind knocked out of her is not a fresh breath)
+        elif e >= 70 and s < float(self._cfg("energy").get("breath_back_below_strength", 40)):
             stamina = "her breath is back, but not her strength: the body under it is worn out"
+        elif e >= 70 and s < float(self._cfg("energy").get("fresh_breath_min_strength", 80)):
+            stamina = "breathing hard"                   # (not fresher than the overall word: winded, tired)
         return (" Status: " + "; ".join(bits) + "." if bits else "") + f" Stamina: {stamina}."
 
     def tier_reaction(self, f, ht):
@@ -7939,7 +7958,9 @@ class Engine:
         if f.eliminated or f.health >= float(cfg.get("max_health", 0)):
             return []
         need = float(cfg.get("min_part_damage", 300))
-        return [p.name for p in f.parts.values() if p.damage >= need]
+        soft = [str(w).lower() for w in cfg.get("boneless", [])]     # (no bone in a stomach or a fin to break)
+        return [p.name for p in f.parts.values() if p.damage >= need
+                and not any(re.search(r"\b" + re.escape(w) + r"s?\b", p.name.lower()) for w in soft)]
 
     def condition_summary(self):
         """Words-plus-numbers summary for the narrator. Overall strength is relative to each fighter's own max,

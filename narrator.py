@@ -2922,6 +2922,7 @@ class Narrator:
         self._tiers_used = set()
         self._must_parts = []
         self._must_struggle = None
+        self._must_block = None      # (a block is this beat's own: set again below only when one happens now)
         self._struggle_kind = None
         self._breaking = []
         self._hurt_now = set()
@@ -3793,8 +3794,9 @@ class Narrator:
                              f"here. Show the flyer shooting past and the blow catching her side, wing or tail on the way.)")
                 lines += [self._hit_line(h) for h in a["counter_hits"]]
             elif a.get("counter_hits"):
-                lines.append(f"  - Out of the dodge, {who} COUNTERS and catches {a['attacker']} (a quick strike of its own, "
-                             f"separate from any attack {who} makes later in this beat; {a['attacker']} is the only one hurt here):")
+                lines.append(f"  - Out of the dodge, {who} COUNTERS and catches {a['attacker']} with {self._counter_weapon(who)} "
+                             f"(a quick strike of its own, separate from any attack {who} makes later in this beat; "
+                             f"{a['attacker']} is the only one hurt here):")
                 lines += [self._hit_line(h) for h in a["counter_hits"]]
             return lines
         if t == "instant":
@@ -4555,7 +4557,12 @@ class Narrator:
                  + (f"It catches {both}" if e.get("hits") else f"It reaches {both}")
                  + (" (everyone)" if e.get("who") == "all" and len(who) > 1 else "")
                  + ". YOU MUST SHOW THIS: the warning (a sound, a movement), the thing happening, and what it does to "
-                 + ("them" if len(who) > 1 else "her") + ". It knocks nobody down and moves nobody; the fight goes on."]
+                 + ("them" if len(who) > 1 else "her") + ". It knocks nobody down and moves nobody; the fight goes on."
+                 + (" It only CLIPS " + ("them" if len(who) > 1 else "her") + ": the hits below leave nothing lasting, "
+                    "so tell it no bigger than that (a glancing share of it catching her, not the whole of it landing "
+                    "on her)."
+                    if e.get("hits") and all(self._pain(h.get("damage_after", 0))["label"] == "minor"
+                                             for h in e["hits"]) else "")]
         lines += [self._hit_line(h, i + 1 if len(e.get("hits") or []) > 1 else None) for i, h in enumerate(e.get("hits") or [])]
         for s in e.get("status_applied") or []:
             look = s.get("look") or self._status_look(s)
@@ -6294,6 +6301,20 @@ class Narrator:
         parts = " ".join(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()).lower()
         return "talons" if "talon" in parts else "hands" if "hand" in parts else "feet" if ("foot" in parts or "feet" in parts) else "grip"
 
+    def _counter_weapon(self, who):
+        """What a counter out of a dodge is thrown with (the engine leaves it unnamed): her forepaw or paw if she has
+        one, else her horn, her tail or her jaws."""
+        parts = list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys())
+        bare = lambda p: re.sub(r"^(?:left|right) ", "", p.lower())
+        for rx, how in ((r"\bforepaw\b|\bfront paw\b", "a quick swipe of her {p}, claws out"),
+                        (r"\bpaw\b|\bhand\b|\bfist\b", "a short, hard blow of her {p}"),
+                        (r"\bhorn\b", "a short jab of her {p}"), (r"\btails?\b", "a lash of her {p}"),
+                        (r"\bwing\b", "a buffet of her {p}"), (r"\bbeak\b", "a stab of her {p}")):
+            p = next((bare(x) for x in parts if re.search(rx, x.lower()) and "hind" not in x.lower()), None)
+            if p:
+                return how.format(p=p)
+        return "a snap of her jaws"
+
     def _feats_of(self, who):
         """What a fighter's body has (tails, fins, horn, arms...), from her own part names, and what she is covered
         in (feathers, scales, skin or fur, from her description: no fur on a dragon's scales)."""
@@ -6372,8 +6393,10 @@ class Narrator:
         ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
         lying = bool(ps.get(who)) and bool(pe.get(who)) and all(
             re.match(r"(?:ON THE GROUND|ON TOP|LOCKED ONTO|OUT)", str(x.get(who, "")).upper()) for x in (ps, pe))
+        # "dizzy": confused or dazed (no idea that has her steady and unmoved)
         return cache.get(who, set()) | ({"aloft"} if self._aloft(who) else {"unfooted"}
-                                        if self._in_air(who) or lying else set())
+                                        if self._in_air(who) or lying else set()) \
+            | ({"dizzy"} if who in (getattr(self, "dizzy", None) or ()) else set())
 
     def _aloft(self, who):
         """In the air as the beat begins AND as it ends (a fighter knocked down out of it lands, and is then on the
@@ -8800,6 +8823,9 @@ class Narrator:
         else:
             allowed = ("no crying out, no screams, no 'agony' or 'waves of pain', nothing 'explodes', and the world "
                        "doesn't blur or spin: a grunt, a hiss, a wince, and she fights on")
+        if who in (getattr(self, "dizzy", None) or ()):
+            # (confused or dazed: the engine has her world swimming, so the check must not forbid it)
+            allowed = re.sub(r",? and the world doesn't blur or spin", "", allowed)
         where = f" ({part})" if worst > 0 else ""
         return eff, part, f"how much {who} hurts: at worst {label.upper()}{where}, at {round(strength)}% of her " \
                           f"strength, so {allowed}", allowed, f"{label.upper()}{where}"
@@ -11204,6 +11230,10 @@ class Narrator:
                 parts_ = " and ".join(dict.fromkeys(x["part"].lower() for x in also
                                                     if x.get("type") == "numb_end" and x.get("fighter") == who))
                 put(who, f"THE FEELING COMING BACK in {poss(who)} {parts_}, given its own moment", "after")
+            elif t == "scene_event" and e.get("fighters"):
+                caught = e["fighters"]
+                put(caught[0], f"THE PLACE ITSELF ACTS ({e.get('name') or 'the arena'}), as the last thing in the beat, "
+                               f"and what it does to {' and '.join(caught)}", "after")
             elif t == "free_blow":
                 put(e.get("attacker"), f"{poss(e.get('attacker'))} FREE BLOW on {poss(e.get('defender'))} "
                                        f"{str(e.get('part', '')).lower()}, quick and told once, her grip staying as it was",
