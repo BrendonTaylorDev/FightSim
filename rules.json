@@ -1244,7 +1244,9 @@
     },
     "regen_per_beat": 5,
     "rest_bonus": 10,
-    "tired_below": 25
+    "tired_below": 25,
+    "_fresh_breath_min_strength_comment": "The notes' stamina line says 'fresh breath' (energy 70+) only while her overall strength is at least this %; below it (an adrenaline refill on a spent body) it says her breath is back but not her strength. Labels only.",
+    "fresh_breath_min_strength": 40
   },
   "adrenaline": {
     "_comment": "The first time a fighter's strength drops below below_strength %, she gets one surge for this many beats: power_mult on her attacks, escape_mult on pin escapes, better dodging, and an energy refill.",

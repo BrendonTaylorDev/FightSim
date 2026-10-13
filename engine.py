@@ -1353,6 +1353,7 @@ class Engine:
         if self._overcommit_now:
             res["overcommit"] = True
             self.set_status(a, "off_balance", 1)      # she overbalances on it
+            self._overbalanced = getattr(self, "_overbalanced", set()) | {a.name}   # (her own lunge, not turned aside)
         self._overcommit_now = None
         if self._last_stand_now and hits:
             res["last_stand"] = True
@@ -4520,6 +4521,7 @@ class Engine:
             self.note_roll(f"{d.name} turning {poss_word(a.name)} {move['name']} aside", defl_p, r - block_p, "DEFLECTED")
             if not ranged:
                 self.set_status(a, "off_balance", 1)
+                getattr(self, "_overbalanced", set()).discard(a.name)
             how = (self.rng.choice(("a burst of her own power", "a sweep of her arm or paw", "a twist of her whole body"))
                    if ranged else self.rng.choice(("a paw or forearm across it", "a shoulder turned into it",
                                                    "a sidestep and a shove")))
@@ -7796,11 +7798,15 @@ class Engine:
     STATUS_LOOK_NOT_COLD = {
         "chilled": "SLOWED: her limbs heavy and stiff, slow to answer, every movement a beat behind",
     }
+    OVERBALANCED_LOOK = ("OFF BALANCE: she threw too much into her last blow and it carried her past her footing; she "
+                         "is still recovering it; slower to dodge, weaker on the next strike")
 
     def status_look(self, name, status):
         """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
         if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
             return self.STATUS_LOOK_NOT_COLD[status]
+        if status == "off_balance" and name in (getattr(self, "_overbalanced", None) or ()):
+            return self.OVERBALANCED_LOOK      # she overcommitted: nothing turned her blow aside
         return self.STATUS_LOOK.get(status, status.upper())
 
     def status_words(self, f):
@@ -7808,6 +7814,8 @@ class Engine:
         e = f.energy
         tired = float(self._cfg("energy").get("tired_below", 25))
         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
+        if e >= 70 and self.strength(f) < float(self._cfg("energy").get("fresh_breath_min_strength", 40)):
+            stamina = "her breath is back, but not her strength: the body under it is worn out"
         return (" Status: " + "; ".join(bits) + "." if bits else "") + f" Stamina: {stamina}."
 
     def favoring(self, f):
