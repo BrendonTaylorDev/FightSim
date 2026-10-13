@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-12 build 179 (all bugs from the Aura vs Dusk and Articuno vs Charizard tests fixed: hit reactions, voices and ideas for a strong fighter with a badly hurt part stay half hidden; flyers can always take off and stay up far more while strong; a fall out of the sky can knock her out; contact moves with an element are staged as blows, not breath; rock moves staged by their shape; close flurries told as flurries; dodge and movement ideas match what the engine did; winners never fade; rain wets fur; blood only from cuts and bites; and more)"
+VERSION = "2026-10-13 build 180 (a sweep of about 300 bug notes from the Glacia vs Cinder test fight: the narrator's notes now fit each body (feathers, scales or fur; beaks, wings that are wings, the right voices) and where she is (no standing or limping in the air or on her back), every event gets a part to be told in, numb parts are told as numb, labels and causes follow the engine (knocked out of the air, not thrown; the hardest-hit parts of a whole-body move), reactions and ideas stay inside the pain caps, and nothing names a thing the place does not have)"
 
 HELP = """
 =============================================================================================

@@ -3,21 +3,11 @@
 Last updated: 2026-10-13, build 179+ on branch `claude/kind-bell-r5ehx4`.
 
 ## Running now
-Three bug-sweep agents, each in its own git worktree (`.claude/worktrees/agent-*`, branches `worktree-agent-*`). They are fixing the narrator-note bugs logged in `glacia_vs_cinder/narr_bugs_*.md`, split by theme:
-- **body:** wrong body or posture (fur, teeth or paws on the bird; standing ideas in the air; wings treated as arms).
-- **structure:** events with no part, numbness, pins, aftermath, repeats.
-- **labels:** labels, history and sizes (thrown vs knocked, cause lists, invented blows, scene words, samples).
-
-The brief they follow is `glacia_vs_cinder/sweep_brief.md`.
-
-Every 10 minutes their commits are saved as patches in `wip_patches/<branch>/` and pushed. If a session dies:
-1. Make a branch from this one.
-2. Apply the patches: `git am sim/test_fights/wip_patches/<branch>/*.patch`.
-3. Merge the branches, run `python3 sim/regress.py`, and push.
+Nothing. The three bug-sweep branches (body, structure, labels) were merged into build 180, and their WIP patches were removed.
 
 ## Still to do
-1. Merge the three sweep branches (or their patches), run regress, bump VERSION, push. Then regenerate the Glacia vs Cinder notes (`glacia_vs_cinder/plan.py 202 all`) and spot-check that the logged bugs are gone.
-2. Give the user the sweep results: what was fixed, already fixed, or left alone.
+1. (Done in build 180) The sweep was merged. The notes were regenerated and spot-checked, and the fight replays with the same rolls.
+2. Decision for the user: should a strike's weakness from a hurt limb count the limb she actually strikes with (an engine and balance change; today `limb_mult` takes the worse of the pair)?
 3. Open question for the user: should aftermath ideas that show small twitches for a fighter who is out cold be tagged waking-only?
 4. Older pending tasks:
    - The card view chooser: Front / Back / Both (side by side), set per card.
