@@ -82,8 +82,10 @@ def features(part_names):
         has.add("mane")
     if "wing" in low or "feather" in low:
         has.add("feathers" if "feather" in low or "beak" in low else "wings")
-    if "tail" in low:
-        has.add("tail")
+    if "tail" in low and "tails" not in has:
+        has.add("tail")        # one tail (a twin-tailed body is "tails": no idea written for a single tail)
+    if re.search(r"\bhands?\b", low):
+        has.add("hands")       # hands with fingers (a webbed paw at the end of an arm is no hand of fingers)
     if "fin" in low or "fan" in low:
         has.add("fins")
     if "horn" in low:
@@ -147,11 +149,36 @@ def body_bans(has):
         if "talons" in has:
             # a bird's feet carry talons, not claws (the other's claws on her are fine), and she has no other legs
             bans += [r"\bher (?:\w+ )?claws?\b", r"\bhind\b"]
+    if "tails" in has:
+        # twin (or more) tails: never one tail of hers
+        bans += [r"\bher tail\b(?!s)", r"\bthe tail (?:stops?|stopp\w*|goes|hangs?|droops?) "]
+    if "arms" in has and "forelegs" not in has:
+        # upright, on two legs: no hind legs, forelegs or all fours
+        bans += [r"\bhind\b", r"\bforelegs?\b", r"\bforepaws?\b", r"\bon all fours\b"]
+    if has & {"arms", "forelegs"} and "hands" not in has:
+        bans += [r"\bfingers?\b(?!'s)"]     # paws, not hands of fingers
+    if "forelegs" in has and "arms" not in has:
+        # on all fours: no hands or fists, and a forepaw she stands on is not pressed to her belly
+        bans += [r"\bher (?:\w+ )?(?:hands?|fists?)\b", r"\bhand or paw\b", r"\bpaws? (?:pressed|clamped|held) to\b"]
+    if "standing" in has:
+        # on her feet all beat: nobody tells her to get up or stay down
+        bans += [r"\bget(?:s|ting)? up\b", r"\bstay(?:s|ing)? down\b"]
+    if "faceup" in has:
+        # flat on her back: not propped up, curled up, on her side, or with her front against the ground
+        bans += [r"\bpropped\b", r"\bcurl(?:s|ed|ing)? (?:up |tight )?(?:round|around)\b", r"\bside up\b",
+                 r"\bon her side\b", r"\bface-?down\b", r"\bpressed into the ground\b"]
+    if "growler" in has and "voice_breaks" not in has:
+        # a fighter who growls and hisses rather than crying out, while she still holds it in: no soft cries
+        bans += [r"\bwhimper\w*", r"\bwhin(?:e|es|ed|ing)\b", r"\byelp\w*", r"\byips?\b", r"\bsqueak\w*",
+                 r"\bsqueal\w*", r"\bchitter\w*", r"\bkeening\b", r"\bmewl\w*"]
+    if "chirper" in has:
+        bans += [r"(?<!the )(?<!other's )\bgrowl\w*"]       # she chitters, squeaks and barks: the growl is not hers
     if "legs" not in has:
         bans += [r"\blegs?\b", r"\bfeet\b", r"\bfoot\b", r"\bknees?\b", r"\btoes\b", r"\bhind\b"]
     if has & {"aloft", "unfooted"}:
         # in the air, or off her feet (lying, pinned, on top of a pin): nothing that needs her standing
-        bans += [r"\bstand(?:s|ing)?\b", r"\bstood\b", r"\bknees?\b", r"\bstance\b", r"\bstagger\w*",
+        bans += [r"\b(?:hang|hangs|hanging) (?:low |loose |limp )?at her sides\b",
+                 r"\bstand(?:s|ing)?\b", r"\bstood\b", r"\bknees?\b", r"\bstance\b", r"\bstagger\w*",
                  r"\bstumbl\w*", r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplant(?:s|ed)\b",
                  r"\bfooting\b", r"\bshifts? her weight\b", r"\bballs of her feet\b", r"\ba step\b", r"\bsteps?\b",
                  r"\bset firm\b", r"\bgives? ground\b"]

@@ -1968,7 +1968,7 @@ she watches with her flotation sac puffed and a grin she can't quite keep down
 she bounces on her toes as she watches, cocky, tails whirring
 
 == watch_thought | fighter: nocturne
-*Weak. Get up, then. Show me.*
+*Weak. Get up, then. Show me.* | posture: down, pinned
 *There. That's where she breaks.*
 *Not so quick now.*
 *I warned you about the dry ground.*
