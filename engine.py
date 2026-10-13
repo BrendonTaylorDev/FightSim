@@ -554,10 +554,17 @@ class Engine:
         if self._source and taken >= 1:
             # the first thing that ever hurt this part, and when (for callbacks much later in the fight)
             defender.learned.setdefault("first_hurt", {}).setdefault(p.name, [self._source, self.turn + 1])
-            log = self.injury_log.setdefault(f"{defender.name}|{p.name}", [])
+            key = f"{defender.name}|{p.name}"
+            log = self.injury_log.setdefault(key, [])
+            amt = self.__dict__.setdefault("injury_amt", {}).setdefault(key, {})
+            amt[self._source] = round(float(amt.get(self._source, 0)) + max(0.0, p.damage - dmg_b), 2)
             if not log or log[-1] != self._source:
+                if self._source in log:
+                    log.remove(self._source)      # (once each, where it last hurt her: no "A, then B, then A")
                 log.append(self._source)
-                del log[:-4]
+                while len(log) > 6:
+                    # (the record keeps what did the most: the lightest older cause goes, never the latest)
+                    log.remove(min(log[:-1], key=lambda c: float(amt.get(c, 0))))
             # a huge hit on this part is remembered for the rest of the fight, however long ago it was
             # (narration.notes_decay.big_hit: part damage added in one go)
             added = p.damage - dmg_b
@@ -754,6 +761,16 @@ class Engine:
     def _health_pct(self, f):
         return 100.0 * f.health / f.max_health if f.max_health else 0.0
 
+    def injury_causes(self, key, n=3):
+        """What hurt one part ("Fighter|Part"), oldest first, as the notes tell it: the causes that did the most
+        damage to it and the latest one, at most n. The same few everywhere it is told, so they never disagree."""
+        log = [c for c in self.injury_log.get(key, []) if c]
+        amt = (self.__dict__.get("injury_amt") or {}).get(key) or {}
+        if len(log) <= n or not amt:
+            return log[-n:]
+        keep = set(sorted(log[:-1], key=lambda c: -float(amt.get(c, 0)))[:n - 1]) | {log[-1]}
+        return [c for c in log if c in keep]
+
     def _count(self, kind, name):
         """One more time this has happened to her this fight (the story may count: "thrown twice")."""
         key = f"{kind}|{name}"
@@ -777,7 +794,8 @@ class Engine:
                               {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
 
     # engine state that lives outside the main snapshot tuple but must be undone with it
-    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn")
+    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
+                   "injury_amt")
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -1319,6 +1337,9 @@ class Engine:
                 hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
             finally:
                 self._dev_active = None
+            for h in hits[1:]:
+                if h["part"] in (math.get("auto_spill_parts") or ()):
+                    h["jarred"] = True     # only knocked by a blow aimed beside it (sized as such in the notes)
             if hits and not move.get("improvised"):    # she remembers what has landed on her (learning)
                 felt = d.learned.setdefault("moves", {})
                 felt[f"{a.name}|{move['name']}"] = felt.get(f"{a.name}|{move['name']}", 0) + 1
@@ -1374,6 +1395,7 @@ class Engine:
         if self._overcommit_now:
             res["overcommit"] = True
             self.set_status(a, "off_balance", 1)      # she overbalances on it
+            self._overbalanced = getattr(self, "_overbalanced", set()) | {a.name}   # (her own lunge, not turned aside)
         self._overcommit_now = None
         if self._last_stand_now and hits:
             res["last_stand"] = True
@@ -1470,6 +1492,7 @@ class Engine:
                 d.status.pop("airborne", None)
                 res["grounded"] = True
                 res["grounded_wing"] = self.wing_damage(d) >= float((fcfg.get("strain") or {}).get("from", 100))
+                res["fell_from_air"] = not res.get("auto_launch")   # no throw rolled: she just fell (labels only)
                 res["auto_launch"], res["drop_severity"] = res.get("auto_launch") or "thrown", res.get("drop_severity") or "solid"
         if hits and not d.eliminated:
             jolt = self._jolts(d, hits)
@@ -4544,6 +4567,7 @@ class Engine:
             self.note_roll(f"{d.name} turning {poss_word(a.name)} {move['name']} aside", defl_p, r - block_p, "DEFLECTED")
             if not ranged:
                 self.set_status(a, "off_balance", 1)
+                getattr(self, "_overbalanced", set()).discard(a.name)
             how = (self.rng.choice(("a burst of her own power", "a sweep of her arm or paw", "a twist of her whole body"))
                    if ranged else self.rng.choice(("a paw or forearm across it", "a shoulder turned into it",
                                                    "a sidestep and a shove")))
@@ -4991,7 +5015,7 @@ class Engine:
         """What the damage to one part LOOKS like by now: the marks of what did it (claws, teeth, blows, grips,
         lightning, cold), how deep, and cartilage (ears, nose, fins) creased or bent out of shape for now."""
         lvl = 2 if p.damage >= 300 else 1 if p.damage >= 150 else 0
-        srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
+        srcs = self.injury_causes(f"{f.name}|{p.name}", 2)
         kinds = list(dict.fromkeys(self._mark_kind(c) for c in srcs)) or ["blunt"]
         import zlib
         pick = lambda lst, salt: lst[zlib.crc32(f"{f.name}|{p.name}|{salt}".encode()) % len(lst)]
@@ -7815,11 +7839,15 @@ class Engine:
     STATUS_LOOK_NOT_COLD = {
         "chilled": "SLOWED: her limbs heavy and stiff, slow to answer, every movement a beat behind",
     }
+    OVERBALANCED_LOOK = ("OFF BALANCE: she threw too much into her last blow and it carried her past her footing; she "
+                         "is still recovering it; slower to dodge, weaker on the next strike")
 
     def status_look(self, name, status):
         """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
         if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
             return self.STATUS_LOOK_NOT_COLD[status]
+        if status == "off_balance" and name in (getattr(self, "_overbalanced", None) or ()):
+            return self.OVERBALANCED_LOOK      # she overcommitted: nothing turned her blow aside
         f = (getattr(self, "fighters", None) or {}).get(str(name).lower())
         look = self.STATUS_LOOK.get(status, status.upper())
         return self.in_her_covering(f, look) if f is not None else look     # (frost in her feathers, on her scales)
@@ -7829,6 +7857,8 @@ class Engine:
         e = f.energy
         tired = float(self._cfg("energy").get("tired_below", 25))
         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
+        if e >= 70 and self.strength(f) < float(self._cfg("energy").get("fresh_breath_min_strength", 40)):
+            stamina = "her breath is back, but not her strength: the body under it is worn out"
         return (" Status: " + "; ".join(bits) + "." if bits else "") + f" Stamina: {stamina}."
 
     def tier_reaction(self, f, ht):
@@ -7923,8 +7953,8 @@ class Engine:
                 if self._stale(f, p.name, ob):
                     big = (f.learned.get("big_hits") or {}).get(p.name)
                     return f"; the worst of it from {big[0]}" if big else ""
-                src = self.injury_log.get(f"{f.name}|{p.name}", [])
-                return f"; from {', then '.join(src[-2:])}" if src else ""
+                src = self.injury_causes(f"{f.name}|{p.name}")
+                return f"; from {', then '.join(src)}" if src else ""
             # a part gone NUMB (numbness) is still wrecked, but for now she barely feels it: the story must know
             hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}"
                     + (", but NUMB for now: she can barely feel it, and the pain will come back" if int(getattr(p, "numb", 0) or 0) > 0 else "")
@@ -7992,7 +8022,7 @@ class Engine:
             bad = sorted((p for p in f.parts.values() if p.damage >= 30), key=lambda p: -p.damage)[:n]
             bits = []
             for p in bad:
-                srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
+                srcs = self.injury_causes(f"{f.name}|{p.name}")
                 srcs = [re.sub(r"(\S+) (escape|struggle)$", r"\1 blow breaking out of a hold", c) for c in srcs]
                 if srcs:
                     bits.append(f"{p.name.lower()} ({' and '.join(srcs)})")
@@ -8166,6 +8196,7 @@ class Engine:
                 "scene_name": self.scene_name, "last_event": self._last_event, "pins": self.pins,
                 "positions": self.positions, "downed": self.downed, "since_pin": self.since_pin,
                 "last_pin_end": self.last_pin_end, "injury_log": self.injury_log, "plan": self.plan,
+                "injury_amt": self.__dict__.get("injury_amt") or {},
                 "tally": self.tally, "momentum": self.momentum, "facing": self.facing, "move_log": self.move_log,
                 "last_reposition": getattr(self, "_last_reposition", {}), "alliances": self.alliances,
                 "weather": getattr(self, "weather", {}), "arena_marks": getattr(self, "arena_marks", []),
@@ -8228,6 +8259,7 @@ class Engine:
         self.momentum = data.get("momentum", [])
         self.last_pin_end = data.get("last_pin_end", {})
         self.injury_log = data.get("injury_log", {})
+        self.injury_amt = data.get("injury_amt", {})
         self.tally = {k: int(v) for k, v in (data.get("tally") or {}).items()}
         self.plan = data.get("plan", {})
         self.alliances = data.get("alliances", [])

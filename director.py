@@ -708,7 +708,8 @@ def resolve(engine, b):
     if act not in ACTIONS and act not in ("quickpin", "pin_success", "pin_escape", "land", "down", "getup", "heal"):
         raise ValueError(f"action must be one of {ACTIONS}")
     att = b.get("attacker")
-    flavor = short_phrase(b.get("flavor", ""), 24)  # keep it a label, not a paragraph (never ending on "and")
+    flavor = short_phrase(b.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
+    # (keep it a label, not a paragraph, never ending on "and")
     intent = b.get("intent", "")
     was_involved = engine.get(att).name in engine.involved
     engine.get_active(att)
@@ -1178,8 +1179,10 @@ def _landing(engine, b, res):
             or (res.get("charge") and not res["charge"].get("skipped"))):  # driven into it by the charge itself
         return None  # nothing landed (dodged, or no effect): nobody goes flying
     launch = str(b.get("launch") or "none").lower()
+    fell = False
     if launch in ("none", "staggered", "") and res.get("auto_launch"):
         launch = res["auto_launch"]  # the move itself knocks down, throws, or launches (moves.json)
+        fell = bool(res.get("fell_from_air"))  # the throw roll failed: she was knocked out of the air, not thrown
     impacts = [x for x in (b.get("landing") or []) if isinstance(x, dict)]
     if launch in ("none", "staggered", "") and not impacts:
         return None
@@ -1244,13 +1247,15 @@ def _landing(engine, b, res):
             impacts = [{"surface": "the ground", "parts": [], "severity": "light"}]
         else:
             impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": "solid"}]
-    word = "driven into" if in_place else (launch if launch != "none" else "knocked down")
+    word = "driven into" if in_place else "knocked out of the air" if fell and not res.get("spiked_by") \
+        else (launch if launch != "none" else "knocked down")
     out = engine.land(who, [(x.get("surface"), x.get("parts") or [], x.get("severity")) for x in impacts],
                       credited=res.get("spiked_by") or res["attacker"], thrown=thrown, in_place=in_place, can_recover=(thrown or launch == "knocked down") and not manual,
                       tumble=False if spiked else True if b.get("tumble") else (None if not manual else False),
                       force=force,
                       how=f"{word}: " + " → ".join(short_phrase(x.get("surface"), default="the ground") for x in impacts))
-    out["launch"] = "driven down" if out.get("in_place") else launch
+    out["launch"] = "driven down" if out.get("in_place") else "knocked out of the air" if fell and not res.get("spiked_by") \
+        else launch
     if res.get("spiked_by"):
         out["spiked_by"] = res["spiked_by"]
     if spiked:

@@ -180,7 +180,7 @@ HURT_WAYS = (
     "through what she can no longer do (a limb that won't take weight, a breath she can't finish)",
     "through the sound of it, the impact heard before it is felt",
     "from the attacker's side: what the blow felt like going IN, the give under it",
-    "through the scenery: the bark, mud or water taking the blow with her",
+    "through the scenery: what she is driven against or lands on taking the blow with her",
     "as one long breathless sentence carrying the whole flurry",
     "through the delay: a beat of nothing, then the pain arriving all at once",
     "by the new pain finding the old one, the two hurts becoming one",
@@ -872,7 +872,13 @@ SEVERAL_BLOWS = re.compile(r"\b(?:two|three|four|several|both) (?:fast |quick |s
                            r"strikes|jabs|punches|chops|hits)\b|\bone-two\b|\bflurry\b|\bcombination\b|\bagain and again\b|"
                            # a first blow thrown to set up "the real one": a second blow the engine never threw
                            r"\bthe (?:real|true|actual) (?:one|bite|blow|strike|punch|chop|kick|swipe|rake)\b|"
-                           r"\b(?:jabbed|jabs?|nipped|nips?|tapped|taps?) once\b|\bto measure\b|\bthen the (?:real|true)\b", re.I)
+                           r"\b(?:jabbed|jabs?|nipped|nips?|tapped|taps?) once\b|\bto measure\b|\bthen the (?:real|true)\b|"
+                           # one shot told as several (a burst to find the range, pulses, a double strike), or a
+                           # feint the engine never decided
+                           r"\bshort (?:bursts?|pulses?)\b|\bto find the range\b|\bdouble (?:strike|slap)\b|"
+                           r"\bboth wings at once\b|\b(?:struck|strikes?|went|comes?|came|bites?|rakes?|jabbed) "
+                           r"(?:\w+ )?(?:twice|again)\b|\bthe second time\b|\bthen another, then\b|\bfeint(?:s|ed|ing)?\b|"
+                           r"\bstruck true\b", re.I)
 
 # what each way of dodging the engine rolls looks like. Every dodge idea shows one of these (or more): "any" is one
 # that shows no way at all (she reads it early, it clips a few hairs), "jump" one no rolled way covers (a hop over a
@@ -1633,7 +1639,8 @@ SCENE_THINGS = ((r"\b(?:grass|grasses|turf|meadow)\b", r"\b(?:grass|meadow|turf|
                 (r"\b(?:leaves|leaf|leaf-?litter|undergrowth|ferns?|brambles?)\b",
                  r"\b(?:lea(?:f|ves)|forest|wood|woods|jungle|undergrowth|fern|bramble|bush|thicket|tree)"),
                 (r"\b(?:mud|muddy|mire)\b", r"\b(?:mud|muddy|mire|marsh|swamp|bog|rain|creek|river|bank|shore)"),
-                (r"\b(?:sand|sandy|dune)\b", r"\b(?:sand|dune|beach|desert|shore)"))
+                (r"\b(?:sand|sandy|dune)\b", r"\b(?:sand|dune|beach|desert|shore)"),
+                (r"\b(?:trees|forest|woods|bark|canopy)\b", r"\b(?:trees?|forest|wood|woods|jungle|grove|orchard|thicket)\b"))
 STONE_ONLY = re.compile(r"\b(?:off the (?:stone|rock|walls?)|stone floor|rock floor|(?:cave|stone|rock) walls?|echo\w* back at her|"
                         r"cave|stalactite|stalagmite)\b", re.I)
 # things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
@@ -1890,6 +1897,24 @@ INTENSE = (
     (90, re.compile(r"\b(?:cr(?:y|ied|ies) out|(?:a|the) (?:raw |sharp |desperate )?cry (?:tore|ripped|burst|broke)|"
                     r"explod\w+|searing|wave of (?:pain|agony)|tore through|ripped through)\b", re.I)),
 )
+
+# the same ceiling, for the IDEAS offered (not the prose check): reactions that take over her whole body, which
+# MEASURED PAIN rules out for a fighter who still covers it (a shudder right through her, clutching, nearly falling,
+# the world sliding, whimpering, doubled over)
+INTENSE_IDEAS = INTENSE + (
+    (150, re.compile(r"\b(?:shudder\w*|whimper\w*|clutch\w*|nearly (?:falls?|fell|collapses?|goes down)|"
+                     r"doubl\w+ (?:her )?over|rock(?:s|ing)? over|(?:world|place|ground) (?:slides?|swings?|tilts?|"
+                     r"lurches?)|tremor that (?:starts|runs)|right through her|all through her|"
+                     r"every (?:feather|scale|hair) (?:on her body|lifts|stands))\b", re.I)),
+    (90, re.compile(r"\b(?:eyes go wet|tears? (?:start|run|spill)|screams?\b|\bher (?:\w+ )?screams)", re.I)),
+)
+
+# an off-target blow told as a lucky one: it slid onto the sound part, not the hurt one (only true when it did)
+LUCKY_PLACING = re.compile(r"\b(?:glad|meaty side|healthy one|still sound|instead of the hurt|not on the sore place|only "
+                           r"stung|something worse|hard part beside|other flank|muscle next to it|soft middle)\b", re.I)
+# coming round or under a guard: not when the blow lands on the very part she is guarding
+ROUND_GUARD = re.compile(r"\b(?:round|around|under|past|over) (?:the outside of )?(?:the|her) guard\b|guarding least|"
+                         r"the open side|slips the guard", re.I)
 
 # filler: resolve or drama TOLD instead of shown ("She would not be defeated.", "a steely resolve", "every muscle
 # screamed"). A short sentence that is nothing else is cut; a longer one is written again with ideas to show it.
@@ -2380,9 +2405,19 @@ class Narrator:
     def _strength(self, taken):
         return "a " + self._strength_key(taken)
 
-    def _impact(self, taken, seed="", who=None):
+    def _hit_size(self, h):
+        """The size of one hit: what it did, but a part only JARRED by a blow aimed beside it (a fraction of its power)
+        is never sized above narration.jarred_size_cap, however much it hurt an already worn part."""
+        k = self._strength_key(h.get("damage_taken", 0))
+        order = ["glancing", "solid", "heavy", "tremendous"]
+        cap = str(self.rules.get("narration", {}).get("jarred_size_cap", "solid"))
+        if h.get("jarred") and cap in order and order.index(k) > order.index(cap):
+            return cap
+        return k
+
+    def _impact(self, taken, seed="", who=None, size=None):
         """A suggested moment-of-impact reaction, varied from hit to hit."""
-        options = self._fit_body(self.IMPACTS[self._strength_key(taken)], who)
+        options = self._fit_body(self.IMPACTS[size or self._strength_key(taken)], who)
         if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
             # the engine decides whether a blow moves her (moves.stumble): no step or stagger slipped in here
             options = [o for o in options if not MOVES_HER.search(o)] or options
@@ -2508,7 +2543,8 @@ class Narrator:
         self._strike_parts.append(h["part"])
         self._hurt_now.add(h["defender"])
         self._linger_pool.append((h["defender"], h["part"], h["damage_taken"], after["label"], "blow"))
-        impact = self._impact(h["damage_taken"], seed, h["defender"])
+        size = self._hit_size(h)
+        impact = self._impact(h["damage_taken"], seed, h["defender"], size)
         if after["label"] == "numb with shock" and before["label"] == "numb with shock":
             impact = "a dull, sickening jolt she barely feels as pain, then a lurch of nausea and shallow breath"
         if h.get("numb"):
@@ -2522,18 +2558,18 @@ class Narrator:
         if how:
             # not a blow: something that stays on her and keeps working (the water of a charge that carries her)
             return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
-                    f"{how}, {self._strength_key(h['damage_taken'])} in size"
+                    f"{how}, {size} in size"
                     + (f" ({raw})" if raw else f" (her reaction: {self._reaction_size(h, after['label'])})")
                     + f"; {change}{tough}{self._numb_note(h)}.")
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
-                f"{self._strength(h['damage_taken'])} blow "
-                f"(impact, e.g. {impact}; a hit here shows as "
+                f"a {size} " + ("knock (jarred by the blow beside it) " if h.get("jarred") else "blow ")
+                + f"(impact, e.g. {impact}; a hit here shows as "
                 f"{self._region_tell(h['part'], sum(map(ord, seed)), h['defender'])}"
                 + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
                    if self._voice_cue(h, after['label'], 0) and not h.get("numb") else "")
                 + ("" if raw else f"; her reaction: " + ("small: a startled grunt, more shock than pain"
                                                         if h.get("numb") else
-                   f"{self._reaction_size(h, after['label'], self._strength_key(h['damage_taken']) == 'glancing')}"))
+                   f"{self._reaction_size(h, after['label'], size == 'glancing')}"))
                 + f"); {change}{tough}{self._numb_note(h)}.")
 
     # a blow on a part that was ALREADY badly hurt. Three things set how raw the reaction is: how hurt the part was
@@ -2563,7 +2599,7 @@ class Narrator:
                                                    and not dev):
             return None
         who = h["defender"]
-        size = self._strength_key(h["damage_taken"])
+        size = self._hit_size(h)
         part_score = {"very painful": 0, "excruciating": 1, "devastated": 2}.get(before_label, 1)
         size_score = {"glancing": -2, "solid": 0, "heavy": 1, "tremendous": 2}[size]
         # how much she has left as THIS blow lands (not at the end of the beat: in a long pummel the first blow
@@ -3531,6 +3567,7 @@ class Narrator:
         if t == "instant" and a.get("environment"):
             how = a.get("launch") or "knocked down"
             verb = {"launched": "is LAUNCHED through the air", "thrown": "is THROWN",
+                    "knocked out of the air": "is KNOCKED OUT OF THE AIR (not thrown: she falls)",
                     "knocked down": "is KNOCKED DOWN"}.get(how, "goes down")
             if a.get("spiked_by"):
                 verb = (f"is SMASHED BACK DOWN out of the air by {poss(a['spiked_by'])} blow (she never landed from the "
@@ -3572,8 +3609,8 @@ class Narrator:
                     + (f"What happens (the author's direction): {a['flavor']}. " if a.get("flavor") else "")
                     + "Keep each fighter at their listed recovery stage unless a change is listed below. Keep the full "
                     "detail of a fight beat, but find NEW things to show each time instead of circling back: a different "
-                    "injury flaring or stiffening, a sense not used yet (" + self._sw("ambience", "a smell, a sound, the light") + "; an "
-                    "echo, the light shifting), small changes in breathing or posture, a new thought or memory of a "
+                    "injury flaring or stiffening, a sense not used yet (" + self._sw("ambience", "a smell, a sound, the light") + "; "
+                    "the light shifting), small changes in breathing or posture, a new thought or memory of a "
                     "specific moment of the fight, how the winner's own wounds are settling in."]
         if t == "heal":
             parts = [c["part"] for c in a.get("parts", [])]
@@ -5006,8 +5043,8 @@ class Narrator:
             "what each of them makes of the other now: her strength, her tells, the way she is favouring a hurt part",
             "a plan forming in one fighter's head, worked through step by step, and doubts about it",
             "the body taking stock, part by part: what still works, what throbs, what she is hiding from her opponent",
-            "the place in detail: what has changed since the fight began (trampled ground, a broken branch, water "
-            "clouded, the light moved), the animals and weather carrying on as if nothing were happening",
+            "the place in detail: what has changed since the fight began (the marks the fight has left, what has been "
+            "knocked loose, the light moved), the weather carrying on as if nothing were happening",
             "breath and heartbeat slowing, the ache arriving where the shock was",
             "small involuntary things: a tail twitching, the head turning to a sound, a limb testing its weight",
             "pride, fear, anger, grudging respect, or stubbornness, each shown through what she does, not named",
@@ -6093,10 +6130,22 @@ class Narrator:
                or a.get("pummel") for a in acts) \
                 or sum(1 for a in acts if a.get("chain") and a.get("hits")) >= 3:
             return "big", ["one of the big moves of the fight"]
+        # out of the sky: a blow knocks her down out of the air, or she is caught and dragged down out of it
+        fell = [str(a.get("attacker") if a.get("dragged_down") else a.get("defender")) for a in acts
+                if a.get("grounded") or a.get("dragged_down")]       # (the diver caught is the one dragged down)
+        if fell:
+            return "big", [f"{' and '.join(dict.fromkeys(fell))} comes down out of the sky"]
         worst = [(w, p) for w, p, lv in (getattr(self, "_breaking", None) or []) if lv in ("devastated", "numb with shock")]
         if worst:
             who = sorted({w for w, _ in worst})
             return "hard", [f"a part of {' and '.join(who)} is hurt past bearing for the first time"]
+        low = [f"{n} drops to {str(f.get('now')).upper()}" for e in also if e.get("type") == "fatigue_shift"
+               for n, f in (e.get("fighters") or {}).items() if str(f.get("now")) in ("spent", "past the limit")]
+        if low:
+            return "hard", low
+        if acts and all(a.get("type") in ("breather", "none", "take_off", "land_flight", "time_passes") for a in acts) \
+                and not any(e.get("type") == "pin_progress" for e in also):
+            return "quiet", []
         return "ordinary", []
 
     def _story_note(self, bundle):
@@ -6121,6 +6170,8 @@ class Narrator:
             "big": "This beat holds a big moment (" + "; ".join(why) + "): give it size and weight, and tell it in order.",
             "hard": "A hard moment (" + "; ".join(why) + "): that one thing gets its full weight. The rest of the "
                     "beat is told plainly round it.",
+            "quiet": "Nobody attacks in this beat: it is a pause in the fight. Tell it in full detail, close and "
+                     "unhurried, with no more drama than it carries.",
             "ordinary": "This beat is an ordinary exchange in the run of the fight: tell it in full detail, with no "
                         "more drama than it carries. Keep the largest reactions for the moments that change something.",
         }[kind]
@@ -6202,6 +6253,8 @@ class Narrator:
         for thing, has in SCENE_THINGS:
             if not re.search(has, scene_low):
                 bans.append(thing)
+        if re.search(r"\bnothing echoes|\bno echo", scene_low):
+            bans.append(r"\becho\w*")       # open air where sound is torn away (the scene's acoustics say so)
         return re.compile("|".join(f"(?:{b})" for b in bans), re.I) if bans else None
 
     def _lines(self):
@@ -6361,9 +6414,23 @@ class Narrator:
         worn = set().union(*(self.recent_reactions or [set()])) if getattr(self, "recent_reactions", None) else set()
         side = ["act"]
 
+        caps_ = {}
+
+        def too_big_for(label):
+            # whose idea it is (the one seen, for "what X can see of Y"), and the ceiling her injuries set on it
+            m_ = re.search(r"can see of (\w+)", label)
+            who_ = m_.group(1) if m_ else next((n for n in sorted(self.strengths or {}, key=lambda n: label.find(n))
+                                                if n in label), None)
+            if who_ not in caps_:
+                ceil_ = self._pain_ceiling(who_) if who_ else None
+                caps_[who_] = [rx for need_, rx in INTENSE_IDEAS if ceil_ and ceil_[0] < need_]
+            return caps_[who_]
+
         def add(label, picks):
             slot = next((k for k, rx in self._SLOTS if re.search(rx, label)), "move")
-            lines.extend((side[0], slot, f"{label}: {p}") for p in picks if not (reactions_used(p) & worn))
+            big_ = too_big_for(label)      # (nothing bigger than her injuries allow, whatever kind of idea it is)
+            lines.extend((side[0], slot, f"{label}: {p}") for p in picks
+                         if not (reactions_used(p) & worn) and not any(rx.search(p) for rx in big_))
 
         posture = self._blk_posture
 
@@ -6427,7 +6494,7 @@ class Narrator:
                                              has=feats(who)))
             # nothing bigger than her injuries allow: the engine's ceiling filters the ideas before the model sees them
             ceil = self._pain_ceiling(who)
-            too_big = [rx for need_, rx in INTENSE if ceil and ceil[0] < need_] or None
+            too_big = [rx for need_, rx in INTENSE_IDEAS if ceil and ceil[0] < need_] or None
             # how the pain shows, sized to the worst place this beat left her with
             worst_hit = max(best.values(), key=lambda x: (x[1].lower() not in numb_, x[2]))
             lv_w = self._pain(worst_hit[2])["label"] if worst_hit[2] > 0 else "minor"
@@ -6582,13 +6649,19 @@ class Narrator:
                 # (a spread thrown close, like Close Combat, is a flurry: several blows are what it is)
                 runs = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
                                                          or a.get("combo") or close_spread(a)) for a in acts)
-                one_ = ([] if runs else [SEVERAL_BLOWS]) + grip_x or None
+                # (a blow that lands on the very part she is guarding went into the guard, not round it)
+                into_guard = any(a.get("attacker") == who and (a.get("guarding") or {}).get("part")
+                                 and any(h.get("part") == a["guarding"]["part"] for h in a.get("hits") or [])
+                                 for a in acts)
+                one_ = ([] if runs else [SEVERAL_BLOWS]) + grip_x + ([ROUND_GUARD] if into_guard else []) or None
                 add(f"a way {who} might stage it", B.pick("movement", 2, kind=kinds, shape=shapes, has=feats(who),
                                                           exclude=one_) if kinds
                     else B.pick("movement", 1, has=feats(who), exclude=one_))
             if kinds:
                 runs_ = any(a.get("attacker") == who and (a.get("pummel") or (a.get("chain") or {}).get("link", 1) > 1
-                                                          or a.get("combo") or int(a.get("hit_count") or 0) > 1) for a in acts)
+                                                          or a.get("combo") or sum(1 for h in a.get("hits") or []
+                                                                                   if not h.get("jarred")) > 1)
+                           for a in acts)    # (a part only jarred beside the blow is not a second blow)
                 self._offer_line(add, f"a finished line for {who} as she commits", "before_strike",
                                  fmt={"foe": target or ""}, exclude=None if runs_ else [SEVERAL_BLOWS],
                                  kind=kinds, shape=shapes, has=feats(who), state=state(who), role="attacker")
@@ -6762,11 +6835,22 @@ class Narrator:
                     add(f"{poss(att_)} thought", B.pick("devastating_thought", 1, fighter=(att_ or "").lower()))
             if a.get("aim") and a.get("hits"):
                 side[0] = "take" if take else "act"
+                aimed_, landed_ = str(a["aim"].get("aimed") or ""), str(a["aim"].get("landed") or "")
+                # (it slid onto a part that was already the worse hurt: no "glad of the bad placing", no "the meaty
+                # side instead of the hurt one"; and no throat or jaw this blow never went near)
+                dmg_ = (getattr(self, "damage_by", None) or {}).get(dfn_) or {}
+                was_ = next((float(h.get("damage_before") or 0) for h in a["hits"] if h.get("part") == landed_), 0.0)
+                worse_ = was_ >= float(dmg_.get(aimed_.lower(), dmg_.get(aimed_, 0)) or 0)
+                words_ = f"{aimed_} {landed_}".lower()
+                far_ = [w for w in ("throat", "jaw", "chin", "shoulder", "middle") if w not in words_
+                        and not (w == "middle" and re.search(r"chest|belly", words_))]
+                aim_x = (([LUCKY_PLACING] if worse_ else [])
+                         + ([re.compile(r"\b(?:" + "|".join(far_) + r")\b", re.I)] if far_ else [])) or None
                 add("off target" if act else f"{dfn_}, keeping it from landing true",
-                    B.pick("off_target" if act else "off_target_take", 1))
+                    B.pick("off_target" if act else "off_target_take", 1, exclude=aim_x))
                 if take:
                     self._offer_line(add, f"a finished line for {dfn_} as it lands off target", "off_target",
-                                     fmt={"part": a["aim"]["landed"].lower(), "foe": att_ or ""})
+                                     fmt={"part": landed_.lower(), "foe": att_ or ""}, exclude=aim_x)
             if act and (a.get("pummel") or {}).get("frenzy"):
                 side[0] = "act"
                 add(f"{poss(att_)} frenzy", B.pick("frenzy", 1))
@@ -7009,7 +7093,8 @@ class Narrator:
         the engine's injury log as it stood before this beat). Each part is offered once in a long while."""
         if not self.rules.get("narration", {}).get("callback_memory", True):
             return None
-        before = getattr(self, "_injury_prev", None) or {}
+        # (the same causes CURRENT CONDITION names for the part: the hardest and the latest, as it stood before)
+        before = getattr(self, "_injury_main_prev", None) or getattr(self, "_injury_prev", None) or {}
         told = self.__dict__.setdefault("_memory_told", {})
         turn = self._blocks().turn
         if any(turn == t for t in told.values()):
@@ -7025,8 +7110,8 @@ class Narrator:
                     continue
                 told[key] = turn
                 return (f"one memory, touched once and in passing (a clause, not a retelling): {poss(who)} "
-                        f"{part.lower()} was already hurt before this beat, by {causes[0]}"
-                        + (f" and then {causes[-1]}" if len(causes) > 1 and causes[-1] != causes[0] else "")
+                        f"{part.lower()} was already hurt before this beat, by "
+                        + (", ".join(causes[:-1]) + f" and then {causes[-1]}" if len(causes) > 1 else causes[0])
                         + ". Let the new pain find the old one (in your own words, not these)")
         return None
 
@@ -7189,7 +7274,8 @@ class Narrator:
         if key == "dwell":
             return ["dwell", "strike take hard", "strike take"]
         if key == "watch":
-            return ["watch", "pin hold", "strike act"]
+            # (a pin passage only when a pin is on: a watcher with nobody pinned is shown watching, or a strike)
+            return ["watch"] + (["pin hold"] if pin_events else []) + ["strike act"]
         if key == "read":
             return ["read", "watch", "strike take"]
         take = key == "take"
@@ -7204,6 +7290,15 @@ class Narrator:
         if acts and all(t == "aftermath" for t in types):
             add("aftermath", "aftermath take")
             self._sample_rounds = {}
+            return tags
+        if acts and all(t in ("breather", "none", "take_off", "land_flight", "time_passes") for t in types) \
+                and not pin_events:
+            # nobody attacks: a passage of two fighters reading each other, never one of a blow landing
+            tags = ["read", "watch"]
+            counts = self.__dict__.setdefault("_sample_counts", {})
+            self._sample_rounds = {t: counts.get(t, 0) for t in tags}
+            for t in tags:
+                counts[t] = counts.get(t, 0) + 1
             return tags
         if any(e.get("complete") and e.get("elimination") for e in pin_events):
             add("pin hold", "faint")
@@ -10073,6 +10168,7 @@ class Narrator:
         self._blocks().save()
         self._lines().save()
         self._injury_prev = {k: list(v) for k, v in (getattr(self, "injury_log", None) or {}).items()}
+        self._injury_main_prev = {k: list(v) for k, v in (getattr(self, "injury_main", None) or {}).items()}
         text = self._drop_repeats(raw, story_so_far)
         text = self._drop_inner_repeats(text, aliases=getattr(self, "aliases", None))
         text = self._drop_sample_copies(text)
@@ -10814,13 +10910,13 @@ class Narrator:
                            f"starts and nobody is touched.",
                     "take": "the fallen and the place: how each fighter who is down or out lies (exactly as CURRENT "
                             "CONDITION says: no change unless one is listed for this beat), her breathing, what the "
-                            "winner notices of her, the water, the light and the sounds of the place. End on "
+                            "winner notices of her, the light, the air and the sounds of the place. End on "
                             "stillness."}
             plan = [(k, jobs.get(k, f), w) for k, f, w in plan]
             pin_plan = True     # (these parts stand as written: no 'the attack has already been shown' after part one)
         others = [x for x in (getattr(self, "strengths", None) or {}) if x != actor]
         if (actor and not receivers and not pin_plan and len(plan) >= 2 and len(others) == 1 and acts
-                and all(a.get("type") in ("breather", "none") for a in acts)
+                and all(a.get("type") in ("breather", "none", "take_off", "land_flight") for a in acts)
                 and not [e for e in pin_events if e.get("complete") and e.get("elimination")]):
             # nobody is hit (she catches her breath, or circles): still both sides, one part each, same length
             o_ = others[0]
@@ -11006,7 +11102,13 @@ class Narrator:
                     # the attack part already showed every hit landing (or the miss): the next part must not retell it
                     k2, _, w2 = plan[i]
                     done = ("Every hit has ALREADY been shown landing above" if self._must_parts
-                            else "The attack has ALREADY been shown above, miss and all")
+                            else "The attacks have ALREADY been shown above, meeting and cancelling out"
+                            if any(x.get("clash") for x in acts)
+                            else "The attack has ALREADY been shown above, miss and all"
+                            if any(x.get("dodged") for x in acts)
+                            else "The attack has ALREADY been shown above"
+                            if any(x.get("type") == "instant" for x in acts)
+                            else "What happens this beat has ALREADY been told above")
                     pinned_now = next((x for x in acts if x.get("type") == "pin_start" and not x.get("continuing")), None)
                     if pinned_now and not strikes:
                         d_ = pinned_now["defender"]
@@ -11285,6 +11387,13 @@ class Narrator:
         for a in missing:
             att, dfn, mv = a["attacker"], a["defender"], a["move"]
             parts = list(dict.fromkeys(h["part"].lower() for h in a["hits"]))
+            if len(parts) > 3:
+                # a whole-body or spread move: where it hit hardest, not the first parts in the body's list
+                took = {}
+                for h in a["hits"]:
+                    took[h["part"].lower()] = took.get(h["part"].lower(), 0) + float(h.get("damage_taken") or 0)
+                parts = sorted(parts, key=lambda p: -took[p])
+                parts = ["whole body, worst of all the " + parts[0]] + parts[1:3]
             worst = max(float(h.get("damage_after", h.get("damage_taken", 0)) or 0) for h in a["hits"])
             big = bool(a.get("devastating") or any(h.get("devastating") for h in a["hits"]) or worst >= 90)
             dev = bool(a.get("devastating") or any(h.get("devastating") for h in a["hits"]))

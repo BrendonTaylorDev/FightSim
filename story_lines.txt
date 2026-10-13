@@ -3316,7 +3316,7 @@ She leaned forward and let the fire roll out in a low, rolling sheet.
 Rime crept across her own lips before the blast left her.
 She narrowed her stance as frost gathered around her, sharp and white.
 The cold built in her chest until her breath turned to glittering mist.
-She hurled the cold forward in a sharp, freezing gust.
+She sent the cold out at {foe}, sharp and freezing.
 
 == before_strike | kind: wind
 She pushed the air out before her in one hard, buffeting wall.
