@@ -6831,7 +6831,8 @@ class Narrator:
         the engine's injury log as it stood before this beat). Each part is offered once in a long while."""
         if not self.rules.get("narration", {}).get("callback_memory", True):
             return None
-        before = getattr(self, "_injury_prev", None) or {}
+        # (the same causes CURRENT CONDITION names for the part: the hardest and the latest, as it stood before)
+        before = getattr(self, "_injury_main_prev", None) or getattr(self, "_injury_prev", None) or {}
         told = self.__dict__.setdefault("_memory_told", {})
         turn = self._blocks().turn
         if any(turn == t for t in told.values()):
@@ -6847,8 +6848,8 @@ class Narrator:
                     continue
                 told[key] = turn
                 return (f"one memory, touched once and in passing (a clause, not a retelling): {poss(who)} "
-                        f"{part.lower()} was already hurt before this beat, by {causes[0]}"
-                        + (f" and then {causes[-1]}" if len(causes) > 1 and causes[-1] != causes[0] else "")
+                        f"{part.lower()} was already hurt before this beat, by "
+                        + (", ".join(causes[:-1]) + f" and then {causes[-1]}" if len(causes) > 1 else causes[0])
                         + ". Let the new pain find the old one (in your own words, not these)")
         return None
 
@@ -9877,6 +9878,7 @@ class Narrator:
         self._blocks().save()
         self._lines().save()
         self._injury_prev = {k: list(v) for k, v in (getattr(self, "injury_log", None) or {}).items()}
+        self._injury_main_prev = {k: list(v) for k, v in (getattr(self, "injury_main", None) or {}).items()}
         text = self._drop_repeats(raw, story_so_far)
         text = self._drop_inner_repeats(text, aliases=getattr(self, "aliases", None))
         text = self._drop_sample_copies(text)
@@ -10974,6 +10976,13 @@ class Narrator:
         for a in missing:
             att, dfn, mv = a["attacker"], a["defender"], a["move"]
             parts = list(dict.fromkeys(h["part"].lower() for h in a["hits"]))
+            if len(parts) > 3:
+                # a whole-body or spread move: where it hit hardest, not the first parts in the body's list
+                took = {}
+                for h in a["hits"]:
+                    took[h["part"].lower()] = took.get(h["part"].lower(), 0) + float(h.get("damage_taken") or 0)
+                parts = sorted(parts, key=lambda p: -took[p])
+                parts = ["whole body, worst of all the " + parts[0]] + parts[1:3]
             worst = max(float(h.get("damage_after", h.get("damage_taken", 0)) or 0) for h in a["hits"])
             big = bool(a.get("devastating") or any(h.get("devastating") for h in a["hits"]) or worst >= 90)
             dev = bool(a.get("devastating") or any(h.get("devastating") for h in a["hits"]))

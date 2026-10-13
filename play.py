@@ -977,10 +977,12 @@ class Session:
                         where.setdefault((mv, who), []).append(part.lower())
         self.narrator.move_victims, self.narrator.move_parts = hit, where
         self.narrator.injury_log = {k: list(v) for k, v in self.eng.injury_log.items()}   # for one memory a beat
+        # (the few causes the notes name for each part, the same as CURRENT CONDITION's: the hardest and the latest)
+        self.narrator.injury_main = {k: self.eng.injury_causes(k) for k in self.eng.injury_log}
         # what kind of wound each part carries (claw, bite, blunt, grip, shock, cold): blood needs a claw or a bite
         self.narrator.wound_kinds = {k: {self.eng._mark_kind(c) for c in v if c} for k, v in self.eng.injury_log.items()}
         self.narrator.first_hurt = {f.name: dict(f.learned.get("first_hurt") or {}) for f in self.eng.fighters.values()}
-        self.narrator.beat_now = self.eng.turn + 1
+        self.narrator.beat_now = self.eng.turn      # (synced after the beat ran: this beat's number)
         self.narrator.voices = {f.name: getattr(f, "voice", "") for f in self.eng.fighters.values()}
         self.narrator.tally = dict(getattr(self.eng, "tally", {}) or {})   # for counts in the story ("thrown twice")
         # every grip that is still on now: the story may not let one go on its own
@@ -1266,6 +1268,13 @@ class Session:
                 for h in res["hits"]:
                     if h["part"] not in parts:
                         parts.append(h["part"])
+                if len(parts) > 3:
+                    # a whole-body or spread move: the parts it hit hardest, not the first three in the body's list
+                    took = {}
+                    for h in res["hits"]:
+                        took[h["part"]] = took.get(h["part"], 0) + float(h.get("damage_taken") or 0)
+                    parts = ["whole body, worst on " + sorted(parts, key=lambda p: -took[p])[0]] + \
+                        sorted(parts, key=lambda p: -took[p])[1:3]
                 if res.get("charge") and not res["charge"].get("skipped"):
                     what += f" (a charge that drove her into {res['charge']['into']})"
                 self.recent_attacks.append(f"{res['attacker']}: {what} → {poss_name(res['defender'])} {', '.join(parts[:3])}"
@@ -1277,6 +1286,12 @@ class Session:
                                             f"nothing landed)" if res.get("resisted") else
                                             f"{res['attacker']}: {what} → {res['defender']} DODGED it"
                                             + (" and countered" if res.get("counter_hits") else "")))
+                rake = res.get("air_rake") or {}
+                if rake.get("hits"):
+                    # her rake back as they crossed landed after the attack did: it is the last thing to hit the attacker
+                    rp = list(dict.fromkeys(h["part"] for h in rake["hits"]))
+                    self.recent_attacks.append(f"{rake['by']}: rake as they crossed → {poss_name(res['attacker'])} "
+                                               f"{', '.join(rp[:3])}")
             elif res.get("type") in ("hold_start", "pin_start"):
                 self.recent_attacks.append(f"{res['attacker']}: {'pin' if res['type'] == 'pin_start' else 'hold'} on "
                                            f"{res['defender']}")

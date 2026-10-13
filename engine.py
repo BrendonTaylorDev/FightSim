@@ -533,10 +533,17 @@ class Engine:
         if self._source and taken >= 1:
             # the first thing that ever hurt this part, and when (for callbacks much later in the fight)
             defender.learned.setdefault("first_hurt", {}).setdefault(p.name, [self._source, self.turn + 1])
-            log = self.injury_log.setdefault(f"{defender.name}|{p.name}", [])
+            key = f"{defender.name}|{p.name}"
+            log = self.injury_log.setdefault(key, [])
+            amt = self.__dict__.setdefault("injury_amt", {}).setdefault(key, {})
+            amt[self._source] = round(float(amt.get(self._source, 0)) + max(0.0, p.damage - dmg_b), 2)
             if not log or log[-1] != self._source:
+                if self._source in log:
+                    log.remove(self._source)      # (once each, where it last hurt her: no "A, then B, then A")
                 log.append(self._source)
-                del log[:-4]
+                while len(log) > 6:
+                    # (the record keeps what did the most: the lightest older cause goes, never the latest)
+                    log.remove(min(log[:-1], key=lambda c: float(amt.get(c, 0))))
             # a huge hit on this part is remembered for the rest of the fight, however long ago it was
             # (narration.notes_decay.big_hit: part damage added in one go)
             added = p.damage - dmg_b
@@ -733,6 +740,16 @@ class Engine:
     def _health_pct(self, f):
         return 100.0 * f.health / f.max_health if f.max_health else 0.0
 
+    def injury_causes(self, key, n=3):
+        """What hurt one part ("Fighter|Part"), oldest first, as the notes tell it: the causes that did the most
+        damage to it and the latest one, at most n. The same few everywhere it is told, so they never disagree."""
+        log = [c for c in self.injury_log.get(key, []) if c]
+        amt = (self.__dict__.get("injury_amt") or {}).get(key) or {}
+        if len(log) <= n or not amt:
+            return log[-n:]
+        keep = set(sorted(log[:-1], key=lambda c: -float(amt.get(c, 0)))[:n - 1]) | {log[-1]}
+        return [c for c in log if c in keep]
+
     def _count(self, kind, name):
         """One more time this has happened to her this fight (the story may count: "thrown twice")."""
         key = f"{kind}|{name}"
@@ -756,7 +773,8 @@ class Engine:
                               {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
 
     # engine state that lives outside the main snapshot tuple but must be undone with it
-    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn")
+    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
+                   "injury_amt")
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -4984,7 +5002,7 @@ class Engine:
         """What the damage to one part LOOKS like by now: the marks of what did it (claws, teeth, blows, grips,
         lightning, cold), how deep, and cartilage (ears, nose, fins) creased or bent out of shape for now."""
         lvl = 2 if p.damage >= 300 else 1 if p.damage >= 150 else 0
-        srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
+        srcs = self.injury_causes(f"{f.name}|{p.name}", 2)
         kinds = list(dict.fromkeys(self._mark_kind(c) for c in srcs)) or ["blunt"]
         import zlib
         pick = lambda lst, salt: lst[zlib.crc32(f"{f.name}|{p.name}|{salt}".encode()) % len(lst)]
@@ -7890,8 +7908,8 @@ class Engine:
                 if self._stale(f, p.name, ob):
                     big = (f.learned.get("big_hits") or {}).get(p.name)
                     return f"; the worst of it from {big[0]}" if big else ""
-                src = self.injury_log.get(f"{f.name}|{p.name}", [])
-                return f"; from {', then '.join(src[-2:])}" if src else ""
+                src = self.injury_causes(f"{f.name}|{p.name}")
+                return f"; from {', then '.join(src)}" if src else ""
             hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}{_origin(p)})"
                     for p in sorted(f.parts.values(), key=lambda p: -p.damage) if p.damage >= 30]
             fresh = [p.name for p in f.parts.values() if p.damage < 10]
@@ -7952,7 +7970,7 @@ class Engine:
             bad = sorted((p for p in f.parts.values() if p.damage >= 30), key=lambda p: -p.damage)[:n]
             bits = []
             for p in bad:
-                srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
+                srcs = self.injury_causes(f"{f.name}|{p.name}")
                 srcs = [re.sub(r"(\S+) (escape|struggle)$", r"\1 blow breaking out of a hold", c) for c in srcs]
                 if srcs:
                     bits.append(f"{p.name.lower()} ({' and '.join(srcs)})")
@@ -8126,6 +8144,7 @@ class Engine:
                 "scene_name": self.scene_name, "last_event": self._last_event, "pins": self.pins,
                 "positions": self.positions, "downed": self.downed, "since_pin": self.since_pin,
                 "last_pin_end": self.last_pin_end, "injury_log": self.injury_log, "plan": self.plan,
+                "injury_amt": self.__dict__.get("injury_amt") or {},
                 "tally": self.tally, "momentum": self.momentum, "facing": self.facing, "move_log": self.move_log,
                 "last_reposition": getattr(self, "_last_reposition", {}), "alliances": self.alliances,
                 "weather": getattr(self, "weather", {}), "arena_marks": getattr(self, "arena_marks", []),
@@ -8188,6 +8207,7 @@ class Engine:
         self.momentum = data.get("momentum", [])
         self.last_pin_end = data.get("last_pin_end", {})
         self.injury_log = data.get("injury_log", {})
+        self.injury_amt = data.get("injury_amt", {})
         self.tally = {k: int(v) for k, v in (data.get("tally") or {}).items()}
         self.plan = data.get("plan", {})
         self.alliances = data.get("alliances", [])
