@@ -1,0 +1,239 @@
+From 8196b7be738e01888569a465e72e3d93c1d78246 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 13 Oct 2026 16:39:01 +0000
+Subject: [PATCH 1/2] Fix: confusion not contradicted (no 'world doesn't blur',
+ no steady/unmoved ideas while confused or dazed); injury report names her own
+ move (no near-miss 'Flash' for Slash); summary gives real strength past the
+ limit; boneless parts never CAN BREAK; stamina label never fresher than
+ overall strength, winded or past the limit; stale BLOCK fix-up reset each
+ beat; counter names its weapon; arena event gets a part and is sized to its
+ hits
+
+---
+ blocks.py   |  4 ++++
+ engine.py   | 33 +++++++++++++++++++++++++++------
+ narrator.py | 38 ++++++++++++++++++++++++++++++++++----
+ play.py     |  3 +++
+ rules.json  | 10 ++++++----
+ 5 files changed, 74 insertions(+), 14 deletions(-)
+
+diff --git a/blocks.py b/blocks.py
+index 234a8de..0eb3ead 100644
+--- a/blocks.py
++++ b/blocks.py
+@@ -155,6 +155,10 @@ def body_bans(has):
+                  r"\bstumbl\w*", r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplant(?:s|ed)\b",
+                  r"\bfooting\b", r"\bshifts? her weight\b", r"\bballs of her feet\b", r"\ba step\b", r"\bsteps?\b",
+                  r"\bset firm\b", r"\bgives? ground\b"]
++    if "dizzy" in has:      # confused or dazed: nothing that has her steady, square and untouched by it
++        bans += [r"\bunmoved\b", r"\bsquares? up again\b", r"\bsteady as before\b", r"\bher rhythm doesn't change\b",
++                 r"\b(?:is|was) set again\b", r"\bwithout hurry\b", r"\bher focus stays fixed\b", r"\bsharp and single\b",
++                 r"\bdoesn't even look\b", r"\bnothing in her movement changes\b", r"\bsteady\b"]
+     if "aloft" in has:      # in the air all beat: no ground under her at all
+         bans += [r"\b(?:sits?|sat|sitting|kneel\w*|haunches)\b", r"\bground\b", r"\bdust\b", r"\bat her feet\b"]
+     return re.compile("|".join(bans), re.I) if bans else None
+diff --git a/engine.py b/engine.py
+index feceeee..21d3e5b 100644
+--- a/engine.py
++++ b/engine.py
+@@ -5156,9 +5156,20 @@ class Engine:
+             return f"{who} struggling"
+         if low in self.SUBMISSIONS:
+             return f"{who} {low}"
+-        mv = self.dex_move(what)
+-        about = str((mv or {}).get("about") or "")
+-        if about[:2].lower() in ("a ", "an") or about[:4].lower() == "the ":
++        # her own move first (the fighter's file), then the move list only under that very name: a near miss in the
++        # list is another move ('Slash' is not 'Flash, a blinding flash of light')
++        try:
++            own = self.find_move(re.sub(r"(?:'s|')$", "", who), what)
++        except ValueError:
++            own = None
++        dex = self.dex_move(what)
++        if dex and " ".join(dex["name"].lower().replace("-", " ").split()) != " ".join(low.replace("-", " ").split()):
++            dex = None
++        mv = own or dex
++        art = re.compile(r"(?:an?|the)\s", re.I)
++        about = next((str(m.get("about") or "") for m in (own, dex) if m and art.match(str(m.get("about") or ""))),
++                     "" if not own or re.match(r"\w+s\b", str(own.get("about") or "")) else str(own.get("about") or ""))
++        if about:
+             noun = re.split(r"\s+(?:across|into|from|that|with|to|which)\b|[,:;(]", about, maxsplit=1)[0].strip()
+             noun = re.sub(r"^(?:a|an|the)\s+", "", noun, flags=re.I)
+         else:
+@@ -5447,7 +5458,8 @@ class Engine:
+                       f"{fin['seconds']} seconds" if fin.get("seconds") else "")
+             rows.append(f"  Finish: {win} pinned {lose}" + (f" for {length}" if length else "") + f"; {how}"
+                         + (f" ({fin['part']})" if fin.get("part") else "") + " put her out at "
+-                        + (f"{max(0.0, fin['strength']):.0f}% strength" if fin.get("strength") is not None else "the end"))
++                        + ((f"{fin['strength']:.0f}% strength" + (", past her limit" if fin["strength"] < 0 else ""))
++                           if fin.get("strength") is not None else "the end"))
+         if tp:
+             rows.append(f"  Turning point: beat {tp['beat']} — {win} took the lead for good"
+                         + (f" ({tp['win']:.0f}% vs {tp['lose']:.0f}%)" if tp.get("win") is not None else ""))
+@@ -7869,8 +7881,15 @@ class Engine:
+         e = f.energy
+         tired = float(self._cfg("energy").get("tired_below", 25))
+         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
+-        if e >= 70 and self.strength(f) < float(self._cfg("energy").get("fresh_breath_min_strength", 40)):
++        s = self.strength(f)
++        if s < 0:
++            stamina = "gasping, running out of energy"   # past her limit: her breath never reads better than this
++        elif any(self.has(f, st) for st in ("breathless", "sputtering", "constricted")):
++            stamina = "no breath in her right now"       # (the wind knocked out of her is not a fresh breath)
++        elif e >= 70 and s < float(self._cfg("energy").get("breath_back_below_strength", 40)):
+             stamina = "her breath is back, but not her strength: the body under it is worn out"
++        elif e >= 70 and s < float(self._cfg("energy").get("fresh_breath_min_strength", 80)):
++            stamina = "breathing hard"                   # (not fresher than the overall word: winded, tired)
+         return (" Status: " + "; ".join(bits) + "." if bits else "") + f" Stamina: {stamina}."
+ 
+     def tier_reaction(self, f, ht):
+@@ -7939,7 +7958,9 @@ class Engine:
+         if f.eliminated or f.health >= float(cfg.get("max_health", 0)):
+             return []
+         need = float(cfg.get("min_part_damage", 300))
+-        return [p.name for p in f.parts.values() if p.damage >= need]
++        soft = [str(w).lower() for w in cfg.get("boneless", [])]     # (no bone in a stomach or a fin to break)
++        return [p.name for p in f.parts.values() if p.damage >= need
++                and not any(re.search(r"\b" + re.escape(w) + r"s?\b", p.name.lower()) for w in soft)]
+ 
+     def condition_summary(self):
+         """Words-plus-numbers summary for the narrator. Overall strength is relative to each fighter's own max,
+diff --git a/narrator.py b/narrator.py
+index 59b59c4..b11fe84 100644
+--- a/narrator.py
++++ b/narrator.py
+@@ -2922,6 +2922,7 @@ class Narrator:
+         self._tiers_used = set()
+         self._must_parts = []
+         self._must_struggle = None
++        self._must_block = None      # (a block is this beat's own: set again below only when one happens now)
+         self._struggle_kind = None
+         self._breaking = []
+         self._hurt_now = set()
+@@ -3793,8 +3794,9 @@ class Narrator:
+                              f"here. Show the flyer shooting past and the blow catching her side, wing or tail on the way.)")
+                 lines += [self._hit_line(h) for h in a["counter_hits"]]
+             elif a.get("counter_hits"):
+-                lines.append(f"  - Out of the dodge, {who} COUNTERS and catches {a['attacker']} (a quick strike of its own, "
+-                             f"separate from any attack {who} makes later in this beat; {a['attacker']} is the only one hurt here):")
++                lines.append(f"  - Out of the dodge, {who} COUNTERS and catches {a['attacker']} with {self._counter_weapon(who)} "
++                             f"(a quick strike of its own, separate from any attack {who} makes later in this beat; "
++                             f"{a['attacker']} is the only one hurt here):")
+                 lines += [self._hit_line(h) for h in a["counter_hits"]]
+             return lines
+         if t == "instant":
+@@ -4555,7 +4557,12 @@ class Narrator:
+                  + (f"It catches {both}" if e.get("hits") else f"It reaches {both}")
+                  + (" (everyone)" if e.get("who") == "all" and len(who) > 1 else "")
+                  + ". YOU MUST SHOW THIS: the warning (a sound, a movement), the thing happening, and what it does to "
+-                 + ("them" if len(who) > 1 else "her") + ". It knocks nobody down and moves nobody; the fight goes on."]
++                 + ("them" if len(who) > 1 else "her") + ". It knocks nobody down and moves nobody; the fight goes on."
++                 + (" It only CLIPS " + ("them" if len(who) > 1 else "her") + ": the hits below leave nothing lasting, "
++                    "so tell it no bigger than that (a glancing share of it catching her, not the whole of it landing "
++                    "on her)."
++                    if e.get("hits") and all(self._pain(h.get("damage_after", 0))["label"] == "minor"
++                                             for h in e["hits"]) else "")]
+         lines += [self._hit_line(h, i + 1 if len(e.get("hits") or []) > 1 else None) for i, h in enumerate(e.get("hits") or [])]
+         for s in e.get("status_applied") or []:
+             look = s.get("look") or self._status_look(s)
+@@ -6294,6 +6301,20 @@ class Narrator:
+         parts = " ".join(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()).lower()
+         return "talons" if "talon" in parts else "hands" if "hand" in parts else "feet" if ("foot" in parts or "feet" in parts) else "grip"
+ 
++    def _counter_weapon(self, who):
++        """What a counter out of a dodge is thrown with (the engine leaves it unnamed): her forepaw or paw if she has
++        one, else her horn, her tail or her jaws."""
++        parts = list(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys())
++        bare = lambda p: re.sub(r"^(?:left|right) ", "", p.lower())
++        for rx, how in ((r"\bforepaw\b|\bfront paw\b", "a quick swipe of her {p}, claws out"),
++                        (r"\bpaw\b|\bhand\b|\bfist\b", "a short, hard blow of her {p}"),
++                        (r"\bhorn\b", "a short jab of her {p}"), (r"\btails?\b", "a lash of her {p}"),
++                        (r"\bwing\b", "a buffet of her {p}"), (r"\bbeak\b", "a stab of her {p}")):
++            p = next((bare(x) for x in parts if re.search(rx, x.lower()) and "hind" not in x.lower()), None)
++            if p:
++                return how.format(p=p)
++        return "a snap of her jaws"
++
+     def _feats_of(self, who):
+         """What a fighter's body has (tails, fins, horn, arms...), from her own part names, and what she is covered
+         in (feathers, scales, skin or fur, from her description: no fur on a dragon's scales)."""
+@@ -6372,8 +6393,10 @@ class Narrator:
+         ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
+         lying = bool(ps.get(who)) and bool(pe.get(who)) and all(
+             re.match(r"(?:ON THE GROUND|ON TOP|LOCKED ONTO|OUT)", str(x.get(who, "")).upper()) for x in (ps, pe))
++        # "dizzy": confused or dazed (no idea that has her steady and unmoved)
+         return cache.get(who, set()) | ({"aloft"} if self._aloft(who) else {"unfooted"}
+-                                        if self._in_air(who) or lying else set())
++                                        if self._in_air(who) or lying else set()) \
++            | ({"dizzy"} if who in (getattr(self, "dizzy", None) or ()) else set())
+ 
+     def _aloft(self, who):
+         """In the air as the beat begins AND as it ends (a fighter knocked down out of it lands, and is then on the
+@@ -8800,6 +8823,9 @@ class Narrator:
+         else:
+             allowed = ("no crying out, no screams, no 'agony' or 'waves of pain', nothing 'explodes', and the world "
+                        "doesn't blur or spin: a grunt, a hiss, a wince, and she fights on")
++        if who in (getattr(self, "dizzy", None) or ()):
++            # (confused or dazed: the engine has her world swimming, so the check must not forbid it)
++            allowed = re.sub(r",? and the world doesn't blur or spin", "", allowed)
+         where = f" ({part})" if worst > 0 else ""
+         return eff, part, f"how much {who} hurts: at worst {label.upper()}{where}, at {round(strength)}% of her " \
+                           f"strength, so {allowed}", allowed, f"{label.upper()}{where}"
+@@ -11204,6 +11230,10 @@ class Narrator:
+                 parts_ = " and ".join(dict.fromkeys(x["part"].lower() for x in also
+                                                     if x.get("type") == "numb_end" and x.get("fighter") == who))
+                 put(who, f"THE FEELING COMING BACK in {poss(who)} {parts_}, given its own moment", "after")
++            elif t == "scene_event" and e.get("fighters"):
++                caught = e["fighters"]
++                put(caught[0], f"THE PLACE ITSELF ACTS ({e.get('name') or 'the arena'}), as the last thing in the beat, "
++                               f"and what it does to {' and '.join(caught)}", "after")
+             elif t == "free_blow":
+                 put(e.get("attacker"), f"{poss(e.get('attacker'))} FREE BLOW on {poss(e.get('defender'))} "
+                                        f"{str(e.get('part', '')).lower()}, quick and told once, her grip staying as it was",
+diff --git a/play.py b/play.py
+index 62ae786..ca3ed49 100644
+--- a/play.py
++++ b/play.py
+@@ -1026,6 +1026,9 @@ class Session:
+             self.narrator.soaked_before = set(self.narrator.soaked_before) | set(self.narrator._soaked_last)
+             self.narrator._soaked_last = soaked
+         self.narrator.soaked_now = soaked
++        # confused or dazed now: her world swims (no 'the world doesn't blur', no steady, unmoved ideas for her)
++        self.narrator.dizzy = {f.name for f in self.eng.fighters.values()
++                               if any(self.eng.has(f, st) for st in ("confused", "dazed"))}
+         self.narrator.water_types = {f.name for f in self.eng.fighters.values()
+                                      if "water" in {str(t).lower() for t in (getattr(f, "types", None) or [])}}
+         self.narrator.rain_wet = (self.eng.scene_cfg.get("wets") or
+diff --git a/rules.json b/rules.json
+index 2429885..7fbab89 100644
+--- a/rules.json
++++ b/rules.json
+@@ -759,10 +759,11 @@
+     "swearing_gap": 5,
+     "_numb_tier_comment": "true: parts at 1000%+ damage go 'numb with shock' (⚪). false: they stay 'devastated' (⚫). Toggle with /numb on|off or /set narration.numb_tier false",
+     "numb_tier": false,
+-    "_bone_break_comment": "Bones may always crack or bruise. Broken, fractured, or shattered bones are allowed only on a part with at least min_part_damage damage, on a fighter whose health is below max_health.",
++    "_bone_break_comment": "Bones may always crack or bruise. Broken, fractured, or shattered bones are allowed only on a part with at least min_part_damage damage, on a fighter whose health is below max_health. boneless: words of part names with no bone in them to break (a stomach, a throat, a fin); those parts are never listed as able to break.",
+     "bone_break": {
+       "min_part_damage": 300,
+-      "max_health": 0
++      "max_health": 0,
++      "boneless": ["stomach", "belly", "midsection", "flank", "throat", "ruff", "mane", "ear", "fin", "sac", "hood", "fan", "scales"]
+     },
+     "_accuracy_comment": "accuracy_check: if a draft skips a listed hit (never mentions that body part) or skips a pin struggle it was told to show, the narrator rewrites it once with the gaps flagged.",
+     "accuracy_check": true,
+@@ -1257,8 +1258,9 @@
+     "regen_per_beat": 5,
+     "rest_bonus": 10,
+     "tired_below": 25,
+-    "_fresh_breath_min_strength_comment": "The notes' stamina line says 'fresh breath' (energy 70+) only while her overall strength is at least this %; below it (an adrenaline refill on a spent body) it says her breath is back but not her strength. Labels only.",
+-    "fresh_breath_min_strength": 40
++    "_fresh_breath_min_strength_comment": "The notes' stamina line says 'fresh breath' (energy 70+) only while her overall strength is at least fresh_breath_min_strength % (the 'fresh' tier: a winded or tired fighter reads 'breathing hard'); below breath_back_below_strength (an adrenaline refill on a spent body) it says her breath is back but not her strength. Past her limit (below 0%) it always reads gasping, and while the wind is knocked out of her it says so. Labels only.",
++    "fresh_breath_min_strength": 80,
++    "breath_back_below_strength": 40
+   },
+   "adrenaline": {
+     "_comment": "The first time a fighter's strength drops below below_strength %, she gets one surge for this many beats: power_mult on her attacks, escape_mult on pin escapes, better dodging, and an energy refill.",
+-- 
+2.43.0
+

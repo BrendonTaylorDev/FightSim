@@ -1,0 +1,371 @@
+From a17bb4284e7da5ab5f3e092426218ffbf3b14fc9 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 13 Oct 2026 16:39:33 +0000
+Subject: [PATCH 1/2] Fix: body and posture fit of the narrator's ideas: arm
+ tells for upright fighters' arms, twin tails, no hind legs/fingers/hands on
+ the wrong body, posture bans (face-up, standing, lying), voice bans per
+ fighter, spent hold reactions and pin tries, softer wear and press looks, no
+ bones breaking in boneless parts
+
+---
+ blocks.py        | 33 ++++++++++++++--
+ engine.py        | 24 +++++++-----
+ narrator.py      | 99 +++++++++++++++++++++++++++++++++++++++++-------
+ story_blocks.txt |  2 +-
+ 4 files changed, 131 insertions(+), 27 deletions(-)
+
+diff --git a/blocks.py b/blocks.py
+index 234a8de..96088a5 100644
+--- a/blocks.py
++++ b/blocks.py
+@@ -82,8 +82,10 @@ def features(part_names):
+         has.add("mane")
+     if "wing" in low or "feather" in low:
+         has.add("feathers" if "feather" in low or "beak" in low else "wings")
+-    if "tail" in low:
+-        has.add("tail")
++    if "tail" in low and "tails" not in has:
++        has.add("tail")        # one tail (a twin-tailed body is "tails": no idea written for a single tail)
++    if re.search(r"\bhands?\b", low):
++        has.add("hands")       # hands with fingers (a webbed paw at the end of an arm is no hand of fingers)
+     if "fin" in low or "fan" in low:
+         has.add("fins")
+     if "horn" in low:
+@@ -147,11 +149,36 @@ def body_bans(has):
+         if "talons" in has:
+             # a bird's feet carry talons, not claws (the other's claws on her are fine), and she has no other legs
+             bans += [r"\bher (?:\w+ )?claws?\b", r"\bhind\b"]
++    if "tails" in has:
++        # twin (or more) tails: never one tail of hers
++        bans += [r"\bher tail\b(?!s)", r"\bthe tail (?:stops?|stopp\w*|goes|hangs?|droops?) "]
++    if "arms" in has and "forelegs" not in has:
++        # upright, on two legs: no hind legs, forelegs or all fours
++        bans += [r"\bhind\b", r"\bforelegs?\b", r"\bforepaws?\b", r"\bon all fours\b"]
++    if has & {"arms", "forelegs"} and "hands" not in has:
++        bans += [r"\bfingers?\b(?!'s)"]     # paws, not hands of fingers
++    if "forelegs" in has and "arms" not in has:
++        # on all fours: no hands or fists, and a forepaw she stands on is not pressed to her belly
++        bans += [r"\bher (?:\w+ )?(?:hands?|fists?)\b", r"\bhand or paw\b", r"\bpaws? (?:pressed|clamped|held) to\b"]
++    if "standing" in has:
++        # on her feet all beat: nobody tells her to get up or stay down
++        bans += [r"\bget(?:s|ting)? up\b", r"\bstay(?:s|ing)? down\b"]
++    if "faceup" in has:
++        # flat on her back: not propped up, curled up, on her side, or with her front against the ground
++        bans += [r"\bpropped\b", r"\bcurl(?:s|ed|ing)? (?:up |tight )?(?:round|around)\b", r"\bside up\b",
++                 r"\bon her side\b", r"\bface-?down\b", r"\bpressed into the ground\b"]
++    if "growler" in has and "voice_breaks" not in has:
++        # a fighter who growls and hisses rather than crying out, while she still holds it in: no soft cries
++        bans += [r"\bwhimper\w*", r"\bwhin(?:e|es|ed|ing)\b", r"\byelp\w*", r"\byips?\b", r"\bsqueak\w*",
++                 r"\bsqueal\w*", r"\bchitter\w*", r"\bkeening\b", r"\bmewl\w*"]
++    if "chirper" in has:
++        bans += [r"(?<!the )(?<!other's )\bgrowl\w*"]       # she chitters, squeaks and barks: the growl is not hers
+     if "legs" not in has:
+         bans += [r"\blegs?\b", r"\bfeet\b", r"\bfoot\b", r"\bknees?\b", r"\btoes\b", r"\bhind\b"]
+     if has & {"aloft", "unfooted"}:
+         # in the air, or off her feet (lying, pinned, on top of a pin): nothing that needs her standing
+-        bans += [r"\bstand(?:s|ing)?\b", r"\bstood\b", r"\bknees?\b", r"\bstance\b", r"\bstagger\w*",
++        bans += [r"\b(?:hang|hangs|hanging) (?:low |loose |limp )?at her sides\b",
++                 r"\bstand(?:s|ing)?\b", r"\bstood\b", r"\bknees?\b", r"\bstance\b", r"\bstagger\w*",
+                  r"\bstumbl\w*", r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplant(?:s|ed)\b",
+                  r"\bfooting\b", r"\bshifts? her weight\b", r"\bballs of her feet\b", r"\ba step\b", r"\bsteps?\b",
+                  r"\bset firm\b", r"\bgives? ground\b"]
+diff --git a/engine.py b/engine.py
+index feceeee..8d086ee 100644
+--- a/engine.py
++++ b/engine.py
+@@ -4913,14 +4913,14 @@ class Engine:
+                   "a few scratches, the fur split along them"],
+                  ["raked furrows through the fur, the skin red beneath", "claw lines scored through the coat, red and "
+                   "raised", "parallel scratches cutting the fur into tufts, the skin angry beneath"],
+-                 ["deep raked lines, the fur torn away in strips", "the coat clawed ragged, whole tufts gone and the skin "
+-                  "welted", "gouged furrows, the fur hanging in torn clumps round them"]),
++                 ["deep raked lines, the fur scraped thin along them", "the coat clawed ragged, whole tufts gone and the skin "
++                  "welted", "deep claw furrows, the fur matted and parted round them, the skin welted"]),
+         "bite": (["tooth marks pressed into the fur", "a crescent of dents where teeth closed",
+                   "the fur pinched up in a line of small tooth prints"],
+                  ["a ring of tooth marks, puffy and red round each one", "bite marks swollen into a raised ring",
+                   "a double row of tooth prints, the skin round them puffed"],
+-                 ["deep tooth marks, the fur matted and clumped round them", "a ragged bite mark, the fur torn and the "
+-                  "flesh round it swollen tight", "deep tooth marks gone dark, the fur round them stiff and matted"]),
++                 ["deep tooth marks, the fur matted and clumped round them", "a deep bite mark, the fur matted and the "
++                  "skin round it swollen tight", "deep tooth marks gone dark, the fur round them stiff and matted"]),
+         "blunt": (["the fur ruffled up the wrong way", "the coat scuffed and standing up in a patch",
+                    "a faint flattened patch where it struck"],
+                   ["bruising showing dark through the fur wherever it parts", "a purpling under the coat you can see "
+@@ -4934,7 +4934,7 @@ class Engine:
+                  ["the fur crushed and matted, the flesh beneath bruised dark and puffy", "deep grip marks, the coat "
+                   "mashed flat and the flesh round them swollen", "the shape of the hold bruised into her, fur crushed "
+                   "into the skin"]),
+-        "shock": (["the fur frizzed and standing up", "the coat crackling, every hair on end",
++        "shock": (["the fur frizzed and standing up", "the coat frizzed, every hair on end",
+                    "a static-fluffed patch of fur"],
+                   ["the fur singed and frizzed", "scorched tips to the fur, smelling of burnt hair",
+                    "the coat frizzed and darkened at the ends"],
+@@ -4950,12 +4950,12 @@ class Engine:
+     MARKS_MORE = {
+         "claw": (["a light scoring of claw marks", "shallow nicks in the coat, the fur parted in thin lines"],
+                  ["claw furrows crossing each other, the fur ragged", "long red scratches showing through the parted fur"],
+-                 ["deep claw tracks, the coat shredded round them", "the fur raked off in strips, the skin beneath "
+-                  "raw-looking"]),
++                 ["deep claw tracks, the coat ragged round them", "the fur raked thin in stripes, the skin beneath "
++                  "red and welted"]),
+         "bite": (["small dents in the coat where fangs pressed", "a faint arc of bite marks"],
+                  ["bite marks raised and reddened", "the fur bunched and wet round a ring of tooth marks"],
+                  ["a crushing bite mark, the flesh round it swollen out", "deep fang marks, the coat round them clumped "
+-                  "and torn"]),
++                  "and matted"]),
+         "blunt": (["the coat mussed where it landed", "a dull patch where the fur was knocked flat"],
+                   ["a bruise blooming under the coat, plain when the fur lifts", "the fur raised over a bruised swelling"],
+                   ["bruised deep and swollen tight, the fur standing up over it", "the swelling pushing the fur apart, "
+@@ -4965,7 +4965,7 @@ class Engine:
+                   "through the flattened fur"],
+                  ["the fur ground flat and the flesh puffed up dark round the grip lines", "crushed and swollen where "
+                   "the hold was, the coat matted down hard"]),
+-        "shock": (["the fur puffed out and twitching", "hairs standing up in a crackling halo"],
++        "shock": (["the fur puffed out and twitching", "hairs standing up in a frizzy halo"],
+                   ["a burnt smell off the frizzed fur", "the fur curled and singed at the tips"],
+                   ["the fur crisped away in patches", "scorched streaks through the coat, the skin hot and red"]),
+         "cold": (["frost glittering in the coat", "the fur crusted white at the tips"],
+@@ -7767,6 +7767,7 @@ class Engine:
+                 bits.append(f"she has been put on the ground {downs} times")
+             lost = float(before.get(f.name, me)) - me
+             fade = float((pinned.get(f.name) or {}).get("fade", 0) or 0)
++            fade = max(fade, 55 if me <= 5 else 30 if me < 25 else 0)     # (her own strength counts: fade_words)
+             mood = ("pinned_fading" if f.name in pinned and fade >= 55 else
+                     "pinned_weakening" if f.name in pinned and fade >= 30 else
+                     "pinned_fighting" if f.name in pinned else
+@@ -7939,7 +7940,10 @@ class Engine:
+         if f.eliminated or f.health >= float(cfg.get("max_health", 0)):
+             return []
+         need = float(cfg.get("min_part_damage", 300))
+-        return [p.name for p in f.parts.values() if p.damage >= need]
++        return [p.name for p in f.parts.values() if p.damage >= need and not self.BONELESS.search(p.name)]
++
++    # parts with no bone in them to break (soft belly, the throat's cartilage, ears, fins, a nose)
++    BONELESS = re.compile(r"\b(?:belly|stomach|midsection|throat|ears?|eyes?|nose|fins?|lips?|sac|wattle)\b", re.I)
+ 
+     def condition_summary(self):
+         """Words-plus-numbers summary for the narrator. Overall strength is relative to each fighter's own max,
+diff --git a/narrator.py b/narrator.py
+index 59b59c4..5969e70 100644
+--- a/narrator.py
++++ b/narrator.py
+@@ -2318,16 +2318,17 @@ class Narrator:
+ 
+     # (an idea that needs ground under her: not for a fighter struck in the air)
+     GROUND_TELL = re.compile(r"\b(?:knees?|stagger\w*|stumbl\w*|stance|step|steps|hop|lurch\w* sideways|off the ground|"
+-                             r"sets? it down|limp\w*|off balance|knocked off balance|balance lost)\b", re.I)
++                             r"sets? it down|limp\w*|off balance|knocked off balance|balance lost|sway\w*)\b", re.I)
+ 
+     def _fit_body(self, opts, who):
+         """Keep only the ideas her body and place allow: no teeth on a beak, no fur on feathers (story_blocks.body_bans),
+         and nothing that needs ground under her while she is in the air. Falls back to all of them if none is left."""
+         if not who:
+             return opts
+-        ban = story_blocks.body_bans(self._feats_of(who))
+         air = self._in_air(who)
+         down = not air and self._off_feet(who)      # lying, pinned or on top of a pin: no stance, step or limp either
++        has = self._feats_of(who)
++        ban = story_blocks.body_bans(has | self._pose_feats(who) | ({"unfooted"} if down else set()) if has else has)
+         keep = [o for o in opts if not (ban and ban.search(o)) and not ((air or down) and self.GROUND_TELL.search(o))
+                 and not (air and self.AIR_NOT.search(o))]
+         return keep or opts
+@@ -2335,12 +2336,25 @@ class Narrator:
+     # (and in the air, nothing at all under her: no ground to scrabble at, no feet to plant)
+     AIR_NOT = re.compile(r"\bground\b|\bfeet\b|\bfooting\b|\bplant(?:s|ed|ing)?\b|\bdust\b", re.I)
+ 
++    # a hit on an ARM of a fighter who stands upright: her arms carry no weight, so no limp, hop or testing weight
++    ARM_TELLS = ["the arm jerking back, then held in close and favored, slow to come up again",
++                 "the arm snatched in against her body", "the paw shaken out hard, as if to shake the sting off",
++                 "the arm curled in tight to her side", "the arm hanging a moment before she makes it come up",
++                 "the paw clenching and opening, testing whether it still works"]
++
+     def _region_tell(self, part, seed=0, who=None):
+         p = part.lower()
+         groups = ["ear", "face", "neck", "chest", "belly", "back", "limb", "tail"]
++        if who and "arms" in self._feats_of(who) and body_region(part) in ("fore_up", "fore_low") \
++                and not re.search(r"\bwings?\b", p):
++            opts = self._fit_body(self.ARM_TELLS, who)
++            return opts[seed % len(opts)]
+         for (keys, tell), g in zip(self.REGION_TELLS, groups):  # whole words: "forearm" must not count as an "ear"
+             if any(re.search(r"\b\w*" + re.escape(k) + r"(?:s|es)?\b", p) for k in keys):
+-                opts = self._fit_body([tell] + self.REGION_TELLS_MORE.get(g, []), who)
++                opts = [tell] + self.REGION_TELLS_MORE.get(g, [])
++                if g == "tail" and "tails" in self._feats_of(who or ""):
++                    opts = [re.sub(r"\bthe tail\b", "the tails", o) for o in opts]   # (twin tails: never one tail)
++                opts = self._fit_body(opts, who)
+                 return opts[seed % len(opts)]
+         return "a flinch away from the spot"
+ 
+@@ -2502,6 +2516,8 @@ class Narrator:
+         if band == 0 and part >= 3 and size == 2:
+             return self.REACTION_HIDDEN        # a part far worse off than she is: it hurts, and she hides how much
+         out = self.REACTION_SIZES[size]
++        if band >= 3:       # (nearly spent: there is no fight left in "the rest of her" to carry on with)
++            out = out.replace("the rest of her still fighting", "and almost nothing left to fight on with")
+         if self._in_air(h.get("defender")):     # (no knees to dip in the air: her flight answers for them)
+             out = (out.replace("her knees dipping under it (a limp if it is a leg)", "her flight dipping under it")
+                    .replace("she sags where she is", "she falters in the air"))
+@@ -2657,6 +2673,8 @@ class Narrator:
+                     "clamps down, and the rest of her is still hers")
+         if self._in_air(who):       # (no ground under a limb in the air: it thrashes at nothing)
+             text = text.replace("a limb scrabbling at the ground", "a limb thrashing at the empty air")
++        elif not self._off_feet(who):   # (on her feet: her legs give and catch, nothing scrabbles at the ground)
++            text = text.replace("a limb scrabbling at the ground", "her legs buckling and catching under her")
+         # (her own mouth: a bird hisses through her beak)
+         text = self._fit_mouth(text, who)
+         lead = {"glancing": ("only a brush, but on a part this ruined even a touch is agony: "
+@@ -2728,9 +2746,23 @@ class Narrator:
+         return (f"    • {h['part']}" + (f" ({with_})" if with_ else "") + f": {self._strength(h['damage_taken'])} squeeze, "
+                 f"{change}{note}; LOOKS: {self._press_look(h)}; SHE REACTS: {self._hold_react(h, after['label'])}")
+ 
++    # under a hold with almost nothing left (narration.reaction_caps.low_from): no flailing, bucking or brushing it
++    # off; the pain shows in small, weak movements and the sounds she can't keep in
++    HOLD_REACT_SPENT = {
++        "low": ["she barely shifts under it, too spent to push back", "a tired flinch, her breath catching",
++                "her face tightens; her limbs stir and settle again", "a faint, weary push against it that goes nowhere"],
++        "high": ["a thin, broken sound with each press, her body twitching under it, too spent to fight it",
++                 "her face crumples and a hoarse cry leaks out; her limbs stir and fall back",
++                 "every press drags a weak, ragged sound out of her, and her body flinches where it lies",
++                 "she shudders under it, small and helpless, a cry catching in her throat each time"],
++    }
++
+     def _hold_react(self, h, level):
+         import zlib
+-        opts = self._fit_body(self.HOLD_REACT.get(level) or self.HOLD_REACT["minor"], h.get("defender"))
++        pool = self.HOLD_REACT.get(level) or self.HOLD_REACT["minor"]
++        if self._health_band(h) >= 3:
++            pool = self.HOLD_REACT_SPENT["high" if level in ("very painful", "excruciating", "devastated") else "low"]
++        opts = self._fit_body(pool, h.get("defender"))
+         return opts[(zlib.crc32(h["part"].encode()) + int(getattr(self, "beat_now", 0) or 0)) % len(opts)]
+ 
+     PRESS_LOOK = {
+@@ -2745,19 +2777,19 @@ class Narrator:
+         "firm": ["the muscle pressed flat under it, the flesh bulging round the edges",
+                  "sunk in, the fur and flesh squeezed out round it in a ridge",
+                  "the muscle flattened and pushed aside, a deep crease running out from it",
+-                 "pressed in far enough to change her outline, the flesh round it puffed and tight",
++                 "pressed in far enough to change her outline, the fur bunched up round it",
+                  "the fur crushed into the skin and the muscle under it spread wide and flat",
+                  "squeezing her out of shape, the muscle bunched up hard on either side of it",
+-                 "pressed in so the flesh rolls up round it in a thick fold",
++                 "pressed in deep, the fur creased into a thick ridge round it",
+                  "deep enough to leave a trench in the fur, the muscle under it quivering"],
+         "heavy": ["sunk deep, the muscle squashed flat, the flesh swelling out round it",
+                   "driven in hard, everything round it pushed out of its shape",
+-                  "buried in her, the body there mashed flat and bulging out on every side",
+-                  "crushing down so the part folds round it, the fur and flesh squeezed up in thick rolls",
++                  "sunk in hard, the body there flattened under it",
++                  "crushing down so the part gives round it, the fur squeezed up in ridges",
+                   "pressed so deep the muscle there goes flat and hard as a board under it",
+                   "grinding her down until the part spreads out flat under it, the fur splayed in every direction",
+-                  "so hard that her whole outline caves in there, the flesh pouring out to the sides",
+-                  "mashing the muscle against the bone, the skin pulled drum-tight round the edges"],
++                  "so hard that her whole outline dips in there, the muscle spread out to the sides",
++                  "pressing the muscle down hard, the skin pulled drum-tight round the edges"],
+     }
+     JOINT_LOOK = ["the joint forced toward the edge of where it bends, the limb at an unnatural angle (bent, not broken)",
+                   "the joint wrenched round, the limb held at a strange, wrong-looking angle (nothing breaks)",
+@@ -2886,7 +2918,8 @@ class Narrator:
+                 w in part for w in ("knee", "hock", "elbow", "hip", "wrist", "ankle"))):
+             look += "; " + self.JOINT_LOOK[seed % len(self.JOINT_LOOK)]
+         elif reg == "neck" and k != "light":
+-            look += "; " + self.THROAT_LOOK[seed % len(self.THROAT_LOOK)]
++            # (the throat is the most delicate part there is: its own look, not a press on muscle as well)
++            look = self.THROAT_LOOK[seed % len(self.THROAT_LOOK)]
+         return self._in_coat(look, h.get("defender"))      # (written for fur: the feathers or scales she has)
+ 
+     def _many_hits(self, hits):
+@@ -5165,11 +5198,20 @@ class Narrator:
+                   "she turns her power on the pinner at no distance at all, a desperate burst"],
+     }
+ 
++    TRY_VIGOROUS = re.compile(r"again and again|violent|explod\w*|hard and wild|all at once|every muscle|"
++                              r"\bonce, twice\b|\bhard\b", re.I)
++
+     def _try_how(self, e):
+         """How the pinned fighter goes about this try (the engine's pick, for variety between beats), in her own body
+         (a bird kicks with her talons, not hind legs and a free paw)."""
+         import zlib
+         opts = self._fit_body(Narrator.TRY_HOW.get(e.get("try_how")) or [], e.get("defender"))
++        if e.get("fight_left") in ("fading", "nearly gone"):
++            # (nearly spent: one slow try, nothing repeated, violent or all-at-once)
++            opts = [o for o in opts if not self.TRY_VIGOROUS.search(o)] or [
++                "she tries once, slowly, to " + {"buck": "heave the weight off", "kick": "kick up at it",
++                                                 "bite": "bite at the nearest limb"}.get(e.get("try_how"),
++                                                                                          "work herself free")]
+         if not opts:
+             return "buck, bridge, twist, wrench a limb loose; stage it your way"
+         seed = zlib.crc32(f"{e.get('defender')}|{e.get('seconds_to')}|{e.get('beats')}|{e.get('try_how')}".encode())
+@@ -6373,7 +6415,31 @@ class Narrator:
+         lying = bool(ps.get(who)) and bool(pe.get(who)) and all(
+             re.match(r"(?:ON THE GROUND|ON TOP|LOCKED ONTO|OUT)", str(x.get(who, "")).upper()) for x in (ps, pe))
+         return cache.get(who, set()) | ({"aloft"} if self._aloft(who) else {"unfooted"}
+-                                        if self._in_air(who) or lying else set())
++                                        if self._in_air(who) or lying else set()) | (
++            self._pose_feats(who) if cache.get(who) else set())     # (no body known: nothing to ban by)
++
++    def _pose_feats(self, who):
++        """Words for story_blocks.body_bans from how she is right now, not her body: "standing" (on her feet all
++        beat), "faceup" (on her back all beat), and her voice: "growler" (growls and hisses rather than cries out:
++        "voice_breaks" once she is worn down past narration.reaction_caps.mid_from, when it breaks through) or
++        "chirper" (chitters, squeaks, barks: never a growl)."""
++        out = set()
++        ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
++        s, e = str(ps.get(who, "")).upper(), str(pe.get(who, "")).upper()
++        if s and e:
++            if s.startswith(("ON HER FEET", "UP")) and e.startswith(("ON HER FEET", "UP")):
++                out.add("standing")
++            if all(re.match(r"(?:ON THE GROUND|OUT)", x) for x in (s, e)) and "FACE-UP" in e:
++                out.add("faceup")
++        fam = self._voice_family(who) if who else "other"
++        if fam == "growl":
++            out.add("growler")
++            caps = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
++            if float((getattr(self, "strengths", None) or {}).get(who, 100)) < float(caps.get("mid_from", 40)):
++                out.add("voice_breaks")
++        elif fam == "chirp":
++            out.add("chirper")
++        return out
+ 
+     def _aloft(self, who):
+         """In the air as the beat begins AND as it ends (a fighter knocked down out of it lands, and is then on the
+@@ -6731,7 +6797,8 @@ class Narrator:
+                 add(f"what {who} can see of {victim}", B.pick("tell", 1, has=feats(victim), state=state(victim)))
+             add(f"{poss(who)} thought", B.pick("collapse_thought", 1) if m.get("collapse") else
+                 # (her opponent going down on her own is not choosing anything: no thoughts about her tactics)
+-                B.pick("watch_thought", 1, state=state(victim) if victim else None, fighter=who.lower()))
++                B.pick("watch_thought", 1, state=state(victim) if victim else None, fighter=who.lower(),
++                       posture=posture(victim, end=True) if victim else None))
+             add(f"what {who} feels", B.pick("emotion", 1, role={"attacker"}, stage=stage, fighter=who.lower(),
+                                             standing=standing(who, victim) if victim else {"level"}, has=feats(who)))
+             add(f"{poss(who)} breath", B.pick("breath", 1, state=state(who), zone=sore_core(who)))
+@@ -6917,6 +6984,12 @@ class Narrator:
+             d_ = (e or pin_now[0])["defender"]
+             fade = {"fighting hard": "fighting", "weakening": "weakening", "fading": "fading",
+                     "nearly gone": "nearly out"}.get((e or {}).get("fight_left"), "fighting")
++            # (and never more fight than she has left overall, as Engine.fade_words: a pin that closes on a spent
++            # fighter finds her weakening or fading from its first second)
++            str_ = float((self.strengths or {}).get(d_, 100))
++            floor_ = "fading" if str_ <= 5 else "weakening" if str_ < 25 else "fighting"
++            order_ = ["fighting", "weakening", "fading", "nearly out"]
++            fade = max(fade, floor_, key=order_.index)
+             ends = bool(e and e.get("complete") and e.get("elimination"))
+             if ends:
+                 fade = "nearly out"
+diff --git a/story_blocks.txt b/story_blocks.txt
+index f5dc036..fa2edf8 100644
+--- a/story_blocks.txt
++++ b/story_blocks.txt
+@@ -1968,7 +1968,7 @@ she watches with her flotation sac puffed and a grin she can't quite keep down
+ she bounces on her toes as she watches, cocky, tails whirring
+ 
+ == watch_thought | fighter: nocturne
+-*Weak. Get up, then. Show me.*
++*Weak. Get up, then. Show me.* | posture: down, pinned
+ *There. That's where she breaks.*
+ *Not so quick now.*
+ *I warned you about the dry ground.*
+-- 
+2.43.0
+
