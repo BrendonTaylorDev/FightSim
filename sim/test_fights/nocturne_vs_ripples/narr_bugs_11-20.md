@@ -1,0 +1,26 @@
+# Narration bugs, beats 11-20
+
+- Beat 11: the order (console header) says "she rakes her free forepaw down the otter thigh to make her let go", but HOLDS says "none ... earlier bites let go" and Crunch (beat 10) was an instant bite. Nothing to let go of.
+- Beat 11: Ripples' left thigh hit is "a heavy blow (impact, e.g. a snarl of pain, balance lost and found again ...)" while the same line says "her reaction: small" and "lasting pain still minor" (6 → 29). Mixed signals; "heavy" seems too big.
+- Beat 11: part 1 block "she circles until the other has to face into the wind": movement the engine didn't decide, and the scene names no wind.
+- Beat 11: part 2 block "the hind leg dips a fraction and straightens": Ripples is upright; she has legs, not hind legs (wrong body).
+- Beat 11: part 2 blocks "eyes squeezed shut for a heartbeat, opened again wet" and "bewilderment ... as if the world had skipped a step" are too big for a minor sting.
+- Beat 12: the counter is "a quick strike of its own" with no move or weapon named (claws? paw? horn?), and no part covers it landing: part 1 (Ripples) stops at the Ice Beam, part 2 is Nocturne's side "what it feels like to receive it", with only dodge blocks. Nocturne is not hit; Ripples is. The counter's landing and Ripples' reaction have no POV slot or blocks.
+- Beat 13: the order says "meaning to drive the otter back into the leaning pillar behind her", but the console has no pillar impact ("it rocks her back on her heels; her feet stay where they are"). Order and engine disagree.
+- Beat 13 (damage piling): Ripples' chest goes 41.5 → 65.0 (beat 12 counter) → 128.7 (Take Down, +63.7 from one blow, ×0.30), sore to very painful in two blows; it reaches 228 in beat 19. Chest is taking almost everything.
+- Beat 13: "Nocturne has had much the better of it and is barely marked; nothing on her is badly hurt yet": her left shoulder is listed as hurting and she just took recoil on it.
+- Beat 13: part 2 block "her arms fly out from her sides with the shock, fingers spread wide": Ripples has webbed paws, not fingers. Block "she folds over the place with both arms and rocks" fights block "she holds chest still and moves everything else around it".
+- Beat 13: part 3 block "*She's keeping her distance now. Smart.*": Nocturne has just rammed into her; nobody moved apart, and Ripples is breathless, not choosing distance.
+- Beat 13: part 3 END block "the other's shape, a little out of focus" breaks the beat's own check ("the world doesn't blur or spin") for a fighter only at minor head pain.
+- Beat 13: the 900-word interlude ("Between this exchange and the next there is a long moment where nobody attacks") lands while Ripples has "the WIND KNOCKED OUT of her ... (1 beat)", and beat 14 still has her gasping (power ×0.85). A long lull should give her breath back. It also asks "what she is fighting for, and whether it is still worth this", which invites backstory the brief forbids.
+- Beat 14: part 1 block "she sweeps the beam upward, forcing the other to rise or be caught": Water Gun is a jet, not a beam (left over from Ice Beam), and "rise" is movement the engine didn't decide.
+- Beat 14: muzzle hit "a heavy blow (impact, e.g. a cry torn out before she can stop it ...)" and part 2 block "a grunt that climbs into a yelp despite her", but the line says "her reaction: small", pain is minor, and CHECKED says Nocturne gets "no crying out". Left ear also "a heavy blow" at minor (0 → 18.6).
+- Beat 14: part 1 blocks "she is enjoying this more than she should" and "something hungry and focused" clash with the fight shape for her ("worried about where this is going, and hiding it") and with her being breathless. Part 2 block "a sudden loneliness" doesn't fit Nocturne's voice or a light splash.
+- Beat 15: no part tells the wisp landing and the burn taking hold. Part 1 (Nocturne) must "STOP at contact"; part 2 says "The attack has ALREADY been shown above: do NOT describe any attack, dodge, impact". The burn's arrival falls between them.
+- Beats 15-17 (burn): the burn is put on a different part each beat: Right Shoulder (b15, "8% → 10%"), Right Paw (b16, "38.77% → 44.82%"), Head (b17, "19.67% → 23.69%"). Will-O-Wisp touched one spot; the burn should stay there. Notes beat 15 say only "burn flares on her right shoulder"; VISIBLE WEAR says "singed patches in her fur" (plural) with no place.
+- Beat 16 (damage piling): Nocturne's right ribs go 46.05 → 145.17 from one Brick Break (+99, sore → very painful); overall 85% → 77% in one blow.
+- Beat 16: CURRENT CONDITION says "the WIND KNOCKED OUT of her ... Stamina: fresh breath" for Nocturne, in the same line.
+- Beat 16: part 1 block "the opening it gives: *She's got nothing. No breath, no fight.*": before this blow Nocturne is fresh (85%) and breathing freely.
+- Beat 16: part 1 block "her clawed hand closes into a fist as it travels and lands like a hammer" and part 2 block "where the fist went in": Brick Break is the chopping edge of a webbed paw, not a clawed fist.
+- Beat 16: TELLING THE HURT suggests "through the scenery: what she is driven against or lands on", but she "takes it where she is"; nothing moves her.
+- Beat 16: "Right Paw (sore; from Nocturne's Bite, then the burn)": the burn listed as a cause on a part the wisp never touched (see the burn-hopping bullet).

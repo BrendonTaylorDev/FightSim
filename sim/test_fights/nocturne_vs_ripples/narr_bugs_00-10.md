@@ -1,0 +1,36 @@
+# Narration bugs, beats 0-10
+
+- Beat 1: Hit 2 on Ripples' arm says "a hit here shows as the limb snatched up off the ground" — an arm is never on the ground (she walks on her feet); limb-impact text is leg text.
+- Beat 1: Part 1 finished line "Her forepaw rose and came down like a mallet, pads first." contradicts the move (order: "a shoulder-first lunge into her chest").
+- Beat 1: Part 2 block 7 "a yelp that cracks in the middle" contradicts CHECKED "MINOR ... so no crying out" and the same list's "how the pain ... shows (minor: no bigger than that)". Also "TELLING THE HURT ... a strong fighter cries out, then fights on" vs "no crying out".
+- Beat 1: Part 2 blocks 4 "nothing in her movement changes" and 6 "her head goes down as if ducking a second blow" pull against each other.
+- Beat 2: Part 1 block 3 "the fist comes round low and hooks up under her guard" is a hook, not Brick Break's downward paw-edge chop (move: "chopping paw strike").
+- Beat 2: Hit 1 impact examples "a howl that tears the throat, the body thrown sideways" contradict the console ("she holds her ground", "takes it where she is") and CHECKED ("no crying out, no screams").
+- Beat 2: TELLING THE HURT "through the scenery: what she is driven against or lands on" — nobody is driven anywhere or lands this beat.
+- Beat 2: Part 2 block 6 "against a trained fighter's blow her body has always folded, and it folds now" — a memory (not allowed) and "folds" overstates a hurting shoulder on a fresh fighter who held her ground.
+- Beat 2: pain jump — fresh Left Shoulder 0% → 60.27% (minor → HURTING, toughness 107 → 76) from one opening chop (power 147.29). Big for a first exchange; may be intended (targeted ×2, super effective ×2).
+- Beat 3: Part 1 finished line "Her horn swept round in a short arc, aimed at Ripples's flank." — wrong weapon and target (order: claws across the belly; Hit 1 is the Stomach), and "Ripples's".
+- Beat 3: Part 1 block 4 "she follows the stagger in, keeping her off balance" — Ripples is not staggered until this blow lands; block 5 "only strikes when the other starts to give ground" invents movement.
+- Beat 3: Part 1 block 8 "*End this.*" is far too final for "early: both are close to fresh".
+- Beat 3: Part 2 block 5 "she staggers in a half-circle before she finds it" contradicts the console "a single step backward"; block 4 "her tail lashes up ... and comes down limp" (she has twin tails; "limp" too big for sore).
+- Beat 3: LINGER says "give her body no movement the beat doesn't list (she isn't driven anywhere new...)" while the same beat lists a stagger step back — stock text not adjusted for the stagger.
+- Beat 3: Hit 2 (Left Thigh, minor 6.25%) "a hit here shows as a limp in the next step" — too big for a minor jar.
+- Beat 2-3 (and on): TELLING THE HURT keeps offering "through the scenery: what she is driven against or lands on" in beats where nobody is driven or lands (repeats).
+- Beat 4: CHECKED says "Nocturne's fur DRY (nothing has wet her yet)" in the beat where a Water Pulse soaks her head and neck.
+- Beat 4: CHECKED "the world doesn't blur or spin" contradicts the new CONFUSED status ("her eyes swim and she sways, unsure where anything is").
+- Beat 4: "It lands differently because: still staggering." sits under Nocturne's hits but means Ripples (the attacker) is staggering — mislabel/ambiguous.
+- Beat 4: Part 1 blocks "she watches the limbs fail to answer and walks straight in" and "she strikes and is already out of reach again" invent movement (Ripples is stumbling backward and throws from range).
+- Beat 4: Part 2 finished line "Her tail gave one sharp flick, the only sign she had been touched." contradicts the confusion (swaying) she must show; END block "what she has stopped feeling" pulls against "pain never goes numb".
+- Beat 5: CHECKED still says "Nocturne's fur DRY (nothing has wet her yet)" one beat after the Water Pulse (repeats beat 4 bug); "the world doesn't blur or spin" again while CONFUSED.
+- Beat 5: Part 1 block "she makes the same move she made before, to see if it is expected" — she has never used Iron Tail before, and this is a confused self-hit.
+- Beat 5: Part 2 blocks "she squares up again, unmoved" and the finished line "was set again before the half-step had finished" erase the confusion that the condition says lasts 1 more beat.
+- Beat 5: notes never say what struck her head in the self-hit (own tail? a pillar?) — the event line just lists "Nocturne's Head" with no source.
+- Beat 6: CHECKED again "Nocturne's fur DRY (nothing has wet her yet)" (repeat).
+- Beat 6: Part 1 block "she catches the edge of the body as she passes and drags her teeth along it" invents a pass-by movement; Part 2 block "her right ribs aches in a narrow line where the blow skidded across it" — "skidded" is slash language for a bite (and "ribs aches").
+- Beat 6: Part 2 END "her eyes, closing" is an odd ending for a fresh fighter mid-exchange.
+- Beat 6: Hit 2 (Chest, minor, reaction "small") offers impact "a sharp, surprised yelp" — too big, clashes with voice "a huff through the nose".
+- Beat 6 (outline order, not notes): "she ducks under the tail" refers to the Iron Tail that never reached her (beat 5 was a self-hit).
+- Beat 7: arm hits use leg text again: Fin "the limb snatched up off the ground", Right Upper Arm "a hop on the other legs, the struck one held up" (repeats beat 1 bug).
+- Beat 7: Hit 1 (Right Paw, sore, reaction "clear") impact example "a choking cry, the head jerking back and forth" — too big, and against CHECKED "no crying out".
+- Beat 7: Part 1 block "her teeth find the old wound and close on it deliberately" — there is no old wound on the fin or the paw, and the bite lands off target.
+- Beat 7: Part 2 block "aimed at the place that hurts most and lands ... on the part that hurts least" is wrong: it was aimed at an untouched fin and landed on the (then untouched) paw. Block "her body bends round the blow like a branch in a gale" too big for a sore hand; "her limbs do not know which of them should hold her" (a paw doesn't hold her up).
