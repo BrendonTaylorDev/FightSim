@@ -1,0 +1,73 @@
+From e6c95f5f1da355f3ec044df4e757057cfd2dd6b9 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 13 Oct 2026 16:52:44 +0000
+Subject: [PATCH 2/3] Fix: a counter out of a dodge has a part and ideas to
+ tell it in; measured pain only for the bad parts struck this beat
+
+---
+ narrator.py | 21 +++++++++++++++++----
+ 1 file changed, 17 insertions(+), 4 deletions(-)
+
+diff --git a/narrator.py b/narrator.py
+index c43e88e..4dd69ad 100644
+--- a/narrator.py
++++ b/narrator.py
+@@ -3443,6 +3443,10 @@ class Narrator:
+                 bad = [p_ for p_, lv, _z in self._worst_parts(who, 3, floor="excruciating")]
+                 if self._hurt_now is not None and who not in self._hurt_now:
+                     continue        # nothing hurts her this beat: there is no pain of hers to measure out
++                # (only the bad parts this beat's blows really struck: the note is about how a blow THERE shows)
++                struck_ = {str(x[1]).lower() for x in (getattr(self, "_linger_pool", None) or []) if x[0] == who}
++                if struck_:
++                    bad = [p_ for p_ in bad if str(p_).lower() in struck_]
+                 # (her strength as the first blow on her lands, as each hit's own reaction note reckons it, so the
+                 # two never disagree on whether she is still strong)
+                 left = next((100.0 * float(h["health_before"]) / float(h.get("max_health") or (
+@@ -6567,7 +6571,9 @@ class Narrator:
+             out, first_b4 = [], {}
+             for i, a in enumerate(acts):
+                 extra = ((a.get("takedown") or {}).get("hits") or []) if a.get("type") in ("pin_start", "pin_forced") else []
+-                for h in list(a.get("hits") or []) + extra:
++                # (the counter out of a dodge lands on the attacker: her hits too)
++                for h in list(a.get("hits") or []) + extra + [dict(c_, defender=c_.get("defender") or a.get("attacker"))
++                                                               for c_ in a.get("counter_hits") or []]:
+                     if (h.get("defender") or a.get("defender")) == who and h.get("part"):
+                         first_b4.setdefault(h["part"], h.get("damage_before", 0))
+                         out.append((h.get("damage_taken", 0), h["part"], first_b4[h["part"]], h.get("damage_after", 0), i))
+@@ -6631,7 +6637,10 @@ class Narrator:
+                              fmt={"part": worst_hit[1].lower(), "foe": foe}, exclude=too_big, level=lv_w, zone=zone_w,
+                              has=feats(who), state=state(who), role="receiver")
+             raw = (getattr(self, "_raw_done", None) or {}).get(who)
+-            still_ = any(a_.get("defender") == who and a_.get("moved") in ("still", "rock") for a_ in acts)
++            still_ = any(a_.get("defender") == who and a_.get("moved") in ("still", "rock") for a_ in acts) or (
++                # (caught only by the counter out of a dodge: a quick strike that moves nobody)
++                any(a_.get("attacker") == who and a_.get("counter_hits") for a_ in acts)
++                and not any(a_.get("defender") == who and a_.get("hits") for a_ in acts))
+             # (a badly hurt part on a fighter still strong: only the reactions written for exactly that, half hidden)
+             hid = ("level", "state") if lv_w in ("excruciating", "devastated") \
+                 and set(state(who) or ()) & {"fresh", "winded"} else ()
+@@ -7147,7 +7156,8 @@ class Narrator:
+                 if who and h.get("part") and who not in hits:
+                     hits[who] = hits_on(who)
+         doers = [x for x in dict.fromkeys(a.get("attacker") for a in acts if a.get("attacker")) if x in self.damage_by]
+-        targets = [x for x in dict.fromkeys(list(receivers) + [a.get("defender") for a in acts if a.get("defender")])
++        targets = [x for x in dict.fromkeys(list(receivers) + [a.get("defender") for a in acts if a.get("defender")]
++                                            + [a.get("attacker") for a in acts if a.get("counter_hits")])
+                    if x in self.damage_by]
+         if act:
+             side[0] = "act"
+@@ -7172,7 +7182,10 @@ class Narrator:
+             side[0] = "take"
+             dodged = [a for a in acts if a.get("dodged") and not a.get("hits")]
+             for who in targets[:2]:
+-                if take_blocks(who, (doers or [who])[0]):
++                # (an attacker caught by the counter out of a dodge: it was the dodger's blow)
++                by_ = next((a.get("defender") for a in acts if a.get("counter_hits") and a.get("attacker") == who),
++                           (doers or [who])[0])
++                if take_blocks(who, by_):
+                     if any(a.get("environment") or a.get("manhandle") in ("throw", "slam") for a in acts):
+                         add(f"how {who} lands", B.pick("landing", 1, has=feats(who)))
+                     worst = self._worst_parts(who, 1, "very painful")
+-- 
+2.43.0
+

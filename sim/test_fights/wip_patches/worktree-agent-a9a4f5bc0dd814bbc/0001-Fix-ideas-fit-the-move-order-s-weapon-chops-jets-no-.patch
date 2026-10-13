@@ -1,7 +1,7 @@
 From 54802d77850b1c7d537b1c65f7818ea448e48eba Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Tue, 13 Oct 2026 16:45:38 +0000
-Subject: [PATCH] Fix: ideas fit the move (order's weapon, chops, jets), no
+Subject: [PATCH 1/3] Fix: ideas fit the move (order's weapon, chops, jets), no
  movement the engine didn't decide, reactions sized to the pain, contradictory
  and wrong-label notes, memory and repeat ideas, confusion pass told
 
