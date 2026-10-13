@@ -4881,7 +4881,7 @@ class Engine:
                    "singed bare in spots, the skin shiny and red beneath"]),
         "cold": (["frost-stiff fur", "the fur rimed white and crunchy", "a patch of fur stiff with ice"],
                  ["frost-burned patches, the fur dull and stiff", "the coat frozen into stiff spikes, the skin pale "
-                  "beneath", "cold-burned patches gone numb and white"],
+                  "beneath", "cold-burned patches gone white and stiff"],
                  ["frost-burned patches gone red and raw-looking under stiff fur", "the skin blotched red and white "
                   "from the cold, the fur brittle", "cold-burned and swollen, the fur frozen into clumps"]),
     }
@@ -7880,7 +7880,10 @@ class Engine:
                     return f"; the worst of it from {big[0]}" if big else ""
                 src = self.injury_log.get(f"{f.name}|{p.name}", [])
                 return f"; from {', then '.join(src[-2:])}" if src else ""
-            hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}{_origin(p)})"
+            # a part gone NUMB (numbness) is still wrecked, but for now she barely feels it: the story must know
+            hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}"
+                    + (", but NUMB for now: she can barely feel it, and the pain will come back" if int(getattr(p, "numb", 0) or 0) > 0 else "")
+                    + f"{_origin(p)})"
                     for p in sorted(f.parts.values(), key=lambda p: -p.damage) if p.damage >= 30]
             fresh = [p.name for p in f.parts.values() if p.damage < 10]
             words, ht = self.strength_words(f)

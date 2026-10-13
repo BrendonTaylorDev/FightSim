@@ -2373,6 +2373,11 @@ class Narrator:
             return next(w for at, w in self.FEEL_STEPS if float(res) >= at)
         return tier_for(res, self.rules["resistance"]["brackets"]).get("feel", "")
 
+    def _numb_this_beat(self):
+        """Is any part numb now, going numb this beat, or getting its feeling back (numbness)? Then numb is a word
+        the story needs."""
+        return bool(getattr(self, "numb_parts", None) or getattr(self, "_numb_events", None))
+
     def _numb_tier(self):
         return next((t for t in self.rules["pain_tiers"] if t.get("label") == "numb with shock"),
                     {"label": "numb with shock", "reaction": "the part has gone numb, heavy and strange"})
@@ -2461,6 +2466,11 @@ class Narrator:
         impact = self._impact(h["damage_taken"], seed, h["defender"])
         if after["label"] == "numb with shock" and before["label"] == "numb with shock":
             impact = "a dull, sickening jolt she barely feels as pain, then a lurch of nausea and shallow breath"
+        if h.get("numb"):
+            # the part is NUMB right now (numbness): no scream and no agony from it, only the dull wrongness
+            impact = ("a dull, sickening jolt she barely feels as pain (the part is NUMB for now), then a lurch of "
+                      "nausea and a shallow breath")
+            change = "the part is still NUMB: the damage is real, but the pain stays shut out for now"
         raw = None if h.get("numb") else self._raw_reaction(h, before["label"])
         if raw:
             impact = raw
@@ -2475,9 +2485,10 @@ class Narrator:
                 f"(impact, e.g. {impact}; a hit here shows as "
                 f"{self._region_tell(h['part'], sum(map(ord, seed)), h['defender'])}"
                 + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
-                   if self._voice_cue(h, after['label'], 0) else "")
-                + ("" if raw else f"; her reaction: "
-                   f"{self._reaction_size(h, after['label'], self._strength_key(h['damage_taken']) == 'glancing')}")
+                   if self._voice_cue(h, after['label'], 0) and not h.get("numb") else "")
+                + ("" if raw else f"; her reaction: " + ("small: a startled grunt, more shock than pain"
+                                                        if h.get("numb") else
+                   f"{self._reaction_size(h, after['label'], self._strength_key(h['damage_taken']) == 'glancing')}"))
                 + f"); {change}{tough}{self._numb_note(h)}.")
 
     # a blow on a part that was ALREADY badly hurt. Three things set how raw the reaction is: how hurt the part was
@@ -2618,7 +2629,10 @@ class Narrator:
         note = ""
         top = h.get("max_health") or (getattr(self, "max_health", None) or {}).get(h["defender"])
         left = (100.0 * float(h["health_before"]) / float(top)) if top and h.get("health_before") is not None else 100.0
-        if float(h["damage_before"]) >= 300:
+        if h.get("numb"):
+            # NUMB for now (numbness): the press lands dull; the agony notes below would contradict it
+            note = " — the part is RUINED but NUMB for now: the pressure lands dull and wrong, not as sharp pain"
+        elif float(h["damage_before"]) >= 300:
             note = (" — the part is RUINED: even steady pressure on it is agony"
                     + (", and she is past holding back her body's reactions to it (jerking, a raw sound with every "
                        "breath, the limb trying to pull away on its own)" if left < 30 else
@@ -2796,7 +2810,8 @@ class Narrator:
         worst = sorted(hits, key=lambda h: -h["damage_taken"])[:4]
         lines = [f"  - It hits EVERY part of {hits[0]['defender']} at once ({len(hits)} body parts): ONE surge through "
                  f"the whole body, all at the same instant. Do not narrate it as a series of separate strikes on "
-                 f"each part; describe the whole body seizing, then where it hurts most afterward."]
+                 f"each part; tell the surge going through all of her at once (only as big as each hit's reaction "
+                 f"below allows), then where it hurts most afterward."]
         mark = len(self._must_parts)
         for h in hits:      # a whole-body hit can push parts over the line as well
             b_, a_ = self._pain(h["damage_before"])["label"], self._pain(h["damage_after"])["label"]
@@ -2806,8 +2821,14 @@ class Narrator:
         tough = [h for h in hits if h["damage_taken"] < 5 and h not in worst]   # (a light surge: the hardest-hit stay out)
         if tough:
             lines.append("  - Barely felt: " + ", ".join(h["part"] for h in tough[:6]))
-        for h in changed[:6]:
-            lines.append(self._hit_line(h))
+        # the hardest-hit parts (and any that goes numb) always get their own line: they are the ones the story
+        # must name; the rest of the parts whose pain changed fill the remaining places, in body order
+        keep = {id(h) for h in worst} | {id(h) for h in hits if h.get("goes_numb")}
+        keep |= {id(h) for h in sorted((h for h in changed if id(h) not in keep), key=lambda h: -h["damage_taken"])
+                 [:max(0, 6 - len(keep))]}
+        for h in hits:
+            if id(h) in keep:
+                lines.append(self._hit_line(h))
         self._must_parts[mark:] = [h["part"] for h in worst[:2]]  # only the worst spots must be named
         return lines
 
@@ -2821,6 +2842,8 @@ class Narrator:
         self._hurt_now = set()
         self._strike_parts = []
         self._linger_pool = []
+        # numbness in this beat: a part going numb, or the feeling coming back (numb is then a word the story needs)
+        self._numb_events = [x for x in self._all_dicts(bundle) if x.get("goes_numb") or x.get("type") == "numb_end"]
         self._raw_done = {}         # fighter -> the raw reaction already asked for this beat (one big one per beat)
         self._raw_parts = {}        # fighter -> the part that had it
         self._getup_tries = None
@@ -3051,9 +3074,24 @@ class Narrator:
                                  + ". Show her going down; it does no new damage.")
                 lines += self._knock_on_lines(e.get("knock_on"))
             elif e["type"] == "wing_strain":
+                # a glide (her breather) holds the wing spread instead of beating it: the cost is in the holding
+                glide = any(a.get("type") == "breather" and a.get("focus") == e["fighter"]
+                            and re.search(r"\bglid", str(a.get("flavor") or ""), re.I)
+                            for a in (bundle.get("actions") or []))
+                hs = [h for h in (e.get("hits") or []) if h.get("part") == e["part"]]
+                b_ = self._pain(hs[0]["damage_before"])["label"] if hs else ""
+                a_ = self._pain(hs[-1]["damage_after"])["label"] if hs else ""
+                if hs and b_ != a_ and a_ in ("excruciating", "devastated", "numb with shock") and not any(
+                        b[:2] == (e["fighter"], e["part"]) for b in self._breaking):
+                    self._breaking.append((e["fighter"], e["part"], a_))   # the strain alone can take it over the line
                 lines.append(f"WING STRAIN: {e['fighter']} stays in the air on her badly hurt {e['part']}: every beat "
-                             f"up there it tears and burns worse (more damage to it this beat). Show the effort and the "
-                             f"pain of each wingbeat.")
+                             f"up there it tears and burns worse (more damage to it this beat"
+                             + (f": it goes from {b_} to {a_.upper()}" if hs and b_ != a_ else "") + "). "
+                             + ("She is gliding, not beating it: show what holding it spread and steady on the air "
+                                "costs her, the strain of every gust on it." if glide else
+                                "Show the effort and the pain of each wingbeat.")
+                             + "".join(self._numb_note(h).replace(" — and her", " Then her", 1) + "."
+                                       for h in hs if h.get("goes_numb")))
             elif e["type"] == "free_blow":
                 lines.append(f"A FREE BLOW during the {e['during']}: without letting go, {e['attacker']} gets one quick, "
                              f"short extra blow in on {poss(e['defender'])} {e['part']} with what she has free "
@@ -3126,11 +3164,25 @@ class Narrator:
                              f"for the next {e['beats']} beats she moves faster, hits harder, and the pain falls away "
                              f"behind sheer will. Make this a turning point: show it rising in her body.")
             elif e["type"] == "numb_end":
-                lines.append(f"THE FEELING COMES BACK in {poss(e['fighter'])} {e['part'].lower()}: the numbness drains "
-                             f"out of it and the pain floods back all at once, as bad as it has ever been and worse for "
-                             f"the moment it returns. She cannot hold this in: a raw sound torn out of her, her body "
-                             f"seizing round the part, the shaking starting again. Give it its own moment. Nothing new "
-                             f"hit her: it is the old injury, awake again.")
+                # every part of hers whose feeling comes back this beat, told as ONE moment (never the same note twice)
+                same = [x for x in (bundle.get("also_this_beat") or [])
+                        if x.get("type") == "numb_end" and x.get("fighter") == e["fighter"]]
+                if same and same[0] is not e:
+                    continue
+                parts_ = " and ".join(dict.fromkeys(x["part"].lower() for x in same or [e]))
+                left_ = float((getattr(self, "strengths", None) or {}).get(e["fighter"], 100))
+                caps_ = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+                # how much of it gets out follows her overall strength, like any other pain (MEASURED PAIN)
+                size_ = ("a sharp sound she can't stop, the part clenching, and she makes herself ride it out"
+                         if left_ >= float(caps_.get("strong_from", 70)) else
+                         "a cry she can't keep in, the part seizing, the shaking starting again"
+                         if left_ >= float(caps_.get("mid_from", 40)) else
+                         "a raw sound torn out of her, her body seizing round the part, the shaking starting again")
+                lines.append(f"THE FEELING COMES BACK in {poss(e['fighter'])} {parts_}: the numbness drains out of "
+                             f"{'them' if ' and ' in parts_ else 'it'} and the pain floods back all at once, as bad as "
+                             f"it has ever been and worse for the moment it returns: {size_}. Give it its own moment "
+                             f"(one moment, even for more than one part). Nothing new hit her: it is the old injury, "
+                             f"awake again.")
             elif e["type"] == "status_end":
                 other = next((w for w in (getattr(self, "strengths", None) or {}) if w != e["fighter"]), "her opponent")
                 end = self.STATUS_ENDS.get(e["status"])
@@ -4599,10 +4651,15 @@ class Narrator:
         fm = bool(e.get("fade_mode"))
         if fm:
             went = e.get("fade_to", 0) - e.get("fade_from", 0)
-            out = [f"THE PIN GOES ON: {poss(a)} pin on {d} holds through this beat, a short stretch of it. THERE IS NO "
+            freed = e.get("struggle") == "escape"     # the beat she breaks out: the pin does NOT hold through it
+            out = [(f"THE PIN, UNTIL SHE BREAKS IT: {poss(a)} pin on {d} is on as this beat begins, and it ends when "
+                    f"she breaks free (told below)." if freed else
+                    f"THE PIN GOES ON: {poss(a)} pin on {d} holds through this beat, a short stretch of it.")
+                   + f" THERE IS NO "
                    f"CLOCK. Nobody here is counting and nobody knows how long {d} can last, so write NO seconds, "
                    f"no numbers of any kind for time, no count up or down, no 'time left', no 'halfway'. Time shows "
-                   f"only in her body. How {d} is by the end of this beat: "
+                   f"only in her body. How {d} is "
+                   + ("as she breaks out: " if freed else "by the end of this beat: ")
                    + ("OUT COLD: she passes out before it ends (told below). Up to that moment she is going fast, "
                       "barely moving, her eyes sliding shut and dragging open again"
                       if e.get("complete") and e.get("elimination") else
@@ -6100,11 +6157,14 @@ class Narrator:
         damage before this beat} for parts hit this beat (what an opponent could see BEFORE striking)."""
         order = [t["label"] for t in pain_tiers(self.rules)]
         out = []
+        # a part NUMB right now (numbness) doesn't hurt for the moment: no ache, agony or guarding ideas built on it
+        numb = set() if before is not None else {
+            p_ for w_, p_ in (getattr(self, "numb_parts", None) or set()) if w_ == who}
         for part, dmg in (self.damage_by.get(who) or {}).items():
             if before is not None and part.lower() in before:
                 dmg = before[part.lower()]
             level = self._pain(dmg)["label"]
-            if part in skip or order.index(level) < order.index(floor):
+            if part in skip or part.lower() in numb or order.index(level) < order.index(floor):
                 continue
             out.append((dmg, part, "devastated" if level == "numb with shock" else level,
                         story_blocks.ZONE_OF.get(body_region(part))))
@@ -6203,9 +6263,11 @@ class Narrator:
             if whole:
                 order = [t["label"] for t in pain_tiers(self.rules)]
                 top = sorted(best.values(), key=lambda x: (-self._strength_rank(x[0]), -x[2]))[:2]
+            # a part that is NUMB right now (numbness) gets no ache or agony ideas: it is dull and strange for now
+            numb_ = {p_ for w_, p_ in (getattr(self, "numb_parts", None) or set()) if w_ == who}
             for taken, part, after, i in top:
                 lv = self._pain(after)["label"]
-                if lv == "minor":
+                if lv == "minor" or part.lower() in numb_:
                     continue
                 add(f"how the hurt in {poss(who)} {part} may feel", B.pick(
                     "sensation", 1, fmt={"part": part.lower()}, level="devastated" if lv == "numb with shock" else lv,
@@ -6221,7 +6283,7 @@ class Narrator:
             ceil = self._pain_ceiling(who)
             too_big = [rx for need_, rx in INTENSE if ceil and ceil[0] < need_] or None
             # how the pain shows, sized to the worst place this beat left her with
-            worst_hit = max(best.values(), key=lambda x: x[2])
+            worst_hit = max(best.values(), key=lambda x: (x[1].lower() not in numb_, x[2]))
             lv_w = self._pain(worst_hit[2])["label"] if worst_hit[2] > 0 else "minor"
             lv_w = "devastated" if lv_w == "numb with shock" else lv_w
             zone_w = story_blocks.ZONE_OF.get(body_region(worst_hit[1]))
@@ -7170,8 +7232,14 @@ class Narrator:
                              f"arms: she never stands on them or puts her weight on them. A hurt paw, fin, or arm "
                              f"changes how she grips, strikes, and guards, never how she stands or walks.")
         if self.rules.get("narration", {}).get("numb_tier", True) is False:
-            extra.append("- Pain never goes numb: even the worst-hurt parts stay sharply, terribly painful, never "
-                         "numb or past feeling.")
+            if (self.rules.get("numbness") or {}).get("enabled", False):
+                # the engine can make a wrecked part go numb for a while (numbness): only that part, only then
+                extra.append("- Pain never goes numb on its own: a part loses its feeling only when these notes say it "
+                             "GOES NUMB or is NUMB, and only until they say the feeling comes back. Every other hurt "
+                             "part stays sharply painful, never numb or past feeling.")
+            else:
+                extra.append("- Pain never goes numb: even the worst-hurt parts stay sharply, terribly painful, never "
+                             "numb or past feeling.")
         # a plain sample is one passage (its first style_sample_chars characters); a sample written in sections gives
         # the passage that shows the KIND of part about to be written (a pin from the pinner's side, a dodge, ...)
         passages, left = [], sample_chars
@@ -7432,7 +7500,7 @@ class Narrator:
         if tried:
             issues.append(f"it showed {tried[0][0]} trying to get up (\"{tried[0][1]}\"), but she has only just gone down: "
                           f"she makes NO attempt to rise this beat, not even a failed one. She lies where she fell")
-        if self.rules.get("narration", {}).get("numb_tier", True) is False:
+        if self.rules.get("narration", {}).get("numb_tier", True) is False and not self._numb_this_beat():
             m = NUMB.search(text)
             if m:
                 issues.append(f"it let pain go numb (\"{m.group(0)}\"). Pain never goes numb in this story: the worst-hurt "
@@ -10279,7 +10347,14 @@ class Narrator:
             return []
         v = max(cands, key=lambda w: sum(d for d, *_ in by_victim[w]))
         hits = sorted(by_victim[v], reverse=True)
-        dmg, part, label, kind = max(hits, key=lambda x: (self.BAD_LEVELS.index(x[2]) if x[2] in self.BAD_LEVELS else -1, x[0]))
+        # the part this stays with: one that has just crossed its breaking point (the beat's biggest moment) first,
+        # then the worst-hurt one; a part that is NUMB right now has no hurt to settle in, so it is the last choice
+        numb = {p_ for w_, p_ in (getattr(self, "numb_parts", None) or set()) if w_ == v}
+        broke = {p_ for w_, p_, _l in (getattr(self, "_breaking", None) or []) if w_ == v}
+        dmg, part, label, kind = max(hits, key=lambda x: (x[1].lower() not in numb and x[2] != "numb with shock",
+                                                          x[1] in broke,
+                                                          self.BAD_LEVELS.index(x[2]) if x[2] in self.BAD_LEVELS else -1,
+                                                          x[0]))
         strength = float(self.strengths.get(v, 100))
         # who did it: the attacker of a hit on her, or the one pinning or holding her
         holder = next((e.get("attacker") for e in pin_events if e.get("defender") == v and not e.get("complete")
@@ -10317,8 +10392,12 @@ class Narrator:
             raw = (getattr(self, "_raw_done", None) or {}).get(v)
             moments.append({"key": "dwell", "who": v, "part": part.lower(), "words": int(dcfg.get("words", 260)), "focus": (
                 f"{poss(v)} side, AFTER the {what} (it has been told above: do not tell it landing again). Slow time "
-                f"right down and stay inside her body with what that {what} to her {part.lower()} has DONE to her: the "
-                f"hurt arriving, spreading and settling, the {part.lower()} first and then what it drags with it; what "
+                f"right down and stay inside her body with what that {what} to her {part.lower()} has DONE to her: "
+                + (f"the {part.lower()} gone NUMB, a dead, heavy strangeness where the pain should be (it will come "
+                   f"back), and the hurts round it that she still feels; what "
+                   if part.lower() in numb or label == "numb with shock" else
+                   f"the hurt arriving, spreading and settling, the {part.lower()} first and then what it drags with "
+                   f"it; what ") +
                 f"her body does on its own (shaking, curling round it, a limb that won't answer, muscles jumping, cold "
                 f"sweat under the fur); her breathing, heavy and ragged, catching where it hurts; the sounds she tries "
                 f"to keep in (a whine through her teeth, a hiss, a cry she bites off) and whether she manages to"
@@ -10381,11 +10460,19 @@ class Narrator:
         """Sometimes one blow (any kind, light ones too) gets a long, slow reaction. Returns (note, extra words)."""
         n = self.rules.get("narration", {})
         chance = float(n.get("linger_chance", 0.3) or 0)
-        pool = [x for x in self._linger_pool if x[2] > 0]
+        numb = getattr(self, "numb_parts", None) or set()
+        pool = [x for x in self._linger_pool if x[2] > 0 and x[3] != "numb with shock" and (x[0], x[1].lower()) not in numb]
         if not pool or random.random() >= chance or getattr(self, "_faint", None):
             return "", 0
+        # the moment is one of the beat's real blows: a part that just crossed its breaking point if there is one,
+        # else any hit at least narration.linger_min_share of the heaviest (a light one only when all were light)
+        broke = {(w, p) for w, p, _l in (getattr(self, "_breaking", None) or [])}
+        top = max(x[2] for x in pool)
+        pool = ([x for x in pool if (x[0], x[1]) in broke]
+                or [x for x in pool if x[2] >= top * float(n.get("linger_min_share", 0.5))])
         # heavier blows are likelier picks, but a light one can still be the moment that stops her
         who, part, dmg, label, kind = random.choices(pool, weights=[d + 15 for _, _, d, _, _ in pool])[0]
+        self._linger_who = who      # (the part of the beat told from her side holds it)
         extra = int(n.get("linger_words", 200))
         what = "squeeze" if kind == "pressure" else "blow"
         return (f"LINGER ON ONE MOMENT: slow time down on the {what} to {poss(who)} {part.lower()} and give her reaction "

@@ -743,6 +743,8 @@
     "_linger_comment": "Chance per beat (0-1) that one blow gets a long, slow reaction, and how many extra words it gets. 0 turns it off.",
     "linger_chance": 0.3,
     "linger_words": 200,
+    "_linger_min_share_comment": "The lingered-on blow is one of the beat's real ones: a part that just crossed its breaking point if there is one, else a hit at least this share (0-1) of the heaviest hit this beat. 0 lets any hit be picked.",
+    "linger_min_share": 0.5,
     "_gore_comment": "gore_check: if a draft goes past gore_level (below), the narrator rewrites it once with those phrases flagged, then cuts any sentence that's still too graphic. Set to false to turn off.",
     "gore_check": true,
     "_gore_level_comment": "gore_level: \"mild\" (default) allows a little blood, small cuts, and bites that break the skin, and only rewrites EXTREME gore (torn or shredded flesh, exposed or breaking bone, pooling blood, severed parts, death). \"none\" rewrites any blood or wounds. \"off\" turns the check off.",
