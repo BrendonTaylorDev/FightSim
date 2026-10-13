@@ -1059,8 +1059,18 @@ class Engine:
                 "target": target if target in ("targeted", "spread") else "targeted",
                 "about": about or "an improvised attack", "improvised": True, "ranged": far}
 
-    def move_attack(self, attacker, defender, move_name, parts, count=1, flavor="", move=None, no_spill=False,
-                    enforce=False, sustain=0, against="", charge_into="", pummel=False, feint=False):
+    def move_attack(self, attacker, *args, **kw):
+        """A named move (or an improvised `move` dict): see _move_attack. A confused attacker who passes her confusion
+        check and attacks anyway has it on the result (through_confusion), so the story can show her doing it dizzy."""
+        self._confusion_passed = None
+        res = self._move_attack(attacker, *args, **kw)
+        if self._confusion_passed and isinstance(res, dict) and not res.get("confused_self_hit"):
+            res["through_confusion"] = True
+        self._confusion_passed = None
+        return res
+
+    def _move_attack(self, attacker, defender, move_name, parts, count=1, flavor="", move=None, no_spill=False,
+                     enforce=False, sustain=0, against="", charge_into="", pummel=False, feint=False):
         """A named move (or an improvised `move` dict). targeted: one part (count repeats);
         spread: the listed parts; whole_body: every body part the defender has."""
         a, d = self.get_active(attacker), self.get_active(defender)
@@ -2338,6 +2348,7 @@ class Engine:
             return None
         if not self._chance(float(self._cfg("status_effects").get("confused_self_hit_chance", 0.33)),
                             f"{a.name} hurting herself in her confusion", "she does", "she attacks normally"):
+            self._confusion_passed = a.name     # (dizzy still, and attacking anyway: move_attack marks it)
             return None
         part = self.rng.choice([p for p in a.parts if body_region(p) in ("head", "fore_low", "fore_up", "shoulder",
                                                                          "chest", "tail")] or list(a.parts))

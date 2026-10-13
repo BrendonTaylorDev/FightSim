@@ -511,7 +511,7 @@ a backhand swipe on the turn, weight following through
 she lets the first swipe miss on purpose to open the line for the second
 the stroke starts from the hip, the whole body uncoiling behind the paw
 claws spread wide to cover more of her, or drawn together to bite deeper in one place
-she steps past as she strikes, so that the cut is made in passing
+she strikes across the body, so the cut is drawn rather than driven
 a downward chop with the weight of the shoulder on it
 she waits for the breath out, and strikes as the ribs fall
 
@@ -524,13 +524,13 @@ a lunge from below, coming up under the guard
 she bites and uses the hold to haul her opponent off balance
 the bite goes for loose skin first, then shifts deeper
 jaws wide, breath hot on the fur, a moment of stillness before they shut
-she catches a mouthful in passing and wrenches as she goes by
+she catches a mouthful and wrenches it once to the side
 she worries at it, head jerking side to side, two short pulls
 
 == movement | kind: charge
-three strides to build it, and the fourth leaves the ground
+three strides to build it, and the fourth is all thrust
 she drops her shoulder at the last instant so that the point of it lands first
-she comes in low, under the centre of weight, to lift as well as hit
+she comes in low, under the centre of weight, and drives up into it
 a sidestep one way and the rush from the other
 she kicks off whatever is solid behind her for the extra speed
 she runs straight through the place where her opponent is standing
@@ -578,7 +578,7 @@ a hook round the outside of the guard, into the side
 == movement | kind: horn
 she lowers her head and turns it flat, the edge of the horn level with the target
 a hooking sweep from outside to in, drawn across rather than driven in
-the horn comes up from below, lifting as it cuts
+the horn comes up from below, cutting upward
 she tosses her head at the last moment, a flick that adds the snap
 the dark gathers along the curve of the horn until its edge looks wet
 she feints with the horn and follows the eyes that follow it
@@ -606,7 +606,6 @@ she gets a grip and then improves it, shifting hold by hold
 
 == movement
 she circles to put the light in her opponent's eyes
-she gives ground on purpose, drawing the other onto worse footing
 she changes level suddenly, dropping low or rising up
 a pause, a long look, and then everything at once
 she comes from the side the other is guarding least
@@ -6402,7 +6401,7 @@ she hunches round it, mouth open, eyes squeezed to slits
 a loud grunt, and her front end dips toward the ground
 she goes stiff from head to foot and only her breath moves
 her cry comes out flat and short, as if stamped out of her
-she spins half round with the force and has to find her opponent again
+her head turns away with the force and she has to find her opponent again
 a whine slips out on the breath after, quieter and worse
 her face crumples for a heartbeat and she makes it hard again
 she sucks a breath through her teeth that whistles
@@ -7645,7 +7644,7 @@ her muscles twitch on their own, and the twitching will not stop
 == status_tell | status: confused
 she turns toward the wrong place and has to look again
 she blinks, slow and puzzled, as if the fight had changed its rules
-she lunges at nothing and catches herself, bewildered
+her head jerks round at nothing, and she has to find her opponent again, bewildered
 
 == status_tell | status: constricted
 the coils press her ribs in and every breath is a small battle
@@ -7765,7 +7764,6 @@ she slashes on the way out, so the cut lands as she retreats
 two strokes crossing, one high and one low, the second where the first drove her opponent
 the claws hook in at the end of the swing and pull her opponent half a step forward
 she reaches long, further than she seemed able, and only the tips of the claws catch
-she strikes as she lands from a leap, the whole drop behind the stroke
 a flurry of short scratches, quick and stinging, to break the other's rhythm
 
 == movement | kind: bite
@@ -7773,14 +7771,12 @@ she darts in, snaps, and is back out of reach before the other has finished flin
 she goes for the limb nearest the ground, where it is hardest to pull away
 she clamps down and plants herself, turning the bite into a tug of war
 her jaws open wide enough to show everything, a threat before the bite
-she catches the edge of the body as she passes and drags her teeth along it
+she catches the edge of the body in her teeth and drags them along it
 she bites, lets go, and bites again a hand's width further along
 
 == movement | kind: charge
-she starts slow, a walk, then a trot, and only at the very end the full rush
 she charges at a slant, so the impact spins as well as shoves
 she builds speed in a curve and arrives from the side the other is not watching
-she leaps the last length and lands on the other with her whole weight
 she lowers herself until she is almost skimming the ground, then rises into the impact
 she charges through the other's guard, not round it
 she comes in shoulder down and keeps driving after the hit, legs pumping | has: legs
@@ -7795,7 +7791,7 @@ the tip of the tail flicks at the eyes while the thick root of it slams into the
 
 == movement | kind: beam
 she fires in short pulses, each one aimed at the last place she hit
-she sweeps the beam upward, forcing the other to rise or be caught
+she starts the beam low and drags it upward across the body
 she plants herself low and wide and lets the force pour out of her
 the beam narrows to a point as she bears down on one spot
 she fires once, wide, to herd the other where she wants her, and then the true shot
@@ -7813,7 +7809,7 @@ she shoves the guard aside with one paw and hits through the space with the othe
 == movement | kind: horn
 she drives the horn forward with the whole push of her body behind it | has: horn
 she lowers her head to aim and the horn swings round like a scythe | has: horn
-she hooks the horn under the other's guard and heaves upward | has: horn
+she hooks the horn under the other's guard and draws it upward | has: horn
 a short stab of the horn, quick in and quick out | has: horn
 she slashes the horn across, edge first, a flat cut rather than a thrust | has: horn
 
@@ -7904,9 +7900,9 @@ the stone points burst up in a ragged line, each one closer to the other than th
 she shifts her footing half a step before every move, so the angle is never the same twice
 she lets the other strike first and answers into the open space it leaves
 she moves in on the other's breath out, when the body is slackest
-she circles until the other has to face into the wind
+she circles until the light is behind her
 she keeps her eyes on the other's shoulders, not the face
-she presses and presses, and only strikes when the other starts to give ground
+she presses and presses, and only strikes when the other's guard starts to sag
 she stops short, waits, and goes the moment the other relaxes
 
 # build 150: speed built over passes in the air, and strafing passes (a second, glancing strike on the way past)
@@ -11618,7 +11614,7 @@ she twitches all over, her body not her own
 == status_tell | status: confused
 she turns the wrong way and stops, puzzled
 her eyes swim and she sways, unsure where she is
-she lunges at nothing and catches herself, blinking
+she snaps at a shape that isn't there, and blinks
 she shakes her head and looks round, lost
 she cannot tell which way her opponent is
 she turns her head one way, then the other, swaying on the spot as she tries to get her bearings
