@@ -1376,7 +1376,7 @@ the way she carries the hurt place, guarding it without thinking
 silence, and what is in it
 the taste in her mouth
 what she can hear of the other's breathing
-something in the place settling: dust, water, an echo dying
+something in the place settling: grit, a loose stone, the air
 a look that passes between them and what it does not say
 the smallest sign that she is not finished
 her shadow, her reflection, the mark she has left on the ground
@@ -3273,7 +3273,7 @@ the talons sink in and the ground drops away, and every wingbeat takes it furthe
 she kicks at nothing; her feet find only air | has: legs
 the grip around her is the only solid thing in the world, and it is going to let go
 she can feel each wingbeat above her as a lurch upward
-the arena below wheels slowly, the trees small, the water a bright coin
+the arena below wheels slowly, everything in it small and far away
 for one long moment at the top of the climb neither of them moves at all
 
 == aerial | moment: carried
@@ -9541,9 +9541,9 @@ the impact jars right down her horn into her skull, and her eyes close for an in
 the strike lands squarely on her horn and it hums, a deep vibration she feels inside her head | zone: head
 
 == sensation | has: horn
-the ache in her {part} sits at the base of her horn, a dull pressure behind her eyes | level: sore, hurting
-the weight of her horn has become a burden, every turn of her head tugging at her {part} | level: very painful, excruciating
-her horn feels enormous, the throb in her {part} pulling her head down toward the ground | level: excruciating, devastated
+the ache in her {part} sits at the base of her horn, a dull pressure behind her eyes | level: sore, hurting | zone: head, neck
+the weight of her horn has become a burden, every turn of her head tugging at her {part} | level: very painful, excruciating | zone: head, neck
+her horn feels enormous, the throb in her {part} pulling her head down toward the ground | level: excruciating, devastated | zone: head, neck
 
 == tell | has: horn
 her head is up and her horn tracks every move her opponent makes | state: fresh

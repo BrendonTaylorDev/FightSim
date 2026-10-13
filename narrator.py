@@ -180,7 +180,7 @@ HURT_WAYS = (
     "through what she can no longer do (a paw that won't take weight, a breath she can't finish)",
     "through the sound of it, the impact heard before it is felt",
     "from the attacker's side: what the blow felt like going IN, the give under it",
-    "through the scenery: the bark, mud or water taking the blow with her",
+    "through the scenery: what she is driven against or lands on taking the blow with her",
     "as one long breathless sentence carrying the whole flurry",
     "through the delay: a beat of nothing, then the pain arriving all at once",
     "by the new pain finding the old one, the two hurts becoming one",
@@ -1633,7 +1633,8 @@ SCENE_THINGS = ((r"\b(?:grass|grasses|turf|meadow)\b", r"\b(?:grass|meadow|turf|
                 (r"\b(?:leaves|leaf|leaf-?litter|undergrowth|ferns?|brambles?)\b",
                  r"\b(?:lea(?:f|ves)|forest|wood|woods|jungle|undergrowth|fern|bramble|bush|thicket|tree)"),
                 (r"\b(?:mud|muddy|mire)\b", r"\b(?:mud|muddy|mire|marsh|swamp|bog|rain|creek|river|bank|shore)"),
-                (r"\b(?:sand|sandy|dune)\b", r"\b(?:sand|dune|beach|desert|shore)"))
+                (r"\b(?:sand|sandy|dune)\b", r"\b(?:sand|dune|beach|desert|shore)"),
+                (r"\b(?:trees|forest|woods|bark|canopy)\b", r"\b(?:trees?|forest|wood|woods|jungle|grove|orchard|thicket)\b"))
 STONE_ONLY = re.compile(r"\b(?:off the (?:stone|rock|walls?)|stone floor|rock floor|(?:cave|stone|rock) walls?|echo\w* back at her|"
                         r"cave|stalactite|stalagmite)\b", re.I)
 # things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
@@ -2335,7 +2336,8 @@ class Narrator:
                 "water" if m.get("type") == "Water" else
                 "blast" if m.get("target") in ("spread", "whole_body") else "blunt")
         import zlib
-        opts = self.BLOW_SOUND[kind]
+        ban = self._scene_ban()
+        opts = [o for o in self.BLOW_SOUND[kind] if not (ban and ban.search(o))] or self.BLOW_SOUND[kind]
         return opts[zlib.crc32(f"{getattr(self, 'beat_now', 0)}|{m.get('name')}".encode()) % len(opts)]
 
     def _relative(self, taken):
@@ -3455,8 +3457,8 @@ class Narrator:
                     + (f"What happens (the author's direction): {a['flavor']}. " if a.get("flavor") else "")
                     + "Keep each fighter at their listed recovery stage unless a change is listed below. Keep the full "
                     "detail of a fight beat, but find NEW things to show each time instead of circling back: a different "
-                    "injury flaring or stiffening, a sense not used yet (" + self._sw("ambience", "a smell, a sound, the light") + "; an "
-                    "echo, the light shifting), small changes in breathing or posture, a new thought or memory of a "
+                    "injury flaring or stiffening, a sense not used yet (" + self._sw("ambience", "a smell, a sound, the light") + "; "
+                    "the light shifting), small changes in breathing or posture, a new thought or memory of a "
                     "specific moment of the fight, how the winner's own wounds are settling in."]
         if t == "heal":
             parts = [c["part"] for c in a.get("parts", [])]
@@ -4860,8 +4862,8 @@ class Narrator:
             "what each of them makes of the other now: her strength, her tells, the way she is favouring a hurt part",
             "a plan forming in one fighter's head, worked through step by step, and doubts about it",
             "the body taking stock, part by part: what still works, what throbs, what she is hiding from her opponent",
-            "the place in detail: what has changed since the fight began (trampled ground, a broken branch, water "
-            "clouded, the light moved), the animals and weather carrying on as if nothing were happening",
+            "the place in detail: what has changed since the fight began (the marks the fight has left, what has been "
+            "knocked loose, the light moved), the weather carrying on as if nothing were happening",
             "breath and heartbeat slowing, sweat or water cooling on fur or skin, the ache arriving where the shock was",
             "small involuntary things: a tail twitching, an ear turning to a sound, a paw testing its weight",
             "pride, fear, anger, grudging respect, or stubbornness, each shown through what she does, not named",
@@ -6063,6 +6065,8 @@ class Narrator:
         for thing, has in SCENE_THINGS:
             if not re.search(has, scene_low):
                 bans.append(thing)
+        if re.search(r"\bnothing echoes|\bno echo", scene_low):
+            bans.append(r"\becho\w*")       # open air where sound is torn away (the scene's acoustics say so)
         return re.compile("|".join(f"(?:{b})" for b in bans), re.I) if bans else None
 
     def _lines(self):
@@ -10576,7 +10580,7 @@ class Narrator:
                            f"starts and nobody is touched.",
                     "take": "the fallen and the place: how each fighter who is down or out lies (exactly as CURRENT "
                             "CONDITION says: no change unless one is listed for this beat), her breathing, what the "
-                            "winner notices of her, the water, the light and the sounds of the place. End on "
+                            "winner notices of her, the light, the air and the sounds of the place. End on "
                             "stillness."}
             plan = [(k, jobs.get(k, f), w) for k, f, w in plan]
             pin_plan = True     # (these parts stand as written: no 'the attack has already been shown' after part one)
