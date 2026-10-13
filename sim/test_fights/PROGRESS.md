@@ -3,7 +3,7 @@
 Last updated: 2026-10-13, build 179+ on branch `claude/kind-bell-r5ehx4`.
 
 ## Running now
-Nothing. The three bug-sweep branches (body, structure, labels) were merged into build 180, and their WIP patches were removed.
+Three bug-sweep agents (engine, body2, ideas2) are working through the Nocturne vs Ripples bug list (nocturne_vs_ripples/sweep_brief2.md), in worktrees on branches `worktree-agent-*`. Their commits are saved to `wip_patches/` every 10 minutes and pushed. To recover: `git am sim/test_fights/wip_patches/<branch>/*.patch`.
 
 ## Still to do
 1. (Done in build 180) The sweep was merged. The notes were regenerated and spot-checked, and the fight replays with the same rolls.
