@@ -4997,7 +4997,8 @@ class Engine:
     def wear_text(self):
         """VISIBLE WEAR: how each fighter looks by now, so the narrator keeps it the same from beat to beat."""
         rows = []
-        for f in self.active():
+        # after the match the one who lost is still there to be seen (the aftermath shows how she lies): her wear stays
+        for f in (list(self.fighters.values()) if self.winner() else self.active()):
             # small surface details (grit in her coat, a scuff) fade from the notes after a few beats: the fight has
             # moved on and the fur has moved with it (narration.notes_decay.wear_beats)
             wb, wt = self._decay("wear_beats", 6), f.learned.get("wear_turn") or {}
@@ -7907,7 +7908,11 @@ class Engine:
             if breakable:
                 ground += (f" Past her limit, so these devastated parts CAN BREAK (broken bones allowed): "
                            f"{', '.join(breakable)}.")
-            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {ht['reaction']}{ground}\n"
+            react = ht['reaction']
+            if self.winner():
+                # the match is over: what could still put her out in the fight no longer applies
+                react = re.sub(r"\s*Only a completed pin puts her out\.", "", react)
+            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {react}{ground}\n"
                          f"   painful parts (they hurt and get favored, but do NOT override overall strength): "
                          f"{', '.join(hurt[:10]) or 'nothing serious'}"
                          + (f"\n   barely touched so far: {', '.join(fresh[:6 if self._decay('origin_beats', 4) else 12])}" if hurt and fresh else "")

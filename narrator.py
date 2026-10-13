@@ -3217,11 +3217,20 @@ class Narrator:
             last_level[(who, part)] = level      # hit twice in one beat: the level it ENDS at
         # at most two a beat, the worst first (devastated before excruciating), so the biggest crossing is never dropped
         rank = {"numb with shock": 3, "devastated": 2, "excruciating": 1}
-        for (who, part), level in sorted(last_level.items(), key=lambda kv: -rank.get(kv[1], 0))[:2]:
+        caps_ = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+        for k_, ((who, part), level) in enumerate(sorted(last_level.items(), key=lambda kv: -rank.get(kv[1], 0))[:2]):
+            # how much of it gets out follows her overall strength (MEASURED PAIN); only one is the biggest moment
+            left_ = float((getattr(self, "strengths", None) or {}).get(who, 100))
+            held_ = left_ >= float(caps_.get("strong_from", 70))
             lines.append(f"BREAKING POINT: {poss(who)} {part} has just become {level.upper()} for the first time. Slow "
-                         f"down and give this its own focused moment: the instant the pain becomes too much to hold in, the "
-                         f"sound she makes, how her body and her thoughts react. It is the biggest moment of this "
-                         f"beat. It is PAIN crossing a line, not a bone: nothing breaks, snaps, gives way or caves in"
+                         f"down and give this its own focused moment: "
+                         + ("the instant the pain crosses the line, the sharp sound she can't fully stop, and how she "
+                            "forces the rest back down (she is still strong: it stays in that part)" if held_ else
+                            "the instant the pain becomes too much to hold in, the sound she makes")
+                         + ", how her body and her thoughts react. "
+                         + ("It is the biggest moment of this beat." if k_ == 0 else
+                            "It comes second to the one above: shorter, folded into the same moment.")
+                         + " It is PAIN crossing a line, not a bone: nothing breaks, snaps, gives way or caves in"
                          + ("" if any(_mentions_exact(part.lower(), b) for b in (getattr(self, "breakable", None) or []))
                             else " (this part can't break yet)") + ".")
         worn = self.worn_phrases()
@@ -3247,7 +3256,14 @@ class Narrator:
                 lines.append("RECENTLY USED REACTIONS (the last beats already showed these; pick DIFFERENT ones now): "
                              + ", ".join(used) + ".")
         if self._tiers_used:
-            guide = [f"{t['label']} = {t['reaction']}" for t in pain_tiers(self.rules) if t["label"] in self._tiers_used]
+            caps0 = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+            measured = any(float(l_) >= float(caps0.get("mid_from", 40)) and self._worst_parts(w_, 1, floor="excruciating")
+                           for w_, l_ in (getattr(self, "strengths", None) or {}).items())
+            # the worst levels' screams and writhing are for a worn-down fighter: with MEASURED PAIN below, it rules
+            guide = [f"{t['label']} = {t['reaction']}"
+                     + (" (that much only on a worn-down fighter: where MEASURED PAIN below covers her, it rules)"
+                        if measured and re.search(r"scream|collapse|writh|overwhelm", t["reaction"], re.I) else "")
+                     for t in pain_tiers(self.rules) if t["label"] in self._tiers_used]
             lines.append("PAIN GUIDE (how each lasting pain level shows from now on):\n  " + "\n  ".join(guide)
                          + "\n  These describe the PART at its worst. How much of it gets out of her (the size of a cry, "
                            "whether her whole body joins in) follows her OVERALL strength: each hit's \"her reaction\" "
@@ -3489,7 +3505,17 @@ class Narrator:
             lines += self._arena_status_lines(a.get("status_applied"))
             return lines
         if t == "aftermath":
-            return [f"AFTER THE MATCH: {a.get('winner')} has won. No attacks, no new injuries, no new pins. Time passes "
+            # a later beat of the quiet moves on from the one before: not the same frame told again
+            now_ = int(getattr(self, "beat_now", 0) or 0)
+            if getattr(self, "_after_first", None) is None or now_ < self._after_first:
+                self._after_first = now_
+            later = now_ - self._after_first
+            return [f"AFTER THE MATCH: {a.get('winner')} has won. No attacks, no new injuries, no new pins. "
+                    + (f"This is a LATER stretch of the quiet ({later + 1} beats after the end): time has moved on, the "
+                       f"light and the wind have shifted, how {a.get('winner')} holds herself and where she looks have moved on "
+                       f"(her posture stays as CURRENT CONDITION says), and nothing told in the last beat is told again. "
+                       if later >= 1 else "")
+                    + f"Time passes "
                     f"quietly: the winner catches her breath, feels her injuries, and reacts to the fallen; the loser lies "
                     f"as CURRENT CONDITION describes. "
                     + (f"What happens (the author's direction): {a['flavor']}. " if a.get("flavor") else "")
@@ -10659,8 +10685,14 @@ class Narrator:
             # after the match nobody attacks, so "the actions from the attackers' bodies / what each fighter who is
             # hit feels" had nothing to point at: one part for the winner, one for the fallen and the place
             win = next((a.get("winner") for a in acts if a.get("winner")), None) or "the winner"
-            jobs = {"act": f"{win} in the quiet after: her breath coming back, each of her injuries settling in and how "
-                           f"she carries it, what she does with herself now, what she thinks of the fight. Nothing new "
+            caps_ = (self.rules.get("narration", {}) or {}).get("reaction_caps", {}) or {}
+            # a winner who is badly worn keeps getting weaker from her injuries after it is over (the engine's health
+            # keeps falling): her breath does not come back yet
+            weak = float((getattr(self, "strengths", None) or {}).get(win, 100)) < float(caps_.get("mid_from", 40))
+            jobs = {"act": f"{win} in the quiet after: "
+                           + ("her breath still ragged and her injuries still draining her even now it is over (she is "
+                              "getting weaker, not better, and she feels it), " if weak else "her breath coming back, ")
+                           + f"each of her injuries settling in and how she carries it, what she does with herself now, what she thinks of the fight. Nothing new "
                            f"starts and nobody is touched.",
                     "take": "the fallen and the place: how each fighter who is down or out lies (exactly as CURRENT "
                             "CONDITION says: no change unless one is listed for this beat), her breathing, what the "

@@ -11102,13 +11102,13 @@ a long trembling groan is pressed out of her and she cannot draw another breath 
 # aftermath_fallen (the one who lost, lying there)
 == aftermath_fallen
 her eyelids flutter now and then, but do not open
-a soft sound comes out of her on the breath out, then nothing
+a soft sound comes out of her on the breath out, then nothing | waking: yes
 she lies curled round her worst hurt, even now
 the fight has left her rumpled and scraped, and she lies there in it
 a slow trickle of dust slides off her side as she breathes
 her face is turned to the ground, and her breath stirs the dirt there
 she shivers once, a long shiver from end to end, and settles
-her mouth works a little, as if she were about to say something
+her mouth works a little, as if she were about to say something | waking: yes
 her eyes are half open, but see nothing
 every so often her body twitches, and she sighs
 she looks small lying there, smaller than she ever looked standing
@@ -11116,7 +11116,7 @@ a bruise darkens slowly on her side as she lies still
 her chest rises and falls, rises and falls, slow and patient
 she lies in a sprawl, limbs flung out the way she landed
 the scratches on her show plainly in the light
-a small whimper escapes her on the breath out and then she is quiet again
+a small whimper escapes her on the breath out and then she is quiet again | waking: yes
 she lies with her head turned away from the one who did this
 one limb jerks, once, like a dreamer running
 the dust settles round her and she does not stir
