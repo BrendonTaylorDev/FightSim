@@ -1,8 +1,8 @@
 From c1680906268da6ed3ebc7300d33cbef3c4cad54d Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Tue, 13 Oct 2026 11:07:41 +0000
-Subject: [PATCH] WIP: unfinished edits saved when the session hit its usage
- limit
+Subject: [PATCH 1/4] WIP: unfinished edits saved when the session hit its
+ usage limit
 
 ---
  blocks.py   |  30 +++++++++++++-

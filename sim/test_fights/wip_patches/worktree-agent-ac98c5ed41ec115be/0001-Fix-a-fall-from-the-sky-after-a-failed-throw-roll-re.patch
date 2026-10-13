@@ -1,7 +1,7 @@
 From d309606b1e2efd9e88a7e067f5b1e695910e8248 Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Tue, 13 Oct 2026 03:19:19 +0000
-Subject: [PATCH 1/5] Fix: a fall from the sky after a failed throw roll reads
+Subject: [PATCH 1/9] Fix: a fall from the sky after a failed throw roll reads
  'knocked out of the air', not THROWN
 
 ---

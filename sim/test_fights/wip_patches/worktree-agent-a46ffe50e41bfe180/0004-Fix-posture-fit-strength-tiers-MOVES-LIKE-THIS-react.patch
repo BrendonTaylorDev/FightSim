@@ -1,0 +1,248 @@
+From 7cddd7373e97846aafba77a423276b156485dc6c Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 13 Oct 2026 11:15:30 +0000
+Subject: [PATCH 4/4] Fix: posture fit: strength tiers, MOVES LIKE THIS,
+ reaction sizes, raw reactions, watch and take-part focus, off-balance
+ wear-off and take-off said for a fighter in the air, lying down or on top of
+ a pin
+
+---
+ engine.py   | 33 +++++++++++++++++++++++++++--
+ narrator.py | 61 ++++++++++++++++++++++++++++++++++++++++++++++-------
+ rules.json  |  9 ++++++--
+ 3 files changed, 91 insertions(+), 12 deletions(-)
+
+diff --git a/engine.py b/engine.py
+index 8aacefe..94f54c2 100644
+--- a/engine.py
++++ b/engine.py
+@@ -5059,6 +5059,12 @@ class Engine:
+                 reg = body_region(p.name)
+                 if "wing" in p.name.lower():
+                     bits.append(self._wing_way(f, p))
++                elif self.has(f, "airborne") and reg in ("hind_low", "hind_up"):
++                    bits.append(f"holds her {p.name.lower()} tucked up stiffly under her as she flies")   # (no limp aloft)
++                elif reg == "tail" and "flame" in p.name.lower():
++                    bits.append("the flame on her tail burns low and small")
++                elif reg in ("neck", "head") and any(b.startswith("holds her head carefully") for b in bits):
++                    continue          # (one line for a hurt head and neck, not the same line twice)
+                 elif reg in ("hind_low", "hind_up") or (reg in ("fore_low", "fore_up") and self.body_plan(f) == "quadruped"):
+                     bits.append(f"favours her {p.name.lower()}, keeping weight off it (a limp when she moves)")
+                 elif reg in ("fore_low", "fore_up"):
+@@ -6480,7 +6486,7 @@ class Engine:
+                                 "max_health": f.max_health,
+                                 "exhaustion": exhaustion, "pain_drain": drain,
+                                 "health_tier": ht["label"], "health_tier_changed": ht["label"] != tier_b,
+-                                "reaction_guide": ht["reaction"]}
++                                "reaction_guide": self.tier_reaction(f, ht)}
+         events += self.recover_tick()
+         events += self._tick_status_energy()
+         events += self._weather_tick()
+@@ -7820,6 +7826,16 @@ class Engine:
+         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
+         return (" Status: " + "; ".join(bits) + "." if bits else "") + f" Stamina: {stamina}."
+ 
++    def tier_reaction(self, f, ht):
++        """What a fighter at this strength can still do (health_tiers' reaction), fitted to where she is: one up in
++        the air has no feet to stand on (reaction_air), one lying down or lying on top in a pin has no ground to
++        drop to between efforts (reaction_down)."""
++        if self.has(f, "airborne") and ht.get("reaction_air"):
++            return ht["reaction_air"]
++        if (f.name in self.downed or self.pinning(f.name)) and ht.get("reaction_down"):
++            return ht["reaction_down"]
++        return ht["reaction"]
++
+     def favoring(self, f):
+         """How badly hurt limbs and tails change the way she moves, so it stays consistent from beat to beat."""
+         out = []
+@@ -7830,8 +7846,21 @@ class Engine:
+             biped = any("arm" in x.lower() for x in f.parts)  # upright fighters guard arms instead of limping
+             arm = biped and region in ("fore_up", "fore_low", "shoulder")
+             name = p.name.lower()
++            air = self.has(f, "airborne")
+             if "wing" in name:
+                 out.append(self._wing_way(f, p))
++            elif region == "shoulder" and not biped and any("wing" in x.lower() for x in f.parts):
++                # a bird's shoulder is the root of her wing: she guards it, she doesn't limp on it
++                out.append(f"favors her {name}, the wing on that side held a little stiff" if p.damage < 300 else
++                           f"guards her {name}, the wing on that side dragging")
++            elif air and not arm and region != "tail":
++                # up in the air there is no weight to keep off a leg: she holds it up out of the way
++                out.append(f"holds her {name} tucked up stiffly under her as she flies" if p.damage < 300 else
++                           f"her {name} hangs stiff under her as she flies, held clear of everything")
++            elif region == "tail" and "flame" in name:
++                # a flame on the tail's tip is not a limb to hold close: it burns low
++                out.append(f"keeps her tail low and still, the flame on it burning small" if p.damage < 300 else
++                           f"her tail drags, the flame on it shrunk to a weak, sputtering flicker")
+             elif region == "tail":
+                 out.append(f"keeps her {name} stiff and close" if p.damage < 300 else f"her {name} drags, barely moving")
+             elif p.damage < 150:
+@@ -7911,7 +7940,7 @@ class Engine:
+             if breakable:
+                 ground += (f" Past her limit, so these devastated parts CAN BREAK (broken bones allowed): "
+                            f"{', '.join(breakable)}.")
+-            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {ht['reaction']}{ground}\n"
++            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {self.tier_reaction(f, ht)}{ground}\n"
+                          f"   painful parts (they hurt and get favored, but do NOT override overall strength): "
+                          f"{', '.join(hurt[:10]) or 'nothing serious'}"
+                          + (f"\n   barely touched so far: {', '.join(fresh[:6 if self._decay('origin_beats', 4) else 12])}" if hurt and fresh else "")
+diff --git a/narrator.py b/narrator.py
+index fa798a6..5edfa40 100644
+--- a/narrator.py
++++ b/narrator.py
+@@ -2302,9 +2302,14 @@ class Narrator:
+             return opts
+         ban = story_blocks.body_bans(self._feats_of(who))
+         air = self._in_air(who)
+-        keep = [o for o in opts if not (ban and ban.search(o)) and not (air and self.GROUND_TELL.search(o))]
++        down = not air and self._off_feet(who)      # lying, pinned or on top of a pin: no stance, step or limp either
++        keep = [o for o in opts if not (ban and ban.search(o)) and not ((air or down) and self.GROUND_TELL.search(o))
++                and not (air and self.AIR_NOT.search(o))]
+         return keep or opts
+ 
++    # (and in the air, nothing at all under her: no ground to scrabble at, no feet to plant)
++    AIR_NOT = re.compile(r"\bground\b|\bfeet\b|\bfooting\b|\bplant(?:s|ed|ing)?\b|\bdust\b", re.I)
++
+     def _region_tell(self, part, seed=0, who=None):
+         p = part.lower()
+         groups = ["ear", "face", "neck", "chest", "belly", "back", "limb", "tail"]
+@@ -2460,8 +2465,23 @@ class Narrator:
+         if self._in_air(h.get("defender")):     # (no knees to dip in the air: her flight answers for them)
+             out = (out.replace("her knees dipping under it (a limp if it is a leg)", "her flight dipping under it")
+                    .replace("she sags where she is", "she falters in the air"))
++        elif self._off_feet(h.get("defender")):  # (lying down, pinned, or lying on top of a pin: no knees to dip)
++            out = out.replace("her knees dipping under it (a limp if it is a leg)", "her body jerking under it")
+         return out
+ 
++    def _stays_put(self, who):
++        """'she keeps her feet', said for where she is: up in the air, or down on the ground."""
++        ps = str((getattr(self, "posture_start", None) or {}).get(who, "")).upper()
++        return ("she stays up in the air" if "AIR" in ps else "she stays where she is, down on the ground"
++                if ps.startswith(("ON THE GROUND", "OUT")) else "she stays where she is, on top of her"
++                if ps.startswith(("ON TOP", "LOCKED ONTO")) else "she keeps her feet")
++
++    def _off_feet(self, who):
++        """Lying on the ground, pinned, on top of a pin or locked onto someone, as the beat begins or ends: not
++        standing, so nothing that needs her feet under her (a knee dipping, a limp, a step back)."""
++        ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
++        return any(re.match(r"(?:ON THE GROUND|ON TOP|LOCKED ONTO|OUT)", str(x.get(who, "")).upper()) for x in (ps, pe))
++
+     def _hit_line(self, h, n=None, how=None):
+         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
+         if h.get("numb"):
+@@ -2588,6 +2608,10 @@ class Narrator:
+             # part (MEASURED PAIN): no whole-body jerking or shaking afterwards
+             text = ("a real scream torn out of her, short and sharp, the hurt part snatched away from it; then she "
+                     "clamps down, and the rest of her is still hers")
++        if self._in_air(who):       # (no ground under a limb in the air: it thrashes at nothing)
++            text = text.replace("a limb scrabbling at the ground", "a limb thrashing at the empty air")
++        # (her own mouth: a bird hisses through her beak)
++        text = self._fit_mouth(text, who)
+         lead = {"glancing": ("only a brush, but on a part this ruined even a touch is agony: "
+                              if before_label == "devastated" else "only a brush, on a part that is already "
+                              f"{before_label}: smaller than a full blow there would be, but "),
+@@ -3159,6 +3183,8 @@ class Narrator:
+             elif e["type"] == "status_end":
+                 other = next((w for w in (getattr(self, "strengths", None) or {}) if w != e["fighter"]), "her opponent")
+                 end = self.STATUS_ENDS.get(e["status"])
++                if self._in_air(e["fighter"]) and e["status"] in ("off_balance", "staggered"):
++                    end = "she steadies in the air, her wingbeats even again, and her guard comes back up"  # (no feet)
+                 lines.append(f"{e['fighter']} shakes off being {self.STATUS_WORDS.get(e['status'], e['status'].replace('_', ' '))}: show it wearing off"
+                              + (f" ({end.format(other=other)})" if end else "") + ".")
+             elif e["type"] == "recovery":
+@@ -3494,8 +3520,11 @@ class Narrator:
+         if t == "take_off":
+             ps = getattr(self, "posture_start", {}) or {}
+             up = [n for n, x in ps.items() if n != a["fighter"] and "AIR" in str(x).upper()]
+-            return [f"{a['fighter']} TAKES TO THE AIR: wings snap open and beat hard, loose grit kicked up, and she "
+-                    f"climbs " + (f"up to meet {up[0]} where she flies." if up else
++            spent_ = float((getattr(self, "strengths", None) or {}).get(a["fighter"], 100)) < 20
++            how_ = ("she drags herself up off the ground on ragged, labouring wingbeats, every stroke an effort, and "
++                    "she climbs slowly " if spent_ else    # (spent: no wings snapping open, the climb is a haul)
++                    "wings snap open and beat hard, loose grit kicked up, and she climbs ")
++            return [f"{a['fighter']} TAKES TO THE AIR: {how_}" + (f"up to meet {up[0]} where she flies." if up else
+                                   "out of reach. Show her rising and her opponent left on the ground looking up.")]
+         if t == "take_off_failed":
+             return [f"{a['fighter']} TRIES TO TAKE OFF AND CAN'T: she is too spent. Her wings beat, hard and ragged, and "
+@@ -6125,6 +6154,17 @@ class Narrator:
+         """Wording written for fur, said in her own covering ('the fur parting' on a dragon: 'the scales parting')."""
+         return in_covering((getattr(self, "coats", None) or {}).get(who), text)
+ 
++    def _fit_mouth(self, text, who):
++        """Wording written for a mouth of teeth, said for a beak ('a hiss through her teeth': through her beak)."""
++        if "beak" not in self._feats_of(who):
++            return text
++        for rx, word in ((r"\b(?:through|behind) (?:her |the )?(?:clenched |shut |bared |gritted )?teeth\b",
++                          "through her beak"), (r"\bsets her jaw\b", "clamps her beak shut"),
++                         (r"\bteeth (?:bared|gritted|clenched)\b", "beak clamped shut"),
++                         (r"\b(?:clenched|bared|gritted) teeth\b", "a clamped beak")):
++            text = re.sub(rx, word, text)
++        return text
++
+     def _status_look(self, s):
+         """How a status looks on her (Engine.STATUS_LOOK), in her own covering."""
+         return self._in_coat(Engine.STATUS_LOOK.get(s["status"], s["status"].upper()), s.get("fighter"))
+@@ -10399,9 +10439,15 @@ class Narrator:
+                                                            or label in self.BAD_LEVELS)))
+         if watch_ok and ready("watch", wcfg, True):
+             last["watch"] = beat_no
++            # where she watches from is where she ENDS the beat: still on top of her, up in the air, down on the
++            # ground (dragged down, thrown off a pin), or standing
++            end_ = str((getattr(self, "posture_end", None) or {}).get(by, "")).upper()
++            still_holding = holding and (not end_ or end_.startswith(("ON TOP", "LOCKED ONTO")) or "GRIP ON" in end_)
+             grip = (f" Her grip and her weight stay exactly as they are: she watches from where she holds her."
+-                    if holding else f" She does not close in or start anything: she watches from where she "
+-                    + ("is, in the air." if self._aloft(by) else "stands."))
++                    if still_holding else f" She does not close in or start anything: she watches from where she "
++                    + ("is, in the air." if "AIR" in end_ else
++                       "lies, down on the ground." if end_.startswith("ON THE GROUND") and "SITTING" not in end_ else
++                       "sits, down on the ground." if end_.startswith("ON THE GROUND") else "stands."))
+             moments.append({"key": "watch", "who": by, "part": part.lower(), "words": int(wcfg.get("words", 220)), "focus": (
+                 f"{poss(by)} side: she WATCHES what she has just done to {v}.{grip} She studies {v} closely, the "
+                 f"way her own nature has her do it (cold, curious, hungry, wary, pitiless, almost gentle): every "
+@@ -11026,8 +11072,7 @@ class Narrator:
+                 seen = "\n".join(w for w in written if w)
+         return written
+ 
+-    @staticmethod
+-    def _segments(actor, receivers, words, n):
++    def _segments(self, actor, receivers, words, n):
+         """Split long narration into focused parts. Each part stays short enough for the model to keep
+         its detail dense; together they reach the target length."""
+         per = max(150, int(n.get("words_per_pass", 300)))
+@@ -11045,7 +11090,7 @@ class Narrator:
+                         f"part.", 1.0),
+                 "take": (f"{poss(who)} side, picking up at the instant of contact (do not re-tell the attack): what "
+                          f"it feels like to receive it (hits that come together are told together, the worst ones on their spot), the fall or landing ONLY if one is "
+-                         f"listed for this beat (otherwise she keeps her feet), the exact quality of each pain, breath, "
++                         f"listed for this beat (otherwise {self._stays_put(list(receivers)[0])}), the exact quality of each pain, breath, "
+                          f"thoughts, and the immediate reaction.", 1.1),
+                 "after": (f"the aftermath: how {actor} and {who} now move, breathe, guard injuries, and reassess; "
+                           f"the space between them; what each one is planning. No new attacks: end on stillness or "
+diff --git a/rules.json b/rules.json
+index 5fe922a..af6c9d6 100644
+--- a/rules.json
++++ b/rules.json
+@@ -955,12 +955,17 @@
+     {
+       "min": 0,
+       "label": "spent",
+-      "reaction": "Barely able to stand, swaying, slow to rise, near collapse, but still conscious and still trying."
++      "reaction": "Barely able to stand, swaying, slow to rise, near collapse, but still conscious and still trying.",
++      "_reaction_air_comment": "reaction_air / reaction_down (optional, any tier): the same, for a fighter up in the air (no feet to stand on), or lying down or lying on top of a pin (no ground to drop to). Left out: reaction is used.",
++      "reaction_air": "Barely able to stay up: her wingbeats ragged and failing, sinking and labouring back up, near collapse, but still conscious and still trying.",
++      "reaction_down": "Barely able to move, slow and shaking, near collapse, but still conscious and still trying."
+     },
+     {
+       "min": -1000000000,
+       "label": "past the limit",
+-      "reaction": "Running on nothing but will: wobbling, dropping to the ground between efforts, but still conscious. Only a completed pin puts her out."
++      "reaction": "Running on nothing but will: wobbling, dropping to the ground between efforts, but still conscious. Only a completed pin puts her out.",
++      "reaction_air": "Running on nothing but will: her wings failing, sinking between strokes and dragging herself back up, but still conscious. Only a completed pin puts her out.",
++      "reaction_down": "Running on nothing but will: shaking, sagging limp between efforts, but still conscious. Only a completed pin puts her out."
+     }
+   ],
+   "holds": {
+-- 
+2.43.0
+

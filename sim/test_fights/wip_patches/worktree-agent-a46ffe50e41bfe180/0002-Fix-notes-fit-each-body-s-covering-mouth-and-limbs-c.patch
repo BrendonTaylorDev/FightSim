@@ -1,0 +1,72 @@
+From b9da294331f1a4289c2e78105b4cac7ed200a392 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 13 Oct 2026 11:08:47 +0000
+Subject: [PATCH 2/4] Fix: notes fit each body's covering, mouth and limbs
+ (coat feature and bans, wing not an arm, bird voice, wind sound, press looks,
+ status looks, no sobbing ideas)
+
+---
+ engine.py   |  4 ++--
+ narrator.py | 10 ++++++++--
+ 2 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/engine.py b/engine.py
+index fee5873..8aacefe 100644
+--- a/engine.py
++++ b/engine.py
+@@ -171,7 +171,7 @@ def body_region(part):
+ _COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b(?! of)", "plumage"), (r"\bhairs?\b(?!'s)", "feathers")],
+                "scales": [(r"\bburnt hair\b", "scorched hide"), (r"\bfur\b", "scales"), (r"\bcoat\b(?! of)", "scales"),
+                           (r"\bhairs?\b(?!'s)", "scales"), (r"\bwhole tufts\b", "whole patches"),
+-                          (r"\btufts?\b", "ragged patches")],
++                          (r"\btufts?\b", "ragged patches"), (r"\bin (her|the) scales\b", r"on \1 scales")],
+                "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b(?! of)", "hide"), (r"\bhairs?\b(?!'s)", "skin"),
+                         (r"\btufts?\b", "ragged patches")]}
+ 
+@@ -7809,7 +7809,7 @@ class Engine:
+         """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
+         if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
+             return self.STATUS_LOOK_NOT_COLD[status]
+-        f = (getattr(self, "fighters", None) or {}).get(name)
++        f = (getattr(self, "fighters", None) or {}).get(str(name).lower())
+         look = self.STATUS_LOOK.get(status, status.upper())
+         return self.in_her_covering(f, look) if f is not None else look     # (frost in her feathers, on her scales)
+ 
+diff --git a/narrator.py b/narrator.py
+index e12e8bc..633ba28 100644
+--- a/narrator.py
++++ b/narrator.py
+@@ -2355,7 +2355,10 @@ class Narrator:
+                 "blast" if m.get("target") in ("spread", "whole_body") else "blunt")
+         import zlib
+         # (her covering: no fur parting on feathers or scales; no trees to roll through on a bare shelf)
+-        opts = self._fit_body(self.BLOW_SOUND[kind], (a or {}).get("defender"))
++        dfn = (a or {}).get("defender")
++        opts = self._fit_body(self.BLOW_SOUND[kind], dfn)
++        if "feathers" in self._coat_feat(dfn):
++            opts = [o for o in opts if not re.search(r"\bhide\b", o)] or opts      # (no hide under claws: feathers)
+         ban = getattr(self._blocks(), "scene_ban", None)
+         opts = [o for o in opts if not (ban is not None and ban.search(o))] or opts
+         return opts[zlib.crc32(f"{getattr(self, 'beat_now', 0)}|{m.get('name')}".encode()) % len(opts)]
+@@ -6262,7 +6265,8 @@ class Narrator:
+             taken, part, after, i = top[0]
+             near = next((p for t2, p, _, _, j in mine if j == i and p != part), None)
+             if near and not whole:
+-                add("how it spreads", B.pick("travel", 1, fmt={"part": part.lower(), "next": near.lower()}))
++                add("how it spreads", B.pick("travel", 1, fmt={"part": part.lower(), "next": near.lower()},
++                                             has=feats(who)))
+             # nothing bigger than her injuries allow: the engine's ceiling filters the ideas before the model sees them
+             ceil = self._pain_ceiling(who)
+             too_big = [rx for need_, rx in INTENSE if ceil and ceil[0] < need_] or None
+@@ -10196,6 +10200,8 @@ class Narrator:
+         """Two examples of how to write a sound out, different each beat, so no example becomes a stock line."""
+         k = getattr(self, "_beat_no", 0) * 2
+         ex = self.SOUND_EXAMPLES
++        for who in list((getattr(self, "strengths", None) or {}))[:4]:
++            ex = self._fit_body(ex, who)      # (an example any of them could make: no yip from a bird, no teeth)
+         return "\"" + ex[k % len(ex)] + "\", \"" + ex[(k + 5) % len(ex)] + "\""
+ 
+     def _sound_note(self):
+-- 
+2.43.0
+

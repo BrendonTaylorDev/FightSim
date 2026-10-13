@@ -1,7 +1,7 @@
 From f332799519029054d154ca396a866856f814d294 Mon Sep 17 00:00:00 2001
 From: Claude <noreply@anthropic.com>
 Date: Tue, 13 Oct 2026 03:25:07 +0000
-Subject: [PATCH 3/5] Fix: beat weight no longer 'an ordinary exchange' for a
+Subject: [PATCH 3/9] Fix: beat weight no longer 'an ordinary exchange' for a
  fall from the sky, a drop to spent, or a beat with no attack; 'miss and all'
  only when something missed
 

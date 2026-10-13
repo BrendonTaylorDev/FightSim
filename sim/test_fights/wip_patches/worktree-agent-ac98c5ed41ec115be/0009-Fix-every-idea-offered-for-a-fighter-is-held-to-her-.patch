@@ -1,0 +1,70 @@
+From 874fc113d309d677d14f63440fc43cadbe367d13 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Tue, 13 Oct 2026 11:17:46 +0000
+Subject: [PATCH 9/9] Fix: every idea offered for a fighter is held to her pain
+ ceiling (MEASURED PAIN): no whole-body shudders, clutching, nearly falling or
+ the world sliding for a fighter who still covers it
+
+---
+ narrator.py | 29 +++++++++++++++++++++++++++--
+ 1 file changed, 27 insertions(+), 2 deletions(-)
+
+diff --git a/narrator.py b/narrator.py
+index c8a93cc..09a84ae 100644
+--- a/narrator.py
++++ b/narrator.py
+@@ -1898,6 +1898,17 @@ INTENSE = (
+                     r"explod\w+|searing|wave of (?:pain|agony)|tore through|ripped through)\b", re.I)),
+ )
+ 
++# the same ceiling, for the IDEAS offered (not the prose check): reactions that take over her whole body, which
++# MEASURED PAIN rules out for a fighter who still covers it (a shudder right through her, clutching, nearly falling,
++# the world sliding, whimpering, doubled over)
++INTENSE_IDEAS = INTENSE + (
++    (150, re.compile(r"\b(?:shudder\w*|whimper\w*|clutch\w*|nearly (?:falls?|fell|collapses?|goes down)|"
++                     r"doubl\w+ (?:her )?over|rock(?:s|ing)? over|(?:world|place|ground) (?:slides?|swings?|tilts?|"
++                     r"lurches?)|tremor that (?:starts|runs)|right through her|all through her|"
++                     r"every (?:feather|scale|hair) (?:on her body|lifts|stands))\b", re.I)),
++    (90, re.compile(r"\b(?:eyes go wet|tears? (?:start|run|spill)|screams?\b|\bher (?:\w+ )?screams)", re.I)),
++)
++
+ # filler: resolve or drama TOLD instead of shown ("She would not be defeated.", "a steely resolve", "every muscle
+ # screamed"). A short sentence that is nothing else is cut; a longer one is written again with ideas to show it.
+ FILLER = re.compile(
+@@ -6193,9 +6204,23 @@ class Narrator:
+         worn = set().union(*(self.recent_reactions or [set()])) if getattr(self, "recent_reactions", None) else set()
+         side = ["act"]
+ 
++        caps_ = {}
++
++        def too_big_for(label):
++            # whose idea it is (the one seen, for "what X can see of Y"), and the ceiling her injuries set on it
++            m_ = re.search(r"can see of (\w+)", label)
++            who_ = m_.group(1) if m_ else next((n for n in sorted(self.strengths or {}, key=lambda n: label.find(n))
++                                                if n in label), None)
++            if who_ not in caps_:
++                ceil_ = self._pain_ceiling(who_) if who_ else None
++                caps_[who_] = [rx for need_, rx in INTENSE_IDEAS if ceil_ and ceil_[0] < need_]
++            return caps_[who_]
++
+         def add(label, picks):
+             slot = next((k for k, rx in self._SLOTS if re.search(rx, label)), "move")
+-            lines.extend((side[0], slot, f"{label}: {p}") for p in picks if not (reactions_used(p) & worn))
++            big_ = too_big_for(label)      # (nothing bigger than her injuries allow, whatever kind of idea it is)
++            lines.extend((side[0], slot, f"{label}: {p}") for p in picks
++                         if not (reactions_used(p) & worn) and not any(rx.search(p) for rx in big_))
+ 
+         posture = self._blk_posture
+ 
+@@ -6255,7 +6280,7 @@ class Narrator:
+                 add("how it spreads", B.pick("travel", 1, fmt={"part": part.lower(), "next": near.lower()}))
+             # nothing bigger than her injuries allow: the engine's ceiling filters the ideas before the model sees them
+             ceil = self._pain_ceiling(who)
+-            too_big = [rx for need_, rx in INTENSE if ceil and ceil[0] < need_] or None
++            too_big = [rx for need_, rx in INTENSE_IDEAS if ceil and ceil[0] < need_] or None
+             # how the pain shows, sized to the worst place this beat left her with
+             worst_hit = max(best.values(), key=lambda x: x[2])
+             lv_w = self._pain(worst_hit[2])["label"] if worst_hit[2] > 0 else "minor"
+-- 
+2.43.0
+
