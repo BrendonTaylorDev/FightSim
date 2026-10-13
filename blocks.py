@@ -293,7 +293,7 @@ class Blocks:
             # not for it, even when she has arms too (a winged dragon)
             exclude = [WING_NOT] + (list(exclude) if isinstance(exclude, (list, tuple)) else [exclude] if exclude
                                     is not None else [])
-        cool = int(self.cfg.get("cooldown_beats", 8))
+        cool = int(self.cfg.get("cooldown_beats", 14))
         pool = []
         for cat, conds, text in self.entries:
             if cat != category or not self._fits(conds, ctx) or any(k not in conds for k in need):

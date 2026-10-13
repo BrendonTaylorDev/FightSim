@@ -144,6 +144,8 @@
     "_limb_limits_comment": "A move thrown WITH a badly hurt limb lands weaker: a chop or a slash with a ruined paw or arm, a charge or a kick on a ruined leg, a bite with a ruined jaw, a horn strike with a ruined horn, a tail strike with a ruined tail. 'at': the damage % on the worst such part, and the power multiplier from there (150 = excruciating, 300 = devastated). Streams, beams and whole-body moves are not thrown with a limb. enabled false = off.",
     "limb_limits": {
       "enabled": true,
+      "_struck_limb": "true: a blow thrown with ONE limb (a wing, an arm, a talon, a horn) counts the limb she throws it with: the one the order names ('her left wing'), or else her sounder one, since a fighter favours a hurt limb. A charge still counts the worst of them (all of them carry it). false = always the worst of the pair, as before.",
+      "struck_limb": true,
       "at": {
         "150": 0.8,
         "300": 0.6
@@ -708,7 +710,7 @@
       "enabled": true,
       "file": "story_blocks.txt",
       "per_part": 10,
-      "cooldown_beats": 8,
+      "cooldown_beats": 14,
       "remember": true,
       "plan": true,
       "open_and_end": true,

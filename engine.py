@@ -1135,7 +1135,9 @@ class Engine:
         self._last_stand_now = self._last_stand(a, move) if enforce else None
         self._overcommit_now = self._overcommit(a, move) if enforce and not self._last_stand_now else None
         self._sustain_now = int(sustain or 0)
+        self._strike_flavor = str(flavor or "")       # (which limb she throws it with, when the order says: limb_mult)
         math = self.move_math(a.name, d.name, move)
+        self._strike_flavor = ""
         spiking = self.spike_ok(a, d, move)
         self._sustain_now = 0
         target = math["target"]
@@ -2427,6 +2429,16 @@ class Engine:
             parts = [p for p in a.parts.values() if body_region(p.name) in ("tail", "belly")]
         if not parts:
             return None
+        if kind != "charge" and (cfg.get("struck_limb", True)):
+            # one limb throws it (a wing, an arm, a talon, a horn): the one the order names ("her left wing"), or else
+            # her sounder one, since a fighter favours a hurt limb; a charge is carried by all of them (the worst)
+            said = str(getattr(self, "_strike_flavor", "") or "").lower()
+            named = [p for p in parts if re.search(r"\b%s\b" % re.escape(p.name.lower()), said)]
+            side = re.search(r"\b(left|right)\b", said)
+            if not named and side:
+                named = [p for p in parts if p.name.lower().startswith(side.group(1))
+                         and re.search(r"\b(?:wing|arm|paw|hand|fist|claw|talon|horn|leg|foot|forearm|tail)\b", said)]
+            parts = named or [min(parts, key=lambda p: p.damage)]
         worst = max(parts, key=lambda p: p.damage)
         steps = sorted(((float(k), float(v)) for k, v in (cfg.get("at") or {"150": 0.8, "300": 0.6}).items()),
                        reverse=True)

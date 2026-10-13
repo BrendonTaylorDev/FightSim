@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-13 build 180 (a sweep of about 300 bug notes from the Glacia vs Cinder test fight: the narrator's notes now fit each body (feathers, scales or fur; beaks, wings that are wings, the right voices) and where she is (no standing or limping in the air or on her back), every event gets a part to be told in, numb parts are told as numb, labels and causes follow the engine (knocked out of the air, not thrown; the hardest-hit parts of a whole-body move), reactions and ideas stay inside the pain caps, and nothing names a thing the place does not have)"
+VERSION = "2026-10-13 build 181 (a blow thrown with one limb (a wing, an arm, a talon, a horn) is weakened only by THAT limb: the one the order names, or her sounder one; ideas wait 14 beats before they can come back, up from 8)"
 
 HELP = """
 =============================================================================================
