@@ -1203,6 +1203,8 @@
         "beats": 1
       }
     },
+    "_from_move_type_always_comment": "statuses from from_move_type that a move of that type gives even when it has effects of its own (a Water Pulse that may confuse still soaks her): the plain facts of the element, not a side effect.",
+    "from_move_type_always": ["soaked"],
     "paralyzed_power_mult": 0.75,
     "_stiff_comment": "stiff (after breaking out of a pin) and cramped (after holding a long one): power and dodge multipliers.",
     "stiff_power_mult": 0.85,

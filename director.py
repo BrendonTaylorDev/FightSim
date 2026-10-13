@@ -5,7 +5,8 @@ The director can SEE the numbers but never calculates anything.
 """
 import json
 import re
-from engine import short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR
+from engine import short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR, match_part, \
+    _REGIONS as ENGINE_REGIONS
 from blocks import kind_of
 
 import llm
@@ -392,6 +393,49 @@ def _severity(engine, kind, word, default):
 def _fit_part(engine, defender, part):
     """Body part names are matched to the defender's real anatomy inside the engine."""
     return engine.get(defender).part(part).name
+
+
+# where a grab's own words put it: "round the white hind legs", "seizes the otter's arm", "clamps onto her scruff"
+_GRIP_ON = r"round|around|about|on|onto|upon|at|by"
+_GRIP_AT = re.compile(r"\b(" + _GRIP_ON + r"|seiz\w*|grab\w*|catch\w*|clamp\w*|lock\w*|wrap\w*|grip\w*|snag\w*|tie\w*|"
+                      r"bind\w*|trap\w*)\s+(?=((?:[\w'’-]+\s+){0,4}[\w'’-]+))", re.I)
+# what she grips WITH, never the part gripped ("clamps her jaws on the scruff": not her jaw)
+_WEAPON_WORDS = {"jaw", "jaws", "teeth", "claw", "claws", "coil", "coils", "talon", "talons", "horn", "tail", "tails"}
+# and what she grips with: "whips her twin tails", "her jaws"
+_GRIP_WITH = re.compile(r"\bher\s+((?:[a-z-]+\s+){0,2}?(?:tails?|jaws|teeth|arms?|paws?|forepaws?|claws|coils|legs|wings?|"
+                        r"horn|fins?|talons|hands?))\b", re.I)
+_PART_QUALIFIERS = {"left", "right", "hind", "fore", "front", "upper", "lower", "back", "twin", "sickle"}
+
+
+def _flavor_grip(engine, att, dfn, flavor):
+    """A grab whose order names no part: the part and the grip its own words name ('she whips her twin tails round
+    the white hind legs': a hind leg, with her twin tails), the way a strike lands where it is aimed. (None, '')
+    when the words name no part of hers."""
+    text = str(flavor or "")
+    names = list(engine.get(dfn).parts)
+    body = ({w for trig, _ in ENGINE_REGIONS for t in trig for w in t.split()}
+            | {w for p in names for w in p.lower().split()}) - {"left", "right"}
+    part, span = None, None
+    # "round the white hind legs" before "whips her twin tails": a preposition says where far more surely than a verb
+    found = sorted(_GRIP_AT.finditer(text), key=lambda m: (not re.fullmatch(_GRIP_ON, m.group(1), re.I), m.start()))
+    for m in found:
+        toks = [re.sub(r"(?:'s|’s|'|’)$", "", t) for t in m.group(2).lower().split()]
+        for i, t in enumerate(toks):
+            if i and toks[i - 1] in ("her", "its") and t in _WEAPON_WORDS and not re.fullmatch(_GRIP_ON, m.group(1), re.I):
+                break       # "clamps her jaws": her own weapon, not where it closes
+            stem = t[:-2] if t.endswith("es") and t[:-2] in body else t[:-1] if t.endswith("s") and t[:-1] in body else t
+            if stem in body and stem not in _PART_QUALIFIERS:
+                phrase = " ".join(([toks[i - 1]] if i and toks[i - 1] in _PART_QUALIFIERS else []) + [stem])
+                part = match_part(names, phrase)
+                break
+        if part:
+            span = (m.start(), m.end(2))
+            break
+    with_ = ""
+    if part:
+        w = next((g for g in _GRIP_WITH.finditer(text) if not (span[0] <= g.start() < span[1])), None)
+        with_ = f"her {w.group(1).lower()}" if w else ""
+    return part, with_
 
 
 def _fill_defender(engine, att, dfn):
@@ -794,11 +838,14 @@ def resolve(engine, b):
     if act == "grapple":
         hits = [h for h in (b.get("hits") or []) if h.get("part")]
         part = b.get("part") or (hits[0]["part"] if hits else None)
+        flavor_with = ""
+        if not part:   # the order's own words name it ("round the white hind legs"): that part, and that grip
+            part, flavor_with = _flavor_grip(engine, att, dfn, flavor)
         if not part:   # nothing named: an arm, the scruff, a shoulder
             body = list(engine.get(dfn).parts)
             reach = [p for p in body if body_region(p) in ("fore_up", "fore_low", "neck", "shoulder")] or body
             part = engine.rng.choice(reach)
-        with_ = short_phrase((hits[0].get("with") if hits else "") or b.get("with") or "", 9)
+        with_ = short_phrase((hits[0].get("with") if hits else "") or b.get("with") or flavor_with or "", 9)
         sev = str((hits[0].get("severity") if hits else None) or b.get("severity") or "light").lower()
         table = engine.rules["severity"]["hold"]
         if sev not in table or table[sev] > table.get("firm", 15):

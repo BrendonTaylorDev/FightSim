@@ -528,6 +528,10 @@ PAIN_NOW = re.compile(r"\b(?:hurting|ach(?:ed|ing)|throbb(?:ed|ing)|scream(?:ed|
 IMPACT_NOW = re.compile(r"\b(?:struck|hit|raked|slammed|crashed|smashed|hammered|caught|landed|tore|ripped|sank|connected|"
                         r"slashed|sliced|bit|drove|exploded (?:with|in) pain|erupted (?:with|in) pain)\b", re.I)
 RECALLED = re.compile(r"\b(?:had|where|which|that|when|since|after|from|earlier|already|still|again)\b", re.I)
+# a direction that says a grip is still on ("keeps her tails locked round the white legs", "legs tied")
+HELD_CLAIM = re.compile(r"\b(?:keeps?|kept|still)\b[^,;.]{0,30}?\b(?:locked|wrapped|clamped|coiled|tied|bound)\b|"
+                        r"\b(?:legs?|arms?|limbs?|paws?|tails?)\s+(?:still\s+)?(?:tied|bound|locked)\b|"
+                        r"\b(?:tied|bound)\s+(?:hind\s+|fore)?(?:legs?|limbs?|arms?)\b", re.I)
 # a blow driven into a named part ("drove her knee up into Nocturne's belly")
 BLOW_INTO = re.compile(r"\b(?:drove|driving|slamm\w+|smash\w+|ramm\w+|kick\w+|punch\w+|hammer\w+|stomp\w+|stamp\w+|sank|"
                        r"buried|rak\w+|slash\w+)\b[^.!?;]{0,40}?\b(?:into|against|across|onto|down on)\s+(?:the |her |his |"
@@ -4620,10 +4624,14 @@ class Narrator:
         m = a.get("move") or {}
         mv = " ".join([str(m.get("name") or ""), str(m.get("about") or "")]).lower()
         bans = story_blocks.body_bans(feats)
+        # a grip the direction still has on ("tails still locked round the white legs", "legs tied") when the engine
+        # has none on her or by her any more: that part of it is gone
+        gripless = not any(who in (g[0], g[1]) for g in (getattr(self, "grips", None) or []))
         keep = []
         for bit in re.split(r"(?<=[,;.])\s+|\s+(?=and\b)", fl):
             low = bit.lower()
             bad = bans is not None and bans.search(bit) and not re.search(r"\b(?:opponent|foe|other)\b", low)
+            bad = bad or (gripless and HELD_CLAIM.search(bit) is not None)
             for rx, tag in self.FLAVOR_FEATS:
                 if re.search(rx, low) and tag not in feats and tag.rstrip("s") not in parts \
                         and not re.search(rx, mv):

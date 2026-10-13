@@ -73,7 +73,7 @@ _REGIONS = [
     (("rib", "side", "flank"), ["ribs", "flank", "midsection", "chest", "stomach", "belly"]),
     (("back", "spine"), ["upper back", "back", "lower back"]),
     (("tail",), ["tails", "sickle tail", "upper tail", "tail"]),
-    (("neck", "throat", "collar", "sac"), ["neck", "throat", "flotation sac"]),
+    (("neck", "throat", "collar", "sac", "scruff", "nape"), ["neck", "throat", "flotation sac"]),
     (("face", "muzzle", "snout", "mouth", "nose", "jaw", "cheek"), ["muzzle", "nose", "jaw", "head"]),
     (("ear", "antenna", "whisker"), ["ear", "antenna", "head fin"]),
     (("horn", "head", "skull", "brow"), ["horn", "head"]),
@@ -1156,7 +1156,9 @@ class Engine:
             if dodge:
                 res.update(dodge)
             else:
-                res["status_applied"] = self._status_from_move(d, move, force_roll=True)
+                aimed = next((x for x in (parts or []) if isinstance(x, str) and match_part(list(d.parts), x)), None)
+                res["status_applied"] = self._status_from_move(
+                    d, move, force_roll=True, at=match_part(list(d.parts), aimed) if aimed else None)
                 res["missed"] = not res["status_applied"]
             return res
         self._aim_miss = None
@@ -1442,7 +1444,8 @@ class Engine:
             if mouth:
                 res["into_mouth"] = mouth
             blocked = bool(guard and guard.get("kind") == "block")   # a blocked blow passes on no status
-            res["status_applied"] = ((self._status_from_move(d, move) if not blocked else [])
+            at = next((h.get("part") for h in hits if h.get("part") and h.get("defender", d.name) == d.name), None)
+            res["status_applied"] = ((self._status_from_move(d, move, at=at) if not blocked else [])
                                      + self._restrain(a, d) + (mouth or [])
                                      + list((res.get("charge") or {}).get("hazard_status") or [])
                                      + list((res.get("sustain") or {}).get("hazard_status") or []))
@@ -2482,20 +2485,27 @@ class Engine:
             out.append(("soaked", float(cfg.get("soaked_electric_mult", 1.5))))
         return out
 
-    def _status_from_move(self, d, move, force_roll=False):
-        """The move's own effects (moves.json), or else the default for its type (rules.json)."""
+    def _status_from_move(self, d, move, force_roll=False, at=None):
+        """The move's own effects (moves.json), or else the default for its type (rules.json). at: the part it
+        touched (a burn stays on that spot)."""
         if d.eliminated:
             return []
         if isinstance(move, str):
             move = {"type": move}
         effs = [x for x in move.get("effects", []) if x.get("status")]
+        default = self._cfg("status_effects").get("from_move_type", {}).get(move.get("type"))
         if not effs and not move.get("effects"):
-            default = self._cfg("status_effects").get("from_move_type", {}).get(move.get("type"))
             effs = [default] if default else []
+        elif default and default.get("status") in self._cfg("status_effects").get("from_move_type_always", []) \
+                and not any(x.get("status") == default["status"] for x in effs):
+            effs = effs + [default]     # (water wets her, whatever else the move does: Water Pulse soaks as well)
         out = []
         for eff in effs:
             if self._chance(float(eff.get("chance", 0)), f"{d.name} {eff['status']} by {move.get('name', 'the move')}",
                             eff["status"], "no"):
+                if eff["status"] == "burned" and not self.has(d, "burned"):
+                    # the burn stays where the fire touched her: every later flare is on that spot
+                    self.__dict__.setdefault("burn_spot", {})[d.name] = at
                 self.set_status(d, eff["status"], eff.get("beats", 2))
                 rec = {"fighter": d.name, "status": eff["status"], "beats": int(eff.get("beats", 2)),
                        "knock_on": self._knock_on}
@@ -6596,9 +6606,12 @@ class Engine:
                 continue
             cfg_s = self._cfg("status_effects")
             if self.has(f, "burned"):
-                hurt = [p for p in f.parts.values() if p.damage > 0] or list(f.parts.values())
+                spots = self.__dict__.setdefault("burn_spot", {})
+                if spots.get(f.name) not in f.parts:     # (no spot known: one is chosen once, and the burn stays there)
+                    hurt = [p for p in f.parts.values() if p.damage > 0] or list(f.parts.values())
+                    spots[f.name] = self.rng.choice(hurt).name
                 self._source = "the burn"
-                hit = self._apply_damage(f, self.rng.choice(hurt).name, float(cfg_s.get("burn_power", 5)))
+                hit = self._apply_damage(f, spots[f.name], float(cfg_s.get("burn_power", 5)))
                 events.append({"type": "status_tick", "fighter": f.name, "status": "burned", "hits": [hit]})
             if self.has(f, "poisoned"):
                 loss = f.max_health * float(cfg_s.get("poison_health_pct", 1.0)) / 100
