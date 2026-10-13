@@ -2355,7 +2355,10 @@ class Narrator:
                 "blast" if m.get("target") in ("spread", "whole_body") else "blunt")
         import zlib
         # (her covering: no fur parting on feathers or scales; no trees to roll through on a bare shelf)
-        opts = self._fit_body(self.BLOW_SOUND[kind], (a or {}).get("defender"))
+        dfn = (a or {}).get("defender")
+        opts = self._fit_body(self.BLOW_SOUND[kind], dfn)
+        if "feathers" in self._coat_feat(dfn):
+            opts = [o for o in opts if not re.search(r"\bhide\b", o)] or opts      # (no hide under claws: feathers)
         ban = getattr(self._blocks(), "scene_ban", None)
         opts = [o for o in opts if not (ban is not None and ban.search(o))] or opts
         return opts[zlib.crc32(f"{getattr(self, 'beat_now', 0)}|{m.get('name')}".encode()) % len(opts)]
@@ -6262,7 +6265,8 @@ class Narrator:
             taken, part, after, i = top[0]
             near = next((p for t2, p, _, _, j in mine if j == i and p != part), None)
             if near and not whole:
-                add("how it spreads", B.pick("travel", 1, fmt={"part": part.lower(), "next": near.lower()}))
+                add("how it spreads", B.pick("travel", 1, fmt={"part": part.lower(), "next": near.lower()},
+                                             has=feats(who)))
             # nothing bigger than her injuries allow: the engine's ceiling filters the ideas before the model sees them
             ceil = self._pain_ceiling(who)
             too_big = [rx for need_, rx in INTENSE if ceil and ceil[0] < need_] or None
@@ -10196,6 +10200,8 @@ class Narrator:
         """Two examples of how to write a sound out, different each beat, so no example becomes a stock line."""
         k = getattr(self, "_beat_no", 0) * 2
         ex = self.SOUND_EXAMPLES
+        for who in list((getattr(self, "strengths", None) or {}))[:4]:
+            ex = self._fit_body(ex, who)      # (an example any of them could make: no yip from a bird, no teeth)
         return "\"" + ex[k % len(ex)] + "\", \"" + ex[(k + 5) % len(ex)] + "\""
 
     def _sound_note(self):

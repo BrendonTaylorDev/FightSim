@@ -171,7 +171,7 @@ def body_region(part):
 _COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b(?! of)", "plumage"), (r"\bhairs?\b(?!'s)", "feathers")],
                "scales": [(r"\bburnt hair\b", "scorched hide"), (r"\bfur\b", "scales"), (r"\bcoat\b(?! of)", "scales"),
                           (r"\bhairs?\b(?!'s)", "scales"), (r"\bwhole tufts\b", "whole patches"),
-                          (r"\btufts?\b", "ragged patches")],
+                          (r"\btufts?\b", "ragged patches"), (r"\bin (her|the) scales\b", r"on \1 scales")],
                "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b(?! of)", "hide"), (r"\bhairs?\b(?!'s)", "skin"),
                         (r"\btufts?\b", "ragged patches")]}
 
@@ -7809,7 +7809,7 @@ class Engine:
         """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
         if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
             return self.STATUS_LOOK_NOT_COLD[status]
-        f = (getattr(self, "fighters", None) or {}).get(name)
+        f = (getattr(self, "fighters", None) or {}).get(str(name).lower())
         look = self.STATUS_LOOK.get(status, status.upper())
         return self.in_her_covering(f, look) if f is not None else look     # (frost in her feathers, on her scales)
 
