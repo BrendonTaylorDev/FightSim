@@ -512,7 +512,7 @@
     "roll": 0.17,
     "damage_scale": 3,
     "_resistance_scale_comment": "resistance_scale multiplies how fast resistance wears down (resistance lost = power x loss_per_power x resistance_scale). It does NOT change damage. 1 = normal; 2 = parts soften twice as fast; 0.5 = half as fast. Change it in the program with /resscale.",
-    "resistance_scale": 1.0,
+    "resistance_scale": 0.7,
     "part_curve": {
       "enabled": true,
       "knee": 300,
@@ -612,7 +612,7 @@
     "minimum": null,
     "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
     "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
-    "loss_per_damage_point": 0.46,
+    "loss_per_damage_point": 1.472,
     "after_win_drain": {"_comment": "Once the fight is won, the badly hurt parts drag at the winner less and less: the pain drain is multiplied by each for every beat since the win (0.5: half, then a quarter...). enabled false keeps the full drain.", "enabled": true, "each": 0.5},
     "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. One HIT costs at most about per_hit of the fighter's own full health (0.05 = 5%), rolled up or down by jitter (0.15 = plus or minus 15%) and smaller for a light knock (power under power_ref scales it down, to no less than power_floor of it): past that the extra levels off, adding at most room x that cap more however big the raw number. Everything that lands on her in one BEAT is softened the same way past per_beat. A devastating blow gets far looser limits (moves.devastating cap_mult, room_mult). The stat block shows 'softened from' when it applies.",
     "soft_cap": {
@@ -1363,7 +1363,9 @@
     "_weak_spot_comment": "weak_spot_chance: with no /focus set, the chance per beat that the director is pointed at one of the opponent's weak spots (a soft part like the throat, or one already worn down), so weak spots are gone for sometimes but not all the time. 0 = never; /focus vulnerable or /focus injured makes them the aim.",
     "weak_spot_chance": 0.2, "weak_spot_reach": 0.35, "_weak_spot_reach": "weak-spot hints pick the softest parts, a little less often the ones hard to reach (moves.aim: a throat, an ear, an eye): 0 = reach doesn't count, 1 = it counts fully",
     "_weak_spot_repeat_comment": "weak_spot_repeat: of those nudges, the share meant for a run of blows (a pummel, a combo, a chain, a grapple worked at): one weak spot hit again and again, a group of parts worked together (one side's foreleg top to bottom, the ribs), or a few weak spots in turn.",
-    "weak_spot_repeat": 0.4,
+    "weak_spot_repeat": 0.25,
+    "_weak_spot_menu": "a WEAK SPOTS hint (the plain kind, not a worked run) offers a short list to choose ONE from, or none: up to badly_hurt parts at 150%+, up to hurt parts between 30% and 150% (picked at random), and up to soft untouched places, shuffled. Spreads the blows over what is hurt instead of always the worst of it.",
+    "weak_spot_menu": {"badly_hurt": 2, "hurt": 3, "soft": 1},
     "grudge_chance": 0.15,
     "drag_to_pin_chance": 0.12,
     "_flight_comment": "flight_chance: each beat, the chance the director is reminded that a winged fighter on the ground could take off (x1.5 when her opponent has nothing that reaches the air). air_attack_chance: for one already in the air, the chance she is pointed at a dive or a carry (Sky Drop). 0 = never.",
@@ -1717,15 +1719,15 @@
     "lead_margin": 5.0
   },
   "fight_length": {
-    "_comment": "Presets for /length: about how many beats a fight runs. Each sets health.loss_per_damage_point to base x health_loss and damage.resistance_scale to base x wear: fighters lose health and wear down faster, so a pin wins sooner (pin success follows her remaining health). Pin openings and escapes are not changed. Measured over 100 simulated fights each (Nocturne vs Ripples, lakeside forest; build 146's balance: fewer wild swings, Nocturne vs Ripples closer to even).",
-    "default": "60",
+    "_comment": "Presets for /length: about how many beats a fight runs. Each sets health.loss_per_damage_point to base x health_loss and damage.resistance_scale to base x wear: fighters lose health and wear down faster, so a pin wins sooner (pin success follows her remaining health). Pin openings and escapes are not changed. From build 182 the shorter presets speed up health loss and slow wear (how fast a part softens) to 0.7, so a fight is short without every blow piling onto the same few ruined parts. Older measurements: over 100 simulated fights each (Nocturne vs Ripples, lakeside forest; build 146's balance: fewer wild swings, Nocturne vs Ripples closer to even).",
+    "default": "40",
     "base": {"loss_per_damage_point": 0.46, "resistance_scale": 1.0},
     "presets": {
-      "30": {"health_loss": 5.0, "wear": 2.3, "_measured": "29 beats, 2.8 pins, Nocturne wins 62% (build 146)"},
-      "35": {"health_loss": 3.6, "wear": 1.8, "_measured": "36 beats, 3.4 pins, Nocturne wins 55% (build 146)"},
-      "40": {"health_loss": 2.8, "wear": 1.5, "_measured": "39 beats, 3.4 pins, Nocturne wins 59% (build 146)"},
-      "45": {"health_loss": 2.35, "wear": 1.3, "_measured": "44 beats, 4.0 pins, Nocturne wins 59% (build 146)"},
-      "50": {"health_loss": 1.9, "wear": 1.2, "_measured": "49 beats, 4.4 pins, Nocturne wins 56% (build 146)"},
+      "30": {"health_loss": 7.2, "wear": 0.7, "_measured": "28 beats, 0.7 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "35": {"health_loss": 5.4, "wear": 0.7, "_measured": "34 beats, 0.9 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "40": {"health_loss": 3.2, "wear": 0.7, "_measured": "40 beats, 1.0 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "45": {"health_loss": 2.6, "wear": 0.7, "_measured": "43 beats, 1.2 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "50": {"health_loss": 2.1, "wear": 0.7, "_measured": "47 beats, 1.5 devastated parts per fighter (build 182: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
       "60": {"health_loss": 1.0, "wear": 1.0, "_measured": "64 beats, 5.9 pins, Nocturne wins 58% (build 146)"}
     }
   },

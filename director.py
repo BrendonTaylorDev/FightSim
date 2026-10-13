@@ -531,6 +531,23 @@ def variety_hint(engine):
             "keeps a fight from being about one spot: the same move can land on a different part.")
 
 
+def weak_spot_menu(engine, foe, soft):
+    """The parts a WEAK SPOTS hint offers (director.weak_spot_menu: how many of each kind): badly hurt ones, ones only
+    hurt so far, and soft places not yet touched; shuffled, so the worst is not always first."""
+    m = engine.rules.get("director", {}).get("weak_spot_menu") or {}
+    parts = sorted(foe.parts.values(), key=lambda p: -p.damage)
+    bad = [p for p in parts if p.damage >= 150][:int(m.get("badly_hurt", 2))]
+    hurt = [p for p in parts if 30 <= p.damage < 150]
+    hurt = engine.rng.sample(hurt, min(len(hurt), int(m.get("hurt", 3))))
+    fresh = [p for p in soft if p.damage < 30][:int(m.get("soft", 1))]
+    out = [(p, "badly hurt already") for p in bad] + [(p, "hurt, not yet badly") for p in hurt] + \
+          [(p, "soft and badly protected") for p in fresh]
+    if len(out) < 2:
+        out += [(p, "soft and badly protected") for p in soft if p not in [q for q, _ in out]][:2]
+    engine.rng.shuffle(out)
+    return out
+
+
 def weak_spot_hint(engine):
     """Now and then, with no /focus set: point one fighter at her opponent's weak spots (soft parts, or ones already
     worn down), so weak spots are gone for sometimes, never constantly (director.weak_spot_chance). Some of these
@@ -557,11 +574,15 @@ def weak_spot_hint(engine):
     reach = float(cfg.get("weak_spot_reach", 0.35) or 0)
     soft = sorted(foe.parts.values(), key=lambda p: p.resistance / (engine.aim_ease(p.name) ** reach if reach else 1))[:4]
     why = lambda p: "already worn down" if p.damage >= 30 else "soft and badly protected"
-    if engine.rng.random() >= float(cfg.get("weak_spot_repeat", 0.4) or 0):
-        p = engine.rng.choice(soft[:3])
-        engine.weak_aim = {p.name}
-        return (f"WEAK SPOT (an idea, not an order): {f.name} could go for {poss_word(foe.name)} {p.name} this time "
-                f"({why(p)}). Just this once; the next blow can land anywhere.")
+    if engine.rng.random() >= float(cfg.get("weak_spot_repeat", 0.25) or 0):
+        # a short MENU to choose from, not one spot: a badly hurt place or two, some that are only hurt so far, and a
+        # soft place not yet touched (director.weak_spot_menu), so the blows spread over what is hurt instead of all
+        # landing on the worst of it
+        menu = weak_spot_menu(engine, foe, soft)
+        engine.weak_aim = {p.name for p, _ in menu}
+        return (f"WEAK SPOTS TO CHOOSE FROM (an idea, not an order): if {f.name} goes for a weak spot this time, any "
+                f"ONE of these would do: " + "; ".join(f"{poss_word(foe.name)} {p.name} ({w})" for p, w in menu)
+                + ". Pick whichever suits the move and the angle, or none of them; the next blow can land anywhere.")
     kind = engine.rng.choice(["same", "group", "several"])
     run = ("if she lands a run of blows this beat (a pummel with a count, a combo, a chain, a grapple she keeps "
            "working at, a charge that drives into it, a stream she holds on it)")

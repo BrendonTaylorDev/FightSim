@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-13 build 181 (a blow thrown with one limb (a wing, an arm, a talon, a horn) is weakened only by THAT limb: the one the order names, or her sounder one; ideas wait 14 beats before they can come back, up from 8)"
+VERSION = "2026-10-13 build 182 (faster fights with the damage spread out: the default is now about 40 beats (was about 54), parts soften more slowly (wear 0.7) and health drops faster, so about 1 part per fighter ends devastated instead of 2.4; the /length presets are re-tuned the same way; a weak-spot hint now offers a short list to choose from (a badly hurt part or two, some only hurt, a soft untouched place) instead of one spot, and the hit-the-same-spot-again version is rarer)"
 
 HELP = """
 =============================================================================================
