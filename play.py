@@ -1322,8 +1322,11 @@ class Session:
 
         if self.use_llm:
             past = "\n".join(f"- {x}" for x in history_before[-10:]) or "- nothing yet: this is the first exchange"
-            condition = (self.eng.narrator_condition() + "\nFIGHT SO FAR (the ONLY earlier attacks that really "
-                         "happened; never mention any other past attack or move):\n" + past)
+            head = ("FIGHT SO FAR (the ONLY earlier attacks that really happened; never mention any other past attack "
+                    "or move):" if len(history_before) <= 10 else
+                    f"FIGHT SO FAR (the last 10 of {len(history_before)} earlier attacks; the older ones are in the story "
+                    f"already; never mention a past attack or move that is in neither):")
+            condition = self.eng.narrator_condition() + "\n" + head + "\n" + past
             # what each fighter is still feeling is the LAST thing that landed on her, never an attack that missed
             last_on, missed = {}, []
             for x in history_before:

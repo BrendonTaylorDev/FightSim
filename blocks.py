@@ -167,7 +167,8 @@ def kind_of(move_name="", about="", with_part="", manhandle="", grab=False, clos
             kinds.add(k)
     if ranged and kinds & {"beam", "fire", "ice", "wind"}:
         # a discharge, a stream, a pulse: not a strike with the part it comes from (its element still counts)
-        return {"beam"} | (kinds & {"fire", "ice", "wind", "rock"})
+        # (wind alone is no beam: blades of air, a gust, a spinning wall of it, each staged as wind)
+        return ({"beam"} if kinds & {"beam", "fire", "ice"} else set()) | (kinds & {"fire", "ice", "wind", "rock"})
     return kinds
 
 

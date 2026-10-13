@@ -935,12 +935,12 @@
     {
       "min": 80,
       "label": "fresh",
-      "reaction": "Fully in the fight: quick, strong, upright, attacking freely. A badly hurt part is favored and guarded, but she does NOT collapse, go limp, or stop fighting; knocked down, she is straight back up."
+      "reaction": "Fully in the fight: quick, strong, upright, attacking freely. A badly hurt part is favored and guarded, but she does NOT collapse, go limp, or stop fighting; knocked down, she wants straight back up (how fast she manages it is the engine's to say)."
     },
     {
       "min": 60,
       "label": "winded",
-      "reaction": "Breathing harder, but still fast and dangerous. Shakes off big hits within a moment and gets straight back up."
+      "reaction": "Breathing harder, but still fast and dangerous. Shakes off big hits within a moment (how fast she gets up is the engine's to say)."
     },
     {
       "min": 40,

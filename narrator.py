@@ -1628,6 +1628,12 @@ GOT_UP = re.compile(r"\b(?:got (?:back )?(?:up|to her feet|on(?:to)? her feet)|(
                     r"(?:back )?(?:up(?:right)?|to her feet|on(?:to)? her feet)|(?:back|up) on her feet|on her feet again|"
                     r"regained her feet|found her feet again|stood (?:back )?up|rose to (?:her|all four) (?:feet|paws))\b", re.I)
 # ideas that need stone around her: not offered where there is none (narrator._scene_ban)
+# (what an idea names, and the words a place must have for it: the scene's own text, read by _scene_ban)
+SCENE_THINGS = ((r"\b(?:grass|grasses|turf|meadow)\b", r"\b(?:grass|meadow|turf|field|lawn|clearing|plain|prairie|savanna)"),
+                (r"\b(?:leaves|leaf|leaf-?litter|undergrowth|ferns?|brambles?)\b",
+                 r"\b(?:lea(?:f|ves)|forest|wood|woods|jungle|undergrowth|fern|bramble|bush|thicket|tree)"),
+                (r"\b(?:mud|muddy|mire)\b", r"\b(?:mud|muddy|mire|marsh|swamp|bog|rain|creek|river|bank|shore)"),
+                (r"\b(?:sand|sandy|dune)\b", r"\b(?:sand|dune|beach|desert|shore)"))
 STONE_ONLY = re.compile(r"\b(?:off the (?:stone|rock|walls?)|stone floor|rock floor|(?:cave|stone|rock) walls?|echo\w* back at her|"
                         r"cave|stalactite|stalagmite)\b", re.I)
 # things only a cave has (the sample passages are set in one): fine in a cave, a slip anywhere else
@@ -4533,7 +4539,9 @@ class Narrator:
         if others:
             lines[0] = lines[0].rstrip(":") + (
                 f" (this is {poss(who)} get-up and nobody else's: {' and '.join(others)} "
-                f"{'is' if len(others) == 1 else 'are'} on {'her' if len(others) == 1 else 'their'} feet when it happens, "
+                f"{'is' if len(others) == 1 else 'are'} "
+                + ("up in the air" if all("AIR" in str(self.posture_start[n]).upper() for n in others) else
+                   f"on {'her' if len(others) == 1 else 'their'} feet") + " when it happens, "
                 f"so no part of it is told of {'her' if len(others) == 1 else 'them'}):")
         verb = "give" if " and " in hurt else "gives"
         fails = list(e.get("fails") or [])
@@ -6020,9 +6028,16 @@ class Narrator:
     def _scene_ban(self):
         """Ideas that need stone walls or a cave (a voice ringing off the stone) when this place has none."""
         scene_low = (str(getattr(self, "_scene_text", "") or "") + " " + str(getattr(self, "scene_words", "") or "")).lower()
-        if not scene_low.strip() or re.search(r"\b(?:cave|cavern|stone|rock|cliff|wall|canyon|ruin|quarry|tunnel)", scene_low):
+        if not scene_low.strip():
             return None
-        return STONE_ONLY
+        bans = []
+        if not re.search(r"\b(?:cave|cavern|stone|rock|cliff|wall|canyon|ruin|quarry|tunnel)", scene_low):
+            bans.append(STONE_ONLY.pattern)
+        # (and the growing things and the mud a place has none of: no grass kicked up on a bare rock shelf)
+        for thing, has in SCENE_THINGS:
+            if not re.search(has, scene_low):
+                bans.append(thing)
+        return re.compile("|".join(f"(?:{b})" for b in bans), re.I) if bans else None
 
     def _lines(self):
         """The library of finished sentences (story_lines.txt): the same format and conditions as the blocks, but
@@ -10430,7 +10445,7 @@ class Narrator:
             f"FIGHTERS:\n{fighter_notes}\n\n"
             f"CURRENT CONDITION (after this beat):\n{condition_summary}\n\n"
             f"PREVIOUS BEATS (already told; context only, do NOT retell):\n"
-            f"{self._story_snip or '(none: this is the FIRST beat of the fight. Nobody has attacked anyone yet, so nobody has any earlier injuries, hits, or history to mention.)'}\n\n"
+            f"{self._story_snip or ('(none: this is the FIRST beat of the fight. Nobody has attacked anyone yet, so nobody has any earlier injuries, hits, or history to mention.)' if int(getattr(self, 'beat_now', 0) or 0) <= 1 else '(not kept: go by FIGHT SO FAR and the injuries listed here)')}\n\n"
             + (f"EXTRA STYLE NOTE FOR THIS SESSION: {self.style}\n\n" if self.style else "")
             + f"WHAT HAPPENS IN THIS BEAT (the only events you may narrate):\n{self.describe(bundle)}\n\n"
         )
