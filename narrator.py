@@ -2429,9 +2429,16 @@ class Narrator:
             return cap
         return k
 
-    def _impact(self, taken, seed="", who=None, size=None):
-        """A suggested moment-of-impact reaction, varied from hit to hit."""
+    # an impact that belongs to a blow on her body's core (the breath knocked out, folding over): not for a head,
+    # a limb or a tail
+    CORE_IMPACT = re.compile(r"\bbreath (?:driven|knocked|punched|forced) out|\bwinded\b|\bdoubl\w* (?:over|up)\b|"
+                             r"\bfold\w* over\b", re.I)
+
+    def _impact(self, taken, seed="", who=None, size=None, part=None):
+        """A suggested moment-of-impact reaction, varied from hit to hit (one that fits WHERE it landed)."""
         options = self._fit_body(self.IMPACTS[size or self._strength_key(taken)], who)
+        if part and body_region(part) not in ("chest", "belly", "back_up", "back_low", "other"):
+            options = [o for o in options if not self.CORE_IMPACT.search(o)] or options
         if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
             # the engine decides whether a blow moves her (moves.stumble): no step or stagger slipped in here
             options = [o for o in options if not MOVES_HER.search(o)] or options
@@ -2560,7 +2567,7 @@ class Narrator:
         self._hurt_now.add(h["defender"])
         self._linger_pool.append((h["defender"], h["part"], h["damage_taken"], after["label"], "blow"))
         size = self._hit_size(h)
-        impact = self._impact(h["damage_taken"], seed, h["defender"], size)
+        impact = self._impact(h["damage_taken"], seed, h["defender"], size, h["part"])
         if after["label"] == "numb with shock" and before["label"] == "numb with shock":
             impact = "a dull, sickening jolt she barely feels as pain, then a lurch of nausea and shallow breath"
         if h.get("numb"):
@@ -6431,6 +6438,9 @@ class Narrator:
                 out.add("standing")
             if all(re.match(r"(?:ON THE GROUND|OUT)", x) for x in (s, e)) and "FACE-UP" in e:
                 out.add("faceup")
+        elif who in (getattr(self, "out_names", None) or ()) and \
+                str((getattr(self, "facing", None) or {}).get(who, "")) == "face-up":
+            out.add("faceup")       # out of the match (no posture listed any more), lying where she fell
         fam = self._voice_family(who) if who else "other"
         if fam == "growl":
             out.add("growler")
