@@ -168,6 +168,27 @@ def body_region(part):
     return "other"
 
 
+_COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b(?! of)", "plumage"), (r"\bhairs?\b(?!'s)", "feathers")],
+               "scales": [(r"\bburnt hair\b", "scorched hide"), (r"\bfur\b", "scales"), (r"\bcoat\b(?! of)", "scales"),
+                          (r"\bhairs?\b(?!'s)", "scales"), (r"\bwhole tufts\b", "whole patches"),
+                          (r"\btufts?\b", "ragged patches"), (r"\bin (her|the) scales\b", r"on \1 scales")],
+               "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b(?! of)", "hide"), (r"\bhairs?\b(?!'s)", "skin"),
+                        (r"\btufts?\b", "ragged patches")]}
+
+
+def in_covering(cover, text):
+    """Wording written for fur, said in her own covering (feathers, scales or skin): 'the fur parting' on a dragon
+    becomes 'the scales parting'. Fur, or a covering not known, leaves it as it is."""
+    swaps = _COVER_SWAP.get(cover)
+    if not swaps or not text:
+        return text
+    for rx, word in swaps:
+        text = re.sub(rx, word, text)
+    return re.sub(r"\b(feathers|scales) (is|was|stands?|lies|parts)\b",
+                  lambda m: m.group(1) + " " + {"is": "are", "was": "were", "stands": "stand", "stand": "stand",
+                                                "lies": "lie", "parts": "part"}[m.group(2)], text)
+
+
 def _side(part):
     w = part.lower().split()
     return "left" if "left" in w else "right" if "right" in w else None
@@ -4962,21 +4983,9 @@ class Engine:
         best = max(n, key=n.get)
         return best if n[best] else "skin"
 
-    _COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b", "plumage"), (r"\bhairs?\b", "feathers")],
-                   "scales": [(r"\bfur\b", "scales"), (r"\bcoat\b", "scales"), (r"\bhairs?\b", "scales"),
-                              (r"\bburnt hair\b", "scorched hide")],
-                   "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b", "hide"), (r"\bhairs?\b", "skin")]}
-
     def in_her_covering(self, f, text):
         """Wound and wear wording is written for fur: say it in feathers, scales or skin for a body that has those."""
-        swaps = self._COVER_SWAP.get(self.covering(f))
-        if not swaps or not text:
-            return text
-        for rx, word in swaps:
-            text = re.sub(rx, word, text)
-        return re.sub(r"\b(feathers|scales) (is|was|stands?|lies|parts)\b",
-                      lambda m: m.group(1) + " " + {"is": "are", "was": "were", "stands": "stand", "stand": "stand",
-                                                    "lies": "lie", "parts": "part"}[m.group(2)], text)
+        return in_covering(self.covering(f), text)
 
     def visible_marks(self, f, p):
         """What the damage to one part LOOKS like by now: the marks of what did it (claws, teeth, blows, grips,
@@ -5055,6 +5064,12 @@ class Engine:
                 reg = body_region(p.name)
                 if "wing" in p.name.lower():
                     bits.append(self._wing_way(f, p))
+                elif self.has(f, "airborne") and reg in ("hind_low", "hind_up"):
+                    bits.append(f"holds her {p.name.lower()} tucked up stiffly under her as she flies")   # (no limp aloft)
+                elif reg == "tail" and "flame" in p.name.lower():
+                    bits.append("the flame on her tail burns low and small")
+                elif reg in ("neck", "head") and any(b.startswith("holds her head carefully") for b in bits):
+                    continue          # (one line for a hurt head and neck, not the same line twice)
                 elif reg in ("hind_low", "hind_up") or (reg in ("fore_low", "fore_up") and self.body_plan(f) == "quadruped"):
                     bits.append(f"favours her {p.name.lower()}, keeping weight off it (a limp when she moves)")
                 elif reg in ("fore_low", "fore_up"):
@@ -6476,7 +6491,7 @@ class Engine:
                                 "max_health": f.max_health,
                                 "exhaustion": exhaustion, "pain_drain": drain,
                                 "health_tier": ht["label"], "health_tier_changed": ht["label"] != tier_b,
-                                "reaction_guide": ht["reaction"]}
+                                "reaction_guide": self.tier_reaction(f, ht)}
         events += self.recover_tick()
         events += self._tick_status_energy()
         events += self._weather_tick()
@@ -7755,7 +7770,7 @@ class Engine:
 
     STATUS_LOOK = {
         "paralyzed": "PARALYZED: muscles locking up, sparks crawling over her, stiff and jerky, slow to react",
-        "chilled": "CHILLED: frost in her fur or on her scales, shivering, limbs stiff and slow",
+        "chilled": "CHILLED: frost in her fur, shivering, limbs stiff and slow",
         "bound": "BOUND: a limb wrapped tight and held: it goes numb and tingling, weak and slow to answer, and she can't "
                  "move freely; the rest of her is untouched",
         "constricted": "CONSTRICTED: coils wound round her, tightening, cutting off her circulation: her trapped limbs go "
@@ -7805,7 +7820,9 @@ class Engine:
         """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
         if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
             return self.STATUS_LOOK_NOT_COLD[status]
-        return self.STATUS_LOOK.get(status, status.upper())
+        f = (getattr(self, "fighters", None) or {}).get(str(name).lower())
+        look = self.STATUS_LOOK.get(status, status.upper())
+        return self.in_her_covering(f, look) if f is not None else look     # (frost in her feathers, on her scales)
 
     def status_words(self, f):
         bits = [self.status_look(f.name, s) + f" ({n} beat{'s' if n != 1 else ''})" for s, n in f.status.items()]
@@ -7813,6 +7830,16 @@ class Engine:
         tired = float(self._cfg("energy").get("tired_below", 25))
         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
         return (" Status: " + "; ".join(bits) + "." if bits else "") + f" Stamina: {stamina}."
+
+    def tier_reaction(self, f, ht):
+        """What a fighter at this strength can still do (health_tiers' reaction), fitted to where she is: one up in
+        the air has no feet to stand on (reaction_air), one lying down or lying on top in a pin has no ground to
+        drop to between efforts (reaction_down)."""
+        if self.has(f, "airborne") and ht.get("reaction_air"):
+            return ht["reaction_air"]
+        if (f.name in self.downed or self.pinning(f.name)) and ht.get("reaction_down"):
+            return ht["reaction_down"]
+        return ht["reaction"]
 
     def favoring(self, f):
         """How badly hurt limbs and tails change the way she moves, so it stays consistent from beat to beat."""
@@ -7824,8 +7851,21 @@ class Engine:
             biped = any("arm" in x.lower() for x in f.parts)  # upright fighters guard arms instead of limping
             arm = biped and region in ("fore_up", "fore_low", "shoulder")
             name = p.name.lower()
+            air = self.has(f, "airborne")
             if "wing" in name:
                 out.append(self._wing_way(f, p))
+            elif region == "shoulder" and not biped and any("wing" in x.lower() for x in f.parts):
+                # a bird's shoulder is the root of her wing: she guards it, she doesn't limp on it
+                out.append(f"favors her {name}, the wing on that side held a little stiff" if p.damage < 300 else
+                           f"guards her {name}, the wing on that side dragging")
+            elif air and not arm and region != "tail":
+                # up in the air there is no weight to keep off a leg: she holds it up out of the way
+                out.append(f"holds her {name} tucked up stiffly under her as she flies" if p.damage < 300 else
+                           f"her {name} hangs stiff under her as she flies, held clear of everything")
+            elif region == "tail" and "flame" in name:
+                # a flame on the tail's tip is not a limb to hold close: it burns low
+                out.append(f"keeps her tail low and still, the flame on it burning small" if p.damage < 300 else
+                           f"her tail drags, the flame on it shrunk to a weak, sputtering flicker")
             elif region == "tail":
                 out.append(f"keeps her {name} stiff and close" if p.damage < 300 else f"her {name} drags, barely moving")
             elif p.damage < 150:
@@ -7908,7 +7948,7 @@ class Engine:
             if breakable:
                 ground += (f" Past her limit, so these devastated parts CAN BREAK (broken bones allowed): "
                            f"{', '.join(breakable)}.")
-            react = ht['reaction']
+            react = self.tier_reaction(f, ht)
             if self.winner():
                 # the match is over: what could still put her out in the fight no longer applies
                 react = re.sub(r"\s*Only a completed pin puts her out\.", "", react)
