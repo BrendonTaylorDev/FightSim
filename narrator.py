@@ -341,6 +341,10 @@ HURT_NEW = re.compile(r"\b(felt (?:the|those) (?:claws?|teeth|fangs|tips|talons|
                       r"where (?:those|the|\w+'s) (?:claws|teeth|fangs|talons) had|fresh (?:wounds?|cuts?|gashes))", re.I)
 
 # electricity in a beat that has no Electric move
+# how a blow is TAKEN (the engine's to roll, never the director's to say): flinching, staggering, falling, crying out
+OUTCOME_CLAIM = re.compile(r"\b(?:flinch\w*|stagger\w*|stumbl\w*|reel\w*|recoil\w*|crumpl\w*|collaps\w*|falls?|fell|"
+                           r"drops?|dodg\w*|sidestep\w*|cr(?:y|ies|ied) out|scream\w*|yelp\w*|howl\w*|gasp\w*|"
+                           r"knocked (?:back|down|off)|goes down|went down|buckl\w*|doubles? over)\b", re.I)
 ELECTRIC = re.compile(r"\b(electric\w*|electrif\w*|lightning|voltage|volts?|static (?:charge|crackl\w*)|current (?:pour|surg|crackl|ran|"
                       r"flood)\w*|sparks? (?:flew|danced|crackl\w*|arced)|crackl\w* with (?:power|energy|charge))\b", re.I)
 
@@ -4744,36 +4748,49 @@ class Narrator:
 
     def _clean_flavor(self, a):
         """The director's one-line direction can give the attacker a body she lacks (tail blades, a fin) or the
-        wrong weapon for the move (a fin cut for a punch): drop the parts of it that do."""
+        wrong weapon for the move (a fin cut for a punch): drop the parts of it that do. A sentence about the one
+        struck is hers, not the attacker's body (her feathers are no claim that the attacker has feathers), but what
+        it says about how she TAKES the blow (flinching, staggering, crying out, falling) is the engine's to roll, so
+        such a sentence is dropped and the rest kept."""
         fl = str(a.get("flavor") or "")
         who = a.get("attacker") or a.get("fighter") or ""
         if not who:
             return fl
+        dfn = str(a.get("defender") or "").split(",")[0].strip()
+        mine, theirs = [], []
+        for x in re.split(r"(?<=[.!?])\s+", fl.strip()):
+            if dfn and x.lower().startswith(dfn.lower()):
+                if not OUTCOME_CLAIM.search(x):
+                    theirs.append(x)
+            else:
+                mine.append(x)
+        att = " ".join(mine)
         feats = self._feats_of(who)
-        if not feats:
-            return fl
-        parts = " ".join(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()).lower()
-        m = a.get("move") or {}
-        mv = " ".join([str(m.get("name") or ""), str(m.get("about") or "")]).lower()
-        bans = story_blocks.body_bans(feats)
-        # a grip the direction still has on ("tails still locked round the white legs", "legs tied") when the engine
-        # has none on her or by her any more: that part of it is gone
-        gripless = not any(who in (g[0], g[1]) for g in (getattr(self, "grips", None) or []))
-        keep = []
-        for bit in re.split(r"(?<=[,;.])\s+|\s+(?=and\b)", fl):
-            low = bit.lower()
-            bad = bans is not None and bans.search(bit) and not re.search(r"\b(?:opponent|foe|other)\b", low)
-            bad = bad or (gripless and HELD_CLAIM.search(bit) is not None)
-            for rx, tag in self.FLAVOR_FEATS:
-                if re.search(rx, low) and tag not in feats and tag.rstrip("s") not in parts \
-                        and not re.search(rx, mv):
-                    bad = True
-                elif re.search(rx, low) and mv and tag in ("fins", "blade") and not re.search(rx, mv) \
-                        and re.search(r"\b(?:punch|chop|kick|break|fist|palm)", mv):
-                    bad = True      # a fin or blade doing a punch's work
-            if not bad:
-                keep.append(bit)
-        return fl if len(keep) == len([b for b in re.split(r"(?<=[,;.])\s+|\s+(?=and\b)", fl)]) else ""
+        if feats and att:
+            parts = " ".join(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()).lower()
+            m = a.get("move") or {}
+            mv = " ".join([str(m.get("name") or ""), str(m.get("about") or "")]).lower()
+            bans = story_blocks.body_bans(feats)
+            # a grip the direction still has on ("tails still locked round the white legs", "legs tied") when the
+            # engine has none on her or by her any more: that part of it is gone
+            gripless = not any(who in (g[0], g[1]) for g in (getattr(self, "grips", None) or []))
+            bits = re.split(r"(?<=[,;.])\s+|\s+(?=and\b)", att)
+            keep = []
+            for bit in bits:
+                low = bit.lower()
+                bad = bans is not None and bans.search(bit) and not re.search(r"\b(?:opponent|foe|other)\b", low)
+                bad = bad or (gripless and HELD_CLAIM.search(bit) is not None)
+                for rx, tag in self.FLAVOR_FEATS:
+                    if re.search(rx, low) and tag not in feats and tag.rstrip("s") not in parts \
+                            and not re.search(rx, mv) and not (dfn and dfn.lower() in low):
+                        bad = True
+                    elif re.search(rx, low) and mv and tag in ("fins", "blade") and not re.search(rx, mv) \
+                            and re.search(r"\b(?:punch|chop|kick|break|fist|palm)", mv):
+                        bad = True      # a fin or blade doing a punch's work
+                if not bad:
+                    keep.append(bit)
+            att = att if len(keep) == len(bits) else ""
+        return " ".join(x for x in [att] + theirs if x)
 
     def _effect_note(self, a, m):
         """What the type matchup means for this blow, said so the story can show it: a body with no answer for this
