@@ -85,6 +85,9 @@ def section_fits(tags, have):
     return True
 
 
+SOBBING = re.compile(r"\b(?:sob(?:s|bed|bing)?|weep\w*|wept|(?:her own )?tears (?:ran|run|spill\w*|streamed))\b", re.I)
+
+
 def style_passages(rules, want=None, limit=None, rounds=None, skip=(), have=None):
     """The passages of the style sample to show the narrator for the part it is about to write.
     A plain sample: its first style_sample_chars characters, as always. A sample in sections: the sections whose
@@ -107,6 +110,8 @@ def style_passages(rules, want=None, limit=None, rounds=None, skip=(), have=None
         rx = re.compile(r"\b(?:" + "|".join(re.escape(w) for w in skip if w) + r")\b")   # as a name: capitalized
         secs = [sec for sec in secs if not rx.search(sec[1])] or secs
     secs = [sec for sec in secs if section_fits(sec[0], have)] or secs
+    # the story never has her sob or weep (the hard rules say so): a passage that shows it would teach it
+    secs = [sec for sec in secs if not SOBBING.search(sec[1])] or secs
     picked = []
     for w in [str(x).strip().lower() for x in (want or [])]:
         fits = [sec for sec in secs if w in sec[0] and sec not in picked]

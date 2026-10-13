@@ -7066,7 +7066,8 @@ class Narrator:
         if key == "dwell":
             return ["dwell", "strike take hard", "strike take"]
         if key == "watch":
-            return ["watch", "pin hold", "strike act"]
+            # (a pin passage only when a pin is on: a watcher with nobody pinned is shown watching, or a strike)
+            return ["watch"] + (["pin hold"] if pin_events else []) + ["strike act"]
         if key == "read":
             return ["read", "watch", "strike take"]
         take = key == "take"
@@ -7081,6 +7082,15 @@ class Narrator:
         if acts and all(t == "aftermath" for t in types):
             add("aftermath", "aftermath take")
             self._sample_rounds = {}
+            return tags
+        if acts and all(t in ("breather", "none", "take_off", "land_flight", "time_passes") for t in types) \
+                and not pin_events:
+            # nobody attacks: a passage of two fighters reading each other, never one of a blow landing
+            tags = ["read", "watch"]
+            counts = self.__dict__.setdefault("_sample_counts", {})
+            self._sample_rounds = {t: counts.get(t, 0) for t in tags}
+            for t in tags:
+                counts[t] = counts.get(t, 0) + 1
             return tags
         if any(e.get("complete") and e.get("elimination") for e in pin_events):
             add("pin hold", "faint")
