@@ -8,7 +8,7 @@ Nothing. The three bug-sweep branches (body, structure, labels) were merged into
 ## Still to do
 1. (Done in build 180) The sweep was merged. The notes were regenerated and spot-checked, and the fight replays with the same rolls.
 2. (Done in build 181) A strike counts the limb she actually uses (`moves.limb_limits.struck_limb`). The user said twitches while out cold are fine. The idea cooldown is now 14 beats.
-3. Recommendation given to the user: use /scale 3 with /length 35 or 40 instead of /scale 4. Measured: /scale 4 /length 60 gives 46 beats with 3.3 devastated parts per fighter; /scale 3 /length 35 gives 34 beats with 1.8. Waiting on whether to make that the default.
+3. (Done in build 182) Faster fights with damage spread out are now the default: about 40 beats, wear 0.7, health loss x3.2, with the /length presets re-tuned. Weak-spot hints now offer a menu of hurt and soft parts. Nocturne vs Ripples now comes out about 43/56 (60 fights; it was 55-62% Nocturne): watch it.
 4. Older pending tasks:
    - The card view chooser: Front / Back / Both (side by side), set per card.
    - Dice-rolled attacker assessment lines: how long she'll last, focus, wear her down, surprise that she keeps going.
