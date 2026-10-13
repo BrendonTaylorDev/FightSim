@@ -1,0 +1,481 @@
+[
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Quick Attack",
+"part": "Chest",
+"flavor": "she breaks from the far side of the clearing at a flat run and is across the mud before the thunder has finished"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Neck",
+"flavor": "she gives with the hit, turns on her heel and chops down at the back of the wolf's neck as Dusk runs past"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Fire Fang",
+"part": "Throat",
+"flavor": "she shakes the chop off, wheels, and lunges for the throat with her fangs alight"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Meteor Mash",
+"part": "Jaw",
+"flavor": "close enough to smell the scorched fur on her own chest, she drives a steel-bright fist up into the jaw that bit her"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Rock Slide",
+"flavor": "she springs back onto the rotten log and howls, and the stones in her mane tear loose and come down on Aura in a clattering wave"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Crunch",
+"part": "Right Forearm",
+"flavor": "while Aura is still ducked under her arms from the stones, Dusk comes off the log and bites down on the forearm over her face"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Close Combat",
+"hits": [
+{
+"part": "Chest"
+},
+{
+"part": "Left Ribs"
+},
+{
+"part": "Left Shoulder"
+},
+{
+"part": "Jaw"
+}
+],
+"flavor": "the bite snaps shut on air beside her arm and she is already inside it, working the wolf over with both paws at no distance"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Stone Edge",
+"part": "Left Thigh",
+"launch": "knocked down",
+"landing": [
+{
+"surface": "the mud",
+"parts": [
+"Upper Back",
+"Left Hip",
+"Tail"
+],
+"severity": "solid"
+}
+],
+"flavor": "twisting away from the last blow she rakes the ground and a spike of stone bursts up out of the mud under Aura's legs"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Crunch",
+"part": "Stomach",
+"count": 3,
+"flavor": "before the branch has stopped rolling she is standing over her, snapping down into the exposed belly again and again"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Aura Sphere",
+"hits": [
+{
+"part": "Head"
+},
+{
+"part": "Muzzle"
+}
+],
+"flavor": "up again with the wolf still panting over her, she cups her paws together and fires point-blank into the wolf's face"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Throat",
+"flavor": "up on one good leg, she steps into the stagger and chops at the throat under the mane"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Quick Attack",
+"part": "Chest",
+"charge_into": "the split oak",
+"flavor": "choking, she does the one thing her body knows: drops her head and drives the jackal backward across the clearing into the smouldering oak"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Fire Fang",
+"part": "Right Knee",
+"flavor": "wheezing through her ruined throat, she goes for the knee she already chewed, fangs burning"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Meteor Mash",
+"part": "Head",
+"flavor": "hauled up against the charred trunk, she plants her good leg and throws a steel fist down at the wolf's head as it comes off her knee"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "grapple",
+"part": "Right Shoulder",
+"hits": [
+{
+"part": "Right Shoulder",
+"with": "her jaws"
+}
+],
+"flavor": "head ringing, she does not let the jackal get away from the tree: she lunges and locks her jaws in the shoulder"
+},
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Left Ribs",
+"count": 3,
+"flavor": "pinned to the trunk by the jaws, she chops down again and again into the ribs she can reach"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Extreme Speed",
+"part": "Right Shoulder",
+"charge_into": "the rotten log",
+"flavor": "she pushes off the oak on her good leg and is simply there, shoulder-first into the wolf, carrying her back across the clearing into the rotten log"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Back",
+"count": 3,
+"flavor": "limping after her, she stands over the wolf sprawled at the foot of the log and chops down into her back"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Rock Tomb",
+"hits": [
+{
+"part": "Right Knee"
+},
+{
+"part": "Left Knee"
+},
+{
+"part": "Right Foot"
+}
+],
+"flavor": "swaying against the log she only just got up from, she howls and the ground answers: stones heave up round the jackal's legs and close on them"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Aura Sphere",
+"hits": [
+{
+"part": "Chest"
+},
+{
+"part": "Throat"
+}
+],
+"flavor": "legs locked in stone, she cannot step; she gathers the aura between her paws and fires it into the open front of the wolf"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Close Combat",
+"hits": [
+{
+"part": "Stomach"
+},
+{
+"part": "Chest"
+},
+{
+"part": "Right Knee"
+},
+{
+"part": "Muzzle"
+}
+],
+"flavor": "she comes out of the stagger already moving and throws herself at the trapped jackal, all claws and shoulder and teeth"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Thunder Fang",
+"part": "Neck",
+"flavor": "the jackal is reeling sideways on the ruined knee, and Dusk goes after her with sparks spitting from her fangs, for the neck"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Left Ribs",
+"flavor": "as the jaws let go she drops her weight onto her good leg and chops down into the ribs she has worked before"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Crunch",
+"part": "Right Ear",
+"flavor": "stumbling, half-blind, she snaps at the first thing she can see: the ear"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Meteor Mash",
+"part": "Chest",
+"flavor": "the teeth clack shut on air by her ear; she leans back in on the good leg and drives the steel fist into the wolf's chest"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Fire Fang",
+"part": "Stomach",
+"flavor": "shaking the numbness out of her blocking leg, she ducks low and bites burning into the belly"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "grapple",
+"part": "Rock Mane",
+"hits": [
+{
+"part": "Rock Mane",
+"with": "her left paw"
+}
+],
+"flavor": "dragged stumbling into the wolf by the bite, she does not fight the fall forward: she fists her left paw in the stone mane and holds on"
+},
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Head",
+"count": 3,
+"flavor": "and chops down into the side of the head with her right, again and again"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Crunch",
+"part": "Left Shoulder",
+"flavor": "she twists out from under the paw and bites at the open left side"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "grapple",
+"part": "Rock Mane",
+"hits": [
+{
+"part": "Rock Mane",
+"with": "her right paw"
+}
+],
+"flavor": "pulled in by the bite, she lets it bring her and knots her paw in the stone mane before the jaws can let go"
+},
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Head",
+"count": 3,
+"flavor": "chopping with her left into the side of the head she is holding still"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Close Combat",
+"hits": [
+{
+"part": "Right Forearm"
+},
+{
+"part": "Stomach"
+},
+{
+"part": "Chest"
+}
+],
+"flavor": "something comes up from the bottom of her: she wrenches round in the grip and tears into the arm holding her and the body behind it"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Jaw",
+"flavor": "the lightning has the wolf frozen mid-flinch; bent nearly double over her own stomach, Aura brings the last chop up under the jaw"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Crunch",
+"part": "Neck",
+"flavor": "on the last of the surge she lunges in under the swing for the jackal's neck"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Meteor Mash",
+"part": "Chest",
+"flavor": "doubled over the bite, she straightens only as far as the punch needs and throws it from the hip into the wolf's chest"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Crunch",
+"part": "Right Forearm",
+"flavor": "as the sloppy punch carries the jackal past her, she snaps at the arm going by"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Left Ribs",
+"flavor": "she lets the bitten arm hang and chops with the other, down into the ribs"
+}
+],
+[
+{
+"attacker": "Aura",
+"defender": "Dusk",
+"action": "strike",
+"move": "Brick Break",
+"part": "Right Ribs",
+"flavor": "the wolf has curled round her broken left side; Aura chops into the right"
+}
+],
+[
+{
+"attacker": "Dusk",
+"defender": "Aura",
+"action": "strike",
+"move": "Thunder Fang",
+"part": "Neck",
+"flavor": "she should be down; she comes off the stagger with her jaws open anyway, sparks crawling over her fangs, for the neck"
+}
+],
+"aftermath",
+"aftermath"
+]

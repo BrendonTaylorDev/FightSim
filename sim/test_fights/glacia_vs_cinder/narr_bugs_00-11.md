@@ -1,0 +1,93 @@
+# Narration bugs, beats 0-11
+
+- General: the brief says each CALL carries a POV header ("— Name —"); none of notes01-11 has one. Each CALL gives a part focus ("from the attackers' bodies" / "what each fighter who is actually HIT feels") but no single POV fighter.
+- General: FIGHTERS calls them "A female Articuno" / "A female Charizard", and the move lines say "SUPER EFFECTIVE" and "(Ice-type move ...)". The story's author wants no species or game words; the notes push them at the narrator.
+- Beat 1 (call 1, item 2): "Cinder's Left Wing (on her ARM, not a leg)". Her wings grow from her upper back; she also has separate arms.
+- Beat 1 (call 1, item 3): Cinder's take-off says "Show her rising and her opponent left on the ground looking up." Glacia already took off in item 1; she is in the air.
+- Beat 1 (call 1, Hit 1): "a hit here shows as a hand or paw pressed to the chest". Glacia has no hands or paws (her own BODY note says so).
+- Beat 1 (call 1, CHECKED): "fur: Glacia DRY ..., Cinder DRY". Neither has fur (feathers; scales).
+- Beat 1 (call 1, ORDER): "2) Cinder's Flamethrower lands on Glacia's chest." Leaves out the right wing, the worse of the two hits and the burned part.
+- Beat 1 (call 1, TELLING THE HURT): "as one long breathless sentence carrying the whole flurry". There is no flurry: two single hits.
+- Beat 1 (call 2, blocks 2-3): "she flexes the limb once and plants it again"; "she smooths her stance with a small roll of her weight". Cinder is in the air; a wing is not planted and she has no stance.
+- Beat 1 (call 2, blocks 6, 10): "her eyes go wet and blank, and then focused and furious"; "a wild urge to run, felt all through her". Far too big for a minor hit on a fresh fighter.
+- Beat 1 (call 2, block 11): "she takes a breath and holds it, wound tight, before the move". Part 2 starts after both moves are made.
+- Beat 1 (call 2): 11 of 12 blocks are Cinder's. Glacia, who took the worse hits (sore wing, burn, chest), gets one block; nothing for her chest or the burn.
+- Beat 1 (call 6): "Cinder throwing it" for a Flamethrower, a stream of fire.
+- Beat 2 (call 1, Hits 1-2): "a snarl of pain"; "a sharp exhale through the teeth, the lips drawn back"; "a ripple of the skin across the back". Glacia is a bird: no teeth, no lips, feathered skin.
+- Beat 2 (call 1, block 2): "her wings sit tight and neat along her back, ready to snap open". Glacia is flying all beat; her wings are open and beating.
+- Beat 2 (call 1, block 3): "a flicker of something like regret" for Cinder, fresh and cocky, after one clean exchange. Doesn't fit her.
+- Beat 2 (calls 1-2, CAMERA): "one paw, one breath, an eye, the fur over a wound". Neither fighter has paws or fur. (Same generic line in every beat.)
+- Beat 2 (call 2, focus): "the fall or landing ONLY if one is listed ... (otherwise she keeps her feet)". She is in the air; there are no feet to keep.
+- Beat 2 (call 2, blocks 2 and 5): "her crest flattens and rises in slow pulses" and "her crest flares bolt upright and stays there, quivering". Two crest reactions in one part, and they contradict.
+- Beat 3 (call 1, Hit 1): "Cinder's Left Wing (on her ARM, not a leg)" again (also beats 7, 9, 10 wherever her left wing is hit).
+- Beat 3 (call 1): "Glacia's burn flares on her right shoulder" (console agrees: "Glacia's burn: Right Shoulder 10.52% → 12.96%"). The burn came from the Flamethrower on her right wing; the shoulder was only jarred by the claws. CURRENT CONDITION still lists the burn under Right Wing.
+- Beat 3 (call 1): "It lands differently because: burned." Doesn't say the burn makes Glacia's beam WEAKER (×0.85). Reads as if Cinder were burned.
+- Beat 3 (call 1, block 5): "She hurled the cold forward in a sharp, freezing gust." Ice Beam is a beam, not a gust.
+- Beat 3 (call 2, block 9): "the ache in her tail flame sits at the base of her horn, a dull pressure behind her eyes". Wrong body part: the tail flame is at the end of her tail.
+- Beat 3 (call 2, block 10): "her left wing screams" for a part that is only hurting. Too big.
+- Beat 4 (call 1): "THE SOUND OF THE BLOW: the scrape of claw on hide." Air Slash is blades of wind, no claws, and Glacia has feathers, not hide.
+- Beat 4 (call 1, Hit 2): "a yowl, the head whipping round". A yowl is a cat sound, not a bird's (also beat 1, Cinder's Hit).
+- Beat 4 (call 1, LINGER): "she isn't driven anywhere new and doesn't leave the ground". She is in the air all beat. Same line in other airborne beats.
+- Beat 4 (call 2, block 8): "her right wing will not close into a grip without shaking". A wing can't grip.
+- Beat 4 (call 2, block 1): "she takes the limb out of the front of her guard". Glacia has no guard of limbs; she is flying on that wing.
+- Beat 4 (call 2, block 12): "outrage, sharp and almost comic, as if she had been cheated at a game". Doesn't fit her calm, detached voice.
+- Beat 4 (call 2, block 13): "END this part on ... the dust settling round her". She is high in the air; there is no dust.
+- Beat 5 (call 1, LINGER): "slow time down on the blow to Glacia's beak". It lingers on the smallest hit (a minor rake-back), not the main blow. It also sits in part 1 (Glacia attacking, "STOP at contact"), and part 2 is Cinder's side, so neither part can hold it.
+- Beat 5 (call 1): the rake-back block doesn't say what Cinder rakes with (claws? tail?). Console only says "Cinder rakes back at Glacia" and hits the Beak. The console also prints the rake before the Wing Attack's hits, while ORDER says "1) Glacia's Wing Attack ... 2) Cinder rakes back".
+- Beat 5 (call 1, Hit 1): "a tremendous blow (impact, e.g. a keening whine through clenched teeth, tears starting" for a hit that ends only sore on a fresh fighter. Too big.
+- Beat 5 (call 1): "Right Wing (hurting; from the burn, then Cinder's Air Slash)". This drops the Flamethrower, which caused the burn. Beat 4 said "from Cinder's Flamethrower, then the burn".
+- Beat 5 (call 1, block 2): "the shape of the ground behind the other, and where it dips". Both are in the air.
+- Beat 5 (call 2, blocks 3, 8): "her muzzle takes the strain her head can no longer take" is too big for sore. "her horn goes up and wide": she has two horns.
+- Beat 6 (call 1, item 1): "IN THE AIR, BOTH OF THEM: ... then they are past each other and turning. Both stay up." The next line says "the blow KNOCKS Glacia OUT OF THE AIR ... She FALLS". These contradict.
+- Beat 6 (call 1, item 2): "Glacia is THROWN by that blow". Console rolled "Flare Blitz: thrown 40%, rolled 94 → no"; she fell because she was knocked out of the air. The console header "Impact — Glacia thrown: the bare rock" has the same mislabel.
+- Beat 6 (calls 1-5): the recoil on Cinder (Right Horn, Left Shoulder) has no part to live in. Part 1 stops at contact, part 2 is Glacia's side, part 3 is Cinder watching. ORDER leaves it out too, and in the item it is listed before the chest hit it comes from.
+- Beat 6 (call 1): "THE LAST ATTACK THAT LANDED ... on Glacia: Cinder's Air Slash." Wrong: Cinder's rake-back on her beak in beat 5 came after it.
+- Beat 6 (call 1, VISIBLE WEAR): "her chest: the feathers raked off in strips, the skin beneath raw-looking". "Raked off in strips" is claw work, not fire, and goes close to the gore limit ("torn ... flesh").
+- Beat 6 (call 1, CHECKED): "a sharp cry, bared teeth, eyes watering". Glacia has no teeth.
+- Beat 6 (call 1, block 5): "Her claws dug in for purchase and threw her forward." Cinder is in the air; there is nothing to dig into.
+- Beat 6 (call 2, blocks 6, 7, 4): "her eyes are dull and wet and do not quite focus", "Every touch to her chest ... wrung a cry from her", "comes down limp". These conflict with the same call's MEASURED PAIN ("she is still STRONG ... recovers within a breath").
+- Beat 6 (call 2, block 8): "her stance stays where it is, but her weight eases off the hurt side". She is knocked out of the sky and lands on her back; she has no stance.
+- Beat 6 (call 5, focus): "she watches from where she stands". Cinder is in the air.
+- Beat 6 (call 5, block 5): "she stands light on her feet, knees soft, ready to spring". This is labelled "what Cinder can see of Glacia", but Glacia is on her back and Cinder is flying.
+- Beat 6 (call 5, block 3): "the effort it takes just to turn over". Glacia stays exactly where she fell; nothing turns her over.
+- Beat 7 (call 1, GETTING UP): "Cinder is on her feet when it happens". Cinder is in the air.
+- Beat 7 (calls 1-5): the get-up has no part. Part 1 is Glacia attacking up to contact, part 2 is Cinder hit, and part 3 is Cinder watching with "no getting up". The console's checker then flagged "get-up not finished".
+- Beat 7 (call 1, VISIBLE WEAR): "Cinder: her left wing: frost-stiff scales, the scales mussed where it landed". The wing hurt is the membrane, and Cinder hasn't landed.
+- Beat 7 (call 1, Hit 2): "her knees dipping under it (a limp if it is a leg)" and "a yowl bitten off short". She is flying.
+- Beat 7 (call 1, block 5): "care, almost fussy, in how she places each paw". Glacia has no paws, and she is lying on her back.
+- Beat 7 (call 1, blocks 7-8): "the beam leaves a line of churned, smoking ground behind it" (Freeze-Dry is a mist breathed straight up into the air) and "she moves in on the other's breath out" (she is flat on the rock and can't move in).
+- Beat 7 (call 2, blocks 2, 6): "she backs off a step" (she is in the air); "the blow numbs her forearm and her paw opens on its own, fingers splayed". The hit is on her wing, not her arm (the wing-on-ARM label again).
+- Beat 7 (call 6): "a terrible, devastating blow". The left wing ends very painful, not devastated.
+- Beat 7 (call 1, FIGHT SO FAR): "Flare Blitz → Glacia's Chest (thrown: the bare rock)". She was knocked out of the air, not thrown (see beat 6).
+- Beat 8 (call 1, item 2): the per-part list gives Head, Right Horn, Muzzle, Eyes and Throat, but no entry for the Left Wing (to excruciating, the BREAKING POINT) or the Tail Flame (to hurting). These are the two hits that matter most.
+- Beat 8 (call 1, item 2 vs MEASURED PAIN): "describe the whole body seizing" vs "no whole-body seizing or shuddering". These contradict.
+- Beat 8 (call 1): "THE SOUND OF THE BLOW: a booming impact that rolls away through the trees." There are no trees, only a few stunted pines, and nothing echoes here (SOUND IN THIS PLACE).
+- Beat 8 (call 1, item 3): "Cinder is THROWN by that blow". Console rolled "Hurricane: thrown 20%, rolled 67 → no"; she fell when she was knocked out of the air.
+- Beat 8 (call 1, ORDER): "Glacia's Hurricane lands on Cinder's head". It hits her whole body, and the worst is the left wing. CALL 5 likewise: "on the head, left horn, right horn, a terrible, devastating blow". Nothing became devastated.
+- Beat 8 (call 1, LINGER): "the blow to Cinder's muzzle" (sore). Wrong choice when the left wing hits its breaking point this beat.
+- Beat 8 (call 1, Hits): "an irritated flick of the ears" (twice). Cinder has no ears in her APPEARANCE. Also "the limb snatched up off the ground" for the thigh while she is falling.
+- Beat 8 (call 1, block 7): "anger at being made to work this hard, in the set of her ears". Glacia has no ears.
+- Beat 8 (call 2, blocks 6-8): "she holds that arm tucked" (it is a wing), "she shudders hard", "a whimper came out of her whenever it swung". The last two break MEASURED PAIN for a fighter at 92%.
+- Beat 8 (call 1): the MEASURED PAIN block for Glacia's chest is repeated, though Glacia takes no hit this beat.
+- Beat 7-8 (CURRENT CONDITION): "Left Wing (excruciating; from Cinder's straining her hurt wing to stay up, then Glacia's Hurricane)". Only the last two causes are kept, so the Ice Shard, Ice Beam and Freeze-Dry that did most of it drop out (same for Glacia's chest and right wing).
+- Beat 9 (call 1, PREVIOUS BEATS): "(none: this is the FIRST beat of the fight. Nobody has attacked anyone yet, so nobody has any earlier injuries ...)". This is beat 9, and the same call's FIGHT SO FAR lists 8 attacks.
+- Beat 9 (call 1, GETTING UP): "Glacia is on her feet when it happens". She is in the air.
+- Beat 9 (call 1, GETTING UP): "Try 1: partway up, her left wing and right wing give out". She "plants her hands on the bare rock and pushes herself up", so her wings don't hold her up and can't give out.
+- Beat 9 (call 1): "CHILLED: frost in her fur" and Left Horn "the fur rippling where it landed". Cinder has scales.
+- Beat 9 (call 1): Left Wing and Tail Flame are "Hardest hit" but get no per-part entry (same as beat 8). The checker then reports them missing (call 7).
+- Beat 9 (call 2, block 3): "*Count her steps. She steps before she swings.*" Glacia is hovering; she neither steps nor swings.
+- Beat 9 (call 5): Icy Wind "striking Cinder on the head, left horn, right horn, a terrible, devastating blow". This is the weakest attack so far (power 7), and nothing became devastated.
+- Beat 10 (call 1): Glacia "MOVES LIKE THIS EVERY BEAT: limps badly, keeping weight off her right wing", and HOW THEY MOVE NOW: "keeps her right wing tucked in and uses it as little as she can". She is flying on that wing (WING STRAIN). A wing doesn't limp.
+- Beat 10 (call 1): the PAIN GUIDE "excruciating = Overwhelming pain: screams, may collapse or writhe" is printed next to MEASURED PAIN "no ... writhing or collapse, no 'overwhelming'". These contradict (also beats 8-9).
+- Beat 10 (call 1, FIGHT SO FAR): "Icy Wind → Cinder's Head, Left Horn, Right Horn". It hit her whole body (same for Hurricane in beat 9's list).
+- Beat 10 (call 1, block 2): "a promise to herself not to try the same trick a third time". No trick of Cinder's has been used twice.
+- Beat 10 (call 2, blocks 5, 7): "she holds the limb clear of everything" and "She could not lift her right wing; she tried, and the cry ... ended the trying". She stays up on that wing all beat.
+- Beat 10 (call 2, blocks 2 and 6): "every feather on her body lifts at once" and "her feathers puff out all over her, every one on end". The same reaction twice.
+- Beat 10 (call 5): "this right wing was first hurt 10 beats ago" (it was beat 1, 9 beats ago), "cold sweat under the fur", "her own paw or limb shaking". No fur or paws.
+- Beat 10 (call 5, blocks 10, 12): "a tearing cramp ... that doubles her over it" (breaks MEASURED PAIN; she is flying) and "END this part on ... the ground under her" (she is in the air).
+- Beat 10 (call 6): "a terrible, devastating blow". The right wing ends excruciating, not devastated.
+- Beat 11 (call 1): the breather says "she stops beating and spreads her wings flat on the updraft ... gliding", but WING STRAIN says "Show the effort and the pain of each wingbeat". Gliding costs the wing more (+50.94%) than flapping did last beat (+45.97%).
+- Beat 11 (call 1): Glacia's Right Wing goes from excruciating to DEVASTATED this beat (CURRENT CONDITION), but there is no BREAKING POINT note, and CHECKED gives only "Glacia DEVASTATED (chest)".
+- Beat 11 (call 1): "MOVES LIKE THIS EVERY BEAT: won't put any weight on her right wing". She is gliding on it.
+- Beat 11 (call 1): Cinder "Stamina: fresh breath", up from "breathing hard" in beat 10, though she took no breather and strained her wing again.
+- Beat 11 (call 1, block 1): "OPEN this part on ... the other's weight, settling". Cinder is in the air; there is nothing for her to settle on.

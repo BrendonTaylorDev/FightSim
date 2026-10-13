@@ -1,0 +1,67 @@
+# Narration bugs, beats 24-35
+
+- Beat 24 (both calls): Cinder is IN THE AIR with WING STRAIN on the left wing, but MOVES LIKE THIS EVERY BEAT says "keeps her left wing tucked in, unusable" and HOW THEY MOVE NOW says "keeps her left wing tucked in and uses it as little as she can". She can't fly with it tucked. (Same as beat 12, still there.)
+- Beat 24: FIGHT SO FAR says "Cinder: Heat Wave → Glacia's Head, Crest, Beak". The beat 18 console shows Heat Wave hit 22 parts; the worst were Chest, Neck and Right Wing (all past 300%). Head, Crest and Beak were among the lightest. Mislabeled.
+- Beat 24: FIGHT SO FAR claims to be "the ONLY earlier attacks that really happened; never mention any other", but it lists only the last 10 (from beat 13). The same notes cite older attacks as causes ("Chest (Cinder's Flare Blitz)", "from Glacia's Hurricane, then Glacia's Icy Wind", "from Cinder's Thunder Punch"), which that list forbids mentioning.
+- Beat 24: the console (beat 22) put Glacia's Chest and Neck NUMB for 3 beats (and her Right Wing NUMB in beat 18). The notes never say so, and the hard rule says "Pain never goes numb: even the worst-hurt parts stay sharply, terribly painful, never numb". Contradicts the console.
+- Beat 24: Cinder's VISIBLE WEAR says her head has "cold-burned patches gone numb and white". Same clash with "Pain never goes numb".
+- Beat 24 (call 2): the STYLE SAMPLE shows a fighter being struck in the face ("The blow came from her blind side and rocked her head round"). Beat 24 is a breather with no blow. Wrong kind of moment.
+- Beat 24 (call 1): CHECKED "fur: Glacia DRY", CAMERA "one paw ... the fur over a wound", focus line "(ears, tails, fins, claws, eyes)": generic, not fitted to a bird (Glacia) or a scaled dragon (Cinder). (Same as beat 12.)
+- Beat 25 (call 1): PREVIOUS BEATS says "(none: this is the FIRST beat of the fight. Nobody has attacked anyone yet...)". This is beat 25. Not the placeholder: a wrong claim that contradicts the CURRENT CONDITION in the same call.
+- Beat 25: "Hardest hit: Left Wing, Head, Tail Flame, Right Eye". Right Eye only ends sore; the Neck (to very painful) is left out, though part 3 is built on the neck. There are no per-part lines at all for Left Wing, Head, Tail Flame, or the Belly (sore → hurting in the console).
+- Beat 25 (Neck line): "her knees dipping under it (a limp if it is a leg)". Cinder is in the air.
+- Beat 25 (part 2, block 2): "the strike lands squarely on her horn and it hums". Blizzard is a whole-body storm, not a strike on a horn.
+- Beat 25 (part 2, block 6): "as if she had been struck by lightning". This clashes with CHECKED "no electricity... lightning".
+- Beat 25 (part 2, blocks 3/4): "she cradles the limb against herself" and "holds it half open, unable to fold it cleanly". She is flying on that wing, and the notes also say it is "tucked in". All three contradict each other.
+- Beat 25 (call 6): "Glacia's Blizzard ... striking Cinder on the head, left horn, right horn, a terrible, devastating blow". The console hit 36 parts. The Left Horn only went minor (13→23), and "landing devastatingly → no". Wrong parts and wrong size.
+- Beat 25: the console shows "Cinder's left wing going numb ... it goes NUMB". The notes don't mention it, and they still say "Pain never goes numb".
+- Beat 25: THE FEELING COMES BACK is given twice, word for word, once for the neck and once for the chest ("She cannot hold this in: a raw sound torn out of her..."). That repeats, and it asks for two separate seizures in one beat.
+- Beat 25 (part 3): "cold sweat under the fur". Cinder has scales. Block 2 "makes her whimper" doesn't fit Cinder's voice (a bellow that breaks into a growl).
+- Beat 25: Cinder's MOVES LIKE THIS EVERY BEAT adds "keeps her tail flame stiff and close". The flame is the tail's tip, so it can't be held "close" by itself (it should be the tail).
+- Beat 26 (part 3): "she watches from where she stands. She does not close in". Cinder has just been dragged out of the air and lies face-down on the stone.
+- Beat 26: no part is given the catch and the drag-down. Part 2 says "the fall or landing ONLY if one is listed (otherwise she keeps her feet)" and is about Glacia, who doesn't fall. Cinder's fall gets no part of its own. The notes don't say how a wingless-armed bird "catches" her, or what Cinder lands on. (The console shows no landing hurt either, though the author's rules say the ground hits back.)
+- Beat 26: "This beat is an ordinary exchange... with no more drama than it carries". Cinder is pulled out of the sky. That is a turning point.
+- Beat 26: "THE SOUND OF THE BLOW: a raspy swish and the tug of fur parting". Glacia has feathers. Hit 2 voice "a yelp (*Yip*)" is a dog sound, not a bird's.
+- Beat 26 (Hit 3, Chest): "a tremendous blow ... a raw scream". This is only the half-power jar from a wing rake (power 14.59); the console says "more than a blow that size should". "Tremendous" oversizes it.
+- Beat 26 (call 6): "Dragon Claw ... a terrible, devastating blow". The console says "landing devastatingly → no", and the Left Wing ends hurting. Mislabel (also in beat 25).
+- Beat 27 (pin presses): "SHE REACTS: her ears flatten" (Cinder has no ears in her description), "LOOKS: the fur pushed flat round it" (neck) and "the fur ruffled the wrong way" (left wing). Cinder is scaled, and her wing is membrane.
+- Beat 27 (Left Wing press): "still numb with shock — the part is RUINED: even steady pressure on it is agony". This contradicts itself, and the hard rule says "Pain never goes numb". The console says "NUMB: it lands dull".
+- Beat 27 (part 1, block 6): "She kept her head up and out of reach of anything that might snap at it." Her beak is pressed into Cinder's neck as part of the pin.
+- Beat 27 (part 2, block 5): "She kicked at anything she could reach." This is struggling, but the struggle is beat 28. No struggle is listed in beat 27.
+- Beat 28: "THE PIN GOES ON: Glacia's pin on Cinder holds through this beat" sits just above "YOU MUST SHOW THIS: Cinder BREAKS FREE!". These contradict each other.
+- Beat 28 (part 1): the focus is "the pin as it stands, from Glacia's side", but every block is Cinder's: "OPEN this part on (from Cinder's side)", "Cinder's thought", "what Cinder feels". Wrong POV.
+- Beat 28 (part 3): "she WATCHES what she has just done to Cinder. Her grip and her weight stay exactly as they are: she watches from where she holds her." The pin has just been broken and Glacia was knocked off, and Glacia did nothing to Cinder this beat.
+- Beat 28 (pin presses): "the coat creased under it, the fur parting", "the coat dimpled under it, the hairs bent over flat". Cinder is scaled.
+- Beat 29: "THE SOUND OF THE BLOW: a ripping hiss as the claws drag." Air Slash is blades of air thrown from a distance. Glacia has no claws and isn't touching Cinder.
+- Beat 29 (part 1, blocks 6/7): "she shoves into it" and "she follows the stagger in, keeping her off balance". Glacia takes off and strikes from range. Cinder only staggers because of this blow, so there's no stagger to follow. These invent contact and movement.
+- Beat 29 (part 1, block 3): "she holds the hurt arm folded close". The hurt part is Cinder's left WING.
+- Beat 29 (Head stagger): "her paws scraping and skidding for grip". Cinder stands on her feet, and the notes' own rule says her paws are her hands.
+- Beat 29: there are two BREAKING POINT blocks (Head, Neck), and each says "It is the biggest moment of this beat".
+- Beat 29: Glacia is in the air with WING STRAIN on her right wing, but MOVES LIKE THIS still says "won't put any weight on her right wing". This is the same flying-with-a-tucked-wing clash as Cinder's.
+- Beat 30 (part 1, block 11): "She leapt up and brought both wings down at once". Glacia is diving out of the air, not leaping, and the order says only the left wing strikes (her right is ruined). Block 10 "aims under the breath" points at the chest, but the target is the Head.
+- Beat 30 (part 2, block 9): "broken gasps and sobs". Sobbing is forbidden by the hard rules.
+- Beat 30 (part 3, block 2): "she yelps, then whimpers". This doesn't fit Cinder's voice (a bellow breaking into a growl).
+- Beat 30 (part 4, block 5): "how she places each paw". Glacia has talons; the notes' own BODY rule says never paws. Block 3 "her wings droop loose at her sides and the tips trail" contradicts the left wing "tucked in".
+- Beat 30: Cinder's CURRENT CONDITION says "OVERALL 21% ... (exhausted) ... Gasping" and then "Stamina: fresh breath". These contradict each other (the surge refilled energy, but the label reads as if she's rested).
+- Beat 30 (Head hit): it's "a tremendous blow ... a raw scream", yet HOW IT MOVES HER says "her head rocks back, more than a blow that size should". The two size it differently.
+- Beat 31 (part 1, block 3): "the guilt of a clean hit on someone already hurt". Nothing lands; the attacks cancel out. Block 7 "she feels the other give a little, then come back, then give again" is a tug-of-war, but the engine has them cancel at once.
+- Beat 31 (part 2): "The attack has ALREADY been shown above, miss and all". It wasn't a miss, it was a clash. Also, part 1 is told to "STOP at contact: leave how it lands", so no part is told to show the clash itself, and the rewrite loop then asks for it (call 5).
+- Beat 31: "Don't add another element: no electricity, fire, ice, or water unless the move itself is that type". The clash needs Glacia's Ice Shard (ice), so the rule clashes with the event.
+- Beat 31: "It lands differently because: dazed; Cinder is riding an adrenaline surge". Nothing lands.
+- Beat 31 (part 2, block 1): "a pebble skittering off the edge and not landing" repeats beat 24's block word for word.
+- Beat 32: "This beat is an ordinary exchange in the run of the fight". Nobody attacks, and Glacia drops to SPENT for the first time, which is the moment this beat should carry. The label doesn't fit.
+- Beat 32: Cinder's "Stamina: fresh breath" sits next to "OVERALL 20% (exhausted) ... Gasping" (same clash as beat 30). Her FIGHT SO FAR line "running out of fight" also clashes with the surge she is still riding.
+- Beat 33 (part 1, blocks 7/8): "a hook round the outside of the guard, into the side" and "she comes from the side the other is guarding least". The punch is aimed at, and lands on, the guarded Chest.
+- Beat 33: "This beat is an ordinary exchange... no more drama". Cinder's surge ends and she drops to SPENT, and Glacia's ruined chest takes the biggest hit of the fight. This mislabel repeats beats 26 and 32.
+- Beat 33 (part 1): block 10 "a small, fierce joy" and block 12 "frustration; she hits harder than she needs to" pull opposite ways in the same moment.
+- Beat 34: the order is cut off: "she does the one thing she was made for: spreads her ragged wings and drags herself up off." (the outline has "...up off the shelf into the wind").
+- Beat 34 (part 1): "Focus of this part: the actions as they happen, in order, from the attackers' bodies". Nobody attacks. Part 2: "The attack has ALREADY been shown above, miss and all". There is no attack and no miss.
+- Beat 34 (part 1, block 1): "OPEN this part on: the other's limb, drawing back" suggests Cinder winding up a strike. None is listed.
+- Beat 34: "wings snap open and beat hard ... she climbs out of reach" is too big for a SPENT fighter whose order says she "drags herself up".
+- Beat 34: FIGHT SO FAR gives both fighters "cornered, and at her most dangerous for it", including Cinder, who "has had much the better of it". It also says "an ordinary exchange" again.
+- Beat 35 (part 2, block 7): "she drops her chin and the blow meant for her throat thuds into her jaw instead". The blow is aimed at the Chest and lands on the Left Wing, and Glacia has no jaw.
+- Beat 35 (part 2, block 8): "her left wing was glad of the bad placing". The blow landed ON the left wing (to excruciating). Part 1 block 8 "her best blow spends itself on the meaty side instead of the hurt one" is wrong for the same reason.
+- Beat 35 (part 1, block 7): "the wind of her rising throws grit in the other's face". Glacia is already in the air, out over the drop.
+- Beat 35: "THE SOUND OF THE BLOW: the dry rip of claws through fur". Glacia has feathers. Hit 1 "a limb scrabbling at the ground" and Hit 2 "her knees dipping under it" are ground reactions, but both fighters are in the air.
+- Beat 35 (part 2, block 11): "Glacia's left wing was already hurt ... by Cinder's Air Slash and then Cinder's Thunder Punch". Air Slash (beat 20) hit the Upper Back and Long Tail. The left wing was hurt by Heat Wave, Dragon Claw (beat 26) and Thunder Punch.
+- Beat 35: "Cinder TAKES TO THE AIR: wings snap open and beat hard" is too big for a SPENT dragon on a devastated wing, whose order says she "hauls herself up". Cinder's "Stamina: fresh breath" again next to "spent". Glacia (3%, in the air) gets "Barely able to stand, swaying". And it says "an ordinary exchange" again.
