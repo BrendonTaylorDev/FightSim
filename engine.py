@@ -5059,6 +5059,12 @@ class Engine:
                 reg = body_region(p.name)
                 if "wing" in p.name.lower():
                     bits.append(self._wing_way(f, p))
+                elif self.has(f, "airborne") and reg in ("hind_low", "hind_up"):
+                    bits.append(f"holds her {p.name.lower()} tucked up stiffly under her as she flies")   # (no limp aloft)
+                elif reg == "tail" and "flame" in p.name.lower():
+                    bits.append("the flame on her tail burns low and small")
+                elif reg in ("neck", "head") and any(b.startswith("holds her head carefully") for b in bits):
+                    continue          # (one line for a hurt head and neck, not the same line twice)
                 elif reg in ("hind_low", "hind_up") or (reg in ("fore_low", "fore_up") and self.body_plan(f) == "quadruped"):
                     bits.append(f"favours her {p.name.lower()}, keeping weight off it (a limp when she moves)")
                 elif reg in ("fore_low", "fore_up"):
@@ -6480,7 +6486,7 @@ class Engine:
                                 "max_health": f.max_health,
                                 "exhaustion": exhaustion, "pain_drain": drain,
                                 "health_tier": ht["label"], "health_tier_changed": ht["label"] != tier_b,
-                                "reaction_guide": ht["reaction"]}
+                                "reaction_guide": self.tier_reaction(f, ht)}
         events += self.recover_tick()
         events += self._tick_status_energy()
         events += self._weather_tick()
@@ -7820,6 +7826,16 @@ class Engine:
         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
         return (" Status: " + "; ".join(bits) + "." if bits else "") + f" Stamina: {stamina}."
 
+    def tier_reaction(self, f, ht):
+        """What a fighter at this strength can still do (health_tiers' reaction), fitted to where she is: one up in
+        the air has no feet to stand on (reaction_air), one lying down or lying on top in a pin has no ground to
+        drop to between efforts (reaction_down)."""
+        if self.has(f, "airborne") and ht.get("reaction_air"):
+            return ht["reaction_air"]
+        if (f.name in self.downed or self.pinning(f.name)) and ht.get("reaction_down"):
+            return ht["reaction_down"]
+        return ht["reaction"]
+
     def favoring(self, f):
         """How badly hurt limbs and tails change the way she moves, so it stays consistent from beat to beat."""
         out = []
@@ -7830,8 +7846,21 @@ class Engine:
             biped = any("arm" in x.lower() for x in f.parts)  # upright fighters guard arms instead of limping
             arm = biped and region in ("fore_up", "fore_low", "shoulder")
             name = p.name.lower()
+            air = self.has(f, "airborne")
             if "wing" in name:
                 out.append(self._wing_way(f, p))
+            elif region == "shoulder" and not biped and any("wing" in x.lower() for x in f.parts):
+                # a bird's shoulder is the root of her wing: she guards it, she doesn't limp on it
+                out.append(f"favors her {name}, the wing on that side held a little stiff" if p.damage < 300 else
+                           f"guards her {name}, the wing on that side dragging")
+            elif air and not arm and region != "tail":
+                # up in the air there is no weight to keep off a leg: she holds it up out of the way
+                out.append(f"holds her {name} tucked up stiffly under her as she flies" if p.damage < 300 else
+                           f"her {name} hangs stiff under her as she flies, held clear of everything")
+            elif region == "tail" and "flame" in name:
+                # a flame on the tail's tip is not a limb to hold close: it burns low
+                out.append(f"keeps her tail low and still, the flame on it burning small" if p.damage < 300 else
+                           f"her tail drags, the flame on it shrunk to a weak, sputtering flicker")
             elif region == "tail":
                 out.append(f"keeps her {name} stiff and close" if p.damage < 300 else f"her {name} drags, barely moving")
             elif p.damage < 150:
@@ -7911,7 +7940,7 @@ class Engine:
             if breakable:
                 ground += (f" Past her limit, so these devastated parts CAN BREAK (broken bones allowed): "
                            f"{', '.join(breakable)}.")
-            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {ht['reaction']}{ground}\n"
+            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {self.tier_reaction(f, ht)}{ground}\n"
                          f"   painful parts (they hurt and get favored, but do NOT override overall strength): "
                          f"{', '.join(hurt[:10]) or 'nothing serious'}"
                          + (f"\n   barely touched so far: {', '.join(fresh[:6 if self._decay('origin_beats', 4) else 12])}" if hurt and fresh else "")

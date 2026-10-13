@@ -955,12 +955,17 @@
     {
       "min": 0,
       "label": "spent",
-      "reaction": "Barely able to stand, swaying, slow to rise, near collapse, but still conscious and still trying."
+      "reaction": "Barely able to stand, swaying, slow to rise, near collapse, but still conscious and still trying.",
+      "_reaction_air_comment": "reaction_air / reaction_down (optional, any tier): the same, for a fighter up in the air (no feet to stand on), or lying down or lying on top of a pin (no ground to drop to). Left out: reaction is used.",
+      "reaction_air": "Barely able to stay up: her wingbeats ragged and failing, sinking and labouring back up, near collapse, but still conscious and still trying.",
+      "reaction_down": "Barely able to move, slow and shaking, near collapse, but still conscious and still trying."
     },
     {
       "min": -1000000000,
       "label": "past the limit",
-      "reaction": "Running on nothing but will: wobbling, dropping to the ground between efforts, but still conscious. Only a completed pin puts her out."
+      "reaction": "Running on nothing but will: wobbling, dropping to the ground between efforts, but still conscious. Only a completed pin puts her out.",
+      "reaction_air": "Running on nothing but will: her wings failing, sinking between strokes and dragging herself back up, but still conscious. Only a completed pin puts her out.",
+      "reaction_down": "Running on nothing but will: shaking, sagging limp between efforts, but still conscious. Only a completed pin puts her out."
     }
   ],
   "holds": {
