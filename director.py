@@ -1883,6 +1883,10 @@ class Director:
             engine._windows_ready = False
         else:
             engine.roll_pin_windows(open_all=bool(direction) and getattr(engine, "dice_mode", "fair") != "strict")
+        # "a devastating hit" in your direction: the first blow that lands this beat is one (no roll), unless the dice
+        # are strict (/play dice strict)
+        engine._force_dev = bool(direction and re.search(r"\bdevastat\w*", direction, re.I)
+                                 and getattr(engine, "dice_mode", "fair") != "strict")
         # your words decide where blows land; the dice only fill in what you left open
         engine.directed = bool(direction) or any(v and v != "WAIT" for v in players.values())
         engine.ordered = {n for n, v in players.items() if v and v != "WAIT"}   # fighters acting on a player's order
@@ -2003,7 +2007,12 @@ class Director:
                             b["sustain"] = 3
                 if players:
                     actions = apply_players(engine, actions, players)
-                results, started = resolve_many(engine, actions)
+                try:
+                    results, started = resolve_many(engine, actions)
+                except Exception:
+                    engine._force_dev_used = None       # (refused and undone: the retry may use it)
+                    raise
+                engine._force_dev, engine._force_dev_used = False, None   # (one beat only, used or not)
                 pos = " ".join(str(beat.get("positions", "") if isinstance(beat, dict) else "").split())
                 if len(pos) >= 15 and pos.lower().strip(". ") not in ("same", "unchanged", "no change", "as before"):
                     engine.set_positions(pos[:500])  # "same" or a blank keeps the previous positions
