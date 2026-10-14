@@ -66,6 +66,15 @@ def _current_game():
     return game if game is not None and game.is_alive() else None
 
 
+
+# the console's coloured squares (resistance) and dots (damage), and its heart: the same colours as the cards
+GLYPHS = {"🟦": ("■", "#3b82f6"), "🟩": ("■", "#22c55e"), "🟨": ("■", "#eab308"), "🟧": ("■", "#f97316"),
+          "🟥": ("■", "#ef4444"), "🟪": ("■", "#a855f7"), "⬛": ("■", "#1f2937"), "🟫": ("■", "#92400e"),
+          "🟢": ("●", "#22c55e"), "🟡": ("●", "#eab308"), "🟠": ("●", "#f97316"), "🔴": ("●", "#ef4444"),
+          "🟣": ("●", "#a855f7"), "⚫": ("●", "#1f2937"), "🔵": ("●", "#3b82f6"), "🟤": ("●", "#92400e"),
+          "❤": ("♥", "#dc2626")}
+GLYPH_RX = re.compile("(" + "|".join(map(re.escape, GLYPHS)) + ")\ufe0f?")
+
 class _Screen:
     """Stands in for sys.stdout: the game's thread writes to its window, everyone else to the real screen."""
 
@@ -567,6 +576,7 @@ class App:
         self.text.tag_configure("progress", font=("Segoe UI", 9, "italic"), foreground="#9ca3af")
         self.text.tag_configure("input", font=("Consolas", 10, "bold"), foreground="#2563eb")
         self.text.tag_configure("rule", foreground="#d1d5db")
+        self._glyph_tags = set()
         self.text.configure(state="disabled")
 
         self.prompt = ttk.Label(bottom, text=">", font=("Consolas", 10, "bold"))
@@ -691,13 +701,28 @@ class App:
         pos = 0
         extra = (base,) if base else ()
         for m in re.finditer(r"\*\*(.+?)\*\*|\*(?!\s)([^*\n]+?)\*", line):
-            self.text.insert("end", line[pos:m.start()], extra)
+            self.put(line[pos:m.start()], extra)
             if m.group(1) is not None:
-                self.text.insert("end", m.group(1), ("mechbold",) if base else ("bold",))
+                self.put(m.group(1), ("mechbold",) if base else ("bold",))
             else:
-                self.text.insert("end", m.group(2), extra + ("italic",) if not base else extra)
+                self.put(m.group(2), extra + ("italic",) if not base else extra)
             pos = m.end()
-        self.text.insert("end", line[pos:], extra)
+        self.put(line[pos:], extra)
+
+    def put(self, text, tags=()):
+        """Insert text, with the console's coloured squares and dots drawn in their colours: Tk on Windows draws
+        emoji in one colour only, so each becomes a plain square or dot coloured by the window (GLYPHS)."""
+        pos = 0
+        for m in GLYPH_RX.finditer(text):
+            self.text.insert("end", text[pos:m.start()], tags)
+            ch, color = GLYPHS[m.group(1)]
+            tag = "glyph" + color
+            if tag not in self._glyph_tags:
+                self.text.tag_configure(tag, foreground=color, font=("Segoe UI Symbol", 10))
+                self._glyph_tags.add(tag)
+            self.text.insert("end", ch, tuple(tags) + (tag,))
+            pos = m.end()
+        self.text.insert("end", text[pos:], tags)
 
     # ---- which beat is shown ----
     # Positions on the slider: 1..N are the beats (each as it stood when that beat ended), N+1 is "now".
