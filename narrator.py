@@ -11761,7 +11761,8 @@ class Narrator:
                 for w in re.findall(r"[A-Za-z]+", mv) if len(w) >= 4 and w.lower() not in ("attack", "strike", "blow")]
         rx = "|".join(([trx] if trx else []) + wrx)
         return bool(rx) and any(re.search(r"\b(?:" + rx + r")\b", s_, re.I) and (a["attacker"] in s_ or a["defender"] in s_)
-                                and any(_mentions_exact(s_.lower(), p) for p in parts) for s_ in sents_all)
+                                and any(_mentions(s_.lower(), p) for p in parts) for s_ in sents_all)
+        # (a part by its key word: "the blast hit Nocturne across her chest" tells a blow on her Chest Ruff)
 
     def _present_sents(self, text, prior=""):
         """Sentences the checks call present tense (they only count once a part has a few of them)."""
