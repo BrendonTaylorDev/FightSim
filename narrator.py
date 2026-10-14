@@ -2837,7 +2837,10 @@ class Narrator:
         """The hits the prose has to put on their own body part: the big ones and the ones that push a part to a worse
         pain. A light hit that changes nothing can go in with the rest of the flurry, or with no part named at all."""
         small = float((self.rules.get("narration", {}) or {}).get("name_hits_from", 2.5))
-        if self._hurt_all() or float(h.get("damage_taken") or 0) >= small or before["label"] != after["label"] \
+        # (measured as it would be at the default damage scale of 3: a higher /scale makes every graze bigger, and
+        # must not by itself make every graze a hit the prose has to name)
+        taken = float(h.get("damage_taken") or 0) * 3.0 / max(0.5, float(h.get("scale") or 3))
+        if self._hurt_all() or taken >= small or before["label"] != after["label"] \
                 or not self._must_parts:
             self._must_parts.append(h["part"])
 

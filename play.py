@@ -20,6 +20,7 @@ import re
 import random
 import shlex
 import sys
+import threading
 
 from director import Director, resolve_many
 from display import Display
@@ -53,6 +54,7 @@ HELP = """
                               any pin or hold they try to (rolls against them still count).
   /auto <n>                   let the director run n beats on its own (for whole fights: /autofight)
   /auto pin                   play the running pin out, beat by beat, until it ends
+  /stop                       (in the window, while /auto or /autofight runs) end the run after this beat
   /wait [what happens]        a beat with no new attack (holds and pins keep going)
   /more [words] [what to dwell on]   (or just +)  STAY in the moment instead of moving on: more paragraphs about
                               the stillness and what the last blows left behind. Nothing happens and no time passes
@@ -869,7 +871,10 @@ class Session:
             raise ValueError("/autofight needs the models (it's the director who fights); you started with --no-llm")
         cap = int(self.eng.rules.get("director", {}).get("autofight_max_beats", 150))
         start = len(self.results)
+        STOP.clear()
         for i in range(count):
+            if STOP.is_set():
+                break
             untouched = self.eng.turn == 0 and not self.over
             same = not names or [self.eng.match_roster(n) for n in names] == self.lineup()
             if not (i == 0 and untouched and same):
@@ -883,6 +888,11 @@ class Session:
                     raise ValueError("the narration failed, so the run stopped here. /reroll writes that beat; then "
                                      "/autofight again to carry on")
                 stalled = stalled + 1 if (self.eng.turn, len(self.story)) == before else 0
+                if STOP.is_set():
+                    break
+            if STOP.is_set():
+                _stopped(self)
+                break
             if not self.over:
                 self.record_result(f"stopped after {self.eng.turn} beats" if self.eng.turn >= cap else "stalled")
                 self.out(f"*** Fight {self.fight_no}: no winner after {self.eng.turn} beats "
@@ -2181,6 +2191,19 @@ def _looks_like_parts(eng, defender, text):
 
 
 SAME_BEAT = re.compile(r"\s\+\s+(?=/)")  # "/charge ... + /move ...": both in ONE beat, in order
+
+
+# /stop, typed in the window while /auto or /autofight runs: the run ends once the beat being written is finished
+STOP = threading.Event()
+
+
+def _stopped(s):
+    """Has /stop been asked for? (Said once, and cleared.)"""
+    if STOP.is_set():
+        STOP.clear()
+        s.out("\n(Stopped after this beat, as you asked. Everything so far is kept; /auto carries on.)")
+        return True
+    return False
 
 
 def _autofight(s, a):
@@ -3724,21 +3747,29 @@ def handle_command(s, line):
         if a and a[0].lower() == "pin":
             if not s.eng.pins:
                 raise ValueError("no pin is running. Start one first (e.g. type: Nocturne pins Ripples)")
+            STOP.clear()
             for _ in range(40):  # plays the pin out beat by beat until it ends: escape, faint, or release
                 if s.over or not s.eng.pins:
                     break
                 s.play_beat("continue the pin")
+                if _stopped(s):
+                    break
             return
         if a and not a[0].isdigit():
             raise ValueError("Usage: /auto <beats>   (or /auto pin).   For whole fights: /autofight <fights> "
                              "[aftermath beats] [names]")
+        STOP.clear()
         if s.use_llm and not s.story and not s.over:
             s.play_beat()  # the opening scene doesn't count as one of the beats
         for _ in range(int(a[0]) if a else 5):
-            if s.over:
+            if s.over or _stopped(s):
                 break
             s.play_beat()
+        _stopped(s)
         return
+    if cmd == "stop":
+        print("Nothing is running. (/stop ends /auto or /autofight after the beat being written: type it in the "
+              "window while one runs. In a console window, Ctrl+C stops at once.)"); return
     b = manual_beat(cmd, a, s.eng)
     if b is None:
         raise ValueError(f"Unknown command '/{cmd}'")
