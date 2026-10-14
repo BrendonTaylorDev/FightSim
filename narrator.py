@@ -1820,6 +1820,12 @@ TUMBLED = re.compile(r"\b(?:tumbl\w+|roll(?:ed|ing|s) (?:over|across|on|along|en
                      r"over and over|spinning across|fetch\w* up|came to rest|came to a stop|rolled to a stop)\b", re.I)
 
 
+# a verb, roughly: what a real sentence has and a list of phrases copied from the notes doesn't
+NOTE_VERB = re.compile(r"\b(?:\w+(?:ed|ing)|is|was|were|are|am|be|been|had|has|have|did|does|do|came|went|ran|hit|took|"
+                       r"made|felt|saw|held|got|let|set|cut|put|shook|broke|rose|fell|struck|caught|drove|threw|kept|"
+                       r"left|stood|sat|lay|bit|tore|spun|swung|gave|found|knew|thought|said|could|would|should|will|"
+                       r"can|must|might|shot|burst|split|hurt|sank|sprang|slid|flew|spread|dug|clung|stung|swept)\b", re.I)
+
 # a sentence that runs straight into another one ("The third was The fur ruffled the wrong way")
 SPLICED = re.compile(r"\b(?:was|were|is|are|of|to|the|her|his|its|a|an)\s+(?:The|Her|His|She|It|A|An)\s+[a-z]+\b")
 
@@ -2184,6 +2190,7 @@ class Narrator:
         self.model, self.rules, self.host, self.style = model, rules, host, style
         self.progress = None  # optional callback: shows "writing part 2/3" while the model works
         self._tiers_used = set()
+        self._beat_notes_low = ""    # this beat's notes (every part), for _drop_note_lists
         self._must_parts = []       # body parts this beat's prose has to show being hit (accuracy check)
         self._must_struggle = None  # a pin struggle the prose has to show
         self._time_window = None    # (from, to) seconds of a pin clock this beat covers
@@ -2724,7 +2731,19 @@ class Narrator:
         ps, pe = getattr(self, "posture_start", {}) or {}, getattr(self, "posture_end", {}) or {}
         return any(re.match(r"(?:ON THE GROUND|ON TOP|LOCKED ONTO|OUT)", str(x.get(who, "")).upper()) for x in (ps, pe))
 
-    def _hit_line(self, h, n=None, how=None):
+    def _landing_hit_lines(self, a):
+        """The hit lines for a landing: each one a knock against the surface it met (in the order of a['landings']),
+        not a blow (nobody struck her: the ground, a root, the water did)."""
+        hits, out, k = list(a.get("hits") or []), [], 0
+        for l in a.get("landings") or []:
+            for _ in (l.get("parts") or []):
+                if k < len(hits):
+                    out.append(self._hit_line(hits[k], k + 1, against=str(l.get("surface") or "the ground")))
+                    k += 1
+        out += [self._hit_line(h, i + 1) for i, h in enumerate(hits[k:], k)]
+        return out
+
+    def _hit_line(self, h, n=None, how=None, against=None):
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
         if h.get("numb"):
             before = after = self._numb_tier()   # the part is numb right now: the blow lands dull, not sharp
@@ -2766,7 +2785,8 @@ class Narrator:
                     + (f" ({raw})" if raw else f" (her reaction: {self._reaction_size(h, after['label'])})")
                     + f"; {change}{tough}{self._numb_note(h, bool(raw))}.")
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
-                f"a {size} " + ("knock (jarred by the blow beside it) " if h.get("jarred") else "blow ")
+                f"a {size} " + (f"knock against {against} (the landing: no blow, nobody strikes her) " if against else
+                                "knock (jarred by the blow beside it) " if h.get("jarred") else "blow ")
                 + f"(impact, e.g. {impact}; a hit here shows as "
                 f"{self._region_tell(h['part'], sum(map(ord, seed)), h['defender'])}"
                 + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
@@ -3805,7 +3825,7 @@ class Narrator:
                              f"{poss(att)} doing, no named move.{told}{intent}")
             lines += self._tumble_line(a)
             lines += self._devastating_line(a)
-            lines += [self._hit_line(h, i + 1) for i, h in enumerate(a["hits"])]
+            lines += self._landing_hit_lines(a)
             lines += self._arena_status_lines(a.get("status_applied"))
             return lines
         if t == "instant" and a.get("environment") and a.get("in_place"):
@@ -3815,7 +3835,7 @@ class Narrator:
                          f"{route}. Each surface hits those body parts. She does NOT fall again and is not thrown "
                          f"anywhere: she stays where she was"
                          + (f", {Engine.FACING_LOOK[fc]}" if fc in Engine.FACING_LOOK else "") + ".")
-            lines += [self._hit_line(h, i + 1) for i, h in enumerate(a["hits"])]
+            lines += self._landing_hit_lines(a)
             lines += self._arena_status_lines(a.get("status_applied"))
             return lines
         if t == "instant" and a.get("environment"):
@@ -3843,7 +3863,7 @@ class Narrator:
                          f"Each surface hits those body parts. " + self._ends_line(a)
                          + " How she travels between the surfaces (skidding, tumbling, bouncing, spinning) is yours.")
             lines += self._tumble_line(a)
-            lines += [self._hit_line(h, i + 1) for i, h in enumerate(a["hits"])]
+            lines += self._landing_hit_lines(a)
             lines += self._arena_status_lines(a.get("status_applied"))
             return lines
         if t == "aftermath":
@@ -7597,8 +7617,8 @@ class Narrator:
             place = self._arena_detail()
         if place:
             at = B.rng.randrange(1, len(steps) + 1) if len(steps) > 1 else len(steps)
-            steps.insert(at, f"the place, glimpsed in passing (one clause; background only: it touches no one and "
-                             f"changes nothing): {place}")
+            steps.insert(at, f"a detail of the place, folded into a sentence about something else, never a sentence "
+                             f"of its own (it does nothing to anyone): {place}")
         if memory:
             steps.insert(max(1, len(steps) - 1) if steps else 0, memory)
         if last and cfg.get("open_and_end", True) and steps:
@@ -8682,6 +8702,11 @@ class Narrator:
             issues.append(f"it put {who} the wrong way round (\"{bit}\"): she ends this beat "
                           + ("SITTING UP on the ground, not lying flat" if fc == "sitting up" else
                              f"lying {fc}, not sitting up") + " (see CURRENT CONDITION and the notes for this beat)")
+        shoved = self._unmoved_lines(text) if n.get("accuracy_check", True) else []
+        if shoved:
+            who_, words_ = shoved[0]
+            issues.append(f"it has {who_} knocked off balance or staggering (\"{words_}\"), but nothing touches her or "
+                          f"moves her this beat: only what is listed happens to her")
         unhurt = self._unhurt_lines(text)
         if unhurt:
             names = sorted({w for w, _ in unhurt})
@@ -9178,6 +9203,34 @@ class Narrator:
                 out.append((who, facing[who], bit))
         return out
 
+    def _unmoved_lines(self, text):
+        """A fighter nothing touched this beat shown knocked off balance or staggering ("her tail lashed out,
+        knocking Ripples off balance" after a dodge): [(fighter, words)]. Anyone a blow, a recoil, a crash of her
+        own, a status or a stagger reached this beat is left alone."""
+        reached = set(getattr(self, "_hurt_now", None) or ())
+        for a in getattr(self, "_acts_now", None) or []:
+            if not isinstance(a, dict):
+                continue
+            for h in a.get("hits") or []:
+                reached.add(h.get("defender"))
+            for s_ in a.get("status_applied") or []:
+                reached.add(s_.get("fighter"))
+            if any(a.get(k) for k in ("missed_charge", "recoil", "overcommit", "off_balance", "counter_hits",
+                                      "rake_back", "rocked", "moved", "clash", "landings")):
+                reached.update({a.get("attacker"), a.get("defender")})
+        out = []
+        for w in (getattr(self, "strengths", None) or {}):
+            if w in reached:
+                continue
+            n_ = re.escape(w)
+            m = re.search(r"\b(?:knock\w*|sen[dt]\w*|throw\w*|threw|toss\w*|bowl\w*) " + n_ + r"(?:'s)? (?:\w+ ){0,2}?"
+                          r"(?:off balance|off (?:her|its) feet|stumbling|sprawling|reeling|flying|backwards?)\b|\b"
+                          + n_ + r" (?:stumbled|staggered|reeled|lost (?:her|its) (?:balance|footing)|was knocked)\b",
+                          text)
+            if m:
+                out.append((w, m.group(0)))
+        return out
+
     def _unhurt_lines(self, text):
         """Sentences that wound a fighter nothing hit this beat: [(fighter, matched words)]."""
         if self._hurt_now is None or not self.strengths or not self.rules.get("narration", {}).get("accuracy_check", True):
@@ -9629,10 +9682,32 @@ class Narrator:
                     f"beats, and there was one just recently. Use other words")
         return None
 
+    def _drop_note_lists(self, text):
+        """A "sentence" that is only a list of phrases lifted from the notes, with no verb ("Fierce jet of water, the
+        next breath, the deep water."): notes, not prose, so it goes. Only when most of its pieces really are in this
+        beat's notes; a fragment of the story's own ("Low, then high.") stays."""
+        notes = getattr(self, "_beat_notes_low", "") or ""
+        if not notes:
+            return text
+        out = []
+        for para in text.split("\n"):
+            keep = []
+            for sent in re.split(r"(?<=[.!?…])\s+", para):
+                bits = [re.sub(r"^(?:the|a|an|her|its)\s+", "", b.strip(" .!?…*_\"“”").lower())
+                        for b in re.split(r"[,;:]", sent)]
+                bits = [b for b in bits if b]
+                if (len(bits) >= 3 and all(len(b.split()) <= 6 for b in bits) and not NOTE_VERB.search(sent)
+                        and sum(1 for b in bits if len(b) > 4 and b in notes) >= 2):
+                    continue
+                keep.append(sent)
+            out.append(" ".join(keep))
+        return "\n".join(out)
+
     def _note_phrases(self, user_msg):
         """The 7-word phrases this part's notes use themselves (not the story so far quoted in them): the story may
         repeat those, so they never count as lines copied from earlier."""
         notes = str(user_msg or "")
+        self._beat_notes_low = (getattr(self, "_beat_notes_low", "") + "\n" + notes.lower())[-200000:]
         snip = getattr(self, "_story_snip", "") or ""
         if snip:
             notes = notes.replace(snip, " ")
@@ -10908,7 +10983,7 @@ class Narrator:
         text = _balance_marks(text)  # cuts above can split a thought: re-pair its marks
         text = _italic_sounds(text)  # "she hissed, hss, and..." -> "*hss*": the sound shown (and coloured) as a sound
         text = _drop_hanging_leadins(text)
-        text = self._last_scrub(text)
+        text = self._drop_note_lists(self._last_scrub(text))
         text = _mend_orphans(text)
         # "slammed into the wall—grunt—and the muscles spasmed": a reaction word from the notes left as a stage direction
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
@@ -10935,6 +11010,21 @@ class Narrator:
         part.") goes. Only when swearing is off (narration.swearing) for the curse."""
         n = self.rules.get("narration", {}) or {}
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        # a move's NAME used as a label ("a pulsing blast of water, Water Pulse." / "Ripples' Aqua Jet missed its mark"
+        # / "with her own Thunderbolt"): the label goes, or the move becomes plain "attack"
+        names_ = sorted((x for x in (getattr(self, "_move_names", None) or set()) if x and x[0].isupper()), key=len,
+                        reverse=True)
+        if names_:
+            alt = "|".join(map(re.escape, names_))
+            text = re.sub(r",\s*(?:" + alt + r")\s*([.!?…])", r"\1", text)
+            def plain(m):
+                kinds = story_blocks.kind_of(m.group(2))
+                word = next((w for k, w in (("bite", "bite"), ("claw", "claws"), ("charge", "charge"), ("tail", "tail"),
+                                            ("horn", "horn"), ("wing", "wing"), ("talon", "talons"), ("beak", "beak"),
+                                            ("punch", "blow"), ("beam", "blast"), ("fire", "fire"), ("ice", "cold"),
+                                            ("wind", "gust"), ("rock", "stones")) if k in kinds), "attack")
+                return f"{m.group(1)} {word}"
+            text = re.sub(r"(\b[A-Z][\w-]+(?:'s|’s|'|’)|\b(?:her|its) own) (" + alt + r")\b(?! [A-Z])", plain, text)
         # a move's TYPE said in the story (the notes' "Show it as the Fighting-type move it is" echoed): a sentence
         # that only names it goes ("It's a Fighting move."); in a longer one the type word goes ("the fighting type
         # hit" -> "the hit")
