@@ -7668,6 +7668,12 @@ class Narrator:
         cap = max(1, int(g.get("max_paragraphs", 5)))
         groups = []
         for a in acts:
+            if a.get("type") == "instant" and a.get("dodged") and a.get("attacker") and not a.get("environment"):
+                # an attack that never landed is still a step in its place: the story mustn't lose it
+                d_ = str(a.get("defender") or "")
+                groups.append(([], f"{self._fact_weapon(a)} at {d_}: DODGED ({a.get('manner') or 'she gets out of the way'}),"
+                                   f" nothing touches her", ""))
+                continue
             if a.get("type") != "instant" or a.get("dodged") or not a.get("hits") or a.get("environment"):
                 continue
             hs = [h for h in a["hits"] if h.get("part")]
@@ -7695,7 +7701,7 @@ class Narrator:
                 # one blow: a rake across several parts, a spread, a hit and what it jars, told as one
                 main = [h for h in hs if not h.get("jarred")] or hs[:1]
                 groups.append((names, *self._fact_line(a, main[0], [h for h in hs if h is not main[0]])))
-        if not groups:
+        if not any(ps for ps, _, _ in groups):
             return ""
         if len(groups) > cap:
             rest = groups[cap - 1:]
@@ -7711,7 +7717,11 @@ class Narrator:
                 "are FACTS, not wording: tell each blow your own way, as TELLING THE HURT asks (the sound before the "
                 "feel, the part only placed on her, the reaction first: whatever fits), but who did it, with what, to "
                 "which part and which side, and how hard stay exactly as given. The reaction listed for each hit is "
-                "the rest of its paragraph.\n" + "\n".join(rows))
+                "the rest of its paragraph."
+                + (" Each attack's wind-up and swing were told in the part before: every step here picks up at the "
+                   "moment of contact (or the miss), and a step the part before already finished is skipped. Never "
+                   "tell the swing again." if key == "take" else "")
+                + "\n" + "\n".join(rows))
 
     def _insert_facts(self, text, prior=""):
         """A draft that left a blow out: its fact line goes in where the plan puts it (after the paragraph with the
@@ -7721,12 +7731,16 @@ class Narrator:
         paras = [x for x in text.split("\n") if x.strip()]
         added = False
         for i, (parts, _note, line) in enumerate(self._fact_lines):
+            if not parts:
+                continue        # (a dodge: nothing landed, so there is nothing to put back)
             seen = (prior + "\n" + "\n".join(paras)).lower()
             if _mentions(seen, parts[0]):
                 continue
             # (a part that picks up at contact opens on the blow; a beat told in one part has its wind-up first)
             at = 1 if getattr(self, "_fact_key", "") == "all" and len(paras) > 1 else 0
             for prev_parts, _n, _l in reversed(self._fact_lines[:i]):
+                if not prev_parts:
+                    continue
                 hit = [k for k, x in enumerate(paras) if _mentions(x.lower(), prev_parts[0])]
                 if hit:
                     at = hit[0] + 1
