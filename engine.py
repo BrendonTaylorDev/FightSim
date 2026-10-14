@@ -4176,7 +4176,7 @@ class Engine:
             "look": {"biped": "on her back with a forearm cranked across her face, pulling her head back and round, "
                               "her knees trapping one arm"},
             "contacts": [("head:jaw|muzzle", "main", {"biped": "her forearm, cranked across her face, pulling back"}),
-                         ("neck", "main", {"biped": "pulled back and round by it"}),
+                         ("neck", "main", {"biped": "the same forearm, cranking it back and round"}),
                          ("shoulder", "second", {"biped": "her knees, trapping it"})],
             "free": {"biped": "her tails"},
             "strain": "her head cranked back and round, her neck twisted to the edge of where it goes"},
@@ -4195,7 +4195,8 @@ class Engine:
                      "quadruped": "her tail clamped in her jaws and wrenched up and round, a forepaw planted on her back"},
             "contacts": [("tail_part", "main", {"biped": "both paws, hauling it up and twisting it",
                                                 "quadruped": "her jaws, wrenching it up and round"}),
-                         ("tail:base", "main", {"biped": "twisted from it", "quadruped": "twisted from it"}),
+                         ("tail:base", "main", {"biped": "the same grip, twisting it from its root",
+                                                "quadruped": "the same jaws, wrenching it from its root"}),
                          ("back_low|back_up", "second", {"biped": "her foot, planted on it", "quadruped": "her forepaw, planted on it"})],
             "free": {"biped": "her mouth and her tails", "quadruped": "her horn"},
             "strain": "the tail hauled up and twisted from its root, the base of it wrenched"},

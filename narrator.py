@@ -1820,6 +1820,9 @@ TUMBLED = re.compile(r"\b(?:tumbl\w+|roll(?:ed|ing|s) (?:over|across|on|along|en
                      r"over and over|spinning across|fetch\w* up|came to rest|came to a stop|rolled to a stop)\b", re.I)
 
 
+# a sentence that runs straight into another one ("The third was The fur ruffled the wrong way")
+SPLICED = re.compile(r"\b(?:was|were|is|are|of|to|the|her|his|its|a|an)\s+(?:The|Her|His|She|It|A|An)\s+[a-z]+\b")
+
 # going on across the ground after a fall: a skid, a slide, a roll (for a landing the dice stopped where it fell)
 SKIDDED = re.compile(r"\b(?:skidd(?:ed|ing) (?:a |several |back |across |along |over |\w+ paces)|"
                      r"sl(?:id|iding) (?:a few|several|across|along) |tumbl(?:ed|ing) (?:over|across|along|away|end)|"
@@ -2043,9 +2046,12 @@ INTENSE = (
                      r"sob(?:bed|bing|s)?|went limp with (?:pain|agony))\b", re.I)),
     (150, re.compile(r"\b(?:scream\w*|shriek\w*|howl\w*|agon\w+|unbearable|excruciating|white-hot|blinding|"
                      r"unfiltered|pure (?:pain|agony)|(?:world|clearing|everything|vision) (?:blurred|spun|swam|tilted|"
-                     r"wavered|went (?:white|grey|gray|black|dark)))\b", re.I)),
+                     r"wavered|went (?:white|grey|gray|black|dark))|"
+                     r"(?:world|everything|clearing)(?: around her)? (?:fad\w+|dissolv\w+|melt\w+) (?:into|to) a blur)\b", re.I)),
     (90, re.compile(r"\b(?:cr(?:y|ied|ies) out|(?:a|the) (?:raw |sharp |desperate )?cry (?:tore|ripped|burst|broke)|"
-                    r"explod\w+|searing|wave of (?:pain|agony)|tore through|ripped through)\b", re.I)),
+                    r"explod\w+|searing|wave of (?:pain|agony)|tore through|ripped through|"
+                    r"(?:pain|ache|hurt) (?:was |is )?everywhere|everywhere at once|plea for (?:release|mercy)|"
+                    r"(?:spread|stretched|wrenched|pulled) (?:wide and |open and )?raw)\b", re.I)),
 )
 
 # the same ceiling, for the IDEAS offered (not the prose check): reactions that take over her whole body, which
@@ -8642,6 +8648,10 @@ class Narrator:
                           f"of its own")
         broken = degeneration(text, (getattr(self, "_story_tail", "") or "") + "\n" + (prior or ""),
                               getattr(self, "_notes_grams", frozenset()))
+        spliced = SPLICED.search(text)
+        if spliced:
+            # two sentences run together ("The third was The fur ruffled the wrong way..."): a note pasted into one
+            broken = list(broken or []) + [f"two sentences run into each other (\"{spliced.group(0)}\")"]
         if broken:
             issues.append("the prose broke down: " + "; ".join(broken) + ". Write normal, complete sentences with "
                           "'the' and 'a', each ending in a period; vary the wording and never copy earlier lines")
@@ -10898,6 +10908,11 @@ class Narrator:
         part.") goes. Only when swearing is off (narration.swearing) for the curse."""
         n = self.rules.get("narration", {}) or {}
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        # the notes' own wording for a glimpse of the place, copied in ("...was background only: it touched no one
+        # and changed nothing"): the glimpse stays, the instruction goes
+        text = re.sub(r"(?i)\s*(?:,|;|:|—)?\s*((?:was|is) )?(?:in the )?background only(?::\s*it touche[sd] no one and "
+                      r"change[sd] nothing)?(?=[.!?…])", lambda m: " went on" if m.group(1) else "", text)
+        text = re.sub(r"(?i)[,;:—]?\s*it touche[sd] no one and change[sd] nothing(?=[.!?…])", "", text)
         for d in ((getattr(self, "scene_cfg", None) or {}).get("details") or []):
             # a detail of the place copied in as a sentence of its own, with no verb round it ("Pine needles soft
             # underfoot at the edge of the trees."): a note, not prose, so it goes

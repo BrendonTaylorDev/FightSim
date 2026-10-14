@@ -1952,7 +1952,7 @@ class Director:
                     engine.nudges.append(label)
                     continue
                 who = [n for n in sorted(names, key=lambda n: line.find(n) if n in line else 10 ** 6) if n in line][:2]
-                if label.startswith(("pin opportunity", "pin setup", "reposition idea")):
+                if label.startswith(("pin opportunity", "pin setup", "reposition idea", "submission opening")):
                     who = who[::-1]   # those lines name the fighter to be pinned first: show "pinner on pinned"
                 engine.nudges.append(label + (f" ({' on '.join(who)})" if who else ""))
         user = (f"SCENE:\n{scene_block(engine, scene)}\n\n"
