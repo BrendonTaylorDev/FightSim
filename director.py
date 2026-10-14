@@ -5,7 +5,8 @@ The director can SEE the numbers but never calculates anything.
 """
 import json
 import re
-from engine import short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR
+from engine import short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR, match_part, \
+    _REGIONS as ENGINE_REGIONS
 from blocks import kind_of
 
 import llm
@@ -394,6 +395,49 @@ def _fit_part(engine, defender, part):
     return engine.get(defender).part(part).name
 
 
+# where a grab's own words put it: "round the white hind legs", "seizes the otter's arm", "clamps onto her scruff"
+_GRIP_ON = r"round|around|about|on|onto|upon|at|by"
+_GRIP_AT = re.compile(r"\b(" + _GRIP_ON + r"|seiz\w*|grab\w*|catch\w*|clamp\w*|lock\w*|wrap\w*|grip\w*|snag\w*|tie\w*|"
+                      r"bind\w*|trap\w*)\s+(?=((?:[\w'’-]+\s+){0,4}[\w'’-]+))", re.I)
+# what she grips WITH, never the part gripped ("clamps her jaws on the scruff": not her jaw)
+_WEAPON_WORDS = {"jaw", "jaws", "teeth", "claw", "claws", "coil", "coils", "talon", "talons", "horn", "tail", "tails"}
+# and what she grips with: "whips her twin tails", "her jaws"
+_GRIP_WITH = re.compile(r"\bher\s+((?:[a-z-]+\s+){0,2}?(?:tails?|jaws|teeth|arms?|paws?|forepaws?|claws|coils|legs|wings?|"
+                        r"horn|fins?|talons|hands?))\b", re.I)
+_PART_QUALIFIERS = {"left", "right", "hind", "fore", "front", "upper", "lower", "back", "twin", "sickle"}
+
+
+def _flavor_grip(engine, att, dfn, flavor):
+    """A grab whose order names no part: the part and the grip its own words name ('she whips her twin tails round
+    the white hind legs': a hind leg, with her twin tails), the way a strike lands where it is aimed. (None, '')
+    when the words name no part of hers."""
+    text = str(flavor or "")
+    names = list(engine.get(dfn).parts)
+    body = ({w for trig, _ in ENGINE_REGIONS for t in trig for w in t.split()}
+            | {w for p in names for w in p.lower().split()}) - {"left", "right"}
+    part, span = None, None
+    # "round the white hind legs" before "whips her twin tails": a preposition says where far more surely than a verb
+    found = sorted(_GRIP_AT.finditer(text), key=lambda m: (not re.fullmatch(_GRIP_ON, m.group(1), re.I), m.start()))
+    for m in found:
+        toks = [re.sub(r"(?:'s|’s|'|’)$", "", t) for t in m.group(2).lower().split()]
+        for i, t in enumerate(toks):
+            if i and toks[i - 1] in ("her", "its") and t in _WEAPON_WORDS and not re.fullmatch(_GRIP_ON, m.group(1), re.I):
+                break       # "clamps her jaws": her own weapon, not where it closes
+            stem = t[:-2] if t.endswith("es") and t[:-2] in body else t[:-1] if t.endswith("s") and t[:-1] in body else t
+            if stem in body and stem not in _PART_QUALIFIERS:
+                phrase = " ".join(([toks[i - 1]] if i and toks[i - 1] in _PART_QUALIFIERS else []) + [stem])
+                part = match_part(names, phrase)
+                break
+        if part:
+            span = (m.start(), m.end(2))
+            break
+    with_ = ""
+    if part:
+        w = next((g for g in _GRIP_WITH.finditer(text) if not (span[0] <= g.start() < span[1])), None)
+        with_ = f"her {w.group(1).lower()}" if w else ""
+    return part, with_
+
+
 def _fill_defender(engine, att, dfn):
     """With exactly two fighters left, the defender is obviously the other one."""
     names = [f.name for f in engine.active()]
@@ -457,6 +501,10 @@ def _apply_focus(engine, att, dfn, b):
     return b
 
 
+# where a charge (Take Down, an Aqua Jet ram) can be moved to: the trunk, which a body slamming into her catches
+CHARGE_REGIONS = ("chest", "shoulder", "belly", "back_up", "back_low", "hind_up")
+
+
 def _apply_variety(engine, att, dfn, b):
     """With no /focus set: a blow aimed at a region this attacker has just been hitting is moved, some of the time,
     to a part she has left alone (director.target_variety; 0 = never). What she aimed at is remembered either way."""
@@ -473,11 +521,18 @@ def _apply_variety(engine, att, dfn, b):
     recent = [p for who, p in log[-3:] if who == d.name]
     lately = {body_region(p) for p in recent}
     runs = int(b.get("count") or 1) > 1     # a pummel or a flurry picks its own spots blow by blow: not re-aimed
-    if (v > 0 and not runs and not engine.focus_for(att) and name not in (getattr(engine, "weak_aim", None) or ())
+    # a blow whose flavor already tells where it lands ("cracks her wing across the head") is meant there: moving it
+    # would leave the narrator two places for one blow
+    said = re.search(r"\b%s\b" % re.escape(name.lower().split()[-1]), str(b.get("flavor") or "").lower())
+    if (v > 0 and not runs and not said and not engine.focus_for(att) and name not in (getattr(engine, "weak_aim", None) or ())
             and body_region(name) in lately and not engine.pinned_by(a.name)
             and a.name not in engine.downed and not engine.grab_between(a.name, d.name)
             and engine.rng.random() < v):
         fresh = [p for p in d.parts if body_region(p) not in lately]
+        mv = engine.find_move(a.name, b.get("move")) if b.get("move") else None
+        if mv and mv.get("charge"):
+            # a full-body ram lands on the body, not on a fin or a paw: it is moved only onto another part of the trunk
+            fresh = [p for p in fresh if body_region(p) in CHARGE_REGIONS]
         if d.name in engine.downed and fresh:     # only what is turned toward her attacker
             fitted, _ = engine.fit_to_facing(d.name, fresh)
             # (and not her tail: lying down, she is on it or it is out behind her, not under her attacker's hands)
@@ -528,6 +583,23 @@ def variety_hint(engine):
             "keeps a fight from being about one spot: the same move can land on a different part.")
 
 
+def weak_spot_menu(engine, foe, soft):
+    """The parts a WEAK SPOTS hint offers (director.weak_spot_menu: how many of each kind): badly hurt ones, ones only
+    hurt so far, and soft places not yet touched; shuffled, so the worst is not always first."""
+    m = engine.rules.get("director", {}).get("weak_spot_menu") or {}
+    parts = sorted(foe.parts.values(), key=lambda p: -p.damage)
+    bad = [p for p in parts if p.damage >= 150][:int(m.get("badly_hurt", 2))]
+    hurt = [p for p in parts if 30 <= p.damage < 150]
+    hurt = engine.rng.sample(hurt, min(len(hurt), int(m.get("hurt", 3))))
+    fresh = [p for p in soft if p.damage < 30][:int(m.get("soft", 1))]
+    out = [(p, "badly hurt already") for p in bad] + [(p, "hurt, not yet badly") for p in hurt] + \
+          [(p, "soft and badly protected") for p in fresh]
+    if len(out) < 2:
+        out += [(p, "soft and badly protected") for p in soft if p not in [q for q, _ in out]][:2]
+    engine.rng.shuffle(out)
+    return out
+
+
 def weak_spot_hint(engine):
     """Now and then, with no /focus set: point one fighter at her opponent's weak spots (soft parts, or ones already
     worn down), so weak spots are gone for sometimes, never constantly (director.weak_spot_chance). Some of these
@@ -554,11 +626,15 @@ def weak_spot_hint(engine):
     reach = float(cfg.get("weak_spot_reach", 0.35) or 0)
     soft = sorted(foe.parts.values(), key=lambda p: p.resistance / (engine.aim_ease(p.name) ** reach if reach else 1))[:4]
     why = lambda p: "already worn down" if p.damage >= 30 else "soft and badly protected"
-    if engine.rng.random() >= float(cfg.get("weak_spot_repeat", 0.4) or 0):
-        p = engine.rng.choice(soft[:3])
-        engine.weak_aim = {p.name}
-        return (f"WEAK SPOT (an idea, not an order): {f.name} could go for {poss_word(foe.name)} {p.name} this time "
-                f"({why(p)}). Just this once; the next blow can land anywhere.")
+    if engine.rng.random() >= float(cfg.get("weak_spot_repeat", 0.25) or 0):
+        # a short MENU to choose from, not one spot: a badly hurt place or two, some that are only hurt so far, and a
+        # soft place not yet touched (director.weak_spot_menu), so the blows spread over what is hurt instead of all
+        # landing on the worst of it
+        menu = weak_spot_menu(engine, foe, soft)
+        engine.weak_aim = {p.name for p, _ in menu}
+        return (f"WEAK SPOTS TO CHOOSE FROM (an idea, not an order): if {f.name} goes for a weak spot this time, any "
+                f"ONE of these would do: " + "; ".join(f"{poss_word(foe.name)} {p.name} ({w})" for p, w in menu)
+                + ". Pick whichever suits the move and the angle, or none of them; the next blow can land anywhere.")
     kind = engine.rng.choice(["same", "group", "several"])
     run = ("if she lands a run of blows this beat (a pummel with a count, a combo, a chain, a grapple she keeps "
            "working at, a charge that drives into it, a stream she holds on it)")
@@ -705,7 +781,8 @@ def resolve(engine, b):
     if act not in ACTIONS and act not in ("quickpin", "pin_success", "pin_escape", "land", "down", "getup", "heal"):
         raise ValueError(f"action must be one of {ACTIONS}")
     att = b.get("attacker")
-    flavor = short_phrase(b.get("flavor", ""), 24)  # keep it a label, not a paragraph (never ending on "and")
+    flavor = short_phrase(b.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
+    # (keep it a label, not a paragraph, never ending on "and")
     intent = b.get("intent", "")
     was_involved = engine.get(att).name in engine.involved
     engine.get_active(att)
@@ -769,11 +846,14 @@ def resolve(engine, b):
     if act == "grapple":
         hits = [h for h in (b.get("hits") or []) if h.get("part")]
         part = b.get("part") or (hits[0]["part"] if hits else None)
+        flavor_with = ""
+        if not part:   # the order's own words name it ("round the white hind legs"): that part, and that grip
+            part, flavor_with = _flavor_grip(engine, att, dfn, flavor)
         if not part:   # nothing named: an arm, the scruff, a shoulder
             body = list(engine.get(dfn).parts)
             reach = [p for p in body if body_region(p) in ("fore_up", "fore_low", "neck", "shoulder")] or body
             part = engine.rng.choice(reach)
-        with_ = short_phrase((hits[0].get("with") if hits else "") or b.get("with") or "", 9)
+        with_ = short_phrase((hits[0].get("with") if hits else "") or b.get("with") or flavor_with or "", 9)
         sev = str((hits[0].get("severity") if hits else None) or b.get("severity") or "light").lower()
         table = engine.rules["severity"]["hold"]
         if sev not in table or table[sev] > table.get("firm", 15):
@@ -1175,8 +1255,10 @@ def _landing(engine, b, res):
             or (res.get("charge") and not res["charge"].get("skipped"))):  # driven into it by the charge itself
         return None  # nothing landed (dodged, or no effect): nobody goes flying
     launch = str(b.get("launch") or "none").lower()
+    fell = False
     if launch in ("none", "staggered", "") and res.get("auto_launch"):
         launch = res["auto_launch"]  # the move itself knocks down, throws, or launches (moves.json)
+        fell = bool(res.get("fell_from_air"))  # the throw roll failed: she was knocked out of the air, not thrown
     impacts = [x for x in (b.get("landing") or []) if isinstance(x, dict)]
     if launch in ("none", "staggered", "") and not impacts:
         return None
@@ -1187,6 +1269,12 @@ def _landing(engine, b, res):
         return None
     who = engine.get(who).name
     manual = bool(b.get("_manual"))
+    if not manual and not res.get("auto_launch") and not res.get("spiked_by") and engine.has(engine.get(who), "airborne") \
+            and engine._rights_herself(engine.get(who), {}, launch, engine.rules.get("flight") or {}):
+        # the director's launch on a flyer still in the air: she may catch herself on her wings, as she would from a
+        # move that launches (flight.air_recover)
+        res["righted"] = launch
+        return None
     thrown = launch in ("thrown", "launched")
     explicit = bool(impacts)
     in_place = False
@@ -1210,6 +1298,18 @@ def _landing(engine, b, res):
         if not explicit:
             return None  # already on the ground: there's nowhere further to fall
         in_place = True  # already down: smashed against what's beside her, not knocked down again
+    if in_place and impacts:
+        # driven into what she lies on: the blow and the drive are one impact, so the part the blow struck isn't
+        # struck a second time; what meets the ground is what she lies on (her underside)
+        struck = {h.get("part") for h in res.get("hits") or [] if h.get("defender", who) == who}
+        under = [p for p in engine.underside_parts(who, 4) if p not in struck]
+        fixed = []
+        for x in impacts:
+            ps = [p for p in (x.get("parts") or []) if str(p).title() not in struck and p not in struck]
+            if x.get("parts") and len(ps) < len(x["parts"]):
+                ps += [p for p in under if p not in ps][:len(x["parts"]) - len(ps)]
+            fixed.append(dict(x, parts=ps))
+        impacts = fixed
     if not in_place:
         # knocked off her feet: that is how the blow moved her, so no rock or stagger on top of it (moves.stumble)
         res.pop("rocked", None)
@@ -1241,13 +1341,15 @@ def _landing(engine, b, res):
             impacts = [{"surface": "the ground", "parts": [], "severity": "light"}]
         else:
             impacts = [{"surface": engine.scene_word("ground"), "parts": [], "severity": "solid"}]
-    word = "driven into" if in_place else (launch if launch != "none" else "knocked down")
+    word = "driven into" if in_place else "knocked out of the air" if fell and not res.get("spiked_by") \
+        else (launch if launch != "none" else "knocked down")
     out = engine.land(who, [(x.get("surface"), x.get("parts") or [], x.get("severity")) for x in impacts],
                       credited=res.get("spiked_by") or res["attacker"], thrown=thrown, in_place=in_place, can_recover=(thrown or launch == "knocked down") and not manual,
                       tumble=False if spiked else True if b.get("tumble") else (None if not manual else False),
                       force=force,
                       how=f"{word}: " + " → ".join(short_phrase(x.get("surface"), default="the ground") for x in impacts))
-    out["launch"] = "driven down" if out.get("in_place") else launch
+    out["launch"] = "driven down" if out.get("in_place") else "knocked out of the air" if fell and not res.get("spiked_by") \
+        else launch
     if res.get("spiked_by"):
         out["spiked_by"] = res["spiked_by"]
     if spiked:
@@ -1334,6 +1436,8 @@ def _knockouts(engine, results, hp0):
                 kinds.append("drop" if r.get("carried") or r.get("drop_severity") else "slam")
             if r.get("manhandle") == "slam":
                 kinds.append("slam")
+            if r.get("grounded") and not r.get("carried"):
+                kinds.append("fall out of the sky")     # struck down from flying height: a drop, as much as a carry is
         dev = any(h.get("devastating") for r in mine for h in (r.get("hits") or []))
         ko = engine.knockout_roll(f.name, hp0.get(f.name, f.health) - f.health, list(dict.fromkeys(kinds)), dev)
         if ko:
@@ -1868,7 +1972,7 @@ class Director:
             if story else "")
         messages = [{"role": "system", "content": system},
                     {"role": "user", "content": user}]
-        last_err = None
+        last_err, last_actions = None, None
         bump = 0.0
         for _ in range(self.retries):
             raw = llm.chat(self.model, messages, host=self.host, temperature=min(1.2, self.temperature + bump),
@@ -1906,6 +2010,8 @@ class Director:
                 return actions, results, started
             except (ValueError, KeyError, TypeError, json.JSONDecodeError) as e:
                 last_err = e
+                if "too worn out for" in str(e) and isinstance(actions, list):
+                    last_actions = actions
                 messages += [{"role": "assistant", "content": raw},
                              {"role": "user", "content": f"That beat is invalid: {e}. Return a corrected beat."}]
         if direction or any(v and v != "WAIT" for v in players.values()):
@@ -1915,12 +2021,57 @@ class Director:
                                  f"it differently, or use a /command for direct control")
             raise ValueError(f"the director couldn't turn that direction into a valid beat ({last_err}). "
                              f"Try wording it differently, or use a /command")
+        if last_actions and "too worn out for" in str(last_err):
+            # it kept choosing a move she can't afford: keep its beat, with the nearest move she can (the same kind
+            # of attack if she has one, else her strongest), rather than stall the story with a pause
+            try:
+                swapped = _afford(engine, last_actions)
+                if swapped:
+                    results, started = resolve_many(engine, swapped)
+                    print(f"[director kept choosing a move she couldn't afford ({last_err}); "
+                          f"using {', '.join(str(b.get('move')) for b in swapped if isinstance(b, dict) and b.get('move'))}]")
+                    return swapped, results, started
+            except (ValueError, KeyError, TypeError) as e:
+                last_err = e
         # Don't stall the story: fall back to a quiet beat (holds still tick) and say why.
         print(f"[director made {self.retries} invalid choices ({last_err}); continuing with a pause beat]")
         fallback = {"action": "breather", "attacker": engine.active()[0].name,
                     "flavor": "the fighters reset, circling and catching their breath", "intent": "reset"}
         results, started = resolve_many(engine, [fallback])
         return [fallback], results, started
+
+
+def _afford(engine, actions):
+    """The director's beat with each move its attacker can't afford swapped for one she can: the same kind of attack
+    (blocks.kind_of) if she has one, else one that reaches as far, else her strongest. None when nothing needed (or could take) a swap."""
+    out, changed = [], False
+    for b in actions:
+        if not isinstance(b, dict) or b.get("action") not in ("strike", "combo") or not b.get("attacker"):
+            out.append(b)
+            continue
+        try:
+            f = engine.get(b["attacker"])
+            mv = engine.find_move(f.name, b.get("move"))
+        except (ValueError, KeyError, AttributeError):
+            out.append(b)
+            continue
+        if not mv or engine.energy_cost(mv) <= f.energy:
+            out.append(b)
+            continue
+        can = [m for m in f.moves if engine.energy_cost(m) <= f.energy and f.move_uses.get(m["name"], 1) > 0
+               and m.get("target") not in ("self",) and m.get("power")]
+        if not can:
+            return None
+        kind = kind_of(mv["name"], mv.get("about", ""))
+        same = ([m for m in can if kind & kind_of(m["name"], m.get("about", ""))]
+                or [m for m in can if engine.is_ranged(m) == engine.is_ranged(mv)])   # (a flyer is out of reach of the rest)
+        pick = max(same or can, key=lambda m: float(m.get("power") or 0))
+        nb = {k: v for k, v in b.items() if k not in ("flavor", "sustain", "with")
+              and not (k == "charge_into" and "charge" not in kind_of(pick["name"], pick.get("about", "")))}
+        nb["move"] = pick["name"]
+        out.append(nb)
+        changed = True
+    return out if changed else None
 
 
 def repair_json(raw):
@@ -2205,11 +2356,11 @@ def pin_shapes(engine, pinner, target, skip=()):
     thigh = rng.choice(thighs) if thighs else thigh
     hips = [n for n in sp["thigh"] if "hip" in n.lower()][:2]
     if t.get("jaws") and neck and front:
-        out["throat_bite"] = (f"jaws clamped on her {neck} as the choke, her weight on her {front}"
+        out["throat_bite"] = (f"{t['jaws'].replace('her ', '', 1)} clamped on her {neck} as the choke, her weight on her {front}"
                               + (f", {t['hind']} on her hips" if t.get("hind") and hips else ""),
                               [(neck, t["jaws"]), (front, t["weight"])] + [(h, t.get("hind", "")) for h in hips if t.get("hind")])
     if t.get("jaws") and arm and neck and t.get("fore"):
-        out["trapped_arm"] = (f"jaws clamped on her {arm}, pinning that limb to the ground, while {t['fore']} bars across her "
+        out["trapped_arm"] = (f"{t['jaws'].replace('her ', '', 1)} clamped on her {arm}, pinning that limb to the ground, while {t['fore']} bars across her "
                               f"{neck} as the choke" + (f" and her weight settles on her {front}" if front else ""),
                               [(arm, t["jaws"]), (neck, t["fore"])] + ([(front, t["weight"])] if front else []))
     if t.get("coil") and neck:

@@ -1,0 +1,208 @@
+# Nocturne vs Ripples test fight (build 182, ruined temple, the new defaults): bugs found
+
+The fight ran 37 beats plus 2 aftermath beats. Nocturne won by pin at 55% strength. The four writers logged these bugs in the narrator's notes. Their main points are in the reply; the full lists follow.
+
+## narr_bugs_00-10
+
+- Beat 1: Hit 2 on Ripples' arm says "a hit here shows as the limb snatched up off the ground" — an arm is never on the ground (she walks on her feet); limb-impact text is leg text.
+- Beat 1: Part 1 finished line "Her forepaw rose and came down like a mallet, pads first." contradicts the move (order: "a shoulder-first lunge into her chest").
+- Beat 1: Part 2 block 7 "a yelp that cracks in the middle" contradicts CHECKED "MINOR ... so no crying out" and the same list's "how the pain ... shows (minor: no bigger than that)". Also "TELLING THE HURT ... a strong fighter cries out, then fights on" vs "no crying out".
+- Beat 1: Part 2 blocks 4 "nothing in her movement changes" and 6 "her head goes down as if ducking a second blow" pull against each other.
+- Beat 2: Part 1 block 3 "the fist comes round low and hooks up under her guard" is a hook, not Brick Break's downward paw-edge chop (move: "chopping paw strike").
+- Beat 2: Hit 1 impact examples "a howl that tears the throat, the body thrown sideways" contradict the console ("she holds her ground", "takes it where she is") and CHECKED ("no crying out, no screams").
+- Beat 2: TELLING THE HURT "through the scenery: what she is driven against or lands on" — nobody is driven anywhere or lands this beat.
+- Beat 2: Part 2 block 6 "against a trained fighter's blow her body has always folded, and it folds now" — a memory (not allowed) and "folds" overstates a hurting shoulder on a fresh fighter who held her ground.
+- Beat 2: pain jump — fresh Left Shoulder 0% → 60.27% (minor → HURTING, toughness 107 → 76) from one opening chop (power 147.29). Big for a first exchange; may be intended (targeted ×2, super effective ×2).
+- Beat 3: Part 1 finished line "Her horn swept round in a short arc, aimed at Ripples's flank." — wrong weapon and target (order: claws across the belly; Hit 1 is the Stomach), and "Ripples's".
+- Beat 3: Part 1 block 4 "she follows the stagger in, keeping her off balance" — Ripples is not staggered until this blow lands; block 5 "only strikes when the other starts to give ground" invents movement.
+- Beat 3: Part 1 block 8 "*End this.*" is far too final for "early: both are close to fresh".
+- Beat 3: Part 2 block 5 "she staggers in a half-circle before she finds it" contradicts the console "a single step backward"; block 4 "her tail lashes up ... and comes down limp" (she has twin tails; "limp" too big for sore).
+- Beat 3: LINGER says "give her body no movement the beat doesn't list (she isn't driven anywhere new...)" while the same beat lists a stagger step back — stock text not adjusted for the stagger.
+- Beat 3: Hit 2 (Left Thigh, minor 6.25%) "a hit here shows as a limp in the next step" — too big for a minor jar.
+- Beat 2-3 (and on): TELLING THE HURT keeps offering "through the scenery: what she is driven against or lands on" in beats where nobody is driven or lands (repeats).
+- Beat 4: CHECKED says "Nocturne's fur DRY (nothing has wet her yet)" in the beat where a Water Pulse soaks her head and neck.
+- Beat 4: CHECKED "the world doesn't blur or spin" contradicts the new CONFUSED status ("her eyes swim and she sways, unsure where anything is").
+- Beat 4: "It lands differently because: still staggering." sits under Nocturne's hits but means Ripples (the attacker) is staggering — mislabel/ambiguous.
+- Beat 4: Part 1 blocks "she watches the limbs fail to answer and walks straight in" and "she strikes and is already out of reach again" invent movement (Ripples is stumbling backward and throws from range).
+- Beat 4: Part 2 finished line "Her tail gave one sharp flick, the only sign she had been touched." contradicts the confusion (swaying) she must show; END block "what she has stopped feeling" pulls against "pain never goes numb".
+- Beat 5: CHECKED still says "Nocturne's fur DRY (nothing has wet her yet)" one beat after the Water Pulse (repeats beat 4 bug); "the world doesn't blur or spin" again while CONFUSED.
+- Beat 5: Part 1 block "she makes the same move she made before, to see if it is expected" — she has never used Iron Tail before, and this is a confused self-hit.
+- Beat 5: Part 2 blocks "she squares up again, unmoved" and the finished line "was set again before the half-step had finished" erase the confusion that the condition says lasts 1 more beat.
+- Beat 5: notes never say what struck her head in the self-hit (own tail? a pillar?) — the event line just lists "Nocturne's Head" with no source.
+- Beat 6: CHECKED again "Nocturne's fur DRY (nothing has wet her yet)" (repeat).
+- Beat 6: Part 1 block "she catches the edge of the body as she passes and drags her teeth along it" invents a pass-by movement; Part 2 block "her right ribs aches in a narrow line where the blow skidded across it" — "skidded" is slash language for a bite (and "ribs aches").
+- Beat 6: Part 2 END "her eyes, closing" is an odd ending for a fresh fighter mid-exchange.
+- Beat 6: Hit 2 (Chest, minor, reaction "small") offers impact "a sharp, surprised yelp" — too big, clashes with voice "a huff through the nose".
+- Beat 6 (outline order, not notes): "she ducks under the tail" refers to the Iron Tail that never reached her (beat 5 was a self-hit).
+- Beat 7: arm hits use leg text again: Fin "the limb snatched up off the ground", Right Upper Arm "a hop on the other legs, the struck one held up" (repeats beat 1 bug).
+- Beat 7: Hit 1 (Right Paw, sore, reaction "clear") impact example "a choking cry, the head jerking back and forth" — too big, and against CHECKED "no crying out".
+- Beat 7: Part 1 block "her teeth find the old wound and close on it deliberately" — there is no old wound on the fin or the paw, and the bite lands off target.
+- Beat 7: Part 2 block "aimed at the place that hurts most and lands ... on the part that hurts least" is wrong: it was aimed at an untouched fin and landed on the (then untouched) paw. Block "her body bends round the blow like a branch in a gale" too big for a sore hand; "her limbs do not know which of them should hold her" (a paw doesn't hold her up).
+- Beat 8: CHECKED "Nocturne's fur DRY until this beat's water soaks her" — she was already drenched by the beat 4 Water Pulse; the engine never set SOAKED for that hit, so wet/dry tracking misses Water Pulse.
+- Beat 8: Part 1 block "she gives ground on purpose, drawing the other onto worse footing" and Part 2 block "she spins half round with the force and has to find her opponent again" invent movement (console: "she takes it where she is").
+- Beat 8: Hit 3 (Right Flank, minor) "a sick sway, a paw pressed to the belly" — a quadruped pressing a paw to the belly, and too big for minor.
+- Beat 9: damage piling — Ripples' Stomach 59.95% → 105.8% (+45.85, sore → VERY PAINFUL) from one spread Dark Pulse (power 35.67, multiplier 0.43 vs 0.25 for the Night Slash that made the wound with power 79.7). Overall drops 90% → 82% (-145 health, more than double any earlier blow). The weakened-part multiplier looks too steep.
+- Beat 9: Part 2 block "her head drops and hangs between her shoulders, mouth open, stringing spit" is too raw for a fighter at 82% (fresh); Part 3 block "her tails are fanned and lifted, each one moving with its own lazy life" doesn't fit a doubled-over, breathless Ripples.
+- Beat 9: Part 1 block "the guilt of a clean hit on someone already hurt" is off-voice for Nocturne ("contempt for weakness"); block "how long she can keep this up, estimated honestly" doesn't fit a fresh fighter at 88%.
+- Beat 9: "(Delivered with her HORN, as the move says: not a claw swipe...)" — Dark Pulse is an aura blast; "as the move says" mislabels it.
+- Beat 10: Part 1 block "reluctant respect, in the distance she now keeps" contradicts the close-in bite; block "she comes in low, under the centre of weight, to lift as well as hit" invents a lift.
+- Beat 10: Part 1 place block "a vine swaying where nothing touched it" repeats beat 2's place block word for word (and "dust sifting down from the top of a pillar" repeats between beats 1 and 9).
+- Beat 10: Part 2 block "a single word, repeated, to get herself through the next breath" is far too big for three minor, not-very-effective bites on a fighter at 87%.
+- Beat 10: TELLING THE HURT again offers "through the scenery: what she is driven against or lands on" (nobody moves).
+- Beat 10 (outline, not notes): the events line reads just "knocked out of her)" — a truncated fragment.
+
+## narr_bugs_11-20
+
+- Beat 11: the order (console header) says "she rakes her free forepaw down the otter thigh to make her let go", but HOLDS says "none ... earlier bites let go" and Crunch (beat 10) was an instant bite. Nothing to let go of.
+- Beat 11: Ripples' left thigh hit is "a heavy blow (impact, e.g. a snarl of pain, balance lost and found again ...)" while the same line says "her reaction: small" and "lasting pain still minor" (6 → 29). Mixed signals; "heavy" seems too big.
+- Beat 11: part 1 block "she circles until the other has to face into the wind": movement the engine didn't decide, and the scene names no wind.
+- Beat 11: part 2 block "the hind leg dips a fraction and straightens": Ripples is upright; she has legs, not hind legs (wrong body).
+- Beat 11: part 2 blocks "eyes squeezed shut for a heartbeat, opened again wet" and "bewilderment ... as if the world had skipped a step" are too big for a minor sting.
+- Beat 12: the counter is "a quick strike of its own" with no move or weapon named (claws? paw? horn?), and no part covers it landing: part 1 (Ripples) stops at the Ice Beam, part 2 is Nocturne's side "what it feels like to receive it", with only dodge blocks. Nocturne is not hit; Ripples is. The counter's landing and Ripples' reaction have no POV slot or blocks.
+- Beat 13: the order says "meaning to drive the otter back into the leaning pillar behind her", but the console has no pillar impact ("it rocks her back on her heels; her feet stay where they are"). Order and engine disagree.
+- Beat 13 (damage piling): Ripples' chest goes 41.5 → 65.0 (beat 12 counter) → 128.7 (Take Down, +63.7 from one blow, ×0.30), sore to very painful in two blows; it reaches 228 in beat 19. Chest is taking almost everything.
+- Beat 13: "Nocturne has had much the better of it and is barely marked; nothing on her is badly hurt yet": her left shoulder is listed as hurting and she just took recoil on it.
+- Beat 13: part 2 block "her arms fly out from her sides with the shock, fingers spread wide": Ripples has webbed paws, not fingers. Block "she folds over the place with both arms and rocks" fights block "she holds chest still and moves everything else around it".
+- Beat 13: part 3 block "*She's keeping her distance now. Smart.*": Nocturne has just rammed into her; nobody moved apart, and Ripples is breathless, not choosing distance.
+- Beat 13: part 3 END block "the other's shape, a little out of focus" breaks the beat's own check ("the world doesn't blur or spin") for a fighter only at minor head pain.
+- Beat 13: the 900-word interlude ("Between this exchange and the next there is a long moment where nobody attacks") lands while Ripples has "the WIND KNOCKED OUT of her ... (1 beat)", and beat 14 still has her gasping (power ×0.85). A long lull should give her breath back. It also asks "what she is fighting for, and whether it is still worth this", which invites backstory the brief forbids.
+- Beat 14: part 1 block "she sweeps the beam upward, forcing the other to rise or be caught": Water Gun is a jet, not a beam (left over from Ice Beam), and "rise" is movement the engine didn't decide.
+- Beat 14: muzzle hit "a heavy blow (impact, e.g. a cry torn out before she can stop it ...)" and part 2 block "a grunt that climbs into a yelp despite her", but the line says "her reaction: small", pain is minor, and CHECKED says Nocturne gets "no crying out". Left ear also "a heavy blow" at minor (0 → 18.6).
+- Beat 14: part 1 blocks "she is enjoying this more than she should" and "something hungry and focused" clash with the fight shape for her ("worried about where this is going, and hiding it") and with her being breathless. Part 2 block "a sudden loneliness" doesn't fit Nocturne's voice or a light splash.
+- Beat 15: no part tells the wisp landing and the burn taking hold. Part 1 (Nocturne) must "STOP at contact"; part 2 says "The attack has ALREADY been shown above: do NOT describe any attack, dodge, impact". The burn's arrival falls between them.
+- Beats 15-17 (burn): the burn is put on a different part each beat: Right Shoulder (b15, "8% → 10%"), Right Paw (b16, "38.77% → 44.82%"), Head (b17, "19.67% → 23.69%"). Will-O-Wisp touched one spot; the burn should stay there. Notes beat 15 say only "burn flares on her right shoulder"; VISIBLE WEAR says "singed patches in her fur" (plural) with no place.
+- Beat 16 (damage piling): Nocturne's right ribs go 46.05 → 145.17 from one Brick Break (+99, sore → very painful); overall 85% → 77% in one blow.
+- Beat 16: CURRENT CONDITION says "the WIND KNOCKED OUT of her ... Stamina: fresh breath" for Nocturne, in the same line.
+- Beat 16: part 1 block "the opening it gives: *She's got nothing. No breath, no fight.*": before this blow Nocturne is fresh (85%) and breathing freely.
+- Beat 16: part 1 block "her clawed hand closes into a fist as it travels and lands like a hammer" and part 2 block "where the fist went in": Brick Break is the chopping edge of a webbed paw, not a clawed fist.
+- Beat 16: TELLING THE HURT suggests "through the scenery: what she is driven against or lands on", but she "takes it where she is"; nothing moves her.
+- Beat 16: "Right Paw (sore; from Nocturne's Bite, then the burn)": the burn listed as a cause on a part the wisp never touched (see the burn-hopping bullet).
+- Beat 17: the counter again has no move or weapon named ("a quick strike of its own"), and "LINGER ON ONE MOMENT" on Nocturne's nose is put in part 2, which is "Ripples' side ... what it feels like to receive it". Ripples isn't hit; Nocturne is. Same POV mismatch as beat 12.
+- Beat 17: Nocturne's nose hit "a heavy blow (impact, e.g. a snarl of pain, balance lost and found again ...)" at minor pain (0 → 26.8) with "her reaction: small".
+- Beat 18: the grab is on Nocturne's Neck (console "takes hold of Nocturne (her Neck)", damage on Neck), but the notes carry the order's staging in the same line: "she seizes her Neck ... (she darts in low and whips her twin tails round the white hind legs to tie them)". Neck or legs? I followed the console (arms round the neck). Beats 20-21 orders keep "tails locked round the white legs" / "legs tied".
+- Beat 18: part 2 (Nocturne receiving the grab) has no building blocks at all.
+- Beat 18: part 3 says "she watches from where she stands. She does not close in" and block "caution that keeps her a step further away than she needs to be", but the two are LOCKED TOGETHER at point-blank by the grab.
+- Beat 18: part 3 block "irritation at a blow that landed short": there was no blow, only a grip.
+- Beat 19 (damage piling): Ripples' chest 128.7 → 228.1 from one Night Slash (+99.3, ×0.46), very painful to excruciating; with beats 12-13 that is 41.5 → 228 in three Nocturne blows. Overall 69% → 60%.
+- Beat 19: chest hit "a real scream, her whole body jerking ... She is too worn to hold all of it in", but she is "OVERALL 60% (winded) ... still fast and dangerous". The brief says a high pain level on a fighter still strong overall should be half hidden.
+- Beat 19: part 1 block "she works the body, close in, blow after blow" against "This is ONE strike, not several". Finished line "She stepped inside Ripples's reach" while they are already locked together; also "Ripples's" spelling.
+- Beat 19: part 3 block "she breathes high in her chest to keep from moving her belly at all": her chest is the excruciating part; breathing high in it is the opposite of sparing it.
+- Beat 19: the hit breaks the grip, but the beat 20 order says "she keeps her tails locked round the white legs" and beat 21's says "legs tied". No hold exists after beat 19 (and the beat 18 hold was on the neck, not the legs).
+- Beat 20: the notes contradict themselves: HOLDS says "none ... earlier bites let go", and the event line says "she keeps her tails locked round the white legs and gulps air". The console has no hold (broken in beat 19). I wrote no hold; the beat 21 writer also wrote the tails "shaken off".
+- Beat 20: "Ripples shakes off being flinched", but the notes give no breathless status ("the claws have knocked the breath out of her") and beat 19 rolled "breathless ... → no". The breathlessness comes only from the order text.
+- Beats 11-20 (general): the "Stamina" line often disagrees with OVERALL: Nocturne is "winded" overall with "Stamina: fresh breath" in beats 16-20.
+
+## narr_bugs_21-30
+
+- Beats 18-26 (the orders, not the engine): the beat 18 grapple order says the tails go "round the white hind legs", but the console has the hold on Nocturne's **Neck**. The beat 19 console breaks that hold ("The hit breaks Ripples' hold on Nocturne's Neck (#1)"). After that every note says "HOLDS: none", yet the orders keep the legs bound: beat 20 "she keeps her tails locked round the white legs" (it is also copied into notes20's WHAT HAPPENS, next to "HOLDS: none"), beat 21 "legs tied", beat 22 "tails still locked round the white legs", beat 24 "bites the bound hind paw", beat 25 "the otter wrapped round her legs most of all", beat 26 "she lets go of the legs". Beat 22 even has a dodge, which can't happen in a hold. I followed the engine and wrote no hold.
+- Beat 21: Part 1, block 1, "OPEN this part on: a flicker of doubt" clashes with the same notes' "calm, almost lazy: she thinks she has the measure of this."
+- Beat 21: Part 1, block 6, "the tail hooks round the far side and pulls rather than strikes" doesn't fit an Iron Tail strike to the head.
+- Beat 21: Hit 1 to the head is described as "breath driven out of her in a rush, the mouth hanging open", which is a chest or stomach reaction, not a head one.
+- Beat 21: Part 2, block 8, "she clutches at the place with her free hand" implies that her other hand is busy, but there is no hold. Block 9, "the ache in her head has settled into her arms", puts the pain in the wrong body part.
+- Beat 21: Part 3, block 4, "she blinks and watches the world slide and come back, and checks it again, and again" is too big for a head that is only sore.
+- Beat 21: Part 2, block 3 ("a flicker of amusement") and block 1 ("something close to scorn") clash with the notes' "uneasy: the fight is slipping" for Ripples.
+- Beat 22: Part 2 is labelled "Nocturne's side ... what it feels like to receive it", but Nocturne takes no hit. Only Ripples is hurt (the counter to her Right Paw), and no part covers how that feels from her side.
+- Beat 22: the counter's move is never named ("a quick strike of its own"). The narrator can't tell whether it was claws, a bite or the tail.
+- Beat 22: Part 2 offers two dodges, block 1 "she ducks her horn low and the blow passes clean over it" and block 3 "she drops flat and it whistles over", next to the WHAT HAPPENS text "drops low". That repeats itself, and "drops flat" is close to going down, which the posture forbids.
+- Beat 22: Part 1, block 8, "relief that it landed at all" is wrong because the attack misses. Block 7, "She flinched at the feint", is wrong because there is no feint. Block 2, "she keeps her chin tucked down into her ruff, guarding her chest", is labelled "(her right ribs)".
+- Beat 23 (damage piling up): the Chest is only jarred by a bite to the arm ("power 12.01 ... × 1.03 × scale 3"), yet it climbs 228% → 265% (+37). That is close to the main hit's +46 and costs more health (-46.65 against -33.74). The jarred multiplier ×1.03 is about four times the ×0.23 on the main target. The notes then turn that carry-over into the beat's biggest moment ("a real scream, her whole body jerking").
+- Beat 23: Part 2, block 5, "a scream, a real one, and her whole body bends round the left upper arm" puts the scream on the arm, which is only hurting. The scream belongs to the chest.
+- Beat 23: Part 2, block 11, "whether the ringing in her head is getting louder or softer": her head was not hit this beat and is only sore.
+- Beat 23: Part 3, block 4, "*That's going to bruise.*" is far too small for an excruciating chest that makes her scream.
+- Beat 23: Part 1, block 5, "she goes for the limb nearest the ground" doesn't fit a bite to the upper arm. Block 6, "she gives ground on purpose, drawing the other onto worse footing", is movement the engine didn't decide.
+- Beat 23: Part 3 calls back "this chest was first hurt 22 beats ago, by Nocturne's Sucker Punch", but WHAT HURT WHERE and CURRENT CONDITION list the chest only as "Take Down, Night Slash, Bite". Meanwhile Sucker Punch appears under Left Upper Arm.
+- Beat 24: Part 2, block 8, "her eyes fly wide, white all round, and see nothing", and block 9, "a keening whine through clenched teeth, tears starting", are far too big for a paw left only sore, on a fighter who is still winded at 72%. They also clash with the note's own "her voice: a huff through the nose".
+- Beat 24: Part 2, block 2, "it lets her go only when it wants to" contradicts the console, where she "wrenches back against the teeth ... as she pulls free".
+- Beat 24: Hit 1 is called "a tremendous blow", yet the lasting pain is only "minor → SORE". The size is fine for a paw, but the label oversells it.
+- Beat 25 (damage piling up): Thunderbolt has "Power 16 = base 8 × 2". Spread over 32 parts, it adds +403.87% damage and takes Ripples' health from 842.6% to 562.13% (-280). That is the single biggest loss of the fight so far, from the weakest move, and it drops her from 50% to 33% overall in one beat. The Chest goes 265% → 311% from power 16 (× 1.33). The whole-body spread is also too generous: every part, ears, feet and tails included, takes its full ×0.10–0.54 share.
+- Beat 25: the Chest note asks for "a real scream, her whole body jerking ... she shakes afterwards, her breath comes in ragged pulls", then in the same line says it "GOES NUMB ... the pain cuts out all at once". BREAKING POINT asks for "the instant the pain becomes too much to hold in". All three are given for the same instant. I wrote the scream first, then the numbness.
+- Beat 25: Part 3's focus is "what that blow to her stomach has DONE to her", and Part 2's blocks are mostly about the stomach. But the chest is the devastated, numbed part and "the biggest moment of this beat".
+- Beat 25: VISIBLE WEAR says "gouged furrows, the fur hanging in torn clumps", which breaks the tone rule (no torn flesh, small cuts at most).
+- Beat 25: Part 4, block 1, "*Weak. Get up, then. Show me.*" is wrong because Ripples is on her feet. Block 5, "her knees bend under her and she has to force them straight", is labelled as what Nocturne sees, but it reads as Nocturne's own body.
+- Beat 25: the move line says "hits the whole body, far worse in water", but no puddle or water is involved.
+- Beat 26 (damage piling up): one Water Pulse ("Power 25", rolled 28.46 × 0.70) takes the Right Ribs from 145% to 205% (+59.7) and costs Nocturne -99.84 health. Her overall drops from 72% to 65%. The ×0.70 factor on a part that is already hurt makes the ribs snowball. They reached very painful at beat 16 from one +99 Brick Break.
+- Beat 26: Hit 1 says "She still has most of her strength, so she fights to keep it in, and mostly does", while MEASURED PAIN says "she is worn now, so more of it gets out: a real cry, a limp or a sag". Both cover the same hit on a fighter at 65%.
+- Beat 26: "This beat is an ordinary exchange ... with no more drama than it carries" sits next to BREAKING POINT's "It is the biggest moment of this beat". Beat 25 has the same clash.
+- Beat 26: Part 1, block 6, "she sees the strange, jerky way her opponent moves, and goes in" uses the confusion before the hit that causes it.
+- Beat 26: Part 2, block 4, "she lunges at nothing and catches herself" is movement the engine didn't decide. Block 9, "she yelps", contradicts block 11, "a low, steady growl instead of a cry", and her voice note ("growls and hisses rather than cries out").
+- Beat 26: CHECKED says "Nocturne's fur damp, drying" just after a Water Pulse hit her full on, so her fur should be wet. Stamina also flips from "breathing hard" (beat 25) back to "fresh breath".
+- Beat 27 (damage piling up): one Slash (power 52.97 × 0.68) takes the Stomach from 133.57% to 242.25% (+108.68) and Ripples from 32% to 23% overall. Two beats earlier the Thunderbolt had already added +27.8 to that Stomach. The ×0.68 on a softened part doubles the damage each time it is hit.
+- Beat 27: MEASURED PAIN says "Nocturne's right ribs is that bad, and she is worn now", but Nocturne takes no hit this beat. Ripples' stomach needed the measured-pain note.
+- Beat 27: the notes leave out the confusion check. The console rolls "Nocturne hurting herself in her confusion 33%, rolled 96 → she attacks normally", but WHAT HAPPENS never says she is still dizzy as she attacks.
+- Beat 27: the ADRENALINE SURGE ("the pain falls away behind sheer will") is contradicted by Part 3's "the sounds she tries to keep in ... (by now she mostly can't)" and block 1, "the agony in her stomach rises and breaks and rises again, each crest higher".
+- Beat 27: Hit 1 offers "a limb scrabbling at the ground" for a fighter who is ON HER FEET all beat. Part 2, block 9, "for a moment she does not seem to be in there at all", reads as blacking out, which is forbidden.
+- Beat 27: Part 1, block 8, "she strikes as she lands from a leap" is movement the engine didn't decide, and it doesn't suit a confused fighter. Part 3, block 8, "the other overreached" is not in the engine.
+- Beat 27: the Lower Back is "jarred next to" a slash on the stomach, which is on the other side of her body. The console line for it also has no "rolled ×" and no "vital" factor ("+7.87 = power 16.43 × 0.16 × scale 3", "health ... × 0.6").
+- Beat 28: MEASURED PAIN again says "Nocturne's right ribs ... she is worn now", although the ribs aren't hit this beat (same as beat 27). CURRENT CONDITION calls Nocturne "tired" and gives her Stamina "fresh breath" in the same line.
+- Beat 28: Part 2, block 2, "the blow sinks into the thick ruff at her chest" sends the hit to the chest when it is on the neck. Block 5, "the ache in her neck has settled into her legs", puts the pain in the wrong part. Block 9 ("a loud grunt, and her front end dips toward the ground") and block 10 ("tears start") are too big for a neck that is only sore, on a resisted, sloppy bite.
+- Beat 28: Part 1, block 4, "she starts slow, a walk, then a trot ... the full rush" is movement the engine didn't decide. Block 10, "not to try the same trick a third time", refers to no trick she has repeated.
+- Beat 28: the chest numbness "wears off" one beat after it set in, while the adrenaline surge (2 beats left) says "pain pushed to the back of her mind". The two clash, and nothing says which wins.
+- Beat 29 (damage piling up): an Iron Tail that is "NOT VERY EFFECTIVE" (power 43.8 × 1.60 × scale 3) adds +210.25 to the Chest, which goes 311% → 448% (the console says it "counts +137.25"). Ripples drops from 23% to 14% overall. A ×1.60 part factor is more than six times a fresh part's. A resisted move does the most damage of any single hit in these beats.
+- Beat 29: "NOT VERY EFFECTIVE ... her body shrugs much of it off" sits on the same hit as "a tremendous blow on a part that was already devastated: a raw scream ... a limb scrabbling at the ground". The two can't both be true. "A limb scrabbling at the ground" also doesn't fit a fighter who is standing.
+- Beat 29: LINGER says "she isn't driven anywhere new", but the STAGGERED note says "knocked off her line, several steps, close to going down backward".
+- Beat 29: Part 1, blocks 8 and 9 ("the tail comes round low, at the legs, a sweep", "a low sweep at the legs, then the tail rising") don't fit a blow aimed at the chest. Block 9 also adds a second motion.
+- Beat 29: Part 2, block 7, "she drags chest along with her" is garbled. The "WORN OUT" phrase "then ripples' blow struck" is harness placeholder text leaking into the notes.
+- Beat 29: MEASURED PAIN names Nocturne's right ribs again, which aren't hit this beat.
+- Beat 30: the SUPER EFFECTIVE framing ("it bites deeper than a blow its size should ... she KNOWS her body can't take this") is applied to a blow that was BLOCKED on the Horn, where the pain stays minor (+29.26%, -4.05 health). Part 2's blocks repeat the mistake: block 4, "the strike sinks in to the core of her and her body folds hard round it"; block 6, "her horn has nothing to shed it with; it soaks in and stays"; block 10, "the sound that comes out is not a growl"; block 11, "a whine slips out". All of these are far too big for a minor horn hit.
+- Beat 30: Part 1, block 6, "she shoves the guard aside with one paw and hits through the space" contradicts the block. Block 10, "*Give her small ones*", contradicts LAST STAND ("puts EVERYTHING ... into this one blow").
+- Beat 30: "This beat is an ordinary exchange" is wrong for a last stand that is blocked and an adrenaline surge that ends. MEASURED PAIN names Nocturne's ribs again, which aren't hit.
+- Beat 30: the ADRENALINE SURGE was "3 beats" from beat 27, but it ends after beat 30's hit. That is fine, but beat 28's CURRENT CONDITION already counts down to "(2 beats)", and beat 29's to "(1 beat)".
+- Beats 21-30, overall: once a part is past "excruciating", every hit there multiplies (×0.68, ×1.03, ×1.33, ×1.60 against about ×0.25 for fresh parts). Ripples' Chest goes 228% → 448% and her Stomach 106% → 242% in ten beats, and she drops from 57% to 13%. Most of that loss comes from carry-over hits, a whole-body Thunderbolt and resisted moves.
+
+## narr_bugs_31-40
+
+- **31:** A fix-up call asks for something from the previous beat: "it never showed the BLOCK: Nocturne got her horn up in the blow's way". The horn block was in beat 30. Nothing is blocked in beat 31.
+- **31:** No part is given the pillar event ("THE PLACE ITSELF ACTS, as the LAST thing in this beat"). Part 3 is Ripples-only and says "nothing new is thrown, gripped or pressed by anyone", so drafts keep leaving it out and the rewrite loop keeps flagging it.
+- **31:** The pillar is told too big for its hits: "comes down in a roar of breaking stone ... It catches Nocturne". All three hits it lands are "lasting pain still minor" with "small: a wince", and it knocks nobody down. A whole pillar falling on her should do more than that.
+- **31:** Ripples is told to put weight on her hands. Right Paw and Right Upper Arm both say "a hit here shows as a limb buckling ... then favoring it and testing weight on it". The rules say her paws are hands and she never puts weight on them.
+- **31:** The reactions don't fit a fighter who is spent (9%). Right Forearm Fin and Right Upper Arm say "the rest of her still fighting".
+- **31 (numbers):** One ram aimed at the forearm fin takes it from 24.54 to 99.68 (+75, minor → very painful): "power 76.68 × 0.33". That is because a full-body Take Down gets "× 2 (targeted)" when aimed at a small part on the arm. A shoulder charge shouldn't get a precision bonus on a fin.
+- **31:** The VISIBLE WEAR on Ripples' chest is past the gore rule: "gouged furrows, the fur hanging in torn clumps".
+- **32:** The same stale fix-up again: "it never showed the BLOCK: Nocturne got her horn up". This beat is a pin, not an attack, so there is nothing to block.
+- **32:** The throat reaction doesn't fit her body or her state: "she huffs and plants her paws, unbothered for now". She is on her back with 4% of her strength left, and her paws are hands she doesn't plant.
+- **32:** Part 2 block 1 doesn't fit a fighter who is spent (4%): "her muscles jump under the hold, all of them ready, none of them yet spent". Her mood line is off too: "already planning the way out".
+- **32:** Block 9 contradicts the pin. It says "she cannot lean all her weight into the hold; her right ribs will not take the press", but the pin itself is "Chest (crushing pressure, with both forepaws and her weight)".
+- **32:** The PINS rules say "Do not initiate a pin unless an opponent is actively on the ground, struggling to stand back up". Beat 31 said Ripples gets no get-up roll until this beat, and none was rolled before the pin went on.
+- **32 (numbers):** The chest damage contradicts itself: "+16.66 ... (the part counts +8.26: past 300% its number climbs slowly)". The bar moves 448.41 → 456.67, which is +8.26, but +16.66 is what goes into health. The outline shows +16.66 too.
+- **32 (numbers):** Ripples drops from 148 to 71 (9% → 4%) in the beat the pin closes, even at "pin damage ×0.5". The chest alone costs -33.8 at "vital 1.4".
+- **33:** The stale fix-up shows up a third time: "it never showed the BLOCK: Nocturne got her horn up". A fix-up note seems to be carried over from beat 30 into every later beat.
+- **33:** The notes now say the chest may break: "these devastated parts CAN BREAK (broken bones allowed): Chest". The author's brief says no broken bones at all.
+- **33:** The mood line contradicts her state: "pinned and furious, and far from done". She is past her limit at -4% and the notes call her "fading".
+- **33:** The throat reaction is wrong for her: "her tail flicks, irritated, as she pushes back". She has twin tails, and she is past her limit, not irritated.
+- **33:** Part 2 names a grip that isn't there: "do not tell Nocturne's jaws, paws or weight bearing down again". No bite is part of this pin.
+- **33:** Part 3 block 1 gets the position wrong: "she watches the hurt chest pressed into the ground as if hiding it there". Ripples is face-up, and her chest is under Nocturne's forepaws, not against the ground.
+- **33:** The struggle is described two ways. The console says "she kicks out" and the notes say "she flails a free limb at the body on top of her". They are close enough, but the notes could pass on the kick.
+- **33 (numbers):** Ripples goes from 70.75 to -70.27 in one pin beat (-141). The presses take -79.7 at "×0.56" and the punish takes -48.9. That takes her from 4% to past her limit at the first struggle.
+- **34:** The stale BLOCK fix-up is back, now inside the Part 2 rewrite reports as well: "ALSO, it never showed the BLOCK".
+- **34:** The stomach is listed as a part that can break: "CAN BREAK (broken bones allowed): Chest, Stomach". The stomach has no bone in it.
+- **34:** Her stamina gets better while she is pinned and past her limit. Beat 33 says "Stamina: gasping, running out of energy". Beat 34 says "Stamina: breathing hard".
+- **34:** The throat punish says "her reaction: strong: ... the rest of her still fighting". She is at -12%, and the same beat's PIN line says she is fading.
+- **34:** One tail again: "SHE REACTS: her tail lashes as she twists". She has twin tails.
+- **34:** The pressing is told twice. "BREAKING POINT: Ripples' Stomach has just become DEVASTATED ... give this its own focused moment", but Part 2 says "The pressing has ALREADY been told above: do not tell ... again". Neither part is told to carry the breaking point.
+- **35:** The stale BLOCK fix-up is still there, in both rewrite reports and the separate fix-up call.
+- **35:** The chest LOOKS line is past the gore rule: "pressed in so the flesh rolls up round it in a thick fold".
+- **35:** Her stamina still reads "Stamina: breathing hard" at -20%, past her limit (see 34).
+- **35 (numbers):** Ripples drops from -197 to -340 in one beat. The presses take -97.8 at "×0.68", the punish takes -32.3, and injuries take -12.6. Pin damage per beat keeps climbing (×0.5 → ×0.56 → ×0.62 → ×0.68) on a body that is already past its limit. The pin clock also uses "health below zero ×1.15", so she goes under faster.
+- **36:** Ripples is given Nocturne's voice: "Throat ... SHE REACTS: she squirms, a low growl breaking into a grunt". Growling belongs to Nocturne. Ripples chitters, squeaks and barks.
+- **36:** Part 1 block 6 gets the position wrong: "she lies with the hurt side up, where the ground cannot press on it". She is face-up, and the hurt parts are the ones under Nocturne's paws.
+- **36:** Part 3 block 3 describes someone standing: "her arms hang low at her sides, fingers loose, barely a guard at all". She is on her back, and she has webbed paws, not fingers.
+- **36:** The throat LOOKS line is too strong for a part that only "hurts": "pressed in far enough to change her outline, the flesh round it puffed and tight". Her throat is the most delicate part, so this reads as brutal.
+- **36:** The stale BLOCK fix-up appears again.
+- **36:** One tail again: "she sees the tail stop moving entirely".
+- **37:** The struggle contradicts itself. It says "she throws her body up against the weight, again and again, short and violent". Elsewhere in the same notes she is "nearly out: barely moving", and the try is "a slow, late try, not a strong one".
+- **37:** The stomach reaction is too big for her state: "she convulses under it, limbs flailing, howling". She is nearly out and barely moving.
+- **37:** Nocturne gets a reaction that doesn't fit her: "she whimpers under her breath with the effort". Her VOICE says she "growls and hisses rather than cries out" and "rarely admits pain", and she still has 55% of her strength.
+- **37 (numbers):** The throat climbs from minor to very painful under nothing but a laid tail: 12.35 → 114.83 over six pin beats, +17 to +18 per beat by the end. The "pin cap" (×0.45) does not stop it, because pin damage ramps up to ×0.8.
+- **37:** The stale BLOCK fix-up is still in the rewrite reports and in its own fix-up call.
+- **38:** Part 1 block 2 gets the position wrong: "she is propped on one elbow and the elbow is shaking". She is flat on her back and pinned.
+- **38:** The stomach reaction is too big for her state: "every press tears a scream out of her and her legs kick wildly". The same notes say she is "barely moving, her eyes sliding shut".
+- **38:** The gore-edge LOOKS line from 35 repeats on the stomach: "pressed in so the flesh rolls up round it in a thick fold".
+- **38:** The INJURY REPORT names a move that never happened: "her stomach, from Nocturne's blinding flash of light". No such move was used. Her stomach was hit by Night Slash, Dark Pulse and Slash. The throat line, "Nocturne's strong electric blast ... did her throat", is doubtful too.
+- **38:** The FIGHT SUMMARY gets her strength wrong: "the pain (chest) put her out at 0% strength". The console has her at -869%.
+- **39:** The stale BLOCK fix-up turns up even in the aftermath, where nothing happens: "YOUR PREVIOUS DRAFT had problems: it never showed the BLOCK".
+- **39:** Part 2 block 2 gets the position wrong: "she lies curled round her worst hurt, even now". CURRENT CONDITION has her flat on her back, face-up.
+- **39:** The throat VISIBLE WEAR is an electric look the pin couldn't make: "her throat: the coat crackling, every hair on end". The throat was hurt by a tail pressing on it.
+- **39:** The VISIBLE WEAR for the stomach copies the chest word for word ("a great dark bruise spreading under the coat, the shape of the part gone puffy...").
+- **39:** Her stamina is wrong just after a seven-beat pin: "Nocturne ... Stamina: fresh breath". The same notes call her "OVERALL 55% ... (tired)".
+- **40:** The stale BLOCK fix-up appears once more. Otherwise the condition is identical to 39, which is correct.
+- **40:** Part 2 block 2 is mildly off: "her ears twitch at the sounds round her but she does not wake". CURRENT CONDITION says "unresponsive". I kept it to one small flick.

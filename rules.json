@@ -71,7 +71,7 @@
     "_sustain_comment": "Sustained moves: a move marked \"sustainable\" (streams and beams like Hydro Pump, Flamethrower, Ice Beam) can be held for up to max_pulses pulses. Each extra pulse hits the same parts at pulse_mult power and costs energy_per_pulse. If the target is pressed against something, each pulse also slams her into it, and it may break (break_chance by surface): a heavy extra hit, the move ends early, and she goes down.",
     "_grind_comment": "grind: blows landed while she is held or pressed against something in the arena (a pummel against a tree, \"pinned_against\" on an ordinary strike) each drive her back into it too: power is the severity of that extra hit on her back, break_mult scales the thing's chance to break (from sustain.break_chance) for each blow.",
     "grind": {"_comment": "Blows on a fighter held or driven against the scenery: each also drives what is behind the part it hit into it (her upper back behind her chest, lower back behind her belly, the back of her head behind her face); a blow on a limb grinds the limb itself in limb_chance of the time (limb_chance_down lying on the ground, where a limb is nearly always against it), and the shoulder or hip it hangs from limb_root_chance; when what is driven in is the struck part itself (the arm, the back of the neck), it takes self_mult of the surface's power (the same for moves.ground_back on the ground). power from severity.environment.", "power": "light", "break_mult": 0.5, "limb_chance": 0.6, "limb_chance_down": 0.85, "limb_root_chance": 0.4, "self_mult": 0.5},
-    "aim": {"_comment": "Where a blow aimed at one part really lands. The smaller or harder to reach a part is, the likelier a blow aimed at it lands on a part beside it instead (bigger and easier ones likelier): the torso is easiest, then the back, shoulders and thighs, the forelimbs, the head, the tail and lower limbs, and the neck hardest of all, tucked under the jaw. 'small' makes a named part harder still within its region (an eye, an ear, the throat). regions: chance (0-1) a blow lands where aimed, by body region. Easier on a fighter who is down or pinned (down_mult), held (held_mult), or open (staggered, dazed, doubled over, off balance, flinched, frozen, asleep, paralyzed: open_mult); harder for an attacker who is dazed, off balance or confused (shaky_mult). These multiply the chance to MISS; scale multiplies it once more (0 = every blow lands where aimed). Where it lands instead: a part beside it, the bigger and easier the likelier; one harder to reach than the part it missed only x harder_mult. A path of parts (a rake from cheek to hip), a pummel's run of blows and a whole-body move are never re-aimed.", "enabled": true, "scale": 1.0,
+    "aim": {"_comment": "Where a blow aimed at one part really lands. The smaller or harder to reach a part is, the likelier a blow aimed at it lands on a part beside it instead (bigger and easier ones likelier): the torso is easiest, then the back, shoulders and thighs, the forelimbs, the head, the tail and lower limbs, and the neck hardest of all, tucked under the jaw. 'small' makes a named part harder still within its region (an eye, an ear, the throat). regions: chance (0-1) a blow lands where aimed, by body region. Easier on a fighter who is down or pinned (down_mult), held (held_mult), or open (staggered, dazed, doubled over, off balance, flinched, frozen, asleep, paralyzed: open_mult); harder for an attacker who is dazed, off balance or confused (shaky_mult). These multiply the chance to MISS; scale multiplies it once more (0 = every blow lands where aimed). Where it lands instead: a part beside it, the bigger and easier the likelier; one harder to reach than the part it missed only x harder_mult. A path of parts (a rake from cheek to hip) is not aimed as a whole, but each small, hard-to-reach part on it (aim ease at or below path_below: an eye, an ear, the throat) is rolled like an aim and lands beside itself if it misses; a pummel's run of blows and a whole-body move are never re-aimed.", "enabled": true, "scale": 1.0, "path_below": 0.6,
       "regions": {"chest": 0.95, "belly": 0.95, "back_up": 0.9, "back_low": 0.9, "shoulder": 0.85, "hind_up": 0.85, "fore_up": 0.8, "head": 0.75, "tail": 0.7, "hind_low": 0.7, "fore_low": 0.65, "neck": 0.55, "other": 0.8},
       "small": [["throat", 0.8], ["ear", 0.7], ["eye", 0.6], ["nose", 0.75], ["muzzle", 0.9], ["jaw", 0.9], ["cheek", 0.9], ["paw", 0.85], ["hand", 0.85], ["foot", 0.85], ["fin", 0.8], ["horn", 0.85], ["knee", 0.9], ["hock", 0.85]],
       "down_mult": 0.5, "held_mult": 0.5, "open_mult": 0.6, "shaky_mult": 1.3, "harder_mult": 0.3},
@@ -144,6 +144,8 @@
     "_limb_limits_comment": "A move thrown WITH a badly hurt limb lands weaker: a chop or a slash with a ruined paw or arm, a charge or a kick on a ruined leg, a bite with a ruined jaw, a horn strike with a ruined horn, a tail strike with a ruined tail. 'at': the damage % on the worst such part, and the power multiplier from there (150 = excruciating, 300 = devastated). Streams, beams and whole-body moves are not thrown with a limb. enabled false = off.",
     "limb_limits": {
       "enabled": true,
+      "_struck_limb": "true: a blow thrown with ONE limb (a wing, an arm, a talon, a horn) counts the limb she throws it with: the one the order names ('her left wing'), or else her sounder one, since a fighter favours a hurt limb. A charge still counts the worst of them (all of them carry it). false = always the worst of the pair, as before.",
+      "struck_limb": true,
       "at": {
         "150": 0.8,
         "300": 0.6
@@ -510,7 +512,7 @@
     "roll": 0.17,
     "damage_scale": 3,
     "_resistance_scale_comment": "resistance_scale multiplies how fast resistance wears down (resistance lost = power x loss_per_power x resistance_scale). It does NOT change damage. 1 = normal; 2 = parts soften twice as fast; 0.5 = half as fast. Change it in the program with /resscale.",
-    "resistance_scale": 1.0,
+    "resistance_scale": 0.7,
     "part_curve": {
       "enabled": true,
       "knee": 300,
@@ -592,7 +594,8 @@
     "smooth": {
       "_comment": "A gradient instead of thresholds: a part's damage mult and health mult slide smoothly with its resistance, along straight lines between these anchor points [resistance, damage mult, health mult] (flat beyond the first and last). The anchors sit in the middle of each bracket, so the overall pace stays close to the brackets'; the brackets themselves still give the labels and icons. enabled false = the old thresholds.",
       "enabled": true,
-      "points": [[15, 1.6, 2.6], [40, 1.0, 1.9], [60, 0.5, 1.2], [80, 0.28, 0.8], [95, 0.17, 0.62], [120, 0.1, 0.47]]
+      "_points_comment": "build 183: the low end flattened (a ruined part took x1.6 and a worn one x1.0; now x0.9 and x0.6), so a hurt part still takes several times what a fresh one does but no longer swallows nearly every later blow; health loss per damage point went up to keep fights the same length",
+      "points": [[15, 0.9, 2.6], [40, 0.6, 1.9], [60, 0.4, 1.2], [80, 0.27, 0.8], [95, 0.17, 0.62], [120, 0.1, 0.47]]
     },
     "max_loss_per_hit": 35,
     "_max_loss_per_hit_comment": "max_loss_per_hit: the most resistance (in points) one blow can take off a part, however devastating, the soft cap's extra wear included. 0 = no limit.",
@@ -610,7 +613,7 @@
     "minimum": null,
     "_minimum_comment": "null = health can drop below 0% with no floor. Set a number (like 0) to stop it there.",
     "_comment": "Health lost per 1% of body-part damage (times the resistance bracket's health_mult), per beat from exhaustion, and per beat for badly hurt parts.",
-    "loss_per_damage_point": 0.46,
+    "loss_per_damage_point": 1.84,
     "after_win_drain": {"_comment": "Once the fight is won, the badly hurt parts drag at the winner less and less: the pain drain is multiplied by each for every beat since the win (0.5: half, then a quarter...). enabled false keeps the full drain.", "enabled": true, "each": 0.5},
     "_soft_cap_comment": "A hit on a badly hurt part costs a lot of health (its low resistance makes sure of that), but nothing swings wildly. One HIT costs at most about per_hit of the fighter's own full health (0.05 = 5%), rolled up or down by jitter (0.15 = plus or minus 15%) and smaller for a light knock (power under power_ref scales it down, to no less than power_floor of it): past that the extra levels off, adding at most room x that cap more however big the raw number. Everything that lands on her in one BEAT is softened the same way past per_beat. A devastating blow gets far looser limits (moves.devastating cap_mult, room_mult). The stat block shows 'softened from' when it applies.",
     "soft_cap": {
@@ -702,21 +705,29 @@
     "pov_labels": true,
     "_raw_reactions_comment": "raw_reactions: when a real blow lands on a part that was ALREADY very painful, excruciating or devastated, the narrator is told to make the reaction visceral, scaled by how hurt the part was, how big the blow is (a brush on a ruined part is far less than a real blow there) and how much strength she has left: most of her strength = she fights to keep it in (a hiss, a bitten-off cry); middling = a real scream and shaking; nearly spent = a raw scream that cracks, shaking she can't stop, streaming eyes. One big reaction per fighter per beat; later blows that beat build on it. Never sobbing. false = off.",
     "raw_reactions": true,
+    "_jarred_size_cap_comment": "jarred_size_cap: a part only jarred by a blow aimed beside it (moves.auto_spill, a fraction of the power) is sized in the notes as at most this (glancing, solid, heavy or tremendous), however much it hurt a worn part. Words only.",
+    "jarred_size_cap": "solid",
+    "_arena_detail_uses_comment": "arena_detail_uses: how many times in one fight each of the scene's details (scenes.json: details) may be offered to the narrator as 'the place, glimpsed in passing'. Once every detail has had its turns, the parts go without one (the place is still in the scene text). 0 = no limit.",
+    "arena_detail_uses": 2,
+    "_size_cap_by_pain_comment": "size_cap_by_pain: a blow is sized in the notes (and its impact examples and reaction ideas picked) as at most this when the part it hit ends the blow at that lasting pain level: a blow that leaves the part minor is at most solid, sore at most heavy (no 'heavy blow' with a cry torn out of her on a part that barely hurts). Levels not listed are not capped. Words only.",
+    "size_cap_by_pain": {"minor": "solid", "sore": "heavy"},
     "_blocks_comment": "Story building blocks (story_blocks.txt): a large file of ideas (reactions, sensations, how a hurt spreads, breath, what an opponent can see of an injury, ways to stage a move, thoughts, feelings, takedowns, pins, getting up, landings, aftermath). Before each part of a beat the program offers the narrator up to per_part of them that FIT the fight as it stands (the size of the blow, how much each part hurts now, who is fresh or spent, what her body has), preferring the least-offered and never one offered in the last cooldown_beats beats. They are suggestions to reword, never new events. remember: what was offered is kept between fights in blocks_memory.json. /blocks shows the counts; /blocks off turns them off.",
     "blocks": {
       "enabled": true,
       "file": "story_blocks.txt",
       "per_part": 10,
-      "cooldown_beats": 8,
+      "cooldown_beats": 14,
       "remember": true,
       "plan": true,
-      "open_and_end": true
+      "open_and_end": true,
+      "light_effect_max_level": "sore"
     },
+    "_light_effect_max_level_comment": "blocks.light_effect_max_level: a not-very-effective (or no-effect) blow gets its matchup ideas (it hardly marks her, it breaks against her, she shrugs it off) only while every part it hit ends this beat at this pain level or lower (minor, sore, hurting, very painful, excruciating, devastated). A weak blow that still leaves a part hurting is told by its hurt, not by the matchup.",
     "_lines_comment": "lines: the library of finished sentences (story_lines.txt, same format as the blocks). One that fits is offered to the narrator per part, to use word for word if it fits; a bare line of told resolve the program cuts (\"She would not be defeated.\") is replaced by one that shows it. cooldown_beats: how long before the same line can come back. Used lines are remembered in lines_memory.json.",
     "_style_repairs_comment": "style_repairs_max: how many paragraphs a part may be written again for WORDING alone (filler, a phrase already used this beat, a stray label, a sound standing alone). Mistakes about what happened, reactions bigger than her injuries and wrong anatomy are always fixed. Lower it for speed, raise it for polish.",
     "style_repairs_max": 2,
-    "_reaction_caps_comment": "reaction_caps: how big a fighter's reactions may be, from her overall health AND her worst part. strong_from % or more: covered pain (a sharp cry at most, even on a ruined part; a devastating blow one step up, a brief scream). mid_from to strong_from: screams, no writhing or convulsing. Below mid_from: no limit, raw.",
-    "reaction_caps": {"strong_from": 70, "mid_from": 40},
+    "_reaction_caps_comment": "reaction_caps: how big a fighter's reactions may be, from her overall health AND her worst part. strong_from % or more: covered pain (a sharp cry at most, even on a ruined part; a devastating blow one step up, a brief scream). mid_from to strong_from: screams, no writhing or convulsing. Below mid_from: no limit, raw. strong_from matches where the notes stop calling her 'winded' (60%: still fast and dangerous), so a fighter told as still strong never gets 'too worn to hold it in'.",
+    "reaction_caps": {"strong_from": 60, "mid_from": 40},
     "lines": {
       "enabled": true,
       "file": "story_lines.txt",
@@ -742,6 +753,8 @@
     "_linger_comment": "Chance per beat (0-1) that one blow gets a long, slow reaction, and how many extra words it gets. 0 turns it off.",
     "linger_chance": 0.3,
     "linger_words": 200,
+    "_linger_min_share_comment": "The lingered-on blow is one of the beat's real ones: a part that just crossed its breaking point if there is one, else a hit at least this share (0-1) of the heaviest hit this beat. 0 lets any hit be picked.",
+    "linger_min_share": 0.5,
     "_gore_comment": "gore_check: if a draft goes past gore_level (below), the narrator rewrites it once with those phrases flagged, then cuts any sentence that's still too graphic. Set to false to turn off.",
     "gore_check": true,
     "_gore_level_comment": "gore_level: \"mild\" (default) allows a little blood, small cuts, and bites that break the skin, and only rewrites EXTREME gore (torn or shredded flesh, exposed or breaking bone, pooling blood, severed parts, death). \"none\" rewrites any blood or wounds. \"off\" turns the check off.",
@@ -751,10 +764,11 @@
     "swearing_gap": 5,
     "_numb_tier_comment": "true: parts at 1000%+ damage go 'numb with shock' (⚪). false: they stay 'devastated' (⚫). Toggle with /numb on|off or /set narration.numb_tier false",
     "numb_tier": false,
-    "_bone_break_comment": "Bones may always crack or bruise. Broken, fractured, or shattered bones are allowed only on a part with at least min_part_damage damage, on a fighter whose health is below max_health.",
+    "_bone_break_comment": "Bones may always crack or bruise. Broken, fractured, or shattered bones are allowed only on a part with at least min_part_damage damage, on a fighter whose health is below max_health. boneless: words of part names with no bone in them to break (a stomach, a throat, a fin); those parts are never listed as able to break.",
     "bone_break": {
       "min_part_damage": 300,
-      "max_health": 0
+      "max_health": 0,
+      "boneless": ["stomach", "belly", "midsection", "flank", "throat", "ruff", "mane", "ear", "fin", "sac", "hood", "fan", "scales"]
     },
     "_accuracy_comment": "accuracy_check: if a draft skips a listed hit (never mentions that body part) or skips a pin struggle it was told to show, the narrator rewrites it once with the gaps flagged.",
     "accuracy_check": true,
@@ -934,12 +948,12 @@
     {
       "min": 80,
       "label": "fresh",
-      "reaction": "Fully in the fight: quick, strong, upright, attacking freely. A badly hurt part is favored and guarded, but she does NOT collapse, go limp, or stop fighting; knocked down, she is straight back up."
+      "reaction": "Fully in the fight: quick, strong, upright, attacking freely. A badly hurt part is favored and guarded, but she does NOT collapse, go limp, or stop fighting; knocked down, she wants straight back up (how fast she manages it is the engine's to say)."
     },
     {
       "min": 60,
       "label": "winded",
-      "reaction": "Breathing harder, but still fast and dangerous. Shakes off big hits within a moment and gets straight back up."
+      "reaction": "Breathing harder, but still fast and dangerous. Shakes off big hits within a moment (how fast she gets up is the engine's to say)."
     },
     {
       "min": 40,
@@ -954,12 +968,17 @@
     {
       "min": 0,
       "label": "spent",
-      "reaction": "Barely able to stand, swaying, slow to rise, near collapse, but still conscious and still trying."
+      "reaction": "Barely able to stand, swaying, slow to rise, near collapse, but still conscious and still trying.",
+      "_reaction_air_comment": "reaction_air / reaction_down (optional, any tier): the same, for a fighter up in the air (no feet to stand on), or lying down or lying on top of a pin (no ground to drop to). Left out: reaction is used.",
+      "reaction_air": "Barely able to stay up: her wingbeats ragged and failing, sinking and labouring back up, near collapse, but still conscious and still trying.",
+      "reaction_down": "Barely able to move, slow and shaking, near collapse, but still conscious and still trying."
     },
     {
       "min": -1000000000,
       "label": "past the limit",
-      "reaction": "Running on nothing but will: wobbling, dropping to the ground between efforts, but still conscious. Only a completed pin puts her out."
+      "reaction": "Running on nothing but will: wobbling, dropping to the ground between efforts, but still conscious. Only a completed pin puts her out.",
+      "reaction_air": "Running on nothing but will: her wings failing, sinking between strokes and dragging herself back up, but still conscious. Only a completed pin puts her out.",
+      "reaction_down": "Running on nothing but will: shaking, sagging limp between efforts, but still conscious. Only a completed pin puts her out."
     }
   ],
   "holds": {
@@ -1157,7 +1176,13 @@
     "counter_chance": 0.35,
     "_chain_comment": "chain_mult: in a chain (two or three attacks by one fighter in one beat, each leading into the next) a link that lands leaves her rocked: her chance to dodge the next link is multiplied by this. A link she dodges ends the chain.",
     "chain_mult": 0.5,
-    "counter_severity": "solid"
+    "counter_severity": "solid",
+    "_leg_manners_comment": "leg_manners: the ways of dodging (rules.json variety.dodge) that need her legs. Their weight is divided by (1 + her worst-hurt leg's damage / leg_manner_halves_at), so a fighter on wrecked legs ducks or twists rather than springing back or stepping aside. Not in the air (she dodges on her wings).",
+    "leg_manners": [
+      "spring_back",
+      "sidestep"
+    ],
+    "leg_manner_halves_at": 80
   },
   "status_effects": {
     "_comment": "from_move_type: a move of that type that lands may give the target this status for this many beats. paralyzed: weaker attacks (paralyzed_power_mult), no dodging, worse pin escapes. chilled: half the dodge chance. soaked: Electric hits do soaked_electric_mult more (anyone the director places in water, or who lands in water, is soaked too). flinched: can't attack next beat.",
@@ -1183,6 +1208,8 @@
         "beats": 1
       }
     },
+    "_from_move_type_always_comment": "statuses from from_move_type that a move of that type gives even when it has effects of its own (a Water Pulse that may confuse still soaks her): the plain facts of the element, not a side effect.",
+    "from_move_type_always": ["soaked"],
     "paralyzed_power_mult": 0.75,
     "_stiff_comment": "stiff (after breaking out of a pin) and cramped (after holding a long one): power and dodge multipliers.",
     "stiff_power_mult": 0.85,
@@ -1237,7 +1264,10 @@
     },
     "regen_per_beat": 5,
     "rest_bonus": 10,
-    "tired_below": 25
+    "tired_below": 25,
+    "_fresh_breath_min_strength_comment": "The notes' stamina line says 'fresh breath' (energy 70+) only while her overall strength is at least fresh_breath_min_strength % (the 'fresh' tier: a winded or tired fighter reads 'breathing hard'); below breath_back_below_strength (an adrenaline refill on a spent body) it says her breath is back but not her strength. Past her limit (below 0%) it always reads gasping, and while the wind is knocked out of her it says so. Labels only.",
+    "fresh_breath_min_strength": 80,
+    "breath_back_below_strength": 40
   },
   "adrenaline": {
     "_comment": "The first time a fighter's strength drops below below_strength %, she gets one surge for this many beats: power_mult on her attacks, escape_mult on pin escapes, better dodging, and an energy refill.",
@@ -1258,6 +1288,8 @@
   "director": {
     "_comment": "initiative: once one fighter has made initiative_after attacks in a row (and an opponent still has at least initiative_min_strength % of full strength), each beat there's a chance the director is told to shift the momentum: initiative_chance at first, +initiative_step for every extra attack in the streak, up to initiative_max. Streaks can run long, just not usually. With /plan dominate, the winner's streaks shift only initiative_dominate_factor as often. initiative_after 0 turns it off.",
     "initiative_after": 3,
+    "_flavor_words_comment": "flavor_words: the author's or director's one-line direction for an action is kept to at most this many words (a label, not a paragraph); a longer one is cut there (an order cut mid-sentence reads wrong, so keep this generous).",
+    "flavor_words": 32,
     "initiative_min_strength": 35,
     "_pin_urge_comment": "How often there is an OPENING for a new pin on a fighter, rolled each beat before the director chooses (the director can only start a pin where there is one; your /commands and typed directions always can). standing: on her feet with at least weak_below % of her strength (rare, but a pin can come at any point). downed: knocked down, same strength. weak_standing / weak_downed: under weak_below % of her strength; these then climb toward max as she nears 0. helpless: asleep or frozen. When there is an opening and you just press Enter, the director is told to go for it.",
     "pin_urge": {
@@ -1341,7 +1373,9 @@
     "_weak_spot_comment": "weak_spot_chance: with no /focus set, the chance per beat that the director is pointed at one of the opponent's weak spots (a soft part like the throat, or one already worn down), so weak spots are gone for sometimes but not all the time. 0 = never; /focus vulnerable or /focus injured makes them the aim.",
     "weak_spot_chance": 0.2, "weak_spot_reach": 0.35, "_weak_spot_reach": "weak-spot hints pick the softest parts, a little less often the ones hard to reach (moves.aim: a throat, an ear, an eye): 0 = reach doesn't count, 1 = it counts fully",
     "_weak_spot_repeat_comment": "weak_spot_repeat: of those nudges, the share meant for a run of blows (a pummel, a combo, a chain, a grapple worked at): one weak spot hit again and again, a group of parts worked together (one side's foreleg top to bottom, the ribs), or a few weak spots in turn.",
-    "weak_spot_repeat": 0.4,
+    "weak_spot_repeat": 0.25,
+    "_weak_spot_menu": "a WEAK SPOTS hint (the plain kind, not a worked run) offers a short list to choose ONE from, or none: up to badly_hurt parts at 150%+, up to hurt parts between 30% and 150% (picked at random), and up to soft untouched places, shuffled. Spreads the blows over what is hurt instead of always the worst of it.",
+    "weak_spot_menu": {"badly_hurt": 2, "hurt": 3, "soft": 1},
     "grudge_chance": 0.15,
     "drag_to_pin_chance": 0.12,
     "_flight_comment": "flight_chance: each beat, the chance the director is reminded that a winged fighter on the ground could take off (x1.5 when her opponent has nothing that reaches the air). air_attack_chance: for one already in the air, the chance she is pointed at a dive or a carry (Sky Drop). 0 = never.",
@@ -1487,7 +1521,7 @@
     }
   },
   "variety": {
-    "_comment": "HOW an outcome plays out once the dice have decided WHAT happens. Each entry is a set of ways with weights (compared with the others in the same set); the engine picks one each time and tells the narrator, so the story varies without ever contradicting the result. Raise a weight to see that way more often; 0 removes it. /variety shows and changes them. charge_stands: a fighter who keeps her feet after being charged into the scenery. charge_falls: one who crumples (lying three ways, or sitting against it). dodge: how an attack is avoided. hold_break: how a hold is broken. hold_strain: how a held fighter fights a grip that stays on. struggle: what a pinned fighter tries. getup_fail / getup_rise: how a try at getting up fails, and how she finally rises.",
+    "_comment": "HOW an outcome plays out once the dice have decided WHAT happens. Each entry is a set of ways with weights (compared with the others in the same set); the engine picks one each time and tells the narrator, so the story varies without ever contradicting the result. Raise a weight to see that way more often; 0 removes it. /variety shows and changes them. charge_stands: a fighter who keeps her feet after being charged into the scenery. charge_falls: one who crumples (lying three ways, or sitting against it). dodge: how an attack is avoided. hold_break: how a hold is broken. hold_strain: how a held fighter fights a grip that stays on. struggle: what a pinned fighter tries. getup_fail / getup_rise: how a try at getting up fails, and how she finally rises. bite_rock: how a bite rocks a fighter who is standing free (dragged toward the biter, shaken on the spot, yanked off her line, or jerked as she pulls free).",
     "charge_stands": {
       "staggers": 4,
       "leans": 3,
@@ -1544,6 +1578,12 @@
       "roll": 2,
       "lean": 3,
       "lurch": 2
+    },
+    "bite_rock": {
+      "drag": 3,
+      "shake": 2,
+      "yank": 2,
+      "wrench_free": 2
     },
     "takedown": {
       "tackle": 3,
@@ -1605,8 +1645,8 @@
     "_vigour_comment": "vigour: a winged fighter who is still strong flies a lot. By her strength (healthy: at or above healthy_at % of her full strength; fair: at or above fair_at; low: below): takeoff_mult multiplies director.flight_chance (how often the director is told she could take off, and how firmly), extra_beats adds to airborne_beats each time she goes up, climb_mult multiplies climb_chance after a dive. enabled false = as before.",
     "vigour": {"enabled": true, "healthy_at": 60, "fair_at": 35,
                "healthy": {"takeoff_mult": 2.6, "extra_beats": 3, "climb_mult": 1.5, "strafe_mult": 1.0},
-               "fair": {"takeoff_mult": 1.7, "extra_beats": 2, "climb_mult": 1.25, "strafe_mult": 0.7},
-               "low": {"takeoff_mult": 0.8, "extra_beats": 0, "climb_mult": 1.0, "strafe_mult": 0.35}},
+               "fair": {"takeoff_mult": 2.2, "extra_beats": 2, "climb_mult": 1.25, "strafe_mult": 0.7},
+               "low": {"takeoff_mult": 1.6, "extra_beats": 1, "climb_mult": 1.0, "strafe_mult": 0.35}},
     "_speed_comment": "speed: every dive she lands and climbs back up from builds speed (one pass, up to max_passes): each pass makes her next dive land per_pass harder (x(1 + per_pass x passes) on top of dive_mult). Taking off again or coming down starts it over. enabled false = off.",
     "speed": {"enabled": true, "per_pass": 0.1, "max_passes": 3},
     "_strafe_comment": "strafe: after a dive that lands, as she climbs away, chance (x vigour strafe_mult by her strength) that her speed carries her round for a second, quicker pass: one more blow at power x the dive's power on another part, costing energy. enabled false = off.",
@@ -1623,9 +1663,18 @@
     "leap": {"enabled": true, "reach": 0.65, "mult": 1.2, "drag_down": 0.35, "drag_landing": "solid", "hit_landing": "light", "miss_landing": "heavy", "energy": 10},
     "airborne_dodge_mult": 1.3,
     "_knock_from_air_comment": "knock_from_air: a blow that lands on a fighter in the air may knock her out of the sky: base + per_damage x the damage it did + per_wing_damage x her worse wing's damage, at most max. She falls and lands.",
-    "knock_from_air": {"base": 0.25, "per_damage": 0.004, "per_wing_damage": 0.0025, "max": 0.9},
+    "knock_from_air": {"base": 0.15, "per_damage": 0.003, "per_wing_damage": 0.0015, "max": 0.7,
+                       "_health_mult": "the chance above x this by her overall strength: at full strength, at half, and with nothing left (eased between): a strong flyer rides out blows that bring a worn one down",
+                       "health_mult": {"full": 0.3, "half": 0.65, "empty": 0.9},
+                       "_spread_share": "per_damage counts her worst hit in full and every other part the blow struck at this share: a gust or a blast over her whole body does not bring her down like one crushing blow",
+                       "spread_share": 0.3},
+    "_air_recover_comment": "air_recover: a flyer a blow would hurl (a move's launch effect: thrown, launched...) may catch herself on her wings instead of falling: by_strength is the chance at full strength, at half and with nothing left (eased between), halved again when her worse wing is at wing_halves_at % damage. A move that always throws (a launch at 100%) can't be ridden out. The blow can still knock her out of the sky as any blow can (knock_from_air). enabled false = a launch always brings her down.",
+    "air_recover": {"enabled": true, "by_strength": {"full": 0.6, "half": 0.3, "empty": 0.0}, "wing_halves_at": 300},
     "_strain_comment": "strain: a hurt wing still lifts her, at a cost. Past `from` % damage on her worse wing, taking off costs energy_per_100 x more energy per 100% of damage past it, and every beat she stays up that wing takes power x (its damage / 100) more damage. Only a wing at max_wing % (shredded) can't lift her at all. ground_at is now only where the air's dodge edge has faded away.",
-    "strain": {"from": 100, "energy_per_100": 1.0, "power": 6, "max_wing": 600},
+    "strain": {"from": 100, "energy_per_100": 1.0, "energy_max_mult": 2.0, "power": 6, "power_cap_at": 250, "max_wing": 600, "max_wing_grounds": false},
+    "_strain_caps_comment": "energy_max_mult: the take-off never costs more than this x takeoff_energy, however hurt the wing. power_cap_at: the strain counts the wing's damage only up to this %, so it stops snowballing. max_wing_grounds: true = a wing at max_wing % can't lift her at all (off: a flyer can always try).",
+    "_weak_takeoff_comment": "weak_takeoff: below `below` % of her full strength, taking off is a roll she often loses: at_below is the chance just under that, at_zero with nothing left (eased between). The energy is spent either way.",
+    "weak_takeoff": {"enabled": true, "below": 10, "at_below": 0.3, "at_zero": 0.05},
     "_dodge_comment": "In the air her dodge rests on her wings, not her legs: chance x 1/(1 + wing damage/wing_per) (the worse wing counts double) x 1/(1 + flight-muscle damage/body_per) (shoulders, chest, belly, back) x 1/(1 + head and neck damage/head_per). The airborne_dodge_mult edge fades with the worse wing's damage and is gone at ground_at.",
     "dodge": {"wing_per": 100, "body_per": 250, "head_per": 400},
     "_carry_comment": "carry: any winged fighter in the air with talons, feet or hands can seize one on the ground with a close strike (the director's \"carry\") and haul her up: chance x (0.5 + 0.5 x her strength) x 1/(1 + worse wing damage/wing_per) x (the lighter the load, the likelier: 0.75 against a fighter at full strength, up to 1 as she weakens), at most 0.95; costs energy. She is dropped from one of drop_heights. fall_strikes: how many strikes in the same chain can catch her on the way down beyond the first, by the drop's severity.",
@@ -1680,15 +1729,15 @@
     "lead_margin": 5.0
   },
   "fight_length": {
-    "_comment": "Presets for /length: about how many beats a fight runs. Each sets health.loss_per_damage_point to base x health_loss and damage.resistance_scale to base x wear: fighters lose health and wear down faster, so a pin wins sooner (pin success follows her remaining health). Pin openings and escapes are not changed. Measured over 100 simulated fights each (Nocturne vs Ripples, lakeside forest; build 146's balance: fewer wild swings, Nocturne vs Ripples closer to even).",
-    "default": "60",
+    "_comment": "Presets for /length: about how many beats a fight runs. Each sets health.loss_per_damage_point to base x health_loss and damage.resistance_scale to base x wear: fighters lose health and wear down faster, so a pin wins sooner (pin success follows her remaining health). Pin openings and escapes are not changed. From build 182 the shorter presets speed up health loss and slow wear (how fast a part softens) to 0.7, so a fight is short without every blow piling onto the same few ruined parts. Older measurements: over 100 simulated fights each (Nocturne vs Ripples, lakeside forest; build 146's balance: fewer wild swings, Nocturne vs Ripples closer to even).",
+    "default": "40",
     "base": {"loss_per_damage_point": 0.46, "resistance_scale": 1.0},
     "presets": {
-      "30": {"health_loss": 5.0, "wear": 2.3, "_measured": "29 beats, 2.8 pins, Nocturne wins 62% (build 146)"},
-      "35": {"health_loss": 3.6, "wear": 1.8, "_measured": "36 beats, 3.4 pins, Nocturne wins 55% (build 146)"},
-      "40": {"health_loss": 2.8, "wear": 1.5, "_measured": "39 beats, 3.4 pins, Nocturne wins 59% (build 146)"},
-      "45": {"health_loss": 2.35, "wear": 1.3, "_measured": "44 beats, 4.0 pins, Nocturne wins 59% (build 146)"},
-      "50": {"health_loss": 1.9, "wear": 1.2, "_measured": "49 beats, 4.4 pins, Nocturne wins 56% (build 146)"},
+      "30": {"health_loss": 9.0, "wear": 0.7, "_measured": "28 beats, 0.4 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "35": {"health_loss": 6.75, "wear": 0.7, "_measured": "32 beats, 0.7 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "40": {"health_loss": 4.0, "wear": 0.7, "_measured": "38 beats, 0.7 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "45": {"health_loss": 3.25, "wear": 0.7, "_measured": "44 beats, 0.8 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
+      "50": {"health_loss": 2.1, "wear": 0.7, "_measured": "50 beats, 1.1 devastated parts per fighter (build 183: Glacia vs Cinder and Nocturne vs Ripples, 40 fights each, /scale 3)"},
       "60": {"health_loss": 1.0, "wear": 1.0, "_measured": "64 beats, 5.9 pins, Nocturne wins 58% (build 146)"}
     }
   },

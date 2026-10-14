@@ -1,0 +1,57 @@
+# Narration bugs, beats 31-40
+
+- **31:** A fix-up call asks for something from the previous beat: "it never showed the BLOCK: Nocturne got her horn up in the blow's way". The horn block was in beat 30. Nothing is blocked in beat 31.
+- **31:** No part is given the pillar event ("THE PLACE ITSELF ACTS, as the LAST thing in this beat"). Part 3 is Ripples-only and says "nothing new is thrown, gripped or pressed by anyone", so drafts keep leaving it out and the rewrite loop keeps flagging it.
+- **31:** The pillar is told too big for its hits: "comes down in a roar of breaking stone ... It catches Nocturne". All three hits it lands are "lasting pain still minor" with "small: a wince", and it knocks nobody down. A whole pillar falling on her should do more than that.
+- **31:** Ripples is told to put weight on her hands. Right Paw and Right Upper Arm both say "a hit here shows as a limb buckling ... then favoring it and testing weight on it". The rules say her paws are hands and she never puts weight on them.
+- **31:** The reactions don't fit a fighter who is spent (9%). Right Forearm Fin and Right Upper Arm say "the rest of her still fighting".
+- **31 (numbers):** One ram aimed at the forearm fin takes it from 24.54 to 99.68 (+75, minor → very painful): "power 76.68 × 0.33". That is because a full-body Take Down gets "× 2 (targeted)" when aimed at a small part on the arm. A shoulder charge shouldn't get a precision bonus on a fin.
+- **31:** The VISIBLE WEAR on Ripples' chest is past the gore rule: "gouged furrows, the fur hanging in torn clumps".
+- **32:** The same stale fix-up again: "it never showed the BLOCK: Nocturne got her horn up". This beat is a pin, not an attack, so there is nothing to block.
+- **32:** The throat reaction doesn't fit her body or her state: "she huffs and plants her paws, unbothered for now". She is on her back with 4% of her strength left, and her paws are hands she doesn't plant.
+- **32:** Part 2 block 1 doesn't fit a fighter who is spent (4%): "her muscles jump under the hold, all of them ready, none of them yet spent". Her mood line is off too: "already planning the way out".
+- **32:** Block 9 contradicts the pin. It says "she cannot lean all her weight into the hold; her right ribs will not take the press", but the pin itself is "Chest (crushing pressure, with both forepaws and her weight)".
+- **32:** The PINS rules say "Do not initiate a pin unless an opponent is actively on the ground, struggling to stand back up". Beat 31 said Ripples gets no get-up roll until this beat, and none was rolled before the pin went on.
+- **32 (numbers):** The chest damage contradicts itself: "+16.66 ... (the part counts +8.26: past 300% its number climbs slowly)". The bar moves 448.41 → 456.67, which is +8.26, but +16.66 is what goes into health. The outline shows +16.66 too.
+- **32 (numbers):** Ripples drops from 148 to 71 (9% → 4%) in the beat the pin closes, even at "pin damage ×0.5". The chest alone costs -33.8 at "vital 1.4".
+- **33:** The stale fix-up shows up a third time: "it never showed the BLOCK: Nocturne got her horn up". A fix-up note seems to be carried over from beat 30 into every later beat.
+- **33:** The notes now say the chest may break: "these devastated parts CAN BREAK (broken bones allowed): Chest". The author's brief says no broken bones at all.
+- **33:** The mood line contradicts her state: "pinned and furious, and far from done". She is past her limit at -4% and the notes call her "fading".
+- **33:** The throat reaction is wrong for her: "her tail flicks, irritated, as she pushes back". She has twin tails, and she is past her limit, not irritated.
+- **33:** Part 2 names a grip that isn't there: "do not tell Nocturne's jaws, paws or weight bearing down again". No bite is part of this pin.
+- **33:** Part 3 block 1 gets the position wrong: "she watches the hurt chest pressed into the ground as if hiding it there". Ripples is face-up, and her chest is under Nocturne's forepaws, not against the ground.
+- **33:** The struggle is described two ways. The console says "she kicks out" and the notes say "she flails a free limb at the body on top of her". They are close enough, but the notes could pass on the kick.
+- **33 (numbers):** Ripples goes from 70.75 to -70.27 in one pin beat (-141). The presses take -79.7 at "×0.56" and the punish takes -48.9. That takes her from 4% to past her limit at the first struggle.
+- **34:** The stale BLOCK fix-up is back, now inside the Part 2 rewrite reports as well: "ALSO, it never showed the BLOCK".
+- **34:** The stomach is listed as a part that can break: "CAN BREAK (broken bones allowed): Chest, Stomach". The stomach has no bone in it.
+- **34:** Her stamina gets better while she is pinned and past her limit. Beat 33 says "Stamina: gasping, running out of energy". Beat 34 says "Stamina: breathing hard".
+- **34:** The throat punish says "her reaction: strong: ... the rest of her still fighting". She is at -12%, and the same beat's PIN line says she is fading.
+- **34:** One tail again: "SHE REACTS: her tail lashes as she twists". She has twin tails.
+- **34:** The pressing is told twice. "BREAKING POINT: Ripples' Stomach has just become DEVASTATED ... give this its own focused moment", but Part 2 says "The pressing has ALREADY been told above: do not tell ... again". Neither part is told to carry the breaking point.
+- **35:** The stale BLOCK fix-up is still there, in both rewrite reports and the separate fix-up call.
+- **35:** The chest LOOKS line is past the gore rule: "pressed in so the flesh rolls up round it in a thick fold".
+- **35:** Her stamina still reads "Stamina: breathing hard" at -20%, past her limit (see 34).
+- **35 (numbers):** Ripples drops from -197 to -340 in one beat. The presses take -97.8 at "×0.68", the punish takes -32.3, and injuries take -12.6. Pin damage per beat keeps climbing (×0.5 → ×0.56 → ×0.62 → ×0.68) on a body that is already past its limit. The pin clock also uses "health below zero ×1.15", so she goes under faster.
+- **36:** Ripples is given Nocturne's voice: "Throat ... SHE REACTS: she squirms, a low growl breaking into a grunt". Growling belongs to Nocturne. Ripples chitters, squeaks and barks.
+- **36:** Part 1 block 6 gets the position wrong: "she lies with the hurt side up, where the ground cannot press on it". She is face-up, and the hurt parts are the ones under Nocturne's paws.
+- **36:** Part 3 block 3 describes someone standing: "her arms hang low at her sides, fingers loose, barely a guard at all". She is on her back, and she has webbed paws, not fingers.
+- **36:** The throat LOOKS line is too strong for a part that only "hurts": "pressed in far enough to change her outline, the flesh round it puffed and tight". Her throat is the most delicate part, so this reads as brutal.
+- **36:** The stale BLOCK fix-up appears again.
+- **36:** One tail again: "she sees the tail stop moving entirely".
+- **37:** The struggle contradicts itself. It says "she throws her body up against the weight, again and again, short and violent". Elsewhere in the same notes she is "nearly out: barely moving", and the try is "a slow, late try, not a strong one".
+- **37:** The stomach reaction is too big for her state: "she convulses under it, limbs flailing, howling". She is nearly out and barely moving.
+- **37:** Nocturne gets a reaction that doesn't fit her: "she whimpers under her breath with the effort". Her VOICE says she "growls and hisses rather than cries out" and "rarely admits pain", and she still has 55% of her strength.
+- **37 (numbers):** The throat climbs from minor to very painful under nothing but a laid tail: 12.35 → 114.83 over six pin beats, +17 to +18 per beat by the end. The "pin cap" (×0.45) does not stop it, because pin damage ramps up to ×0.8.
+- **37:** The stale BLOCK fix-up is still in the rewrite reports and in its own fix-up call.
+- **38:** Part 1 block 2 gets the position wrong: "she is propped on one elbow and the elbow is shaking". She is flat on her back and pinned.
+- **38:** The stomach reaction is too big for her state: "every press tears a scream out of her and her legs kick wildly". The same notes say she is "barely moving, her eyes sliding shut".
+- **38:** The gore-edge LOOKS line from 35 repeats on the stomach: "pressed in so the flesh rolls up round it in a thick fold".
+- **38:** The INJURY REPORT names a move that never happened: "her stomach, from Nocturne's blinding flash of light". No such move was used. Her stomach was hit by Night Slash, Dark Pulse and Slash. The throat line, "Nocturne's strong electric blast ... did her throat", is doubtful too.
+- **38:** The FIGHT SUMMARY gets her strength wrong: "the pain (chest) put her out at 0% strength". The console has her at -869%.
+- **39:** The stale BLOCK fix-up turns up even in the aftermath, where nothing happens: "YOUR PREVIOUS DRAFT had problems: it never showed the BLOCK".
+- **39:** Part 2 block 2 gets the position wrong: "she lies curled round her worst hurt, even now". CURRENT CONDITION has her flat on her back, face-up.
+- **39:** The throat VISIBLE WEAR is an electric look the pin couldn't make: "her throat: the coat crackling, every hair on end". The throat was hurt by a tail pressing on it.
+- **39:** The VISIBLE WEAR for the stomach copies the chest word for word ("a great dark bruise spreading under the coat, the shape of the part gone puffy...").
+- **39:** Her stamina is wrong just after a seven-beat pin: "Nocturne ... Stamina: fresh breath". The same notes call her "OVERALL 55% ... (tired)".
+- **40:** The stale BLOCK fix-up appears once more. Otherwise the condition is identical to 39, which is correct.
+- **40:** Part 2 block 2 is mildly off: "her ears twitch at the sounds round her but she does not wake". CURRENT CONDITION says "unresponsive". I kept it to one small flick.

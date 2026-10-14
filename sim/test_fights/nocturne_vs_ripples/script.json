@@ -1,0 +1,428 @@
+[
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Sucker Punch",
+"part": "Chest",
+"flavor": "the white shape is across the flagstones before the otter has finished setting her feet, a shoulder-first lunge into her chest"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Brick Break",
+"part": "Left Shoulder",
+"flavor": "she rolls with it, comes up inside the white guard and chops the edge of her paw down onto the shoulder"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Night Slash",
+"part": "Stomach",
+"flavor": "she rears and rakes dark-edged claws across the cream belly"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Water Pulse",
+"hits": [
+{
+"part": "Head"
+},
+{
+"part": "Neck"
+}
+],
+"flavor": "still stumbling backwards, she flings a ringing sphere of water at the white head"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Iron Tail",
+"part": "Right Shoulder",
+"flavor": "she spins and the steel-hard sickle tail comes round flat into the otter shoulder"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Ice Fang",
+"part": "Right Upper Foreleg",
+"flavor": "she ducks under the tail and sinks freezing teeth into the white foreleg"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Bite",
+"part": "Right Forearm Fin",
+"flavor": "shaking the cold off her ribs, she snaps at the otter forearm fin as it comes up to guard"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Aqua Jet",
+"part": "Chest",
+"flavor": "she wraps herself in water and launches herself like a thrown spear into the white chest, driving her back"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Dark Pulse",
+"hits": [
+{
+"part": "Chest"
+},
+{
+"part": "Stomach"
+},
+{
+"part": "Head"
+}
+],
+"flavor": "she lowers her horn and a ring of black force rolls out of her across the flagstones into the otter"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Crunch",
+"part": "Left Upper Foreleg",
+"flavor": "she gets in under the horn and clamps her jaws on the white foreleg"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Slash",
+"part": "Left Thigh",
+"flavor": "she rakes her free forepaw down the otter thigh to make her let go"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Ice Beam",
+"hits": [
+{
+"part": "Left Flank"
+},
+{
+"part": "Left Hip"
+}
+],
+"flavor": "springing back out of reach, she opens her jaws and a beam of white cold lances across the white flank"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Take Down",
+"part": "Chest",
+"flavor": "she lowers her head and charges, meaning to drive the otter back into the leaning pillar behind her"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Water Gun",
+"hits": [
+{
+"part": "Muzzle"
+},
+{
+"part": "Left Ear"
+}
+],
+"flavor": "gasping, she spits a hard jet of water into the white face"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Will-O-Wisp",
+"part": "Right Thigh",
+"flavor": "shaking the water from her face, she flicks a wisp of ghostly blue fire at the otter"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Brick Break",
+"part": "Right Ribs",
+"flavor": "ignoring the burn, she drives the edge of her paw into the white ribs where her teeth already went in"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Psycho Cut",
+"hits": [
+{
+"part": "Upper Back"
+},
+{
+"part": "Left Shoulder"
+}
+],
+"flavor": "her horn glows violet and she sweeps it through the air, sending pale crescent blades across the otter back"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "grapple",
+"flavor": "she darts in low and whips her twin tails round the white hind legs to tie them"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Night Slash",
+"part": "Chest",
+"flavor": "she twists and rakes dark claws across the otter chest, where it is already bruised"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "breather",
+"flavor": "the claws have knocked the breath out of her; she keeps her tails locked round the white legs and gulps air"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Iron Tail",
+"part": "Head",
+"flavor": "legs tied, she swings the steel-hard tail round at the otter head"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Brick Break",
+"part": "Left Shoulder",
+"flavor": "tails still locked round the white legs, she chops down hard on the shoulder she hit at the start"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Bite",
+"part": "Left Upper Arm",
+"flavor": "she twists her neck round and bites the otter arm to break the hold"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Ice Fang",
+"part": "Left Hind Paw",
+"flavor": "she drops low and bites the bound hind paw with freezing teeth"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Thunderbolt",
+"flavor": "her fur stands on end and she lets the stored lightning go through everything touching her, the otter wrapped round her legs most of all"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Water Pulse",
+"hits": [
+{
+"part": "Right Ribs"
+},
+{
+"part": "Chest"
+}
+],
+"flavor": "smoking and shaking, she lets go of the legs and throws a ringing ball of water into the white ribs"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Slash",
+"part": "Stomach",
+"flavor": "she steps after her and rakes the otter belly"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Crunch",
+"part": "Neck",
+"flavor": "she lunges up and gets her teeth into the white neck"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Iron Tail",
+"part": "Chest",
+"flavor": "she shakes her loose and brings the steel tail down across the otter chest"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "strike",
+"move": "Brick Break",
+"part": "Right Ribs",
+"flavor": "with the last of the surge she throws herself forward and chops into the ribs she has been working all fight"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "strike",
+"move": "Take Down",
+"part": "Chest",
+"launch": "knocked down",
+"flavor": "she drops her head and runs straight through the otter, bowling her over onto the cracked flagstones"
+}
+],
+[
+{
+"attacker": "Nocturne",
+"defender": "Ripples",
+"action": "pin",
+"flavor": "she plants both forepaws on the otter chest, lowers her weight onto her and lays the sickle tail across her throat",
+"hits": [
+{
+"part": "Chest",
+"severity": "crushing",
+"with": "both forepaws and her weight"
+},
+{
+"part": "Throat",
+"severity": "firm",
+"with": "her sickle tail"
+},
+{
+"part": "Stomach",
+"severity": "firm",
+"with": "a hind paw"
+}
+]
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "struggle",
+"flavor": "she twists and bucks under the white weight, clawing at the forepaws on her chest"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "struggle",
+"flavor": "she twists and bucks under the white weight, clawing at the forepaws on her chest"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "struggle",
+"flavor": "she twists and bucks under the white weight, clawing at the forepaws on her chest"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "struggle",
+"flavor": "she twists and bucks under the white weight, clawing at the forepaws on her chest"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "struggle",
+"flavor": "she twists and bucks under the white weight, clawing at the forepaws on her chest"
+}
+],
+[
+{
+"attacker": "Ripples",
+"defender": "Nocturne",
+"action": "struggle",
+"flavor": "she twists and bucks under the white weight, clawing at the forepaws on her chest"
+}
+],
+"aftermath",
+"aftermath"
+]

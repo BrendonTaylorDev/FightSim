@@ -73,7 +73,7 @@ _REGIONS = [
     (("rib", "side", "flank"), ["ribs", "flank", "midsection", "chest", "stomach", "belly"]),
     (("back", "spine"), ["upper back", "back", "lower back"]),
     (("tail",), ["tails", "sickle tail", "upper tail", "tail"]),
-    (("neck", "throat", "collar", "sac"), ["neck", "throat", "flotation sac"]),
+    (("neck", "throat", "collar", "sac", "scruff", "nape"), ["neck", "throat", "flotation sac"]),
     (("face", "muzzle", "snout", "mouth", "nose", "jaw", "cheek"), ["muzzle", "nose", "jaw", "head"]),
     (("ear", "antenna", "whisker"), ["ear", "antenna", "head fin"]),
     (("horn", "head", "skull", "brow"), ["horn", "head"]),
@@ -166,6 +166,27 @@ def body_region(part):
         if any(re.search(r"\b" + re.escape(k) + r"(?:s|es)?\b", p) for k in keys):
             return region
     return "other"
+
+
+_COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b(?! of)", "plumage"), (r"\bhairs?\b(?!'s)", "feathers")],
+               "scales": [(r"\bburnt hair\b", "scorched hide"), (r"\bfur\b", "scales"), (r"\bcoat\b(?! of)", "scales"),
+                          (r"\bhairs?\b(?!'s)", "scales"), (r"\bwhole tufts\b", "whole patches"),
+                          (r"\btufts?\b", "ragged patches"), (r"\bin (her|the) scales\b", r"on \1 scales")],
+               "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b(?! of)", "hide"), (r"\bhairs?\b(?!'s)", "skin"),
+                        (r"\btufts?\b", "ragged patches")]}
+
+
+def in_covering(cover, text):
+    """Wording written for fur, said in her own covering (feathers, scales or skin): 'the fur parting' on a dragon
+    becomes 'the scales parting'. Fur, or a covering not known, leaves it as it is."""
+    swaps = _COVER_SWAP.get(cover)
+    if not swaps or not text:
+        return text
+    for rx, word in swaps:
+        text = re.sub(rx, word, text)
+    return re.sub(r"\b(feathers|scales) (is|was|stands?|lies|parts)\b",
+                  lambda m: m.group(1) + " " + {"is": "are", "was": "were", "stands": "stand", "stand": "stand",
+                                                "lies": "lie", "parts": "part"}[m.group(2)], text)
 
 
 def _side(part):
@@ -533,10 +554,17 @@ class Engine:
         if self._source and taken >= 1:
             # the first thing that ever hurt this part, and when (for callbacks much later in the fight)
             defender.learned.setdefault("first_hurt", {}).setdefault(p.name, [self._source, self.turn + 1])
-            log = self.injury_log.setdefault(f"{defender.name}|{p.name}", [])
+            key = f"{defender.name}|{p.name}"
+            log = self.injury_log.setdefault(key, [])
+            amt = self.__dict__.setdefault("injury_amt", {}).setdefault(key, {})
+            amt[self._source] = round(float(amt.get(self._source, 0)) + max(0.0, p.damage - dmg_b), 2)
             if not log or log[-1] != self._source:
+                if self._source in log:
+                    log.remove(self._source)      # (once each, where it last hurt her: no "A, then B, then A")
                 log.append(self._source)
-                del log[:-4]
+                while len(log) > 6:
+                    # (the record keeps what did the most: the lightest older cause goes, never the latest)
+                    log.remove(min(log[:-1], key=lambda c: float(amt.get(c, 0))))
             # a huge hit on this part is remembered for the rest of the fight, however long ago it was
             # (narration.notes_decay.big_hit: part damage added in one go)
             added = p.damage - dmg_b
@@ -733,6 +761,16 @@ class Engine:
     def _health_pct(self, f):
         return 100.0 * f.health / f.max_health if f.max_health else 0.0
 
+    def injury_causes(self, key, n=3):
+        """What hurt one part ("Fighter|Part"), oldest first, as the notes tell it: the causes that did the most
+        damage to it and the latest one, at most n. The same few everywhere it is told, so they never disagree."""
+        log = [c for c in self.injury_log.get(key, []) if c]
+        amt = (self.__dict__.get("injury_amt") or {}).get(key) or {}
+        if len(log) <= n or not amt:
+            return log[-n:]
+        keep = set(sorted(log[:-1], key=lambda c: -float(amt.get(c, 0)))[:n - 1]) | {log[-1]}
+        return [c for c in log if c in keep]
+
     def _count(self, kind, name):
         """One more time this has happened to her this fight (the story may count: "thrown twice")."""
         key = f"{kind}|{name}"
@@ -756,7 +794,8 @@ class Engine:
                               {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
 
     # engine state that lives outside the main snapshot tuple but must be undone with it
-    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn")
+    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
+                   "injury_amt")
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -796,16 +835,22 @@ class Engine:
                      "power": 1},
         "getup_fail": {"gives_out": 4, "slips": 2, "dizzy": 2, "breath": 2},
         "getup_rise": {"push": 4, "roll": 2, "lean": 3, "lurch": 2},
+        "bite_rock": {"drag": 3, "shake": 2, "yank": 2, "wrench_free": 2},
         "takedown": {"tackle": 3, "leg_hook": 3, "sweep": 3, "hip_throw": 3, "shoulder_drive": 2, "drag_down": 2,
                      "spin_down": 2, "trip_back": 2, "pull_forward": 2, "ride_down": 2},
     }
 
-    def vary(self, key):
-        """Pick HOW an already-decided outcome plays out (one of several ways that are all true to the result)."""
+    def vary(self, key, skip=(), scale=None):
+        """Pick HOW an already-decided outcome plays out (one of several ways that are all true to the result).
+        skip: ways that aren't true to it this time (rolling onto her front when she already lies on it); scale:
+        weights multiplied for ways she is less able to do now (springing back on wrecked legs)."""
         table = dict(self.VARIETY.get(key, {}))
         over = self.rules.get("variety", {}).get(key)
         if isinstance(over, dict):
             table = {k: float(v) for k, v in over.items() if not str(k).startswith("_") and float(v) > 0} or table
+        table = {k: v for k, v in table.items() if k not in skip} or table
+        if scale:
+            table = {k: v * float(scale.get(k, 1.0)) for k, v in table.items()}
         names = list(table)
         return self.rng.choices(names, [table[n] for n in names])[0]
 
@@ -947,7 +992,11 @@ class Engine:
                 "vs": f"{move['type']} vs {'/'.join(d.types) or 'typeless'}", "type_mult": tmult,
                 "target": target, "target_mult": aim, "stab": stab, "effective": effective,
                 "effectiveness": word, "about": move.get("about", ""), "improvised": bool(move.get("improvised")),
-                "extras": extras, "extra_mult": xm}
+                "extras": extras, "extra_mult": xm,
+                # (what is_ranged reads, so the record of a blow says ranged or close the way the move does: Close
+                # Combat is a spread delivered close, Flame Wheel a charge)
+                **({"ranged": move["ranged"]} if "ranged" in move else {}),
+                **({"charge": True} if move.get("charge") else {})}
 
     def _use_move(self, fighter, move):
         """Limited moves (fighters.json 'uses') run out. Raises if none are left; otherwise uses one."""
@@ -1010,8 +1059,18 @@ class Engine:
                 "target": target if target in ("targeted", "spread") else "targeted",
                 "about": about or "an improvised attack", "improvised": True, "ranged": far}
 
-    def move_attack(self, attacker, defender, move_name, parts, count=1, flavor="", move=None, no_spill=False,
-                    enforce=False, sustain=0, against="", charge_into="", pummel=False, feint=False):
+    def move_attack(self, attacker, *args, **kw):
+        """A named move (or an improvised `move` dict): see _move_attack. A confused attacker who passes her confusion
+        check and attacks anyway has it on the result (through_confusion), so the story can show her doing it dizzy."""
+        self._confusion_passed = None
+        res = self._move_attack(attacker, *args, **kw)
+        if self._confusion_passed and isinstance(res, dict) and not res.get("confused_self_hit"):
+            res["through_confusion"] = True
+        self._confusion_passed = None
+        return res
+
+    def _move_attack(self, attacker, defender, move_name, parts, count=1, flavor="", move=None, no_spill=False,
+                     enforce=False, sustain=0, against="", charge_into="", pummel=False, feint=False):
         """A named move (or an improvised `move` dict). targeted: one part (count repeats);
         spread: the listed parts; whole_body: every body part the defender has."""
         a, d = self.get_active(attacker), self.get_active(defender)
@@ -1023,6 +1082,7 @@ class Engine:
         if move.get("target") == "hold":
             raise ValueError(f"{move['name']} is a hold; use it to start a hold or pin")
         self._can_act(a, enforce)
+        d_up = self.has(d, "airborne")    # (before the blow: knocking her out of the sky must not make it a dive)
         busy = self.busy_with(a, move)
         if enforce and busy:
             raise ValueError(f"{poss_word(a.name)} {busy[0]} are clamped on {poss_word(busy[1])} {busy[2].lower()}: she "
@@ -1085,7 +1145,9 @@ class Engine:
         self._last_stand_now = self._last_stand(a, move) if enforce else None
         self._overcommit_now = self._overcommit(a, move) if enforce and not self._last_stand_now else None
         self._sustain_now = int(sustain or 0)
+        self._strike_flavor = str(flavor or "")       # (which limb she throws it with, when the order says: limb_mult)
         math = self.move_math(a.name, d.name, move)
+        self._strike_flavor = ""
         spiking = self.spike_ok(a, d, move)
         self._sustain_now = 0
         target = math["target"]
@@ -1104,7 +1166,9 @@ class Engine:
             if dodge:
                 res.update(dodge)
             else:
-                res["status_applied"] = self._status_from_move(d, move, force_roll=True)
+                aimed = next((x for x in (parts or []) if isinstance(x, str) and match_part(list(d.parts), x)), None)
+                res["status_applied"] = self._status_from_move(
+                    d, move, force_roll=True, at=match_part(list(d.parts), aimed) if aimed else None)
                 res["missed"] = not res["status_applied"]
             return res
         self._aim_miss = None
@@ -1125,6 +1189,19 @@ class Engine:
                 if landed != names[0]:
                     self._aim_miss = {"aimed": names[0], "landed": landed}
                     names = [landed]
+            elif enforce and target == "targeted" and len(names) > 1 and not pummel:
+                # a path of parts is not an aim, but a small, hard-to-reach part on it (an eye, an ear, the throat)
+                # is still no sure thing: each of those is rolled like an aim, and lands beside itself if it misses
+                # (moves.aim.path_below: parts at or below this ease are rolled; 0 = never)
+                below = float(((self.rules.get("moves") or {}).get("aim") or {}).get("path_below", 0.6))
+                out = []
+                for nm in names:
+                    landed = self._aim(a, d, nm) if self.aim_ease(nm) <= below else nm
+                    if landed != nm and not getattr(self, "_aim_miss", None):
+                        self._aim_miss = {"aimed": nm, "landed": landed}
+                    if landed not in out:
+                        out.append(landed)
+                names = out
             k_ = max(1, int(count or 1))
             # several blows over several named parts: they go round the parts in order, the count in all
             plan = ([names[i % len(names)] for i in range(k_)] if k_ > 1 and len(names) > 1 else [names[0]] * k_) \
@@ -1287,6 +1364,9 @@ class Engine:
                 hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
             finally:
                 self._dev_active = None
+            for h in hits[1:]:
+                if h["part"] in (math.get("auto_spill_parts") or ()):
+                    h["jarred"] = True     # only knocked by a blow aimed beside it (sized as such in the notes)
             if hits and not move.get("improvised"):    # she remembers what has landed on her (learning)
                 felt = d.learned.setdefault("moves", {})
                 felt[f"{a.name}|{move['name']}"] = felt.get(f"{a.name}|{move['name']}", 0) + 1
@@ -1342,6 +1422,7 @@ class Engine:
         if self._overcommit_now:
             res["overcommit"] = True
             self.set_status(a, "off_balance", 1)      # she overbalances on it
+            self._overbalanced = getattr(self, "_overbalanced", set()) | {a.name}   # (her own lunge, not turned aside)
         self._overcommit_now = None
         if self._last_stand_now and hits:
             res["last_stand"] = True
@@ -1386,14 +1467,18 @@ class Engine:
             if mouth:
                 res["into_mouth"] = mouth
             blocked = bool(guard and guard.get("kind") == "block")   # a blocked blow passes on no status
-            res["status_applied"] = ((self._status_from_move(d, move) if not blocked else [])
+            at = next((h.get("part") for h in hits if h.get("part") and h.get("defender", d.name) == d.name), None)
+            res["status_applied"] = ((self._status_from_move(d, move, at=at) if not blocked else [])
                                      + self._restrain(a, d) + (mouth or [])
                                      + list((res.get("charge") or {}).get("hazard_status") or [])
                                      + list((res.get("sustain") or {}).get("hazard_status") or []))
             launch = self._launch_from_move(move)
+            fcfg = self.rules.get("flight") or {}
+            if launch and self.has(d, "airborne") and not d.eliminated and not move.get("grab_carry") \
+                    and not move.get("carry") and self._rights_herself(d, move, launch, fcfg):
+                res["righted"], launch = launch, None
             if launch:
                 res["auto_launch"] = launch
-            fcfg = self.rules.get("flight") or {}
             grab = move.get("grab_carry") and not move.get("carry") and not d.eliminated
             if grab:
                 # a winged fighter in the air seizes her with whatever she grips with and tries to haul her up:
@@ -1418,15 +1503,24 @@ class Engine:
                 res["auto_launch"], res["drop_severity"] = "launched", h[1]
             kfa = fcfg.get("knock_from_air") or {}
             fall = (min(float(kfa.get("max", 0.9)), float(kfa.get("base", 0.25))
-                        + float(kfa.get("per_damage", 0.004)) * sum(h.get("damage_taken", 0) for h in hits)
+                        + float(kfa.get("per_damage", 0.004)) * self._fall_damage(hits, float(kfa.get("spread_share", 0.3)))
                         + float(kfa.get("per_wing_damage", 0.0025)) * self.wing_damage(d))
                     if self.has(d, "airborne") and not res.get("carried") and not d.eliminated else 0.0)
+            hm = kfa.get("health_mult") or {}
+            if fall > 0 and hm:
+                # a strong flyer rides out a blow that would bring a worn one down (knock_from_air.health_mult: at full
+                # strength, at half, and at nothing left, eased between)
+                pct = max(0.0, min(100.0, self._health_pct(d)))
+                full, half, empty = (float(hm.get(k, v)) for k, v in (("full", 1.0), ("half", 1.0), ("empty", 1.0)))
+                m = half + (full - half) * (pct - 50) / 50 if pct >= 50 else empty + (half - empty) * pct / 50
+                fall = min(float(kfa.get("max", 0.9)), fall * m)
             if fall > 0 and self._chance(fall, f"{d.name} knocked out of the air", "she falls", "she stays up"):
                 # hit in the air with nothing under her: the blow knocks her out of the sky (harder, the more it hurt
                 # and the worse her wings are: flight.knock_from_air)
                 d.status.pop("airborne", None)
                 res["grounded"] = True
                 res["grounded_wing"] = self.wing_damage(d) >= float((fcfg.get("strain") or {}).get("from", 100))
+                res["fell_from_air"] = not res.get("auto_launch")   # no throw rolled: she just fell (labels only)
                 res["auto_launch"], res["drop_severity"] = res.get("auto_launch") or "thrown", res.get("drop_severity") or "solid"
         if hits and not d.eliminated:
             jolt = self._jolts(d, hits)
@@ -1434,7 +1528,7 @@ class Engine:
                 res["status_applied"] = (res.get("status_applied") or []) + jolt
         if hits and not d.eliminated and not dodge and not (guard and guard.get("kind") == "block") \
                 and not any(res.get(k) for k in ("charge", "sustain", "ground_into", "ground_back", "into_mouth",
-                                                  "auto_launch", "grounded", "carried")):
+                                                  "auto_launch", "grounded", "carried", "righted")):
             reel = self._stumble(a, d, move, hits)
             if ((self.rules.get("moves") or {}).get("stumble") or {}).get("enabled", True):
                 res["moved"] = "stagger" if reel and reel.get("status") else "rock" if reel else "still"
@@ -1452,7 +1546,7 @@ class Engine:
                 res["reflected"] = back
         if res.get("carried"):
             self.set_status(a, "airborne", max(a.status.get("airborne", 0), 2))   # she is up there with her
-        elif self.has(a, "airborne") and not self.is_ranged(move) and not self.has(d, "airborne") \
+        elif self.has(a, "airborne") and not self.is_ranged(move) and not d_up \
                 and move.get("target") not in ("status", "hold") and not move.get("carry"):
             if (getattr(self, "_juggle", None) or {}).get("who") == d.name:
                 res["dive"], res["climbs"] = True, True    # she struck her in the air: there is no one to catch her
@@ -1462,7 +1556,7 @@ class Engine:
                     self._strafe(a, d, res, math)
         elif leap:
             self._leap_after(a, d, res, leap, bool(hits) and not res.get("dodged"))
-        elif self.has(a, "airborne") and self.has(d, "airborne") and not self.is_ranged(move) \
+        elif self.has(a, "airborne") and d_up and not self.is_ranged(move) \
                 and move.get("target") not in ("status", "hold", "self") and not move.get("carry") \
                 and (getattr(self, "_juggle", None) or {}).get("who") != d.name \
                 and ((self.rules.get("flight") or {}).get("air_pass") or {}).get("enabled", True):
@@ -2125,7 +2219,7 @@ class Engine:
         if any(self.has(a, st) for st in ("dazed", "off_balance", "confused")):
             miss *= float(cfg.get("shaky_mult", 1.3))
         miss *= float(cfg.get("scale", 1.0))
-        if miss <= 0 or not self._chance(min(0.9, miss), f"{poss_word(a.name)} blow landing on the {part} it was aimed at",
+        if miss <= 0 or not self._chance(min(0.9, miss), f"{poss_word(a.name)} blow sliding off the {part} it was aimed at",
                                          "it lands beside it", "on target"):
             return part
         same, near = neighbor_parts(list(d.parts), part)
@@ -2270,6 +2364,7 @@ class Engine:
             return None
         if not self._chance(float(self._cfg("status_effects").get("confused_self_hit_chance", 0.33)),
                             f"{a.name} hurting herself in her confusion", "she does", "she attacks normally"):
+            self._confusion_passed = a.name     # (dizzy still, and attacking anyway: move_attack marks it)
             return None
         part = self.rng.choice([p for p in a.parts if body_region(p) in ("head", "fore_low", "fore_up", "shoulder",
                                                                          "chest", "tail")] or list(a.parts))
@@ -2299,6 +2394,8 @@ class Engine:
         fighter who falls asleep on her feet slumps to the ground. What that knocked loose is left in _knock_on."""
         f.status[status] = max(f.status.get(status, 0), int(beats))
         self._fresh_status.add((f.name, status))
+        if status == "chilled":
+            (getattr(self, "_slow_not_cold", None) or set()).discard(f.name)   # (cold, unless the move says otherwise)
         self._knock_on = []
         if status in ("asleep", "frozen") and not f.eliminated:
             word = "fell asleep" if status == "asleep" else "froze solid"
@@ -2359,13 +2456,23 @@ class Engine:
             parts = [p for p in a.parts.values() if body_region(p.name) in ("tail", "belly")]
         if not parts:
             return None
+        if kind != "charge" and (cfg.get("struck_limb", True)):
+            # one limb throws it (a wing, an arm, a talon, a horn): the one the order names ("her left wing"), or else
+            # her sounder one, since a fighter favours a hurt limb; a charge is carried by all of them (the worst)
+            said = str(getattr(self, "_strike_flavor", "") or "").lower()
+            named = [p for p in parts if re.search(r"\b%s\b" % re.escape(p.name.lower()), said)]
+            side = re.search(r"\b(left|right)\b", said)
+            if not named and side:
+                named = [p for p in parts if p.name.lower().startswith(side.group(1))
+                         and re.search(r"\b(?:wing|arm|paw|hand|fist|claw|talon|horn|leg|foot|forearm|tail)\b", said)]
+            parts = named or [min(parts, key=lambda p: p.damage)]
         worst = max(parts, key=lambda p: p.damage)
         steps = sorted(((float(k), float(v)) for k, v in (cfg.get("at") or {"150": 0.8, "300": 0.6}).items()),
                        reverse=True)
         mult = next((m for at, m in steps if worst.damage >= at), None)
         if mult is None or mult >= 1:
             return None
-        return (f"her hurt {worst.name.lower()}", mult)
+        return (f"{poss_word(a.name)} hurt {worst.name.lower()}", mult)   # (named: "her" reads as the defender's)
 
     def power_extras(self, a, d, move_type):
         """Status multipliers on a move's power: (label, multiplier) pairs."""
@@ -2402,23 +2509,37 @@ class Engine:
             out.append(("soaked", float(cfg.get("soaked_electric_mult", 1.5))))
         return out
 
-    def _status_from_move(self, d, move, force_roll=False):
-        """The move's own effects (moves.json), or else the default for its type (rules.json)."""
+    def _status_from_move(self, d, move, force_roll=False, at=None):
+        """The move's own effects (moves.json), or else the default for its type (rules.json). at: the part it
+        touched (a burn stays on that spot)."""
         if d.eliminated:
             return []
         if isinstance(move, str):
             move = {"type": move}
         effs = [x for x in move.get("effects", []) if x.get("status")]
+        default = self._cfg("status_effects").get("from_move_type", {}).get(move.get("type"))
         if not effs and not move.get("effects"):
-            default = self._cfg("status_effects").get("from_move_type", {}).get(move.get("type"))
             effs = [default] if default else []
+        elif default and default.get("status") in self._cfg("status_effects").get("from_move_type_always", []) \
+                and not any(x.get("status") == default["status"] for x in effs):
+            effs = effs + [default]     # (water wets her, whatever else the move does: Water Pulse soaks as well)
         out = []
         for eff in effs:
             if self._chance(float(eff.get("chance", 0)), f"{d.name} {eff['status']} by {move.get('name', 'the move')}",
                             eff["status"], "no"):
+                if eff["status"] == "burned" and not self.has(d, "burned"):
+                    # the burn stays where the fire touched her: every later flare is on that spot
+                    self.__dict__.setdefault("burn_spot", {})[d.name] = at
                 self.set_status(d, eff["status"], eff.get("beats", 2))
-                out.append({"fighter": d.name, "status": eff["status"], "beats": int(eff.get("beats", 2)),
-                            "knock_on": self._knock_on})
+                rec = {"fighter": d.name, "status": eff["status"], "beats": int(eff.get("beats", 2)),
+                       "knock_on": self._knock_on}
+                if eff["status"] == "chilled" and move.get("type") != "Ice":
+                    # (the slow of a move that isn't cold, Rock Tomb's boulders or String Shot's silk, isn't frost)
+                    if not hasattr(self, "_slow_not_cold"):
+                        self._slow_not_cold = set()
+                    self._slow_not_cold.add(d.name)
+                    rec["look"] = self.status_look(d.name, "chilled")
+                out.append(rec)
                 self._knock_on = []
         return out
 
@@ -2759,7 +2880,13 @@ class Engine:
         if not forced and (ch <= 0 or not self._chance(ch, f"{d.name} dodging {poss_word(a.name)} attack", "DODGED",
                                                        "it lands")):
             return None
-        out = {"dodged": True, "dodge_chance": ch, "counter_hits": [], "manner": self.vary("dodge"), "wary": wary}
+        # (the ways of dodging that need her legs, a step aside or a spring back, grow rarer as her legs are hurt;
+        # in the air she dodges on her wings)
+        ecfg = self._cfg("evasion")
+        legw = 0.0 if self.has(d, "airborne") else self._leg_worst(d)
+        legs_ok = 1.0 / (1.0 + legw / float(ecfg.get("leg_manner_halves_at", 80)))
+        manner = self.vary("dodge", scale={m: legs_ok for m in ecfg.get("leg_manners", ["spring_back", "sidestep"])})
+        out = {"dodged": True, "dodge_chance": ch, "counter_hits": [], "manner": manner, "wary": wary}
         if forced:
             out["chain_broken"] = True
         acfg = self.rules.get("arena") or {}
@@ -3306,8 +3433,8 @@ class Engine:
                               for h in self.holds.values() if h.attacker == name]}
             if tries is not None:
                 del self.downed[name]
-                self.facing.pop(name, None)
-                ev["rise"] = self.vary("getup_rise")
+                lay = self.facing.pop(name, None)
+                ev["rise"] = self.vary("getup_rise", ("roll",) if lay == "face-down" else ())  # (already on her front)
                 ev["fails"] = [self.vary("getup_fail") for _ in range(max(0, tries - 1))]
             else:
                 ev["fails"] = [self.vary("getup_fail") for _ in range(3)]
@@ -3750,7 +3877,15 @@ class Engine:
             return False
         if "ranged" in move:   # moves.json can say so outright ("ranged": false for a close flurry like Close Combat)
             return bool(move["ranged"])
-        return move.get("target") in ("spread", "whole_body")
+        if move.get("target") in ("spread", "whole_body"):
+            return True
+        # a single-target move that is thrown, shot or fired across the gap (Ice Shard, "a fast-flung chunk of ice"),
+        # never one delivered by a fist, a fang or a body ("Bullet Punch")
+        words = f"{move.get('name', '')} {move.get('about', '')}".lower()
+        return bool(re.search(r"\b(?:flung|fling|shards?|shot|shoots?|bullets?|spits?|spat|hurl\w*|thrown|needles?|"
+                              r"missiles?|darts?|gun|beams?|rays?|bolts?|blasts?|pulse|spheres?|orbs?|spray|jets? of)\b", words)
+                    and not re.search(r"\b(?:punch|fist|fang|bite|claw|kick|tackle|slam|strike|headbutt|tail|grabs?|grips?|seiz\w*|swings?)\b",
+                                      words))
 
     def _clash(self, a, d, move, math):
         """A ranged attack met head-on by one of the defender's own (moves.clash): the two meet in the air between
@@ -3775,7 +3910,7 @@ class Engine:
         if not options:
             return None
         if not self._chance(float(cfg.get("chance", 0.15)), f"{d.name} meeting {poss_word(a.name)} {move['name']} "
-                            f"with one of her own", "CLASH", "no"):
+                            f"with an attack of her own", "CLASH", "no"):
             return None
         # how much force a move puts out, all told: a whole-body discharge spreads its power over every part, so
         # it is weighed by how much of her it covers, not by one part's share
@@ -4298,7 +4433,11 @@ class Engine:
                       and a.move_uses.get(m["name"], 1) > 0 and a.energy >= self.energy_cost(m)]
             gripped = [h.part for h in self.holds.values() if h.attacker == an and h.defender == dn]
             same, near = neighbor_parts(list(d.parts), self.rng.choice(gripped)) if gripped else ([], [])
-            spots = [x for x in same + near if x not in gripped] or [x for x in d.parts if x not in gripped] or list(d.parts)
+            # never the side she is lying on: a fighter pinned face-up has her back against the ground
+            hidden = {"face-up": ("back_up", "back_low"), "face-down": ("chest", "belly")}.get(self.facing_of(dn), ())
+            spots = ([x for x in same + near if x not in gripped and body_region(x) not in hidden]
+                     or [x for x in d.parts if x not in gripped and body_region(x) not in hidden]
+                     or [x for x in d.parts if x not in gripped] or list(d.parts))
             part = self.rng.choice(spots)
             if usable:
                 move = self.rng.choice(usable)
@@ -4474,6 +4613,7 @@ class Engine:
             self.note_roll(f"{d.name} turning {poss_word(a.name)} {move['name']} aside", defl_p, r - block_p, "DEFLECTED")
             if not ranged:
                 self.set_status(a, "off_balance", 1)
+                getattr(self, "_overbalanced", set()).discard(a.name)
             how = (self.rng.choice(("a burst of her own power", "a sweep of her arm or paw", "a twist of her whole body"))
                    if ranged else self.rng.choice(("a paw or forearm across it", "a shoulder turned into it",
                                                    "a sidestep and a shove")))
@@ -4725,7 +4865,11 @@ class Engine:
                    "it shoves her a little way along the ground where she lies" if kind in ("blunt", "blast") else
                    "her body jerks where she lies")
         elif kind == "bite":
-            how = f"the jaws drag her toward {a.name} before they let go"
+            how = {"drag": f"the jaws drag her toward {a.name} before they let go",
+                   "shake": "the jaws shake her where she stands, once, hard, and open",
+                   "yank": f"the bite yanks her off her line, half a step toward {a.name}, and lets go",
+                   "wrench_free": "she wrenches back against the teeth and her body jerks with them as she pulls free",
+                   }[self.vary("bite_rock")]
         elif kind in ("claw", "blade"):
             how = f"she twists{side or ''} away from the {'cut' if kind == 'blade' else 'rake'} as it goes across her"
         elif holding:
@@ -4803,14 +4947,14 @@ class Engine:
                   "a few scratches, the fur split along them"],
                  ["raked furrows through the fur, the skin red beneath", "claw lines scored through the coat, red and "
                   "raised", "parallel scratches cutting the fur into tufts, the skin angry beneath"],
-                 ["deep raked lines, the fur torn away in strips", "the coat clawed ragged, whole tufts gone and the skin "
-                  "welted", "gouged furrows, the fur hanging in torn clumps round them"]),
+                 ["deep raked lines, the fur scraped thin along them", "the coat clawed ragged, whole tufts gone and the skin "
+                  "welted", "deep claw furrows, the fur matted and parted round them, the skin welted"]),
         "bite": (["tooth marks pressed into the fur", "a crescent of dents where teeth closed",
                   "the fur pinched up in a line of small tooth prints"],
                  ["a ring of tooth marks, puffy and red round each one", "bite marks swollen into a raised ring",
                   "a double row of tooth prints, the skin round them puffed"],
-                 ["deep tooth marks, the fur matted and clumped round them", "a ragged bite mark, the fur torn and the "
-                  "flesh round it swollen tight", "deep tooth marks gone dark, the fur round them stiff and matted"]),
+                 ["deep tooth marks, the fur matted and clumped round them", "a deep bite mark, the fur matted and the "
+                  "skin round it swollen tight", "deep tooth marks gone dark, the fur round them stiff and matted"]),
         "blunt": (["the fur ruffled up the wrong way", "the coat scuffed and standing up in a patch",
                    "a faint flattened patch where it struck"],
                   ["bruising showing dark through the fur wherever it parts", "a purpling under the coat you can see "
@@ -4824,7 +4968,7 @@ class Engine:
                  ["the fur crushed and matted, the flesh beneath bruised dark and puffy", "deep grip marks, the coat "
                   "mashed flat and the flesh round them swollen", "the shape of the hold bruised into her, fur crushed "
                   "into the skin"]),
-        "shock": (["the fur frizzed and standing up", "the coat crackling, every hair on end",
+        "shock": (["the fur frizzed and standing up", "the coat frizzed, every hair on end",
                    "a static-fluffed patch of fur"],
                   ["the fur singed and frizzed", "scorched tips to the fur, smelling of burnt hair",
                    "the coat frizzed and darkened at the ends"],
@@ -4832,7 +4976,7 @@ class Engine:
                    "singed bare in spots, the skin shiny and red beneath"]),
         "cold": (["frost-stiff fur", "the fur rimed white and crunchy", "a patch of fur stiff with ice"],
                  ["frost-burned patches, the fur dull and stiff", "the coat frozen into stiff spikes, the skin pale "
-                  "beneath", "cold-burned patches gone numb and white"],
+                  "beneath", "cold-burned patches gone white and stiff"],
                  ["frost-burned patches gone red and raw-looking under stiff fur", "the skin blotched red and white "
                   "from the cold, the fur brittle", "cold-burned and swollen, the fur frozen into clumps"]),
     }
@@ -4840,12 +4984,12 @@ class Engine:
     MARKS_MORE = {
         "claw": (["a light scoring of claw marks", "shallow nicks in the coat, the fur parted in thin lines"],
                  ["claw furrows crossing each other, the fur ragged", "long red scratches showing through the parted fur"],
-                 ["deep claw tracks, the coat shredded round them", "the fur raked off in strips, the skin beneath "
-                  "raw-looking"]),
+                 ["deep claw tracks, the coat ragged round them", "the fur raked thin in stripes, the skin beneath "
+                  "red and welted"]),
         "bite": (["small dents in the coat where fangs pressed", "a faint arc of bite marks"],
                  ["bite marks raised and reddened", "the fur bunched and wet round a ring of tooth marks"],
                  ["a crushing bite mark, the flesh round it swollen out", "deep fang marks, the coat round them clumped "
-                  "and torn"]),
+                  "and matted"]),
         "blunt": (["the coat mussed where it landed", "a dull patch where the fur was knocked flat"],
                   ["a bruise blooming under the coat, plain when the fur lifts", "the fur raised over a bruised swelling"],
                   ["bruised deep and swollen tight, the fur standing up over it", "the swelling pushing the fur apart, "
@@ -4855,7 +4999,7 @@ class Engine:
                   "through the flattened fur"],
                  ["the fur ground flat and the flesh puffed up dark round the grip lines", "crushed and swollen where "
                   "the hold was, the coat matted down hard"]),
-        "shock": (["the fur puffed out and twitching", "hairs standing up in a crackling halo"],
+        "shock": (["the fur puffed out and twitching", "hairs standing up in a frizzy halo"],
                   ["a burnt smell off the frizzed fur", "the fur curled and singed at the tips"],
                   ["the fur crisped away in patches", "scorched streaks through the coat, the skin hot and red"]),
         "cold": (["frost glittering in the coat", "the fur crusted white at the tips"],
@@ -4909,27 +5053,15 @@ class Engine:
         best = max(n, key=n.get)
         return best if n[best] else "skin"
 
-    _COVER_SWAP = {"feathers": [(r"\bfur\b", "feathers"), (r"\bcoat\b", "plumage"), (r"\bhairs?\b", "feathers")],
-                   "scales": [(r"\bfur\b", "scales"), (r"\bcoat\b", "scales"), (r"\bhairs?\b", "scales"),
-                              (r"\bburnt hair\b", "scorched hide")],
-                   "skin": [(r"\bfur\b", "skin"), (r"\bcoat\b", "hide"), (r"\bhairs?\b", "skin")]}
-
     def in_her_covering(self, f, text):
         """Wound and wear wording is written for fur: say it in feathers, scales or skin for a body that has those."""
-        swaps = self._COVER_SWAP.get(self.covering(f))
-        if not swaps or not text:
-            return text
-        for rx, word in swaps:
-            text = re.sub(rx, word, text)
-        return re.sub(r"\b(feathers|scales) (is|was|stands?|lies|parts)\b",
-                      lambda m: m.group(1) + " " + {"is": "are", "was": "were", "stands": "stand", "stand": "stand",
-                                                    "lies": "lie", "parts": "part"}[m.group(2)], text)
+        return in_covering(self.covering(f), text)
 
     def visible_marks(self, f, p):
         """What the damage to one part LOOKS like by now: the marks of what did it (claws, teeth, blows, grips,
         lightning, cold), how deep, and cartilage (ears, nose, fins) creased or bent out of shape for now."""
         lvl = 2 if p.damage >= 300 else 1 if p.damage >= 150 else 0
-        srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
+        srcs = self.injury_causes(f"{f.name}|{p.name}", 2)
         kinds = list(dict.fromkeys(self._mark_kind(c) for c in srcs)) or ["blunt"]
         import zlib
         pick = lambda lst, salt: lst[zlib.crc32(f"{f.name}|{p.name}|{salt}".encode()) % len(lst)]
@@ -4944,7 +5076,8 @@ class Engine:
     def wear_text(self):
         """VISIBLE WEAR: how each fighter looks by now, so the narrator keeps it the same from beat to beat."""
         rows = []
-        for f in self.active():
+        # after the match the one who lost is still there to be seen (the aftermath shows how she lies): her wear stays
+        for f in (list(self.fighters.values()) if self.winner() else self.active()):
             # small surface details (grit in her coat, a scuff) fade from the notes after a few beats: the fight has
             # moved on and the fur has moved with it (narration.notes_decay.wear_beats)
             wb, wt = self._decay("wear_beats", 6), f.learned.get("wear_turn") or {}
@@ -4955,7 +5088,8 @@ class Engine:
             if self.has(f, "burned"):
                 bits.append("singed patches in her fur")
             if self.has(f, "chilled"):
-                bits.append("frost in her fur, shivering")
+                bits.append("moving stiff and heavy" if f.name in (getattr(self, "_slow_not_cold", None) or ())
+                            else "frost in her fur, shivering")
             bad = sorted((p for p in f.parts.values() if p.damage >= 90), key=lambda p: -p.damage)[:4]
             # a mark on a part nobody has touched for a while is given in short: the first thing that shows
             ob = self._decay("origin_beats", 4)
@@ -4979,6 +5113,15 @@ class Engine:
             return None
         return a.name
 
+    def _wing_way(self, f, p):
+        """How a hurt wing shows in the way she moves: in the air she still flies on it, on the ground she holds it."""
+        name, bad = p.name.lower(), p.damage >= 300
+        if self.has(f, "airborne"):
+            return (f"flies lopsided, her {name} labouring, every stroke of it ragged and short" if bad else
+                    f"favours her {name} in the air, its strokes a little short and careful")
+        return (f"her {name} hangs half-folded and trailing, held off the rock" if bad else
+                f"keeps her {name} folded close, guarding it")
+
     def movement_text(self):
         """HOW THEY MOVE NOW: what each fighter's injuries do to the way she moves (favouring a leg, an arm held in),
         repeated every beat so the story keeps it up."""
@@ -4989,7 +5132,15 @@ class Engine:
                 if p.damage < 150 or len(bits) >= 3:
                     continue
                 reg = body_region(p.name)
-                if reg in ("hind_low", "hind_up") or (reg in ("fore_low", "fore_up") and self.body_plan(f) == "quadruped"):
+                if "wing" in p.name.lower():
+                    bits.append(self._wing_way(f, p))
+                elif self.has(f, "airborne") and reg in ("hind_low", "hind_up"):
+                    bits.append(f"holds her {p.name.lower()} tucked up stiffly under her as she flies")   # (no limp aloft)
+                elif reg == "tail" and "flame" in p.name.lower():
+                    bits.append("the flame on her tail burns low and small")
+                elif reg in ("neck", "head") and any(b.startswith("holds her head carefully") for b in bits):
+                    continue          # (one line for a hurt head and neck, not the same line twice)
+                elif reg in ("hind_low", "hind_up") or (reg in ("fore_low", "fore_up") and self.body_plan(f) == "quadruped"):
                     bits.append(f"favours her {p.name.lower()}, keeping weight off it (a limp when she moves)")
                 elif reg in ("fore_low", "fore_up"):
                     bits.append(f"keeps her {p.name.lower()} tucked in and uses it as little as she can")
@@ -5039,9 +5190,20 @@ class Engine:
             return f"{who} struggling"
         if low in self.SUBMISSIONS:
             return f"{who} {low}"
-        mv = self.dex_move(what)
-        about = str((mv or {}).get("about") or "")
-        if about[:2].lower() in ("a ", "an") or about[:4].lower() == "the ":
+        # her own move first (the fighter's file), then the move list only under that very name: a near miss in the
+        # list is another move ('Slash' is not 'Flash, a blinding flash of light')
+        try:
+            own = self.find_move(re.sub(r"(?:'s|')$", "", who), what)
+        except ValueError:
+            own = None
+        dex = self.dex_move(what)
+        if dex and " ".join(dex["name"].lower().replace("-", " ").split()) != " ".join(low.replace("-", " ").split()):
+            dex = None
+        mv = own or dex
+        art = re.compile(r"(?:an?|the)\s", re.I)
+        about = next((str(m.get("about") or "") for m in (own, dex) if m and art.match(str(m.get("about") or ""))),
+                     "" if not own or re.match(r"\w+s\b", str(own.get("about") or "")) else str(own.get("about") or ""))
+        if about:
             noun = re.split(r"\s+(?:across|into|from|that|with|to|which)\b|[,:;(]", about, maxsplit=1)[0].strip()
             noun = re.sub(r"^(?:a|an|the)\s+", "", noun, flags=re.I)
         else:
@@ -5330,7 +5492,8 @@ class Engine:
                       f"{fin['seconds']} seconds" if fin.get("seconds") else "")
             rows.append(f"  Finish: {win} pinned {lose}" + (f" for {length}" if length else "") + f"; {how}"
                         + (f" ({fin['part']})" if fin.get("part") else "") + " put her out at "
-                        + (f"{max(0.0, fin['strength']):.0f}% strength" if fin.get("strength") is not None else "the end"))
+                        + ((f"{fin['strength']:.0f}% strength" + (", past her limit" if fin["strength"] < 0 else ""))
+                           if fin.get("strength") is not None else "the end"))
         if tp:
             rows.append(f"  Turning point: beat {tp['beat']} — {win} took the lead for good"
                         + (f" ({tp['win']:.0f}% vs {tp['lose']:.0f}%)" if tp.get("win") is not None else ""))
@@ -5454,13 +5617,15 @@ class Engine:
         return max(wings) if wings else 0.0
 
     def can_fly(self, f, why=False):
-        """A fighter with wings, free to take off. A hurt wing still lifts her, at a cost (flight.strain); only a shredded
-        one (strain.max_wing) can't."""
+        """A fighter with wings, free to take off. A hurt wing still lifts her, at a cost (flight.strain); a shredded one
+        (strain.max_wing) grounds her only if strain.max_wing_grounds is on. Nearly spent, she may try and fail
+        (flight.weak_takeoff, rolled in take_off)."""
         cfg = self.rules.get("flight") or {}
         reason = None
         if not any("wing" in p.lower() for p in f.parts):     # a bird, or a winged dragon with arms too
             reason = f"{f.name} has no wings"
-        elif self.wing_damage(f) >= float((cfg.get("strain") or {}).get("max_wing", 600)):
+        elif (cfg.get("strain") or {}).get("max_wing_grounds", False) \
+                and self.wing_damage(f) >= float((cfg.get("strain") or {}).get("max_wing", 600)):
             reason = f"{poss_word(f.name)} wings are shredded: they can't lift her at all"
         elif f.name in self.downed or self.pinned_by(f.name) or self.pinning(f.name):
             reason = f"{f.name} has to be up and free to take off"
@@ -5478,7 +5643,8 @@ class Engine:
         cfg = self.rules.get("flight") or {}
         st = cfg.get("strain") or {}
         over = max(0.0, self.wing_damage(f) - float(st.get("from", 100)))
-        return float(cfg.get("takeoff_energy", 8)) * (1 + float(st.get("energy_per_100", 1.0)) * over / 100)
+        return float(cfg.get("takeoff_energy", 8)) * min(float(st.get("energy_max_mult", 2.0)),
+                                                         1 + float(st.get("energy_per_100", 1.0)) * over / 100)
 
     def _wing_strain_tick(self):
         """Flying on a badly hurt wing tears it further: each beat in the air with her worse wing past flight.strain
@@ -5495,7 +5661,8 @@ class Engine:
             if worst.damage < float(st.get("from", 100)):
                 continue
             self._source = f"{poss_word(f.name)} straining her hurt wing to stay up"
-            power = round(float(st.get("power", 6)) * worst.damage / 100, 2)
+            # (counted only up to power_cap_at %: past it, the strain stops growing with the wing's own damage)
+            power = round(float(st.get("power", 6)) * min(worst.damage, float(st.get("power_cap_at", 250))) / 100, 2)
             hit = self._apply_damage(f, worst.name, power)
             events.append({"type": "wing_strain", "fighter": f.name, "part": worst.name, "power": power,
                            "hits": [hit], "tags": self._tags([hit])})
@@ -5511,6 +5678,16 @@ class Engine:
         cfg = self.rules.get("flight") or {}
         cost = self.takeoff_cost(f)
         f.energy = max(0.0, f.energy - cost)
+        wt = cfg.get("weak_takeoff") or {}
+        pct = self._health_pct(f)
+        if wt.get("enabled", True) and pct < float(wt.get("below", 10)):
+            # nearly spent: her wings can still lift her, but it is a struggle she often loses
+            lo, hi = float(wt.get("at_zero", 0.05)), float(wt.get("at_below", 0.3))
+            ch = lo + (hi - lo) * max(0.0, pct) / max(1.0, float(wt.get("below", 10)))
+            if not self._chance(ch, f"{f.name} getting off the ground", "she lifts off", "she can't"):
+                self.involved.add(f.name)
+                return {"type": "take_off_failed", "fighter": f.name, "energy": round(cost, 1),
+                        "hurt_wing": self.wing_damage(f) >= float((cfg.get("strain") or {}).get("from", 100))}
         for h in [h for h in self.holds.values() if h.attacker == f.name]:
             self.holds.pop(h.id, None)
         beats = int(cfg.get("airborne_beats", 3)) + self.flight_vigour(f, "extra_beats", 0)
@@ -5593,6 +5770,30 @@ class Engine:
         res["leap"]["landing_hits"] = [self._apply_damage(a, p, power) for p in self.rng.sample(legs, min(2, len(legs)))]
         self._source = mine
 
+    def _rights_herself(self, d, move, launch, fcfg):
+        """A flyer the blow would hurl (a launch effect) may catch herself on her wings before she hits the ground
+        (flight.air_recover): likelier the stronger she is and the sounder her wings. A move that always throws (a
+        launch at 100%, a seize-and-throw) can't be ridden out."""
+        cfg = fcfg.get("air_recover") or {}
+        if not cfg.get("enabled", True) or any(e.get("launch") == launch and float(e.get("chance", 1)) >= 1
+                                               for e in move.get("effects", [])):
+            return False
+        pct = max(0.0, min(100.0, self._health_pct(d)))
+        hm = cfg.get("by_strength") or {}
+        full, half, empty = (float(hm.get(k, v)) for k, v in (("full", 0.6), ("half", 0.3), ("empty", 0.0)))
+        ch = half + (full - half) * (pct - 50) / 50 if pct >= 50 else empty + (half - empty) * pct / 50
+        ch /= 1.0 + self.wing_damage(d) / float(cfg.get("wing_halves_at", 300))
+        return ch > 0 and self._chance(min(0.9, ch), f"{d.name} catching herself on her wings", "she rights herself",
+                                       "she falls")
+
+    @staticmethod
+    def _fall_damage(hits, share):
+        """How hard a blow's hits shake a flyer, for knock_from_air: the worst hit in full and the rest at `share`
+        (a gust over her whole body is not a blow that crushes one wing), each as it would be at the default scale
+        of 3 (a higher /scale makes every number bigger, and must not by itself bring flyers down more often)."""
+        dmg = sorted((h.get("damage_taken", 0) * 3.0 / max(0.5, float(h.get("scale") or 3)) for h in hits), reverse=True)
+        return (dmg[0] + share * sum(dmg[1:])) if dmg else 0.0
+
     def _air_pass(self, a, d, res, landed):
         """Two flyers meet in the air (flight.air_pass): they cross at speed, so the one struck may rake back at the
         other as they pass (rake_back, more often while she is strong), and a pass that lands builds the attacker's
@@ -5602,8 +5803,8 @@ class Engine:
         if landed:
             self._set_air_speed(a, self.air_speed(a) + 1)
             res["air_speed"] = self.air_speed(a)
-        if d.eliminated or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched")):
-            return
+        if d.eliminated or res.get("grounded") or any(self.has(d, st) for st in ("asleep", "frozen", "paralyzed", "flinched")):
+            return     # (knocked out of the sky by it, she is falling, not crossing)
         ch = float(cfg.get("rake_back", 0.3)) * self.flight_vigour(d, "strafe_mult", 1.0)
         if not self._chance(min(0.8, ch), f"{d.name} raking back at {a.name} as they cross", "she rakes back", "no"):
             return
@@ -6372,7 +6573,7 @@ class Engine:
                                 "max_health": f.max_health,
                                 "exhaustion": exhaustion, "pain_drain": drain,
                                 "health_tier": ht["label"], "health_tier_changed": ht["label"] != tier_b,
-                                "reaction_guide": ht["reaction"]}
+                                "reaction_guide": self.tier_reaction(f, ht)}
         events += self.recover_tick()
         events += self._tick_status_energy()
         events += self._weather_tick()
@@ -6429,9 +6630,12 @@ class Engine:
                 continue
             cfg_s = self._cfg("status_effects")
             if self.has(f, "burned"):
-                hurt = [p for p in f.parts.values() if p.damage > 0] or list(f.parts.values())
+                spots = self.__dict__.setdefault("burn_spot", {})
+                if spots.get(f.name) not in f.parts:     # (no spot known: one is chosen once, and the burn stays there)
+                    hurt = [p for p in f.parts.values() if p.damage > 0] or list(f.parts.values())
+                    spots[f.name] = self.rng.choice(hurt).name
                 self._source = "the burn"
-                hit = self._apply_damage(f, self.rng.choice(hurt).name, float(cfg_s.get("burn_power", 5)))
+                hit = self._apply_damage(f, spots[f.name], float(cfg_s.get("burn_power", 5)))
                 events.append({"type": "status_tick", "fighter": f.name, "status": "burned", "hits": [hit]})
             if self.has(f, "poisoned"):
                 loss = f.max_health * float(cfg_s.get("poison_health_pct", 1.0)) / 100
@@ -7612,6 +7816,7 @@ class Engine:
                 bits.append(f"she has been put on the ground {downs} times")
             lost = float(before.get(f.name, me)) - me
             fade = float((pinned.get(f.name) or {}).get("fade", 0) or 0)
+            fade = max(fade, 55 if me <= 5 else 30 if me < 25 else 0)     # (her own strength counts: fade_words)
             mood = ("pinned_fading" if f.name in pinned and fade >= 55 else
                     "pinned_weakening" if f.name in pinned and fade >= 30 else
                     "pinned_fighting" if f.name in pinned else
@@ -7651,7 +7856,7 @@ class Engine:
 
     STATUS_LOOK = {
         "paralyzed": "PARALYZED: muscles locking up, sparks crawling over her, stiff and jerky, slow to react",
-        "chilled": "CHILLED: frost in her fur or on her scales, shivering, limbs stiff and slow",
+        "chilled": "CHILLED: frost in her fur, shivering, limbs stiff and slow",
         "bound": "BOUND: a limb wrapped tight and held: it goes numb and tingling, weak and slow to answer, and she can't "
                  "move freely; the rest of her is untouched",
         "constricted": "CONSTRICTED: coils wound round her, tightening, cutting off her circulation: her trapped limbs go "
@@ -7692,12 +7897,48 @@ class Engine:
                       "than she should be able to",
     }
 
+    # the same status from a move that is not cold: CHILLED is the engine's word for any slowing
+    STATUS_LOOK_NOT_COLD = {
+        "chilled": "SLOWED: her limbs heavy and stiff, slow to answer, every movement a beat behind",
+    }
+    OVERBALANCED_LOOK = ("OFF BALANCE: she threw too much into her last blow and it carried her past her footing; she "
+                         "is still recovering it; slower to dodge, weaker on the next strike")
+
+    def status_look(self, name, status):
+        """How a status looks on her: STATUS_LOOK, or the slow of a move that is not cold (Rock Tomb's boulders)."""
+        if name in (getattr(self, "_slow_not_cold", None) or ()) and status in self.STATUS_LOOK_NOT_COLD:
+            return self.STATUS_LOOK_NOT_COLD[status]
+        if status == "off_balance" and name in (getattr(self, "_overbalanced", None) or ()):
+            return self.OVERBALANCED_LOOK      # she overcommitted: nothing turned her blow aside
+        f = (getattr(self, "fighters", None) or {}).get(str(name).lower())
+        look = self.STATUS_LOOK.get(status, status.upper())
+        return self.in_her_covering(f, look) if f is not None else look     # (frost in her feathers, on her scales)
+
     def status_words(self, f):
-        bits = [self.STATUS_LOOK.get(s, s.upper()) + f" ({n} beat{'s' if n != 1 else ''})" for s, n in f.status.items()]
+        bits = [self.status_look(f.name, s) + f" ({n} beat{'s' if n != 1 else ''})" for s, n in f.status.items()]
         e = f.energy
         tired = float(self._cfg("energy").get("tired_below", 25))
         stamina = ("fresh breath" if e >= 70 else "breathing hard" if e >= tired else "gasping, running out of energy")
+        s = self.strength(f)
+        if s < 0:
+            stamina = "gasping, running out of energy"   # past her limit: her breath never reads better than this
+        elif any(self.has(f, st) for st in ("breathless", "sputtering", "constricted")):
+            stamina = "no breath in her right now"       # (the wind knocked out of her is not a fresh breath)
+        elif e >= 70 and s < float(self._cfg("energy").get("breath_back_below_strength", 40)):
+            stamina = "her breath is back, but not her strength: the body under it is worn out"
+        elif e >= 70 and s < float(self._cfg("energy").get("fresh_breath_min_strength", 80)):
+            stamina = "breathing hard"                   # (not fresher than the overall word: winded, tired)
         return (" Status: " + "; ".join(bits) + "." if bits else "") + f" Stamina: {stamina}."
+
+    def tier_reaction(self, f, ht):
+        """What a fighter at this strength can still do (health_tiers' reaction), fitted to where she is: one up in
+        the air has no feet to stand on (reaction_air), one lying down or lying on top in a pin has no ground to
+        drop to between efforts (reaction_down)."""
+        if self.has(f, "airborne") and ht.get("reaction_air"):
+            return ht["reaction_air"]
+        if (f.name in self.downed or self.pinning(f.name)) and ht.get("reaction_down"):
+            return ht["reaction_down"]
+        return ht["reaction"]
 
     def favoring(self, f):
         """How badly hurt limbs and tails change the way she moves, so it stays consistent from beat to beat."""
@@ -7709,7 +7950,22 @@ class Engine:
             biped = any("arm" in x.lower() for x in f.parts)  # upright fighters guard arms instead of limping
             arm = biped and region in ("fore_up", "fore_low", "shoulder")
             name = p.name.lower()
-            if region == "tail":
+            air = self.has(f, "airborne")
+            if "wing" in name:
+                out.append(self._wing_way(f, p))
+            elif region == "shoulder" and not biped and any("wing" in x.lower() for x in f.parts):
+                # a bird's shoulder is the root of her wing: she guards it, she doesn't limp on it
+                out.append(f"favors her {name}, the wing on that side held a little stiff" if p.damage < 300 else
+                           f"guards her {name}, the wing on that side dragging")
+            elif air and not arm and region != "tail":
+                # up in the air there is no weight to keep off a leg: she holds it up out of the way
+                out.append(f"holds her {name} tucked up stiffly under her as she flies" if p.damage < 300 else
+                           f"her {name} hangs stiff under her as she flies, held clear of everything")
+            elif region == "tail" and "flame" in name:
+                # a flame on the tail's tip is not a limb to hold close: it burns low
+                out.append(f"keeps her tail low and still, the flame on it burning small" if p.damage < 300 else
+                           f"her tail drags, the flame on it shrunk to a weak, sputtering flicker")
+            elif region == "tail":
                 out.append(f"keeps her {name} stiff and close" if p.damage < 300 else f"her {name} drags, barely moving")
             elif p.damage < 150:
                 out.append(f"favors her {name}" + (" (guards it close)" if arm else " (a slight limp)"))
@@ -7740,7 +7996,12 @@ class Engine:
         if f.eliminated or f.health >= float(cfg.get("max_health", 0)):
             return []
         need = float(cfg.get("min_part_damage", 300))
-        return [p.name for p in f.parts.values() if p.damage >= need]
+        soft = [str(w).lower() for w in cfg.get("boneless", [])]     # (no bone in a stomach or a fin to break)
+        return [p.name for p in f.parts.values() if p.damage >= need and not self.BONELESS.search(p.name)
+                and not any(re.search(r"\b" + re.escape(w) + r"s?\b", p.name.lower()) for w in soft)]
+
+    # parts with no bone in them to break (soft belly, the throat's cartilage, ears, fins, a nose)
+    BONELESS = re.compile(r"\b(?:belly|stomach|midsection|throat|ears?|eyes?|nose|fins?|lips?|sac|wattle)\b", re.I)
 
     def condition_summary(self):
         """Words-plus-numbers summary for the narrator. Overall strength is relative to each fighter's own max,
@@ -7766,9 +8027,12 @@ class Engine:
                 if self._stale(f, p.name, ob):
                     big = (f.learned.get("big_hits") or {}).get(p.name)
                     return f"; the worst of it from {big[0]}" if big else ""
-                src = self.injury_log.get(f"{f.name}|{p.name}", [])
-                return f"; from {', then '.join(src[-2:])}" if src else ""
-            hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}{_origin(p)})"
+                src = self.injury_causes(f"{f.name}|{p.name}")
+                return f"; from {', then '.join(src)}" if src else ""
+            # a part gone NUMB (numbness) is still wrecked, but for now she barely feels it: the story must know
+            hurt = [f"{p.name} ({tier_for(p.damage, pain_tiers(self.rules))['label']}"
+                    + (", but NUMB for now: she can barely feel it, and the pain will come back" if int(getattr(p, "numb", 0) or 0) > 0 else "")
+                    + f"{_origin(p)})"
                     for p in sorted(f.parts.values(), key=lambda p: -p.damage) if p.damage >= 30]
             fresh = [p.name for p in f.parts.values() if p.damage < 10]
             words, ht = self.strength_words(f)
@@ -7788,7 +8052,11 @@ class Engine:
             if breakable:
                 ground += (f" Past her limit, so these devastated parts CAN BREAK (broken bones allowed): "
                            f"{', '.join(breakable)}.")
-            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {ht['reaction']}{ground}\n"
+            react = self.tier_reaction(f, ht)
+            if self.winner():
+                # the match is over: what could still put her out in the fight no longer applies
+                react = re.sub(r"\s*Only a completed pin puts her out\.", "", react)
+            lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {react}{ground}\n"
                          f"   painful parts (they hurt and get favored, but do NOT override overall strength): "
                          f"{', '.join(hurt[:10]) or 'nothing serious'}"
                          + (f"\n   barely touched so far: {', '.join(fresh[:6 if self._decay('origin_beats', 4) else 12])}" if hurt and fresh else "")
@@ -7828,7 +8096,7 @@ class Engine:
             bad = sorted((p for p in f.parts.values() if p.damage >= 30), key=lambda p: -p.damage)[:n]
             bits = []
             for p in bad:
-                srcs = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c][-2:]
+                srcs = self.injury_causes(f"{f.name}|{p.name}")
                 srcs = [re.sub(r"(\S+) (escape|struggle)$", r"\1 blow breaking out of a hold", c) for c in srcs]
                 if srcs:
                     bits.append(f"{p.name.lower()} ({' and '.join(srcs)})")
@@ -7883,8 +8151,7 @@ class Engine:
                         fx.append(f"{x['status'] if x.get('status') else x.get('launch')} {x.get('chance', 1) * 100:.0f}%")
                     learned = ", lent for this fight" if m.get("learned") else ""
                     rng_word = ("on herself or the arena" if m.get("target") == "self" else
-                                "close" if (m.get("target", "targeted") in ("targeted", "hold") and not m.get("ranged"))
-                                or m.get("ranged") is False else "ranged")
+                                "ranged" if self.is_ranged(m) else "close")
                     if m.get("carry"):
                         rng_word += ", needs her in the air"
                     if m.get("sustainable"):
@@ -8003,6 +8270,7 @@ class Engine:
                 "scene_name": self.scene_name, "last_event": self._last_event, "pins": self.pins,
                 "positions": self.positions, "downed": self.downed, "since_pin": self.since_pin,
                 "last_pin_end": self.last_pin_end, "injury_log": self.injury_log, "plan": self.plan,
+                "injury_amt": self.__dict__.get("injury_amt") or {},
                 "tally": self.tally, "momentum": self.momentum, "facing": self.facing, "move_log": self.move_log,
                 "last_reposition": getattr(self, "_last_reposition", {}), "alliances": self.alliances,
                 "weather": getattr(self, "weather", {}), "arena_marks": getattr(self, "arena_marks", []),
@@ -8065,6 +8333,7 @@ class Engine:
         self.momentum = data.get("momentum", [])
         self.last_pin_end = data.get("last_pin_end", {})
         self.injury_log = data.get("injury_log", {})
+        self.injury_amt = data.get("injury_amt", {})
         self.tally = {k: int(v) for k, v in (data.get("tally") or {}).items()}
         self.plan = data.get("plan", {})
         self.alliances = data.get("alliances", [])

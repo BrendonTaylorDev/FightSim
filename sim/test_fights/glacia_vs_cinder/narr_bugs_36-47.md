@@ -1,0 +1,71 @@
+# Narration bugs, beats 36-47
+
+- Beat 36 (all calls, CURRENT CONDITION): Glacia "limps badly, keeping weight off her left wing". A wing is not a leg, and she is in the air.
+- Beat 36 (CURRENT CONDITION): Cinder is "IN THE AIR" but her strength line says "Barely able to stand, swaying, slow to rise", and her MOVES line says "keeps her left wing tucked in, unusable" while WING STRAIN has her flying on it.
+- Beat 36 (CURRENT CONDITION): Cinder "Stamina: fresh breath" while she is "spent" at 12% and has been straining a ruined wing for beats.
+- Beat 36 (HOW THEY MOVE NOW): Cinder's line repeats itself: "holds her head carefully, the head making every turn of it a decision; holds her head carefully, the neck making every turn of it a decision".
+- Beat 36 (FIGHT SO FAR): calls itself "the ONLY earlier attacks that really happened" but lists only the last 10. Flare Blitz, Hurricane etc. are missing, yet the same notes cite "Chest (Cinder's Flare Blitz)" as the wound that matters most, and part 2 block 10 cites "Glacia's Hurricane".
+- Beat 36 (call 2, block 10 vs CURRENT CONDITION): jaw history is given two ways: "already hurt ... by Glacia's Hurricane and then Glacia's Blizzard" vs "Jaw (hurting; from Glacia's Blizzard, then Glacia's Ice Shard)".
+- Beat 36 (call 1, Hit 1/Hit 2): "her knees dipping under it (a limp if it is a leg)". Cinder is in the air. Hit 2 (muzzle, "a solid blow") gets the same "strong: a real cry" reaction as the heavier Hit 1.
+- Beat 36 (call 1): "THE SOUND OF THE BLOW: a creak of freezing fur." Cinder has scales.
+- Beat 36 (call 1, block 3): "anger ... in the set of her ears". Glacia has no ears.
+- Beat 36 (call 1, TELLING THE HURT): "through the scenery: the bark, mud or water". No bark, mud or water on a rock shelf, and both are in the air.
+- Beat 36 (call 2, block 6): "It was sent at the middle of her and landed on her jaw." The shard was aimed at her head.
+- Beat 36 (call 2, block 7): "spray or grit flies off her in a burst". She is in mid-air, dry.
+- Beat 36 (call 5): "she watches from where she stands". Glacia is in the air. Block 6 "eagerness that makes her shift her weight" does not fit a fighter past the limit and "desperate".
+- Beat 36 (call 5): the style sample for a watching part is a pin passage ("Lying across Sorrel, pressing her down"). No pin this beat.
+- Beat 36 (VISIBLE WEAR): Cinder's head "the scales clawed ragged, whole tufts gone". Scales have no tufts, and the head was hit by Air Slash and Wing Attack, not claws.
+- Beat 37 (call 1): "IN THE AIR, BOTH OF THEM: ... Both stay up." contradicts the next line, "the blow KNOCKS Glacia OUT OF THE AIR ... She FALLS".
+- Beat 37 (call 1, blocks 2-3): "she cannot stand straight; her chest folds her" and "her right wing hangs, and she turns her body so that it is furthest from the fight". Glacia is flying on that wing at this point.
+- Beat 37 (call 1, Hit 1): "a limb scrabbling at the ground". The bite lands in mid-air.
+- Beat 37 (call 1, Hit 2 and all three landing hits): "her reaction: strong: a real cry, her knees dipping under it ... the rest of her still fighting". Glacia is past the limit, and lying on her back for the landing hits. Left Thigh "shows as a limp in the next step": she takes no step.
+- Beat 37 (call 2, block 10): "Glacia's neck was already hurt before this beat, by Cinder's Thunder Punch and then Cinder's Fire Fang", but CURRENT CONDITION says "Neck (devastated; from Cinder's Heat Wave, then Cinder's Fire Fang)".
+- Beat 37 (call 2, block 9): "her tail barely twitches" offered as how the devastated NECK shows.
+- Beat 37 (call 5): "cold sweat under the fur" (she has feathers). Block 8 thought "*Shake it off. Shake it off.*" is not Glacia's calm, detached voice.
+- Beat 37 (call 5, style sample): "each one ending in a sob she could not stop. Her face was wet ... her own tears" breaks the notes' own rule "no sobbing or weeping".
+- Beat 37 (missing): no part covers Cinder after the last stand ("afterwards she has nothing left at all, barely able to stay up"). Part 3 is Glacia only.
+- Beat 37 (CURRENT CONDITION): Glacia "favors her left shoulder (a slight limp)" and "limps badly, keeping weight off her left wing". She is lying on her back; a wing or shoulder gives no limp.
+- Beat 38 (call 2): "The attack has ALREADY been shown above, miss and all: do NOT describe any attack, dodge, impact". There is no attack and no miss this beat (a landing and a breather).
+- Beat 38 (call 1): "the actions as they happen, in order, from the attackers' bodies". Nobody attacks this beat, and the part gets no POV.
+- Beat 38 (rewrite calls): "she tries to rise ... and can't, so she ends the beat still on the ground" leaves out that she gets as far as sitting up.
+- Beat 39 (get-up): "she ends on the ground, gathering herself for the next try" does not say she is still SITTING UP, which beat 40 relies on ("sitting up → face-up"). The rewrite text says the same.
+- Beat 39 (call 1, blocks 9-10): "she lets her foot slip on the bad footing and uses the slip" and "She narrowed her stance". Glacia is sitting and cannot stand.
+- Beat 39 (call 2, block 10 vs CURRENT CONDITION): "Cinder's belly was already hurt ... by Glacia's Hurricane and then Glacia's Blizzard", but the condition says "Belly (... from Glacia's Blizzard, then Glacia's Ice Beam)", and beat 36 said "from Glacia's Freeze-Dry, then Glacia's Blizzard". The memory line seems to say "Hurricane then Blizzard" for every part (same in beat 36 for the jaw).
+- Beat 39 (call 5, block 1): "a hot, deep ache all the way down the arm, and her shoulder has taken it up too". The beam hit chest and belly; no arm.
+- Beat 39 (call 5): "cold sweat under the fur" for a scaled dragon; (call 6, block 1) "the sweat darken along the other's sides".
+- Beat 39 (call 6): "she watches from where she stands". Glacia is sitting. Block 2 "jerk at a sound from somewhere else": there is nobody and nothing else on the shelf. Block 3 "her horn" (singular): Cinder has two.
+- Beat 40 (call 1, pin LOOKS): "the fur ruffled the wrong way", "a light print sunk into the fur", "the fur pushed flat round it". Glacia has feathers.
+- Beat 40 (call 1): the PIN line says Glacia "is fading: her limbs are heavy, her sight is greying", but FIGHT SO FAR says "pinned and furious, and far from done", and FADING THOUGHTS names only Cinder as fading.
+- Beat 40 (call 2, blocks 2-3): "she shoves at the ground ... and gains a hair's width" and "Her whole spine arched, lifting both of them a fraction." No struggle is rolled this beat (it starts in beat 41), so this is movement the engine did not decide.
+- Beat 40 (CURRENT CONDITION): Glacia "Stamina: breathing hard", better than "gasping" in beats 37-39, just as a crushing weight lands on her chest.
+- Beat 41 (pin presses): "paws clawing at anything", "the fur smoothed down hard", "the coat creased under it, the fur parting". Glacia has no paws, fur or coat.
+- Beat 41 (WHAT HAPPENS): "described under PIN CLOCK, if the pin is already running". There is no PIN CLOCK section; the section is "THE PIN GOES ON", and it says there is no clock.
+- Beat 41 (call 1, block 5): "she braces with the left wing and it trembles under the load". Cinder's left wing is devastated and "tucked in, unusable".
+- Beat 41 (part 3, block 7): "END this part on ... something in the place settling: dust, water, an echo dying". No water on the shelf, and SOUND IN THIS PLACE says "nothing echoes".
+- Beat 42 (break-loose): the notes say "she flails a free limb at the body on top of her", and the rewrite asks "what she hits with", but they never name it. The console says "she kicks out". Glacia has no arms, one wing is pinned and the other is devastated, so the notes should name the legs/talons.
+- Beat 42 (call 2, block 3): "She made a small movement that might have been an attempt to rise." This undercuts the "hard and wild" break-loose the same part must show.
+- Beat 42 (call 2, block 7): "a hawk circling far out". This adds a creature that is not in the scene.
+- Beat 42 (Cinder's throat hit): "her knees dipping under it (a limp if it is a leg) ... the rest of her still fighting". Cinder is lying on top of Glacia and has just gone past the limit.
+- Beat 42 (pin LOOKS): "pressed in so the flesh rolls up round it in a thick fold" on Glacia's chest is too fleshy for a bird and heavier than the gore rule. Also "the fur flattened", "the fur fanned out" again.
+- Beat 42 (FADING THOUGHTS): only Glacia is fading, although Cinder goes past the limit this beat.
+- Beat 43 (struggle): "she lashes out with whatever she can still move: hind legs, tail, a free paw". Glacia has no paws and no "hind" legs (a bird has only legs).
+- Beat 43 (call 2, block 7): "Glacia's chest was already hurt ... by Cinder's Fire Fang and then Cinder's pin", but WHAT HURT WHERE says "chest (Cinder's Thunder Punch and Cinder's pin)". The last Fire Fang (beat 37) hit the neck.
+- Beat 43 (part 3, blocks 4-5): "*Look at her pretend.*" and "contempt, in the way she turns half away before the other has recovered". These don't fit a bird who is "nearly gone under the pin", nor Cinder's proud, respectful voice, nor a pinner who must keep her weight on.
+- Beat 43 (Left Wing press): "she twists so hard her back comes off the ground, then slams back". This clashes with "a slow, late try, not a strong one" in the same beat.
+- Beat 43 (pin LOOKS): "a trench in the fur", "the fur and flesh squeezed out round it in a ridge", "the fur ruffled the wrong way". Fur again.
+- Beat 44 (free blow): "Cinder gets one quick, short extra blow in on Glacia's Upper Back ... (Flamethrower, at point-blank)". Glacia is face-up with "her back against the ground", so the engine picked a part the pinner can't reach. Also, neither part's instructions say where the free blow goes (part 2 ends on the failed struggle).
+- Beat 44 (struggle, Chest hit): "a hit here shows as a hand or paw pressed to the chest". Glacia has neither.
+- Beat 44 (call 1, blocks 3 and 5): "read through her paws"; "she keeps her face out of reach of the other's teeth". Glacia has a beak, not teeth.
+- Beat 44 (call 2, blocks 2-3): "her body has stopped answering, and she has stopped asking" and "they no longer fought to open". Both come before the struggle that the same part must show, and FIGHT SO FAR says "still refusing".
+- Beat 44 (pin LOOKS): "the coat dimpled under it, the hairs bent over flat in a ring", "the fur at the throat". Feathers.
+- Beat 42-45 (CURRENT CONDITION): Cinder, lying on top in a pin, is "wobbling, dropping to the ground between efforts". This is the standing text for past-the-limit, not fitted to a pinner.
+- Beat 45 (parts): neither part is given the struggle. Part 1 says "STOP before Glacia goes out ... and Cinder strikes nobody in this beat", although Cinder punishes the bridge with her forearm (Neck, a heavy blow). Part 2 lists breath, sight and the faint, but not the bridge. The rewrite then flags "it skipped the struggle".
+- Beat 45 (call 1, block 2): "she has stopped struggling and is saving something". She bridges this beat, and "saving something" suggests a trick that never comes.
+- Beat 45 (call 1, block 7): "her left wing lags, and the move comes out lopsided". Cinder makes no move; she is lying on top.
+- Beat 45 (pin LOOKS): "the fur and flesh squeezed out round it in a ridge", "a jerk under the fur", "sunk into the fur". Fur again.
+- Beat 46 (AFTER THE MATCH): "a sense not used yet (wind, ... the cry of a hawk; an echo ...)". A hawk adds a creature, and the place has "nothing echoes".
+- Beat 46 (call 2): "the water, the light and the sounds of the place". There is no water on the shelf.
+- Beat 46 (call 2, block 1): "a small whimper escapes her on the breath out". Glacia is "OUT COLD ... unresponsive".
+- Beat 46-47 (VISIBLE WEAR): only Cinder's wear is listed. Glacia's (scorched chest, bitten neck, clawed wing) drops out once she is eliminated, just when the aftermath is supposed to describe how she lies.
+- Beat 46-47 (CURRENT CONDITION): Cinder "Stamina: breathing hard", and part 1 asks for "her breath coming back". But the console shows her still getting worse (health -61.54 → -66.17 → -68.49, from injuries). The notes never say that she keeps weakening. Her strength line still says "Only a completed pin puts her out" after the match is over.
+- Beat 47: the notes are a near copy of beat 46 (same frame, same AFTER THE MATCH text, same style samples); only the building blocks change. Block "her mouth is slightly open": she has a beak.

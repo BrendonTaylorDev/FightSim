@@ -259,7 +259,7 @@
         {
           "name": "Brick Break",
           "type": "Fighting",
-          "power": 35,
+          "power": 28,
           "target": "targeted",
           "about": "chopping paw strike"
         },

@@ -16,7 +16,15 @@ SLOT = re.compile(r"\{(\w+)\}")
 # narration.old_memories is on (off by default: the story has no past before the fight unless you want one)
 PAST_MEMORY = re.compile(r"\b(?:old fights?|an? (?:old|earlier) (?:fight|battle|opponent)|other fights|every fight against|"
                          r"training|taught|old lesson|a lesson|long ago|since she was (?:small|young|little)|grew up|"
-                         r"remembers? (?:a|whole|the) \w+ (?:from|of) long|as a (?:pup|kit|cub|hatchling))\b", re.I)
+                         r"remembers? (?:a|whole|the) \w+ (?:from|of) long|as a (?:pup|kit|cub|hatchling)|"
+                         r"(?:has|have|had) always|always (?:has|had|have))\b", re.I)
+
+# sobbing and weeping: the narrator's hard rules forbid them (pain shows as cries, shaking and streaming eyes)
+NO_SOB = re.compile(r"\bsob(?:s|bed|bing)?\b|\bweep(?:s|ing)?\b|\bwept\b", re.I)
+
+# what a wing is not: an arm with a hand on it, or a leg she stands and limps on
+WING_NOT = re.compile(r"\b(?:fore)?arms?\b|\bpaws?\b|\bhands?\b|\bfingers?\b|\bfists?\b|\bknuckles?\b|\bgrip\b|"
+                      r"\bforelegs?\b|\bplant(?:s|ed|ing)?\b|\blimp\w*|\bweight (?:on|off)\b|\bstep\w*", re.I)
 
 ZONE_OF = {"head": "head", "neck": "neck", "chest": "chest", "belly": "belly", "back_up": "back", "back_low": "back",
            "shoulder": "arm", "fore_up": "arm", "fore_low": "arm", "hind_up": "leg", "hind_low": "leg", "tail": "tail"}
@@ -75,8 +83,10 @@ def features(part_names):
         has.add("mane")
     if "wing" in low or "feather" in low:
         has.add("feathers" if "feather" in low or "beak" in low else "wings")
-    if "tail" in low:
-        has.add("tail")
+    if "tail" in low and "tails" not in has:
+        has.add("tail")        # one tail (a twin-tailed body is "tails": no idea written for a single tail)
+    if re.search(r"\bhands?\b", low):
+        has.add("hands")       # hands with fingers (a webbed paw at the end of an arm is no hand of fingers)
     if "fin" in low or "fan" in low:
         has.add("fins")
     if "horn" in low:
@@ -99,6 +109,12 @@ def features(part_names):
         has.add("talons")
     if "hood" in low:
         has.add("hood")
+    if "scale" in low:
+        has.add("scales")
+    if "shell" in low or "carapace" in low:
+        has.add("shell")
+    if re.search(r"\bspikes?\b|\bquills?\b|\bspines\b", low):
+        has.add("spikes")       # a back of spikes or quills (not the spine itself)
     if re.search(r"thigh|hip|knee|hock|foot|hind paw|talon", low):
         has.add("legs")
     else:
@@ -116,14 +132,63 @@ def body_bans(has):
     if "beak" in has:
         bans += [r"\bteeth\b", r"\btooth\b", r"\bfangs?\b", r"\bjaws?\b", r"\blips?\b", r"\bmuzzle", r"\bsnout",
                  r"\bwhiskers?\b", r"\bgums?\b", r"\bcheeks?\b"]
-    if "feathers" in has:
-        bans += [r"\bfur\b", r"\bhackles\b", r"\bpelt\b", r"\bscruff\b"]
+    if has & {"feathers", "scales", "skin"} and "fur" not in has:
+        # (her covering is not fur: no coat, pelt or hairs on feathers, a dragon's scales or smooth skin)
+        bans += [r"\bfur(?:red|ry)?\b", r"\bhackles\b", r"\bpelt\b", r"\bscruff\b", r"\bcoat\b(?! of)", r"\bhairs\b",
+                 r"\btufts?\b"]
+    if has & {"beak", "scales"}:
+        # a dog's or a cat's noises: no yelping bird and no yowling dragon (a bird doesn't growl or whimper either)
+        bans += [r"\byowl\w*", r"\byelp\w*", r"\byips?\b", r"\*yip\*", r"\bwhimper\w*"]
+        if "beak" in has:
+            bans += [r"\bgrowl\w*", r"\bsnarl\w*", r"(?<!the )\bbark(?:s|ed|ing)?\b", r"\bwhine[sd]?\b"]
     if "ears" not in has:
         bans += [r"\bears?\b"]
     if "arms" not in has and "forelegs" not in has:
         bans += [r"\bpaws?\b", r"\bhands?\b", r"\bfists?\b", r"\bfingers?\b", r"\bforelegs?\b", r"\bknuckles?\b"]
+        if "wings" in has:
+            bans += [r"\b(?:fore)?arms?\b"]        # a bird's wings are not arms
+        if "talons" in has:
+            # a bird's feet carry talons, not claws (the other's claws on her are fine), and she has no other legs
+            bans += [r"\bher (?:\w+ )?claws?\b", r"\bhind\b"]
+    if "tails" in has:
+        # twin (or more) tails: never one tail of hers
+        bans += [r"\bher tail\b(?!s)", r"\bthe tail (?:stops?|stopp\w*|goes|hangs?|droops?) "]
+    if "arms" in has and "forelegs" not in has:
+        # upright, on two legs: no hind legs, forelegs or all fours
+        bans += [r"\bhind\b", r"\bforelegs?\b", r"\bforepaws?\b", r"\bon all fours\b"]
+    if has & {"arms", "forelegs"} and "hands" not in has:
+        bans += [r"\bfingers?\b(?!'s)"]     # paws, not hands of fingers
+    if "forelegs" in has and "arms" not in has:
+        # on all fours: no hands or fists, and a forepaw she stands on is not pressed to her belly
+        bans += [r"\bher (?:\w+ )?(?:hands?|fists?)\b", r"\bhand or paw\b", r"\bpaws? (?:pressed|clamped|held) to\b"]
+    if "standing" in has:
+        # on her feet all beat: nobody tells her to get up or stay down
+        bans += [r"\bget(?:s|ting)? up\b", r"\bstay(?:s|ing)? down\b"]
+    if "faceup" in has:
+        # flat on her back: not propped up, curled up, on her side, or with her front against the ground
+        bans += [r"\bpropped\b", r"\bcurl(?:s|ed|ing)? (?:up |tight )?(?:round|around)\b", r"\bside up\b",
+                 r"\bon her side\b", r"\bface-?down\b", r"\bpressed into the ground\b"]
+    if "growler" in has and "voice_breaks" not in has:
+        # a fighter who growls and hisses rather than crying out, while she still holds it in: no soft cries
+        bans += [r"\bwhimper\w*", r"\bwhin(?:e|es|ed|ing)\b", r"\byelp\w*", r"\byips?\b", r"\bsqueak\w*",
+                 r"\bsqueal\w*", r"\bchitter\w*", r"\bkeening\b", r"\bmewl\w*"]
+    if "chirper" in has:
+        bans += [r"(?<!the )(?<!other's )\bgrowl\w*"]       # she chitters, squeaks and barks: the growl is not hers
     if "legs" not in has:
         bans += [r"\blegs?\b", r"\bfeet\b", r"\bfoot\b", r"\bknees?\b", r"\btoes\b", r"\bhind\b"]
+    if has & {"aloft", "unfooted"}:
+        # in the air, or off her feet (lying, pinned, on top of a pin): nothing that needs her standing
+        bans += [r"\b(?:hang|hangs|hanging) (?:low |loose |limp )?at her sides\b",
+                 r"\bstand(?:s|ing)?\b", r"\bstood\b", r"\bknees?\b", r"\bstance\b", r"\bstagger\w*",
+                 r"\bstumbl\w*", r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplant(?:s|ed)\b",
+                 r"\bfooting\b", r"\bshifts? her weight\b", r"\bballs of her feet\b", r"\ba step\b", r"\bsteps?\b",
+                 r"\bset firm\b", r"\bgives? ground\b"]
+    if "dizzy" in has:      # confused or dazed: nothing that has her steady, square and untouched by it
+        bans += [r"\bunmoved\b", r"\bsquares? up again\b", r"\bsteady as before\b", r"\bher rhythm doesn't change\b",
+                 r"\b(?:is|was) set again\b", r"\bwithout hurry\b", r"\bher focus stays fixed\b", r"\bsharp and single\b",
+                 r"\bdoesn't even look\b", r"\bnothing in her movement changes\b", r"\bsteady\b"]
+    if "aloft" in has:      # in the air all beat: no ground under her at all
+        bans += [r"\b(?:sits?|sat|sitting|kneel\w*|haunches)\b", r"\bground\b", r"\bdust\b", r"\bat her feet\b"]
     return re.compile("|".join(bans), re.I) if bans else None
 
 
@@ -157,8 +222,23 @@ def kind_of(move_name="", about="", with_part="", manhandle="", grab=False, clos
             kinds.add(k)
     if ranged and kinds & {"beam", "fire", "ice", "wind"}:
         # a discharge, a stream, a pulse: not a strike with the part it comes from (its element still counts)
-        return {"beam"} | (kinds & {"fire", "ice", "wind", "rock"})
+        # (wind alone is no beam: blades of air, a gust, a spinning wall of it, each staged as wind)
+        return ({"beam"} if kinds & {"beam", "fire", "ice"} else set()) | (kinds & {"fire", "ice", "wind", "rock"})
     return kinds
+
+
+# the shape a rock move takes, for 'shape:' (read off its name and about): stones thrown at her, rocks falling on
+# her from above, stone driven up out of the ground under her, boulders closing round her
+ROCK_SHAPES = (("rise", r"spike|edge|erupt|pillar|stab"), ("fall", r"slide|fall|avalanche|drop|rain"),
+               ("tomb", r"tomb|pin\b|trap|ring of|wall"),
+               ("thrown", r"hurl|throw|thrown|fling|flung|volley|sling|stone that|blast"))
+
+
+def shape_of(move_name="", about=""):
+    """The shapes of a rock move ({'fall'} for Rock Slide, {'rise'} for Stone Edge); none for a move whose text
+    says no shape (a ray of gemstone light), which then gets no rock-shaped staging at all."""
+    t = f"{move_name} {about}".lower()
+    return {k for k, rx in ROCK_SHAPES if re.search(rx, t)}
 
 
 class Blocks:
@@ -236,15 +316,24 @@ class Blocks:
         if not self.enabled or n <= 0:
             return []
         fmt = fmt or {}
+        if "earlier" not in ctx and getattr(self, "earlier", None):
+            ctx["earlier"] = self.earlier      # what earlier beats left behind (a blow landed): for every pick
         ctx = {k: ({str(x).lower() for x in v} if isinstance(v, (set, frozenset, list, tuple)) else {str(v).lower()})
                for k, v in ctx.items() if v}
-        cool = int(self.cfg.get("cooldown_beats", 8))
+        if re.search(r"\bwings?\b", " ".join([str(fmt.get("part") or "")] + sorted(ctx.get("part") or ()))):
+            # the part is a wing: a block for a hurt arm (a paw that opens, a grip, a limb planted or limped on) is
+            # not for it, even when she has arms too (a winged dragon)
+            exclude = [WING_NOT] + (list(exclude) if isinstance(exclude, (list, tuple)) else [exclude] if exclude
+                                    is not None else [])
+        cool = int(self.cfg.get("cooldown_beats", 14))
         pool = []
         for cat, conds, text in self.entries:
             if cat != category or not self._fits(conds, ctx) or any(k not in conds for k in need):
                 continue
             if any(s not in fmt or not str(fmt[s]).strip() for s in SLOT.findall(text)):
                 continue       # a slot with nothing to fill it ("the instant  looked away"): not this one
+            if NO_SOB.search(text):
+                continue       # the hard rules allow no sobbing or weeping, so no idea offers it
             if not getattr(self, "old_memories", True) and PAST_MEMORY.search(text):
                 continue       # a memory from before the fight, and those are off (narration.old_memories)
             if getattr(self, "scene_ban", None) is not None and self.scene_ban.search(text):

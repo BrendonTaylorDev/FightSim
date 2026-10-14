@@ -13,7 +13,7 @@ Each case plays a few scripted beats over several seeds. A case passes when, on 
     and plays on;
 and, on at least one seed, what the case is for actually happened (a pummel ran, a carry lifted her, a pin
 started...). Exit code 0 when everything passed."""
-import contextlib, io, json, os, sys, tempfile, time, traceback
+import atexit, contextlib, io, json, os, shutil, sys, tempfile, time, traceback
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -198,6 +198,7 @@ def _state(eng):
 
 def _round_trip(s, names, problems):
     tmp = tempfile.mkdtemp(prefix="fightsim_regress_")
+    atexit.register(shutil.rmtree, tmp, True)      # (cleared away when the run ends)
     path = os.path.join(tmp, "save.json")
     s.eng.save(path, s._extra())
     e2 = Engine(seed=0, only=names)
@@ -225,9 +226,12 @@ def _round_trip(s, names, problems):
     s2 = _quiet(H.session, 7, fighters=",".join(names))
     try:
         _quiet(s2.load, old)
-        out, prompts = H.beat(s2, [A(names[0], names[1], "breather")], [], roll=True)
+        # (a save of a fight already won goes on with an aftermath beat: there are no attacks left to make)
+        done = s2.eng.winner()
+        out, prompts = H.beat(s2, None if done else [A(names[0], names[1], "breather")], [], roll=not done)
         if not prompts:
-            problems.append("an old save loaded, but its next beat wasn't narrated")
+            problems.append("an old save loaded, but its next beat wasn't narrated"
+                            + (" (an aftermath beat)" if done else ""))
         for b in s2.eng.check_state():
             problems.append(f"old save, next beat: {b}")
     except Exception as e:

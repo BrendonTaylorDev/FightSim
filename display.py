@@ -766,6 +766,9 @@ class Display:
                            f"{a['aim']['landed']} (moves.aim)")
             if a.get("carried"):
                 out.append(f"🦅 **{a['attacker']} carries {a['defender']} up** ({a['carried']['height']}) and drops her")
+            if a.get("righted"):
+                out.append(f"🪽 **{a['defender']} rights herself in the air**: the blow would have {a['righted']} her, "
+                           f"but she catches herself on her wings and stays up (flight.air_recover)")
             if a.get("grounded"):
                 out.append(f"🪶 **{a['defender']} is knocked out of the air**"
                            + (": her hurt wing can't catch her" if a.get("grounded_wing") else "") + ": she falls")
@@ -1044,6 +1047,9 @@ class Display:
             out.append(f"🌤️ The {a['kind']} clears")
         elif t == "take_off":
             out.append(f"🪽 **{a['fighter']} takes to the air** (up for {a['beats']} beats; only ranged attacks reach her)")
+        elif t == "take_off_failed":
+            out.append(f"🪶 **{a['fighter']} tries to take off and can't**: too spent, her wings beat but don't lift her "
+                       f"(flight.weak_takeoff)")
         elif t == "land_flight":
             out.append(f"🪶 **{a['fighter']} comes down** out of the air and lands")
         elif t == "reposition" and a.get("resisted"):

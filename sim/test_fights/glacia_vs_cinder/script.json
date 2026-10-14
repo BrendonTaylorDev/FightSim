@@ -1,0 +1,557 @@
+[
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"reposition": "take off",
+"move": "Ice Shard",
+"part": "Left Wing",
+"flavor": "she lifts off the shelf in one stroke of her long wings and sends a shard of ice whistling at the dragon's spread wing"
+},
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"reposition": "take off",
+"move": "Flamethrower",
+"hits": [
+{
+"part": "Chest"
+},
+{
+"part": "Right Wing"
+}
+],
+"flavor": "the dragon roars and launches herself after her, fire already pouring from her jaws"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Dragon Claw",
+"part": "Chest",
+"flavor": "she beats hard to close the gap and rakes at the ice bird as they cross"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Ice Beam",
+"hits": [
+{
+"part": "Left Wing"
+},
+{
+"part": "Chest"
+},
+{
+"part": "Tail Flame"
+}
+],
+"flavor": "wheeling high above the dragon, she opens her beak and the beam lances down across her wing and chest"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Air Slash",
+"hits": [
+{
+"part": "Left Wing"
+},
+{
+"part": "Right Wing"
+},
+{
+"part": "Long Tail"
+}
+],
+"flavor": "shaking the frost out of her wing, she climbs above the bird and slashes the air at her in blades"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Wing Attack",
+"part": "Head",
+"flavor": "she folds and drops past the dragon and the leading edge of her wing cracks across the horned head"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Flare Blitz",
+"part": "Chest",
+"flavor": "furious at the blow to her head, she wraps herself in fire and flies straight into the bird"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Freeze-Dry",
+"hits": [
+{
+"part": "Right Wing"
+},
+{
+"part": "Left Wing"
+}
+],
+"flavor": "still flat on her back on the stone, she opens her beak and breathes a freezing mist straight up at the wings circling over her"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"reposition": "take off",
+"move": "Hurricane",
+"flavor": "she throws herself off the shelf into the updraft and, rising, beats her great wings so hard the air itself turns into a spinning wall"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Icy Wind",
+"flavor": "hanging over the shelf on slow, heavy wingbeats, she fans a bitter wind down over the dragon sprawled on the stone, trying to put out the fire in her"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"reposition": "take off",
+"move": "Fire Fang",
+"part": "Right Wing",
+"flavor": "shaking the frost off, she launches from the shelf straight up at the hovering bird and snaps burning jaws on her wing as they pass"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "breather",
+"flavor": "she stops beating and spreads her wings flat on the updraft off the cliff, gliding in a wide slow circle to get her breath back, the burned wing held stiff"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Thunder Punch",
+"part": "Neck",
+"flavor": "she cuts across the circle the bird is gliding and drives a fist crackling with lightning at the long blue neck as they meet"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Air Slash",
+"hits": [
+{
+"part": "Belly"
+},
+{
+"part": "Chest"
+}
+],
+"flavor": "still on her back, the electric sting still in her throat, she sweeps one wing up off the stone and the air leaves it in pale blades at the pale belly above her"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"reposition": "land",
+"move": "Dragon Claw",
+"part": "Belly",
+"flavor": "her left wing is shaking and failing her, so she drops onto the shelf in front of the bird and swings her claws low at the soft white belly"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Ice Beam",
+"hits": [
+{
+"part": "Neck"
+},
+{
+"part": "Head"
+}
+],
+"flavor": "too close and too tired to fly, she lowers her head and fires a beam of white cold straight into the dragon at point-blank range"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Seismic Toss",
+"part": "Neck",
+"flavor": "shaking the frost from her face, she lunges in, wraps both arms round the bird under her wings, heaves her off her feet, spins and hurls her down onto the stone"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Freeze-Dry",
+"hits": [
+{
+"part": "Chest"
+},
+{
+"part": "Belly"
+}
+],
+"flavor": "slumped against the cliff, she lifts her head as the dragon stalks in and breathes a freezing mist straight into her chest"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Heat Wave",
+"flavor": "she shakes the cold off her chest, spreads her good wing and beats a rolling wall of scorching air across the shelf at the bird"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Wing Attack",
+"part": "Head",
+"flavor": "her right wing has gone dead and numb, so she swings round and cracks the hard leading edge of her left wing across the frosted head"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"reposition": "take off",
+"move": "Air Slash",
+"hits": [
+{
+"part": "Upper Back"
+},
+{
+"part": "Long Tail"
+}
+],
+"flavor": "she heaves herself back into the air on her ragged wing and, from above, slashes blades of wind down across the bird hunched over her chest"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Ice Shard",
+"part": "Left Wing",
+"flavor": "she tracks the dragon labouring overhead, forms a single shard of ice and flings it straight into the torn left wing"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Fire Fang",
+"part": "Neck",
+"flavor": "snarling at the cold in her wing, she folds and drops on the bird from above, jaws wreathed in flame, going for the long neck"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "breather",
+"flavor": "she cannot get her breath; she braces on the stone with her wings half spread, beak open, dragging the thin mountain air in while the dragon hangs above her"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "breather",
+"flavor": "her own breath is gone too; she circles slowly on her good wing and the frozen one, watching the bird and gathering her fire"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Blizzard",
+"flavor": "she spreads both wings, the burned one shaking, and the air over the shelf goes white: a howling storm of snow and ice driven up into the hovering dragon"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Dragon Claw",
+"part": "Left Wing",
+"flavor": "snow caked on her horns, she drops on the bird again and rakes her claws down the one good wing she still has"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "pin",
+"flavor": "she drops onto the dragon sprawled face-down on the stone, all her weight on her back, talons clamped on the ruined wing and her beak pressed into the back of her neck",
+"hits": [
+{
+"part": "Upper Back",
+"severity": "crushing",
+"with": "her full weight"
+},
+{
+"part": "Neck",
+"severity": "firm",
+"with": "her beak"
+},
+{
+"part": "Left Wing",
+"severity": "firm",
+"with": "her talons"
+}
+]
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "struggle",
+"flavor": "she heaves up under the bird, her tail flame flaring, clawing at the stone to get her shoulders under her"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"reposition": "take off",
+"move": "Air Slash",
+"hits": [
+{
+"part": "Head"
+},
+{
+"part": "Neck"
+}
+],
+"flavor": "something cold and bright floods through her: she throws herself off the stone, wings tearing at the thin air, climbs, and whips blades of wind down at the dragon head and neck"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Wing Attack",
+"part": "Head",
+"flavor": "she folds her wings and drops out of the sky on the staggering dragon, and at the bottom of the dive the frozen edge of her left wing cracks across her head"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Flamethrower",
+"hits": [
+{
+"part": "Chest"
+},
+{
+"part": "Neck"
+}
+],
+"flavor": "head ringing, half blind, she finds the bird by the cold coming off her, plants her feet and pours a roaring stream of fire into her chest"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "breather",
+"flavor": "the brightness has drained out of her; she sways on the stone with her wings drooping, beak open, trying to find one more breath"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Thunder Punch",
+"part": "Chest",
+"flavor": "riding the last of her own surge, she steps in and drives a fist crackling with lightning into the bird scorched chest"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "breather",
+"reposition": "take off",
+"flavor": "with nothing left to throw, she does the one thing she was made for: spreads her ragged wings and drags herself up off the shelf into the wind"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"reposition": "take off",
+"move": "Dragon Claw",
+"part": "Chest",
+"flavor": "she will not let her go: she hauls herself up after the bird on one good wing and one torn one, closes underneath her and rakes her claws up across the scorched chest"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Ice Shard",
+"part": "Head",
+"flavor": "hanging in the wind on failing wings, she forms one last shard of ice and flings it at the battered head"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "strike",
+"move": "Fire Fang",
+"part": "Neck",
+"flavor": "she beats up under the drifting bird one last time and closes burning jaws on the long blue neck as they meet"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "breather",
+"reposition": "land",
+"flavor": "her wing gives out; she half falls, half glides down onto the shelf a few strides from the bird and stands there with her head hanging, heaving for breath"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "strike",
+"move": "Ice Beam",
+"hits": [
+{
+"part": "Chest"
+},
+{
+"part": "Belly"
+}
+],
+"flavor": "propped up on the stone, she lifts her head one more time and the last cold she has goes out of her in a thin, shaking beam into the dragon chest"
+}
+],
+[
+{
+"attacker": "Cinder",
+"defender": "Glacia",
+"action": "pin",
+"flavor": "wheezing, she lurches the last strides across the stone and topples onto the sitting bird, bearing her over onto her back: her weight on the scorched chest, a forearm across the long neck, claws pressing the good wing flat",
+"hits": [
+{
+"part": "Chest",
+"severity": "crushing",
+"with": "her full weight"
+},
+{
+"part": "Neck",
+"severity": "firm",
+"with": "her forearm"
+},
+{
+"part": "Left Wing",
+"severity": "firm",
+"with": "her claws"
+}
+]
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "struggle",
+"flavor": "she twists under the dragon weight, beats her good wing against the stone, tries to drag her neck out from under the forearm"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "struggle",
+"flavor": "she twists under the dragon weight, beats her good wing against the stone, tries to drag her neck out from under the forearm"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "struggle",
+"flavor": "she twists under the dragon weight, beats her good wing against the stone, tries to drag her neck out from under the forearm"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "struggle",
+"flavor": "she twists under the dragon weight, beats her good wing against the stone, tries to drag her neck out from under the forearm"
+}
+],
+[
+{
+"attacker": "Glacia",
+"defender": "Cinder",
+"action": "struggle",
+"flavor": "she heaves once more, weaker, her good wing scraping feebly at the stone"
+}
+],
+"aftermath",
+"aftermath"
+]
