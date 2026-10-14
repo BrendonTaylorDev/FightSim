@@ -1820,6 +1820,14 @@ TUMBLED = re.compile(r"\b(?:tumbl\w+|roll(?:ed|ing|s) (?:over|across|on|along|en
                      r"over and over|spinning across|fetch\w* up|came to rest|came to a stop|rolled to a stop)\b", re.I)
 
 
+# a part struck against something now ("her head snapped back against the bark", "her hip slammed into the tree")
+IMPACT_ON = re.compile(r"\b(?:slamm\w*|crack\w*|bang\w*|smack\w*|crash\w*|snapp\w* back|thudd?\w*|struck|hit) "
+                       r"(?:\w+ )?(?:into|against|on)\b", re.I)
+# a grip kept, when nobody holds anyone
+GRIP_KEPT = re.compile(r"\b(?:maintain\w* (?:her|its|the) grip|kept (?:her|its|the) grip|keeping (?:her|its|the) grip|"
+                       r"did(?: not|n't) let go|never let go|refus\w+ to let go|tighten\w* (?:her|its|the) grip|"
+                       r"(?:her|its|the) grip (?:held|tightened|on (?:her|the) \w+ held))\b", re.I)
+
 # a verb, roughly: what a real sentence has and a list of phrases copied from the notes doesn't
 NOTE_VERB = re.compile(r"\b(?:\w+(?:ed|ing)|is|was|were|are|am|be|been|had|has|have|did|does|do|came|went|ran|hit|took|"
                        r"made|felt|saw|held|got|let|set|cut|put|shook|broke|rose|fell|struck|caught|drove|threw|kept|"
@@ -8702,6 +8710,15 @@ class Narrator:
             issues.append(f"it put {who} the wrong way round (\"{bit}\"): she ends this beat "
                           + ("SITTING UP on the ground, not lying flat" if fc == "sitting up" else
                              f"lying {fc}, not sitting up") + " (see CURRENT CONDITION and the notes for this beat)")
+        phantom = self._phantom_impact_lines(text)
+        if phantom:
+            who_, part_, words_ = phantom[0]
+            issues.append(f"it has {poss(who_)} {part_} hit (\"{words_}\"), but nothing reaches her {part_} this beat: "
+                          f"only the parts listed are struck")
+        kept = self._invented_grip_lines(text) if n.get("accuracy_check", True) else []
+        if kept:
+            issues.append(f"it has someone keeping a grip (\"{kept[0]}\"), but nobody is holding anyone this beat: no "
+                          f"grip to keep or let go of")
         shoved = self._unmoved_lines(text) if n.get("accuracy_check", True) else []
         if shoved:
             who_, words_ = shoved[0]
@@ -9231,6 +9248,56 @@ class Narrator:
                 out.append((w, m.group(0)))
         return out
 
+    def _parts_hit_now(self):
+        """{fighter: {part, lower case}} for every part a blow, a landing, a crush or a recoil reached this beat."""
+        out = {}
+
+        def walk(x):
+            if isinstance(x, dict):
+                if x.get("part") and x.get("defender") and "damage_taken" in x:
+                    out.setdefault(x["defender"], set()).add(str(x["part"]).lower())
+                for v in x.values():
+                    walk(v)
+            elif isinstance(x, (list, tuple)):
+                for v in x:
+                    walk(v)
+        walk(getattr(self, "_acts_now", None) or [])
+        return out
+
+    def _phantom_impact_lines(self, text):
+        """A part slammed, cracked or snapped back against something this beat when no blow, landing or crush this
+        beat reached that part ("Ripples' head snapped back against the rough bark" when the charge hit her chest,
+        shoulders, back and hip): [(fighter, part, words)]. Only a sentence about her alone, and only a part of hers
+        named right before the impact words."""
+        hit = self._parts_hit_now()
+        if not hit or not self.rules.get("narration", {}).get("accuracy_check", True):
+            return []
+        out = []
+        for sent, whos, named in self._said(text):
+            if len(whos) != 1 or whos[0] not in hit:
+                continue
+            w = whos[0]
+            for m in IMPACT_ON.finditer(sent):
+                span = sent[max(0, m.start() - 35):m.start()].lower()
+                parts = [p for p in ((self.damage_by or {}).get(w) or {})
+                         if re.search(r"\b" + re.escape(re.sub(r"^(left|right) ", "", p)) + r"s?\b", span)]
+                if parts and not any(re.sub(r"^(left|right) ", "", p) in {re.sub(r"^(left|right) ", "", q)
+                                                                        for q in hit[w]} for p in parts):
+                    out.append((w, parts[0], m.group(0)))
+                    break
+        return out
+
+    def _invented_grip_lines(self, text):
+        """Someone keeping a grip or refusing to let go in a beat where nobody holds anyone (a crush against a tree
+        is her body, not a grip): [words]."""
+        if getattr(self, "grips", None) or getattr(self, "_grips_ended", None) or getattr(self, "_pin_beat", False):
+            return []
+        acts = [a for a in (getattr(self, "_acts_now", None) or []) if isinstance(a, dict)]
+        if any(str(a.get("type") or "").startswith(("hold", "grapple", "pin", "submission")) or a.get("grab_carry")
+               or a.get("carried") or a.get("manhandle") for a in acts):
+            return []
+        return [m.group(0) for m in [GRIP_KEPT.search(text)] if m]
+
     def _unhurt_lines(self, text):
         """Sentences that wound a fighter nothing hit this beat: [(fighter, matched words)]."""
         if self._hurt_now is None or not self.strengths or not self.rules.get("narration", {}).get("accuracy_check", True):
@@ -9298,7 +9365,9 @@ class Narrator:
                     "heel": ("foot", "hind paw", "hock"), "forehead": ("head",), "brow": ("head",), "temple": ("head",),
                     "collarbone": ("shoulder",), "spine": ("back", "upper back", "lower back"), "belly": ("stomach", "belly"),
                     "gut": ("stomach", "belly"), "toes": ("foot", "hind paw", "talon"),
-                    "foreleg": ("upper foreleg", "lower foreleg"), "hind leg": ("thigh", "hock", "lower leg")}
+                    "foreleg": ("upper foreleg", "lower foreleg"), "hind leg": ("thigh", "hock", "lower leg"),
+                    "mouth": ("muzzle", "jaw", "beak"),
+                    "lips": ("muzzle", "jaw"), "lip": ("muzzle", "jaw")}
 
     # a plain word for what hurt her, and what it can have been in the engine's record of the part
     _CAUSE_WORDS = {"kick": ("kick", r"kick|stomp|foot|feet|heel|hind"), "kicks": ("kick", r"kick|stomp|foot|feet|heel|hind"),
