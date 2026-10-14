@@ -11876,6 +11876,18 @@ class Narrator:
                           f"tension, never on someone starting a new move.", 0.8),
             }
             order = {2: ["act", "take"], 3: ["act", "take", "after"], 4: ["setup", "act", "take", "after"]}[count]
+            acts_now = [a for a in (getattr(self, "_acts_now", None) or []) if isinstance(a, dict)]
+            if getattr(self, "_ongoing", False) and any(g[0] == actor for g in (getattr(self, "grips", None) or [])) \
+                    and not any(a.get("type") in ("struggle", "struggle_request", "escape") for a in acts_now) and not any(
+                    a.get("type") == "instant" or str(a.get("type") or "").endswith("_start")
+                    or a.get("type") in ("submission", "pin_forced", "grapple") for a in acts_now):
+                # nothing new is thrown or grabbed: a hold she already has goes on. Her side is keeping it on, not a
+                # wind-up to a contact that happened beats ago
+                focus["act"] = (f"{poss(actor)} side of the hold she ALREADY has on {who} (it was taken earlier and "
+                                f"goes on now): how she keeps it on, her grip, her weight, where she presses, what she "
+                                f"feels of {who} fighting it, her own effort and breath. Nothing new starts from her: "
+                                f"no wind-up, no reaching, no moment before contact. Leave how the pressure feels to "
+                                f"{who} for the next part.", 1.0)
         else:
             focus = {
                 "act": ("the actions as they happen, in order, from the attackers' bodies.", 1.0),
