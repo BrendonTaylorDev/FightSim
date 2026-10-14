@@ -137,12 +137,15 @@ class GameThread(threading.Thread):
         self.args, self.out_q, self.in_q = args, out_q, in_q
         self.session = None
         self.fightsim_game = True
+        self.waiting = False       # at the prompt (True), or busy writing a beat
 
     def ask(self, prompt=""):
         if self.session is not None:
             self.out_q.put(("live", snapshot(self.session, "now")))
         self.out_q.put(("prompt", str(prompt)))
+        self.waiting = True
         line = self.in_q.get()
+        self.waiting = False
         if line is None:
             raise EOFError
         self.out_q.put(("text", f"{prompt}{line}\n"))
@@ -597,6 +600,11 @@ class App:
         self.send_line(line)
 
     def send_line(self, line):
+        if line.strip().lower() in ("/stop", "stop") and not getattr(self.game, "waiting", True):
+            # busy with /auto or /autofight: it ends after the beat being written (play.STOP), nothing is queued
+            play.STOP.set()
+            self.out_q.put(("text", "\n[/stop: the run ends once this beat is finished]\n"))
+            return
         self.in_q.put(line)
         self.prompt.configure(text="…")
 
