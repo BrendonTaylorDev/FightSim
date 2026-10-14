@@ -1198,7 +1198,8 @@ class Engine:
                 for nm in names:
                     landed = self._aim(a, d, nm) if self.aim_ease(nm) <= below else nm
                     if landed != nm and not getattr(self, "_aim_miss", None):
-                        self._aim_miss = {"aimed": nm, "landed": landed}
+                        # only one stretch of a blow across several parts strays: the rest lands as aimed
+                        self._aim_miss = {"aimed": nm, "landed": landed, "path": True}
                     if landed not in out:
                         out.append(landed)
                 names = out
