@@ -3130,6 +3130,7 @@ class Narrator:
         self._ongoing = any(e["type"] in ("pin_progress", "hold_ongoing") for e in bundle.get("also_this_beat", []))
         self._tiers_used = set()
         self._must_parts = []
+        self._fact_lines = []        # (parts it lands on, the program's sentence for it): narration.guided.fact_lines
         self._must_struggle = None
         self._must_block = None      # (a block is this beat's own: set again below only when one happens now)
         self._struggle_kind = None
@@ -7589,6 +7590,168 @@ class Narrator:
                 "touched. They are jotted in the present tense: the story puts them in the past (\"her head snaps "
                 "back\" becomes \"her head snapped back\").\n" + "\n".join(f" {i}. {t}" for i, t in enumerate(steps, start=1)))
 
+    # ---------- engine-led narration (narration.guided) ----------
+    def _guided(self, what):
+        g = (self.rules.get("narration", {}) or {}).get("guided") or {}
+        return bool(g.get("enabled", False) and g.get(what, True))
+
+    _WEAPON = (("bite", "jaws"), ("talon", "talons"), ("claw", "claws"), ("horn", "horn"), ("beak", "beak"),
+               ("tail", "tail"), ("wing", "wing"), ("punch", "fist"), ("charge", "rush"))
+    _ELEMENT = {"Water": "water", "Electric": "lightning", "Fire": "fire", "Ice": "cold", "Grass": "lash of leaves",
+                "Psychic": "unseen force", "Dark": "dark force", "Flying": "blast of air", "Rock": "stones",
+                "Ground": "earth", "Poison": "poison", "Ghost": "shadow", "Dragon": "dragon's force",
+                "Fairy": "light", "Steel": "steel"}
+
+    def _fact_weapon(self, a):
+        """What the blow is made of, in a word or two, for a fact line: her jaws, her claws, the water."""
+        mv = a.get("move") or {}
+        ranged = Engine.is_ranged(mv) if hasattr(Engine, "is_ranged") else False
+        kinds = story_blocks.kind_of(str(mv.get("name") or ""), str(mv.get("about") or ""), ranged=ranged)
+        att = a.get("attacker") or ""
+        feats = self._feats_of(att) if att else set()
+        if not ranged:
+            for k, noun in self._WEAPON:
+                if k in kinds:
+                    if noun == "claws" and "talons" in feats and "claws" not in feats:
+                        noun = "talons"
+                    el = self._ELEMENT.get(str(mv.get("type") or ""), "")
+                    if noun == "rush" and el and el not in ("steel", "stones", "earth"):
+                        return f"{poss(att)} rush, wrapped in {el}"   # (an Aqua Jet, a Flame Charge, a Wild Charge)
+                    return f"{poss(att)} {noun}"
+            return f"{poss(att)} blow"
+        el = self._ELEMENT.get(str(mv.get("type") or ""), "")
+        if "wind" in kinds:
+            el = "wind"
+        return f"{poss(att)} {el or 'blast'}".strip()
+
+    def _fact_line(self, a, main, jarred):
+        """The program's own sentence for one blow: who, with what, which part (and side), how hard."""
+        dfn = main.get("defender") or a.get("defender")
+        size = self._hit_size(main)
+        weapon = self._fact_weapon(a)
+        noun = weapon.split()[-1]
+        verb = ({"jaws": ("nipped", "bit into", "bit deep into", "bit down hard on"),
+                 "claws": ("scraped", "raked", "raked hard across", "tore across"),
+                 "talons": ("scraped", "raked", "raked hard across", "tore across")}.get(noun)
+                or ("grazed", "struck", "slammed into", "smashed into"))[["glancing", "solid", "heavy", "tremendous"].index(size)]
+        line = (f"{weapon[0].upper() + weapon[1:]}{',' if ',' in weapon else ''} {verb} {poss(dfn)} "
+                f"{str(main['part']).lower()}")
+        if jarred:
+            js = [str(h["part"]).lower() for h in jarred]
+            line += f", and the force of it jarred her {', '.join(js[:-1]) + ' and ' + js[-1] if len(js) > 1 else js[0]}"
+        return line + "."
+
+    def _paragraph_plan(self, key, acts, actor=None, receivers=()):
+        """narration.guided: in the part where the blows land, a PARAGRAPH PLAN: one paragraph per blow (the parts it
+        jars go with it), each opening on the program's fact line for it, and its reaction after. The fact lines are
+        kept so a draft that leaves a blow out gets its line put back (_insert_facts) instead of a whole rewrite."""
+        if key not in ("take", "all") or not (self._guided("paragraph_plan") or self._guided("fact_lines")):
+            return ""
+        g = (self.rules.get("narration", {}) or {}).get("guided") or {}
+        cap = max(1, int(g.get("max_paragraphs", 5)))
+        groups = []
+        for a in acts:
+            if a.get("type") != "instant" or a.get("dodged") or not a.get("hits") or a.get("environment"):
+                continue
+            hs = [h for h in a["hits"] if h.get("part")]
+            if len({str(h["part"]).lower() for h in hs}) > 4:
+                # a blow over the whole of her (or most of it): one line, worst first
+                top = sorted(hs, key=lambda h: -float(h.get("damage_taken") or 0))
+                worst = list(dict.fromkeys(str(h["part"]).lower() for h in top))[:3]
+                dfn = top[0].get("defender") or a.get("defender")
+                line = (f"{self._fact_weapon(a)[0].upper() + self._fact_weapon(a)[1:]} caught all of {dfn} at once, "
+                        f"worst at her {', '.join(worst[:-1])} and {worst[-1]}.")
+                groups.append((worst, line))
+                continue
+            blows = []          # [main hit, the hits it jarred]
+            for h in hs:
+                if h.get("jarred") and blows:
+                    blows[-1][1].append(h)
+                else:
+                    blows.append([h, []])
+            groups += [([str(x["part"]).lower() for x in [m] + js], self._fact_line(a, m, js)) for m, js in blows]
+        if not groups:
+            return ""
+        if len(groups) > cap:
+            rest = groups[cap - 1:]
+            parts = [p for ps, _ in rest for p in ps]
+            groups = groups[:cap - 1] + [(parts, " ".join(line for _, line in rest))]
+        self._fact_lines = list(groups)
+        if not self._guided("paragraph_plan"):
+            return ""
+        rows = [f" {i}. FACT: {line} THEN: how it lands on her (her reaction as listed for that hit), and nothing "
+                f"from the next blow yet." for i, (_, line) in enumerate(groups, 1)]
+        rows.append(f" {len(groups) + 1}. Whatever else is listed for this part (a landing, a fall, a status, a "
+                    f"get-up), in its order, and how she is left.")
+        return ("\n\nPARAGRAPH PLAN for this part (the program's; one paragraph for each step, in this order). Each "
+                "blow's paragraph OPENS on its fact line: put it in your own words if you like, but keep exactly who "
+                "did it, with what, to which part and which side, and how hard. The rest of that paragraph is how it "
+                "lands on her. The building blocks and the moment around it fill the paragraphs out; they never "
+                "change these facts.\n" + "\n".join(rows))
+
+    def _insert_facts(self, text, prior=""):
+        """A draft that left a blow out: its fact line goes in where the plan puts it (after the paragraph with the
+        blow before it, or first), as a paragraph of its own. Returns the text (unchanged when nothing was missing)."""
+        if not self._fact_lines or not self._guided("fact_lines"):
+            return text
+        paras = [x for x in text.split("\n") if x.strip()]
+        added = False
+        for i, (parts, line) in enumerate(self._fact_lines):
+            seen = (prior + "\n" + "\n".join(paras)).lower()
+            if _mentions(seen, parts[0]):
+                continue
+            at = 0
+            for prev_parts, _ in reversed(self._fact_lines[:i]):
+                hit = [k for k, x in enumerate(paras) if _mentions(x.lower(), prev_parts[0])]
+                if hit:
+                    at = hit[0] + 1
+                    break
+            paras.insert(at, line)
+            added = True
+        return "\n\n".join(paras) if added else text
+
+    _READ_LEVELS = ("hurting", "very painful", "excruciating", "devastated")
+
+    def _read_note(self, key, actor, receivers):
+        """narration.guided.reads: now and then the attacker gets one tactical read from what the engine knows, before
+        she commits, to show as a thought or a look in her own voice (never a new event)."""
+        if key not in ("act", "all") or not actor or not receivers or not self._guided("reads"):
+            return ""
+        g = (self.rules.get("narration", {}) or {}).get("guided") or {}
+        seen = self.__dict__.setdefault("_read_beats", {})
+        if self._beat_no - seen.get(actor, -99) < int(g.get("read_gap", 2)):
+            return ""
+        rng = random.Random(f"read{self._beat_no}{actor}{id(self)}")
+        if rng.random() >= float(g.get("read_chance", 0.45)):
+            return ""
+        opp = receivers[0]
+        st = self.strengths or {}
+        mine, theirs = float(st.get(actor, 100)), float(st.get(opp, 100))
+        cands = []
+        w = self._worst_parts(opp, 1, floor="hurting")
+        if w:
+            cands.append(f"she has seen {opp} favor her {w[0][0]} ({w[0][1]}): that is the place to work")
+        w = self._worst_parts(actor, 1, floor="very painful")
+        if w:
+            cands.append(f"her own {w[0][0]} is her weak spot ({w[0][1]}), and {opp} has surely seen it: she keeps it "
+                         f"back out of reach as she goes in")
+        if theirs < mine - 15:
+            cands.append(f"{opp} is wearing down faster than she is: slower to answer, breathing harder. Keep the "
+                         f"pressure on and give her no time")
+        elif mine < theirs - 15:
+            cands.append(f"she is the one wearing down faster: she can't trade blow for blow with {opp}, so she looks "
+                         f"for the opening that ends it sooner")
+        wings = [(d, p) for p, d in ((self.damage_by or {}).get(opp) or {}).items() if "wing" in p and d >= 90]
+        if wings and self._in_air(opp):
+            cands.append(f"{poss(opp)} {max(wings)[1]} is failing, the strokes short and late: keep her low and make "
+                         f"her work to stay up")
+        if not cands:
+            return ""
+        seen[actor] = self._beat_no
+        return (f"\n\nA READ (the dice gave {actor} one this beat): {rng.choice(cands)}. Show it as ONE short thought in "
+                f"her own VOICE, or one look that says it, before she commits. It counts toward this part's thoughts, "
+                f"and it is only what she sees: no new event comes from it.")
+
     def _checklist(self, key, acts, actor=None, receivers=()):
         """narration.checklist (off by default): a short list of what this part MUST contain, straight from the engine,
         apart from the colour ideas: who does what, where each blow lands and how hard, how each part hurts now, who
@@ -9406,6 +9569,14 @@ class Narrator:
             if ((self._issue_weight(other_issues), len(other_issues), -len(other))
                     < (self._issue_weight(issues), len(issues), -len(text))):
                 text, issues = other, other_issues
+        if issues and coverage and any("these hits landing" in i or "every attack listed" in i for i in issues):
+            # a blow left out: the program's own fact line for it goes in where it belongs, no rewrite needed for it
+            # (narration.guided.fact_lines)
+            filled = self._insert_facts(text, prior)
+            if filled != text:
+                if self.progress:
+                    self.progress("a blow was left out: putting in its fact line")
+                text, issues = filled, self._review(filled, coverage, prior)
         repair = bool(self.rules.get("narration", {}).get("paragraph_repair", True))
         missing = []
         if issues:
@@ -11530,6 +11701,8 @@ class Narrator:
             return self._call(context + f"Write this beat in about {words} words. {DETAIL}"
                               + self._blocks_for("all", acts, pin_events, also_now, actor, receivers, True, True)
                               + self._checklist("all", acts, actor, receivers)
+                              + self._paragraph_plan("all", acts, actor, receivers)
+                              + self._read_note("all", actor, receivers)
                               + self._talk_note(""),
                               words, coverage=True)
 
@@ -11566,6 +11739,7 @@ class Narrator:
                                and isinstance(going, list) else (actor, receivers))
             ask += self._blocks_for(key, acts, pin_events, also_now, b_actor, b_recv, i == 1, i == len(plan))
             ask += self._checklist(key, acts, actor, receivers)
+            ask += self._paragraph_plan(key, acts, actor, receivers) + self._read_note(key, actor, receivers)
             if cmp_.get("sounds_where_hit") and self._sounds_full:
                 ask += ("\n\n" + self._sounds_full.strip() if key in ("take", "all", "after") or i == len(plan) else
                         "\n\nSOUNDS: every pained sound is described (what it is, where it comes from, its shape), never "

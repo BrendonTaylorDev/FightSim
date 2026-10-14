@@ -5073,6 +5073,21 @@ class Engine:
             marks.append("swollen")
         return self.in_her_covering(f, f"her {p.name.lower()}: " + ", ".join(marks))
 
+    def _guided(self, what):
+        """narration.guided: is this piece of the engine-led narration on?"""
+        g = (self.rules.get("narration") or {}).get("guided") or {}
+        return bool(g.get("enabled", False) and g.get(what, True))
+
+    def _mark_age(self, f, p):
+        """When the mark on this part was made (narration.guided.marks): " (new this beat)", " (from beat 7)", so a
+        cut is fresh or old as it really is, and nothing on her has "begun to dry" that was made a moment ago."""
+        if not self._guided("marks"):
+            return ""
+        t = (getattr(self, "hit_turn", None) or {}).get(f"{f.name}|{p.name}")
+        if t is None:
+            return ""
+        return " (new this beat)" if t >= self.turn else f" (last hit in beat {t}, {self.turn - t} beat{'s' if self.turn - t != 1 else ''} ago)"
+
     def wear_text(self):
         """VISIBLE WEAR: how each fighter looks by now, so the narrator keeps it the same from beat to beat."""
         rows = []
@@ -5094,7 +5109,19 @@ class Engine:
             # a mark on a part nobody has touched for a while is given in short: the first thing that shows
             ob = self._decay("origin_beats", 4)
             bits += [(self.visible_marks(f, p).split(", ")[0] if self._stale(f, p.name, ob) else self.visible_marks(f, p))
-                     for p in bad]
+                     + self._mark_age(f, p) for p in bad]
+            guided = self._guided("marks")
+            if guided:
+                # what she does NOT show matters as much: a fighter only ever struck with blunt blows has no cut and
+                # no blood on her, and a part not listed carries no mark (narration.guided.marks)
+                hurt = [p for p in f.parts.values() if p.damage >= 30]
+                kinds = {self._mark_kind(c) for p in hurt for c in self.injury_causes(f"{f.name}|{p.name}", 3)}
+                if hurt and not kinds & {"claw", "bite"}:
+                    bits.append("no cuts and no blood anywhere on her: only bruising")
+                if not bits:
+                    bits.append("no marks that show yet" + (" (her hurts so far are under the skin)" if hurt else ""))
+                elif bad:
+                    bits.append("nothing else on her shows a mark")
             if bits:
                 rows.append(f"{f.name}: " + self.in_her_covering(f, "; ".join(dict.fromkeys(bits))))
         return ("VISIBLE WEAR (how they look by now; keep it the same unless this beat changes it): "
