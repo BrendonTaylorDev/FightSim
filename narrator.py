@@ -1820,6 +1820,12 @@ TUMBLED = re.compile(r"\b(?:tumbl\w+|roll(?:ed|ing|s) (?:over|across|on|along|en
                      r"over and over|spinning across|fetch\w* up|came to rest|came to a stop|rolled to a stop)\b", re.I)
 
 
+# going on across the ground after a fall: a skid, a slide, a roll (for a landing the dice stopped where it fell)
+SKIDDED = re.compile(r"\b(?:skidd(?:ed|ing) (?:a |several |back |across |along |over |\w+ paces)|"
+                     r"sl(?:id|iding) (?:a few|several|across|along) |tumbl(?:ed|ing) (?:over|across|along|away|end)|"
+                     r"rolled (?:over and over|across|away|end over end|several)|cartwheel\w*)", re.I)
+
+
 PROMPT_LINE = re.compile(r"^\s*[*_\-\s]*(?:POSTURE THIS BEAT|WHAT HAPPENS IN THIS BEAT|CURRENT CONDITION|PREVIOUS BEATS|"
                          r"FIGHT SO FAR|POSITIONS(?: NOW)?\b|GETTING UP:|LINGER ON ONE MOMENT|MORE HARD RULES|STYLE SAMPLE|"
                          r"THE AUTHOR'S INSTRUCTIONS|EXTRA STYLE NOTE|YOUR (?:PREVIOUS|LAST TWO) DRAFTS?|SCENE:|FIGHTERS(?: \(as in part 1\))?:|SOUNDS(?: THEY MAKE)?:|"
@@ -7531,6 +7537,9 @@ class Narrator:
         pick = min(fresh, key=lambda d: (used.get(d, -99), self._blocks().rng.random()))
         used[pick] = turn
         times[pick] = times.get(pick, 0) + 1
+        if getattr(self, "on_ground", None) or getattr(self, "_landed", None):
+            # someone is lying on it: nothing is "underfoot" for her (the detail is the place, not where she is)
+            pick = re.sub(r"\s*\b(?:underfoot|under(?:foot|paw)|beneath (?:her|their) feet)\b", "", pick)
         return pick
 
     def _blocks_plan(self, lines, key, first, last, lead=None, other=None, memory=None):
@@ -8295,6 +8304,17 @@ class Narrator:
                           + f" {man['defender']}: that is what happens this beat. Show the grab and the "
                           + {"throw": "throw", "slam": "slam", "drag": "drag across the ground"}[man["manhandle"]])
         tb = getattr(self, "_must_tumble", None)
+        stopped = {a.get("defender") for a in (getattr(self, "_acts_now", None) or []) if isinstance(a, dict)
+                   and a.get("environment") and not a.get("tumble") and not a.get("kept_feet")}
+        stopped.discard(None)
+        if stopped and not tb:
+            # knocked down where she stood, and the dice gave no tumble: she doesn't skid or roll on across the ground
+            for sent, whos, named in self._said(text):
+                m = SKIDDED.search(sent)
+                if m and len(whos) == 1 and whos[0] in stopped:
+                    issues.append(f"it has {whos[0]} sliding or rolling on after she lands (\"{m.group(0)}\"), but she "
+                                  f"stops where she lands this beat: she goes down and stays there")
+                    break
         if tb and coverage and not TUMBLED.search((prior or "") + "\n" + text):
             issues.append(f"it left out the tumble: {tb['defender']} doesn't stop where she lands this beat. She goes "
                           f"on across {tb['tumble']['across']}, rolling and skidding"
@@ -10667,6 +10687,12 @@ class Narrator:
         part.") goes. Only when swearing is off (narration.swearing) for the curse."""
         n = self.rules.get("narration", {}) or {}
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        for d in ((getattr(self, "scene_cfg", None) or {}).get("details") or []):
+            # a detail of the place copied in as a sentence of its own, with no verb round it ("Pine needles soft
+            # underfoot at the edge of the trees."): a note, not prose, so it goes
+            d = re.sub(r"\s+", " ", str(d)).strip(" .")
+            if len(d) > 12:
+                text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))[*_]?" + re.escape(d) + r"[.!…]?[*_]?(?:[ \t]+|$)", r"\1", text)
         horns = [sum(1 for p in parts if re.search(r"\bhorn\b", p, re.I))
                  for parts in (getattr(self, "damage_by", None) or {}).values()]
         if horns and max(horns) == 1:   # one horn in the whole fight: "the roots of her horns" is her horn
