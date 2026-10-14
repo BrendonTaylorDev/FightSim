@@ -39,6 +39,20 @@ Nothing. Sweep 2 (engine, body2, ideas2) was merged into build 184.
    - dice-rolled tactical reads for the attacker (read_chance 0.45, read_gap 2).
    Waiting for the user's test. Suggestion 5 (spend the words where the beat matters: short quiet beats) is next.
 
+10. The user's lakeside test on the anchors build (beats 1-4). Fixed on all three branches:
+   - window colours;
+   - left-out-attack false alarm;
+   - skid after a stopped landing;
+   - pasted scenery notes, and "background only" copied in;
+   - hold contact wording;
+   - submission hint label;
+   - spliced sentences;
+   - overblown minor pain;
+   - the holder's part in a continuing hold.
+   Open:
+   - speed: the user's reading rate is 400-650 tokens/s; asked them to check `ollama ps` and my_settings.json;
+   - the act part doesn't say where a blast comes out of her.
+
 ## Done in this stretch (builds 177-179 and after)
 - Hit reactions weigh the hurt part as well as overall strength. A strong fighter with a ruined part gets a half-hidden reaction, a capped voice, and only concealed ideas.
 - Flight:
