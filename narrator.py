@@ -7668,8 +7668,9 @@ class Narrator:
         note = (f"{weapon} → {poss(dfn)} {where} ({['a glancing', 'a solid', 'a heavy', 'a tremendous'][k]} blow)"
                 + (f"; jarred with it: her {both(js)}" if js else ""))
         bare = weapon.split("'s ", 1)[-1].split("' ", 1)[-1].split(",")[0]       # "rush", "jaws", "water"
-        jar = f", the force of it jarring her {both(js)}" if js else ""
         rng = random.Random(f"fact{self._beat_no}{dfn}{where}{id(self)}")
+        jar = rng.choice([f", the force of it jarring her {both(js)}", f", jarring her {both(js)} as well",
+                          f", and the shock ran on into her {both(js)}", f", her {both(js)} taking the jolt of it"]) if js else ""
         shapes = [f"{weapon[0].upper() + weapon[1:]}{',' if ',' in weapon else ''} {verb} {poss(dfn)} {where}{jar}.",
                   f"{weapon[0].upper() + weapon[1:]}{',' if ',' in weapon else ''} caught {dfn} "
                   f"{'glancingly ' if k == 0 else 'hard ' if k >= 2 else ''}on the {where}{jar}.",
