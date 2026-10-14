@@ -761,7 +761,10 @@ class Display:
             if a.get("strafe"):
                 out.append(f"💨 **Strafing pass**: her speed carries her round for a second, quicker blow on "
                            f"{a['defender']}'s {a['strafe']['part']} (power {num(a['strafe']['power'])}, listed last)")
-            if a.get("aim"):
+            if a.get("aim") and a["aim"].get("path"):
+                out.append(f"🎯 Part of it strays: the stretch meant for {a['defender']}'s {a['aim']['aimed']} catches "
+                           f"her {a['aim']['landed']} instead; the rest lands as aimed (moves.aim)")
+            elif a.get("aim"):
                 out.append(f"🎯 Off target: aimed at {a['defender']}'s {a['aim']['aimed']}, lands on her "
                            f"{a['aim']['landed']} (moves.aim)")
             if a.get("carried"):

@@ -2046,7 +2046,7 @@ INTENSE = (
                      r"sob(?:bed|bing|s)?|went limp with (?:pain|agony))\b", re.I)),
     (150, re.compile(r"\b(?:scream\w*|shriek\w*|howl\w*|agon\w+|unbearable|excruciating|white-hot|blinding|"
                      r"unfiltered|pure (?:pain|agony)|(?:world|clearing|everything|vision) (?:blurred|spun|swam|tilted|"
-                     r"wavered|went (?:white|grey|gray|black|dark))|"
+                     r"wavered|went (?:white|grey|gray|black|dark))|vision (?:swimming|swims|blurring)|"
                      r"(?:world|everything|clearing)(?: around her)? (?:fad\w+|dissolv\w+|melt\w+) (?:into|to) a blur)\b", re.I)),
     (90, re.compile(r"\b(?:cr(?:y|ied|ies) out|(?:a|the) (?:raw |sharp |desperate )?cry (?:tore|ripped|burst|broke)|"
                     r"explod\w+|searing|wave of (?:pain|agony)|tore through|ripped through|"
@@ -4136,7 +4136,13 @@ class Narrator:
                 lines.append(f"  - {a['attacker']} is so {'tired' if worn else 'out of breath'} she OVERCOMMITS: the blow is "
                              f"sloppy, badly timed, half its "
                              f"usual force, and she overbalances on it and has to catch herself (OFF BALANCE after it).")
-            if a.get("aim"):
+            if a.get("aim") and a["aim"].get("path"):
+                am = a["aim"]
+                lines.append(f"  - PART OF IT STRAYS: the stretch of the blow meant for {poss(a['defender'])} "
+                             f"{am['aimed'].lower()} catches her {am['landed'].lower()} instead; the rest of it lands "
+                             f"where it was aimed. A small thing inside the blow, not a miss: the "
+                             f"{am['aimed'].lower()} is not touched.")
+            elif a.get("aim"):
                 am = a["aim"]
                 lines.append(f"  - OFF TARGET: {a['attacker']} aims it at {poss(a['defender'])} {am['aimed'].lower()}, "
                              f"but it is a small or hard place to reach and it does not land there: it lands on her "
@@ -7229,7 +7235,7 @@ class Narrator:
                                                         fighter=(dfn_ or "").lower()))
                 if act and a["devastating"].get("reason") != "ground":
                     add(f"{poss(att_)} thought", B.pick("devastating_thought", 1, fighter=(att_ or "").lower()))
-            if a.get("aim") and a.get("hits"):
+            if a.get("aim") and a.get("hits") and not a["aim"].get("path"):
                 side[0] = "take" if take else "act"
                 aimed_, landed_ = str(a["aim"].get("aimed") or ""), str(a["aim"].get("landed") or "")
                 # (it slid onto a part that was already the worse hurt: no "glad of the bad placing", no "the meaty
@@ -7837,6 +7843,8 @@ class Narrator:
                     how = f": {dfn} DODGES it ({a.get('manner') or 'gets out of the way'}), nothing lands"
                 elif (a.get("guard") or {}).get("kind") == "block":
                     how = f": {dfn} BLOCKS it with her {a['guard']['part'].lower()}"
+                elif aim and aim.get("path"):
+                    how = f"; the stretch meant for her {aim['aimed'].lower()} catches her {aim['landed'].lower()} instead"
                 elif aim:
                     how = f", aimed at her {aim['aimed'].lower()}; it lands on her {aim['landed'].lower()} instead"
                 else:
@@ -7950,7 +7958,7 @@ class Narrator:
             add(None, "stagger take")
         elif any((a.get("rocked") or {}).get("where") in ("held", "down") for a in acts):
             add(None, "jolted take")
-        if any(a.get("aim") and a.get("hits") for a in acts):
+        if any(a.get("aim") and a.get("hits") and not a["aim"].get("path") for a in acts):
             add("off target", "off target")
         if (take or both) and getattr(self, "_breaking", None):
             tags.append("breaking point")
@@ -10924,6 +10932,16 @@ class Narrator:
         part.") goes. Only when swearing is off (narration.swearing) for the curse."""
         n = self.rules.get("narration", {}) or {}
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        # a move's TYPE said in the story (the notes' "Show it as the Fighting-type move it is" echoed): a sentence
+        # that only names it goes ("It's a Fighting move."); in a longer one the type word goes ("the fighting type
+        # hit" -> "the hit")
+        types = r"(?:normal|fire|water|grass|electric|ice|fighting|poison|ground|flying|psychic|bug|rock|ghost|dragon|dark|steel|fairy)"
+        text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))[*_]?(?:it'?s|it’s|that'?s|that’s|it was|that was|this was|this is) (?:a|an|her) "
+                      + types + r"(?:[- ]type)? (?:move|attack|hit|blow)[.!…]?[*_]?(?:[ \t]+|$)", r"\1", text)
+        text = re.sub(r"(?i)\b(a|an) " + types + r"[- ]type (move|attack|hit|blow|strike)",
+                      lambda m: ("an " if m.group(2)[0] in "aeiouAEIOU" else "a ") + m.group(2), text)
+        text = re.sub(r"(?i)\b" + types + r"[- ]type (move|attack|hit|blow|strike)", r"\1", text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
         # the notes' own wording for a glimpse of the place, copied in ("...was background only: it touched no one
         # and changed nothing"): the glimpse stays, the instruction goes
         text = re.sub(r"(?i)\s*(?:,|;|:|—)?\s*((?:was|is) )?(?:in the )?background only(?::\s*it touche[sd] no one and "
@@ -11460,8 +11478,9 @@ class Narrator:
                 + f"her face and what is in it (satisfaction, cold attention, eagerness, wariness, tiredness), where "
                 f"{poss(by)} eyes go on {poss(v)} body and what that says she means to do next; and what each sign "
                 f"tells {v}: what still hurts {by}, where she is open, how much {by} has left, whether she can be "
-                f"beaten. Between looks she checks her OWN body: a glance down at her {part.lower()}, the tremor in "
-                f"her limbs, whether what hurts will still carry her, comparing what she has left with what {by} has. "
+                f"beaten. Between looks, ONE short glance at her OWN body: whether her {part.lower()} will still carry "
+                f"her, set against what {by} has left. Its pain was told above: no new account of how it hurts, and "
+                f"nothing done twice (one tail lash, one shift of weight). Most of this part is {by}, seen. "
                 f"{poss(v)} own hurt stays with her as she watches (her {part.lower()} is {label}, about "
                 f"{strength:.0f}% of her strength left; TRUE TO SIZE). Her thoughts, short and in her own voice "
                 f"(fear, fury, calculation, stubbornness, grudging respect). No attack begins. " + stays)})
