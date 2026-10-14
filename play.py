@@ -28,7 +28,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-13 build 186 (a director throw on a flyer still in the air lets her catch herself on her wings; a beat driven into the ground no longer hits the part just struck twice; a move she cannot afford is swapped for one she can instead of a pause beat; stray THE END lines, memories of past fights and blood claims in the direction are cut; one horn stays one horn)"
+VERSION = "2026-10-14 build 187 (in a part told from both sides, a name that is only an owner or an object no longer takes over who \"her\" is, so another fighter's feathers or beak on her are caught; favoring or limping on a limb that was never hurt is caught; her coat called wet when nothing has wet her is caught)"
 
 HELP = """
 =============================================================================================

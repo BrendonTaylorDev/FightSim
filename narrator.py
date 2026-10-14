@@ -628,6 +628,15 @@ GETUP_RETRY = re.compile(r"\b(third time|second (?:time|try|attempt)|(?:try|trie
 
 
 # words that make a sentence about a body part an INJURY (checked against parts that have no damage at all)
+# her coat called wet ("her fur still damp", "water dripping from her feathers"), for a check against what wet her
+WET_COAT = re.compile(r"\b(?:her|its)\s+(?:\w+\s+)?(?:fur|feathers|plumage|coat|pelt|scales|ruff|mane|hide)\b"
+                      r"(?:\s+\w+){0,4}?\s+(?:still\s+)?(?:wet|damp|soaked|sodden|drenched|dripping|soggy|moist)\b|"
+                      r"\b(?:wet|damp|soaked|sodden|drenched|dripping|soggy)\s+(?:\w+\s+)?(?:fur|feathers|plumage|coat|pelt)\b|"
+                      r"\b(?:residual |the )?moisture from\b|\bwater (?:dripp|stream|runn)\w* (?:from|off|down) her\b", re.I)
+
+# a hurt shown by how she carries it ("favoring her left foreleg", "limping on it", "nursing her wing")
+FAVORED = re.compile(r"\b(?:favou?r(?:ed|ing|s)?|limp(?:ed|ing|s)?(?: on)?|nurs(?:ed|ing|es)|kept (?:her |the )?weight off|"
+                     r"keeping (?:her |the )?weight off|holding up)\b", re.I)
 WOUND = re.compile(r"\b(wounds?(?! (?:tight\w*|round|around|about|up|down|in|into|through|itself|themselves|"
                    r"her|his|its|their|back|once|twice|them|it|closer|close|together)\b)|gash\w*|cuts?(?! (?:off|short|out)\b)|scratch(?:es|ed)?|claw marks|grazed?|bleed\w*|"
                    r"blood(?:ied|y)?(?! (?:beat|beating|pound\w+|roar\w+|rush\w+|hammer\w+|thudd\w+|sang|singing|drain\w+|"
@@ -709,8 +718,13 @@ def _who_said(text, names, aliases=None, leads=None):
                 subj = named[0]
             last = subj or (last if last in names else side)
             out.append((sent, named, True))
+        elif named and last in names and last not in named and _object_only(sent, named, aliases):
+            # no side to keep to (a part told from both sides), but the same holds: "Her gaze flicked to Glacia's
+            # face" is still about the one "she" has been, and so is the "her feathers" after it
+            out.append((sent, [last], False))
         elif named:
-            last = named[0] if len(named) == 1 else None
+            # (both named: a following "she" carries on from the subject of its last clause, if it has one)
+            last = named[0] if len(named) == 1 else _subject(sent, names, aliases, last=True)
             out.append((sent, named, True))
         else:
             out.append((sent, [last] if last else [], False))
@@ -8598,6 +8612,18 @@ class Narrator:
             if hit:
                 add(sent, f"{w} has no {hit[0].lower()} (\"{hit[1]}\"): she has "
                           + ", ".join(sorted(self._feats_of(w)))[:90] + "; use her own body")
+        # "her fur still damp from Glacia's attacks" when nothing has wet her (no water hit her, no rain): her coat is
+        # dry. (Sweat is her own, and a lake or a stream she stood in may well have wet her: those are left alone)
+        wet = (set(getattr(self, "soaked_now", None) or ()) | set(getattr(self, "soaked_before", None) or ())
+               | set(getattr(self, "water_types", None) or ()))
+        if not getattr(self, "rain_wet", None) and not getattr(self, "_wet_beat", False):
+            for sent, whos, named in self._said(text):
+                if len(whos) != 1 or whos[0] in wet:
+                    continue
+                m = WET_COAT.search(re.sub(r"\b(?:damp|wet|slick|slicked|beaded) with sweat\b", "", sent, flags=re.I))
+                if m and not re.search(r"\b(?:dry|lake|shallows|stream|river|pool|puddle|pond|waves?|creek|surf|"
+                                       r"tide|mud|dew|sea|swamp|marsh|bog)\b", sent, re.I):
+                    add(sent, f"{whos[0]} is wet (\"{m.group(0)}\"), but nothing has wet her: her coat is DRY")
         # on her feet from the first moment of the beat to the last, never knocked off them, and no get-up of her own:
         # yet the passage has her lying there or hauling herself up (another fighter's get-up handed to her)
         down_now = set(self.on_ground) | set(getattr(self, "_landed", set()) or ()) | set(getattr(self, "_slammed", set()) or ())
@@ -8837,6 +8863,10 @@ class Narrator:
             if w and MISSED_HER.search(sent):
                 w = None   # "the blade hissed past her ear and cut nothing but air": it says it missed
             part = self._untouched_part(whos[0], sent) if w else None
+            fav = FAVORED.search(sent) if not part else None
+            if fav:
+                # "Nocturne favored her left foreleg" when it is her right ribs that hurt: the part right after it
+                w, part = fav, self._untouched_part(whos[0], sent[fav.start():fav.end() + 40])
             if part:
                 # "Under the left one the cut thigh had stopped jumping", told from the pinner's side: the thigh is
                 # the one UNDER her paw, the pinned fighter's, and that one is hurt
@@ -8853,7 +8883,8 @@ class Narrator:
                     "elbow": ("upper arm", "forearm", "upper foreleg", "lower foreleg"), "shin": ("lower leg", "hock", "knee"),
                     "heel": ("foot", "hind paw", "hock"), "forehead": ("head",), "brow": ("head",), "temple": ("head",),
                     "collarbone": ("shoulder",), "spine": ("back", "upper back", "lower back"), "belly": ("stomach", "belly"),
-                    "gut": ("stomach", "belly"), "toes": ("foot", "hind paw", "talon")}
+                    "gut": ("stomach", "belly"), "toes": ("foot", "hind paw", "talon"),
+                    "foreleg": ("upper foreleg", "lower foreleg"), "hind leg": ("thigh", "hock", "lower leg")}
 
     # a plain word for what hurt her, and what it can have been in the engine's record of the part
     _CAUSE_WORDS = {"kick": ("kick", r"kick|stomp|foot|feet|heel|hind"), "kicks": ("kick", r"kick|stomp|foot|feet|heel|hind"),
@@ -8939,12 +8970,12 @@ class Narrator:
                 return named[0]
         for word, homes in self.BODY_ALIASES.items():
             m = re.search(r"\b(?:(left|right) )?" + re.escape(word) + r"s?\b", low)
-            if not m or any(re.search(r"\b" + re.escape(word) + r"s?\b", p) for p in dmg):
+            if not m or word in groups:
                 continue    # (a body that really has a part by that name is handled above)
-            home = next((h for h in homes if h in groups), None)
-            if not home:
+            # (every part the word can mean on her: "her left foreleg" is untouched only if both halves of it are)
+            items = [x for h in homes if h in groups for x in groups[h]]
+            if not items:
                 continue
-            items = groups[home]
             named = [p for p, _ in items if m.group(1) and p.startswith(m.group(1))] or [p for p, _ in items]
             if all(dmg[p] <= 0 for p in named):
                 self._untouched_word = word

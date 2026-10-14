@@ -1,6 +1,6 @@
 # Work in progress (kept in the repo so nothing is lost if a session stops)
 
-Last updated: 2026-10-13, build 186 on branch `claude/kind-bell-r5ehx4`.
+Last updated: 2026-10-14, build 187 on branch `claude/kind-bell-r5ehx4`.
 
 ## Running now
 Nothing. Sweep 2 (engine, body2, ideas2) was merged into build 184.
@@ -26,8 +26,10 @@ Nothing. Sweep 2 (engine, body2, ideas2) was merged into build 184.
    - "her horns" becomes "horn" when nobody has two.
    Still open:
    - speed (notes grow to 49k characters; up to 10 minutes a beat);
-   - species names in prose ("the Absol"): asked the user;
-   - invented facts and body slips in "Both" parts.
+   - species names in prose: the user says they're fine.
+7. (Build 187) Body slips in "Both" parts: "her" now follows the subject, not an owner name. Invented facts: favoring a
+   never-hurt limb, and a coat called wet when nothing wet her, are now caught.
+8. Merged builds 186-187 into `claude/kind-bell-r5ehx4-shorter-notes` (the compact-notes trial) for the user's speed test.
 
 ## Done in this stretch (builds 177-179 and after)
 - Hit reactions weigh the hurt part as well as overall strength. A strong fighter with a ruined part gets a half-hidden reaction, a capped voice, and only concealed ideas.
