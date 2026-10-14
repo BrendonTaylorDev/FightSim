@@ -1,0 +1,42 @@
+# Stock phrases the story should not lean on (narration.phrase_memory). One per line: the phrase as it is shown to
+# the narrator, then optionally " | " and a regular expression that catches all its forms. Lines starting with #
+# are notes. Add your own; a phrase used often is rested for a while, then allowed back (phrase_memory.json keeps
+# the running totals between fights and runs).
+a stark contrast | \ba stark contrast\b
+a testament to | \ba testament to\b
+coursing through her | \bcours(?:e|es|ed|ing) through (?:her|him|them|its)\b
+sent a jolt through | \bsen(?:t|ds|ding) (?:a )?(?:jolt|shiver|shockwave|shock wave|ripple|spike) (?:of \w+ )?(?:through|up|down)\b
+a wave of pain | \ba wave of (?:pain|nausea|relief|exhaustion|agony|heat|cold|dizziness)\b
+every fibre of her being | \bevery fib(?:er|re) of (?:her|his|their) being\b
+muscles straining | \b(?:her )?muscles (?:strain(?:ed|ing)?|bunch(?:ed|ing)?|coil(?:ed|ing)?|tens(?:ed|ing))\b
+the world narrowed | \b(?:the )?world (?:seemed to )?narrow(?:ed|ing|s)?\b
+a mix of | \ba mix(?:ture)? of\b
+it was as if | \bit was as (?:if|though)\b
+time seemed to slow | \btime (?:seemed to )?(?:slow(?:ed)?|stop(?:ped)?|st(?:ood|and) still)\b
+her heart pounded | \b(?:her )?heart (?:pound(?:ed|ing)|hammer(?:ed|ing)|rac(?:ed|ing)|thunder(?:ed|ing))\b
+breath came in ragged gasps | \bbreath came in (?:short|ragged|sharp|shallow|quick|harsh)\b
+a flicker of | \ba flicker of\b
+a low growl rumbled | \ba low growl rumbl(?:ed|ing|es)\b
+eyes locked on | \b(?:eyes|gaze) (?:locked|fixed|narrowed) (?:on|onto|upon)\b
+an ache that radiated | \b(?:ache|pain|heat|throb) (?:that )?radiat(?:ed|ing|es) (?:out|outward|through|from|up|down)\b
+renewed determination | \b(?:renewed|newfound|grim|fierce|steely) (?:determination|resolve|vigou?r)\b
+a surge of adrenaline | \ba surge of (?:adrenaline|energy|pride|determination|anger|strength)\b
+the air crackled with tension | \b(?:the )?air (?:crackled|was thick|hung heavy|grew thick) with\b
+far from over | \b(?:this|it) (?:was|is) far from over\b
+relentless | \brelentless(?:ly)?\b
+unyielding | \bunyielding\b
+a sharp intake of breath | \ba (?:sharp|quick|ragged) intake of breath\b
+the sound echoed through the clearing | \b(?:echo(?:ed|ing|es)|reverberat(?:ed|ing)) (?:through|across|around) the\b
+a reminder of | \ba (?:constant |painful |stark |harsh |sharp )?reminder of\b
+pushed the pain aside | \bpush(?:ed|ing)? (?:the pain|it) (?:aside|away|down)\b
+gritted her teeth | \bgr(?:i|itt)(?:t|tt)?ed (?:her|his) teeth\b
+a primal sound | \bprimal\b
+the pain was a living thing | \b(?:pain|ache) (?:was|became) a living thing\b
+her vision swam | \bvision (?:swam|blurred|tunnell?ed)\b
+a dance of | \ba (?:deadly |brutal |violent )?dance of\b
+in a blur of motion | \bin a blur of (?:motion|movement|fur|feathers|scales|speed)\b
+with every fibre | \bwith every (?:ounce|fib(?:er|re)) of\b
+she had to keep going | \b(?:had|needed) to keep (?:going|fighting|moving)\b
+a guttural sound | \bguttural\b
+sending a ripple | \bsending (?:a )?(?:ripple|shiver|tremor|wave)s? (?:of \w+ )?(?:through|across|along|up|down)\b
+the clearing fell silent | \b(?:clearing|world|arena|air|forest) (?:fell|went|grew) (?:silent|still|quiet)\b

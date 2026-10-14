@@ -3543,9 +3543,13 @@ class Narrator:
                          + ("" if any(_mentions_exact(part.lower(), b) for b in (getattr(self, "breakable", None) or []))
                             else " (this part can't break yet)") + ".")
         worn = self.worn_phrases()
-        if worn:
-            lines.append("WORN OUT in this fight (each of these has been written in several beats already: don't use them "
-                         "again, find fresh words for the moment): " + "; ".join(f"\"{x}\"" for x in worn) + ".")
+        pm = self._phrase_mem()
+        rested = [x for x in (pm.rested(seed=f"rest{pm.clock}") if pm else []) if x not in worn]
+        if worn or rested:
+            # (only ever phrases to leave alone: nothing here is offered for use, so none of them gets pushed)
+            lines.append("RESTED FOR NOW (each of these has been written recently, in this fight or the ones before: "
+                         "leave them alone this beat and find fresh words for the moment; they come back later): "
+                         + "; ".join(f"\"{x}\"" for x in list(dict.fromkeys(worn + rested))[:12]) + ".")
         if self.recent_lines:
             lines.append("ALREADY SAID in recent beats (do NOT reuse or echo these thoughts, lines, or sounds; write new "
                          "ones): " + "; ".join(f"\"{x}\"" for x in list(dict.fromkeys(self.recent_lines))[-14:]) + ".")
@@ -10688,8 +10692,19 @@ class Narrator:
         self.recent_reactions = (self.recent_reactions + [reactions_used(text)])[-3:]
         self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         self._note_worn(text)
+        if self._phrase_mem() is not None:
+            # the stock phrases this beat used, counted for good (phrase_memory.json); the fight's worn runs are learned
+            self._phrase_mem().note_beat(text, self.worn_phrases(20))
         self._beat_no += 1
         return self.pov_labels(text)
+
+    def _phrase_mem(self):
+        """The stock-phrase memory kept across fights and runs (narration.phrase_memory), or None when it is off."""
+        if "_pm" not in self.__dict__:
+            import phrases
+            pm = phrases.PhraseMemory(self.rules)
+            self._pm = pm if pm.enabled else None
+        return self._pm
 
     def _last_scrub(self, text):
         """What the rewrites let through, mended without another call: a stock "a symphony of pain" says "pain"; a short
