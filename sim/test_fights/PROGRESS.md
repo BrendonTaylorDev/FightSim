@@ -31,6 +31,14 @@ Nothing. Sweep 2 (engine, body2, ideas2) was merged into build 184.
    never-hurt limb, and a coat called wet when nothing wet her, are now caught.
 8. Merged builds 186-187 into `claude/kind-bell-r5ehx4-shorter-notes` (the compact-notes trial) for the user's speed test.
 
+9. Branch `claude/kind-bell-r5ehx4-anchors` (build 187-guided): the shorter-notes trial plus suggestions 1-4,
+   all under rules.json narration.guided (each switchable):
+   - fact lines and a paragraph plan in the part where the blows land; a missing blow gets its fact line put back
+     (no rewrite);
+   - VISIBLE WEAR says when each mark was made, and "no cuts and no blood anywhere" for a fighter only struck blunt;
+   - dice-rolled tactical reads for the attacker (read_chance 0.45, read_gap 2).
+   Waiting for the user's test. Suggestion 5 (spend the words where the beat matters: short quiet beats) is next.
+
 ## Done in this stretch (builds 177-179 and after)
 - Hit reactions weigh the hurt part as well as overall strength. A strong fighter with a ruined part gets a half-hidden reaction, a capped voice, and only concealed ideas.
 - Flight:

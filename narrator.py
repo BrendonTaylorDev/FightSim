@@ -7614,6 +7614,10 @@ class Narrator:
                 if k in kinds:
                     if noun == "claws" and "talons" in feats and "claws" not in feats:
                         noun = "talons"
+                    bans = story_blocks.body_bans(feats) if feats else None
+                    if bans is not None and bans.search(f"her {noun}"):
+                        # a body without it (no fist on four legs): what she really hits with
+                        noun = "forepaw" if noun == "fist" and "forelegs" in feats else "blow"
                     el = self._ELEMENT.get(str(mv.get("type") or ""), "")
                     if noun == "rush" and el and el not in ("steel", "stones", "earth"):
                         return f"{poss(att)} rush, wrapped in {el}"   # (an Aqua Jet, a Flame Charge, a Wild Charge)
@@ -7631,14 +7635,16 @@ class Narrator:
         weapon = self._fact_weapon(a)
         noun = weapon.split()[-1]
         verb = ({"jaws": ("nipped", "bit into", "bit deep into", "bit down hard on"),
-                 "claws": ("scraped", "raked", "raked hard across", "tore across"),
-                 "talons": ("scraped", "raked", "raked hard across", "tore across")}.get(noun)
+                 "claws": ("scraped", "raked", "raked hard across", "raked deep across"),
+                 "talons": ("scraped", "raked", "raked hard across", "raked deep across")}.get(noun)
                 or ("grazed", "struck", "slammed into", "smashed into"))[["glancing", "solid", "heavy", "tremendous"].index(size)]
+        both = lambda xs: ", ".join(xs[:-1]) + " and " + xs[-1] if len(xs) > 1 else xs[0]
+        on = [str(h["part"]).lower() for h in jarred if not h.get("jarred")]
+        js = [str(h["part"]).lower() for h in jarred if h.get("jarred")]
         line = (f"{weapon[0].upper() + weapon[1:]}{',' if ',' in weapon else ''} {verb} {poss(dfn)} "
-                f"{str(main['part']).lower()}")
-        if jarred:
-            js = [str(h["part"]).lower() for h in jarred]
-            line += f", and the force of it jarred her {', '.join(js[:-1]) + ' and ' + js[-1] if len(js) > 1 else js[0]}"
+                f"{both([str(main['part']).lower()] + on)}")
+        if js:
+            line += f", and the force of it jarred her {both(js)}"
         return line + "."
 
     def _paragraph_plan(self, key, acts, actor=None, receivers=()):
@@ -7663,20 +7669,27 @@ class Narrator:
                         f"worst at her {', '.join(worst[:-1])} and {worst[-1]}.")
                 groups.append((worst, line))
                 continue
-            blows = []          # [main hit, the hits it jarred]
-            for h in hs:
-                if h.get("jarred") and blows:
-                    blows[-1][1].append(h)
-                else:
-                    blows.append([h, []])
-            groups += [([str(x["part"]).lower() for x in [m] + js], self._fact_line(a, m, js)) for m, js in blows]
+            names = [str(h["part"]).lower() for h in hs]
+            if a.get("pummel") or len(set(names)) < len(names):
+                # separate blows (a pummel, a flurry that comes back to the same place): a paragraph each
+                blows = []          # [main hit, the hits it jarred]
+                for h in hs:
+                    if h.get("jarred") and blows:
+                        blows[-1][1].append(h)
+                    else:
+                        blows.append([h, []])
+                groups += [([str(x["part"]).lower() for x in [m] + js], self._fact_line(a, m, js)) for m, js in blows]
+            else:
+                # one blow: a rake across several parts, a spread, a hit and what it jars, told as one
+                main = [h for h in hs if not h.get("jarred")] or hs[:1]
+                groups.append((names, self._fact_line(a, main[0], [h for h in hs if h is not main[0]])))
         if not groups:
             return ""
         if len(groups) > cap:
             rest = groups[cap - 1:]
             parts = [p for ps, _ in rest for p in ps]
             groups = groups[:cap - 1] + [(parts, " ".join(line for _, line in rest))]
-        self._fact_lines = list(groups)
+        self._fact_lines, self._fact_key = list(groups), key
         if not self._guided("paragraph_plan"):
             return ""
         rows = [f" {i}. FACT: {line} THEN: how it lands on her (her reaction as listed for that hit), and nothing "
@@ -7700,7 +7713,8 @@ class Narrator:
             seen = (prior + "\n" + "\n".join(paras)).lower()
             if _mentions(seen, parts[0]):
                 continue
-            at = 0
+            # (a part that picks up at contact opens on the blow; a beat told in one part has its wind-up first)
+            at = 1 if getattr(self, "_fact_key", "") == "all" and len(paras) > 1 else 0
             for prev_parts, _ in reversed(self._fact_lines[:i]):
                 hit = [k for k, x in enumerate(paras) if _mentions(x.lower(), prev_parts[0])]
                 if hit:
