@@ -1834,6 +1834,10 @@ NOTE_VERB = re.compile(r"\b(?:\w+(?:ed|ing)|is|was|were|are|am|be|been|had|has|h
                        r"left|stood|sat|lay|bit|tore|spun|swung|gave|found|knew|thought|said|could|would|should|will|"
                        r"can|must|might|shot|burst|split|hurt|sank|sprang|slid|flew|spread|dug|clung|stung|swept)\b", re.I)
 
+# a part held: something closes on it and stays ("her twin tails wrapped round the sickle tail and locked")
+GRIPPED = re.compile(r"\b(?:wrap\w*|coil\w*|lock\w*|bound|bind\w*|clamp\w*|grip\w*|seiz\w*|wound|twin(?:ed|ing)|"
+                     r"trap\w*|clench\w*|held|hold\w*|clos(?:ed|ing) (?:on|round|around|over)|cinch\w*|squeez\w*)\b", re.I)
+
 # a sentence that runs straight into another one ("The third was The fur ruffled the wrong way")
 SPLICED = re.compile(r"\b(?:was|were|is|are|of|to|the|her|his|its|a|an)\s+(?:The|Her|His|She|It|A|An)\s+[a-z]+\b")
 
@@ -7725,6 +7729,17 @@ class Narrator:
         cap = max(1, int(g.get("max_paragraphs", 5)))
         groups = []
         for a in acts:
+            if a.get("type") in ("hold_start", "grapple_start") and a.get("parts") and a.get("attacker") \
+                    and not all(p.get("existing") for p in a["parts"]):
+                # a grip taken this beat: a step of its own, and put back if the draft never shows it closing
+                dfn_, att_ = str(a.get("defender") or ""), str(a["attacker"])
+                for p_ in a["parts"][:2]:
+                    part_, with_ = str(p_.get("part") or "").lower(), str(p_.get("with") or "").strip()
+                    with_ = re.sub(r"^her ", "", with_) or "grip"
+                    groups.append(([f"grip:{part_}"], f"{poss(att_)} {with_} → lock onto {poss(dfn_)} {part_} (a hold: "
+                                                      f"still on when the beat ends)",
+                                   f"Then {poss(att_)} {with_} closed on {poss(dfn_)} {part_} and locked there."))
+                continue
             if a.get("type") == "instant" and a.get("dodged") and a.get("attacker") and not a.get("environment"):
                 # an attack that never landed is still a step in its place: the story mustn't lose it
                 d_ = str(a.get("defender") or "")
@@ -7791,17 +7806,25 @@ class Narrator:
             if not parts:
                 continue        # (a dodge: nothing landed, so there is nothing to put back)
             seen = (prior + "\n" + "\n".join(paras)).lower()
-            if _mentions(seen, parts[0]):
+            if parts[0].startswith("grip:"):
+                # a hold is shown when a sentence has the part GRIPPED (her tail named is not enough: it lashes too)
+                key = parts[0][5:].split()[-1]
+                if any(GRIPPED.search(x) and re.search(r"\b" + re.escape(key) + r"s?\b", x)
+                       for x in re.split(r"(?<=[.!?…])\s+|\n+", seen)):
+                    continue
+            elif _mentions(seen, parts[0]):
                 continue
             # (a part that picks up at contact opens on the blow; a beat told in one part has its wind-up first)
             at = 1 if getattr(self, "_fact_key", "") == "all" and len(paras) > 1 else 0
             for prev_parts, _n, _l in reversed(self._fact_lines[:i]):
                 if not prev_parts:
                     continue
-                hit = [k for k, x in enumerate(paras) if _mentions(x.lower(), prev_parts[0])]
+                hit = [k for k, x in enumerate(paras) if _mentions(x.lower(), prev_parts[0].replace("grip:", ""))]
                 if hit:
                     at = hit[0] + 1
                     break
+            if parts[0].startswith("grip:"):
+                at = len(paras)     # (a grip taken this beat closes after what came before it: the landing, the fall)
             paras.insert(at, line)
             self.__dict__.setdefault("_facts_put", []).append((set(parts), line))
             added = True
