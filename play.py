@@ -376,6 +376,8 @@ HELP = """
                             health, and every body part's damage and resistance, as a page for your browser
   /settings             what you changed with commands (kept in my_settings.json; a new build doesn't reset it)
   /settings forget      drop them, so the next build's defaults apply
+  /phrases              the stock phrases the story has used, with running totals (kept between fights and runs);
+                        a recently used one is rested for a while, then allowed back. /phrases forget starts over
   /save [file]   /load [file]   (every beat autosaves: /load autosave)
   /help   /quit
 """
@@ -2949,6 +2951,24 @@ def handle_command(s, line):
         print("Settings you changed with commands (kept in my_settings.json; a new build doesn't touch them):\n"
               + ("\n".join(rows) if rows else "  (none yet)")
               + "\n/settings forget   drops them, so the next build's defaults apply"); return
+    if cmd in ("phrases", "stock"):
+        pm = s.narrator._phrase_mem() if hasattr(s.narrator, "_phrase_mem") else None
+        if pm is None:
+            print("The stock-phrase memory is off (/set narration.phrase_memory.enabled true turns it on)."); return
+        if a and a[0].lower() in ("forget", "reset", "clear"):
+            pm.book, pm.clock = {}, 0
+            pm.save()
+            print("Stock-phrase memory cleared: every phrase starts fresh."); return
+        rows = pm.report(int(a[0]) if a and a[0].isdigit() else 20)
+        print(f"Stock phrases the story has used (phrase_memory.json, {pm.clock} beats counted; heat halves every "
+              f"{pm.cfg.get('half_life_beats', 12)} beats, and a warm phrase is rested for a while):")
+        for g, uses, heat, kind in rows:
+            state = ("RESTED" if heat >= float(pm.cfg.get("always_rest", 1.5)) else
+                     "often rested" if heat >= float(pm.cfg.get("rest_from", 0.35)) else "free")
+            print(f"  {g:<40} used {uses:>3}×  heat {heat:4.2f}  {state}{'  (learned)' if kind == 'learned' else ''}")
+        if not rows:
+            print("  (none yet)")
+        print("Add your own to stock_phrases.txt. /phrases forget starts over."); return
     if cmd == "pinpower":
         cfg = s.eng.rules.setdefault("pin", {})
         if not a:
