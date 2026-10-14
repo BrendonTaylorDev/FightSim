@@ -11,3 +11,4 @@ check_counts.json
 images/
 exports/
 .claude/worktrees/
+phrase_memory.json
