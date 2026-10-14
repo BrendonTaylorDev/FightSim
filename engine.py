@@ -4287,6 +4287,7 @@ class Engine:
 
     def roll_sub_windows(self, open_all=False):
         self.sub_window = {}
+        self._sub_open_all = bool(open_all)   # (your direction this beat: a fighter put down during it is open too)
         for f in self.active():
             ch = self.sub_chance(f)
             if ch > 0:
@@ -4341,7 +4342,7 @@ class Engine:
                 raise ValueError(f"{d.name} is pinned: finish the pin or release it before a submission hold")
             if a.name in self.downed or self.pinned_by(a.name) or self.pinning(a.name):
                 raise ValueError(f"{a.name} isn't free to lock a hold on anyone right now")
-            if self.__dict__.get("sub_window", {}).get(d.name) is not True:
+            if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
                 raise ValueError(f"no submission opening on {d.name} this beat (they are very rare). Choose another "
                                  f"action")
         if key not in shapes:
@@ -5573,7 +5574,11 @@ class Engine:
             if reason != "weak_point" or self.rng.random() < 0.5:
                 reason, why = "position", vu[0]
         ch = min(float(cfg.get("max_chance", 0.1)), ch)
-        if not self._chance(ch, f"{poss_word(a.name)} {move['name']} landing devastatingly", "DEVASTATING", "no"):
+        if self.__dict__.get("_force_dev") and not self.__dict__.get("_force_dev_used"):
+            self._force_dev_used = True     # your direction asked for a devastating blow: this one is it
+            self.rolls.append({"what": f"{poss_word(a.name)} {move['name']} landing devastatingly (your direction)",
+                               "chance": 1.0, "roll": 0.0, "ok": True, "result": "DEVASTATING"})
+        elif not self._chance(ch, f"{poss_word(a.name)} {move['name']} landing devastatingly", "DEVASTATING", "no"):
             return None
         lo, hi = cfg.get("mult", [1.7, 2.2])
         mult = round(self.rng.uniform(float(lo), float(hi)), 2)
