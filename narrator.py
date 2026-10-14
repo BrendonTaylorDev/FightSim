@@ -1767,6 +1767,9 @@ GRIP_KEPT = re.compile(r"\b(?:maintain\w* (?:her|its|the) grip|kept (?:her|its|t
                        r"did(?: not|n't) let go|never let go|refus\w+ to let go|tighten\w* (?:her|its|the) grip|"
                        r"(?:her|its|the) grip (?:held|tightened|on (?:her|the) \w+ held))\b", re.I)
 
+# staging only a blow with the hands has (for close blows that are kicks, knees, headbutts or bites)
+HAND_STROKE = re.compile(r"\b(?:wrists?|elbows?|fists?|knuckles?|forearms?)\b", re.I)
+
 # a verb, roughly: what a real sentence has and a list of phrases copied from the notes doesn't
 NOTE_VERB = re.compile(r"\b(?:\w+(?:ed|ing)|is|was|were|are|am|be|been|had|has|have|did|does|do|came|went|ran|hit|took|"
                        r"made|felt|saw|held|got|let|set|cut|put|shook|broke|rose|fell|struck|caught|drove|threw|kept|"
@@ -2138,6 +2141,7 @@ class Narrator:
         self.progress = None  # optional callback: shows "writing part 2/3" while the model works
         self._tiers_used = set()
         self._beat_notes_low = ""    # this beat's notes (every part), for _drop_note_lists
+        self._beat_note_grams = set()   # their wording ten words at a time, for _drop_note_copies
         self._must_parts = []       # body parts this beat's prose has to show being hit (accuracy check)
         self._must_struggle = None  # a pin struggle the prose has to show
         self._time_window = None    # (from, to) seconds of a pin clock this beat covers
@@ -6840,7 +6844,8 @@ class Narrator:
             foe = next((w for w in (self.strengths or {}) if w != who), "")
             eff_ = self._effect_on(who, acts)
             if eff_:
-                self._offer_line(add, f"a finished line for {who}: the {eff_[1]} on a body like hers", "effect_take",
+                self._offer_line(add, f"a finished line for {who}, about the {str(eff_[1]).lower()} going through her",
+                                 "effect_take",
                                  fmt={"part": worst_hit[1].lower(), "foe": by or foe},
                                  exclude=(list(too_big or []) + ([] if self._in_air(who) else [IN_AIR_WORDS])) or None,
                                  effect=eff_[0],
@@ -6982,6 +6987,10 @@ class Narrator:
                              f"{own_flavor(a.get('flavor'))}" for a in acts if a.get("attacker") == who)
             not_move = ([NOT_CHOP] if CHOP.search(said_) else []) + (
                 [BEAM_WORD] if "beam" in kinds and not re.search(r"\b(?:beam|ray|laser|light)", said_, re.I) else [])
+            if close and re.search(r"\b(?:kick\w*|knee\w*|stomp\w*|heel|head-?butt\w*|bit(?:e|es|ing)|fangs?|jaws?)\b",
+                                   said_, re.I):
+                not_move.append(HAND_STROKE)    # blows at no distance with a foot, a knee, a head or teeth: no wrist
+                                                # turned over, no elbow-to-wrist strokes
             # (an old wound to go for only when her blow lands on a part an earlier one had already hurt)
             if not any(self._pain(h.get("damage_before", 0))["label"] != "minor" for a in acts
                        if a.get("attacker") == who for h in a.get("hits") or [] if not h.get("jarred")):
@@ -7005,10 +7014,12 @@ class Narrator:
                 pum_ = any(a.get("attacker") == who and a.get("pummel") for a in acts)
                 add(f"a way {who} might stage it", B.pick("movement", 1, kind=(kinds & {"grab", "close"}) or {"close"},
                                                           need=("kind",), has=feats(who),
-                                                          exclude=None if pum_ else [SEVERAL_BLOWS, CLOSE_RUN]))
+                                                          exclude=(([] if pum_ else [SEVERAL_BLOWS, CLOSE_RUN])
+                                                                   + not_move) or None))
             elif {"grab", "close"} <= kinds:      # a grab and then blows inside it: an idea for each
                 add(f"a way {who} might stage it", B.pick("movement", 1, kind={"grab"}, need=("kind",), has=feats(who))
-                    + B.pick("movement", 1, kind={"close"}, need=("kind",), has=feats(who)))
+                    + B.pick("movement", 1, kind={"close"}, need=("kind",), has=feats(who),
+                             exclude=not_move or None))
             else:
                 # one blow is one blow: no staging ideas that throw two or three ("two fast ones", "three of them")
                 # (a spread thrown close, like Close Combat, is a flurry: several blows are what it is)
@@ -9432,6 +9443,38 @@ class Narrator:
                     f"beats, and there was one just recently. Use other words")
         return None
 
+    def _fit_limbs(self, text):
+        """"Her arm" said of a fighter on four legs, in a sentence about her alone: her foreleg (no rewrite)."""
+        for sent, whos, named in self._said(text):
+            if len(whos) != 1 or not sent:
+                continue
+            f_ = self._feats_of(whos[0])
+            if "forelegs" in f_ and "arms" not in f_:
+                fixed = re.sub(r"\b(her|" + re.escape(whos[0]) + r"(?:'s|’s|'|’)) ((?:left |right |good |hurt |front )?)"
+                               r"arm(s?)\b", r"\1 \2foreleg\3", sent)
+                if fixed != sent:
+                    text = text.replace(sent, fixed, 1)
+        return text
+
+    def _drop_note_copies(self, text):
+        """A sentence that copies the notes' own wording, ten words or more in a row ("The move missed completely
+        and did no damage ... (missing costs her balance or breath, no pain of her own)"): an instruction, not the
+        story, so it goes. A thought or a spoken line is left to the other checks."""
+        grams = getattr(self, "_beat_note_grams", None)
+        if not grams:
+            return text
+        out = []
+        for para in text.split("\n"):
+            keep = []
+            for sent in re.split(r"(?<=[.!?…)])\s+", para):
+                w = re.findall(r"[a-z']+", sent.lower())
+                if len(w) >= 10 and not sent.lstrip().startswith(("*", "\"", "“")) and any(
+                        " ".join(w[i:i + 10]) in grams for i in range(len(w) - 9)):
+                    continue
+                keep.append(sent)
+            out.append(" ".join(keep))
+        return "\n".join(out)
+
     def _drop_note_lists(self, text):
         """A "sentence" that is only a list of phrases lifted from the notes, with no verb ("Fierce jet of water, the
         next breath, the deep water."): notes, not prose, so it goes. Only when most of its pieces really are in this
@@ -9458,6 +9501,10 @@ class Narrator:
         repeat those, so they never count as lines copied from earlier."""
         notes = str(user_msg or "")
         self._beat_notes_low = (getattr(self, "_beat_notes_low", "") + "\n" + notes.lower())[-200000:]
+        # the notes' own wording, ten words at a time (not the story or the style samples quoted in them, <<< >>>)
+        bare = re.findall(r"[a-z']+", re.sub(r"<<<.*?>>>", " ", notes, flags=re.S).lower())
+        grams = self.__dict__.setdefault("_beat_note_grams", set())
+        grams.update(" ".join(bare[i:i + 10]) for i in range(len(bare) - 9))
         snip = getattr(self, "_story_snip", "") or ""
         if snip:
             notes = notes.replace(snip, " ")
@@ -10721,7 +10768,7 @@ class Narrator:
         text = _balance_marks(text)  # cuts above can split a thought: re-pair its marks
         text = _italic_sounds(text)  # "she hissed, hss, and..." -> "*hss*": the sound shown (and coloured) as a sound
         text = _drop_hanging_leadins(text)
-        text = self._drop_note_lists(self._last_scrub(text))
+        text = self._fit_limbs(self._drop_note_copies(self._drop_note_lists(self._last_scrub(text))))
         text = _mend_orphans(text)
         # "slammed into the wall—grunt—and the muscles spasmed": a reaction word from the notes left as a stage direction
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
