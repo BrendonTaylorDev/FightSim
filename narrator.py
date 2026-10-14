@@ -3130,7 +3130,8 @@ class Narrator:
         self._ongoing = any(e["type"] in ("pin_progress", "hold_ongoing") for e in bundle.get("also_this_beat", []))
         self._tiers_used = set()
         self._must_parts = []
-        self._fact_lines = []        # (parts it lands on, the program's sentence for it): narration.guided.fact_lines
+        self._fact_lines = []        # (parts it lands on, its facts in note form, a sentence for it): narration.guided
+        self._facts_put = []         # (parts, sentence) put back into a draft that left the blow out
         self._must_struggle = None
         self._must_block = None      # (a block is this beat's own: set again below only when one happens now)
         self._struggle_kind = None
@@ -7629,28 +7630,38 @@ class Narrator:
         return f"{poss(att)} {el or 'blast'}".strip()
 
     def _fact_line(self, a, main, jarred):
-        """The program's own sentence for one blow: who, with what, which part (and side), how hard."""
+        """One blow as the program knows it: (a note of the facts for the plan, a sentence for it). The note is no
+        prose at all, so the story tells it its own way; the sentence is only for putting a left-out blow back, and
+        the dice pick its shape, so no two read alike (each names what struck her, so the attack counts as told)."""
         dfn = main.get("defender") or a.get("defender")
         size = self._hit_size(main)
         weapon = self._fact_weapon(a)
         noun = weapon.split()[-1]
+        k = ["glancing", "solid", "heavy", "tremendous"].index(size)
         verb = ({"jaws": ("nipped", "bit into", "bit deep into", "bit down hard on"),
                  "claws": ("scraped", "raked", "raked hard across", "raked deep across"),
                  "talons": ("scraped", "raked", "raked hard across", "raked deep across")}.get(noun)
-                or ("grazed", "struck", "slammed into", "smashed into"))[["glancing", "solid", "heavy", "tremendous"].index(size)]
+                or ("grazed", "struck", "slammed into", "smashed into"))[k]
         both = lambda xs: ", ".join(xs[:-1]) + " and " + xs[-1] if len(xs) > 1 else xs[0]
         on = [str(h["part"]).lower() for h in jarred if not h.get("jarred")]
         js = [str(h["part"]).lower() for h in jarred if h.get("jarred")]
-        line = (f"{weapon[0].upper() + weapon[1:]}{',' if ',' in weapon else ''} {verb} {poss(dfn)} "
-                f"{both([str(main['part']).lower()] + on)}")
-        if js:
-            line += f", and the force of it jarred her {both(js)}"
-        return line + "."
+        where = both([str(main["part"]).lower()] + on)
+        note = (f"{weapon} → {poss(dfn)} {where} ({['a glancing', 'a solid', 'a heavy', 'a tremendous'][k]} blow)"
+                + (f"; jarred with it: her {both(js)}" if js else ""))
+        bare = weapon.split("'s ", 1)[-1].split("' ", 1)[-1].split(",")[0]       # "rush", "jaws", "water"
+        jar = f", the force of it jarring her {both(js)}" if js else ""
+        rng = random.Random(f"fact{self._beat_no}{dfn}{where}{id(self)}")
+        shapes = [f"{weapon[0].upper() + weapon[1:]}{',' if ',' in weapon else ''} {verb} {poss(dfn)} {where}{jar}.",
+                  f"{weapon[0].upper() + weapon[1:]}{',' if ',' in weapon else ''} caught {dfn} "
+                  f"{'glancingly ' if k == 0 else 'hard ' if k >= 2 else ''}on the {where}{jar}.",
+                  f"The {bare} found {poss(dfn)} {where}{jar}."]
+        return note, rng.choice(shapes)
 
     def _paragraph_plan(self, key, acts, actor=None, receivers=()):
         """narration.guided: in the part where the blows land, a PARAGRAPH PLAN: one paragraph per blow (the parts it
-        jars go with it), each opening on the program's fact line for it, and its reaction after. The fact lines are
-        kept so a draft that leaves a blow out gets its line put back (_insert_facts) instead of a whole rewrite."""
+        jars go with it), each given as the facts of it in note form (never wording to copy: the story tells it its
+        own way), and its reaction after. A sentence for each is kept so a draft that leaves a blow out gets it put
+        back (_insert_facts) instead of a whole rewrite."""
         if key not in ("take", "all") or not (self._guided("paragraph_plan") or self._guided("fact_lines")):
             return ""
         g = (self.rules.get("narration", {}) or {}).get("guided") or {}
@@ -7665,9 +7676,10 @@ class Narrator:
                 top = sorted(hs, key=lambda h: -float(h.get("damage_taken") or 0))
                 worst = list(dict.fromkeys(str(h["part"]).lower() for h in top))[:3]
                 dfn = top[0].get("defender") or a.get("defender")
-                line = (f"{self._fact_weapon(a)[0].upper() + self._fact_weapon(a)[1:]} caught all of {dfn} at once, "
-                        f"worst at her {', '.join(worst[:-1])} and {worst[-1]}.")
-                groups.append((worst, line))
+                w_ = self._fact_weapon(a)
+                groups.append((worst, f"{w_} → all of {dfn} at once, worst at her {', '.join(worst[:-1])} and "
+                                      f"{worst[-1]}", f"{w_[0].upper() + w_[1:]} caught all of {dfn} at once, worst "
+                                                      f"at her {', '.join(worst[:-1])} and {worst[-1]}."))
                 continue
             names = [str(h["part"]).lower() for h in hs]
             if a.get("pummel") or len(set(names)) < len(names):
@@ -7678,29 +7690,28 @@ class Narrator:
                         blows[-1][1].append(h)
                     else:
                         blows.append([h, []])
-                groups += [([str(x["part"]).lower() for x in [m] + js], self._fact_line(a, m, js)) for m, js in blows]
+                groups += [([str(x["part"]).lower() for x in [m] + js], *self._fact_line(a, m, js)) for m, js in blows]
             else:
                 # one blow: a rake across several parts, a spread, a hit and what it jars, told as one
                 main = [h for h in hs if not h.get("jarred")] or hs[:1]
-                groups.append((names, self._fact_line(a, main[0], [h for h in hs if h is not main[0]])))
+                groups.append((names, *self._fact_line(a, main[0], [h for h in hs if h is not main[0]])))
         if not groups:
             return ""
         if len(groups) > cap:
             rest = groups[cap - 1:]
-            parts = [p for ps, _ in rest for p in ps]
-            groups = groups[:cap - 1] + [(parts, " ".join(line for _, line in rest))]
+            parts = [p for ps, _, _ in rest for p in ps]
+            groups = groups[:cap - 1] + [(parts, "; then ".join(n_ for _, n_, _ in rest), " ".join(x for _, _, x in rest))]
         self._fact_lines, self._fact_key = list(groups), key
         if not self._guided("paragraph_plan"):
             return ""
-        rows = [f" {i}. FACT: {line} THEN: how it lands on her (her reaction as listed for that hit), and nothing "
-                f"from the next blow yet." for i, (_, line) in enumerate(groups, 1)]
+        rows = [f" {i}. {note_}." for i, (_, note_, _) in enumerate(groups, 1)]
         rows.append(f" {len(groups) + 1}. Whatever else is listed for this part (a landing, a fall, a status, a "
                     f"get-up), in its order, and how she is left.")
-        return ("\n\nPARAGRAPH PLAN for this part (the program's; one paragraph for each step, in this order). Each "
-                "blow's paragraph OPENS on its fact line: put it in your own words if you like, but keep exactly who "
-                "did it, with what, to which part and which side, and how hard. The rest of that paragraph is how it "
-                "lands on her. The building blocks and the moment around it fill the paragraphs out; they never "
-                "change these facts.\n" + "\n".join(rows))
+        return ("\n\nPARAGRAPH PLAN for this part (the program's): one paragraph for each step, in this order. These "
+                "are FACTS, not wording: tell each blow your own way, as TELLING THE HURT asks (the sound before the "
+                "feel, the part only placed on her, the reaction first: whatever fits), but who did it, with what, to "
+                "which part and which side, and how hard stay exactly as given. The reaction listed for each hit is "
+                "the rest of its paragraph.\n" + "\n".join(rows))
 
     def _insert_facts(self, text, prior=""):
         """A draft that left a blow out: its fact line goes in where the plan puts it (after the paragraph with the
@@ -7709,18 +7720,19 @@ class Narrator:
             return text
         paras = [x for x in text.split("\n") if x.strip()]
         added = False
-        for i, (parts, line) in enumerate(self._fact_lines):
+        for i, (parts, _note, line) in enumerate(self._fact_lines):
             seen = (prior + "\n" + "\n".join(paras)).lower()
             if _mentions(seen, parts[0]):
                 continue
             # (a part that picks up at contact opens on the blow; a beat told in one part has its wind-up first)
             at = 1 if getattr(self, "_fact_key", "") == "all" and len(paras) > 1 else 0
-            for prev_parts, _ in reversed(self._fact_lines[:i]):
+            for prev_parts, _n, _l in reversed(self._fact_lines[:i]):
                 hit = [k for k, x in enumerate(paras) if _mentions(x.lower(), prev_parts[0])]
                 if hit:
                     at = hit[0] + 1
                     break
             paras.insert(at, line)
+            self.__dict__.setdefault("_facts_put", []).append((set(parts), line))
             added = True
         return "\n\n".join(paras) if added else text
 
@@ -11939,6 +11951,8 @@ class Narrator:
         if re.search(r"\b" + re.escape(mv) + r"\b", seen, re.I):
             return True
         parts = {h["part"].lower() for h in a["hits"]}
+        if any(ps & parts and line in seen for ps, line in getattr(self, "_facts_put", None) or []):
+            return True     # (the program put this blow back in itself: narration.guided.fact_lines)
         trx = TYPE_SHOWN.get(str(a["move"].get("type", "")).lower())
         # what it strikes with (a bite: jaws, teeth; a kick: kicked...) counts as much as its element does: "her jaws
         # clamped down on Swift's throat" is the Throat Bite told, even with the name left out
