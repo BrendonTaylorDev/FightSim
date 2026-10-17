@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-17 build 188-guided (undo and saves keep everything; audit F fixes. TRIAL BRANCH:the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
+VERSION = "2026-10-17 build 189-guided (damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
 
 HELP = """
 =============================================================================================
