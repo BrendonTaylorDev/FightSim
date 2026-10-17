@@ -324,8 +324,9 @@ def save_anchors(book):
         os.makedirs(IMG_DIR, exist_ok=True)
         with open(ANCHORS, "w", encoding="utf-8") as fh:
             json.dump(book, fh, indent=1, sort_keys=True)
-    except Exception:
-        pass
+    except Exception as e:
+        from engine import note_failure
+        note_failure("saving the picture's part points (images/anchors.json)", e)
 
 
 def picture_bytes(name, species, download=True):

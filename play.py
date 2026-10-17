@@ -24,12 +24,12 @@ import threading
 
 from director import Director, resolve_many
 from display import Display
-from engine import Engine, BALANCE, body_region as body_region_of, species_of
+from engine import Engine, BALANCE, body_region as body_region_of, species_of, poss_word, note_failure
 from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-14 build 187-guided (TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
+VERSION = "2026-10-17 build 188-guided (undo and saves keep everything; audit F fixes. TRIAL BRANCH:the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
 
 HELP = """
 =============================================================================================
@@ -969,7 +969,8 @@ class Session:
         self.narrator.out_names = [f.name for f in self.eng.fighters.values() if f.eliminated]
         try:
             self.narrator.story_state = None if self.over else self.eng.story_state()
-        except Exception:
+        except Exception as e:
+            note_failure("the story state (how each fighter feels about the fight)", e)
             self.narrator.story_state = None
         self.narrator.silent_out = [] if self.over else [
             w for f in self.eng.fighters.values()
@@ -1383,8 +1384,8 @@ class Session:
             text = self._write_prose(args)
             try:
                 self.narrator.save_check_tally(HERE)     # (/checks)
-            except Exception:
-                pass
+            except Exception as e:
+                note_failure("saving the /checks tally", e)
             if text is not None:
                 self.out("\n" + text + "\n")
                 self.story.append(text)
@@ -1530,8 +1531,7 @@ class Session:
         return {"actions": bundle["actions"], "also_this_beat": also}
 
 
-def poss_name(name):
-    return f"{name}'" if name.endswith("s") else f"{name}'s"
+poss_name = poss_word   # (one possessive rule for the whole game: engine.poss_word)
 
 
 USAGE = {

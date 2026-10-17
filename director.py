@@ -5,7 +5,7 @@ The director can SEE the numbers but never calculates anything.
 """
 import json
 import re
-from engine import short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR, match_part, \
+from engine import note_failure, short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR, match_part, \
     _REGIONS as ENGINE_REGIONS
 from blocks import kind_of
 
@@ -1020,7 +1020,8 @@ def resolve(engine, b):
             # director would choose it, so the story knows what she pins her with
             try:
                 shapes = pin_shapes(engine, engine.get(att), engine.get(dfn))
-            except Exception:
+            except Exception as e:
+                note_failure("choosing a pin shape", e)
                 shapes = {}
             weights = {k: float(v) for k, v in ((engine.rules.get("director") or {}).get("pin_shape_weights") or {}).items()
                        if not str(k).startswith("_")}
@@ -1234,6 +1235,17 @@ def _juggle_next(engine, b, res, actions, i, limit):
         return False
     who = res.get("defender")
     if not who or engine.get(who).eliminated or engine.pinned_by(engine.get(who).name):
+        return False
+    nxt = actions[i] if i < len(actions) and isinstance(actions[i], dict) else {}
+    try:
+        from_above = engine.has(engine.get(nxt.get("attacker")), "airborne")
+    except (ValueError, KeyError, TypeError, AttributeError):
+        from_above = False
+    if not from_above and (str(nxt.get("charge_into") or "").strip() or (
+            int(nxt.get("sustain") or 0) > 1 and str(nxt.get("pinned_against") or "").strip())):
+        # from the ground, a charge drives her back along it and a held stream pins her to the scenery: neither can
+        # follow up on a fighter up in the air, so this launch lands first and the next action meets her down
+        # (from ABOVE they are a spike that drives her down: still a juggle)
         return False
     return _next_on(actions, i, who)
 
@@ -1856,7 +1868,8 @@ def story_line(engine):
         return ""
     try:
         ss = engine.story_peek()
-    except Exception:
+    except Exception as e:
+        note_failure("the story line for the director", e)
         ss = None
     if not ss:
         return ""
@@ -2607,8 +2620,7 @@ def drag_to_pin_hint(engine, roll=None):
     return ""
 
 
-def poss_name(n):
-    return n + ("'" if n.endswith("s") else "'s")
+poss_name = poss_word   # (one possessive rule for the whole game: engine.poss_word)
 
 
 def throat_hint(engine, roll=None):

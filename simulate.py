@@ -146,8 +146,9 @@ def one_fight(names, rules, scene, seed, max_beats=150):
     if scene:
         try:
             eng.set_scene(scene)
-        except Exception:
-            pass
+        except Exception as e:
+            from engine import note_failure
+            note_failure(f"setting the arena '{scene}' for /simulate", e)
     rng = random.Random(seed * 7919 + 1)
     stats = {"pins": 0, "escapes": 0, "worst_beat": 0.0, "errors": 0, "beats": 0, "subs": 0}
     last = None

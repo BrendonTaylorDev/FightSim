@@ -39,7 +39,7 @@ def _chat(*args, **kw):
         CALL_LOG.append((who, _time.time() - t, size))
 
 import userprompt
-from engine import tier_for, pain_tiers, Engine, body_region, in_covering
+from engine import tier_for, pain_tiers, Engine, body_region, in_covering, poss_word, note_failure
 
 CRAFT_RULES = """You are the narrator of a fight story. A rules engine has ALREADY decided what happens.
 You turn WHAT HAPPENS IN THIS BEAT into prose.
@@ -1697,9 +1697,7 @@ DETAIL = ("Slow time down and spend the words on concrete detail: exactly where 
           "tells (the eyes, the breath, the set of the head, a limb, the tail). Detail, not filler: no summarizing, no repeating.")
 
 
-def poss(name):
-    """Ripples -> Ripples', Nocturne -> Nocturne's"""
-    return f"{name}'" if name.endswith("s") else f"{name}'s"
+poss = poss_word   # Ripples -> Ripples', Nocturne -> Nocturne's (engine.poss_word)
 
 
 META_TALK = re.compile(r"(?i)\b(incomplete response|let me try again|you haven'?t provided|i(?:'ll| will| need to| am going to) "
@@ -3699,10 +3697,27 @@ class Narrator:
                            + (f" ({k['with']})" if k.get("with") else "") + f": {k['reason']}. Show it come off as the "
                            f"blow lands (it goes slack, slides away, is torn loose); {k['defender']} is free of it "
                            f"from that moment, and it is NOT on her when the beat ends.")
+            elif k["type"] == "hold_end" and str(k.get("reason", "")).endswith("took off"):
+                out.append(f"  - {k['attacker']} LETS GO of {poss(k['defender'])} {k['part']} as she lifts into the air: "
+                           f"that hold is over, and {k['defender']} is free of it from that moment.")
+            elif k["type"] == "hold_end" and str(k.get("reason", "")).startswith("reversed"):
+                out.append(f"  - The grab is TURNED ROUND: {k['attacker']} had hold of {k['defender']} a moment before; "
+                           f"that grip is gone now, and {k['defender']} is the one holding her. Show it reversed in one "
+                           f"motion, both still on their feet.")
             elif k["type"] == "hold_end":
                 out.append(f"  - {k['attacker']} LOSES HER GRIP on {poss(k['defender'])} {k['part']} ({k['reason']}): "
                            f"that hold is over. Show it come off as it happens (torn loose, wrenched away as she goes "
                            f"down); {k['defender']} is free of it from that moment.")
+            elif k["type"] == "out_of_air":
+                out.append(f"  - {k['fighter']} WAS IN THE AIR: {k['why']} brings her down to the ground first (dragged "
+                           f"down out of the air, or landing to make it). She is no longer flying.")
+            elif k["type"] == "slumps" and k.get("from_air"):
+                fc = k.get("facing")
+                out.append(f"  - {k['fighter']} DROPS OUT OF THE AIR: "
+                           + ("the ice locks her wings rigid mid-beat" if k.get("how") == "frozen" else
+                              "sleep takes her on the wing and her wings go slack")
+                           + " and she falls to the ground. She is no longer flying"
+                           + (f": she ends up {Engine.FACING_LOOK[fc]}." if fc in Engine.FACING_LOOK else "."))
             elif k["type"] == "slumps":
                 fc = k.get("facing")
                 out.append(f"  - {k['fighter']} slumps to the ground as it takes her"
@@ -3930,7 +3945,8 @@ class Narrator:
                     "she climbs slowly " if spent_ else    # (spent: no wings snapping open, the climb is a haul)
                     "wings snap open and beat hard, loose grit kicked up, and she climbs ")
             return [f"{a['fighter']} TAKES TO THE AIR: {how_}" + (f"up to meet {up[0]} where she flies." if up else
-                                  "out of reach. Show her rising and her opponent left on the ground looking up.")]
+                                  "out of reach. Show her rising and her opponent left on the ground looking up.")] \
+                + self._knock_on_lines(a.get("knock_on"))
         if t == "take_off_failed":
             return [f"{a['fighter']} TRIES TO TAKE OFF AND CAN'T: she is too spent. Her wings beat, hard and ragged, and "
                     f"lift her a little or not at all, and she comes back down onto the ground where she was. She is "
@@ -6555,8 +6571,8 @@ class Narrator:
             skip |= set(re.findall(r"[a-z]+", f"{k} {v}".lower()))
         try:      # the words of this beat's own events (move names and the like) are not the story's habit
             skip |= set(re.findall(r"[a-z]+", self.describe(bundle).lower())) if cfg.get("skip_event_words", True) else set()
-        except Exception:
-            pass
+        except Exception as e:
+            note_failure("the worn-phrase check (this beat's own words)", e)
         cfg_scene = getattr(self, "scene_cfg", None) or {}
         skip |= set(re.findall(r"[a-z]+", " ".join(str(cfg_scene.get(k, "")) for k in ("place", "ground", "rough", "slick")).lower()))
         counts, shown = {}, {}
@@ -12345,7 +12361,8 @@ class Narrator:
         joined = "\n\n".join(w for w in written if w)
         try:
             issues = self._review(joined, True, "")
-        except Exception:
+        except Exception as e:
+            note_failure("the final review of the prose", e)
             return written
         todo = [i for i in issues if ("never showed" in i or "left out the tumble" in i or "meeting the attack" in i)
                 and "every attack listed" not in i]

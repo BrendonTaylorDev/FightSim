@@ -51,7 +51,7 @@ Tool: `sim/harness.py`. `H.session(seed, scene=..., settings=[...])` and `H.beat
 ## Status
 - [x] A (report_A.md; fixed)  [x] B (report_B.md; fixed)  [x] C (report_C_partial.md + report_C.md; C1-C13 fixed)  [x] D (report_D.md; D1-D12 fixed. D11b, event props breaking, left as is: the timber props and pillars stand for several of a kind, so one falling shouldn't remove them all)  [ ] E (on hold): reports go in `audit/report_X.md` as they come in. (First run: all five were stopped by a usage limit before reporting. Now run ONE group at a time to limit usage, in order A, B, C, D, E; each saves findings to scratchpad audit_X/report.md as it goes, copied here as audit/report_X.md.)
 - E is on hold: start it only when the user asks.
-- [~] F (attack interactions): partial findings in audit/report_F_partial.md, NOT yet verified or fixed; finish the audit later.
+- [x] F (attack interactions): audit/report_F_partial.md F1-F6 (F2b included) verified and fixed in build 188; F3 (undo memory) fixed with the state classification that sim/regress.py now checks. The rest of group F was never audited.
 - [ ] Coverage cross-check against the inventories; anything not exercised goes to a second round.
 - [ ] Fix every confirmed bug, rerun the regression checks and balance, commit and push.
 

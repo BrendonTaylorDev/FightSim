@@ -74,6 +74,8 @@ def _all(*fns):
 
 
 def _open_pins(s):
+    # (a pin case tests pins whatever the fights are set to: rules.json may have them off, finish.no_pins)
+    s.eng.rules.setdefault("finish", {})["no_pins"] = False
     s.eng.roll_pin_windows(open_all=True)
 
 
@@ -193,7 +195,35 @@ def _state(eng):
                                                              for p in f.parts.values()}}
                      for f in eng.fighters.values()},
         "holds": sorted([h.attacker, h.defender, h.part, round(h.power, 4), h.sub, h.locked] for h in eng.holds.values()),
-        "pins": sorted(eng.pins), "downed": eng.downed, "facing": eng.facing}, sort_keys=True, default=str)
+        "pins": sorted(eng.pins), "downed": eng.downed, "facing": eng.facing,
+        # everything else that must survive (story memory, burns, props lain against, the arena's dice...)
+        "extra": _quiet(eng._saveable_extra), "event_rng": eng.event_rng.getstate()[1][:4]},
+        sort_keys=True, default=str)
+
+
+def _unclassified(eng):
+    """Engine attributes in none of the groups engine.py keeps (_SNAP_FIELDS, _SNAP_EXTRA, _NOT_SNAPPED): new state
+    that /undo and saves would quietly leave behind."""
+    known = set(Engine._SNAP_FIELDS) | set(Engine._SNAP_EXTRA) | set(Engine._NOT_SNAPPED)
+    return sorted(k for k in eng.__dict__ if k not in known)
+
+
+def _undo_replay(seed, problems):
+    """A beat taken back with /undo and played again the same way comes out the same: same screen, same state."""
+    acts = [A("Nocturne", "Ripples", "strike", move="Slash", part="Chest"),
+            A("Ripples", "Nocturne", "strike", move="Aqua Jet", part="Chest")]
+    s = _quiet(H.session, seed, fighters="Nocturne,Ripples")
+    for i in range(4):
+        first, _ = H.beat(s, [dict(a) for a in acts[i % 2:i % 2 + 1]], [], roll=False)   # (openings rolled outside a beat aren't undone)
+        after = _state(s.eng)
+        _quiet(s.undo)
+        again, _ = H.beat(s, [dict(a) for a in acts[i % 2:i % 2 + 1]], [], roll=False)
+        # the engine's side of the beat: its stat block (the prose differs: the narrator's variety memory isn't undone)
+        strip = lambda t: (t.split("-" * 40 + "\n")[1:2] or [""])[0].splitlines()
+        if strip(first) != strip(again) or _state(s.eng) != after:
+            diff = next((f"{x!r} / {y!r}" for x, y in zip(strip(first), strip(again)) if x != y), "the state differs")
+            problems.append(f"seed {seed} beat {i + 1}: undo and replay came out different: {diff[:300]}")
+            return
 
 
 def _round_trip(s, names, problems):
@@ -267,6 +297,10 @@ def run_case(case, verbose=False):
                 problems.append(f"seed {seed} beat {i}: " + next(l for l in out.splitlines() if "[state check" in l).strip())
             if not prompts:
                 problems.append(f"seed {seed} beat {i}: the narrator was never asked to write it")
+            loose = _unclassified(s.eng)
+            if loose:
+                problems.append(f"seed {seed} beat {i}: engine state that /undo and saves don't know about: "
+                                f"{', '.join(loose)} (add each to _SNAP_EXTRA, or to _NOT_SNAPPED if it is per-beat scratch)")
             r, e = _results(s)
             try:
                 if saw(r, e, s):
@@ -311,6 +345,17 @@ def main(argv):
         probs = run_case(case, verbose)
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  {case[0]}  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p.replace("\n", "\n      "))
+    if not want or any(w in "undo and replay" for w in want):
+        t, probs = time.time(), []
+        for seed in SEEDS:
+            try:
+                _undo_replay(seed, probs)
+            except Exception:
+                probs.append(f"seed {seed}: crashed:\n" + traceback.format_exc(limit=6))
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  undo and replay give the same beat  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p.replace("\n", "\n      "))
     if not want or any(w in "whole fights" for w in want):

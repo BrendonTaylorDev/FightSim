@@ -13,6 +13,48 @@ import re
 from dataclasses import dataclass, field, asdict
 
 
+_FAILED_ONCE = set()
+
+
+def note_failure(where, exc):
+    """A step that has a fallback failed (the story's mood, the pin shapes, a check of the prose...): the fight goes
+    on with the fallback, but it isn't silent. Every failure goes into errors.log with its traceback; the first one
+    from each place this session is also said in one line."""
+    import time
+    import traceback
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "errors.log"), "a", encoding="utf-8") as fh:
+            fh.write(f"--- {time.strftime('%Y-%m-%d %H:%M:%S')} {where}: {exc!r}\n"
+                     + "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)))
+    except OSError:
+        pass
+    if where not in _FAILED_ONCE:
+        _FAILED_ONCE.add(where)
+        print(f"[{where} failed ({type(exc).__name__}: {exc}); carrying on without it. Details in errors.log]")
+
+
+def _to_json(v):
+    """State for a save file: sets become {"__set__": [...]} (JSON has no sets), tuples lists, the rest as it is."""
+    if isinstance(v, (set, frozenset)):
+        return {"__set__": sorted((_to_json(x) for x in v), key=str)}
+    if isinstance(v, dict):
+        return {k: _to_json(x) for k, x in v.items()}
+    if isinstance(v, (list, tuple)):
+        return [_to_json(x) for x in v]
+    return v
+
+
+def _from_json(v):
+    """The other way: {"__set__": [...]} back into a set (tuples stay lists; nothing that reads them minds)."""
+    if isinstance(v, dict):
+        if set(v) == {"__set__"}:
+            return {tuple(x) if isinstance(x, list) else x for x in v["__set__"]}
+        return {k: _from_json(x) for k, x in v.items()}
+    if isinstance(v, list):
+        return [_from_json(x) for x in v]
+    return v
+
+
 def load_json(path):
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -784,18 +826,49 @@ class Engine:
         return copy.deepcopy((self.fighters, self.holds, self.next_hold_id, self.turn, self.involved,
                               self.pins, self.positions, self.downed, self.since_pin, self.momentum,
                               self.move_log, self.last_pin_end, self.injury_log, self.plan, self.facing,
-                              {**getattr(self, "_last_reposition", {}),
-                               **{"by:" + k: v for k, v in getattr(self, "_last_manhandle", {}).items()}},
+                              dict(getattr(self, "_last_reposition", {})),
                               self._fresh_down, self._fresh_status,
                               self.pressed, self.alliances, self._pending_events, list(getattr(self, "rolls", [])),
                               self.tally, getattr(self, "weather", {}), list(getattr(self, "arena_marks", [])),
                               getattr(self, "chronicle", None) or self.new_chronicle(),
                               list(self.__dict__.get("setups") or []), self.rng.getstate(),
-                              {k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__}))
+                              {**{k: self.__dict__.get(k) for k in self._SNAP_EXTRA if k in self.__dict__},
+                               "~event_rng": self.event_rng.getstate()}))
 
-    # engine state that lives outside the main snapshot tuple but must be undone with it
+    # Every attribute the engine ever holds belongs to exactly one of these groups (sim/regress.py checks it, so a new
+    # piece of state can't be forgotten by /undo and saves):
+    # the main snapshot tuple above (save and load handle each of these by name)
+    _SNAP_FIELDS = ("fighters", "holds", "next_hold_id", "turn", "involved", "pins", "positions", "downed", "since_pin",
+                    "momentum", "move_log", "last_pin_end", "injury_log", "plan", "facing", "_last_reposition",
+                    "_fresh_down", "_fresh_status", "pressed", "alliances", "_pending_events", "rolls", "tally",
+                    "weather", "arena_marks", "chronicle", "setups")
+    # engine state that lives outside the main snapshot tuple but must be undone (and saved) with it
     _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
-                   "injury_amt")
+                   "injury_amt", "lying_at", "burn_spot", "_story_prev", "_story_now", "_story_pinned", "_story_turned",
+                   "_tac_status", "_last_event", "_forced_event", "_overbalanced", "_rock_open", "_slow_not_cold",
+                   "_last_manhandle", "last_pin_shape")
+    # ...those of them that __init__ sets up: put back to this when a snapshot or save doesn't have them (never removed)
+    _SNAP_INIT = {"_last_event": None, "_forced_event": None}
+    # scratch for one attack or one beat (set fresh before it is read), or the session and its settings: never undone
+    _NOT_SNAPPED = ("_aim_miss", "_chain_on", "_confusion_passed", "_dev_active", "_dive_now", "_feint_open",
+                    "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
+                    "_sustain_now", "_source", "_knock_on", "_tac_before", "beat_loss", "sub_window", "pin_window",
+                    "nudges", "_windows_ready", "_pre_rolls", "directed", "ordered", "dice_mode", "lucky",
+                    "rules", "roster", "roster_species", "scenes", "scene_cfg", "scene_name", "scene", "movedex",
+                    "variants", "variant_of", "settings_applied", "_seed0", "rng", "event_rng")
+
+    def _put_back_extra(self, src, keep=()):
+        """The _SNAP_EXTRA state from a snapshot or a save: what it has goes back, what it lacks goes away (or back to
+        its starting value). keep: names to leave as they are when `src` doesn't have them."""
+        for k in self._SNAP_EXTRA:
+            if k in src:
+                self.__dict__[k] = _from_json(src[k])
+            elif k in keep:
+                continue
+            elif k in self._SNAP_INIT:
+                self.__dict__[k] = copy.deepcopy(self._SNAP_INIT[k])
+            else:
+                self.__dict__.pop(k, None)
 
     def restore_state(self, snap):
         self.beat_loss = {}   # a beat taken back takes its health.soft_cap tally with it
@@ -805,13 +878,9 @@ class Engine:
          self.pressed, self.alliances, self._pending_events, self.rolls, self.tally, self.weather, self.arena_marks,
          self.chronicle, self.setups, rng, *more) = copy.deepcopy(snap)
         extra = more[0] if more else {}
-        for k in self._SNAP_EXTRA:      # state added later than the tuple: put back what was there, drop what wasn't
-            if k in extra:
-                self.__dict__[k] = extra[k]
-            else:
-                self.__dict__.pop(k, None)
-        self._last_manhandle = {k[3:]: v for k, v in self._last_reposition.items() if k.startswith("by:")}
-        self._last_reposition = {k: v for k, v in self._last_reposition.items() if not k.startswith("by:")}
+        self._put_back_extra(extra)     # state added later than the tuple: put back what was there, drop what wasn't
+        if extra.get("~event_rng"):
+            self.event_rng.setstate(extra["~event_rng"])   # (an undone arena event comes the same way when replayed)
         self._knock_on = []
         self.rng.setstate(rng)
 
@@ -2401,9 +2470,14 @@ class Engine:
         if status in ("asleep", "frozen") and not f.eliminated:
             word = "fell asleep" if status == "asleep" else "froze solid"
             loose = self._lose_grip(f.name, f"{f.name} {word}")
-            if status == "asleep" and f.name not in self.downed:
+            # asleep, she slumps wherever she is; frozen, she stands rigid on the ground, but in the air her wings
+            # lock and she drops out of it
+            from_air = self.has(f, "airborne")
+            if (status == "asleep" or from_air) and f.name not in self.downed:
                 self.knock_down(f.name, why=f"{f.name} {word}")
-                loose += self._knock_on + [{"type": "slumps", "fighter": f.name, "facing": self.facing.get(f.name)}]
+                f.status.pop("airborne", None)
+                loose += self._knock_on + [{"type": "slumps", "fighter": f.name, "facing": self.facing.get(f.name),
+                                            "from_air": from_air, "how": status}]
             self._knock_on = loose
 
     def _pin_mult(self, a, d):
@@ -5722,14 +5796,15 @@ class Engine:
                 self.involved.add(f.name)
                 return {"type": "take_off_failed", "fighter": f.name, "energy": round(cost, 1),
                         "hurt_wing": self.wing_damage(f) >= float((cfg.get("strain") or {}).get("from", 100))}
-        for h in [h for h in self.holds.values() if h.attacker == f.name]:
-            self.holds.pop(h.id, None)
+        # every grip she had lets go as she lifts away, and the screen and the story are told so
+        loose = self._lose_grip(f.name, f"{f.name} took off")
         beats = int(cfg.get("airborne_beats", 3)) + self.flight_vigour(f, "extra_beats", 0)
         self._set_air_speed(f, 0)      # a fresh climb: no speed built yet
         self.set_status(f, "airborne", beats)
         self.involved.add(f.name)
         return {"type": "take_off", "fighter": f.name, "beats": beats, "energy": round(cost, 1),
-                "hurt_wing": self.wing_damage(f) >= float((cfg.get("strain") or {}).get("from", 100))}
+                "hurt_wing": self.wing_damage(f) >= float((cfg.get("strain") or {}).get("from", 100)),
+                "knock_on": loose}
 
     def flight_vigour(self, f, key, default):
         """flight.vigour: a flyer who is still strong flies more (longer in the air, back up after a dive more often;
@@ -5897,6 +5972,8 @@ class Engine:
             return None                      # pinned herself: she can hit her pinner, not pummel her
         if self.grabbed_by(a, d):
             return "grab"
+        if self.has(self.get(a), "airborne"):
+            return None                      # in the air: a dive is one drop and she climbs away, not a flurry over her
         if d in self.pinning(a):
             # blows rained down inside a pin: not how a pin usually goes (grapple.pummel_in_pin, off by default)
             return "pin" if self.rules.get("grapple", {}).get("pummel_in_pin", False) else None
@@ -5945,10 +6022,13 @@ class Engine:
         for st in ("asleep", "frozen"):
             if not enforce:
                 a.status.pop(st, None)
+        grounded = self._out_of_air((a, d), "the grab")   # (your own command only: the director's is refused above)
         pname = d.part(part).name
         # the grab she already had on her from the other side ends: you can't be held by her and holding her at once
-        for h in [h for h in list(self.holds.values()) if h.grab and h.attacker == d.name and h.defender == a.name]:
-            self.release(h.id, "reversed: the grab turned round on her")
+        # (said on screen and in the story: knock_on)
+        reversed_ = [self.release(h.id, "reversed: the grab turned round on her")
+                     for h in [h for h in list(self.holds.values()) if h.grab and h.attacker == d.name
+                               and h.defender == a.name]]
         st = self.start_hold(a.name, d.name, pname, power, 0.0, flavor, with_part, keep_with=enforce)
         self.holds[st["hold_id"]].grab = True
         if d.name in self.downed:
@@ -5962,7 +6042,18 @@ class Engine:
                 "part": pname, "with": st.get("with", ""), "power": st["power"], "hold_id": st["hold_id"],
                 "hold_ids": [] if st.get("existing") else [st["hold_id"]], "existing": bool(st.get("existing")),
                 "flavor": flavor, "energy": [round(before), round(a.energy)],
-                "break_chance": self.hold_break_chance(a.name, d.name)}
+                "break_chance": self.hold_break_chance(a.name, d.name), "knock_on": grounded + reversed_}
+
+    def _out_of_air(self, fighters, what):
+        """A grab or a pin happens on the ground: any of `fighters` still flying comes down for it. Returns a knock_on
+        event for each, for the screen and the story."""
+        out = []
+        for f in fighters:
+            if self.has(f, "airborne"):
+                f.status.pop("airborne", None)
+                self._set_air_speed(f, 0)
+                out.append({"type": "out_of_air", "fighter": f.name, "why": what})
+        return out
 
     def pin_securable(self, f):
         """With pin.secure enabled, a pin can only be WON once the pinned fighter is worn down enough: at least
@@ -6204,6 +6295,8 @@ class Engine:
             if d.name not in self.downed:
                 # taken down into the pin: whatever she was pinning or holding (except her grip on the pinner) ends
                 loose += self._lose_grip(d.name, f"{d.name} was taken down", keep_on=a.name)
+            # (only your own command gets here with a flyer in the air: the director's pin is refused above)
+            loose += self._out_of_air((a, d), "the pin")
         if new_pin:
             for h in [h for h in self.holds.values() if h.attacker == a.name and h.defender == d.name and h.sub]:
                 self.holds.pop(h.id, None)      # the submission is let go for the pin
@@ -6311,7 +6404,7 @@ class Engine:
     def regrab_wait(self, a, d):
         """Beats left before `a` may grip `d` again after `d` tore free of her (holds.break.regrab_after); 0 = free."""
         wait = int((self.rules.get("holds", {}).get("break", {}) or {}).get("regrab_after", 2))
-        broke = (getattr(self, "broke_free_at", {}) or {}).get((a.name, d.name))
+        broke = (getattr(self, "broke_free_at", {}) or {}).get(f"{a.name}>{d.name}")
         return 0 if broke is None else max(0, wait - (self.turn - broke))
 
     def _regrab_check(self, a, d):
@@ -6467,7 +6560,7 @@ class Engine:
                 for h in hs:
                     self.holds.pop(h.id, None)
                 # she just tore loose: the same grip can't simply close on her again next beat
-                self.__dict__.setdefault("broke_free_at", {})[(a, d)] = self.turn
+                self.__dict__.setdefault("broke_free_at", {})[f"{a}>{d}"] = self.turn   # ("A>B": a save can hold it)
                 events.append({"type": "hold_end", "broke_free": True, "attacker": a, "defender": d,
                                "submission": next((h.sub for h in hs if h.sub), ""),
                                "hold_ids": [h.id for h in hs], "parts": [h.part for h in hs],
@@ -8312,6 +8405,7 @@ class Engine:
                 "chronicle": getattr(self, "chronicle", None) or self.new_chronicle(),
                 "setups": self.__dict__.get("setups") or [],
                 "more": self._saveable_extra(),
+                "event_rng": _to_json(self.event_rng.getstate()),
                 "extra": extra or {},
                 "fighters": {k: {**asdict(f), "parts": {n: asdict(p) for n, p in f.parts.items()}}
                              for k, f in self.fighters.items()},
@@ -8321,15 +8415,17 @@ class Engine:
 
     def _saveable_extra(self):
         """The state kept outside the main fields (_SNAP_EXTRA: who is encouraged, how a fighter went out...) that
-        can go into a save as it is. Anything that can't is left out: a loaded fight simply starts without it."""
+        can go into a save (sets written so they come back as sets). Anything that still can't is left out, and said:
+        a loaded fight starts without it."""
         out = {}
         for k in self._SNAP_EXTRA:
             if k in self.__dict__:
                 try:
-                    json.dumps(self.__dict__[k])
-                    out[k] = self.__dict__[k]
-                except (TypeError, ValueError):
-                    pass
+                    v = _to_json(self.__dict__[k])
+                    json.dumps(v)
+                    out[k] = v
+                except (TypeError, ValueError) as e:
+                    print(f"[save: {k} could not be written ({e}); a loaded fight starts without it]")
         return out
 
     @staticmethod
@@ -8373,13 +8469,20 @@ class Engine:
         self.alliances = data.get("alliances", [])
         self.weather = data.get("weather", {})
         self.arena_marks = data.get("arena_marks", [])
-        self.broken_props = list(data.get("broken_props", []) or [])
+        if data.get("broken_props"):
+            self.broken_props = list(data["broken_props"])
+        else:
+            self.__dict__.pop("broken_props", None)   # (none broken: as a fight that never broke one)
         self.chronicle = {**self.new_chronicle(), **(data.get("chronicle") or {})}
         self.setups = list(data.get("setups") or [])
         self.pressed, self._pending_events, self.pin_window = {}, [], {}
-        for k in self._SNAP_EXTRA:      # put back what the save kept; drop what this fight had that the save didn't
-            if k in (data.get("more") or {}):
-                self.__dict__[k] = data["more"][k]
-            elif k != "broken_props":
-                self.__dict__.pop(k, None)
+        # put back what the save kept; drop what this fight had that the save didn't (an older save: last_event and
+        # broken_props have fields of their own, read above)
+        self._put_back_extra(data.get("more") or {}, keep=("broken_props", "_last_event"))
+        if data.get("event_rng"):
+            st = data["event_rng"]
+            try:
+                self.event_rng.setstate((st[0], tuple(st[1]), st[2]))
+            except (TypeError, ValueError, IndexError):
+                pass     # (a hand-edited save: the arena's dice simply start fresh)
         return data.get("extra", {})

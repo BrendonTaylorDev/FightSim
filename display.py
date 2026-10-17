@@ -40,8 +40,7 @@ def way(kind, key, lead=" · how: "):
     return f"{lead}{text}" if text else ""
 
 
-def poss_name(n):
-    return n + ("'" if n.endswith("s") else "'s")
+poss_name = poss_word   # (one possessive rule for the whole game: engine.poss_word)
 
 
 class Display:
@@ -420,9 +419,21 @@ class Display:
                 out.append(f"💥 **The hit breaks {poss_word(k['attacker'])} hold** on {poss_word(k['defender'])} {k['part']} "
                            f"(#{k['hold_id']}) after {k['beats_held']} beat{'s' if k['beats_held'] != 1 else ''} — "
                            f"{k['reason']} (chance to lose it {k['chance'] * 100:.0f}%)")
+            elif k["type"] == "hold_end" and str(k.get("reason", "")).endswith("took off"):
+                out.append(f"🔓 **{k['attacker']} lets go** of {poss_word(k['defender'])} {k['part']} (#{k['hold_id']}) "
+                           f"as she takes off")
+            elif k["type"] == "hold_end" and str(k.get("reason", "")).startswith("reversed"):
+                out.append(f"🔄 **{k['attacker']}'s grab is turned round on her**: {k['defender']} has hold of her now "
+                           f"(#{k['hold_id']} ends)")
             elif k["type"] == "hold_end":
                 out.append(f"🔓 **{k['attacker']} loses her grip** on {poss_word(k['defender'])} {k['part']} "
                            f"(#{k['hold_id']}): {k['reason']}")
+            elif k["type"] == "out_of_air":
+                out.append(f"⬇️ **{k['fighter']} is brought down out of the air** for {k['why']}")
+            elif k["type"] == "slumps" and k.get("from_air"):
+                out.append(f"⬇️ **{k['fighter']} drops out of the air**, "
+                           + ("frozen solid, wings locked" if k.get("how") == "frozen" else "asleep on the wing")
+                           + (f" ({k['facing']})" if k.get("facing") else ""))
             elif k["type"] == "slumps":
                 out.append(f"💤 **{k['fighter']} slumps to the ground**" + (f" ({k['facing']})" if k.get("facing") else ""))
         return out

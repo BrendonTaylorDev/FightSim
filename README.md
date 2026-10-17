@@ -654,6 +654,46 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 188
+- **/undo and saves bring back everything.** Before, some state lived outside what /undo and saves knew about,
+  so an undone beat could leave traces and a loaded fight could lose them:
+  - which prop a fighter collapsed against
+  - where a burn sits
+  - the story's memory of how each fighter feels (an undone pin left her "just out of a pin" and "relieved")
+  - tactical reads
+  - when the arena last acted, and the arena's own dice (an undone arena event didn't come again when replayed)
+  - who is off balance or rocked, stiff-but-not-cold slowness
+  - the last pin shape
+  - when a grip was torn free (it was never saved at all)
+
+  Saves now write sets properly, and anything that still can't be written is reported instead of dropped.
+- **The regression suite guards it** (`python sim/regress.py`):
+  - Every attribute the engine holds must be listed in `engine.py` as either undone and saved (`_SNAP_FIELDS`,
+    `_SNAP_EXTRA`) or per-beat scratch (`_NOT_SNAPPED`). New state can't be forgotten without a failing test.
+  - Save/load must bring all of it back exactly.
+  - A beat undone and played again the same way must give the same stat block and state.
+- **A frozen flyer drops out of the air** (so does one put to sleep). Before, she stayed IN THE AIR, frozen solid,
+  out of reach of every close attack.
+- **Taking off says what it lets go of.** A grab or hold she had ends on screen and in the story ("lets go as she
+  takes off"). Before, it vanished between beats.
+- **A reversed grab is told.** Two fighters grabbing each other in one beat: the first grab turning round on its
+  owner is shown and narrated.
+- **A diving flyer can't also pummel.** A strike with a count from the air on a fighter who is down is one dive, not
+  a dive and a flurry of blows "over her".
+- **No charge into a fighter up in the air.** After a launch, a charge (or a held stream pinned against the scenery)
+  from the ground doesn't follow up in the air: she lands first. From above it is still a spike that drives her down.
+- **Your own /pin or /grapple on (or by) a flyer brings her down** for it, on screen and in the story. Before, she
+  could be pinned and still in the air, out of reach of the pinner's own blows.
+- **Failures aren't silent.** A few steps that fall back quietly when something breaks now write what happened to
+  `errors.log` and say so once:
+  - the story state, the pin shapes, the /checks tally
+  - the narrator's last review
+  - saving a picture's part points
+  - an unknown arena in /simulate
+- **One possessive rule** (`engine.poss_word`) instead of five copies.
+- **The folder is a git repository now.** The first commit is build 187 exactly as it was, so any change can be
+  looked at or taken back (`git log`, `git diff`).
+
 ## Build 113
 - **Aqua Jet keeps touching her until it's over.** A charge wrapped in its element (Aqua Jet, Wave Crash, Flame Wheel,
   Flare Blitz, Spark, Wild Charge, Volt Tackle...) never leaves the one it hits between the hit and the slam: she is
