@@ -654,6 +654,39 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 189
+- **Damage marks on the pictures** (the **Damage marks** switch in the window; `window.damage_marks`). From
+  `marks_from` (30%) damage on, each hurt part shows the marks of what hurt it, and they get worse as the damage climbs:
+  - claw slashes that bleed and trickle
+  - bite punctures in two jaw rows
+  - bruises that darken and split
+  - scorch and char from fire
+  - lightning burns
+  - frost crystals
+  - grip marks from holds and pins
+
+  A ruined part (300%+) is swollen and dark. Fresh wounds (this beat or the last) look brighter. Each part's marks
+  stay in the same place from beat to beat and only grow. They show in the window, in its history, and in
+  `/exportfight` pages. Fights exported before this build show the glow only (they have no wound data).
+- **Statuses show on her** (`window.status_look`): frozen is iced blue with crystals, chilled a frosty tint, soaked
+  wet with droplets, paralyzed crackles with sparks, poisoned and burned tint her.
+- **The glow is half as strong while the marks are on**, so the marks read (`window.glow` false turns it off).
+- **Poses** (the **Poses** switch; `window.poses`). How a fighter is placed changes her picture:
+  - **With your own picture:** `images/<name>_pinned`, `_pinning`, `_faceup`, `_facedown`, `_side`, `_sitting`,
+    `_air` (or `<species>_...`), each falling back to the nearest one you have, then to `_down`. Click a label, then
+    the picture, to place her parts on a pose picture: they are kept separately for each picture.
+  - **Without one** (`window.pose_fallback`), the program poses her own picture:
+    - on her back (turned over), flat on her front, on her side, sitting
+    - braced on top when she is pinning someone
+    - raised high when flying
+    - on a ground line with a soft shadow
+
+    The marks follow her parts into the pose.
+- **Lying on her side actually lies down now.** Before, every picture tipped over by only 16°: the artwork comes on
+  a square canvas, so the old rule always thought she was already lying flat. Now it goes by the shape of her body.
+- **Damage marks know more attacks:** a move missing from `moves.json` is still read by its name (a plain Slash is
+  claws, not a bruise).
+
 ## Build 188
 - **/undo and saves bring back everything.** Before, some state lived outside what /undo and saves knew about,
   so an undone beat could leave traces and a loaded fight could lose them:

@@ -443,6 +443,14 @@ def timing_summary(rows):
     return "\n".join(out)
 
 
+def _marks_of(eng, f):
+    try:
+        return eng.picture_marks(f)
+    except Exception as e:
+        note_failure("working out the damage marks for the pictures", e)
+        return {}
+
+
 def fight_snapshot(s, label=None):
     """Every fighter as she stands right now (plain data): health, energy, statuses, posture, and each body part's
     damage and resistance. Kept for every beat (/exportfight, the window's history)."""
@@ -466,6 +474,8 @@ def fight_snapshot(s, label=None):
             "health": round(float(f.health), 2), "max": float(f.max_health or 1), "energy": round(float(f.energy), 1),
             "status": {k: v for k, v in (f.status or {}).items()}, "out": bool(f.eliminated), "posture": posture,
             "parts": [(p.name, round(float(p.damage), 2), round(float(p.resistance), 2)) for p in f.parts.values()],
+            # for the pictures: which way she lies, and the marks on each hurt part (window.poses, window.damage_marks)
+            "facing": facing, "marks": _marks_of(eng, f),
         })
     return {"turn": int(getattr(eng, "turn", 0) or 0), "fighters": out,
             "label": label or f"after beat {getattr(eng, 'turn', 0)}"}

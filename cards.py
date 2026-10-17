@@ -7,8 +7,10 @@ import io
 import json
 import math
 import os
+import random
 import re
 import urllib.request
+import zlib
 
 from engine import body_region
 
@@ -84,6 +86,12 @@ BACK_POINTS = {
 BACK_REGIONS = ("back_up", "back_low", "tail")
 # how she looks as she weakens: the picture files tried, in order, for each state (images/<name>_<state>.png ...)
 STATE_TRY = {"out": ("out", "down", "hurt"), "down": ("down", "hurt"), "hurt": ("hurt", "worn"), "worn": ("worn",)}
+# how she is placed (window.poses): the picture files tried, in order, for each pose (images/<name>_<pose>.png ...),
+# before the weakened ones; with none of them, her picture is posed by the program (window.pose_fallback)
+POSE_TRY = {"pinned": ("pinned", "faceup", "down"), "faceup": ("faceup", "down"), "facedown": ("facedown", "down"),
+            "side": ("side", "down"), "sitting": ("sitting",), "pinning": ("pinning",), "air": ("air",),
+            "out": ("out", "down")}
+LYING = ("pinned", "faceup", "facedown", "side", "down", "out")
 EXTS = (".png", ".gif", ".webp", ".jpg", ".jpeg")
 
 
@@ -97,7 +105,32 @@ def opts_of(rules):
     w.setdefault("worn_below", 60)
     w.setdefault("hurt_below", 30)
     w.setdefault("back_size", 220)
+    w.setdefault("glow", True)
+    w.setdefault("damage_marks", True)
+    w.setdefault("marks_from", 30)
+    w.setdefault("status_look", True)
+    w.setdefault("poses", True)
+    w.setdefault("pose_fallback", True)
     return w
+
+
+def pose_of(f):
+    """How she is placed, for the picture (window.poses): "pinned", "pinning", "air", "faceup", "facedown", "side",
+    "sitting", "out", or None (on her feet). Read from her posture line, so fights saved before build 189 work too."""
+    if f.get("out"):
+        return "out"
+    post = str(f.get("posture") or "").lower()
+    if post.startswith("pinned by"):
+        return "pinned"
+    if post.startswith("pinning"):
+        return "pinning"
+    if post.startswith("in the air") or "airborne" in (f.get("status") or {}):
+        return "air"
+    if post.startswith("down"):
+        face = str(f.get("facing") or post)
+        return ("facedown" if "face-down" in face else "faceup" if "face-up" in face else
+                "sitting" if "sitting" in face else "side")
+    return None
 
 
 def health_state(f, opts=None):
@@ -208,13 +241,17 @@ class PictureBook:
         self._base[view] = (got[0], got[1], got[2], builtin) if got else None
         return self._base[view]
 
-    def pick(self, view, state):
-        """(bytes, own, key, fallback keys, builtin points, own_state): her picture for this state if you have one,
-        else the view's own picture (own_state False: the window gives it the weakened look itself)."""
+    def pick(self, view, state, pose=None):
+        """(bytes, own, key, fallback keys, builtin points, own_state, matched): her picture for this pose (pose files
+        first, POSE_TRY) or state if you have one, else the view's own picture (own_state False: the window gives it
+        the weakened look and the pose itself). matched: the file's pose or state word, or None."""
         base = self.base(view)
         if base is None:
             return None
-        for st in STATE_TRY.get(state or "", ()):
+        tries = list(POSE_TRY.get(pose or "", ()))
+        # (with a pose, lying down is the pose's to choose: a _down picture is never used for her sitting or on top)
+        tries += [st for st in STATE_TRY.get(state or "", ()) if st not in tries and not (pose and st in ("down", "out"))]
+        for st in tries:
             ck = (view, st)
             if ck not in self._state:
                 hit = None
@@ -227,18 +264,78 @@ class PictureBook:
                 self._state[ck] = hit
             hit = self._state[ck]
             if hit:
-                return hit[0], hit[1], hit[2], [base[2]], base[3] if not hit[1] else {}, True
-        return base[0], base[1], base[2], [], base[3], False
+                if st in LYING:
+                    # lying down, her parts are nowhere near where they are standing: no borrowed points (place
+                    # them on this picture: click a label, then the picture)
+                    return hit[0], hit[1], hit[2], [], {}, True, st
+                return hit[0], hit[1], hit[2], [base[2]], base[3] if not hit[1] else {}, True, st
+        return base[0], base[1], base[2], [], base[3], False, None
 
 
-def weak_look(im, state):
-    """Her picture made to look the way she is when there is no picture of it: a little faded when worn; faded,
-    dimmer and slumped when badly hurt; on her side when down or out. Returns (image, xf): xf moves a point given as
-    fractions of the old picture to fractions of the new one."""
-    if Image is None or im is None or not state:
-        return im, None
-    fade, dim, angle = {"worn": (0.8, 0.96, 0), "hurt": (0.55, 0.85, -7), "down": (0.65, 0.88, 90),
-                        "out": (1.0, 1.0, 90)}.get(state, (1, 1, 0))
+# colour for each state: (how much colour is left, brightness)
+SHADE = {"worn": (0.8, 0.96), "hurt": (0.55, 0.85), "down": (0.65, 0.88), "out": (1.0, 1.0)}
+# the program's own pose, when there is no picture of it (window.pose_fallback): the steps that bend her picture
+# into it, where she sits in her box ("bottom": on the ground, "top": up in the air) and whether she casts a shadow
+POSE_GEO = {
+    "faceup":   {"ops": [("flip_v",), ("scale", 1.0, 0.8)], "at": "bottom", "shadow": True},
+    "pinned":   {"ops": [("flip_v",), ("scale", 1.0, 0.75)], "at": "bottom", "shadow": True, "dim": 0.85},
+    "facedown": {"ops": [("scale", 1.12, 0.55)], "at": "bottom", "shadow": True},
+    "side":     {"ops": [("rotate", 90)], "at": "bottom", "shadow": True},
+    "out":      {"ops": [("rotate", 90)], "at": "bottom", "shadow": True},
+    "sitting":  {"ops": [("scale", 1.0, 0.82)], "at": "bottom", "shadow": True},
+    "pinning":  {"ops": [("scale", 1.05, 0.9)], "at": "bottom", "shadow": True},
+    "air":      {"ops": [("scale", 0.8, 0.8)], "at": "top", "shadow": True},
+}
+# the old weakened look's shapes (window.poses off): slumped when badly hurt, on her side when down or out
+OLD_GEO = {"hurt": [("rotate", -7)], "down": [("rotate", 90)], "out": [("rotate", 90)]}
+
+
+def _geo(im, ops):
+    """Her picture put through ops (flip_v, scale sx sy, rotate degrees), and xf: where a point given as fractions of
+    the old picture is, as fractions of the new one."""
+    w0, h0 = im.size
+    maps = []
+    for op in ops:
+        w, h = im.size
+        if op[0] == "flip_v":
+            im = im.transpose(Image.FLIP_TOP_BOTTOM)
+            maps.append(lambda x, y, h=h: (x, h - y))
+        elif op[0] == "scale":
+            sx, sy = op[1], op[2]
+            im = im.resize((max(1, round(w * sx)), max(1, round(h * sy))), Image.LANCZOS)
+            maps.append(lambda x, y, sx=sx, sy=sy: (x * sx, y * sy))
+        elif op[0] == "rotate":
+            a = op[1]
+            if a == 90:
+                # (by her body, not the picture: the artwork comes on a square canvas whatever her shape) a body
+                # already lying along the picture (Buizel, Swellow) turned on end would look less down, so it tips over
+                bb = im.getchannel("A").point(lambda v: 255 if v > 40 else 0).getbbox() or (0, 0, w, h)
+                if (bb[3] - bb[1]) < (bb[2] - bb[0]) * 0.9:
+                    a = -16
+            rot = im.rotate(a, expand=True, resample=Image.BICUBIC)
+            W, H, t = rot.size[0], rot.size[1], math.radians(a)
+            maps.append(lambda x, y, w=w, h=h, W=W, H=H, t=t: (W / 2 + (x - w / 2) * math.cos(t) + (y - h / 2) * math.sin(t),
+                                                               H / 2 - (x - w / 2) * math.sin(t) + (y - h / 2) * math.cos(t)))
+            im = rot
+    W, H = im.size
+
+    def xf(fx, fy):
+        x, y = fx * w0, fy * h0
+        for m in maps:
+            x, y = m(x, y)
+        return x / W, y / H
+    return im, (xf if maps else None)
+
+
+def pose_look(im, state=None, pose=None):
+    """Her picture made to look the way she is when there is no picture of it: faded and dimmer as she weakens
+    (state), and bent into her pose (pose: POSE_GEO) or, with no pose, the old slump or tip onto her side. Returns
+    (image, xf, place): place says where she sits in her box and whether she casts a shadow."""
+    if Image is None or im is None or not (state or pose):
+        return im, None, {}
+    fade, dim = SHADE.get(state, (1, 1))
+    g = POSE_GEO.get(pose) if pose else None
+    dim *= (g or {}).get("dim", 1)
     a = im.getchannel("A")
     rgb = im.convert("RGB")
     if fade != 1:
@@ -247,19 +344,14 @@ def weak_look(im, state):
         rgb = ImageEnhance.Brightness(rgb).enhance(dim)
     out = rgb.convert("RGBA")
     out.putalpha(a)
-    if not angle:
-        return out, None
-    w, h = out.size
-    if angle == 90 and h < w * 1.1:
-        angle = -16          # already lying along the picture: turned on end it would look less down, so it tips over
-    rot = out.rotate(angle, expand=True, resample=Image.BICUBIC)
-    W, H = rot.size
-    t = math.radians(angle)
+    out, xf = _geo(out, g["ops"] if g else OLD_GEO.get(state, []) if pose is None else [])
+    return out, xf, ({"at": g["at"], "shadow": g["shadow"]} if g else {})
 
-    def xf(fx, fy):
-        dx, dy = fx * w - w / 2, fy * h - h / 2
-        return ((W / 2 + dx * math.cos(t) + dy * math.sin(t)) / W, (H / 2 - dx * math.sin(t) + dy * math.cos(t)) / H)
-    return rot, xf
+
+def weak_look(im, state):
+    """The weakened look alone (no pose): (image, xf). Kept for anything that still asks for it."""
+    out, xf, _ = pose_look(im, state, None)
+    return out, xf
 
 
 def split_parts(parts, keys, opts=None):
@@ -362,13 +454,15 @@ def picture_bytes(name, species, download=True):
 def prepare_picture(data, size=PIC, look=None):
     """(src, rect, box) for a picture: the picture fitted into a size x size square (RGBA), where it sits
     (x, y, w, h), and where the body is inside it (x0, y0, x1, y1). Needs Pillow; (None, ...) without it.
-    look: a state for weak_look; then a fourth item, xf, moves points to where they are on the changed picture."""
+    look: a state, or (state, pose), for pose_look; then a fourth item, xf, moves points to where they are on the
+    changed picture. A posed picture sits on the ground of its box (or high in it, flying) over a soft shadow."""
     if Image is None or not data:
         return (None, (4, 4, size - 8, size - 8), None) + ((None,) if look is not None else ())
     im = Image.open(io.BytesIO(data)).convert("RGBA")
-    xf = None
+    xf, place = None, {}
     if look:
-        im, xf = weak_look(im, look)
+        state, pose = look if isinstance(look, tuple) else (look, None)
+        im, xf, place = pose_look(im, state, pose)
     small = im.width < (size - 8) / 2 and im.height < (size - 8) / 2
     if small:       # a small sprite: grown in whole steps, kept crisp
         k = max(1, int((size - 8) // max(im.width, im.height)))
@@ -376,6 +470,19 @@ def prepare_picture(data, size=PIC, look=None):
     im.thumbnail((size - 8, size - 8))
     canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     x, y = (size - im.width) // 2, (size - im.height) // 2
+    body = im.getchannel("A").point(lambda a: 255 if a > 40 else 0).getbbox() or (0, 0, im.width, im.height)
+    if place.get("at") == "bottom":
+        y = size - 10 - body[3]                 # her lowest point on the ground line, a little above the box's edge
+    elif place.get("at") == "top":
+        y = 4 - body[1]
+    if place.get("shadow"):
+        # (faint and blurred: under the body threshold, so no glow or mark ever lands on it)
+        bw = (body[2] - body[0]) * (0.5 if place.get("at") == "top" else 0.85)
+        cx, gy = x + (body[0] + body[2]) / 2, size - 9
+        sh = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        ImageDraw.Draw(sh).ellipse((cx - bw / 2, gy - bw * 0.07, cx + bw / 2, gy + bw * 0.07),
+                                   fill=(0, 0, 0, 20 if place.get("at") == "top" else 34))
+        canvas.alpha_composite(sh.filter(ImageFilter.GaussianBlur(4)))
     canvas.paste(im, (x, y), im)
     box = canvas.getchannel("A").point(lambda a: 255 if a > 40 else 0).getbbox() or (0, 0, size, size)
     return (canvas, (x, y, im.width, im.height), box) + ((xf,) if look is not None else ())
@@ -442,10 +549,11 @@ def anchor_points(f, src=None, rect=(4, 4, PIC - 8, PIC - 8), box=None, own=Fals
     return out
 
 
-def glow_image(src, f, spots):
-    """The picture with each hurt part glowing in its damage colour, kept on the body; greyed out if she is out."""
-    if Image is None or src is None:
-        return None
+def _body_mask(src):
+    return src.getchannel("A").point(lambda a: 255 if a > 40 else 0).filter(ImageFilter.GaussianBlur(2))
+
+
+def _glow_layer(src, f, spots, alpha=190):
     layer = Image.new("RGBA", src.size, (0, 0, 0, 0))
     dr = ImageDraw.Draw(layer)
     for part, dmg, res in sorted(f["parts"], key=lambda t: t[1]):
@@ -455,17 +563,225 @@ def glow_image(src, f, spots):
         x, y = spots[part]
         r = (16 + min(16, dmg / 25)) * src.size[0] / PIC
         rgb = tuple(int(col[i:i + 2], 16) for i in (1, 3, 5))
-        dr.ellipse((x - r, y - r, x + r, y + r), fill=rgb + (190,))
-    layer = layer.filter(ImageFilter.GaussianBlur(9))
-    body = src.getchannel("A").point(lambda a: 255 if a > 40 else 0).filter(ImageFilter.GaussianBlur(2))
-    layer.putalpha(ImageChops.multiply(layer.getchannel("A"), body))
+        dr.ellipse((x - r, y - r, x + r, y + r), fill=rgb + (alpha,))
+    return layer.filter(ImageFilter.GaussianBlur(9))
+
+
+def mark_tier(dmg):
+    """How bad the marks on a part look: 0 (none) up to 5 (ruined), on the damage steps the labels use."""
+    return 5 if dmg >= 300 else 4 if dmg >= 150 else 3 if dmg >= 90 else 2 if dmg >= 60 else 1 if dmg >= 30 else 0
+
+
+def _ragged(rng, x0, y0, x1, y1, n, jit):
+    """A line from (x0, y0) to (x1, y1) as n+1 points, each nudged sideways by up to jit: a torn edge, not a ruler."""
+    dx, dy = x1 - x0, y1 - y0
+    ln = math.hypot(dx, dy) or 1
+    nx, ny = -dy / ln, dx / ln
+    pts = []
+    for i in range(n + 1):
+        t = i / n
+        j = rng.uniform(-jit, jit) if 0 < i < n else 0
+        pts.append((x0 + dx * t + nx * j, y0 + dy * t + ny * j))
+    return pts
+
+
+def _mark(kind, soft, sharp, x, y, u, tier, rng, fresh):
+    """One kind of mark at (x, y): soft (blurred later: bruising, soot, frost haze, blood seeping) and sharp (cuts,
+    punctures, crystals). u: pixels per point at this picture's size; tier 1-5; fresh: made this beat or the last."""
+    r = (9 + 3.5 * tier) * u
+    u = u * 1.4          # (lines, dots and crystals a little heavier than the spacing, so they read on the card)
+    pop = 1.15 if fresh else 1.0
+
+    def A(v):
+        return int(max(0, min(255, v * pop)))
+    if kind == "claw":
+        n = 4 if tier >= 4 else 3
+        ang = rng.uniform(-1.15, -0.45)
+        L, gap = r * (1.5 + 0.15 * tier), (2.2 + 0.35 * tier) * u
+        w = (0.6 + 0.4 * tier) * u
+        ca, sa = math.cos(ang), math.sin(ang)
+        for j in range(n):
+            off = (j - (n - 1) / 2) * gap + rng.uniform(-0.6, 0.6) * u
+            cx, cy = x - sa * off, y + ca * off
+            ln = L * rng.uniform(0.75, 1.05)
+            pts = _ragged(rng, cx - ca * ln / 2, cy - sa * ln / 2, cx + ca * ln / 2, cy + sa * ln / 2, 6,
+                          (0.3 + 0.25 * tier) * u)
+            soft.line(pts, fill=(170, 20, 30, A(25 + 15 * tier)), width=int(w * 3))
+            sharp.line(pts, fill=(105, 8, 18, A(150 + 20 * tier)), width=max(1, int(w)))
+            if tier >= 2:
+                sharp.line(pts[1:-1], fill=(205, 30, 40, A(170 + 10 * tier)), width=max(1, int(w * 0.5)))
+            if tier >= 3 and rng.random() < 0.5 + 0.1 * tier:
+                mx, my = pts[len(pts) // 2]
+                sharp.line([(mx, my), (mx + rng.uniform(-1, 1) * u, my + r * rng.uniform(0.3, 0.8))],
+                           fill=(150, 10, 20, A(170)), width=max(1, int(w * 0.6)))      # a trickle of blood
+    elif kind == "bite":
+        R, k = r * 0.85, 3 + min(2, tier // 2)
+        d = (1.0 + 0.35 * tier) * u
+        for side in (-1, 1):                       # the upper and the lower jaw
+            for i in range(k):
+                t = (i - (k - 1) / 2) / max(1, k - 1) * 1.6
+                px = x + R * math.sin(t) + rng.uniform(-0.5, 0.5) * u
+                py = y + side * (R * 0.45 + R * 0.25 * (1 - math.cos(t))) + rng.uniform(-0.5, 0.5) * u
+                soft.ellipse((px - d * 2.4, py - d * 2.4, px + d * 2.4, py + d * 2.4), fill=(160, 20, 30, A(35 + 15 * tier)))
+                sharp.ellipse((px - d, py - d, px + d, py + d), fill=(80, 0, 10, A(235)))
+                if tier >= 3 and side == 1 and rng.random() < 0.35:
+                    sharp.line([(px, py), (px, py + r * rng.uniform(0.3, 0.7))], fill=(150, 10, 20, A(170)),
+                               width=max(1, int(d * 0.8)))
+    elif kind == "burn":
+        for i in range(2 + tier):
+            ox, oy, rr = rng.uniform(-0.5, 0.5) * r, rng.uniform(-0.4, 0.4) * r, r * rng.uniform(0.45, 0.85)
+            soft.ellipse((x + ox - rr, y + oy - rr * 0.8, x + ox + rr, y + oy + rr * 0.8), fill=(35, 20, 10, A(45 + 18 * tier)))
+        if tier >= 2:
+            soft.ellipse((x - r * 0.45, y - r * 0.35, x + r * 0.45, y + r * 0.35), fill=(200, 65, 20, A(50 + 18 * tier)))
+        if tier >= 4:
+            for i in range(4 + tier):
+                px, py, s = x + rng.uniform(-0.8, 0.8) * r, y + rng.uniform(-0.6, 0.6) * r, rng.uniform(0.8, 1.8) * u
+                sharp.ellipse((px - s, py - s, px + s, py + s), fill=(20, 10, 5, A(200)) if i % 2 else (235, 190, 150, A(170)))
+    elif kind == "shock":
+        soft.ellipse((x - r, y - r * 0.8, x + r, y + r * 0.8), fill=(60, 40, 10, A(35 + 15 * tier)))
+        for i in range(2 + tier // 2):
+            a = rng.uniform(0, 2 * math.pi)
+            pts = [(x, y)]
+            for s in range(1, 5):
+                pts.append((x + math.cos(a) * r * 0.35 * s + rng.uniform(-1.5, 1.5) * u,
+                            y + math.sin(a) * r * 0.35 * s + rng.uniform(-1.5, 1.5) * u))
+            sharp.line(pts, fill=(40, 30, 10, A(190)), width=max(1, int((0.8 + 0.2 * tier) * u)))
+            sharp.line(pts, fill=(255, 235, 110, A(190)), width=max(1, int(0.5 * u)))
+    elif kind == "cold":
+        soft.ellipse((x - r, y - r * 0.8, x + r, y + r * 0.8), fill=(170, 210, 255, A(50 + 15 * tier)))
+        for i in range(3 + tier):
+            px, py = x + rng.uniform(-0.8, 0.8) * r, y + rng.uniform(-0.6, 0.6) * r
+            s = (2 + 0.6 * tier) * u * rng.uniform(0.7, 1.2)
+            for k in range(3):
+                a = math.pi / 3 * k + rng.uniform(-0.1, 0.1)
+                sharp.line([(px - math.cos(a) * s, py - math.sin(a) * s), (px + math.cos(a) * s, py + math.sin(a) * s)],
+                           fill=(230, 248, 255, A(220)), width=max(1, int(0.7 * u)))
+    elif kind == "grip":
+        ang = rng.uniform(0, math.pi)
+        for i in range(4):
+            t = ang + (i - 1.5) * 0.45
+            px, py = x + math.cos(t) * r * 0.7, y + math.sin(t) * r * 0.7
+            rw, rh = r * 0.38, r * 0.16
+            soft.ellipse((px - rw, py - rh, px + rw, py + rh), fill=(130, 30, 60, A(45 + 18 * tier)))
+            if tier >= 3:
+                sharp.ellipse((px - u, py - u, px + u, py + u), fill=(110, 10, 20, A(200)))
+    else:  # blunt: a bruise that darkens and swells
+        soft.ellipse((x - r * 1.1, y - r * 0.8, x + r * 1.1, y + r * 0.8), fill=(70, 30, 90, A(40 + 22 * tier)))
+        if tier >= 3:
+            soft.ellipse((x - r * 0.55, y - r * 0.4, x + r * 0.55, y + r * 0.4), fill=(50, 15, 60, A(60 + 15 * tier)))
+        if tier >= 2 and rng.random() < 0.6:
+            px = x + rng.uniform(-0.4, 0.4) * r
+            sharp.line(_ragged(rng, px - r * 0.3, y, px + r * 0.3, y + rng.uniform(-0.2, 0.2) * r, 3, u),
+                       fill=(140, 20, 30, A(110 + 15 * tier)), width=max(1, int(0.7 * u)))   # the skin split
+    if tier >= 5:
+        # ruined: swollen and dark, blood under and around it, whatever did it
+        soft.ellipse((x - r * 1.25, y - r, x + r * 1.25, y + r), fill=(90, 10, 25, A(105)))
+
+
+def _marks_layer(src, f, spots, o):
+    """Every hurt part's marks (window.damage_marks), drawn at twice the size and brought down, so the lines are
+    smooth. Each part's marks come from her name and the part, so they stay put from beat to beat and only grow."""
+    W, H = src.size
+    S = 2
+    soft_im = Image.new("RGBA", (W * S, H * S), (0, 0, 0, 0))
+    sharp_im = Image.new("RGBA", (W * S, H * S), (0, 0, 0, 0))
+    soft, sharp = ImageDraw.Draw(soft_im), ImageDraw.Draw(sharp_im)
+    u = S * W / PIC
+    least = float(o.get("marks_from", 30))
+    marks = f.get("marks") or {}
+    for part, dmg, res in sorted(f["parts"], key=lambda t: t[1]):
+        tier = mark_tier(dmg)
+        if dmg < least or not tier or part not in spots:
+            continue
+        info = marks.get(part) or {}
+        kinds = list(info.get("kinds") or ["blunt"])[:2]
+        age = info.get("age")
+        fresh = age is not None and age <= 1
+        rng = random.Random(zlib.crc32(f"{f.get('name')}|{part}".encode()))
+        x, y = spots[part][0] * S, spots[part][1] * S
+        for i, k in enumerate(kinds):
+            # a second kind sits a little to one side of the first, a step lighter
+            dx, dy = (rng.uniform(-6, 6) * u, rng.uniform(-4, 4) * u) if i else (0, 0)
+            _mark(k, soft, sharp, x + dx, y + dy, u, max(1, tier - i), rng, fresh)
+    soft_im = soft_im.filter(ImageFilter.GaussianBlur(3 * u))
+    soft_im.alpha_composite(sharp_im)
+    return soft_im.resize((W, H), Image.LANCZOS)
+
+
+# whole-body looks for statuses (window.status_look): a tint over her body, and what sparkles or drips on it
+STATUS_TINT = {"frozen": ((120, 185, 255), 0.42), "chilled": ((200, 230, 255), 0.18), "soaked": ((90, 140, 220), 0.12),
+               "poisoned": ((140, 60, 170), 0.14), "burned": ((90, 40, 20), 0.12), "paralyzed": ((255, 240, 120), 0.08)}
+
+
+def _status_layer(src, f, mask):
+    st = f.get("status") or {}
+    have = [k for k in STATUS_TINT if k in st]
+    if not have:
+        return None
+    W, H = src.size
+    layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    for k in have:
+        col, share = STATUS_TINT[k]
+        tint = Image.new("RGBA", (W, H), col + (0,))
+        tint.putalpha(mask.point(lambda a, s=share: int(a * s)))
+        layer.alpha_composite(tint)
+    box = mask.point(lambda a: 255 if a > 128 else 0).getbbox()
+    if box:
+        rng = random.Random(zlib.crc32(f"{f.get('name')}|status".encode()))
+        dr = ImageDraw.Draw(layer)
+        u = W / PIC
+        x0, y0, x1, y1 = box
+        if "frozen" in st:
+            for i in range(18):
+                px, py, s = rng.uniform(x0, x1), rng.uniform(y0, y1), rng.uniform(3, 7) * u
+                for a in (0, math.pi / 3, 2 * math.pi / 3):
+                    dr.line([(px - math.cos(a) * s, py - math.sin(a) * s), (px + math.cos(a) * s, py + math.sin(a) * s)],
+                            fill=(240, 250, 255, 235), width=max(1, int(1.2 * u)))
+        if "soaked" in st:
+            for i in range(7):
+                px, py = rng.uniform(x0, x1), rng.uniform(y0, y0 + (y1 - y0) * 0.6)
+                dr.ellipse((px - 1.5 * u, py - 2.5 * u, px + 1.5 * u, py + 2.5 * u), fill=(255, 255, 255, 120))
+        if "paralyzed" in st:
+            for i in range(8):
+                px, py = rng.uniform(x0, x1), rng.uniform(y0, y1)
+                pts = [(px + rng.uniform(-7, 7) * u, py + k * 6 * u) for k in range(5)]
+                dr.line(pts, fill=(90, 70, 0, 200), width=max(1, int(3 * u)))
+                dr.line(pts, fill=(255, 240, 90, 245), width=max(1, int(1.5 * u)))
+    layer.putalpha(ImageChops.multiply(layer.getchannel("A"), mask))
+    return layer
+
+
+def paint(src, f, spots, o=None):
+    """Her picture with what the fight has done to her, each piece switchable (rules.json "window"): the damage glow
+    (glow), the marks on each hurt part (damage_marks), the look of her statuses (status_look), all kept on her
+    body; greyed out if she is out."""
+    if Image is None or src is None:
+        return None
+    o = o or opts_of(None)
+    mask = _body_mask(src)
     out = src.copy()
-    out.alpha_composite(layer)
+    # (with the marks on, the glow is half as strong: the colour says how bad, the marks show what it looks like)
+    glow_a = 95 if o.get("damage_marks", True) else 190
+    for on, make in ((o.get("glow", True), lambda: _glow_layer(src, f, spots, glow_a)),
+                     (o.get("damage_marks", True), lambda: _marks_layer(src, f, spots, o))):
+        if on:
+            layer = make()
+            layer.putalpha(ImageChops.multiply(layer.getchannel("A"), mask))
+            out.alpha_composite(layer)
+    if o.get("status_look", True):
+        layer = _status_layer(src, f, mask)
+        if layer is not None:
+            out.alpha_composite(layer)
     if f.get("out"):
         grey = out.convert("LA").convert("RGBA")
         grey.putalpha(out.getchannel("A"))
         out = grey
     return out
+
+
+def glow_image(src, f, spots):
+    """The picture with each hurt part glowing in its damage colour (the glow alone; paint() does the rest too)."""
+    return paint(src, f, spots, {"glow": True, "damage_marks": False, "status_look": False})
 
 
 def columns(f, spots, rect, parts=None):
@@ -516,12 +832,14 @@ def _font(size, bold=False):
 def card_panels(f, book, opts=None, plain=False, cache=None):
     """The pictures on one fighter's card, top to bottom: the front, then the back (her back, lower back and tails,
     and any part you moved there). Each is a dict: view, size, src (the prepared picture), pic (with the glow), rect,
-    spots, parts, left, right (the label columns), key (where clicks store points), height, state, look.
-    plain: no weakened look (while you place a point by hand). cache: a dict to keep prepared pictures in."""
+    spots, parts, left, right (the label columns), key (where clicks store points), height, state, pose, look.
+    plain: the picture as it is, never bent or faded by the program (while you place a point by hand: your own pose
+    and state pictures are still the ones shown, so their points go on them). cache: prepared pictures are kept here."""
     o = opts or opts_of(None)
-    state = None if plain or not o.get("weak_look", True) else health_state(f, o)
+    state = health_state(f, o) if o.get("weak_look", True) else None
+    pose = pose_of(f) if o.get("poses", True) else None
     views = ["front"] + (["back"] if o.get("back_view", True) and Image is not None else [])
-    picked = {v: book.pick(v, state) if book is not None else None for v in views}
+    picked = {v: book.pick(v, state, pose) if book is not None else None for v in views}
     if "back" in picked and not picked["back"]:
         views.remove("back")
     if len(views) == 2:
@@ -537,7 +855,12 @@ def card_panels(f, book, opts=None, plain=False, cache=None):
     for v in views:
         got = picked.get(v)
         size = PIC if v == "front" else int(o.get("back_size", 220))
-        look = state if (state and got and not got[5]) else None
+        look = None
+        if got and not got[5] and not plain:
+            # no picture of her like this: the program fades her (state) and bends her into the pose (window.poses
+            # with pose_fallback; "" = poses on but not bent; None = the old tilt and tip onto her side)
+            geo = (pose if o.get("pose_fallback", True) and pose in POSE_GEO else "") if o.get("poses", True) else None
+            look = (state, geo) if (state or geo) else None
         if got and got[0]:
             ck = (v, got[2], look, size)
             prep = (cache or {}).get(ck)
@@ -555,9 +878,9 @@ def card_panels(f, book, opts=None, plain=False, cache=None):
                               builtin=builtin, parts=parts, xf=xf, size=size)
         left, right = columns(f, spots, rect, parts)
         H = max(size, ROW * max(len(left), len(right)) + 12)
-        out.append({"view": v, "size": size, "src": src, "pic": glow_image(src, f, spots) if src is not None else None,
+        out.append({"view": v, "size": size, "src": src, "pic": paint(src, f, spots, o) if src is not None else None,
                     "rect": rect, "spots": spots, "parts": parts, "left": left, "right": right, "key": key,
-                    "height": H, "state": state, "look": look})
+                    "height": H, "state": state, "pose": pose, "look": look})
     return out
 
 

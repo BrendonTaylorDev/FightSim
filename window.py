@@ -16,7 +16,8 @@ Otherwise the official artwork is fetched once from PokeAPI and kept there; with
 drawn instead. Each fighter also gets a picture from behind, under the first one, carrying her back, lower back and
 tails (<name>_back.png or <species>_back.png, else the PokeAPI back sprite, else her outline), so the front isn't
 crowded; click a part's label, then either picture, to place it there. As she weakens her pictures show it: your own
-<name>_worn.png, _hurt, _down and _out (and _back_hurt and so on) if you have them, else her picture fades, slumps,
+<name>_worn.png, _hurt, _down and _out (and _back_hurt and so on), and pose pictures (_pinned, _faceup, _side...: see
+rules.json window.poses) if you have them, else her picture fades, slumps,
 or tips over. "Back view" and "Weakened look" on the bar above the cards turn each off (rules.json "window")."""
 import builtins
 import io
@@ -527,6 +528,10 @@ class App:
         o = opts_of(self._rules())
         self.back_view = tk.BooleanVar(value=bool(o.get("back_view", True)))
         self.weak_look = tk.BooleanVar(value=bool(o.get("weak_look", True)))
+        self.damage_marks = tk.BooleanVar(value=bool(o.get("damage_marks", True)))
+        self.poses = tk.BooleanVar(value=bool(o.get("poses", True)))
+        ttk.Checkbutton(top, text="Poses", variable=self.poses, command=self.redraw_cards).pack(side="right")
+        ttk.Checkbutton(top, text="Damage marks", variable=self.damage_marks, command=self.redraw_cards).pack(side="right")
         ttk.Checkbutton(top, text="Back view", variable=self.back_view, command=self.redraw_cards).pack(side="right")
         ttk.Checkbutton(top, text="Weakened look", variable=self.weak_look,
                         command=self.redraw_cards).pack(side="right")
@@ -841,10 +846,12 @@ class App:
             return {}
 
     def card_opts(self):
-        """The card settings (rules.json "window"), with the two switches on the bar above the cards."""
+        """The card settings (rules.json "window"), with the switches on the bar above the cards."""
         o = opts_of(self._rules())
         o["back_view"] = bool(self.back_view.get())
         o["weak_look"] = bool(self.weak_look.get())
+        o["damage_marks"] = bool(self.damage_marks.get())
+        o["poses"] = bool(self.poses.get())
         return o
 
     def redraw_cards(self):

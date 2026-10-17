@@ -5121,6 +5121,33 @@ class Engine:
             return "cold"
         return "blunt"
 
+    def picture_marks(self, f, least=20):
+        """What the window and exported cards draw on each hurt part (window.damage_marks): {part: {"kinds", "age"}}.
+        kinds: the marks of what hurt it, up to two (claw, bite, blunt, grip, shock, cold, and burn for fire); age:
+        beats since it was last hit (0 = this beat), or None. Only parts with at least `least` damage."""
+        out = {}
+        for p in f.parts.values():
+            if p.damage < least:
+                continue
+            kinds = []
+            for src in self.injury_causes(f"{f.name}|{p.name}", 2):
+                k = self._mark_kind(src)
+                if k == "blunt":
+                    m = re.match(r"^.+?'s? (.+?)(?: \(.*\))?$", str(src or ""))
+                    mv = (self.dex_move(m.group(1)) if m else None) or {}
+                    s = str(src or "").lower()
+                    # (a move missing from moves.json still says what it is in its own name)
+                    k = ("burn" if mv.get("type") == "Fire" or re.search(r"flame|fire|ember|burn|scorch|heat", s) else
+                         "claw" if re.search(r"slash|claw|swipe|scratch|rake|cut|talon", s) else
+                         "bite" if re.search(r"bite|fang|crunch|jaws|teeth", s) else
+                         "shock" if re.search(r"thunder|shock|spark|volt|electr", s) else
+                         "cold" if re.search(r"\bice\b|icy|frost|freez|blizzard|hail", s) else k)
+                if k not in kinds:
+                    kinds.append(k)
+            t = (getattr(self, "hit_turn", None) or {}).get(f"{f.name}|{p.name}")
+            out[p.name] = {"kinds": kinds[:2] or ["blunt"], "age": None if t is None else max(0, self.turn - t)}
+        return out
+
     def covering(self, f):
         """What her body is covered with, from her own description: fur, feathers, scales, or bare skin."""
         t = f"{getattr(f, 'appearance', '') or ''} {getattr(f, 'description', '') or ''}".lower()
