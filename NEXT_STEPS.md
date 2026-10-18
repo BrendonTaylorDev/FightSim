@@ -53,7 +53,9 @@ Fixed already (commit after build 193):
   (her body was "a rock" while she was slammed into the pine).
 - The body note now says it belongs to the blow's ONE telling.
 
-Still to look at:
+Build 194 then fixed: the linger note dropped when body detail is on (`narration.rich.no_linger`), rich length
+1.5, a no-past reminder on the first beat, "familiar" smells cleaned, hands marked in landings, a roll-through told
+once. Still to look at (the rest of the list below, apart from those):
 - **The same cheek blow is told 3-4 times in Ripples' part.** The linger note, the impact-motion note, the body note
   and the matchup note all describe the same blow, so the model tells it several times. Idea: merge them into one
   block for each blow (part of the beat card, idea 1), or skip the linger when rich body detail is on.
