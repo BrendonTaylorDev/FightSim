@@ -3,12 +3,18 @@
 Written after build 193 (branch `claude/kind-bell-r5ehx4-anchors`). Nothing below is built yet; the user hasn't
 picked. Suggested order: 3 → 1 → 2 → 5 → 7. Every one must be switchable in rules.json (see CLAUDE.md).
 
-## Where things stand
+## Where things stand (build 197)
 - Build 192: `narration.rich` (longer beats, INNER LIFE from `engine.inner_state` / `fight_record`, one sense a part,
   closing thoughts, per-blow body detail: `narrator._impact_body`, `BODY_MOVES` / `BODY_GIVES` / `BODY_DEEP`).
 - Build 193: `/sets` (every setting), `/intro on|off`.
+- Builds 194-196: fixes from the user's Nerine vs Ripples fights (see the sections below).
+- Build 197: `/bench`, the test bench (play.py `_bench_save` / `_bench_run` / `bench`; cases in bench_cases/,
+  reports in bench_reports/). Tested here only with the stand-in model, not yet with the real one.
 - New fighter Nerine (a second Buizel, no flotation sac), health 1775. The user doesn't want more balance testing.
-- Not yet copied to the other branches (`claude/kind-bell-r5ehx4`, `-shorter-notes`).
+- None of this is on the other branches yet (`claude/kind-bell-r5ehx4`, `-shorter-notes`).
+- Next: idea 1, the beat card, behind a switch so `/bench` can compare it with the current layout. Ask the user for a
+  bench baseline first.
+- The user asked: commit once per build, not after every fix.
 
 ## The ideas
 (Build 197 built idea 3, the test bench: `/bench`.)
