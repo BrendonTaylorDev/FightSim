@@ -274,12 +274,14 @@ HELP = """
           /focus neck              the throat and neck (with no /focus, no part of the body comes first)
           /focus vulnerable        the soft places: throat, eyes, nose, ears, belly, knees and hocks
           /focus weakened          the same as injured
+          /focus Nocturne limbs    only Nocturne's attacks go for arms, legs and paws
+          /focus strength 0.8      how firmly off-target picks get moved onto the zone (0 = nudge only)
+          /focus                   shows what is set now, and every zone
+          /focus off               no zone: attacks go anywhere
   /weakspots [0-1|off]                      how often the director is nudged at one weak spot (default 0.2);
                                             with no /focus, nothing else is aimed at first
   /weakspots worked [0-1]                   how many of those nudges are for a run of blows (pummel, combo, chain,
                                             grapple): one weak spot again and again, a group of parts, or several
-          /focus Nocturne limbs    only Nocturne's attacks go for arms, legs and paws
-          /focus strength 0.8      how firmly off-target picks get moved onto the zone (0 = nudge only)
 
 =============================================================================================
  MOVES   (moves.json: 250+ Pokemon moves)
