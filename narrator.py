@@ -3152,7 +3152,7 @@ class Narrator:
     BODY_GIVES = {
         "blunt": ["the instant of contact: pressure building against the {part} before it drives through, the fur "
                   "flattened in a dent and the flesh under it giving, then springing back",
-                  "the {part} takes the weight of it: skin and fur shoved across the bone, the muscle under it "
+                  "the {part} takes the weight of it: skin and fur shoved hard across what lies under them, the muscle under it "
                   "pressed flat and then rebounding"],
         "claw": ["the claws catch first: fur and skin drag and stretch taut along the line of the cut before they part",
                  "the skin is pulled with the claws for a moment, stretched, before it gives along the cut"],
@@ -3171,7 +3171,7 @@ class Narrator:
         (r"cheek|jaw|muzzle|snout|mouth|chin",
          ["the shock rings through her teeth and up into her skull", "her jaw, clenched a moment before, is knocked open "
           "and her teeth clack back together", "her lips and cheek are shoved back off her teeth by it",
-          "the jaw is knocked sideways and she feels it grind back into place", "a hot ache blooms along the bone and her "
+          "the jaw is knocked sideways and she feels it settle back where it belongs", "a hot ache blooms deep under the fur and her "
           "eyes water with it", "her head fills with the dull crack of it, heard from inside"]),
         (r"\bnose\b|snout",
          ["her eyes water at once, a sharp sting flooding up behind them", "her nose is shoved sideways and every breath "
@@ -3201,7 +3201,7 @@ class Narrator:
           "hot wrench under the muscle", "the blow's shock runs down the limb and her paw splays open on its own"]),
         (r"upper arm|forearm|\barm\b|foreleg|forepaw|\bpaw\b|hand|wrist|elbow",
          ["the shock jumps down the limb and her toes splay", "the limb goes numb for an instant and comes back "
-          "throbbing", "the bone under it hums with the blow", "her grip opens without her meaning it to"]),
+          "throbbing", "the whole limb hums with the blow", "her grip opens without her meaning it to"]),
         (r"\bfin\b",
          ["the fin is bent back and its edge folds before snapping straight", "a sharp sting runs along the fin's edge and "
           "into her arm"]),
@@ -3216,7 +3216,7 @@ class Narrator:
          ["the jolt runs up the tail into its root and her hips", "the tail goes stiff and then trembles",
           "the shock of it shoots up into the small of her back"]),
         (r"wing",
-         ["the wing's bones hum with it and the feathers along it splay", "the wing jerks half-open on its own"]),
+         ["the whole wing hums with it and the feathers along it splay", "the wing jerks half-open on its own"]),
     ]
     BODY_AFTER = {"claw": ["the sting arrives a beat after the claws have gone, sharper than the cut itself",
                            "cold air finds the opened skin and makes it burn"],
@@ -3266,7 +3266,8 @@ class Narrator:
         inside = rnd.sample(deep, min(n_deep, len(deep)))
         if kind in self.BODY_AFTER:
             inside.append(rnd.choice(self.BODY_AFTER[kind]))
-        out = (f"  - THE BODY UNDER IT (ideas for this blow, in slow physical detail and your own words: use what fits, "
+        out = (f"  - THE BODY UNDER IT (ideas for the ONE telling of this blow, in slow physical detail and your own "
+               f"words: fold them into the moment it lands and never land it again to use them; use what fits, "
                f"or invent more like them, as big as a {size} blow and no bigger; nothing moves her anywhere the beat "
                f"doesn't say, and no wound is added): {gives}"
                + (f"; {moves}" if moves else "") + "."
@@ -5135,7 +5136,7 @@ class Narrator:
                     for h in a.get("hits") or [] if (h.get("defender") or d) == d)
         # or the blow itself was big (devastating, or a hit that leaves a part very painful or worse): "her body
         # shrugs it off" would say the opposite of the numbers
-        big_ = a.get("devastating") or any(
+        big_ = a.get("devastating") or a.get("launch") or a.get("landings") or a.get("knockout") or any(
             self._pain(h.get("damage_after", 0))["label"] in ("very painful", "excruciating", "devastated")
             for h in a.get("hits") or [] if (h.get("defender") or d) == d)
         if e == "weak" and (sore_ or big_):

@@ -45,3 +45,29 @@ picked. Suggested order: 3 → 1 → 2 → 5 → 7. Every one must be switchable
   - pastes in pieces of the notes.
 
   The beat card (1) and the outline (4) are aimed at these.
+
+## From the user's Nerine vs Ripples beat 1 (build 193; 10.5 min, 24 calls, 4 parts)
+Fixed already (commit after build 193):
+- The body ideas no longer say "bone", which likely set off the broken-bones check: 2 checks, 5 paragraph rewrites.
+- "Not very effective" is no longer told as a shrug when the blow knocks her down or throws her into something
+  (her body was "a rock" while she was slammed into the pine).
+- The body note now says it belongs to the blow's ONE telling.
+
+Still to look at:
+- **The same cheek blow is told 3-4 times in Ripples' part.** The linger note, the impact-motion note, the body note
+  and the matchup note all describe the same blow, so the model tells it several times. Idea: merge them into one
+  block for each blow (part of the beat card, idea 1), or skip the linger when rich body detail is on.
+- **Too slow:** 4 parts (linger + rich length) and 12 paragraph fixes. Ideas:
+  - fewer parts when rich is on (count words per part, not parts);
+  - give the paragraph-repair pass a budget per beat;
+  - `narration.rich.length_mult` 1.5.
+- **Invented history on beat 1:** "a slight favoring of her left side, a remnant of the last hit". Nothing had hit
+  her yet.
+- **Familiar smells:** "a familiar sensation", "a familiar and comforting aroma". The no-past note isn't enough; a
+  scrub for "familiar" next to smell or sensation words might be.
+- **Hands treated as feet:** "her left paw hit the ground first ... into her hip", although a Buizel's paws are her
+  hands.
+- **Rolled to her feet, told as staggering:** "she took the blow, staggered" after she was knocked down, rolled
+  through and came up standing.
+- **The first part is labelled "— Both —"** before the two sides are told.
+- **16 present-tense sentences** in one beat: the model drifts more over long parts.
