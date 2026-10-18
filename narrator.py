@@ -12694,7 +12694,32 @@ class Narrator:
                         break
                 if placed:
                     continue
-            written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()
+            if re.search(r"get(?:s|ting)? up|getting to her feet|rise|rising|on her feet|stand", issue, re.I):
+                written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()     # (the get-up itself: last)
+            else:
+                written = self._put_in_order(written, at, text)
+        return written
+
+    GETUP_TRY = re.compile(r"\b(?:push(?:ed|es|ing)? (?:her|him)self (?:up|upright)|tried to (?:rise|get up|stand)|"
+                           r"struggl\w* (?:to (?:rise|get up|stand|her feet)|up)|(?:planted|got) (?:her|his) "
+                           r"(?:hands|paws|legs|feet) (?:on|under)|first try|second try|third try|onto her feet|"
+                           r"to her feet|got up|gets up|getting up)\b", re.I)
+
+    def _put_in_order(self, written, at, text):
+        """A passage for something the drafts left out, put where it belongs: in front of the first paragraph (from
+        part `at` on) where the fighter who gets up this beat starts trying to, since the get-up comes at the end of
+        the beat; else at the end of part `at`. Returns the new list."""
+        who = getattr(self, "_getup_who", None) or (getattr(self, "_getup_event", None) or {}).get("fighter")
+        written = list(written)
+        if who:
+            for k in range(at, len(written)):
+                paras = (written[k] or "").split("\n\n")
+                for j, para in enumerate(paras):
+                    if self.GETUP_TRY.search(para) and (who in para or who in "\n".join(paras[:j])):
+                        paras.insert(j, text.strip())
+                        written[k] = "\n\n".join(paras).strip()
+                        return written
+        written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()
         return written
 
     def _rise_at(self, text, who):
@@ -12768,7 +12793,7 @@ class Narrator:
                         f"Then {poss(att)} {('fire' if 'fire' in kinds else 'cold' if 'ice' in kinds else 'blow')} "
                         f"struck {poss(dfn)} {part}.")
             if text:
-                written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()
+                written = self._put_in_order(written, at, text)
                 seen = "\n".join(w for w in written if w)
         return written
 
