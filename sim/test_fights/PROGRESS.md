@@ -53,6 +53,13 @@ Nothing. Sweep 2 (engine, body2, ideas2) was merged into build 184.
    - speed: the user's reading rate is 400-650 tokens/s; asked them to check `ollama ps` and my_settings.json;
    - the act part doesn't say where a blast comes out of her.
 
+11. (Build 190-guided, on the anchors branch) The user's local builds 188-189 (made in another session) were
+    replayed onto the anchors branch; a backup of the branch from before is at backup/anchors-before-userzip
+    (local only). /help was rebuilt with balance, narration, settings and switches topics, and word search.
+12. In progress: review of the user's full fight (Ripples vs Nocturne, 23 beats, knockouts only, scale 5). The beats
+    are in the scratchpad's fight1/bNN.txt, and the reviewers' findings in fight1/findings_A/B/C.md. Next: verify the
+    systemic findings and fix them.
+
 ## Done in this stretch (builds 177-179 and after)
 - Hit reactions weigh the hurt part as well as overall strength. A strong fighter with a ruined part gets a half-hidden reaction, a capped voice, and only concealed ideas.
 - Flight:
