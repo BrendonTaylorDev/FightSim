@@ -874,6 +874,17 @@ def resolve(engine, b):
             raise ValueError(f"'{b.get('improvised_name')}' is not an attack: getting up, bracing, or recovering does no "
                              f"damage. If she attacks, name the attack (a kick, a bite, a tail strike); otherwise use "
                              f"'breather'")
+        named_ = str(b.get("improvised_name") or "").strip()
+        exact_ = " ".join(named_.lower().replace("-", " ").split())
+        # (a real move she doesn't know, and one no body makes by itself: a Thunderbolt, not a Headbutt)
+        if not manual and exact_ and any(" ".join(m["name"].lower().replace("-", " ").split()) == exact_
+                                         and str(m.get("type") or "Normal") not in ("Normal", "Fighting")
+                                         for m in engine.movedex) and not engine.find_move(b.get("attacker"), named_):
+            # a real move she doesn't know ("Thunderbolt" for a Buizel): it would land as a plain Normal blow under
+            # that move's name, and the story would tell the move
+            own_ = ", ".join(m["name"] for m in engine.get(b.get("attacker")).moves)
+            raise ValueError(f"'{named_}' is a move {b.get('attacker')} doesn't know. Use one of hers ({own_}), or "
+                             f"name an improvised blow by what it is (a kick, a tail swipe, a shoulder)")
         target = "spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1 else "targeted"
         move = engine.improvised_move(b.get("improvised_name"), b.get("improvised_type"), b.get("severity"),
                                       target, b.get("flavor", ""))

@@ -1831,6 +1831,20 @@ class Engine:
         self.scene = self.scene_cfg.get("text") or fallback or "A fight."
         return self.scene_cfg
 
+    LIES_ON = re.compile(r"\b(?:in|on|across|into|at the edge of|half in)\s+(?:the|a|an)\s+(?:[a-z'-]+\s+){0,2}?"
+                         r"(shallows|water|pool|stream|sand|beach|mud|bank|shingle|pebbles|gravel|snow|ice|moss|"
+                         r"grass|stone|rock|rocks|floor|deck|planks|shelf|ledge|slope|leaves|needles)\b", re.I)
+
+    def ground_under(self, name):
+        """What a fighter lies on as she gets up: where the director last placed her (in the shallows, on the
+        sand), else the arena's own ground word."""
+        text = getattr(self, "positions", None) or ""
+        m = re.search(re.escape(name) + r"\s*:\s*([^;]*)", text, re.I) if text else None
+        place = self.LIES_ON.search(m.group(1)) if m else None
+        if place:
+            return "the " + place.group(1).lower()
+        return self.scene_word("ground")
+
     def scene_word(self, key, default=None):
         """A word the notes use for this arena: place, ground, rough, slick, ambience."""
         return self.scene_cfg.get(key) or default or {"place": "the arena", "ground": "the ground",
@@ -2462,7 +2476,11 @@ class Engine:
 
     def set_status(self, f, status, beats):
         """Apply a status. Falling ASLEEP or being FROZEN also ends everything she was holding or pinning, and a
-        fighter who falls asleep on her feet slumps to the ground. What that knocked loose is left in _knock_on."""
+        fighter who falls asleep on her feet slumps to the ground. What that knocked loose is left in _knock_on.
+        A fighter already out takes no new status (it would never tick off: she is out of the beats)."""
+        if f.eliminated:
+            self._knock_on = []
+            return
         f.status[status] = max(f.status.get(status, 0), int(beats))
         self._fresh_status.add((f.name, status))
         if status == "chilled":
@@ -3497,7 +3515,7 @@ class Engine:
             # (and nobody lying out in the open has a prop to hand: a prop only where she lies at the foot of one)
             grab = (getattr(self, "lying_at", None) or {}).get(name) or None
             natural = next((i + 1 for i, c in enumerate(cuts) if score >= c), None)
-            ev = {"type": "get_up", "fighter": name, "plan": plan, "grab": grab, "ground": self.scene_word("ground"),
+            ev = {"type": "get_up", "fighter": name, "plan": plan, "grab": grab, "ground": self.ground_under(name),
                   "beats_down": beats,
                   "score": round(score, 2), "cuts": list(cuts), "forced": natural is None and tries is not None,
                   "tries": tries or len(cuts), "stands": tries is not None,
@@ -6846,6 +6864,9 @@ class Engine:
         for f in self.active():
             m = re.search(re.escape(f.name) + r"\s*:\s*([^;]*)", text, re.I)
             if m and self.IN_WATER.search(m.group(1)):
+                if not self.has(f, "soaked"):
+                    # (said, so a soaked fighter's electric hit later has a cause anyone can see)
+                    print(f"💧 {f.name} is soaked: she is standing in the water ({m.group(1).strip()[:60]})")
                 self.set_status(f, "soaked", max(f.status.get("soaked", 0), 2))
                 self._knock_on = []
 

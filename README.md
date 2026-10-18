@@ -654,6 +654,25 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 191
+Fixes from the full Ripples vs Nocturne fight (23 beats):
+- **Soaked is said when it starts.** A fighter placed IN the water by the director's positions ("in the shallows")
+  gets a console line, "💧 Ripples is soaked: she is standing in the water", so a later ×1.5 electric hit has a cause.
+- **No borrowed elemental moves.** An improvised blow named after a real Electric/Fire/Water/etc. move the fighter
+  doesn't know (Ripples' "Thunderbolt") is refused and the director told to use her own moves or name the blow by what
+  it is. Body blows that are also move names (Headbutt) are still fine.
+- **Get-ups happen where she lies:** "using the shallows" or "the sand" from the director's positions, not always the
+  arena's ground word ("the grass").
+- **No status on a fighter already out** (the frozen that never ended).
+- **Console:** rolls that round to the same whole number show a decimal (63.2 vs 63.0), so a "tie" no longer looks
+  decided both ways; hold changes read "power 8 → 26, then steady"; the "(moves.aim)" code name is gone.
+- **Prose clean-up, no extra calls:** pain sounds in brackets, "(Hnk)", become *Hnk* in italics; camera lines on their
+  own ("Wide shot.") and bracketed asides about "this part" / "the next part" are cut; "the other Absol" becomes "the
+  Absol" when there is only one; a NOT VERY EFFECTIVE blow that was devastating or left a part very painful is no longer
+  described as one her body shrugs off.
+- Not changed: the grab's "about 25% now" was right when the grab started; the second chain link tightened it to power
+  26, so the next roll was 11%.
+
 ## Build 190
 - **Builds 188-189 merged with the latest trial fixes.** Everything from 188 (undo and saves keep all state, audit F)
   and 189 (damage marks, status looks and poses on the pictures) is here, together with:

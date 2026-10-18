@@ -282,8 +282,13 @@ class Display:
         pointed at."""
         out = []
         if rolls:
+            def pair(c, r_):
+                # (whole numbers, unless they round to the same one: then a decimal shows which side it fell on)
+                a_, b_ = f"{c * 100:.0f}", f"{r_ * 100:.0f}"
+                return (a_, b_) if a_ != b_ else (f"{c * 100:.1f}", f"{r_ * 100:.1f}")
             items = [f"{r['what']} → {r['result']}" if r.get("plain") else
-                     f"{r['what']} {r['chance'] * 100:.0f}%, rolled {r['roll'] * 100:.0f} → {r['result']}" for r in rolls]
+                     "{0} {1}%, rolled {2} → {3}".format(r['what'], *pair(r['chance'], r['roll']), r['result'])
+                     for r in rolls]
             if self.tight():
                 lines = self._wrap(items, width=118, indent="   ", sep=" · ")
                 out += ["🎲 Rolls: " + lines[0].strip()] + lines[1:]
@@ -774,10 +779,10 @@ class Display:
                            f"{a['defender']}'s {a['strafe']['part']} (power {num(a['strafe']['power'])}, listed last)")
             if a.get("aim") and a["aim"].get("path"):
                 out.append(f"🎯 Part of it strays: the stretch meant for {a['defender']}'s {a['aim']['aimed']} catches "
-                           f"her {a['aim']['landed']} instead; the rest lands as aimed (moves.aim)")
+                           f"her {a['aim']['landed']} instead; the rest lands as aimed")
             elif a.get("aim"):
                 out.append(f"🎯 Off target: aimed at {a['defender']}'s {a['aim']['aimed']}, lands on her "
-                           f"{a['aim']['landed']} (moves.aim)")
+                           f"{a['aim']['landed']}")
             if a.get("carried"):
                 out.append(f"🦅 **{a['attacker']} carries {a['defender']} up** ({a['carried']['height']}) and drops her")
             if a.get("righted"):
@@ -984,7 +989,8 @@ class Display:
         elif t == "hold_change":
             for c in (a.get("changes") or [a]):     # every grip she adjusted, not just the first
                 out.append(f"🔒 **Hold #{c['hold_id']} ({c.get('part', '')}) {c['direction']}**: power "
-                           f"{num(c['power_before'])} → **{num(c['power_after'])}**, {c['change_per_beat']:+g}/beat")
+                           f"{num(c['power_before'])} → **{num(c['power_after'])}**"
+                           + (f", then {c['change_per_beat']:+g} each beat" if c.get('change_per_beat') else ", then steady"))
         elif t == "hold_end":
             ids = a.get("hold_ids") or [a["hold_id"]]
             what = ", ".join(a["parts"]) if a.get("parts") else a.get("part", "")

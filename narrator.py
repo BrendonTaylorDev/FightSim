@@ -4979,9 +4979,15 @@ class Narrator:
         # a part that was already badly hurt: no body shrugs a blow off there, whatever its type
         sore_ = any(self._pain(h.get("damage_before", 0))["label"] in ("very painful", "excruciating", "devastated")
                     for h in a.get("hits") or [] if (h.get("defender") or d) == d)
-        if e == "weak" and sore_:
+        # or the blow itself was big (devastating, or a hit that leaves a part very painful or worse): "her body
+        # shrugs it off" would say the opposite of the numbers
+        big_ = a.get("devastating") or any(
+            self._pain(h.get("damage_after", 0))["label"] in ("very painful", "excruciating", "devastated")
+            for h in a.get("hits") or [] if (h.get("defender") or d) == d)
+        if e == "weak" and (sore_ or big_):
             return (f" It is NOT VERY EFFECTIVE: {poss(d)} body ({mine}) is made to take {t}, and the {t} itself "
-                    f"spends itself against her. But it lands on a part that was already badly hurt, and there it "
+                    f"spends itself against her. But " + ("it lands on a part that was already badly hurt, and there it "
+                                                      if sore_ else "this blow was big enough that it ") +
                     f"still hurts as the hit below says: show the matchup only in the {t} not getting in, never as her "
                     f"shrugging the blow off.")
         if e == "super":
@@ -8022,7 +8028,8 @@ class Narrator:
         if any(a.get("devastating") for a in acts):
             add("devastating", "devastating take")
         effs = {self.EFFECT_KEY.get((a.get("move") or {}).get("effectiveness")) for a in acts
-                if a.get("type") == "instant" and (a.get("hits") or not a.get("dodged"))}
+                if a.get("type") == "instant" and (a.get("hits") or not a.get("dodged"))
+                and not (a.get("devastating") and self.EFFECT_KEY.get((a.get("move") or {}).get("effectiveness")) == "weak")}
         if "super" in effs:
             add("super effective act", "super effective take")
         elif effs & {"weak", "none"}:
@@ -11206,6 +11213,25 @@ class Narrator:
         if horns and max(horns) == 1:   # one horn in the whole fight: "the roots of her horns" is her horn
             text = re.sub(r"\b((?:her|its|the) (?:\w+ )?)horns\b", r"\1horn", text)
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))\*?(?:Continue with the next part|Next part)[.!]?\*?\s*", r"\1", text)
+        # a camera word left as a line of its own ("Wide shot.") and an aside to the reader in brackets ("(This is all
+        # that is required for this part. The next part will tell...)"): the plan's wording, not the story
+        text = re.sub(r"(?mi)^[ \t]*[*_]?(?:wide|close|medium|long|tight|low|high)(?:[- ]angle)? ?(?:shot|up|view)[.!:]?[*_]?[ \t]*$",
+                      "", text)
+        text = re.sub(r"(?mi)^[ \t]*\((?:[^()\n]{0,240}\b(?:this part|the next part|this paragraph|the next paragraph|"
+                      r"this beat|the next beat|is required|as instructed|the notes?)\b[^()\n]{0,240})\)[ \t]*$", "", text)
+        # a pain sound put in brackets after the sound it names ("escaped Nocturne (Hnk), her breath..."): set as the
+        # sound itself, in italics
+        sound = r"(?:H[mn]?[a-z]{0,5}|Ts+|Ff+|Rr+h*|Gr+h*|Eek|Ip|Ah+|Oo?f+|Ugh|Gah|Nn+g?h?|Mm+|Ss+|Hs+r*)"
+        text = re.sub(r"[ \t]*\((" + sound + r")\)(?=[,.;:!?…]|[ \t]*$)", r", *\1*", text, flags=re.M)
+        text = re.sub(r"[ \t]*\((" + sound + r")\)(?=[ \t]+\S)", r", *\1*,", text)
+        # "the other Absol" when only one Absol is in the fight: there is no other
+        spec = {}
+        for s_ in (getattr(self, "species_of", None) or {}).values():
+            spec[s_] = spec.get(s_, 0) + 1
+        for s_, k in spec.items():
+            if k == 1 and s_:
+                text = re.sub(r"\b([Tt]he) other (" + re.escape(s_) + r")\b", r"\1 \2", text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
         if str(n.get("swearing", "rare")).lower() in ("none", "off", "false", "never", "no", "0"):
             text = re.sub(r"(?:(?<=^)|(?<=[.!?…]\s)|(?<=\n))\*?(?:Damn|Dammit|Damn it|Damn this|Damn her|Damn you)[^.!?\n]{0,20}[.!?]+\*?\s*",
                           "", text)
