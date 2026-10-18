@@ -5541,7 +5541,8 @@ class Narrator:
         small reactions, and the place itself in detail. narration.interlude; /interlude."""
         n = self.rules.get("narration", {})
         cfg = n.get("interlude") or {}
-        words = int(words or cfg.get("words", 900))
+        # (narration.rich: the beats already take their time over thoughts, so an interlude of its own is shorter)
+        words = int(words or (self._rich().get("interlude_words") if self._rich() else None) or cfg.get("words", 900))
         # what this passage may and may not contain: the same as /more (nothing happens in the fight)
         self._time_window, self._no_clock, self._important = None, True, False
         self._pin_beat = "PIN:" in condition
@@ -5589,6 +5590,7 @@ class Narrator:
         ], 5)
         msg = (f"SCENE: {scene}\n\nFIGHTERS:\n{fighter_notes}\n\n"
                f"CURRENT CONDITION (right now):\n{condition}{why}\n\n"
+               + self._inner_note() +
                f"THE STORY SO FAR (the last part of it; continue from its final line):\n"
                f"{_tail(story_so_far, 3000) or '(nothing yet)'}\n\n"
                + "\n".join(self._posture_lines()) + "\n\n"
@@ -11415,6 +11417,10 @@ class Narrator:
             text = re.sub(r"(?i)\b(a|the) familiar (\w+)\b(?: of (?:her|its) home)?",
                           lambda m: (m.group(1) + ("n" if m.group(1).lower() == "a" and m.group(2)[0].lower() in "aeiou"
                                                    else "")) + " " + m.group(2), text)
+        # a fragment left where a sentence was cut ("was the only thing that moved in the clearing as she..."): a
+        # sentence that opens in lower case, at the start of a paragraph or after a full stop, goes
+        text = re.sub(r"(?m)(^|(?<=[.!?…]\s))(?:was|were|is|are|seemed|seems|had|has|could|would|and|but|as|then|"
+                      r"which|that|of|with|to|from|by|in|on)\b[^.!?…\n]*[.!?…]+[ \t]*", r"\1", text)
         # three choices strung with "or" ("her shoulder or limb or body curled"): a note's menu, copied. The first stays
         text = re.sub(r"\b(her|a|the) ([a-z]+) or ([a-z]+) or ([a-z]+)\b", r"\1 \2", text)
         text = re.sub(r"\n{3,}", "\n\n", text)
@@ -12540,6 +12546,16 @@ class Narrator:
             if t == "get_up" and not any("tries to get up" in f or "GET-UP" in f for _k, f, _w in plan):
                 put(who, f"{poss(who)} GET-UP, exactly as listed under GETTING UP (every try, in order), as the last "
                          f"thing in it", "after")
+                mine_ = [i for i in after_ok if leads[i] == who]
+                got = mine_[-1] if mine_ else len(keys) - 1      # (the part put() chose for it, "after")
+                # the other parts see GETTING UP too: they are told plainly it isn't theirs (it was told in two parts)
+                for i in range(len(keys)):
+                    if i == got:
+                        continue
+                    out.setdefault(i, []).append(
+                        f"NOT IN THIS PART: {poss(who)} get-up (a later part tells it): here she is still on the ground, "
+                        f"and no try at getting up is told." if i < got else
+                        f"NOT IN THIS PART: {poss(who)} get-up (told above): she is up now; don't tell any try again.")
             elif t == "numb_end" and not any(x.get("type") == "numb_end" and x.get("fighter") == who
                                              for x in also[:also.index(e)]):
                 parts_ = " and ".join(dict.fromkeys(x["part"].lower() for x in also

@@ -5047,14 +5047,14 @@ a flash of doubt about her footing, settled with one look down
 *Don't wait for her to set.*
 *Low, then high. She always looks low.*
 *Close the gap before she breathes.*
-*There. She flinched at the feint.*
+*There. She flinched.*
 *Make her turn. She hates turning.*
 *Keep it short. Nothing wild.*
 *She's guarding the wrong side.*
 *One more like that and she'll start to doubt.* | stage: middle, late, end
 *Easy. Don't telegraph it.*
 *Hit, then gone. Hit, then gone.*
-*I've been slow all fight. Not now.* | stage: late, end
+*I've been slow all fight. Not now.* | stage: late, end | standing: losing, level
 *Let her think I'm tired.* | standing: winning, level
 *Make it count. I can't throw many more.* | stage: late, end
 *She's waiting for the big one. Give her small ones.*

@@ -5608,7 +5608,7 @@ class Engine:
             if kinds.get(k, 0) < (per_kind + 1 if k == "pin" else per_kind) and len(keep) < cap:
                 kinds[k] = kinds.get(k, 0) + 1
                 keep.append(m)
-        keep.sort(key=lambda m: m["beat"])
+        keep.sort(key=lambda m: (m["beat"], m["kind"] == "knockout"))     # (the knockout ends its beat)
         fin = ch.get("finish") or {}
         tp = self._turning_point(win, lose)
         dealt = ch.get("dealt", {})

@@ -654,6 +654,20 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 196
+- **Build 195 would not start** (a quote mark in the version line): fixed.
+- **Things in order:** a passage for something the drafts left out (an attack, a landing) is put in front of the
+  get-up, not after it.
+- **The get-up is told once:** the parts that don't tell it are told so (before it: she is still down; after it: she
+  is up).
+- **Fragments cut:** a sentence left starting in lower case where another was cut ("was the only thing that moved...")
+  goes.
+- **Story lines that fit:** "I've been slow all fight" only for a fighter who is losing or level; the feint line no
+  longer speaks of a feint.
+- **Shorter interlude with rich narration** (`narration.rich.interlude_words`, 500), and it gets the INNER LIFE facts.
+- **Console:** the director's line no longer gives the attacker's move to the defender ("Ripples' Ice Fang" on
+  Nerine's Ice Fang); the summary lists the knockout last in its beat.
+
 ## Build 195
 Fixes from the user's full Ripples vs Nerine fight (10 beats, 2.5-7.5 minutes each):
 - The body note no longer ends on a fixed line ("the sting or ache settling into the neck, the fur lying wrong over

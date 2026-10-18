@@ -108,3 +108,18 @@ the injury report, "a Aqua Tail". Still to look at:
 - **Console:**
   - the flavor names the wrong fighter: "Ripples' Ice Fang lands and Nerine's jaw..." on Nerine's attack;
   - the summary lists the knockout before the deflected Crunch from the same beat.
+
+Build 196 fixed:
+- left-out passages now go in order, before the get-up;
+- the get-up is told once;
+- fragments left after a cut are removed;
+- the "slow all fight" and feint lines only appear when they fit;
+- a shorter interlude, with the INNER LIFE facts;
+- the director's line no longer gives the attacker's move to the defender;
+- the summary puts the knockout last in its beat.
+
+Still open from that fight:
+- **Adrenaline given to the wrong fighter:** "Nerine could feel the adrenaline", which was Ripples' surge.
+- **"Recent rain" on a sunny day.**
+- **Body parts next to a hit that don't fit:** "her legs throbbed in sympathy" after a neck hit (the story block's
+  `{next}` part).

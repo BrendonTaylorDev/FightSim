@@ -783,6 +783,12 @@ def resolve(engine, b):
     att = b.get("attacker")
     flavor = short_phrase(b.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
     # (keep it a label, not a paragraph, never ending on "and")
+    dfn_ = str(b.get("defender") or "").split(",")[0].strip()
+    mv_ = str(b.get("move") or b.get("improvised_name") or "").strip()
+    if att and dfn_ and mv_ and mv_.lower() != "improvised":
+        # "Ripples' Ice Fang lands..." on Nerine's own Ice Fang: the move is the attacker's
+        flavor = re.sub(r"\b" + re.escape(dfn_) + r"(?:'s|'|’s|’) (" + re.escape(mv_) + r")\b",
+                        lambda m: poss_word(att) + " " + m.group(1), flavor, flags=re.I)
     intent = b.get("intent", "")
     was_involved = engine.get(att).name in engine.involved
     engine.get_active(att)
