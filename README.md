@@ -654,6 +654,16 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 193
+- **`/sets`: every setting there is.** `/sets` lists the rules sections and how many settings each has; `/sets
+  narration.rich` shows one section's explanation and each of its settings as a `/set` line ready to copy, with its
+  current value; `/sets pin` finds every setting with "pin" in its name or note; `/sets all` writes all ~1,200 of them,
+  section by section with their explanations, to all_settings.md.
+- **`/intro off`** skips the opening passage that sets the scene (the first Enter starts the fight); `/intro on` brings
+  it back. Same as `/set narration.scene_intro false`.
+- **/help** has the richer-narration switches under `/help switches`, `/sets` under `/help settings`, and both in the
+  quick start.
+
 ## Build 192
 - **Richer narration (`narration.rich`, on; `/set narration.rich.enabled false` turns it all off).** Slower beats,
   longer prose:

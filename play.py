@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-18 build 192-guided (richer narration: longer beats, the body under each blow, inner life from the engine, one sense a part; a new Buizel, Nerine; build 191: fixes from a full fight: soaked said when it starts, no borrowed elemental moves, get-ups where she lies, sound tags and camera lines cleaned; build 190: a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
+VERSION = "2026-10-18 build 193-guided (/sets lists every setting, /intro off skips the opening passage; build 192: richer narration: longer beats, the body under each blow, inner life from the engine, one sense a part; a new Buizel, Nerine; build 191: fixes from a full fight: soaked said when it starts, no borrowed elemental moves, get-ups where she lies, sound tags and camera lines cleaned; build 190: a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
 
 HELP = """
 =============================================================================================
@@ -361,6 +361,10 @@ HELP = """
 =============================================================================================
   /set <rule.path> <value> [nosave]     change any rule in rules.json      /set narration.swearing never
   /get [rule.path]                      show rules                          /get pin.struggle
+  /sets [section | word | all [file]]   every /set there is, ready to copy, with its current value and what it does:
+                      /sets  the sections and how many settings each has     /sets narration.rich  one section
+                      /sets pin  every setting with "pin" in its name or note
+                      /sets all  writes all of them (about 1,200) to all_settings.md, section by section
   /settings [forget]  what you changed with commands (kept in my_settings.json; a new build doesn't reset it);
                       forget drops them, so the next build's defaults apply
   /style on|off|auto  real bold and italic on screen instead of **asterisks** (auto: on in Spyder and terminals)
@@ -394,12 +398,22 @@ HELP = """
                               /set narration.dwell.chance 0.3   (0 turns one off)
     stock-phrase memory       /set narration.phrase_memory.enabled false     (/phrases shows it)
     swearing                  /set narration.swearing never      (or rare, free)
-    setting the scene         /set narration.scene_intro false   (skip the opening passage)
+    setting the scene         /intro off   (or /set narration.scene_intro false): no opening passage, the first
+                                           Enter starts the fight.   /intro on brings it back
+  Richer narration (slower beats; /sets narration.rich for every part of it):
+    all of it                 /set narration.rich.enabled false
+    how long a beat is        /set narration.rich.length_mult 2.0    (1.0 = the plain length, 1.5 shorter)
+    paragraphs                /set narration.rich.words_per_paragraph 110   (smaller = more paragraphs a part)
+    the body under each blow  /set narration.rich.body_detail false
+    thoughts from the fight   /set narration.rich.inner false        (INNER LIFE: what she has learned this fight)
+    one sense a part          /set narration.rich.senses false
+    closing thoughts          /set narration.rich.closing_thoughts false
     the arena question        /set scene.ask_at_start false      (don't ask for an arena at start-up)
   Speed:
     context window            /set narration.context_window 16384   (smaller fits the graphics card better;
                                                                       12288 if it's still tight)
     time budget               /budget 6     (minutes; past it the optional checks stop)
+  Every other setting:        /sets   (the sections)    /sets <word>   (search)    /sets all   (all of them, to a file)
 
 =============================================================================================
  LOOKING AROUND
@@ -1709,8 +1723,8 @@ HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the orde
     ("healing", "healing heal restore recover aftermath", "healing and after the match: /heal, /restore, /recover"),
     ("balance", "balance scale length damage health healthloss resscale wear vital numb fighter part hard", "balance: /scale, /length, how hard hits land, /fighter and /part"),
     ("narration", "narration story words talk sounds sample blocks phrases model reader repair budget timing checks slow speed", "narration: /words, /talk, /sounds, /sample, /phrases, /model, the checks and their cost"),
-    ("settings", "settings set get layout math style scene arena hazards", "settings, screen, arenas: /set, /get, /settings, /layout, /scene, /hazards"),
-    ("switches", "switches switch toggle knockout knockouts ko pins guided compact reads swearing context window", "switches: knockouts only, no pins, guided narration, shorter notes, speed..."),
+    ("settings", "settings set sets get options layout math style scene arena hazards", "settings, screen, arenas: /set, /sets (every setting), /get, /settings, /layout, /scene, /hazards"),
+    ("switches", "switches switch toggle knockout knockouts ko pins guided compact reads swearing context window intro rich", "switches: knockouts only, no pins, the opening passage, richer narration, guided narration, speed..."),
     ("looking", "looking status health look", "looking around: /status, /health, /look"),
     ("files", "files undo reroll save load export exportfight quit", "undo, files, quit: /undo, /reroll, /save, /load, /export, /exportfight"),
 ]
@@ -1727,7 +1741,8 @@ QUICK START
   a + b                      join up to three commands into one beat
   /auto 20   /stop           let the director run 20 beats; /stop (in the window) ends the run after this beat
   /undo   /reroll   /status  take a beat back, rewrite its narration, see where everyone stands
-  /help switches             the on/off settings: knockouts only, no pins, guided narration, speed...
+  /help switches             the on/off settings: knockouts only, no pins, the opening passage, richer narration...
+  /sets   /sets <word>       every setting there is, ready to copy as a /set line (/sets all: all of them, to a file)
 
 TOPICS   /help <topic>   ·   /help <command> (/help charge)   ·   /help <any word> searches everything
          (/help knockout, /help tumble)   ·   /help all = everything
@@ -2113,6 +2128,93 @@ def _remember(keys, value):
             json.dump(data, fh, indent=2, ensure_ascii=False)
     except (OSError, ValueError, TypeError) as e:
         print(f"[couldn't update my_settings.json: {e}]")
+
+
+def _first_sentence(text, n=110):
+    """The first sentence of a _comment, cut to n characters (for the /sets lists)."""
+    t = " ".join(str(text or "").split())
+    m = re.match(r"(.{12,}?[.!?])(?:\s|$)", t)
+    t = m.group(1) if m else t
+    return t if len(t) <= n else t[:n - 1].rstrip() + "…"
+
+
+def _rule_leaves(node, prefix=""):
+    """Every setting under a rules section: (path, value, its note). A note is the "_<key>" line beside a setting,
+    if it has one. Lists are one setting (set them as a whole)."""
+    out = []
+    for k, v in (node or {}).items():
+        if k.startswith("_"):
+            continue
+        path = prefix + k
+        if isinstance(v, dict):
+            out += _rule_leaves(v, path + ".")
+        else:
+            out.append((path, v, node.get("_" + k) or ""))
+    return out
+
+
+def _set_line(path, value, note="", width=70):
+    """'/set path value' ready to copy, with the setting's note after it when it has one."""
+    line = f"  /set {path} {json.dumps(value, ensure_ascii=False)}"
+    return line + (f"   ({_first_sentence(note, width)})" if note else "")
+
+
+def _sets_text(rules, what=""):
+    """/sets: the rules sections; one section's settings as /set lines; or every setting whose path or note has the
+    word in it."""
+    if not what:
+        rows = []
+        for k, v in rules.items():
+            if k.startswith("_"):
+                continue
+            n = len(_rule_leaves(v)) if isinstance(v, dict) else 1
+            note = _first_sentence((v.get("_comment") if isinstance(v, dict) else "") or rules.get("_" + k, ""), 80)
+            rows.append(f"  {k:<16} {n:>4} setting{'s' if n != 1 else ' '}  {note}")
+        return ("Every rule can be changed with /set <path> <value> (saved; add nosave for this session only).\n"
+                "Sections:\n" + "\n".join(rows) + "\n/sets <section> lists one (e.g. /sets narration.rich), "
+                "/sets <word> searches (e.g. /sets pin), /sets all [file] writes every one to a file.")
+    try:
+        node, key, _ = _rule_path(rules, what)
+        val = node[key]
+    except ValueError:
+        val = None
+    if isinstance(val, dict):
+        rows = [_set_line(what + "." + p, v, n) for p, v, n in _rule_leaves(val)]
+        # (the section's own explanation, whole: most settings are explained there rather than one by one)
+        import textwrap
+        note = " ".join(str(val.get("_comment") or "").split())
+        head = what + (":\n" + textwrap.fill(note, 116, initial_indent="  ", subsequent_indent="  ") if note else "")
+        return head + "\n" + "\n".join(rows)
+    if val is not None:
+        return _set_line(what, val, node.get("_" + key, ""), 400)
+    word = what.lower()
+    hits = [(p, v, n) for p, v, n in _rule_leaves(rules) if word in p.lower() or word in str(n).lower()]
+    if not hits:
+        return f"No setting has '{what}' in its name or note. /sets lists the sections."
+    rows = [_set_line(p, v, n) for p, v, n in hits[:60]]
+    more = f"\n  ... and {len(hits) - 60} more: narrow it down (e.g. /sets {hits[0][0].split('.')[0]})" if len(hits) > 60 else ""
+    return f"Settings with '{what}' in them ({len(hits)}):\n" + "\n".join(rows) + more
+
+
+def _sets_file(rules, path):
+    """/sets all: every setting, section by section, as a Markdown file of /set lines with their notes."""
+    out = ["# FightSim settings", "",
+           "Every setting in rules.json. Change one in the game with `/set <path> <value>` (it is saved; add `nosave` to "
+           "change it for this session only). The values shown are the ones in use when this file was written.", ""]
+    for k, v in rules.items():
+        if k.startswith("_"):
+            continue
+        out += [f"## {k}", ""]
+        note = (v.get("_comment") if isinstance(v, dict) else "") or rules.get("_" + k, "")
+        if note:
+            out += [" ".join(str(note).split()), ""]
+        leaves = _rule_leaves(v, k + ".") if isinstance(v, dict) else [(k, v, "")]
+        for p, val, n in leaves:
+            out.append(f"- `/set {p} {json.dumps(val, ensure_ascii=False)}`" + (f": {' '.join(str(n).split())}" if n else ""))
+        out.append("")
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(out))
+    return sum(1 for x in out if x.startswith("- `/set"))
 
 
 def _settings_lines(data, prefix=""):
@@ -3048,6 +3150,22 @@ def handle_command(s, line):
         print("Settings you changed with commands (kept in my_settings.json; a new build doesn't touch them):\n"
               + ("\n".join(rows) if rows else "  (none yet)")
               + "\n/settings forget   drops them, so the next build's defaults apply"); return
+    if cmd in ("sets", "setlist", "options"):
+        if a and a[0].lower() == "all":
+            path = os.path.join(HERE, a[1] if len(a) > 1 else "all_settings.md")
+            n = _sets_file(s.eng.rules, path)
+            print(f"Wrote all {n} settings, section by section, to {path}"); return
+        print(_sets_text(s.eng.rules, a[0] if a else "")); return
+    if cmd == "intro":
+        if not a or a[0].lower() not in ("on", "off"):
+            on = s.eng.rules.get("narration", {}).get("scene_intro", True)
+            print(f"The opening passage that sets the scene before the first beat is {'on' if on else 'off'}. "
+                  f"/intro off skips it (the first Enter starts the fight); /intro on brings it back."); return
+        on = a[0].lower() == "on"
+        s.eng.rules.setdefault("narration", {})["scene_intro"] = on
+        _save_rule_path(["narration", "scene_intro"], on)
+        print("The fight now opens with a passage setting the scene." if on else
+              "No opening passage: the first Enter starts the fight. (/intro on brings it back.)"); return
     if cmd in ("phrases", "stock"):
         pm = s.narrator._phrase_mem() if hasattr(s.narrator, "_phrase_mem") else None
         if pm is None:
