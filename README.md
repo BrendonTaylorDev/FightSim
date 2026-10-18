@@ -654,6 +654,21 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 197
+- **`/bench`: the narration test bench.** Each beat's narrator inputs are now kept in bench_cases/ (the last 30;
+  `narration.bench`). `/bench 2 narration.rich.length_mult=1.0` tells your last 2 beats twice, once with your settings
+  as they are (A) and once with the changes (B), and compares them:
+  - words and paragraphs;
+  - model calls and seconds;
+  - rewrites;
+  - which checks fired;
+  - repeated 5-word runs.
+
+  Both tellings of each beat go side by side to bench_reports/bench_<time>.md. Nothing in the fight changes, and the
+  stock-phrase, story-block and check memories are put back after each telling, so a bench never wears them. Slow:
+  each beat is two whole narrations. More beats give a fairer comparison, since the model's own sampling varies
+  between tellings.
+
 ## Build 196
 - **Build 195 would not start** (a quote mark in the version line): fixed.
 - **Things in order:** a passage for something the drafts left out (an attack, a landing) is put in front of the

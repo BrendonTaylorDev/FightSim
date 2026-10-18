@@ -12,3 +12,5 @@ images/
 exports/
 .claude/worktrees/
 phrase_memory.json
+bench_cases/
+bench_reports/

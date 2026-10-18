@@ -11,6 +11,7 @@ picked. Suggested order: 3 → 1 → 2 → 5 → 7. Every one must be switchable
 - Not yet copied to the other branches (`claude/kind-bell-r5ehx4`, `-shorter-notes`).
 
 ## The ideas
+(Build 197 built idea 3, the test bench: `/bench`.)
 1. **One beat card layout.** Every part's prompt in fixed blocks: FACTS (mandatory, note form) / BODY / MIND
    (inner life) / IDEAS (optional, "never quote") / THIS PART'S JOB (last). Fixed rules first so Ollama's KV cache is
    reused (speed). Biggest change: build behind a switch and measure with (3).

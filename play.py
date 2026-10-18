@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-18 build 196-guided (left-out passages in order, no get-up told twice, fragments cut, shorter interlude; build 195: fixes from a full Ripples vs Nerine fight: no copied note lines, familiar-smell wording cleaned, more sound tags; build 194: one telling a blow, rich length 1.5, hands in landings, no past on the first beat; build 193: /sets lists every setting, /intro off skips the opening passage; build 192: richer narration: longer beats, the body under each blow, inner life from the engine, one sense a part; a new Buizel, Nerine; build 191: fixes from a full fight: soaked said when it starts, no borrowed elemental moves, get-ups where she lies, sound tags and camera lines cleaned; build 190: a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
+VERSION = "2026-10-18 build 197-guided (/bench: the narration test bench; build 196: left-out passages in order, no get-up told twice, fragments cut, shorter interlude; build 195: fixes from a full Ripples vs Nerine fight: no copied note lines, familiar-smell wording cleaned, more sound tags; build 194: one telling a blow, rich length 1.5, hands in landings, no past on the first beat; build 193: /sets lists every setting, /intro off skips the opening passage; build 192: richer narration: longer beats, the body under each blow, inner life from the engine, one sense a part; a new Buizel, Nerine; build 191: fixes from a full fight: soaked said when it starts, no borrowed elemental moves, get-ups where she lies, sound tags and camera lines cleaned; build 190: a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
 
 HELP = """
 =============================================================================================
@@ -363,6 +363,12 @@ HELP = """
 =============================================================================================
   /set <rule.path> <value> [nosave]     change any rule in rules.json      /set narration.swearing never
   /get [rule.path]                      show rules                          /get pin.struggle
+  /bench [beats] <setting=value> ...   the narration test bench: your last saved beats (2 by default) told twice,
+                      as your settings are (A) and with the changes (B), compared on words, paragraphs, model calls,
+                      time, rewrites, the checks that fired and repeated phrases; both tellings go to bench_reports/.
+                      Nothing in the fight changes. Slow: each beat is two whole narrations.
+                        /bench 2 narration.rich.length_mult=1.0      /bench 3 narration.rich.enabled=false
+                      (narration.bench: save, keep, folder; each beat's inputs are kept in bench_cases/)
   /sets [section | word | all [file]]   every /set there is, ready to copy, with its current value and what it does:
                       /sets  the sections and how many settings each has     /sets narration.rich  one section
                       /sets pin  every setting with "pin" in its name or note
@@ -990,6 +996,151 @@ class Session:
         self.beat_records = extra.get("beat_records", [])
         self.history, self.last_narration, self.pending = [], None, None
 
+    # ---------- the narration test bench (narration.bench; /bench) ----------
+    BENCH_FILES = ("blocks_memory.json", "lines_memory.json", "phrase_memory.json", "check_counts.json")
+
+    def _bench_cfg(self):
+        return (self.eng.rules.get("narration") or {}).get("bench") or {}
+
+    def _bench_save(self, args):
+        """Keep this beat's narrator inputs (the notes and everything the narrator knows right now) in bench_cases/,
+        so /bench can tell the same beat again under other settings. The last narration.bench.keep are kept."""
+        cfg = self._bench_cfg()
+        if not cfg.get("save", True):
+            return
+        import pickle
+        try:
+            folder = os.path.join(HERE, cfg.get("folder", "bench_cases"))
+            os.makedirs(folder, exist_ok=True)
+            state = {}
+            for k, v in self.narrator.__dict__.items():
+                if callable(v) or k in ("progress",):
+                    continue
+                try:
+                    pickle.dumps(v)
+                    state[k] = v
+                except Exception:
+                    continue        # (something that can't be kept: the bench runs without it)
+            name = f"fight{self.fight_no}_beat{self.eng.turn:03d}_{time.strftime('%Y%m%d_%H%M%S')}.pkl"
+            with open(os.path.join(folder, name), "wb") as fh:
+                pickle.dump({"args": args, "state": state, "version": VERSION, "beat": self.eng.turn,
+                             "fight": self.fight_no}, fh)
+            old = sorted(f for f in os.listdir(folder) if f.endswith(".pkl"))
+            for f in old[:max(0, len(old) - int(cfg.get("keep", 30)))]:
+                os.remove(os.path.join(folder, f))
+        except Exception as e:
+            note_failure("saving a beat for /bench", e)
+
+    def _bench_run(self, case, overrides, seed):
+        """Tell one saved beat again with the rules changed by `overrides` ([(path, value)]): (text, stats). The
+        narrator, its memories (stock phrases, story blocks, check counts) and their files are put back after."""
+        import copy as _copy, shutil, tempfile, pickle
+        import narrator as narrator_mod
+        keep_dict = {}
+        for k, v in self.narrator.__dict__.items():
+            if k == "rules":
+                keep_dict[k] = v        # (shared with the game: a /set afterwards still reaches the narrator)
+                continue
+            try:
+                keep_dict[k] = _copy.deepcopy(v)
+            except Exception:
+                keep_dict[k] = v
+        tmp = tempfile.mkdtemp(prefix="bench_")
+        saved = [f for f in self.BENCH_FILES if os.path.exists(os.path.join(HERE, f))]
+        for f in saved:
+            shutil.copy2(os.path.join(HERE, f), os.path.join(tmp, f))
+        log = []
+        try:
+            self.narrator.__dict__.update(pickle.loads(pickle.dumps(case["state"])))
+            rules = _copy.deepcopy(self.eng.rules)
+            for path, value in overrides:
+                node, key, _ = _rule_path(rules, path)
+                node[key] = value
+            self.narrator.rules = rules
+            self.narrator.progress = log.append
+            random.seed(seed)
+            t0 = time.time()
+            text = self.narrator.narrate(*case["args"]) or ""
+            secs = time.time() - t0
+            calls = len(narrator_mod.CALL_LOG)
+        finally:
+            self.narrator.__dict__.clear()
+            self.narrator.__dict__.update(keep_dict)
+            for f in self.BENCH_FILES:
+                p = os.path.join(HERE, f)
+                if f in saved:
+                    shutil.copy2(os.path.join(tmp, f), p)
+                elif os.path.exists(p):
+                    os.remove(p)
+            shutil.rmtree(tmp, True)
+        prose = re.sub(r"(?m)^— [^\n]{1,40} —\s*$", "", text)
+        words = re.findall(r"[A-Za-z']+", prose)
+        grams = collections.Counter(" ".join(w.lower() for w in words[i:i + 5]) for i in range(len(words) - 4))
+        checks = collections.Counter()
+        for line in log:
+            m = re.search(r"checking the draft: (.+)", str(line))
+            if m:
+                checks.update(x.strip() for x in m.group(1).split(","))
+        stats = {"words": len(words), "paragraphs": len([p for p in prose.split("\n\n") if p.strip()]),
+                 "calls": calls, "seconds": round(secs), "repeats": sum(1 for g, c in grams.items() if c > 1),
+                 "rewrites": sum(1 for line in log if re.search(r"again|rewrite", str(line))), "checks": checks}
+        return text, stats
+
+    def bench(self, n, overrides):
+        """/bench: the last n saved beats, each told twice (your settings as they are, then with the changes) and
+        compared: words, paragraphs, model calls, time, rewrites, the checks that fired, repeated 5-word runs. Both
+        tellings go to bench_reports/ side by side. Nothing in the fight changes."""
+        import pickle
+        cfg = self._bench_cfg()
+        folder = os.path.join(HERE, cfg.get("folder", "bench_cases"))
+        files = sorted(f for f in os.listdir(folder) if f.endswith(".pkl")) if os.path.isdir(folder) else []
+        if not files:
+            print("No saved beats yet: play a beat or two first (narration.bench.save keeps them)."); return
+        files = files[-n:]
+        label_b = ", ".join(f"{p}={json.dumps(v, ensure_ascii=False)}" for p, v in overrides)
+        print(f"Bench: {len(files)} beat(s), each told twice (A: your settings; B: {label_b}). That is "
+              f"{2 * len(files)} whole narrations: it takes a while. Nothing in the fight changes.")
+        rows, report = [], [f"# Bench {time.strftime('%Y-%m-%d %H:%M')}", "", f"- A: your settings as they are",
+                            f"- B: {label_b}", f"- {VERSION.split(' (')[0]}", ""]
+        for i, f in enumerate(files):
+            with open(os.path.join(folder, f), "rb") as fh:
+                case = pickle.load(fh)
+            seed = 1000 + i
+            out = {}
+            for side, ov in (("A", []), ("B", overrides)):
+                print(f"  [{f}: telling it as {side}]")
+                try:
+                    out[side] = self._bench_run(case, ov, seed)
+                except Exception as e:
+                    note_failure(f"/bench on {f}", e)
+                    out[side] = ("", {"words": 0, "paragraphs": 0, "calls": 0, "seconds": 0, "repeats": 0,
+                                      "rewrites": 0, "checks": collections.Counter({"(failed)": 1})})
+            rows.append((f, out))
+            report += [f"## {f}", "", "| | words | paragraphs | calls | seconds | rewrites | repeats | checks |",
+                       "|---|---|---|---|---|---|---|---|"]
+            for side in ("A", "B"):
+                st = out[side][1]
+                report.append(f"| {side} | {st['words']} | {st['paragraphs']} | {st['calls']} | {st['seconds']} | "
+                              f"{st['rewrites']} | {st['repeats']} | "
+                              + (", ".join(f"{k} {v}" for k, v in st["checks"].most_common()) or "none") + " |")
+            for side in ("A", "B"):
+                report += ["", f"### {side}", "", out[side][0].strip(), ""]
+        tot = {s: {k: sum(o[s][1][k] for _f, o in rows) for k in ("words", "paragraphs", "calls", "seconds",
+                                                                 "rewrites", "repeats")} for s in ("A", "B")}
+        lines = ["", "Totals      words  paragraphs  calls  seconds  rewrites  repeats"]
+        for s in ("A", "B"):
+            t = tot[s]
+            lines.append(f"  {s}        {t['words']:>6}  {t['paragraphs']:>10}  {t['calls']:>5}  {t['seconds']:>7}  "
+                         f"{t['rewrites']:>8}  {t['repeats']:>7}")
+        report[6:6] = ["```"] + lines[1:] + ["```", ""]
+        rep_dir = os.path.join(HERE, cfg.get("reports", "bench_reports"))
+        os.makedirs(rep_dir, exist_ok=True)
+        path = os.path.join(rep_dir, f"bench_{time.strftime('%Y%m%d_%H%M%S')}.md")
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(report))
+        print("\n".join(lines) + f"\n(repeats: 5-word runs used twice in one beat; rewrites: fixes the checks asked for)"
+              f"\nBoth tellings of every beat, side by side: {path}")
+
     def _write_prose(self, args):
         """Run the narrator. On a model failure the beat's stats still stand; /reroll can narrate it later."""
         try:
@@ -1445,6 +1596,7 @@ class Session:
             self._rising = {e["fighter"] for e in also if e.get("type") == "get_up"}  # falling while rising is fine
             self.sync_narrator()
             args = (self.for_narrator(bundle), condition, self.notes(), self.eng.scene, self.recent_story())
+            self._bench_save(args)     # (for /bench: this beat can be told again under other settings)
             text = self._write_prose(args)
             try:
                 self.narrator.save_check_tally(HERE)     # (/checks)
@@ -3152,6 +3304,24 @@ def handle_command(s, line):
         print("Settings you changed with commands (kept in my_settings.json; a new build doesn't touch them):\n"
               + ("\n".join(rows) if rows else "  (none yet)")
               + "\n/settings forget   drops them, so the next build's defaults apply"); return
+    if cmd == "bench":
+        n_, ov = 2, []
+        for x in a:
+            if re.fullmatch(r"\d+", x):
+                n_ = max(1, int(x))
+            elif "=" in x:
+                path, val = x.split("=", 1)
+                _rule_path(s.eng.rules, path)          # (a wrong path is said now, not after the first run)
+                ov.append((path, _parse_value(val)))
+            else:
+                raise ValueError(f"'{x}' is not a setting=value or a number")
+        if not ov:
+            raise ValueError("Usage: /bench [beats] <setting=value> [...]   e.g. /bench 2 narration.rich.length_mult=1.0\n"
+                             "  tells your last saved beats twice, as your settings are (A) and with the changes (B), and "
+                             "compares them (words, paragraphs, model calls, time, rewrites, checks, repeats)")
+        if not s.use_llm:
+            raise ValueError("/bench needs the narration model (it is off in this session)")
+        s.bench(n_, ov); return
     if cmd in ("sets", "setlist", "options"):
         if a and a[0].lower() == "all":
             path = os.path.join(HERE, a[1] if len(a) > 1 else "all_settings.md")
