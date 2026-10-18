@@ -654,6 +654,18 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 194
+Fixes from the user's Nerine vs Ripples beat 1 (10.5 minutes, the same blow told four times):
+- **Richer narration is shorter by default:** `narration.rich.length_mult` 1.5 (was 2.0).
+- **One telling a blow:** with the rich body detail on there is no "linger on one moment" note as well
+  (`narration.rich.no_linger`); the body note says it belongs to the blow's one telling; a fighter who rolls through a
+  fall is told falling and rolling once, never "staggering" from the blow again later in the beat.
+- **Quicker checks:** the body-detail ideas no longer say "bone" (it set off the broken-bones check and its rewrites).
+- **"Not very effective" isn't a shrug** when the blow knocks her down or throws her into something.
+- **Hands are hands in a landing:** a Buizel's paw in a landing is marked as her hand, thrown out to catch herself.
+- **The first beat has no past:** the first beat says nobody has been hit yet (no old injury or favoured side); "a
+  familiar and comforting aroma" / "a smell she knew well" lose the "familiar" and the "knew well".
+
 ## Build 193
 - **`/sets`: every setting there is.** `/sets` lists the rules sections and how many settings each has; `/sets
   narration.rich` shows one section's explanation and each of its settings as a `/set` line ready to copy, with its

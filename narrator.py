@@ -2483,6 +2483,15 @@ class Narrator:
         (("tail", "fan"), "the tail jerking, curling in protectively, or going still"),
     ]
 
+    def _parts_said(self, defender, parts):
+        """Body parts listed for a landing, a paw marked as her hand on a fighter who stands upright with arms (a
+        hand meets the ground thrown out to catch her, never as a foot she lands on)."""
+        out = []
+        for p in parts or []:
+            note = self._limb_note(defender, p)
+            out.append(p + (" (her HAND, thrown out to catch herself: not a foot)" if "HAND" in note else ""))
+        return ", ".join(out)
+
     def _limb_note(self, defender, part):
         """For a fighter who stands upright with arms, say plainly whether a part is on her arm or her leg, so a hurt
         'paw' (hand) isn't narrated as a foot, or the reverse."""
@@ -3973,7 +3982,8 @@ class Narrator:
         if t == "instant" and a.get("environment") and a.get("manhandle"):
             self._must_manhandle = a
             att, dfn, kind = a["attacker"], a["defender"], a["manhandle"]
-            route = "; then ".join(("tumbling on: " if l.get("tumble") else "") + f"{l['surface']} ({', '.join(l['parts'])})"
+            route = "; then ".join(("tumbling on: " if l.get("tumble") else "") +
+                                   f"{l['surface']} ({self._parts_said(a['defender'], l['parts'])})"
                                    for l in a.get("landings", []))
             fc = a.get("facing")
             lies = f", {Engine.FACING_LOOK[fc]}" if fc in Engine.FACING_LOOK else ""
@@ -4007,7 +4017,8 @@ class Narrator:
             lines += self._arena_status_lines(a.get("status_applied"))
             return lines
         if t == "instant" and a.get("environment") and a.get("in_place"):
-            route = "; then ".join(f"{l['surface']} ({', '.join(l['parts'])})" for l in a.get("landings", []))
+            route = "; then ".join(f"{l['surface']} ({self._parts_said(a['defender'], l['parts'])})"
+                                   for l in a.get("landings", []))
             fc = a.get("facing")
             lines.append(f"{a['defender']} is ALREADY ON THE GROUND, and that blow DRIVES HER INTO it where she lies: "
                          f"{route}. Each surface hits those body parts. She does NOT fall again and is not thrown "
@@ -4030,7 +4041,8 @@ class Narrator:
             if a.get("from_ground"):
                 verb = ("was LYING ON THE GROUND when it hit (she was never standing this beat): the blow smashes into "
                         "her where she lies and sends her skidding, rolling, and tumbling across the ground")
-            route = "; then ".join(("tumbling on: " if l.get("tumble") else "") + f"{l['surface']} ({', '.join(l['parts'])})"
+            route = "; then ".join(("tumbling on: " if l.get("tumble") else "") +
+                                   f"{l['surface']} ({self._parts_said(a['defender'], l['parts'])})"
                                    for l in a.get("landings", []))
             if a.get("leap_fall"):
                 lines.append(f"{a['defender']} FALLS from {a['leap_fall']} after her leap missed, with nothing to catch "
@@ -5615,7 +5627,8 @@ class Narrator:
             return (f"But this time {d} ROLLS THROUGH the landing: she takes every impact, tumbles, gets her feet under "
                     f"her and comes up ON HER FEET, shaken and hurting, turned back toward her opponent. She does NOT "
                     f"stay down, nobody stands over her, and she needs no get-up. Show the impacts, the roll, and her "
-                    f"coming up; the passage ends with her standing.")
+                    f"coming up; the passage ends with her standing. Tell the fall and the roll ONCE: later in the "
+                    f"beat she is not hit again, does not 'stagger' from the blow again, and is not knocked down again.")
         ends = str(a.get("ends") or "")
         if fc == "sitting up" and ends.startswith("slumped"):
             return (f"This time she ends SITTING, {ends}: her back against it, legs out in front of her "
@@ -11392,6 +11405,13 @@ class Narrator:
         for s_, k in spec.items():
             if k == 1 and s_:
                 text = re.sub(r"\b([Tt]he) other (" + re.escape(s_) + r")\b", r"\1 \2", text)
+        # a smell or a feeling "familiar" from before the fight (there is no before, narration.old_memories): the word
+        # goes ("a familiar and comforting aroma" -> "a comforting aroma"; "a smell she knew well" -> "a smell")
+        if not n.get("old_memories"):
+            text = re.sub(r"(?i)\b(a|the) familiar and (\w+) (aroma|smell|scent|sensation|feeling)\b", r"\1 \2 \3", text)
+            text = re.sub(r"(?i)\b(a) familiar (aroma|smell|scent)\b",
+                          lambda m: m.group(1) + ("n " if m.group(2)[0].lower() in "aeiou" else " ") + m.group(2), text)
+            text = re.sub(r"(?i)\b(smell|scent|aroma)( that)? (?:she|he|[A-Z][a-z]+) knew (?:well|so well)\b", r"\1", text)
         # three choices strung with "or" ("her shoulder or limb or body curled"): a note's menu, copied. The first stays
         text = re.sub(r"\b(her|a|the) ([a-z]+) or ([a-z]+) or ([a-z]+)\b", r"\1 \2", text)
         text = re.sub(r"\n{3,}", "\n\n", text)
@@ -11795,6 +11815,9 @@ class Narrator:
                f"detail and thought, never from extra events or from telling a blow twice.")
         if cfg.get("senses", True):
             out += f" SENSE to bring in somewhere in this part (once or twice, plainly): {self._sense_pick()}."
+        if int(getattr(self, "beat_now", 0) or 0) <= 1:
+            out += (" This is the FIRST beat: nobody has been hit before it, so there is no earlier hit, old injury, "
+                    "favoured side or sore spot to notice on anyone.")
         if last and key not in ("dwell", "watch", "read") and cfg.get("closing_thoughts", True):
             out += (" Before the part ends, give EACH fighter who is still conscious a few sentences of her own mind: "
                     "how she reads the fight now and what she means to do about it (an intention, not a new move).")
@@ -12109,7 +12132,11 @@ class Narrator:
             if self.progress:
                 self.progress("a devastating blow: giving it room")
         self._moments = self._extra_moments(bundle, acts, pin_events)
-        linger, extra = self._linger() if not self._moments else ("", 0)
+        # (narration.rich.no_linger: with the body detail on, every blow already gets its slow telling; a linger on
+        # top of it had the same blow told three or four times)
+        rich_ = self._rich()
+        no_linger = bool(rich_ and rich_.get("body_detail", True) and rich_.get("no_linger", True))
+        linger, extra = self._linger() if not self._moments and not no_linger else ("", 0)
         if linger:
             context += linger
             words += extra
