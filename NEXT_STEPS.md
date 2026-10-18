@@ -1,0 +1,47 @@
+# Next steps (narration ideas, not started)
+
+Written after build 193 (branch `claude/kind-bell-r5ehx4-anchors`). Nothing below is built yet; the user hasn't
+picked. Suggested order: 3 → 1 → 2 → 5 → 7. Every one must be switchable in rules.json (see CLAUDE.md).
+
+## Where things stand
+- Build 192: `narration.rich` (longer beats, INNER LIFE from `engine.inner_state` / `fight_record`, one sense a part,
+  closing thoughts, per-blow body detail: `narrator._impact_body`, `BODY_MOVES` / `BODY_GIVES` / `BODY_DEEP`).
+- Build 193: `/sets` (every setting), `/intro on|off`.
+- New fighter Nerine (a second Buizel, no flotation sac), health 1775. The user doesn't want more balance testing.
+- Not yet copied to the other branches (`claude/kind-bell-r5ehx4`, `-shorter-notes`).
+
+## The ideas
+1. **One beat card layout.** Every part's prompt in fixed blocks: FACTS (mandatory, note form) / BODY / MIND
+   (inner life) / IDEAS (optional, "never quote") / THIS PART'S JOB (last). Fixed rules first so Ollama's KV cache is
+   reused (speed). Biggest change: build behind a switch and measure with (3).
+2. **Situation-matched examples from the user's own fights.** `/keep <paragraph>` saves a paragraph of the last beat,
+   tagged from that beat's events (move kind, part region, species, scene, knockdown/get-up...). Later beats with
+   matching tags get 1-2 kept passages as style examples, with a cooldown. Builds on `_sample_tags` /
+   style_sample_scenes.txt.
+3. **Test bench.** Replay a saved beat's narrator inputs (play.py `last_narration["args"]`, or the export JSON) through
+   the narrator with settings A vs B; report words, checks fired, rewrites, time, repeated phrases. Needs Ollama, so
+   the user runs it locally.
+4. **Plan, then write.** For the part where blows land: a 4-6 line outline first (focus, sense, thought per
+   paragraph), checked against the facts by the program, then the prose.
+5. **Variety in shape.** The engine picks a rhythm per part from the events (staccato for a flurry, long for a dwell,
+   a one-line paragraph for a devastating blow), plus a "recent paragraph openings" don't-repeat list.
+6. **A thread for each fighter.** A motif picked at fight start (Nerine's notched fin, the old oak), brought back every
+   few beats and changing as the fight goes.
+7. **A short history for each wound.** For each badly hurt part: first hit, what worsened it, what it does now (from
+   `engine.injury_log` / `injury_causes`), for accurate callbacks.
+8. **Sensory details for each arena.** A bank per sense in scenes.json, drawn by the sense rotation (`_sense_pick`).
+9. **Body language for each species.** Movement, pain sounds, threat displays, how it gets up.
+10. **Different temperatures for different parts:** warmer for thought and aftermath parts, cooler for the part
+    where blows land.
+11. **Expand the thinnest part instead of rewriting:** when a rich beat comes out short, expand the thinnest
+    paragraph rather than adding a passage at the end.
+12. **Grow story blocks and lines only with narrow tags** (event, region, species), so each beat draws a few that fit.
+
+## Still open from the full-fight review
+- The model still sometimes:
+  - tells a blow twice;
+  - swaps the fighters' injuries;
+  - writes in the present tense;
+  - pastes in pieces of the notes.
+
+  The beat card (1) and the outline (4) are aimed at these.
