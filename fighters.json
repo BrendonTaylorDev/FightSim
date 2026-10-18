@@ -348,6 +348,157 @@
       ]
     },
     {
+      "name": "Nerine",
+      "_balance_note": "Made in build 192 from Ripples' sleek variant (no flotation sac): paws, forearm fins, tails and throat +5, back and hips -5; Crunch, Hydro Pump and Ice Beam swapped for Quick Attack, Aqua Tail (5 uses) and Bite. Health 1775: in simulated fights she beats Ripples about half the time (1700: 46%, 1850: 57%) and loses to Nocturne a little more often than Ripples does.",
+      "description": "A female Buizel. Small, quick, showy and impatient; a sleek river-bred Buizel with no flotation sac, her neck and throat bare, short fur. Walks upright with webbed paws, fins on her forearms, and twin tails she whips like a flail. A hit-and-run striker rather than a grappler: darting in with Quick Attack and Aqua Jet, slamming with water-wrapped tails, and out again before the answer comes. She rides low and fast in the water, steering with her forearm fins. Hates being held still, and fights dirtiest when she is.",
+      "appearance": "Buizel. Upright, otter-like weasel with ORANGE fur, a shade darker and redder than most, and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm; the left one has a small notch near its tip. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET.",
+      "voice": "Cocky, quick and restless. Thinks in fast, bright flashes: a dare to herself, a jab at her opponent, a running score of who has landed what. Chirps, yips and whistles through her teeth; when hurt she goes quiet and sharp, then comes back louder, and she hates admitting a blow got to her.",
+      "tells": "Her tails flick and twitch even when she stands still, and lash when she is angry; her forearm fins flare wide when she is about to dart in and clamp flat when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, her throat working as she swallows; she bounces on the balls of her feet; ears pin back; the black cheek marks twitch when she grins or grits her teeth; she yips or whistles; her webbed paws flex open and shut; she shakes water out of her fur.",
+      "types": [
+        "Water"
+      ],
+      "health": 1775,
+      "body": {
+        "Head": 93,
+        "Left Ear": 63,
+        "Right Ear": 63,
+        "Muzzle": 78,
+        "Nose": 53,
+        "Left Cheek": 78,
+        "Right Cheek": 78,
+        "Jaw": 88,
+        "Neck": 78,
+        "Throat": 68,
+        "Chest": 103,
+        "Stomach": 78,
+        "Upper Back": 108,
+        "Lower Back": 98,
+        "Left Shoulder": 103,
+        "Right Shoulder": 103,
+        "Left Upper Arm": 93,
+        "Right Upper Arm": 93,
+        "Left Forearm Fin": 73,
+        "Right Forearm Fin": 73,
+        "Left Paw": 83,
+        "Right Paw": 83,
+        "Left Hip": 103,
+        "Right Hip": 103,
+        "Left Thigh": 113,
+        "Right Thigh": 113,
+        "Left Knee": 88,
+        "Right Knee": 88,
+        "Left Foot": 83,
+        "Right Foot": 83,
+        "Tail Base": 133,
+        "Twin Tails": 173
+      },
+      "moves": [
+        {
+          "name": "Aqua Jet",
+          "type": "Water",
+          "power": 30,
+          "target": "targeted",
+          "about": "water-sheathed body charge",
+          "charge": true,
+          "energy": 40
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 20,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Aqua Tail",
+          "type": "Water",
+          "power": 40,
+          "target": "targeted",
+          "about": "both tails wrapped in water and whipped round in a slam",
+          "uses": 5,
+          "effects": [
+            {
+              "launch": "knocked down",
+              "chance": 0.15
+            }
+          ]
+        },
+        {
+          "name": "Brick Break",
+          "type": "Fighting",
+          "power": 28,
+          "target": "targeted",
+          "about": "chopping paw strike"
+        },
+        {
+          "name": "Bite",
+          "type": "Dark",
+          "power": 32,
+          "target": "targeted",
+          "about": "a hard, quick bite",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Ice Fang",
+          "type": "Ice",
+          "power": 30,
+          "target": "targeted",
+          "about": "freezing bite"
+        },
+        {
+          "name": "Water Gun",
+          "type": "Water",
+          "power": 20,
+          "target": "spread",
+          "about": "jet of water across the front of the body",
+          "sustainable": true
+        },
+        {
+          "name": "Water Pulse",
+          "type": "Water",
+          "power": 20,
+          "target": "spread",
+          "about": "a pulsing blast of water",
+          "effects": [
+            {
+              "status": "confused",
+              "chance": 0.2,
+              "beats": 2
+            }
+          ],
+          "sustainable": true
+        },
+        {
+          "name": "Swift",
+          "type": "Normal",
+          "power": 20,
+          "target": "spread",
+          "about": "star-shaped rays that never miss"
+        },
+        {
+          "name": "Tail Bind",
+          "type": "Normal",
+          "power": 10,
+          "target": "hold",
+          "about": "twin tails wrapped and squeezing a limb or the body"
+        },
+        {
+          "name": "Pin Down",
+          "type": "Normal",
+          "power": 12,
+          "target": "hold",
+          "about": "pins with weight, knees, paws and teeth"
+        }
+      ]
+    },
+    {
       "name": "Seraphina",
       "description": "A female Milotic. Graceful, calm, and enormously strong; a long serpentine body with iridescent scales, a cream-scaled belly, long red antennae and fin-like 'hair' on her head, and a broad iridescent tail fan. Fights by coiling and constricting (she squeezes on her opponent's exhale), crushing with her body's weight, tail-fan lashes, bites, and water attacks. Deadly in water, slower on dry stone.",
       "appearance": "Milotic. Long serpentine body, primarily CREAM-colored and iridescent (scales shift color with the angle); blue and pink diamond-shaped scales outlined in black on her lower body. Long PINKISH antennae above red eyes, and long hair-like fins above her eyes that start thin and thicken toward the tips. A small straight spike on top of her head. Three black gill-like dots down each side of her neck. Tail fan of four overlapping blue fins with pink ovals in the centers. No limbs.",

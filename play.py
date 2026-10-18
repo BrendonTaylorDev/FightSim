@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-18 build 191-guided (fixes from a full fight: soaked said when it starts, no borrowed elemental moves, get-ups where she lies, sound tags and camera lines cleaned; build 190: a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
+VERSION = "2026-10-18 build 192-guided (richer narration: longer beats, the body under each blow, inner life from the engine, one sense a part; a new Buizel, Nerine; build 191: fixes from a full fight: soaked said when it starts, no borrowed elemental moves, get-ups where she lies, sound tags and camera lines cleaned; build 190: a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
 
 HELP = """
 =============================================================================================
@@ -1011,6 +1011,7 @@ class Session:
                                 if self.eng.facing_of(f.name)}
         self.narrator.aliases = {self.eng.species(f): f.name for f in self.eng.fighters.values() if self.eng.species(f)}
         self.narrator.species_of = {f.name: self.eng.species(f) for f in self.eng.fighters.values() if self.eng.species(f)}
+        self.narrator.inner = {f.name: self.eng.inner_state(f.name) for f in self.eng.active()}
         self._sync_absent()
         self.narrator.out_names = [f.name for f in self.eng.fighters.values() if f.eliminated]
         try:
@@ -1363,6 +1364,7 @@ class Session:
         also = self.eng.beat(skip_hold_ids=started)
         self.state_check()
         self.eng.record_beat(results, also)   # key moments and the strength track, for the end-of-fight summary
+        self.eng.record_inner(results)        # what each fighter has learned this fight (narration.rich.inner)
         for e in also:  # blows landed inside a pin are real attacks too: the story may refer back to them
             if e.get("type") == "hold_end" and e.get("broke_free"):
                 self.recent_attacks.append(f"{e['defender']}: wrenched free of {poss_name(e['attacker'])} hold")

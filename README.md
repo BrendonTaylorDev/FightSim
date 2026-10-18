@@ -654,6 +654,41 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 192
+- **Richer narration (`narration.rich`, on; `/set narration.rich.enabled false` turns it all off).** Slower beats,
+  longer prose:
+  - **Longer beats:** twice the words by default (`length_mult` 2.0, so most beats are told in three parts), each part
+    asked for at least one paragraph per ~110 words, and the beat's time budget doubled to match (`budget_mult`).
+  - **The body under each blow:** every blow that lands gets ideas for how it works on the body in that instant,
+    picked by the dice from where it lands, what kind of blow it is and how hard: the pressure of contact, the head
+    snapping round from a blow to the cheek, fur and skin stretching along a cut or round teeth, and what it does inside
+    and past the part (the shock ringing through her teeth, a clenched jaw knocked open, eyes watering from a blow to
+    the nose, the arm going dead from a shoulder hit, a cut that stings a beat late). The narrator may invent more like
+    them; a fighter held fast gets the pressure and the give, not the movement, and nothing is added that the engine
+    didn't resolve. `body_detail` false turns it off.
+  - **Inner life from the engine:** the engine keeps what each fighter has learned this fight (`fight_record`, undone
+    and saved with the fight): her moves that land and miss, the move that keeps hitting her, the attacks she has
+    dodged, what her worst wounds now stop her doing, how tired she is, the wound she can see on her opponent, what
+    the last beat cost her. The narrator gets it as INNER LIFE, for thoughts and plans that reason from the fight.
+  - **One sense a part:** sound, smell, touch, temperature, taste or light, whichever the fight has used least.
+  - **Closing thoughts:** the last part of a beat gives each conscious fighter a few sentences of her own mind, and one
+    more italic thought is allowed per part.
+- **A new fighter: Nerine,** a second Buizel with no flotation sac. A quick, showy hit-and-run striker: Quick Attack,
+  Aqua Tail and Bite in place of Ripples' Crunch, Hydro Pump and Ice Beam; harder paws, fins and tails, a little
+  thinner through the back and hips. Health 1775: she beats Ripples about half the time in simulated fights. `/newfight Nerine Ripples`.
+- **Fixes from the full-fight review:**
+  - Carry-over damage only to parts that touch the one hit (the right upper arm no longer carries over to the left
+    fin; `moves.auto_spill.carry_next_to_only`).
+  - A fighter knocked down onto the beach or into the shallows is driven down into THAT (and gets up off it), not the
+    arena's ground word.
+  - A fighter who attacks from the ground gets up only after her blows, in the prose too.
+  - The pummel's answer is printed after the blows it stops; the last-stand header shows energy going to 0.
+  - Summary: a whole-body move isn't named for one part, a last-stand blow isn't listed twice, the knockout blow is
+    listed.
+  - Soaked is topped up in the water but still counts down; no "now exhausted" after the fight is won.
+  - Guarding notes give one way of covering a part ("a shoulder hunched up over it"), and "her shoulder or limb or body"
+    menus copied into the prose are cut to the first; a reminder that her past is this fight only.
+
 ## Build 191
 Fixes from the full Ripples vs Nocturne fight (23 beats):
 - **Soaked is said when it starts.** A fighter placed IN the water by the director's positions ("in the shallows")

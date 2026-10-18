@@ -804,9 +804,6 @@ class Display:
                               "limit": " — as many as she can throw",
                               "answered": " — it ends when the one being hit ANSWERS with a blow of her own"
                               }.get(pm.get("ended") or "", ""))
-                if pm.get("answer"):
-                    out.append(f"↩️ **{a['defender']} answers{' from inside the grab' if (pm.get('where') or 'grab') == 'grab' else ''}:**")
-                    out += self.hits_block(a["attacker"], pm["answer"])
             if a.get("point_blank"):
                 out.append(f"- (point-blank: {a['point_blank']} has hold of her opponent, so no dodge either way)")
             if a.get("sustain"):
@@ -889,6 +886,12 @@ class Display:
                 if i and not self.tight():
                     out.append("")
                 out += self.hits_block(who, hs, by_def.get(who, a.get("move")), tags or None)
+            pm_ = a.get("pummel") or {}
+            if pm_.get("answer"):
+                # (after the blows: her answer comes after the last of them, and that is what stops it)
+                out.append(f"↩️ **{a['defender']} answers{' from inside the grab' if (pm_.get('where') or 'grab') == 'grab' else ''}** "
+                           f"after the last of them, and that stops it:")
+                out += self.hits_block(a["attacker"], pm_["answer"])
             if a.get("recoil"):
                 rc = a["recoil"]
                 out.append(f"💢 **Recoil**: {poss_name(a['attacker'])} own {a['move']['name']} jars back into her (power {num(rc['power'])})")

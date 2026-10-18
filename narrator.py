@@ -2223,6 +2223,7 @@ class Narrator:
         self.grips = []             # (holder, held, part, with) for every hold still on when the beat ends
         self._grip_seen = {}        # (holder, held) -> (part, with) of the last grip she had on her
         self._grip_gone = {}        # (holder, held) -> the beat that grip ended in
+        self.inner = {}             # fighter -> what she knows from the fight so far (engine.inner_state; narration.rich)
         self.aliases = {}           # species word -> fighter ("Buizel" -> "Ripples"), so "the Buizel" is attributed
         self.out_names = []         # fighters who are out of the fight (sentences about them aren't posture-checked)
         self.silent_out = []        # names and species of fighters who are out and never hurt anyone: not to be mentioned
@@ -3127,6 +3128,151 @@ class Narrator:
         look = rnd.choice(self.MOTION[kind]).format(part=h["part"].lower())
         stay = "She stays down where she is." if kind == "down" else "She stays on her feet: no fall, no knockdown."
         return f"  - MOVEMENT (part of the same instant, how the blow moves her body): {look}. {stay}"
+
+    # how a landed blow works on the body, region by region (narration.rich.body_detail): (what moves, what gives)
+    BODY_MOVES = {
+        "head": ["her head snaps round with it, the neck twisting to follow before it can stop it",
+                 "her head is knocked sideways, ears flung out, her eyes jarred in their sockets",
+                 "her head rocks back on her neck and comes forward again a heartbeat later"],
+        "neck": ["her head whips back as her neck takes it", "her neck bends away from it and the muscles there "
+                 "clench to hold her head up"],
+        "chest": ["her whole chest is driven back and her shoulders hunch round it",
+                  "it shoves her chest in and the breath is punched out of her"],
+        "belly": ["her body folds round it, curling over the place it sinks in",
+                  "it sinks in and her middle buckles round it, the breath leaving her in one push"],
+        "shoulder": ["her shoulder is shoved back and her whole side turns with it",
+                     "her shoulder drops under it and the limb below it swings loose for an instant"],
+        "fore": ["the limb is flung aside at the joint", "the limb is driven back against her body and jolts there"],
+        "hind": ["the leg is knocked out of line and her weight lurches onto the other one",
+                 "the leg buckles a little and has to catch her"],
+        "back": ["her back arches away from it and the jolt runs down her spine",
+                 "it drives her forward a fraction, her spine bowing with it"],
+        "tail": ["her tail is flung aside and the jolt runs up it to the root", "her tail jerks with it and lashes once"],
+    }
+    BODY_GIVES = {
+        "blunt": ["the instant of contact: pressure building against the {part} before it drives through, the fur "
+                  "flattened in a dent and the flesh under it giving, then springing back",
+                  "the {part} takes the weight of it: skin and fur shoved across the bone, the muscle under it "
+                  "pressed flat and then rebounding"],
+        "claw": ["the claws catch first: fur and skin drag and stretch taut along the line of the cut before they part",
+                 "the skin is pulled with the claws for a moment, stretched, before it gives along the cut"],
+        "bite": ["the teeth sink in and the skin round them is dragged taut, the {part} pulled toward the biter",
+                 "the pressure of the jaws closing: fur bunched, skin stretched tight round each tooth"],
+        "blast": ["the force flattens her fur back against the {part} and shoves the skin under it",
+                  "it presses into the {part} over its whole width, fur pushed flat and rippling outward"],
+        "shock": ["the muscles of the {part} jump and lock, the fur over it standing on end",
+                  "a twitch tears through the {part}, the muscle clenching hard under fur that rises and crackles"],
+        "cold": ["the fur over the {part} stiffens with it and the skin under it pulls tight",
+                 "the {part} tightens against it, skin shrinking and the fur stiffening into spikes"],
+    }
+
+    # what a solid blow does INSIDE the part it lands on, and past it (narration.rich.body_detail): (part words, ideas)
+    BODY_DEEP = [
+        (r"cheek|jaw|muzzle|snout|mouth|chin",
+         ["the shock rings through her teeth and up into her skull", "her jaw, clenched a moment before, is knocked open "
+          "and her teeth clack back together", "her lips and cheek are shoved back off her teeth by it",
+          "the jaw is knocked sideways and she feels it grind back into place", "a hot ache blooms along the bone and her "
+          "eyes water with it", "her head fills with the dull crack of it, heard from inside"]),
+        (r"\bnose\b|snout",
+         ["her eyes water at once, a sharp sting flooding up behind them", "her nose is shoved sideways and every breath "
+          "through it after stings", "the world goes white for a blink and smells of nothing but metal"]),
+        (r"\bear\b",
+         ["a high ringing fills that side of her head and the world's sounds go thin", "the ear is folded flat under it "
+          "and springs back up stinging", "for a moment she can't tell which way is up, her balance knocked loose with the "
+          "sound"]),
+        (r"\beye\b|\bhead\b|forehead|crest|horn",
+         ["a white flash goes off behind her eyes", "her sight doubles for a heartbeat and swims back together",
+          "her skull rings like struck stone and her thoughts scatter", "her neck takes the weight of her head snapping, "
+          "a hot strain down the back of it"]),
+        (r"throat|neck",
+         ["her breath stops mid-draw, the throat shut for an instant", "she gags on nothing, swallowing hard against it",
+          "her voice is knocked out of her: whatever sound she makes comes out crushed", "the pressure leaves her throat "
+          "aching every time it moves"]),
+        (r"chest|rib|ruff",
+         ["it booms through her ribcage and she feels it in her back", "her heart thuds hard against the place it hit",
+          "the air is driven out of her chest in one hard push and coming back burns", "her ribs flex in and spring back, "
+          "a deep ache left in their wake"]),
+        (r"stomach|belly|midsection|flank",
+         ["her stomach lurches and a wave of sickness rises with it", "the air leaves her in a wet grunt and won't come "
+          "back for a moment", "it folds her in the middle and her legs feel far away", "a hollow, sinking ache spreads "
+          "out from it through her middle"]),
+        (r"shoulder",
+         ["the arm below it goes dead and tingling all the way down to the paw", "the joint is jolted in its socket, a "
+          "hot wrench under the muscle", "the blow's shock runs down the limb and her paw splays open on its own"]),
+        (r"upper arm|forearm|\barm\b|foreleg|forepaw|\bpaw\b|hand|wrist|elbow",
+         ["the shock jumps down the limb and her toes splay", "the limb goes numb for an instant and comes back "
+          "throbbing", "the bone under it hums with the blow", "her grip opens without her meaning it to"]),
+        (r"\bfin\b",
+         ["the fin is bent back and its edge folds before snapping straight", "a sharp sting runs along the fin's edge and "
+          "into her arm"]),
+        (r"hip|thigh|knee|hock|foot|hind",
+         ["the leg's strength flickers out for an instant and comes back shaking", "the joint is jolted sideways, a hot "
+          "twist that she feels with her next step", "the shock runs down into the foot and the ground feels strange "
+          "under it", "the muscle of the leg knots up hard round the place it hit"]),
+        (r"back|spine",
+         ["the shock runs down her spine to the root of her tail", "her breath hitches as it jars her whole frame",
+          "the muscles along her back seize round it"]),
+        (r"tail",
+         ["the jolt runs up the tail into its root and her hips", "the tail goes stiff and then trembles",
+          "the shock of it shoots up into the small of her back"]),
+        (r"wing",
+         ["the wing's bones hum with it and the feathers along it splay", "the wing jerks half-open on its own"]),
+    ]
+    BODY_AFTER = {"claw": ["the sting arrives a beat after the claws have gone, sharper than the cut itself",
+                           "cold air finds the opened skin and makes it burn"],
+                  "bite": ["the ache of the teeth stays in the shape of the bite after they let go",
+                           "the skin round the bite throbs in time with her heart"],
+                  "shock": ["her muscles keep twitching after it stops", "the smell of singed fur lingers over it"],
+                  "cold": ["the cold goes in deep and the part stiffens", "it burns with cold, then goes numb at the edges"]}
+
+    def _impact_body(self, a, told_motion=False):
+        """narration.rich.body_detail: for each blow that lands, how it works on the body in the instant it lands:
+        the pressure of contact, what moves with it (the head swinging round from a blow to the cheek, the chest
+        driven in), the fur and skin stretching or flattening, by the kind of blow and how hard it was. A fighter
+        held fast (pinned, gripped, pressed against something) gets the pressure and the give, not the movement."""
+        cfg = self._rich()
+        if not cfg or not cfg.get("body_detail", True) or a.get("type") != "instant" or not a.get("hits"):
+            return ""
+        if a.get("environment") or len(a["hits"]) > 3:
+            return ""   # (a landing, or a whole-body surge: their own notes tell them)
+        from engine import body_region
+        import random as _r, zlib
+        h = max(a["hits"], key=lambda x: float(x.get("damage_taken") or 0))
+        dfn = h.get("defender") or a.get("defender")
+        rnd = _r.Random(zlib.crc32(f"body|{getattr(self, 'beat_now', 0)}|{a.get('attacker')}|{h['part']}".encode()))
+        m = a.get("move") or {}
+        name = f"{m.get('name', '')} {m.get('about', '')} {a.get('flavor') or ''}".lower()
+        kind = ("claw" if re.search(r"slash|claw|swipe|scratch|rake|cut", name) else
+                "bite" if re.search(r"bite|fang|crunch|jaws", name) else
+                "shock" if m.get("type") == "Electric" else "cold" if m.get("type") == "Ice" else
+                "blast" if m.get("target") in ("spread", "whole_body") or re.search(r"beam|blast|pulse|jet|gun|wave", name)
+                else "blunt")
+        reg = body_region(h["part"])
+        reg = {"fore_up": "fore", "fore_low": "fore", "hind_up": "hind", "hind_low": "hind", "back_up": "back",
+               "back_low": "back"}.get(reg, reg)
+        part = h["part"].lower()
+        gives = rnd.choice(self.BODY_GIVES[kind]).format(part=part)
+        held = told_motion or (dfn in (getattr(self, "pinned_now", None) or ()) or a.get("target_against") or a.get("point_blank")
+                or dfn in (getattr(self, "on_ground", None) or ()) or a.get("moved") or a.get("launch")
+                or any(g[1] == dfn for g in (getattr(self, "grips", None) or [])))
+        size = self._strength_key(float(h.get("damage_taken") or 0))
+        # (a shock or cold locks or stiffens her rather than shoving her; a glancing blow doesn't snap her head round)
+        moves = ("" if held or reg not in self.BODY_MOVES or kind in ("shock", "cold") or size == "glancing"
+                 else rnd.choice(self.BODY_MOVES[reg]))
+        # what it does inside the part and past it (the teeth ringing from a blow to the cheek, the jaw knocked open):
+        # two ideas for a solid blunt one, one for a glancing one, and the after-feel of a cut, a bite, a shock, cold
+        deep = next((ideas for rx, ideas in self.BODY_DEEP if re.search(rx, part)), [])
+        n_deep = 0 if not deep else 1 if size == "glancing" or kind not in ("blunt", "blast") else 2
+        inside = rnd.sample(deep, min(n_deep, len(deep)))
+        if kind in self.BODY_AFTER:
+            inside.append(rnd.choice(self.BODY_AFTER[kind]))
+        out = (f"  - THE BODY UNDER IT (ideas for this blow, in slow physical detail and your own words: use what fits, "
+               f"or invent more like them, as big as a {size} blow and no bigger; nothing moves her anywhere the beat "
+               f"doesn't say, and no wound is added): {gives}"
+               + (f"; {moves}" if moves else "") + "."
+               + (" Inside it and past it: " + "; ".join(inside) + "." if inside else "")
+               + f" Then what it leaves: the sting or ache settling into the {part}, the fur lying wrong over it.")
+        return self._in_coat(out, dfn)
 
     def _press_look(self, h):
         """What a press LOOKS like on the body: fur, muscle, and a joint bent toward its limit, by how hard it is."""
@@ -4210,8 +4356,13 @@ class Narrator:
                              f"has nothing left at all, emptied out, barely able to stay up.")
             if a.get("guarding"):
                 gd = a["guarding"]
-                lines.append(f"  - {a['defender']} is GUARDING her {gd['part'].lower()} without thinking, shoulder or "
-                             f"limb or body curled to cover it" + (f", which leaves her {gd['open_side']}{' side' if gd['open_side'] in ('left', 'right') else ''} open"
+                from engine import body_region
+                reg_ = body_region(gd["part"])
+                # (one way of covering it, by where it is: a list of choices was copied into the story as it stood)
+                cover_ = ("a shoulder hunched up over it" if reg_ in ("head", "neck") else
+                          "her body curled over it" if reg_ in ("chest", "belly", "back_up", "back_low") else
+                          "the limb drawn in close")
+                lines.append(f"  - {a['defender']} is GUARDING her {gd['part'].lower()} without thinking, {cover_}" + (f", which leaves her {gd['open_side']}{' side' if gd['open_side'] in ('left', 'right') else ''} open"
                                                                     if gd.get("open_side") else "") + ".")
             g = a.get("guard") or {}
             if g.get("kind") == "block":
@@ -4530,6 +4681,9 @@ class Narrator:
             mv_line = self._impact_motion(a)
             if mv_line:
                 lines.append(mv_line)
+            body_line = self._impact_body(a, told_motion=bool(mv_line))
+            if body_line:
+                lines.append(body_line)
             if a.get("counter_hits"):
                 lines.append(f"  - It caught one target, but another dodged and countered {a['attacker']}:")
                 lines += [self._hit_line(h) for h in a["counter_hits"]]
@@ -5077,6 +5231,11 @@ class Narrator:
             lines = [f"GETTING UP: {who} is on the ground and tries to rise; she {how}. Show each try in its own short "
                      f"paragraph, with the strain in her {hurt}. Exactly {e['tries'] if e['stands'] else 3} tries, no "
                      f"more:"]
+        if who in (getattr(self, "_attackers", None) or set()):
+            # she attacked this beat from where she lay: the get-up comes only once her blows are done
+            lines[0] = lines[0].rstrip(":") + (f" AFTER her attack this beat: she makes it FROM THE GROUND, lying "
+                                               f"where she fell, and only once its last blow has landed does she try "
+                                               f"to rise (never before it or during it):")
         others = [n for n in (getattr(self, "posture_start", None) or {}) if n != who
                   and not str(self.posture_start[n]).upper().startswith(("ON THE GROUND", "OUT OF"))]
         if others:
@@ -9536,8 +9695,8 @@ class Narrator:
 
     def _talk_limits(self):
         t = self.rules.get("narration", {}).get("talk", {}) or {}
-        return (int(t.get("spoken_per_beat", 1)), int(t.get("spoken_gap", 2)), int(t.get("thoughts_per_part", 3)),
-                bool(t.get("enabled", True)))
+        return (int(t.get("spoken_per_beat", 1)), int(t.get("spoken_gap", 2)), int(t.get("thoughts_per_part", 3))
+                + int(self._rich().get("extra_thoughts", 0) or 0), bool(t.get("enabled", True)))
 
     def _talk_allowance(self, prior):
         """How many spoken lines this part may still have, and how many thoughts."""
@@ -11055,7 +11214,8 @@ class Narrator:
         """Has this beat run past its time budget (narration.beat_budget_minutes, times factor)? Past it, only the
         optional extra passes are dropped (a second whole rewrite, wording-only fixes, the second reading); every
         part is still written in full, and the program's own cleanup still runs. 0 = no budget."""
-        mins = float(self.rules.get("narration", {}).get("beat_budget_minutes", 6) or 0)
+        mins = float(self.rules.get("narration", {}).get("beat_budget_minutes", 6) or 0) \
+            * float(self._rich().get("budget_mult", 1.0) or 1.0)    # (a rich beat is longer: it gets longer too)
         t0 = getattr(self, "_beat_t0", None)
         return bool(mins > 0 and t0 and _time.time() - t0 > mins * 60 * factor)
 
@@ -11231,6 +11391,8 @@ class Narrator:
         for s_, k in spec.items():
             if k == 1 and s_:
                 text = re.sub(r"\b([Tt]he) other (" + re.escape(s_) + r")\b", r"\1 \2", text)
+        # three choices strung with "or" ("her shoulder or limb or body curled"): a note's menu, copied. The first stays
+        text = re.sub(r"\b(her|a|the) ([a-z]+) or ([a-z]+) or ([a-z]+)\b", r"\1 \2", text)
         text = re.sub(r"\n{3,}", "\n\n", text)
         if str(n.get("swearing", "rare")).lower() in ("none", "off", "false", "never", "no", "0"):
             text = re.sub(r"(?:(?<=^)|(?<=[.!?…]\s)|(?<=\n))\*?(?:Damn|Dammit|Damn it|Damn this|Damn her|Damn you)[^.!?\n]{0,20}[.!?]+\*?\s*",
@@ -11575,6 +11737,68 @@ class Narrator:
                 f"{'her' if len(low) == 1 else 'their'} italic thoughts come in fragments (a word or two, broken off). "
                 f"ONLY the thoughts: the prose around them keeps its full detail, body, breath and sound.\n\n")
 
+    def _rich(self):
+        """narration.rich: longer beats, more paragraphs, thoughts that reason from what the fight has taught each
+        fighter (the engine's inner_state), and one sense a part that the fight hasn't leaned on lately."""
+        cfg = (self.rules.get("narration") or {}).get("rich") or {}
+        return cfg if cfg.get("enabled", False) else {}
+
+    SENSES = [("sound", "what she HEARS: breath, paws or feet on the ground, the place's own noises, the other's sounds"),
+              ("smell", "what she SMELLS: the other's fur and breath, her own blood or sweat, the water, the earth, "
+                        "whatever the place gives off"),
+              ("touch", "what her body FEELS that isn't pain: the ground under her, grit, wet fur, wind, the heat of "
+                        "the other close by"),
+              ("temperature", "HEAT and COLD: the air on her, warmth leaving or flooding a hurt part, cold water or "
+                              "stone, the other's breath"),
+              ("taste", "what she TASTES: blood, water, dust, the copper of a split lip, the dryness of a hard-run mouth"),
+              ("light", "what she SEES of the light: where it falls, glints on wet fur, shadows, how her sight swims or "
+                        "sharpens")]
+
+    def _sense_pick(self):
+        """One sense for this part: the one the fight has used least, never the one the last part had."""
+        used = self.__dict__.setdefault("_senses_used", {})
+        last = getattr(self, "_sense_last", None)
+        pool = [x for x in self.SENSES if x[0] != last]
+        low = min(used.get(k, 0) for k, _ in pool)
+        key, text = random.choice([x for x in pool if used.get(x[0], 0) == low])
+        used[key] = used.get(key, 0) + 1
+        self._sense_last = key
+        return text
+
+    def _inner_note(self):
+        """INNER LIFE: what each fighter knows from the fight so far (engine.inner_state), for her thoughts."""
+        cfg = self._rich()
+        inner = getattr(self, "inner", None) or {}
+        if not cfg or not cfg.get("inner", True) or not inner:
+            return ""
+        lines = [f"- {who}: " + "; ".join(facts) + "." for who, facts in inner.items() if facts]
+        if not lines:
+            return ""
+        return ("INNER LIFE (true, worked out by the program from the fight so far; for each fighter's thoughts, "
+                "worries and plans, NEVER as new events or new injuries):\n" + "\n".join(lines) + "\n"
+                + ("" if (self.rules.get("narration") or {}).get("old_memories") else
+                   "What she knows comes from THIS fight only: no earlier fights, no other opponents, no training, no "
+                   "smells or places she 'knew well' from before.\n") + "\n")
+
+    def _rich_part_note(self, key, seg_words, last):
+        """What a rich part adds: how many paragraphs, a sense to lean on, and room to think."""
+        cfg = self._rich()
+        if not cfg:
+            return ""
+        paras = max(2, int(seg_words // max(60, int(cfg.get("words_per_paragraph", 110)))))
+        out = (f"\nDEPTH for this part: write it as at least {paras} paragraphs. Slow down: give each moment its "
+               f"physical detail (weight, footing, breath, the exact feel of fur, muscle and ground) and the fighter's "
+               f"mind as it happens (what she notices, what she makes of it, what she fears or wants, what she "
+               f"decides). Let her thoughts reason from INNER LIFE where it fits: what has worked, what keeps hurting "
+               f"her, what her wounds stop her doing, what she can see is wrong with the other. The length comes from "
+               f"detail and thought, never from extra events or from telling a blow twice.")
+        if cfg.get("senses", True):
+            out += f" SENSE to bring in somewhere in this part (once or twice, plainly): {self._sense_pick()}."
+        if last and key not in ("dwell", "watch", "read") and cfg.get("closing_thoughts", True):
+            out += (" Before the part ends, give EACH fighter who is still conscious a few sentences of her own mind: "
+                    "how she reads the fight now and what she means to do about it (an intention, not a new move).")
+        return out
+
     def _camera_note(self, key):
         """How close this part is told (narration.camera): close in on one body, or wide on both and the place."""
         cfg = (self.rules.get("narration") or {}).get("camera") or {}
@@ -11892,6 +12116,11 @@ class Narrator:
                 self.progress("lingering on one blow this beat")
         self._important = self._is_important(bundle)
         self._story_tail = _tail(story_so_far, 6000)
+        rich_ = self._rich()
+        if rich_:
+            # (narration.rich: more room, and what each fighter has learned this fight for her thoughts)
+            words = int(words * float(rich_.get("length_mult", 1.6)))
+            context += self._inner_note()
         self._last_context, self._last_words = context, words  # for topping up a beat that comes out short
         actor, receivers = self.actors(bundle)
         plan = self._segments(actor, receivers, words, n)
@@ -12093,6 +12322,7 @@ class Narrator:
                               + self._checklist("all", acts, actor, receivers)
                               + self._paragraph_plan("all", acts, actor, receivers)
                               + self._read_note("all", actor, receivers)
+                              + self._rich_part_note("all", words, True)
                               + self._talk_note(""),
                               words, coverage=True)
 
@@ -12135,6 +12365,7 @@ class Narrator:
                         "\n\nSOUNDS: every pained sound is described (what it is, where it comes from, its shape), never "
                         "just 'a sound'; the full rules for sounds come with the part where the blows land.")
             ask += self._camera_note(key)
+            ask += self._rich_part_note(key, seg_words, i == len(plan))
             ask += self._talk_note(so_far)
             n_def = len(self._deferred)
             ctx_ = context
