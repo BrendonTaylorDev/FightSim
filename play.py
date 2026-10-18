@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-18 build 190-guided (builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
+VERSION = "2026-10-18 build 190-guided (a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
 
 HELP = """
 =============================================================================================
@@ -220,7 +220,6 @@ HELP = """
   /release <hold_id> ["how"]                end one hold
   /release <att> <def> ["how"]              end every hold att has on def (breaks a whole pin)
   /struggle <pinned>                        she tries to break free this beat (result rolled)
-  /length [beats|default]                   how long fights run: presets for about 30, 35, 40, 45, 50 or 60 beats (default 60)
   /pins [number|off|default]                how often pins come: 1 = twice as many, 0.25 = half (default 0.5)
   /pinsuccess <att> <def> ["Part:sev=with,..."]   the pin wins now (starts one if none is running)
   /pinescape <att> <def>                    the pinned fighter breaks free right now (her blow lands on the pinner)
@@ -302,64 +301,105 @@ HELP = """
   (After the match, Enter keeps the aftermath going; the loser may come around on her own.)
 
 =============================================================================================
- RULES AND FIGHTERS   (changes are saved to rules.json unless noted)
+ BALANCE: HOW HARD HITS LAND, HOW FIGHTS END   (saved to rules.json unless noted)
 =============================================================================================
-  /scale [n]          how hard every hit lands on body parts (default 5)
-  /budget [min|off]   a beat's time budget (default 6): past it, the optional extra checking passes stop;
-                      /budget timing on|off shows where each beat's time went
-  /healthloss [n]     how much health each point of body-part damage costs (default 0.5)
+  /scale [n]          how hard every hit lands on body parts (3 is what the fighters are tuned at; /scale alone
+                      shows the current value)
+  /length [beats|default]   how long fights run: presets for about 30, 35, 40, 45, 50 or 60 beats (default 40)
+  /healthloss [n]     how much health each point of body-part damage costs (/healthloss alone shows it)
   /resscale [n]       how fast body-part resistance wears down (separate from /scale)
   /wear [n]           resistance ALSO lost per 1% of damage a hit really does (0 = off)   /wear 0.05
   /vital [word n | on | off]   how much each body part matters to overall health (a throat more, an ear far less)
                       /vital = show every part's weight      /vital ear 0.3      /vital off = all parts count the same
+  /numb [on|off]      the "numb with shock" pain level at 1000%+ (off: those parts stay devastated)
+  /fighter <name> <field> [value] [beats]
+        fields: health, maxhealth, energy, status, clearstatus, down, up, recovery, revive
+          /fighter Ripples health 900     /fighter Nocturne status paralyzed 2
+  /part <name> "<Part>" damage|resistance <value>      /part Ripples "Right Paw" damage 120
+  How a fight can end, and other switches: /help switches
+
+=============================================================================================
+ NARRATION: HOW THE STORY IS WRITTEN
+=============================================================================================
+  /words [n]          narration length per beat
   /talk quiet|less|normal|free   how much the fighters speak and think in italics (default: less)
   /sounds always|often|sometimes|rarely   how often a hurt fighter makes a sound (default: always)
   /sounds write often|sometimes|rarely|never   how often a sound is written out, *Nngh* (default: often)
-  /style on|off|auto  real bold and italic on screen instead of **asterisks** (auto: on in Spyder and terminals)
-  /style color <name> give the bold parts a colour too (yellow, cyan, green...; none = plain bold)
-  /numb [on|off]      the "numb with shock" pain level at 1000%+ (off: those parts stay devastated)
-  /words [n]          narration length per beat
+  /sample [name]      which style sample the narrator imitates. /sample lists them; /sample 1 or /sample
+                      style_sample.txt switches (saved). style_sample_scenes.txt is written in sections, and the
+                      narrator is shown the passage that fits the part it is about to write.
+  /style <text>       an extra style note for the narrator this session
   /blocks [on|off|n|reset]   story building blocks (story_blocks.txt): ideas for reactions, sensations, what an
                       opponent can see of an injury, ways to stage a move, thoughts and more, offered to the
                       narrator a few at a time when they fit the fight, the least-offered first. /blocks shows the
                       counts; /blocks 6 = at most six per part; /blocks reset forgets what has been offered.
-  /sample [name]      which style sample the narrator imitates. /sample lists them; /sample 1 or /sample
-                      style_sample.txt switches (saved). style_sample_scenes.txt is written in sections, and the
-                      narrator is shown the passage that fits the part it is about to write.
+  /phrases [forget]   the stock phrases the story has used, with running totals (kept between fights and runs);
+                      a recently used one is rested for a while, then allowed back. /phrases forget starts over
+  /model [narrator|director] [name]   which Ollama model writes the story / picks what happens (this session).
+                      /model narrator gemma4:31b   /model   (shows both)
+  Checking and speed:
+  /budget [min|off]   a beat's time budget (default 6): past it, the optional extra checking passes stop;
+                      /budget timing on|off shows where each beat's time went
   /timing [on|off|clear]   after each beat the program says how long it took, how fast the model wrote, and what
                       had to be written again. /timing alone: the averages so far, by narrator model (for
                       comparing two models: play some beats on each, then /timing).
-  /checks [clear]          which mistakes the narrator's checks keep finding, and how often the paragraph fixes for
+  /checks [clear]     which mistakes the narrator's checks keep finding, and how often the paragraph fixes for
                       each kind work and what they cost (this fight, and all fights so far)
-  /model [narrator|director] [name]   which Ollama model writes the story / picks what happens (this session).
-                      /model narrator gemma4:31b   /model   (shows both)
-  /repair on|off        on (default): a paragraph with a mistake is written again by itself and the rest of the
-                        part stays word for word. off: the whole part is rewritten for any problem
-  /reader on|off        on (default): after each part, the model reads it back against the beat's facts and
-                        the paragraphs it finds contradictions in are written again (one short extra call)
+  /repair on|off      on (default): a paragraph with a mistake is written again by itself and the rest of the
+                      part stays word for word. off: the whole part is rewritten for any problem
+  /reader on|off      on (default): after each part, the model reads it back against the beat's facts and
+                      the paragraphs it finds contradictions in are written again (one short extra call)
   /reader model <name>  have a different Ollama model do that reading (/reader model same = the narrator's)
   /reader cpu on|off    run that other model on the CPU, in system memory, so the narrator stays on the graphics card
   /reader confirm on|off  off (default): on = each thing the reading finds is asked about a second time before
                         any paragraph is rewritten for it (fewer rewrites, but it can talk itself out of a real find)
+  More narration switches (guided narration, shorter notes, the extra "staying with the damage" parts...):
+  /help switches
+
+=============================================================================================
+ SETTINGS, SCREEN AND ARENAS
+=============================================================================================
+  /set <rule.path> <value> [nosave]     change any rule in rules.json      /set narration.swearing never
+  /get [rule.path]                      show rules                          /get pin.struggle
+  /settings [forget]  what you changed with commands (kept in my_settings.json; a new build doesn't reset it);
+                      forget drops them, so the next build's defaults apply
+  /style on|off|auto  real bold and italic on screen instead of **asterisks** (auto: on in Spyder and terminals)
+  /style color <name> give the bold parts a colour too (yellow, cyan, green...; none = plain bold)
   /layout clear|tight|classic  how the stat math is laid out. clear (default): each hit as three labelled rows
                         (damage, resistance, health: before → after, then the math), blocks spaced out, one chance
                         roll per line. tight: one unlabelled row per hit, packed. classic: the long Before /
                         Calculations / After blocks
   /math auto|full|compact|both|off      how much of the stat math to show
-  /get [rule.path]                      show rules            /get pin.struggle
-  /set <rule.path> <value> [nosave]     change any rule       /set narration.swearing never
-                                        skip setting the scene:  /set narration.scene_intro false
-  /fighter <name> <field> [value] [beats]
-        fields: health, maxhealth, energy, status, clearstatus, down, up, recovery, revive
-          /fighter Ripples health 900     /fighter Nocturne status paralyzed 2
-  /part <name> "<Part>" damage|resistance <value>      /part Ripples "Right Paw" damage 120
-  /style <text>       an extra style note for the narrator this session
   /scene [name|number|random]   the arenas (scenes.json): /scene lists them; /scene 3 or /scene power plant
                       switches. /scene <a sentence of your own> makes an arena from your description (things
                       named in it can be landed on; nothing in it is tracked as a hazard).
   /hazards [on|off|chance <n>]  what this arena does: its hazards (burns, chills, drenches... when a fighter lands
                       on or is driven into them) and its events (things the place does by itself now and then)
   /hazard <event> [fighter]     make one of the arena's events happen at the end of the next beat
+
+=============================================================================================
+ SWITCHES   (the on/off settings people ask about; each is a /set, kept in my_settings.json)
+=============================================================================================
+  How fights end:
+    knockouts only            /set finish.knockout_only true     (a fight ends only when a blow knocks her out)
+    no pins at all            /set finish.no_pins true           (with knockouts only)
+    how often pins come       /pins 1 (twice as many)   /pins 0.25 (half)   /pins default
+  The narration:
+    guided narration          /set narration.guided.enabled false   (the paragraph plan, fact lines, marks, reads;
+                                                                     trial branch only)
+    shorter notes             /set narration.compact.enabled false  (the shorter-notes trial)
+    tactical reads            /set narration.guided.read_chance 0.2  (how often the attacker gets one)
+    "staying with the damage" parts (each adds a part to the beat, and time):
+                              /set narration.watch.chance 0.3   /set narration.read.chance 0.2
+                              /set narration.dwell.chance 0.3   (0 turns one off)
+    stock-phrase memory       /set narration.phrase_memory.enabled false     (/phrases shows it)
+    swearing                  /set narration.swearing never      (or rare, free)
+    setting the scene         /set narration.scene_intro false   (skip the opening passage)
+    the arena question        /set scene.ask_at_start false      (don't ask for an arena at start-up)
+  Speed:
+    context window            /set narration.context_window 16384   (smaller fits the graphics card better;
+                                                                      12288 if it's still tight)
+    time budget               /budget 6     (minutes; past it the optional checks stop)
 
 =============================================================================================
  LOOKING AROUND
@@ -376,10 +416,6 @@ HELP = """
   /export [file] [prose]    write every fight this session to a .md file ("prose" = story only)
   /exportfight [file] [all] save this fight (or every fight: all) beat by beat, with each fighter's picture,
                             health, and every body part's damage and resistance, as a page for your browser
-  /settings             what you changed with commands (kept in my_settings.json; a new build doesn't reset it)
-  /settings forget      drop them, so the next build's defaults apply
-  /phrases              the stock phrases the story has used, with running totals (kept between fights and runs);
-                        a recently used one is rested for a while, then allowed back. /phrases forget starts over
   /save [file]   /load [file]   (every beat autosaves: /load autosave)
   /help   /quit
 """
@@ -1669,7 +1705,10 @@ HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the orde
     ("story", "story plan focus targeting steering weakspots weak reason reasons why", "steering the story: /reason, /plan, /focus, /weakspots, /targeting"),
     ("moves", "moves moveinfo learn forget", "moves: /moves, /moveinfo, /learn, /forget"),
     ("healing", "healing heal restore recover aftermath", "healing and after the match: /heal, /restore, /recover"),
-    ("rules", "rules settings set get scale model sounds words style sample reader budget time slow timing", "rules and fighters: /set, /scale, /model, /sounds, /words, /sample..."),
+    ("balance", "balance scale length damage health healthloss resscale wear vital numb fighter part hard", "balance: /scale, /length, how hard hits land, /fighter and /part"),
+    ("narration", "narration story words talk sounds sample blocks phrases model reader repair budget timing checks slow speed", "narration: /words, /talk, /sounds, /sample, /phrases, /model, the checks and their cost"),
+    ("settings", "settings set get layout math style scene arena hazards", "settings, screen, arenas: /set, /get, /settings, /layout, /scene, /hazards"),
+    ("switches", "switches switch toggle knockout knockouts ko pins guided compact reads swearing context window", "switches: knockouts only, no pins, guided narration, shorter notes, speed..."),
     ("looking", "looking status health look", "looking around: /status, /health, /look"),
     ("files", "files undo reroll save load export exportfight quit", "undo, files, quit: /undo, /reroll, /save, /load, /export, /exportfight"),
 ]
@@ -1684,9 +1723,12 @@ QUICK START
   /throw Ripples "an old oak=Chest:heavy; the grass:solid"   thrown into the arena, surface by surface
   /pin Nocturne Ripples      a pin (the engine fills in the grips)
   a + b                      join up to three commands into one beat
+  /auto 20   /stop           let the director run 20 beats; /stop (in the window) ends the run after this beat
   /undo   /reroll   /status  take a beat back, rewrite its narration, see where everyone stands
+  /help switches             the on/off settings: knockouts only, no pins, guided narration, speed...
 
-TOPICS   type /help <topic> (or a command name: /help charge)   ·   /help all = everything
+TOPICS   /help <topic>   ·   /help <command> (/help charge)   ·   /help <any word> searches everything
+         (/help knockout, /help tumble)   ·   /help all = everything
 """
 
 
@@ -1709,18 +1751,38 @@ def help_text(arg=""):
                 title, body = sections[idx]
                 return f"{bar}\n {title}\n{bar}\n{body.rstrip()}\n\n(/help for the menu, /help all for everything)"
     # a command: every block of help that mentions it
-    hits = []
+    hits, own = [], []
     for title, body in sections:
         blocks = re.split(r"\n(?=  /)", body)
         for b in blocks:
-            if re.search(r"(?<![\w-])/" + re.escape(arg) + r"\b", b):
-                hits.append(b.rstrip())
+            if re.match(r"\s*/" + re.escape(arg) + r"\b", b):
+                own.append(b.rstrip())          # the command's own entry
+            elif re.search(r"(?<![\w-])/" + re.escape(arg) + r"\b", b):
+                hits.append(b.rstrip())         # an entry that only mentions it
+    hits = own or hits
     if hits:
         return "\n\n".join(hits) + "\n\n(/help for the menu)"
     for idx, (key, words, _) in enumerate(HELP_TOPICS):
         if arg in words.split() and idx < len(sections):
             title, body = sections[idx]
             return f"{bar}\n {title}\n{bar}\n{body.rstrip()}"
+    # anything else: every entry in the help that mentions it (an entry is a command line and the lines under it)
+    words_ = [w for w in re.findall(r"[a-z0-9_.]+", arg) if len(w) > 2]
+    found = []
+    for title, body in sections:
+        for b in re.split(r"\n(?=  \S)", body):
+            low = b.lower()
+            if words_ and all(w in low for w in words_):
+                found.append((title.split("   ")[0].title(), b.rstrip()))
+    if found:
+        out, last = [], None
+        for title, b in found[:14]:
+            if title != last:
+                out.append(f"-- {title} --")
+                last = title
+            out.append(b)
+        more = f"\n(and {len(found) - 14} more: /help all)" if len(found) > 14 else ""
+        return "\n".join(out) + more + "\n\n(/help for the menu)"
     return f"Nothing in the help about '{arg}'. /help for the menu, /help all for everything."
 
 

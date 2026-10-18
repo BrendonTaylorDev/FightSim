@@ -654,6 +654,26 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 190
+- **Builds 188-189 merged with the latest trial fixes.** Everything from 188 (undo and saves keep all state, audit F)
+  and 189 (damage marks, status looks and poses on the pictures) is here, together with:
+  - **Your direction can ask for a devastating blow:** "devastating" in a typed direction makes the first blow that
+    lands that beat devastating, no roll (`/play dice strict` keeps it to the dice).
+  - **A submission on a fighter put down that beat:** a direction opens it even when she was standing as the beat began.
+  - **Holds in the paragraph plan** (guided narration): a grip taken this beat is a step of the plan, and put back if
+    the draft never shows it closing.
+  - **Notes copied word for word are cut:** a sentence copying ten words in a row of the beat's notes goes.
+  - **Kicks get no hand staging,** and "her arm" on a four-legged fighter becomes her foreleg.
+  - **`/stop`** in the window ends an `/auto` run after the beat being written.
+  - **The stock-phrase memory** (`/phrases`): stock phrases are rested for a while after use, across fights and runs.
+- **A rebuilt /help.**
+  - The long rules section is now four topics: balance, narration, settings, switches.
+  - `/help switches` lists the on/off settings people ask about, each with its command (knockouts only, no pins,
+    guided narration, shorter notes, the "staying with the damage" parts, the context window...).
+  - `/help <any word>` searches every entry (`/help knockout`, `/help tumble`), and `/help <command>` shows that
+    command's own entry first.
+  - Stale defaults are gone (/scale, /healthloss, /length), and /length moved out of the pins section.
+
 ## Build 189
 - **Damage marks on the pictures** (the **Damage marks** switch in the window; `window.damage_marks`). From
   `marks_from` (30%) damage on, each hurt part shows the marks of what hurt it, and they get worse as the damage climbs:
