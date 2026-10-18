@@ -654,6 +654,16 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 195
+Fixes from the user's full Ripples vs Nerine fight (10 beats, 2.5-7.5 minutes each):
+- The body note no longer ends on a fixed line ("the sting or ache settling into the neck, the fur lying wrong over
+  it" came back word for word); it asks for what the blow leaves, in the narrator's own words.
+- The grip-stays-on note for a get-up is in note form ("GRIP STAYS ON: ...") instead of a sentence the model pasted in.
+- "Familiar" is cleaned in any form ("a familiar comfort", "the familiar smell of her home"); sound tags "(Yaah)",
+  "(Waah)", "(Yowl)" become italics like the others.
+- Nerine's Bite reads "a hard bite, quick as a snap" (the injury report cut "a hard, quick bite" to "Nerine's hard").
+- The console no longer says "a Aqua Tail".
+
 ## Build 194
 Fixes from the user's Nerine vs Ripples beat 1 (10.5 minutes, the same blow told four times):
 - **Richer narration is shorter by default:** `narration.rich.length_mult` 1.5 (was 2.0).

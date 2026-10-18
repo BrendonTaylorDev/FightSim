@@ -73,3 +73,38 @@ once. Still to look at (the rest of the list below, apart from those):
   through and came up standing.
 - **The first part is labelled "— Both —"** before the two sides are told.
 - **16 present-tense sentences** in one beat: the model drifts more over long parts.
+
+## From the user's full Ripples vs Nerine fight (build 194; 10 beats, 2.5-7.5 min each)
+Build 195 fixed: copied body-note and grip-note lines, "familiar" in any form, more sound tags, Nerine's Bite name in
+the injury report, "a Aqua Tail". Still to look at:
+- **Events told twice:**
+  - beat 7: the get-up tries are told in both fighters' parts;
+  - beat 7: the knee is told again at the end;
+  - beat 10: the missed Crunch is told twice.
+- **Events out of order:**
+  - beat 4: the get-up is told before the pine impact and the nose bite;
+  - beat 7: the get-up is told before the knee.
+
+  Cause: passages for left-out events are added at the end. Idea: insert them where they belong.
+- **Fragments left after cut sentences:** "was the only thing that moved...", "seemed to echo the rhythm of her
+  heartbeat...". After a cut, check that the next sentence starts like a sentence.
+- **Wrong state in the prose:**
+  - beat 2: "Ripples' feet were planted" while she lay down;
+  - beat 3: "Nerine's grip tightened ... jaws clamped on her chest" in the interlude, after that hold broke;
+  - beat 10: "Nerine could feel the adrenaline", which was Ripples' surge.
+- **Invented past or events:**
+  - "showing where Nerine had launched her Aqua Jet" (never used);
+  - "earth damp from the recent rain";
+  - "She had seen one like it before";
+  - "one that she had seen work before";
+  - "There. She flinched at the feint." (a story-block line, though no feint happened).
+- **Untrue story lines:**
+  - "I've been slow all fight" for the fighter who was dominating;
+  - "Her legs throbbed in sympathy".
+
+  Ideas: tag those lines with when they fit (losing or winning), and drop feint lines unless there was a feint.
+- **The interlude is long and repeats itself** (about 900 words). Shorten `narration.interlude.words`, or don't run
+  an interlude in rich mode.
+- **Console:**
+  - the flavor names the wrong fighter: "Ripples' Ice Fang lands and Nerine's jaw..." on Nerine's attack;
+  - the summary lists the knockout before the deflected Crunch from the same beat.

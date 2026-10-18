@@ -436,7 +436,7 @@
           "type": "Dark",
           "power": 32,
           "target": "targeted",
-          "about": "a hard, quick bite",
+          "about": "a hard bite, quick as a snap",
           "effects": [
             {
               "status": "flinched",

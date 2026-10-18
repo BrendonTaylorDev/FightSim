@@ -2,6 +2,7 @@
 Prints the stat blocks in your format, straight from engine numbers.
 Resistance uses colored squares, damage uses colored circles, and the heart is only ever health.
 """
+import re
 from engine import tier_for, pain_tiers, poss_word
 
 
@@ -701,6 +702,7 @@ class Display:
                 out += self.hits_block(a["attacker"], mc["hits"])
         elif t == "instant":
             fl = a.get("flavor") or (a.get("move") or {}).get("name", "") if isinstance(a.get("move"), dict) else a.get("flavor", "")
+            fl = re.sub(r"\b([Aa]) (?=[AEIOU])", r"\1n ", str(fl or ""))     # (the director's "a Aqua Tail")
             out.append(f"⚔️ **{a['attacker']} → {a['defender']}**" + (f": {fl}" if fl else ""))
             cl = a.get("clash")
             if cl:

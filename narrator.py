@@ -3281,7 +3281,7 @@ class Narrator:
                f"doesn't say, and no wound is added): {gives}"
                + (f"; {moves}" if moves else "") + "."
                + (" Inside it and past it: " + "; ".join(inside) + "." if inside else "")
-               + f" Then what it leaves: the sting or ache settling into the {part}, the fur lying wrong over it.")
+               + f" Then what it leaves on the {part}, in a few words of your own.")
         return self._in_coat(out, dfn)
 
     def _press_look(self, h):
@@ -5295,11 +5295,11 @@ class Narrator:
                          + ("the limb that gave way" if h.get("how") == "gives_out" else "what she lands on") + ":")
             lines.append(self._hit_line(h))
         for g in e.get("held") or []:
-            lines.append(f"  - {poss(g['by'])} grip on her {g['part']}" + (f" ({g['with']})" if g.get("with") else "")
-                         + f" STAYS ON through every try" + (" and after she is up" if e["stands"] else "")
-                         + f": {g['by']} does not let go and is not shaken off; {who} "
-                         + ("rises with it still clamped on, dragging against it." if e["stands"] else
-                            "strains against it."))
+            # (in note form: the sentence it used to be came back word for word in the story)
+            lines.append(f"  - GRIP STAYS ON: {poss(g['by'])} on her {g['part'].lower()}"
+                         + (f" ({g['with']})" if g.get("with") else "") + " — on through every try"
+                         + ("; still on once she is up (she rises dragging it)" if e["stands"] else "; she strains at it")
+                         + ". Show it in your own words.")
         for g in e.get("holding") or []:
             lines.append(f"  - {poss(who)} own grip on {poss(g['on'])} {g['part']}"
                          + (f" ({g['with']})" if g.get("with") else "") + " stays on too: she does not let go of it.")
@@ -11395,7 +11395,7 @@ class Narrator:
                       r"this beat|the next beat|is required|as instructed|the notes?)\b[^()\n]{0,240})\)[ \t]*$", "", text)
         # a pain sound put in brackets after the sound it names ("escaped Nocturne (Hnk), her breath..."): set as the
         # sound itself, in italics
-        sound = r"(?:H[mn]?[a-z]{0,5}|Ts+|Ff+|Rr+h*|Gr+h*|Eek|Ip|Ah+|Oo?f+|Ugh|Gah|Nn+g?h?|Mm+|Ss+|Hs+r*)"
+        sound = r"(?:H[mn]?[a-z]{0,5}|Ts+|Ff+|Rr+h*|Gr+h*|Eek|Ip|Ah+|Oo?f+|Ugh|Gah|Nn+g?h?|Mm+|Ss+|Hs+r*|Ya+h*|Wa+h*|Yo?w+l?)"
         text = re.sub(r"[ \t]*\((" + sound + r")\)(?=[,.;:!?…]|[ \t]*$)", r", *\1*", text, flags=re.M)
         text = re.sub(r"[ \t]*\((" + sound + r")\)(?=[ \t]+\S)", r", *\1*,", text)
         # "the other Absol" when only one Absol is in the fight: there is no other
@@ -11412,6 +11412,9 @@ class Narrator:
             text = re.sub(r"(?i)\b(a) familiar (aroma|smell|scent)\b",
                           lambda m: m.group(1) + ("n " if m.group(2)[0].lower() in "aeiou" else " ") + m.group(2), text)
             text = re.sub(r"(?i)\b(smell|scent|aroma)( that)? (?:she|he|[A-Z][a-z]+) knew (?:well|so well)\b", r"\1", text)
+            text = re.sub(r"(?i)\b(a|the) familiar (\w+)\b(?: of (?:her|its) home)?",
+                          lambda m: (m.group(1) + ("n" if m.group(1).lower() == "a" and m.group(2)[0].lower() in "aeiou"
+                                                   else "")) + " " + m.group(2), text)
         # three choices strung with "or" ("her shoulder or limb or body curled"): a note's menu, copied. The first stays
         text = re.sub(r"\b(her|a|the) ([a-z]+) or ([a-z]+) or ([a-z]+)\b", r"\1 \2", text)
         text = re.sub(r"\n{3,}", "\n\n", text)
