@@ -654,6 +654,14 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 203
+- **A takedown is never left out.** When a pin starts on a fighter who was on her feet and neither the drafts nor
+  the fixes told how she was taken down (beat 3 of the build-201 fight started with her already pinned), the program
+  puts in a plain sentence of its own at the start: who took whom down, the way the engine rolled (a shoulder drive,
+  a sweep...), and the parts the hard landing hit.
+- **The wrong-limb check reads both sides at once** ("her paws dug into Ripples' upper arms" when knees hold one arm
+  and jaws the other), and also checks the grips that an escape ended this beat.
+
 ## Build 202
 Fixes from the first fight on build 201 (Ripples vs Nerine, 4 beats):
 - **The type matchup is never named in the story** ("but she knew it was not very effective on her").

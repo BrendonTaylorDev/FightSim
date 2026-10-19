@@ -4767,6 +4767,7 @@ class Narrator:
             if a.get("taken_down"):
                 td = a.get("takedown") or {}
                 self._takedown = (a["attacker"], a["defender"])   # checked afterwards: the passage has to show it
+                self._takedown_how = (td.get("how"), sorted({str(h.get("part", "")).lower() for h in td.get("hits") or []}))
                 how = (TAKEDOWN_WAYS.get(td.get("how") or "") + "; fit it to their bodies" if td.get("how") in TAKEDOWN_WAYS
                        else "as the line above already says" if td.get("told")
                        else "a tackle, a leg hooked out from under her, a drag to the ground: whatever fits their bodies")
@@ -6625,6 +6626,40 @@ class Narrator:
         plain = (f"{poss(who)} struggles faded. Her eyes slid shut, her body went limp under {by}, and she lay still, "
                  f"breathing but out cold.\n\n{by} held a moment longer, felt nothing push back, and eased her weight off.")
         return text.rstrip() + "\n\n" + plain
+
+    TAKEDOWN_TOLD = {
+        "tackle": "{a} hit {d} low and hard, and they went down together, {d} underneath",
+        "leg_hook": "{a} hooked a leg behind {d} and shoved, and {d} went over it backward",
+        "sweep": "{a} swept {d}'s legs out from the side, and {d} dropped where she stood",
+        "hip_throw": "{a} caught {d} round the middle, turned her over a hip and put her down",
+        "shoulder_drive": "{a} drove a shoulder into {d}'s middle, folded her and carried her down backward",
+        "drag_down": "{a} seized {d} and dragged her down by sheer weight, {d} fighting it all the way to the ground",
+        "spin_down": "{a} caught {d}, spun her half round on her own momentum and brought her down",
+        "trip_back": "{a} walked {d} backward faster than her feet could go, until they tangled and she went over",
+        "pull_forward": "{a} hauled {d} forward off her feet, and she went down on her front",
+        "ride_down": "{a} took {d} from behind and rode her down until she was flat on her front",
+    }
+
+    def _ensure_takedown(self, text):
+        """A pin that starts on a fighter who was on her feet needs the takedown in the story. When neither the drafts
+        nor the fixes told it (the checks can be skipped late in a long beat), a plain sentence of the program's own
+        says it, in front of the first paragraph: who took whom down, how, and what she landed on."""
+        td = getattr(self, "_takedown", None)
+        if not td or not text or TAKEDOWN_SHOWN.search(text):
+            return text
+        a, d = td
+        how, parts = getattr(self, "_takedown_how", None) or (None, [])
+        line = self.TAKEDOWN_TOLD.get(how or "", "{a} took {d} off her feet and brought her down").format(
+            a=a, d=d).replace(f"{d}'s", poss(d))
+        if parts:
+            line += f"; {d} hit the ground hard, the jolt going through her {' and '.join(parts[:2])}"
+        line += f", and {a} was on her before she could move."
+        if self.progress:
+            self.progress("the takedown was never told: putting it in")
+        paras = text.split("\n\n")
+        i = next((k for k, p in enumerate(paras) if p.strip() and not p.strip().startswith(("—", "-" * 4))), 0)
+        paras.insert(i, line[0].upper() + line[1:])
+        return "\n\n".join(paras)
 
     def _ensure_getup(self, text):
         """The get-up is rolled by the program, so the passage has to end with her standing. When the cuts took
@@ -10454,24 +10489,41 @@ class Narrator:
         """A grip told with the wrong limb on the wrong place ("the twin tails tightening on her left upper arm" when
         the tails are round her right paw and the paws on the arm): what is wrong, or "". Only for a sentence that
         names one gripped part and one kind of limb, and only when that limb really holds another part."""
-        grips = [g for g in (getattr(self, "grips", None) or []) if g[3]]
+        # the grips on now, and the ones that came off this beat (an escape): the story still tells those
+        ended = getattr(self, "_grips_ended", None) or set()
+        grips = [g for g in list(getattr(self, "grips", None) or [])
+                 + [g for g in (getattr(self, "_grips_before", None) or []) if (g[0], g[1]) in ended] if g[3]]
+        grips = list(dict.fromkeys(grips))
         if not grips or not self.GRIP_VERB.search(sent):
             return ""
         low = sent.lower()
-        on = [g for g in grips if re.search(r"\b" + re.escape(g[2].lower()) + r"\b", low)]
-        parts_named = {g[2].lower() for g in on}
+
+        def named(part):
+            # "her left upper arm", or both sides at once: "her upper arms"
+            p = part.lower()
+            bare = re.sub(r"^(?:left|right) ", "", p)
+            return re.search(r"\b" + re.escape(p) + r"\b", low) or (bare != p and re.search(
+                r"\b" + re.escape(bare) + r"s\b", low))
+        on = [g for g in grips if named(g[2])]
+        parts_named = {re.sub(r"^(?:left|right) ", "", g[2].lower()) for g in on}
         if len(parts_named) != 1:
             return ""
         rest = low
         for p_ in parts_named:
-            rest = rest.replace(p_, " ")
+            rest = re.sub(r"\b(?:left |right )?" + re.escape(p_) + r"s?\b", " ", rest)
         limbs = [k for k, rx in self.GRIP_LIMBS.items() if re.search(rx, rest)]
         if len(limbs) != 1:
             return ""
         rx = self.GRIP_LIMBS[limbs[0]]
         if any(re.search(rx, str(g[3]).lower()) for g in on):
             return ""
-        other = [g for g in grips if g[0] == on[0][0] and g[2].lower() not in parts_named and re.search(rx, str(g[3]).lower())]
+        other = [g for g in grips if g[0] == on[0][0] and re.sub(r"^(?:left|right) ", "", g[2].lower()) not in parts_named
+                 and re.search(rx, str(g[3]).lower())]
+        if not other and len(on) > 1:
+            # "her paws dug into Ripples' upper arms" when knees hold one and jaws the other: none of them is paws
+            g = on[0]
+            return (f"the wrong limb on the wrong place: {poss(g[1])} " + " and ".join(
+                f"{x[2].lower()} is held with {self._own_with(x[0], x[3])}" for x in on))
         if not other:
             return ""
         o, g = other[0], on[0]
@@ -11554,6 +11606,7 @@ class Narrator:
         text = self._cut_retold(self._drop_self_repeats(text))
         text = self._keep_subjects(raw, text)   # a cut can take the sentence that said who "she" is
         text = self._ensure_faint(self._ensure_getup(self._top_up(text, story_so_far)))
+        text = self._ensure_takedown(text)
         text = _balance_marks(text)  # cuts above can split a thought: re-pair its marks
         text = _italic_sounds(text)  # "she hissed, hss, and..." -> "*hss*": the sound shown (and coloured) as a sound
         text = _drop_hanging_leadins(text)
@@ -11568,6 +11621,7 @@ class Narrator:
             # the stock phrases this beat used, counted for good (phrase_memory.json); the fight's worn runs are learned
             self._phrase_mem().note_beat(text, self.worn_phrases(20))
         self._beat_no += 1
+        self._grips_before = list(getattr(self, "grips", None) or [])   # for next beat's check of grips it ends
         # the last cuts can split a thought again: the marks re-paired, and narration set in italics made plain
         text = _unitalic_narration(_balance_marks(text), list(self.strengths or {}))
         text = re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", text)   # a paragraph emptied by the cuts leaves no gap
