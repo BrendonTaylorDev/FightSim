@@ -654,6 +654,20 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 202
+Fixes from the first fight on build 201 (Ripples vs Nerine, 4 beats):
+- **The type matchup is never named in the story** ("but she knew it was not very effective on her").
+- **Any short sound in brackets is set as a sound** ("a quick chirrup of surprise (Prrt)" -> "*Prrt*"), not only the
+  ones on the old list. Fighters' names in brackets are left alone.
+- **A menu of reactions copied from the notes keeps its first choice** ("her eyes squeezed shut or watered").
+- **A thought left open is closed after its first sentence** ("...sharp and clear: *Not stuck. She could feel..."),
+  and the marks are checked once more after the last cuts of a beat.
+- **Narration is never set in italics.** A paragraph in italics that talks about a fighter by name in the third person
+  ("*Nerine's eyes narrowed as she watched her opponent...*") loses the marks; real thoughts keep them.
+- **The attacker's part stops at contact.** The parts before the receiving one are told that how the blow lands on her
+  belongs to the next part (beat 1 had the Aqua Jet's effect on Nerine told twice, once from each side).
+- **The "bruise that was already there" pin idea** is only offered when she already carries a hurt.
+
 ## Build 201
 - **The beat card (`narration.card`, off by default).** A short block at the very end of each part's prompt, right
   before the model writes:

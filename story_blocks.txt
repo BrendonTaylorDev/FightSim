@@ -848,7 +848,7 @@ she is not sure any more which way is up
 # A pin HURTS, both of them, and more as it goes on. pin_pain: what a press feels like to the pinned fighter, by how
 # far gone she is. pin_strain: what holding it costs the pinner, by how long she has held (held: early, middle, long).
 == pin_pain | fade: fighting
-the press on her {part} finds the bruise that was already there and leans on it
+the press on her {part} finds the bruise that was already there and leans on it | earlier: hurt
 her {part} is ground against the hard ground with every breath either of them takes
 a hot, tight circle of hurt where the contact sits on her {part}
 her {part} aches under the weight in a plain, hard way she can still think round

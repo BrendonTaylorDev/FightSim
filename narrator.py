@@ -1875,6 +1875,23 @@ def _mend_orphans(text):
     return re.sub(r"[ \t]{2,}", " ", text)
 
 
+def _unitalic_narration(text, names):
+    """A paragraph of narration set in italics as if it were a thought ("*Nerine's eyes narrowed as she watched her
+    opponent... She was enjoying this more than she should.*"): told in the third person about a named fighter, so
+    it is prose, and the marks go."""
+    if not names:
+        return text
+    rx = re.compile(r"(?m)^([ \t]*)\*([^*\n]{60,})\*[ \t]*$")
+    who = re.compile(r"\b(?:" + "|".join(re.escape(n) for n in names) + r")(?:'s|’s|')?\b")
+
+    def fix(m):
+        inner = m.group(2)
+        if who.search(inner) and re.search(r"\b(?:she|her)\b", inner) and not re.search(r"\b(?:I|I'm|me|my)\b", inner):
+            return m.group(1) + inner
+        return m.group(0)
+    return rx.sub(fix, text)
+
+
 def _balance_marks(text):
     """Keep the * marks around thoughts in pairs. A thought can lose one end when a sentence inside it is cut
     (a repeated line, a stray curse) or when the model forgets to close it:
@@ -1908,7 +1925,14 @@ def _balance_marks(text):
             else:
                 body = " ".join(sents[:-1]) + " *" + sents[-1]
         else:
-            body = re.sub(r"\*(?=[^*]*$)", "", body, count=1)  # a lone mark in the middle: drop it
+            m = re.search(r"(?:^|(?<=[:.!?…]\s))\*(?=[A-Z])", body)
+            end = re.search(r"[.!?…]", body[m.end():]) if m and body.count("*") == 1 else None
+            if m and end:
+                # "...sharp and clear: *Not stuck. She could feel..." -> the thought is its first sentence
+                at = m.end() + end.end()
+                body = body[:at] + "*" + body[at:]
+            else:
+                body = re.sub(r"\*(?=[^*]*$)", "", body, count=1)  # a lone mark in the middle: drop it
         fixed.append(lead + body)
     return "\n".join(fixed)
 
@@ -11544,6 +11568,8 @@ class Narrator:
             # the stock phrases this beat used, counted for good (phrase_memory.json); the fight's worn runs are learned
             self._phrase_mem().note_beat(text, self.worn_phrases(20))
         self._beat_no += 1
+        # the last cuts can split a thought again: the marks re-paired, and narration set in italics made plain
+        text = _unitalic_narration(_balance_marks(text), list(self.strengths or {}))
         text = re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", text)   # a paragraph emptied by the cuts leaves no gap
         return re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", self.pov_labels(text))
 
@@ -11667,6 +11693,22 @@ class Narrator:
         # tail that only explains goes, the fact stays
         text = re.sub(r"(?i)\s*[:;,—]\s*(?:it works on her|it(?:'s| is) the place to go for|she knows its shape,? and "
                       r"dreads it|[A-Z]\w+ has its measure|she trusts her eyes)(?=[.!?…*])", "", text)
+        # the type matchup named in the story ("but she knew it was not very effective on her"): the game's words
+        text = re.sub(r"(?i)[,;]?\s*(?:but |and )?(?:she knew |she could tell )?(?:that )?(?:it was |it's |it is |that was )?"
+                      r"(?:not very|super|super-|barely) effective(?: on| against| for) (?:her|it)\b", "", text)
+        text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))[^.!?…\n]{0,60}\b(?:not very|super) effective\b[^.!?…\n]{0,60}[.!?…]+[ \t]*",
+                      r"\1", text)
+        # a sound in brackets that the list above doesn't know ("a quick chirrup of surprise (Prrt)"): set as a sound
+        not_sound = {w.lower() for w in (getattr(self, "strengths", None) or {})} | {"yes", "no", "and", "the", "she", "her"}
+
+        def as_sound(m, tail):
+            return m.group(0) if m.group(1).strip("!.").lower() in not_sound else ", *" + m.group(1) + "*" + tail
+        text = re.sub(r"[ \t]*\(([A-Z][a-z]{0,2}(?:-?[a-z]{0,4})?[!.]?)\)(?=[,.;:!?…]|[ \t]*$)",
+                      lambda m: as_sound(m, ""), text, flags=re.M)
+        text = re.sub(r"[ \t]*\(([A-Z][a-z]{0,2}(?:-?[a-z]{0,4})?[!.]?)\)(?=[ \t]+\S)", lambda m: as_sound(m, ","), text)
+        # a menu of reactions copied from the notes ("her eyes squeezed shut or watered"): the first one stays
+        text = re.sub(r"\b((?:eyes?|ears?|fins?|tails?) \w+(?: shut| flat| wide| back)?) or \w+(?: shut| flat| wide| back)?\b",
+                      r"\1", text)
         # the "she looks at her own body" idea copied as it stands ("her own covering there, any swelling or mark")
         text = re.sub(r"(?i),?\s*(?:\()?her own (?:covering|fur|coat|skin|scales|feathers) there,? any swelling or mark(?:\))?", "", text)
         text = re.sub(r"(?i),?\s*watching (?:it|them) obey or not", "", text)
@@ -12835,6 +12877,16 @@ class Narrator:
                 put(e.get("attacker"), f"{poss(e.get('attacker'))} FREE BLOW on {poss(e.get('defender'))} "
                                        f"{str(e.get('part', '')).lower()}, quick and told once, her grip staying as it was",
                     "pinner")
+        # the parts before the receiving one stop at contact: how the blow lands on her is the receiving part's
+        landed_on = sorted({a.get("defender") for a in acts if a.get("type") == "instant" and a.get("hits")
+                            and not a.get("dodged") and a.get("defender")})
+        if landed_on and "take" in keys:
+            for i in range(take_i):
+                if keys[i] in ("act", "setup"):
+                    out.setdefault(i, []).append(
+                        f"NOT IN THIS PART: how the blow lands on {' and '.join(landed_on)} (her body, her sounds, the "
+                        f"water or force spreading over her, what it does inside her). The next part tells it. Stop at "
+                        f"the instant of contact.")
         # a pin that starts after this beat's attack: the parts before the attack lands are told with nobody on her
         pins_ = [a for a in acts if a.get("type") in ("pin_start", "pin_forced") and not a.get("continuing")
                  and not a.get("joined")]
