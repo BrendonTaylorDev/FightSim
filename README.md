@@ -654,6 +654,29 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 199
+Fixes from the 29-beat Ripples vs Nerine fight:
+- **A grip torn off by a hit is no longer told tightening first.** The notes had said both "the hold tightens" and
+  "the hit breaks her grip", and the prose had Nerine clamp down harder after the ear slash freed Ripples.
+- **After a pin knockout, the loser stays out.** Any part after she faints is told from the winner's side, with the
+  loser out cold (no eyes opening, no last thought).
+- **Left-out passages go before the escape.** A pin press the drafts skipped is put in front of the paragraph where
+  she breaks out, not after it.
+- **Scenery that breaks under a held stream has to be named** (the fallen trunk in beat 13 was never mentioned).
+- **No blackout in a beat where nobody goes out** ("And then, nothing.", "everything went black").
+- **More cleanups:**
+  - the model's own remarks ("It is now written.", "The paragraph above has a word count of 60.");
+  - the notes' labels ("Inside it and past it:", "Her thought:", "Her voice:");
+  - camera moves ("Pulling back from the fighters, ...");
+  - "eight beats ago";
+  - runs of bare sounds ("Pip. Yp. Eek.");
+  - a sentence cut off at a name;
+  - "a sound she knew well", "not one she was unfamiliar with", "a familiar and comforting smell";
+  - INNER LIFE's wording copied ("it's the place to go for") and the look-at-her-body idea copied word for word;
+  - empty paragraphs.
+- **Interludes get the same last clean-up as beats** (the leaked word-count line came from one).
+- INNER LIFE now asks for thoughts in the fighter's own words, never the line as written.
+
 ## Build 198
 - **No more Spyder kernel crash after closing the window mid-beat.** A closed window (or one from an earlier run)
   could be cleaned up from the game's thread while it was still writing its last beat. Tk only allows that on the

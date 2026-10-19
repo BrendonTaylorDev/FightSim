@@ -3386,6 +3386,12 @@ class Narrator:
         # pairs whose hold really did end or was shaken loose this beat (so a "let go" between them is right)
         self._grips_ended = {(x.get("attacker"), x.get("defender")) for x in self._all_dicts(bundle)
                              if x.get("type") in ("hold_end", "pin_broken", "pin_left") and x.get("attacker")}
+        # someone goes out this beat (a knockout, or a pin held to the end): only then may the prose black her out
+        self._ko_now = any(x.get("type") == "eliminated" or (x.get("complete") and x.get("elimination"))
+                           for x in self._all_dicts(bundle))
+        # grips a hit tore loose this beat: told as coming off, never as tightening first
+        self._shaken_ids = {x.get("hold_id") for x in self._all_dicts(bundle)
+                            if x.get("type") == "hold_end" and x.get("shaken") and x.get("hold_id")}
         # which grips are on, and which have gone: a grip that ended must not be told as still on in later beats
         live = {(g[0], g[1]) for g in (getattr(self, "grips", None) or [])}
         seen, gone = getattr(self, "_grip_seen", None), getattr(self, "_grip_gone", None)
@@ -3978,6 +3984,13 @@ class Narrator:
             # checked afterwards: every surface she hits that isn't just the ground under her has to be in the story
             self._must_surfaces = list(getattr(self, "_must_surfaces", None) or []) + [
                 (a.get("defender"), str(l.get("surface") or "")) for l in a.get("landings", []) if l.get("surface")]
+        for key in ("sustain", "ground_into"):
+            # a held stream that pins her against scenery (or grinds her into it), above all when it breaks: named
+            sc = a.get(key) if isinstance(a.get(key), dict) else None
+            if t == "instant" and sc and sc.get("against") and (sc.get("broke") or any(
+                    p.get("broke") for p in sc.get("pulses") or [])):
+                self._must_surfaces = list(getattr(self, "_must_surfaces", None) or []) + [
+                    (a.get("defender"), str(sc["against"]))]
         intent = f" (why: {a['intent']})" if a.get("intent") else ""
         if t == "instant" and a.get("environment") and a.get("manhandle"):
             self._must_manhandle = a
@@ -4773,6 +4786,11 @@ class Narrator:
                 lines.append(f"  - The pin has only just begun: no time passes on it in this beat. Don't mention a "
                              f"clock, a count, or any seconds yet. Every press listed (which part, pressed with what) "
                              f"must appear in the prose.")
+        elif t == "hold_change" and a.get("hold_id") in (getattr(self, "_shaken_ids", None) or ()):
+            # torn loose by a hit later this beat: the grip only lasts until that blow lands
+            lines.append(f"{poss(a['attacker'])} hold on {poss(a['defender'])} {a['part']} is still on as the beat "
+                         f"opens, but a hit TEARS IT LOOSE this beat (told with that hit). She does not tighten it, "
+                         f"and it is NOT on when the beat ends.")
         elif t == "hold_change":
             how = {"tightens": "TIGHTENS: she bears down harder",
                    "loosens": "eases a little, and STAYS ON: she shifts her grip without letting go (it is not broken, "
@@ -5617,6 +5635,10 @@ class Narrator:
         text = _balance_marks(self._drop_said_repeats(self._drop_seen(self._drop_sample_copies(
             self._drop_self_repeats(self._drop_repeats(text, story_so_far))))))
         text = _italic_sounds(text)
+        # the same last clean-up a beat gets (meta lines, copied labels, "familiar", fragments)
+        self._ko_now = False
+        text = _mend_orphans(self._fit_limbs(self._last_scrub(_drop_hanging_leadins(text))))
+        text = re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", text)
         self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         return text
 
@@ -11332,7 +11354,8 @@ class Narrator:
             # the stock phrases this beat used, counted for good (phrase_memory.json); the fight's worn runs are learned
             self._phrase_mem().note_beat(text, self.worn_phrases(20))
         self._beat_no += 1
-        return self.pov_labels(text)
+        text = re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", text)   # a paragraph emptied by the cuts leaves no gap
+        return re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", self.pov_labels(text))
 
     def _phrase_mem(self):
         """The stock-phrase memory kept across fights and runs (narration.phrase_memory), or None when it is off."""
@@ -11413,7 +11436,12 @@ class Narrator:
             text = re.sub(r"(?i)\b(a|the) familiar and (\w+) (aroma|smell|scent|sensation|feeling)\b", r"\1 \2 \3", text)
             text = re.sub(r"(?i)\b(a) familiar (aroma|smell|scent)\b",
                           lambda m: m.group(1) + ("n " if m.group(2)[0].lower() in "aeiou" else " ") + m.group(2), text)
-            text = re.sub(r"(?i)\b(smell|scent|aroma)( that)? (?:she|he|[A-Z][a-z]+) knew (?:well|so well)\b", r"\1", text)
+            text = re.sub(r"(?i)\b(smell|scent|aroma|sound|sight|feeling|taste|ache|pain)( that)? (?:she|he|[A-Z][a-z]+) "
+                          r"knew (?:well|so well|all too well)\b", r"\1", text)
+            text = re.sub(r"(?i)[,;]?\s*(?:but )?not (?:one|a pain|a feeling|something) (?:that )?she was unfamiliar with",
+                          "", text)
+            text = re.sub(r"(?i)\ba familiar and (\w+)", lambda m: ("an " if m.group(1)[0].lower() in "aeiou" else "a ")
+                          + m.group(1), text)
             text = re.sub(r"(?i)\b(a|the) familiar (\w+)\b(?: of (?:her|its) home)?",
                           lambda m: (m.group(1) + ("n" if m.group(1).lower() == "a" and m.group(2)[0].lower() in "aeiou"
                                                    else "")) + " " + m.group(2), text)
@@ -11421,6 +11449,38 @@ class Narrator:
         # sentence that opens in lower case, at the start of a paragraph or after a full stop, goes
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))(?:was|were|is|are|seemed|seems|had|has|could|would|and|but|as|then|"
                       r"which|that|of|with|to|from|by|in|on)\b[^.!?…\n]*[.!?…]+[ \t]*", r"\1", text)
+        # the model talking about its own writing ("It is now written." / "The paragraph above has a word count of
+        # 60."), and the notes' labels copied in ("Inside it and past it: a high ringing..." / "Her thought: ...")
+        text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))[^.!?…\n]{0,80}\b(?:word count|the paragraph above|the passage above|"
+                      r"this paragraph|as requested|as instructed)\b[^.!?…\n]{0,120}[.!?…]+[ \t]*", r"\1", text)
+        text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))(?:It|This) is (?:now )?(?:written|done|complete)\.[ \t]*", r"\1", text)
+        text = re.sub(r"(?i)\binside it and past it[:,]\s*(\w)", lambda m: m.group(1).upper(), text)
+        text = re.sub(r"\b(?:Her|His) thoughts?:\s*", "", text)
+        text = re.sub(r"\b(Her|His) voice: (an?) ", r"She gave \2 ", text)
+        # a camera move told as the story ("Pulling back from the fighters, the clearing opened out"): the place stays
+        text = re.sub(r"(?m)(^|(?<=[.!?…]\s))(?:Pulling|Pull|Zooming|Cutting|Panning|Drawing) (?:back|out|away|wide)"
+                      r"(?: from [^,.]{1,40})?,\s*(\w)", lambda m: m.group(1) + m.group(2).upper(), text)
+        # "Eight beats ago": the game's word for time
+        text = re.sub(r"\b(?:\w+|\d+) beats? ago\b", "earlier", text)
+        text = re.sub(r"(?m)(^|(?<=[.!?…]\s))earlier\b", r"\1Earlier", text)
+        # a run of bare sounds ("Pip. Yp. Eek."): the first one says it
+        snd = r"\*?(?:[BCDFGHJKLMNPQRSTVWXZ][bcdfghjklmnpqrstvwxz-]{0,5}|Eek|Eep|Ip|Pip|Yip|Yp|Hah|Ah+|Oof|Ugh|Gah|Ack|Ki-?ki|Ki-ii|Ya+h)[.!-]\*?"
+        text = re.sub(r"(?m)((?:^|(?<=[.!?…]\s))" + snd + r")(?:[ \t]+" + snd + r")+", r"\1", text)
+        # a sentence cut off at a name ("The grip was tight, and it hurt. Ripples'"): the stub goes
+        text = re.sub(r"(?m)(?<=[.!?…])[ \t]+[A-Z][\w-]*(?:'s|’s|'|’)?[ \t]*$", "", text)
+        if not getattr(self, "_ko_now", False) and not getattr(self, "_faint", None):
+            # nobody goes out this beat, so nobody blacks out ("And then, nothing.")
+            text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))(?:and )?then,? nothing\.[ \t]*", r"\1", text)
+            text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))[^.!?…\n]{0,80}\b(?:everything|the world) went (?:black|dark)\b"
+                          r"[^.!?…\n]{0,80}[.!?…]+[ \t]*", r"\1", text)
+        # INNER LIFE's own wording copied ("Ripples is favoring her left upper arm; it's the place to go for"): the
+        # tail that only explains goes, the fact stays
+        text = re.sub(r"(?i)\s*[:;,—]\s*(?:it works on her|it(?:'s| is) the place to go for|she knows its shape,? and "
+                      r"dreads it|[A-Z]\w+ has its measure|she trusts her eyes)(?=[.!?…*])", "", text)
+        # the "she looks at her own body" idea copied as it stands ("her own covering there, any swelling or mark")
+        text = re.sub(r"(?i),?\s*(?:\()?her own (?:covering|fur|coat|skin|scales|feathers) there,? any swelling or mark(?:\))?", "", text)
+        text = re.sub(r"(?i),?\s*watching (?:it|them) obey or not", "", text)
+        text = re.sub(r"(?i)[,;]?\s*what she made of what she saw", "", text)
         # three choices strung with "or" ("her shoulder or limb or body curled"): a note's menu, copied. The first stays
         text = re.sub(r"\b(her|a|the) ([a-z]+) or ([a-z]+) or ([a-z]+)\b", r"\1 \2", text)
         text = re.sub(r"\n{3,}", "\n\n", text)
@@ -11805,7 +11865,9 @@ class Narrator:
         if not lines:
             return ""
         return ("INNER LIFE (true, worked out by the program from the fight so far; for each fighter's thoughts, "
-                "worries and plans, NEVER as new events or new injuries):\n" + "\n".join(lines) + "\n"
+                "worries and plans, NEVER as new events or new injuries. Never copy a line: turn it into her own "
+                "short thought, first person and in her own words, or into what she does about it):\n"
+                + "\n".join(lines) + "\n"
                 + ("" if (self.rules.get("narration") or {}).get("old_memories") else
                    "What she knows comes from THIS fight only: no earlier fights, no other opponents, no training, no "
                    "smells or places she 'knew well' from before.\n") + "\n")
@@ -12292,8 +12354,14 @@ class Narrator:
                       + ("keeping her grip and her weight where they are a moment or two longer to be sure, then "
                          if sure else "")
                       + "letting go and easing off her, and the quiet after.")
+            # any other part comes after she has gone out: the winner's side only, and the loser stays out
+            later = (f"after {d_} has gone out: {poss(a_)} side only, and {d_} is OUT COLD the whole part (eyes shut, "
+                     f"no movement, no thought, no feeling of her own; only her breathing). What {a_} does now, her "
+                     f"own breath and hurts, and the quiet of the place. {d_} does not stir, open her eyes or try "
+                     f"anything.")
             jobs = {"act": first, "take": second}
-            plan = [(k, jobs.get(k, f), w) for k, f, w in plan]
+            at = next((i for i, (k, _f, _w) in enumerate(plan) if k == "take"), len(plan))
+            plan = [(k, jobs.get(k, later if i > at else f), w) for i, (k, f, w) in enumerate(plan)]
             pin_plan = True
             going = gone
         kos = [a for a in acts if a.get("type") == "eliminated" and a.get("knockout")]
@@ -12721,12 +12789,27 @@ class Narrator:
                            r"(?:hands|paws|legs|feet) (?:on|under)|first try|second try|third try|onto her feet|"
                            r"to her feet|got up|gets up|getting up)\b", re.I)
 
+    ESCAPE_TOLD = re.compile(r"\b(?:the pin (?:was|is) (?:over|broken)|the pin broke|threw (?:her|him) off|"
+                             r"(?:broke|breaks|tore|wrenched|twisted) (?:free|loose|out)|rolled clear|wriggled free|"
+                             r"slid(?:e|ing)? out from under|bucked (?:her|him) off|shoved (?:her|him) off)\b", re.I)
+
     def _put_in_order(self, written, at, text):
         """A passage for something the drafts left out, put where it belongs: in front of the first paragraph (from
         part `at` on) where the fighter who gets up this beat starts trying to, since the get-up comes at the end of
-        the beat; else at the end of part `at`. Returns the new list."""
+        the beat (or, when she broke out of a pin this beat, in front of the escape, which comes after the pin's
+        presses); else at the end of part `at`. Returns the new list."""
         who = getattr(self, "_getup_who", None) or (getattr(self, "_getup_event", None) or {}).get("fighter")
         written = list(written)
+        freed = [f for f, _m in (getattr(self, "_escaped", None) or [])]
+        if freed and not self.ESCAPE_TOLD.search(text):
+            # the pin's presses come before she breaks out of it: a left-out press goes in front of the escape
+            for k in range(at, len(written)):
+                paras = (written[k] or "").split("\n\n")
+                for j, para in enumerate(paras):
+                    if self.ESCAPE_TOLD.search(para) and any(f in para or f in "\n".join(paras[:j]) for f in freed):
+                        paras.insert(j, text.strip())
+                        written[k] = "\n\n".join(paras).strip()
+                        return written
         if who:
             for k in range(at, len(written)):
                 paras = (written[k] or "").split("\n\n")
