@@ -654,6 +654,13 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 219
+
+- **Breaking out of a submission goes by her own health, like a pin.** Before, a fresh fighter had only about a 10% chance a beat to break a submission, and it barely changed with her health. Now a beat's chance comes from her health: about 33% at full, 25% at three quarters, 17% at half, 10% at a quarter. Below that it keeps falling, but never under 3%: very unlikely, never impossible. Over the three tries before the hold would turn into a pin, she gets out about 70% of the time from full health, 55% from three quarters, 38% from half, 12% from a quarter. It is a little higher when the holder is hurt or the grip is light, and still grows with every beat the hold stays on. In a submission match, any hold that hurts (a choke, a plain grip) is broken the same way, since any of them can make her tap (`match_holds`). Settings: `submissions.escape` (`points`, `grow`, `holder_hurt`, `grip_weight`, `floor`); `/set submissions.escape.enabled false` brings back the old chance.
+- **No pins in a submission match.** With `finish.submission.enabled` on, there are no pins at all now. A submission held a long time stays a submission instead of turning into a pin, so only a tap-out or a pass-out ends the fight. `/set finish.submission.no_pins false` brings pins back. `/help switches` lists the submission match.
+- **Words while she fights the tap.** In a beat where she fights not to tap out (or taps), up to two short spoken lines are allowed between the two, even if someone spoke the beat before. The holder can tell her low to give up, and she can answer through her teeth. The notes invite it. Her paw twitching toward the tap and stopping, touching it, then lying on it shaking, was already there. Setting: `narration.talk.hold_exchange` (`spoken` 2).
+- **A submission goes on the side the direction names.** "Ripples hauls Nerine's left leg across a root" used to grip the right knee and hip (the more hurt leg). Now the grips go on the left one. With no side named, it still picks the hurt leg.
+
 ## Build 218
 
 - **A hold costs even less health.** `holds.health_cap.health_mult` is now 1.1, down from 1.3. In the seed-11 submission match, health lost per beat of the second hold is now 42, 83, 68, 90, 89, then 143 in the last beat. Ripples taps at 637. The tap chances stay at 20%, 28%, 36% and 47%.

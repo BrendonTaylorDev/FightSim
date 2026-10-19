@@ -4021,6 +4021,9 @@ class Narrator:
                                  + (" (no longer a reason now, just a stubbornness she can't explain, or a plea "
                                     "for it to stop on its own)" if n_ >= 3 else "")
                                  + ". She does NOT tap this beat.")
+                    if self._hold_exchange():
+                        lines.append(f"  - She may answer {e['attacker']} if spoken to, or speak first: one short "
+                                     f"line through her teeth (a refusal, a 'no', her name), or nothing.")
                     if tb.get("enabled", True) and e.get("over") and n_ >= int(tb.get("holder_from", 2)):
                         lines.append(f"  - WHAT {e['attacker'].upper()} FEELS THROUGH THE GRIP: the twitch toward "
                                      f"the tap and the stop, coming through her own arms; her own grip tiring and "
@@ -9011,6 +9014,11 @@ class Narrator:
                          f"spoken line in a beat, and not in back-to-back beats. Thoughts in italics are few (up to "
                          f"{thoughts} short ones per part) and only when they add something the body can't show. Carry "
                          f"the rest through action, breath, and expression.")
+            if self._hold_exchange():
+                extra.append(f"- THIS BEAT she is fighting not to tap out, and the two of them are close enough to "
+                             f"hear a breath: up to {self._hold_exchange()} short spoken lines are allowed between "
+                             f"them (the holder telling her low to give up, her answer forced through her teeth, a "
+                             f"word or a refusal), even if someone spoke last beat. Short, never speeches.")
         absent = [w for w in (getattr(self, "absent_words", None) or []) if w]
         if absent:
             extra.append(f"- NOT IN THIS FIGHT: {', '.join(absent)}. She is not here and not part of this story: "
@@ -10363,6 +10371,28 @@ class Narrator:
         return (int(t.get("spoken_per_beat", 1)), int(t.get("spoken_gap", 2)), int(t.get("thoughts_per_part", 3))
                 + int(self._rich().get("extra_thoughts", 0) or 0), bool(t.get("enabled", True)))
 
+    def _hold_exchange(self):
+        """narration.talk.hold_exchange: in a beat where she fights not to tap out, the spoken lines allowed (the
+        holder telling her to give up, her answer), whatever the usual gap; 0 when it is off or not such a beat."""
+        t = (self.rules.get("narration", {}).get("talk", {}) or {}).get("hold_exchange") or {}
+        if not getattr(self, "_hold_talk", False) or not t.get("enabled", True):
+            return 0
+        return int(t.get("spoken", 2))
+
+    @staticmethod
+    def _has_tap_fight(bundle):
+        """True when the beat has her fighting not to tap (a tap_resist that isn't a choke) or tapping out."""
+        stack = [bundle]
+        while stack:
+            x = stack.pop()
+            if isinstance(x, dict):
+                if x.get("type") == "tap_out" or (x.get("type") == "tap_resist" and not x.get("choke")):
+                    return True
+                stack.extend(v for v in x.values() if isinstance(v, (dict, list)))
+            elif isinstance(x, list):
+                stack.extend(v for v in x if isinstance(v, (dict, list)))
+        return False
+
     def _talk_allowance(self, prior):
         """How many spoken lines this part may still have, and how many thoughts."""
         per_beat, gap, thoughts, on = self._talk_limits()
@@ -10370,6 +10400,7 @@ class Narrator:
             return None, None
         since = getattr(self, "_beat_no", 0) - getattr(self, "_last_spoken", -999)
         allowed = 0 if (gap and since <= gap) else per_beat
+        allowed = max(allowed, self._hold_exchange())   # (a tap fought off: a word or two between them)
         return max(0, allowed - len(self._spoken(prior or ""))), thoughts
 
     def _talk_note(self, prior=""):
@@ -12118,6 +12149,7 @@ class Narrator:
 
     def narrate(self, bundle, condition_summary, fighter_notes, scene, story_so_far):
         self._beat_t0 = _time.time()
+        self._hold_talk = self._has_tap_fight(bundle)
         del CALL_LOG[:]
         self._blocks().next_turn()
         self._lines().next_turn()

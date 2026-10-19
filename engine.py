@@ -4517,14 +4517,15 @@ class Engine:
             "strain": "the limb twisted and shaken in her jaws, the joint wrenched against itself"},
     }
 
-    def _sub_part(self, d, spec, used=()):
-        """The defender's part for one submission contact. Of a left and a right, the HURT one: a leg lock goes on
-        the leg that is already damaged (a holder works the known injury); and once one contact has a side, the
-        others take the same side (the knee and the hip of the same leg)."""
+    def _sub_part(self, d, spec, used=(), prefer=None):
+        """The defender's part for one submission contact. Of a left and a right, the side the direction named
+        (prefer), else the HURT one: a leg lock goes on the leg that is already damaged (a holder works the known
+        injury); and once one contact has a side, the others take the same side (the knee and the hip of the same
+        leg)."""
         names = [n for n in d.parts if n not in used]
         def region_of(n):
             return body_region(n)
-        side_ = next((sd for u in used for sd in ("Left", "Right") if u.startswith(sd + " ")), None)
+        side_ = next((sd for u in used for sd in ("Left", "Right") if u.startswith(sd + " ")), None) or prefer
         def pick(cands):
             if not cands:
                 return None
@@ -4570,9 +4571,10 @@ class Engine:
                 return pick(hit)
         return None
 
-    def submission_shapes(self, attacker, defender):
+    def submission_shapes(self, attacker, defender, side=None):
         """The submission holds THIS attacker could put on THIS defender as she lies now: {name: {"look",
-        "contacts": [(part, role, with)], "free", "strain"}}."""
+        "contacts": [(part, role, with)], "free", "strain"}}. side ("Left"/"Right"): the side the direction named,
+        taken over the hurt one."""
         a, d = self.get(attacker), self.get(defender)
         plan = self.body_plan(a)
         lie = self.facing_of(d.name) if d.name in self.downed else None
@@ -4591,7 +4593,7 @@ class Engine:
                 continue      # (nothing there to use)
             used, contacts, ok = [], [], True
             for spec, role, how in s["contacts"]:
-                got = self._sub_part(d, spec, used)
+                got = self._sub_part(d, spec, used, side)
                 if not got:
                     ok = False
                     break
@@ -4713,19 +4715,49 @@ class Engine:
         return self.strength(d) < float(cfg.get("stuck_below", 25)) or ruined
 
     def sub_break_chance(self, ch, d, hs):
-        """The break-free chance against a submission: the plain-hold chance x break_mult, and x (1 + grow per beat
+        """The break-free chance against a submission. With submissions.escape on, it comes from her own health (the
+        escape.points curve, like a pin's), a little higher when the holder is hurt or the grip light, never under
+        escape.floor; off, it is the plain-hold chance x break_mult. Either way x (1 + grow per beat
         it has been on), so the longer it's on the likelier she gets out, up to max_break. Unless she is stuck
         (sub_stuck): then it does not grow (x stuck_mult), and the holder is pointed at a pin or other damage
         instead. Returns (chance, stuck)."""
         cfg = self.rules.get("submissions") or {}
-        ch *= float(cfg.get("break_mult", 0.8))
+        esc = cfg.get("escape") if isinstance(cfg.get("escape"), dict) else {}
         stuck = self.sub_stuck(d, hs)
         beats = max(h.turns_active for h in hs)
+        on = esc.get("enabled", False) and ch > 0      # (asleep or frozen: she can't try at all)
+        if on:
+            # her own health decides it, as in a pin: easy to wrench out of while she is strong, harder and harder
+            # as she is hurt, never quite hopeless
+            a = self.get(hs[0].attacker)
+            ch = self._curve(esc.get("points") or [[100, 0.45], [0, 0.06]], 100.0 * d.health / max(1.0, d.max_health))
+            ch *= 1.0 + float(esc.get("holder_hurt", 0.5)) * (1.0 - max(0.0, min(1.0, a.health / a.max_health)))
+            grip = float(self.rules.get("holds", {}).get("break", {}).get("reference_power", 15)) / max(
+                1.0, max(h.power for h in hs))
+            ch *= max(0.4, min(1.5, grip)) ** float(esc.get("grip_weight", 0.5))
+            ch *= self._break_mods(a, d, hs)
+        else:
+            ch *= float(cfg.get("break_mult", 0.8))
         if stuck:
             ch *= float(cfg.get("stuck_mult", 0.6))
         else:
-            ch *= 1.0 + float(cfg.get("grow", 0.3)) * max(0, beats - 1)
-        return round(min(float(cfg.get("max_break", 0.85)), ch), 3), stuck
+            grow = float(esc.get("grow", cfg.get("grow", 0.3)) if on else cfg.get("grow", 0.3))
+            ch *= 1.0 + grow * max(0, beats - 1)
+        ch = min(float(cfg.get("max_break", 0.85)), ch)
+        if on:
+            ch = max(float(esc.get("floor", 0.03)), ch)
+        return round(ch, 3), stuck
+
+    @staticmethod
+    def _curve(points, x):
+        """A value from [x, y] points: straight lines between them, flat past either end."""
+        pts = sorted((float(p[0]), float(p[1])) for p in points)
+        if x <= pts[0][0]:
+            return pts[0][1]
+        for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+            if x0 <= x <= x1:
+                return y0 + (y1 - y0) * (x - x0) / max(0.001, x1 - x0)
+        return pts[-1][1]
 
     def in_submission(self, name):
         """The submission hold on her, if any: (holder, hold name)."""
@@ -4740,7 +4772,10 @@ class Engine:
         a, d = self.get_active(attacker), self.get_active(defender)
         cfg = self.rules.get("submissions") or {}
         key = str(name or "").strip().lower()
-        shapes = self.submission_shapes(a.name, d.name)
+        # the side the direction names ("hauls her left leg across a root") is the side the grips go on, so the
+        # story and the numbers agree; only one side named, or none
+        sides = {w.capitalize() for w in re.findall(r"\b(left|right)\b", str(flavor or "").lower())}
+        shapes = self.submission_shapes(a.name, d.name, side=sides.pop() if len(sides) == 1 else None)
         if key not in self.SUBMISSIONS:
             raise ValueError(f"no submission hold called '{name}'. Holds: {', '.join(self.SUBMISSIONS)}")
         if enforce:
@@ -6522,6 +6557,9 @@ class Engine:
         got = self.since_pin.get(d.name, need)  # the rule is about the gap BETWEEN pins: no pin yet, no wait
         why = []
         if self.no_pins():
+            if self.submission_match():
+                return False, ("pins are off in this submission match (finish.submission.no_pins): only a tap-out "
+                               "or a pass-out ends it, so lock a submission or a choke on her instead")
             return False, ("pins are off in this fight (knockout-only, with finish.no_pins): wear her down with "
                            "blows, grapples and submissions, and knock her out")
         if self.has(d, "airborne"):
@@ -6867,20 +6905,28 @@ class Engine:
         ch = base * rel * grip * limb + float(cfg.get("per_beat", 0.015)) * max(0, max(h.turns_active for h in hs) - 1)
         if d.health <= 0:
             ch *= float(cfg.get("below_zero_mult", 0.25))
+        ch *= self._break_mods(a, d, hs)
+        return round(max(0.0, min(float(cfg.get("max", 0.6)), ch)), 3)
+
+    def _break_mods(self, a, d, hs):
+        """What her state and the grip's kind do to any break-free chance: paralyzed, adrenaline, a grab or a coil,
+        wet fur on either side."""
+        cfg = self.rules.get("holds", {}).get("break", {})
+        m = 1.0
         if self.has(d, "paralyzed"):
-            ch *= 0.5
+            m *= 0.5
         if self.has(d, "adrenaline"):
-            ch *= 1.5
+            m *= 1.5
         if all(h.grab for h in hs):
-            ch *= float(cfg.get("grab_mult", 1.6))   # a grab holds her close; it doesn't lock her
+            m *= float(cfg.get("grab_mult", 1.6))   # a grab holds her close; it doesn't lock her
         if any(h.coil for h in hs):
-            ch *= float((self.rules.get("holds", {}).get("coil") or {}).get("break_mult", 0.75))   # coils give nothing to push against
+            m *= float((self.rules.get("holds", {}).get("coil") or {}).get("break_mult", 0.75))   # coils give nothing to push against
         sc = self._cfg("status_effects")
         if self.has(d, "soaked"):
-            ch *= float(sc.get("soaked_slip_mult", 1.2))     # wet fur slides out of a grip
+            m *= float(sc.get("soaked_slip_mult", 1.2))     # wet fur slides out of a grip
         if self.has(a, "soaked"):
-            ch *= float(sc.get("soaked_grip_mult", 1.1))     # and a wet paw holds worse
-        return round(max(0.0, min(float(cfg.get("max", 0.6)), ch)), 3)
+            m *= float(sc.get("soaked_grip_mult", 1.1))     # and a wet paw holds worse
+        return m
 
     def shake_grips(self, name, health_lost, why="the hit"):
         """A hard enough hit can shake loose what she is holding on with. `name` has just lost `health_lost`
@@ -6929,7 +6975,10 @@ class Engine:
             if not fa or not fd or fa.eliminated or fd.eliminated:
                 continue
             ch = self.hold_break_chance(a, d)
-            if any(h.sub for h in hs):
+            esc = (self.rules.get("submissions") or {}).get("escape") or {}
+            if any(h.sub for h in hs) or (self.submission_match() and esc.get("enabled", False)
+                                          and esc.get("match_holds", True) and not all(h.grab for h in hs)):
+                # (in a submission match any hold that hurts can make her tap: she breaks it the same way)
                 ch, _ = self.sub_break_chance(ch, fd, hs)
             if fd.name in self.lucky:
                 ch = 1.0   # /play dice free: she breaks any hold on her at once
@@ -8043,9 +8092,12 @@ class Engine:
                 "kicked_out_at": counts[-1]["count"] if result == "kickout" else None}
 
     def no_pins(self):
-        """finish.no_pins (with finish.knockout_only): no pins at all, so the fight is won by a knockout blow."""
+        """No pins at all: finish.no_pins (with finish.knockout_only), so the fight is won by a knockout blow; or a
+        submission match with finish.submission.no_pins (on by default), won only by a tap-out or a pass-out."""
         cfg = self.rules.get("finish") or {}
-        return bool(cfg.get("knockout_only", False) and cfg.get("no_pins", False))
+        sub = cfg.get("submission") if isinstance(cfg.get("submission"), dict) else {}
+        return bool((cfg.get("knockout_only", False) and cfg.get("no_pins", False))
+                    or (sub.get("enabled", False) and sub.get("no_pins", True)))
 
     def submission_match(self):
         """finish.submission.enabled: a submission match. Only a tap-out or a pass-out ends it: no knockouts from blows.
