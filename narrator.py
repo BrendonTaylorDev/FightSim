@@ -3081,6 +3081,26 @@ class Narrator:
                        "she kicks out at nothing, her legs working as if she could run out of it"],
             "spent": ["her paws only pat at the grip on her throat now, weaker each time",
                       "her hands fall away from the grip and come back, slower, and fall away again"]}),
+        ("tail", r"tail", {
+            "skill": ["she clamps her tail down and pulls it toward herself in one long haul",
+                      "she twists round toward her tail, trying to take the pull off its root",
+                      "she goes with the pull instead of against it, shifting her hips back to give the tail slack",
+                      "she reaches back and gets her own paw round the base of her tail, holding it against the pull",
+                      "she rolls toward the side the tail is hauled to, trying to unwind the twist"],
+            "thrash": ["she spins and snaps at whatever has her tail", "she throws herself forward, as if she could tear "
+                       "the tail free by running", "she lashes the tail side to side in the grip, trying to whip it "
+                       "loose", "she kicks back blindly at whoever is behind her"],
+            "spent": ["her tail only twitches in the grip", "she lies flat and lets the tail be held, because every "
+                      "pull on it goes up her spine"]}),
+        ("ankle", r"foot|feet|ankle|heel|talon|hoof|hind paw", {
+            "skill": ["she turns her whole body with the twist, trying to take the spin out of her ankle and knee",
+                      "she points her foot hard and stiffens it, trying to slip the heel out of the grip",
+                      "she plants her free foot on the holder and pushes, trying to straighten out of it",
+                      "she curls her toes and locks the ankle, trying to give the grip nothing to turn"],
+            "thrash": ["she kicks with the trapped leg itself, short and desperate, trying to tear the foot loose",
+                       "she spins on her back or side, trying to roll with the twist before it goes any further"],
+            "spent": ["the trapped foot only jerks in the grip", "she stops pulling the foot, because pulling makes "
+                      "the ankle scream"]}),
         ("leg", r"leg|thigh|knee|hock|ankle|foot|shin|hind", {
             "skill": ["she turns the knee WITH the twist instead of against it, trying to take the angle away",
                       "she drops her weight low, trying to take the strain off the joint",
@@ -3093,6 +3113,14 @@ class Narrator:
                        "she claws at the arm on her leg, at fur, at anything, with no plan in it"],
             "spent": ["she pulls at the leg once, weakly, and it goes nowhere",
                       "she lies still and breathes, gathering herself for one more try that doesn't come"]}),
+        ("wrist", r"\bpaw|hand|wrist", {
+            "skill": ["she makes a fist and locks her wrist straight, trying to give the bend nothing to work on",
+                      "she pulls her elbow in tight to her ribs, trying to take the leverage away",
+                      "she turns her paw with the bend instead of against it, trying to unwind it",
+                      "she grabs her own trapped paw with her free one, trying to hold the wrist straight"],
+            "thrash": ["she yanks the trapped paw back in short, frantic tugs", "she claws at the paws on her wrist "
+                       "with her free one"],
+            "spent": ["her trapped paw has gone loose and shaking in the grip"]}),
         ("arm", r"arm|shoulder|elbow|wrist|paw|hand|foreleg|fin|wing", {
             "skill": ["she grabs her own trapped limb with her free one and hauls, putting both into it",
                       "she turns her elbow to follow the twist, trying to take the bend out of the joint",
@@ -3104,12 +3132,21 @@ class Narrator:
                        "she flails with everything else she has, the trapped limb the one thing she can't move"],
             "spent": ["the trapped limb only twitches when she tries to pull it",
                       "she stops pulling and just holds still, because holding still hurts least"]}),
-        ("tail", r"tail", {
-            "skill": ["she clamps her tail down and pulls it toward herself in one long haul",
-                      "she twists round toward her tail, trying to take the pull off its root"],
-            "thrash": ["she spins and snaps at the hands on her tail", "she throws herself forward, as if she could tear "
-                       "the tail free by running"],
-            "spent": ["her tail only twitches in the grip"]}),
+        ("belly", r"stomach|belly|midsection|gut", {
+            "skill": ["she tightens her stomach against the squeeze, holding her breath in so it can't be pressed out",
+                      "she pries at the legs or arms locked round her middle, one finger's width at a time",
+                      "she twists her hips out sideways, trying to get her middle out of line with the squeeze",
+                      "she pushes the holder's knee or paw off her stomach with both paws"],
+            "thrash": ["she bucks her middle up against the weight, again and again", "she claws at whatever is "
+                       "crushing her stomach"],
+            "spent": ["she can only take short sips of air past the squeeze, her stomach fluttering under it"]}),
+        ("back", r"back", {
+            "skill": ["she keeps her back flat and stiff, fighting the bend",
+                      "she gets a paw under herself and pushes, trying to take the arch out",
+                      "she reaches back for the knee or paw at the point of the bend and shoves at it"],
+            "thrash": ["she twists her shoulders and hips against each other, trying to wrench out of the bend",
+                       "she flails her free limbs, trying to find the ground with any of them"],
+            "spent": ["she lets the bend have her, her back trembling, and only breathes"]}),
         ("body", r"chest|rib|ruff|belly|stomach|midsection|back|side|flank|torso|hip", {
             "skill": ["she jams her elbows out from inside the grip, trying to pry it open",
                       "she drops her weight suddenly, trying to slide down out of it",

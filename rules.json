@@ -1336,8 +1336,8 @@
       "scale": 0.5,
       "_comment": "scale (set with /pins): every chance below is multiplied by it, so 0.5 = about half as many pins and 2 = more; 0 = the director never starts a pin. The chance of a pin opening on a fighter each beat. It follows how hurt she is: standing / downed_fresh at full strength (knocked down while still strong barely raises it: she is up again in a moment), rising along a curve to weak_standing / weak_downed at weak_below % strength, then toward max as she nears nothing. Each part at hurt_at %+ damage adds hurt_bonus (up to hurt_cap): her opponent knows where she is hurt. No time factor: pins come more often late in a fight only because she is more hurt by then. helpless: asleep or frozen."
     },
-    "_game_plan_comment": "Each fighter comes in with a plan: one zone of the other's body she means to take apart (legs, neck, head, core, arms, tail, weighted by zones; in a submission match the weights are multiplied by match_weights, and the plan is to finish with a hold on it). Rolled once at the start, from a copy of the dice, so it never changes the fight's own rolls. A fighter with a /focus has her focus as her plan. On nudge of the beats (0-1) the director is reminded of it, as a pull and not an order. The narrator shows it with narration.plan_notes. enabled false: no plans.",
-    "game_plan": {"enabled": true, "nudge": 0.35, "zones": {"legs": 3, "neck": 2, "head": 2, "core": 2, "arms": 1.5, "tail": 1}, "match_weights": {"legs": 2, "arms": 1.5, "neck": 1.5}},
+    "_game_plan_comment": "Each fighter comes in with a plan: one zone of the other's body she means to take apart (legs, neck, head, core, the belly, the back, arms, wrists, ankles, tail, weighted by zones; in a submission match the weights are multiplied by match_weights, and the plan is to finish with a hold on it). Rolled once at the start, from a copy of the dice, so it never changes the fight's own rolls. A fighter with a /focus has her focus as her plan. On nudge of the beats (0-1) the director is reminded of it, as a pull and not an order. The narrator shows it with narration.plan_notes. enabled false: no plans.",
+    "game_plan": {"enabled": true, "nudge": 0.35, "zones": {"legs": 3, "neck": 2, "head": 2, "core": 1, "belly": 1.5, "back": 1.5, "arms": 1.5, "wrists": 1, "ankles": 1.5, "tail": 1}, "match_weights": {"legs": 2, "arms": 1.5, "neck": 1.5, "wrists": 1.5, "ankles": 1.5, "tail": 1.5, "back": 1.25}},
     "_focus_comment": "Where attacks aim (set with /focus). '*' = everyone; a fighter's name = that attacker only. focus_strength (0-1) = how often an off-target pick gets moved onto the focus zone; 0 = a prompt nudge only.",
     "focus": {},
     "focus_strength": 0.6,
@@ -1439,6 +1439,10 @@
   },
   "body_zones": {
     "_comment": "Groups of body parts for /focus (also: injured or weakened = what is already hurt). Each zone lists body regions (head, neck, shoulder, chest, belly, back_up, back_low, fore_up, fore_low, hind_up, hind_low, tail) and/or words found in part names. A fighter without a zone (a serpent has no legs) is simply open everywhere.",
+    "belly": {"regions": ["belly"], "words": ["stomach", "belly"]},
+    "back": {"regions": ["back_up", "back_low"]},
+    "wrists": {"regions": ["fore_low"], "words": ["wrist", "hand", "forepaw"]},
+    "ankles": {"words": ["foot", "feet", "ankle", "hock", "talon", "hoof", "hind paw", "heel"]},
     "head": {
       "regions": [
         "head",

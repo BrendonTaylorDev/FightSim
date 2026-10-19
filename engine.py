@@ -4508,6 +4508,181 @@ class Engine:
                                               "serpent": "the lower coil"})],
             "free": {"biped": "her paws and her mouth", "quadruped": "her jaws", "serpent": "her jaws"},
             "strain": "the ribs squeezed in, each breath shorter than the last"},
+        # the wrists, the ankles, the stomach and the back: holds that work the small joints and the soft middle
+        "wrist lock": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped",), "needs": "arm",
+            "look": {"biped": "her paw caught in both of hers and folded back on itself at the wrist, her elbow "
+                              "pinned against her own ribs so there is nowhere for the bend to go"},
+            "contacts": [("wrist", "main", {"biped": "both paws, folding it back on itself"}),
+                         ("arm", "second", {"biped": "her forearm, pinning the elbow"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the wrist bent back past where it goes, the fingers splayed and trembling"},
+        "kimura": {
+            "facing": ("face-up", "on her side"), "by": ("biped",), "needs": "arm",
+            "look": {"biped": "one wrist gripped and cranked up behind her back, her other arm threaded under the "
+                              "elbow and locked onto her own wrist, levering the shoulder round"},
+            "contacts": [("wrist", "main", {"biped": "her paw, gripping it and cranking it up behind"}),
+                         ("shoulder", "main", {"biped": "her other arm, threaded under the elbow, levering it round"})],
+            "free": {"biped": "her tails"},
+            "strain": "the shoulder turned round in its socket, the arm cranked up behind her by the wrist"},
+        "heel hook": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped",), "needs": "leg",
+            "look": {"biped": "her legs tangled round the hurt leg, the heel trapped in the crook of her arm and turned, "
+                              "the twist running up through the ankle into the knee"},
+            "contacts": [("foot", "main", {"biped": "her arm, hooked round the heel and turning it"}),
+                         ("leg_joint", "main", {"biped": "the same twist, carried up into it"}),
+                         ("hind_up", "second", {"biped": "her legs, tangled round it"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the heel turned and the ankle and knee twisted with it, all one wrench up the leg"},
+        "toe hold": {
+            "facing": ("face-up", "on her side"), "by": ("biped",), "needs": "leg",
+            "look": {"biped": "kneeling on her shin with the foot in both paws, twisting it sideways at the ankle"},
+            "contacts": [("foot", "main", {"biped": "both paws, twisting it sideways at the ankle"}),
+                         ("leg_joint", "second", {"biped": "her knee, kneeling on the shin below it"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the ankle rolled sideways and held there, the foot turned the way it doesn't go"},
+        "body scissors": {
+            "facing": ("face-up", "on her side"), "by": ("biped", "quadruped"),
+            "look": {"biped": "her legs scissored round the middle and locked at the ankles, squeezing, both paws "
+                              "holding her shoulders down",
+                     "quadruped": "her hind legs scissored round the middle and squeezing, her forepaws on her chest"},
+            "contacts": [("belly", "main", {"biped": "her legs, scissored round it and squeezing",
+                                            "quadruped": "her hind legs, scissored round it"}),
+                         ("back_low|back_up", "second", {"biped": "the locked ankles, digging into it",
+                                                         "quadruped": "her hind paws, locked under it"})],
+            "free": {"biped": "her paws, her mouth and her tails", "quadruped": "her jaws"},
+            "strain": "the stomach crushed in from both sides, the breath squeezed out of her a little more each time "
+                      "she lets one go"},
+        "rear waist crush": {
+            "facing": ("face-down", "on her side"), "by": ("biped",),
+            "look": {"biped": "behind her, both arms locked round her middle and crushing it, her chest driven into "
+                              "her lower back"},
+            "contacts": [("belly", "main", {"biped": "both arms, locked round it and crushing"}),
+                         ("back_low", "main", {"biped": "her chest and her weight, driven into it"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the middle crushed between her arms and her chest, the lower back bent in against it"},
+        "stomach claw": {
+            "facing": ("face-up",), "by": ("biped", "quadruped"),
+            "look": {"biped": "kneeling over her with one paw clamped on the stomach, claws sunk in, kneading and "
+                              "twisting, the other paw pinning her chest",
+                     "quadruped": "standing over her with her jaws clamped on the stomach, worrying at it, her forepaws "
+                                  "on her chest"},
+            "contacts": [("belly", "main", {"biped": "her paw, claws sunk in, clamping and twisting",
+                                            "quadruped": "her jaws, clamped on and worrying"}),
+                         ("chest", "second", {"biped": "her other paw, pinning it", "quadruped": "her forepaws, pinning it"})],
+            "free": {"biped": "her mouth and her tails", "quadruped": "her tail"},
+            "strain": "the soft middle clamped and twisted, the gut clenching against the grip"},
+        "knee on belly": {
+            "facing": ("face-up",), "by": ("biped", "quadruped"),
+            "look": {"biped": "one knee driven into the stomach with all her weight behind it, both paws pinning her "
+                              "shoulders",
+                     "quadruped": "both forepaws planted on the stomach and all her weight leaned onto them"},
+            "contacts": [("belly", "main", {"biped": "her knee, all her weight driven into it",
+                                            "quadruped": "her forepaws, all her weight on them"}),
+                         ("shoulder", "second", {"biped": "both paws, pinning them", "quadruped": "her jaws, in the scruff"})],
+            "free": {"biped": "her tails", "quadruped": "her tail"},
+            "strain": "the weight crushing the breath out of her, nothing to push it off with"},
+        "bow and arrow": {
+            "facing": ("face-down", "on her side"), "by": ("biped",), "needs": "leg",
+            "look": {"biped": "her knee in the small of the back, one arm round the neck and the other hauling a leg "
+                              "back, bending her body like a drawn bow"},
+            "contacts": [("back_low", "main", {"biped": "her knee, driven into it, the point of the bend"}),
+                         ("neck", "second", {"biped": "one arm, hooked round it and hauling back"}),
+                         ("hind_up", "second", {"biped": "her other paw, hauling the leg back"})],
+            "free": {"biped": "her tails"},
+            "strain": "the spine bent back like a drawn bow, the knee the point it bends over"},
+        "backbreaker": {
+            "facing": ("face-up",), "by": ("biped", "quadruped"), "prop": "near",
+            "look": {"biped": "her back laid over {prop} and both paws bearing down on her middle, bending her "
+                              "backward across it",
+                     "quadruped": "her back laid over {prop} and her forepaws and weight bearing down on her middle"},
+            "contacts": [("back_low|back_up", "main", {"biped": "the bend, over {prop}", "quadruped": "the bend, over {prop}"}),
+                         ("belly", "second", {"biped": "both paws, bearing down on it", "quadruped": "her forepaws, bearing down"})],
+            "free": {"biped": "her mouth and her tails", "quadruped": "her jaws"},
+            "strain": "the back bent backward over {prop}, the spine arched past where it wants to go"},
+        "wrist bite": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("quadruped",), "needs": "arm",
+            "look": {"quadruped": "her jaws clamped on the wrist and twisting it, a forepaw pinning the elbow down"},
+            "contacts": [("wrist", "main", {"quadruped": "her jaws, clamped on and twisting it"}),
+                         ("arm", "second", {"quadruped": "her forepaw, pinning it"})],
+            "free": {"quadruped": "her tail"},
+            "strain": "the wrist held in teeth and turned, the small bones grinding"},
+        "hamstring hold": {
+            "facing": ("face-down", "on her side"), "by": ("quadruped",), "needs": "leg",
+            "look": {"quadruped": "her jaws clamped in the back of the thigh and hauling, a forepaw pressing the knee "
+                                  "down"},
+            "contacts": [("hind_up", "main", {"quadruped": "her jaws, clamped in it and hauling"}),
+                         ("leg_joint", "second", {"quadruped": "her forepaw, pressing it down"})],
+            "free": {"quadruped": "her tail"},
+            "strain": "the long muscle of the thigh stretched and torn at by the jaws, the knee held so it can't bend "
+                      "with it"},
+        "talon clamp": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("avian",),
+            "look": {"avian": "standing on her with both talons sunk in and clenched, her wings spread for balance and "
+                              "her beak at the back of the neck"},
+            "contacts": [("back_up|chest", "main", {"avian": "her talons, sunk in and clenching"}),
+                         ("neck", "second", {"avian": "her beak, clamped on it"})],
+            "free": {"avian": "her wings"},
+            "strain": "talons clenched deep into the muscle, the weight of the bird bearing down through them"},
+        "talon wrist pin": {
+            "facing": ("face-up", "on her side"), "by": ("avian",), "needs": "arm",
+            "look": {"avian": "one talon clamped round the wrist and grinding it into the ground, the other foot on her "
+                              "chest"},
+            "contacts": [("wrist", "main", {"avian": "one talon, clamped round it and grinding"}),
+                         ("chest", "second", {"avian": "her other foot, planted on it"})],
+            "free": {"avian": "her beak and her wings"},
+            "strain": "the wrist crushed in the talon and ground into the earth"},
+        # the tail: a hold on it works the tail itself and the root it hangs from, which goes on up the spine
+        "tail fold": {
+            "facing": ("face-down", "on her side"), "by": ("biped",), "needs": "tail",
+            "look": {"biped": "kneeling on her lower back with the tail folded back over itself in both paws, bent "
+                              "double toward the root"},
+            "contacts": [("tail_part", "main", {"biped": "both paws, folding it back over itself"}),
+                         ("tail:base", "main", {"biped": "the fold, wrenching it at the root"}),
+                         ("back_low", "second", {"biped": "her knee, kneeling on it"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the tail bent double, the root of it wrenched and the pull running on up her spine"},
+        "tail and leg stretch": {
+            "facing": ("face-down",), "by": ("biped",), "needs": "tail",
+            "look": {"biped": "standing over her with the tail hauled up in one paw and a leg hauled up and back in the "
+                              "other, stretching the two apart over her own back"},
+            "contacts": [("tail_part", "main", {"biped": "one paw, hauling it up and back"}),
+                         ("hind_up", "main", {"biped": "her other arm, hauling the leg up the other way"}),
+                         ("back_low", "second", {"biped": "her foot, planted on it"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the tail and the leg stretched apart, the lower back bent between them"},
+        "tail bind": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped", "quadruped"), "needs": "tail",
+            "has": "tails",
+            "look": {"biped": "her own twin tails wound round the other's tail and the ankle together, binding the two "
+                              "and hauling them toward each other, both paws on her shoulders",
+                     "quadruped": "her tails wound round the other's tail and one hind leg together, hauling them "
+                                  "toward each other"},
+            "contacts": [("tail_part", "main", {"biped": "her twin tails, bound round it and hauling",
+                                                "quadruped": "her tails, bound round it"}),
+                         ("tail:base", "main", {"biped": "the same pull, wrenching it at the root",
+                                                "quadruped": "the same pull, wrenching it at the root"}),
+                         ("foot", "second", {"biped": "the same tails, bound round it and hauling it to the tail",
+                                             "quadruped": "the same tails, hauling it back"})],
+            "free": {"biped": "her paws and her mouth", "quadruped": "her jaws"},
+            "strain": "the tail and the leg bound together and hauled toward each other, the hip and the tail root "
+                      "both wrenched"},
+        "tail bite": {
+            "facing": ("face-down", "on her side"), "by": ("quadruped",), "needs": "tail",
+            "look": {"quadruped": "her jaws clamped on the tail and hauling back, both forepaws planted on her lower "
+                                  "back"},
+            "contacts": [("tail_part", "main", {"quadruped": "her jaws, clamped on it and hauling back"}),
+                         ("back_low", "second", {"quadruped": "her forepaws, planted on it"})],
+            "free": {"quadruped": "her horn"},
+            "strain": "the tail hauled back in the teeth, the pull wrenching at its root"},
+        "tail stomp": {
+            "facing": ("face-down", "on her side"), "by": ("avian",), "needs": "tail",
+            "look": {"avian": "one talon clamped on the tail and grinding it into the ground, the other foot on her "
+                              "lower back"},
+            "contacts": [("tail_part", "main", {"avian": "one talon, clamped on it and grinding"}),
+                         ("back_low", "second", {"avian": "her other foot, on it"})],
+            "free": {"avian": "her beak and her wings"},
+            "strain": "the tail crushed in the talon, pinned to the ground"},
         "limb wrench": {
             "facing": ("face-down", "face-up", "on her side"), "by": ("quadruped",), "needs": "arm",
             "look": {"quadruped": "one forelimb clamped in her jaws and twisted and shaken, a forepaw pinning her "
@@ -4550,6 +4725,11 @@ class Engine:
             return pick([n for n in names if region_of(n) == "fore_up" and "wing" not in n.lower()])
         if spec == "leg_joint":
             return pick([n for n in names if region_of(n) == "hind_low" and any(k in n.lower() for k in ("knee", "hock"))])
+        if spec == "wrist":
+            # (a wrist is where the paw meets the forearm: the paw, the hand, the forearm itself; never a wingtip)
+            low = [n for n in names if region_of(n) == "fore_low" and "wing" not in n.lower()]
+            return pick([n for n in low if any(k in n.lower() for k in ("paw", "hand", "wrist", "claw"))]
+                        or [n for n in low if "forearm" in n.lower()])
         if spec == "foot":
             return pick([n for n in names if region_of(n) == "hind_low" and any(k in n.lower() for k in ("foot", "ankle", "hind paw"))])
         if spec == "tail_part":

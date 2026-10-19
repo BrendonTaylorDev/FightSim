@@ -654,6 +654,23 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 221
+
+More kinds of holds, on more of the body:
+
+- **19 new submission holds:**
+  - **Wrists:** wrist lock, kimura.
+  - **Ankles:** heel hook, toe hold.
+  - **Stomach:** body scissors, rear waist crush, stomach claw, knee on belly.
+  - **Back:** bow and arrow, and a backbreaker over whatever she lies against.
+  - **Tail:** tail fold, tail and leg stretch, and a tail bind, where twin tails bind her tail to her ankle.
+  - **Quadrupeds:** wrist bite, hamstring hold, tail bite.
+  - **Birds** (who had none before): talon clamp, talon wrist pin, tail stomp.
+
+  Each one only goes on a body that has those parts and lies the right way.
+- **New zones** for `/focus` and the fighters' game plans: `belly`, `back`, `wrists`, `ankles`. The game plan now picks from all of them, and in a submission match leans more toward the wrists, ankles, tail and back (`director.game_plan`).
+- **Escape tries for the new holds** (`narration.hold_tries`): wrist, ankle, stomach and back holds have their own ways out, and tail holds have more.
+
 ## Build 220
 
 Three things from Claude's own test-fight narration, put into the engine and the narrator:
