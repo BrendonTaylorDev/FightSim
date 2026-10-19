@@ -4321,6 +4321,101 @@ class Engine:
                          ("back_low|back_up", "second", {"biped": "her foot, planted on it", "quadruped": "her forepaw, planted on it"})],
             "free": {"biped": "her mouth and her tails", "quadruped": "her horn"},
             "strain": "the tail hauled up and twisted from its root, the base of it wrenched"},
+        # more holds, and nastier ones: what a Pokemon's body and the arena make possible ("has": the holder needs it;
+        # "prop": it uses the scenery, {prop} in its words: "near" = what she lies against, "ground" = the rough ground)
+        "figure-four leg lock": {
+            "facing": ("face-up",), "by": ("biped",), "needs": "leg",
+            "look": {"biped": "sitting at her feet with her legs figure-foured round one of hers, both their weights "
+                              "bending the knee sideways against its hinge"},
+            "contacts": [("leg_joint", "main", {"biped": "her legs, locked in a figure four round it, bending it sideways"}),
+                         ("foot", "second", {"biped": "her own leg, hooked over it and holding it down"})],
+            "free": {"biped": "her paws and her tails"},
+            "strain": "the knee bent sideways against its hinge, the shin levered the way it doesn't go"},
+        "ankle lock": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped",), "needs": "leg",
+            "look": {"biped": "the foot trapped under her arm and wrenched back and round, her knees clamped on the "
+                              "leg above it"},
+            "contacts": [("foot", "main", {"biped": "her arm, hooked under the heel, wrenching the foot back and round"}),
+                         ("leg_joint", "second", {"biped": "her knees, clamped on it"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the ankle bent back and twisted at once, the whole leg rigid with it"},
+        "tail-bound knee crank": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped", "quadruped"), "needs": "leg",
+            "has": "tails",
+            "look": {"biped": "her twin tails wound round the hurt knee and twisting one way while both paws turn "
+                              "the foot the other",
+                     "quadruped": "her tails wound round the hurt leg and twisting it while her jaws hold the foot"},
+            "contacts": [("leg_joint", "main", {"biped": "her twin tails, wound round it and wrenching it sideways",
+                                                "quadruped": "her tails, wound round it and wrenching it"}),
+                         ("foot", "main", {"biped": "both paws, turning it against the twist of the tails",
+                                           "quadruped": "her jaws, holding it against the twist"})],
+            "free": {"biped": "her mouth", "quadruped": "nothing: all of her is in it"},
+            "strain": "the knee wrenched two ways at once, the tails and the paws turning it against each other"},
+        "root lever": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped", "quadruped"), "needs": "leg",
+            "prop": "ground",
+            "look": {"biped": "the hurt leg dragged across {prop} and levered back over it, her whole weight on the "
+                              "shin, the knee bent backward across the hump",
+                     "quadruped": "the hurt leg pinned across {prop} under her forepaws and leaned on, the knee bent "
+                                  "backward over it"},
+            "contacts": [("leg_joint", "main", {"biped": "her weight, levering it back over {prop}",
+                                                "quadruped": "her forepaws and her weight, levering it back over {prop}"}),
+                         ("hind_up", "second", {"biped": "both paws, pinning it down", "quadruped": "her jaws, holding it"})],
+            "free": {"biped": "her tails", "quadruped": "her tail"},
+            "strain": "the knee bent backward over {prop}, the leg used as a lever against the ground itself"},
+        "trunk arm wrench": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped",), "needs": "arm", "prop": "near",
+            "look": {"biped": "her arm hauled round {prop} and wrenched back against it, a knee pinning her shoulder to it"},
+            "contacts": [("arm", "main", {"biped": "both paws, wrenching it back round {prop}"}),
+                         ("shoulder", "second", {"biped": "her knee, pinning it against {prop}"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the arm bent back round {prop}, the shoulder wrenched against it"},
+        "tail strangle": {
+            "facing": ("face-down", "on her side"), "by": ("biped", "quadruped"), "has": "tails",
+            "look": {"biped": "kneeling on her back with her twin tails looped round the throat from behind and drawn "
+                              "tight, both paws hauling the tails back like reins",
+                     "quadruped": "standing over her with her tails looped round the throat and drawn tight"},
+            "contacts": [("neck", "main", {"biped": "her twin tails, looped round from behind and drawn tight",
+                                           "quadruped": "her tails, looped round and drawn tight"}),
+                         ("back_up|back_low", "second", {"biped": "her knees, planted in her back",
+                                                         "quadruped": "her forepaws, planted on her back"})],
+            "free": {"biped": "her mouth", "quadruped": "her jaws"},
+            "strain": "the throat closed by the tails, the head hauled back, the back bowed under the knees"},
+        "chicken wing": {
+            "facing": ("face-down",), "by": ("biped",), "needs": "arm",
+            "look": {"biped": "kneeling on her back with one arm bent up behind it, hauled higher and higher toward "
+                              "the shoulder blade"},
+            "contacts": [("arm", "main", {"biped": "both paws, bending it up behind her back"}),
+                         ("shoulder", "main", {"biped": "the same grip, wrenching it up out of its socket"}),
+                         ("back_up|back_low", "second", {"biped": "her knee, in her back"})],
+            "free": {"biped": "her mouth and her tails"},
+            "strain": "the arm bent up behind her toward the shoulder blade, the shoulder forced out to the edge of its socket"},
+        "scorpion lock": {
+            "facing": ("face-down",), "by": ("biped",), "needs": "two_legs",
+            "look": {"biped": "her legs crossed and folded up, the attacker stepping over and sitting back on them, "
+                              "bending her lower back and knees together"},
+            "contacts": [("legs", "main", {"biped": "her legs, crossed and folded under her arms as she sits back"}),
+                         ("back_low|back_up", "main", {"biped": "her weight, sitting back and bending it"})],
+            "free": {"biped": "her tails"},
+            "strain": "the knees and the lower back bent together, the legs crossed and crushed back toward her head"},
+        "jaw lock": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped", "quadruped"), "needs": "leg",
+            "look": {"biped": "her jaws clamped on the hurt knee and twisting, worrying at it, both paws holding the leg "
+                              "still for her teeth",
+                     "quadruped": "her jaws clamped on the hurt knee, twisting and worrying at it"},
+            "contacts": [("leg_joint", "main", {"biped": "her jaws, clamped on and twisting",
+                                                "quadruped": "her jaws, clamped on and twisting"}),
+                         ("hind_up", "second", {"biped": "both paws, holding the leg still", "quadruped": "her forepaws"})],
+            "free": {"biped": "her tails", "quadruped": "her tail"},
+            "strain": "teeth sunk into the joint and twisting it, the leg held still to take it"},
+        "surfboard stretch": {
+            "facing": ("face-down",), "by": ("biped",),
+            "look": {"biped": "both her arms hauled back by the wrists, knees driven into her back, bending her up off "
+                              "the ground like a drawn bow"},
+            "contacts": [("shoulder", "main", {"biped": "both paws, hauling the arms back"}),
+                         ("back_up|back_low", "main", {"biped": "her knees, driven into her back"})],
+            "free": {"biped": "her tails"},
+            "strain": "her shoulders hauled back to their limit, her spine bent up off the ground"},
         "limb wrench": {
             "facing": ("face-down", "face-up", "on her side"), "by": ("quadruped",), "needs": "arm",
             "look": {"quadruped": "one forelimb clamped in her jaws and twisted and shaken, a forepaw pinning her "
@@ -4332,20 +4427,38 @@ class Engine:
     }
 
     def _sub_part(self, d, spec, used=()):
-        """The defender's part for one submission contact."""
+        """The defender's part for one submission contact. Of a left and a right, the HURT one: a leg lock goes on
+        the leg that is already damaged (a holder works the known injury); and once one contact has a side, the
+        others take the same side (the knee and the hip of the same leg)."""
         names = [n for n in d.parts if n not in used]
         def region_of(n):
             return body_region(n)
+        side_ = next((sd for u in used for sd in ("Left", "Right") if u.startswith(sd + " ")), None)
+        def pick(cands):
+            if not cands:
+                return None
+            if side_ and any(c.startswith(side_ + " ") for c in cands):
+                cands = [c for c in cands if c.startswith(side_ + " ")]
+            def limb_hurt(c):
+                # the part's own damage, and the rest of that limb on that side (a hurt knee makes its foot the target)
+                sd = next((x for x in ("Left", "Right") if c.startswith(x + " ")), None)
+                grp = {"hind_up": "hind", "hind_low": "hind", "fore_up": "fore", "fore_low": "fore",
+                       "shoulder": "fore"}.get(region_of(c))
+                rest = sum(p.damage for n, p in d.parts.items() if sd and grp and n != c and n.startswith(sd + " ")
+                           and {"hind_up": "hind", "hind_low": "hind", "fore_up": "fore", "fore_low": "fore",
+                                "shoulder": "fore"}.get(region_of(n)) == grp)
+                return d.parts[c].damage + 0.5 * rest
+            return max(cands, key=lambda c: (limb_hurt(c), -cands.index(c)))
         if spec == "legs":
             legs = [n for n in names if region_of(n) == "hind_up" and "thigh" in n.lower()] or \
                    [n for n in names if region_of(n) in ("hind_up", "hind_low")]
             return legs[:2] if len(legs) >= 2 else None
         if spec == "arm":
-            ups = [n for n in names if region_of(n) == "fore_up" and "wing" not in n.lower()]
-            return ups[0] if ups else None
+            return pick([n for n in names if region_of(n) == "fore_up" and "wing" not in n.lower()])
         if spec == "leg_joint":
-            j = [n for n in names if region_of(n) == "hind_low" and any(k in n.lower() for k in ("knee", "hock"))]
-            return j[0] if j else None
+            return pick([n for n in names if region_of(n) == "hind_low" and any(k in n.lower() for k in ("knee", "hock"))])
+        if spec == "foot":
+            return pick([n for n in names if region_of(n) == "hind_low" and any(k in n.lower() for k in ("foot", "ankle", "hind paw"))])
         if spec == "tail_part":
             t = [n for n in names if region_of(n) == "tail" and "base" not in n.lower()]
             return t[0] if t else None
@@ -4357,13 +4470,13 @@ class Engine:
             for k in keys:
                 hit = [n for n in names if k in n.lower()]
                 if hit:
-                    return hit[0]
+                    return pick(hit)
             return None
         for reg in spec.split("|"):
             hit = [n for n in names if region_of(n) == reg and not (reg == "neck" and "throat" in n.lower()
                                                                      and any("neck" in m.lower() for m in names))]
             if hit:
-                return hit[0]
+                return pick(hit)
         return None
 
     def submission_shapes(self, attacker, defender):
@@ -4373,9 +4486,18 @@ class Engine:
         plan = self.body_plan(a)
         lie = self.facing_of(d.name) if d.name in self.downed else None
         out = {}
+        prop_near = (getattr(self, "lying_at", None) or {}).get(d.name)
+        rough = str((self.scene_cfg or {}).get("rough") or "")
+        prop_ground = (prop_near or ("a root humped out of the ground" if "root" in rough else
+                                      f"a ridge of {rough}" if rough else ""))
         for name, s in self.SUBMISSIONS.items():
             if plan not in s["by"] or lie not in s["facing"]:
                 continue
+            if s.get("has") == "tails" and not any(re.search(r"\btails?\b", n.lower()) for n in a.parts):
+                continue
+            prop = {"near": prop_near, "ground": prop_ground}.get(s.get("prop")) if s.get("prop") else ""
+            if s.get("prop") and not prop:
+                continue      # (nothing there to use)
             used, contacts, ok = [], [], True
             for spec, role, how in s["contacts"]:
                 got = self._sub_part(d, spec, used)
@@ -4384,11 +4506,16 @@ class Engine:
                     break
                 for p in (got if isinstance(got, list) else [got]):
                     used.append(p)
-                    contacts.append((p, role, how[plan]))
+                    contacts.append((p, role, how[plan].replace("{prop}", prop)))
             if ok and contacts:
-                out[name] = {"look": s["look"][plan], "contacts": contacts, "free": s["free"][plan],
-                             "strain": s["strain"]}
+                out[name] = {"look": s["look"][plan].replace("{prop}", prop), "contacts": contacts,
+                             "free": s["free"][plan], "strain": s["strain"].replace("{prop}", prop),
+                             "used": self.sub_uses(name)}
         return out
+
+    def sub_uses(self, name):
+        """How many times this submission hold has been put on anyone this fight."""
+        return sum(int(v) for k, v in self.tally.items() if k.startswith(f"subname:{name}|"))
 
     def sub_chance(self, f):
         """The chance of an opening to lock a submission on her this beat: only while she is down and not pinned or
@@ -4469,6 +4596,12 @@ class Engine:
             lie = self.facing_of(d.name) if d.name in self.downed else "on her feet"
             raise ValueError(f"{a.name} can't put {d.name} in a {key} as she is ({lie}). She could: "
                              f"{', '.join(shapes) or 'none right now'}")
+        cap_ = int(cfg.get("repeat_cap", 2) or 0)
+        if enforce and cap_ and self.sub_uses(key) >= cap_:
+            others = [n for n in shapes if self.sub_uses(n) < cap_]
+            if others:
+                raise ValueError(f"the {key} has been used {self.sub_uses(key)} times this fight already: it is not "
+                                 f"new any more. Use another hold (she could: {', '.join(others)})")
         s = shapes[key]
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
@@ -4480,6 +4613,7 @@ class Engine:
                 self.holds[hid].sub = key
         self.__dict__.setdefault("sub_window", {})[d.name] = False
         self._count("submission", d.name)
+        self._count(f"subname:{key}", a.name)
         res["submission"] = {"name": key, "look": s["look"], "free": s["free"], "strain": s["strain"],
                              "max_beats": int(cfg.get("max_beats", 3))}
         return res
@@ -6750,6 +6884,7 @@ class Engine:
 
         events += self._advance_pins(skip_hold_ids)
         events += self._hold_break_tick(skip_hold_ids)
+        events += self._tap_out_tick()
         events += self._submission_tick()
         events += self._free_blow_tick(skip_hold_ids)
         events += self._wing_strain_tick()
@@ -7736,6 +7871,89 @@ class Engine:
         cfg = self.rules.get("finish") or {}
         return bool(cfg.get("knockout_only", False) and cfg.get("no_pins", False))
 
+    def submission_match(self):
+        """finish.submission.enabled: a submission match. Only a tap-out or a pass-out ends it: no knockouts from blows.
+        Each beat a submission (or a choke, or a coil round her) has been on, the one in it may TAP OUT; in a choke
+        she may PASS OUT instead; and a pin held to its end still puts her out (she passes out under it)."""
+        return bool(((self.rules.get("finish") or {}).get("submission") or {}).get("enabled", False))
+
+    def _tap_out_tick(self):
+        """finish.submission: after the pressure lands, everyone held in a submission, a choke, a coil or any other hold
+        that hurts (for at least two beats; not a grab, not a pin) may tap out, and a choke may make her pass out. A tap-out is resisted while she can: the pain she
+        must resist (the gripped part's damage, a share of the other gripped parts, and more each beat it stays on)
+        against her resistance (tap.resist, scaled by her overall strength; an adrenaline surge raises it). Only pain
+        past her resistance can make her tap, likelier the further past it. A choke builds air hunger every beat
+        against her endurance (her strength again). Close to her limit without giving in is a tap_resist event. A pin
+        has its own pass-out (its clock), so a pinned fighter doesn't roll here."""
+        cfg = (self.rules.get("finish") or {}).get("submission") or {}
+        if not cfg.get("enabled", False) or self.winner():
+            return []
+        tcfg, ccfg = cfg.get("tap") or {}, cfg.get("choke") or {}
+        events, pairs = [], {}
+        for h in self.holds.values():
+            if h.grab or h.locked:
+                continue      # (a grab only holds her there; a pin has its own pass-out)
+            pairs.setdefault((h.attacker, h.defender), []).append(h)
+        for (a, dn), hs in pairs.items():
+            d = self.fighters.get(dn.lower())
+            if not d or d.eliminated or self.pinned_by(dn) or max(h.turns_active for h in hs) < 2:
+                continue
+            beats = max(h.turns_active for h in hs)
+            # THE PAIN SHE MUST RESIST: how hurt the gripped part is (the worst one, and a share of the others), and
+            # worse every beat the hold stays on and cranks. HER RESISTANCE: her will, which her overall strength
+            # carries: fresh, she can bear a great deal; worn down, much less. She holds on while she can.
+            dmg = sorted((d.parts[h.part].damage for h in hs if h.part in d.parts), reverse=True) or [0.0]
+            pain = (dmg[0] + float(tcfg.get("second_part", 0.4)) * sum(dmg[1:])
+                    + float(tcfg.get("per_beat", 15)) * (beats - 1))
+            s_ = max(0.0, min(100.0, self._health_pct(d)))   # (her overall health: what she has left to resist with)
+            power = float(tcfg.get("resist_power", 0.8))
+            surge = float(tcfg.get("surge_resist", 1.5)) if self.has(d, "adrenaline") else 1.0
+            resist = max(10.0, float(tcfg.get("resist", 130)) * (s_ / 100.0) ** power * surge)
+            over = pain - resist
+            tap = min(float(tcfg.get("max", 0.85)), max(0.0, over / float(tcfg.get("span", 120))))
+            choke = any(re.search(r"(?i)neck|throat", h.part) for h in hs)
+            name = next((h.sub for h in hs if h.sub), "") or ("choke" if choke else "hold")
+            how, po, air, endure = None, 0.0, 0.0, 0.0
+            if choke:
+                # A CHOKE runs out her air and blood, not her will: it builds every beat it is on, and her strength
+                # decides how long she stays conscious under it
+                air = float(ccfg.get("air_per_beat", 22)) * beats
+                endure = float(ccfg.get("endurance", 110)) * (s_ / 100.0) ** power * surge
+                po = min(float(ccfg.get("max", 0.85)), max(0.0, (air - endure) / float(ccfg.get("span", 70))))
+            # she holds on the first beat it goes past her limit, whatever it costs her: only after that can she
+            # give in (d.learned keeps which grip she has already fought through once)
+            key_ = f"{a}|{name}|{min(h.id for h in hs)}"
+            first_over = tap > 0 and d.learned.get("tap_limit") != key_
+            if first_over:
+                d.learned["tap_limit"] = key_
+                tap = 0.0
+            if tap > 0 and self._chance(tap, f"{dn} tapping out to {poss_word(a)} {name} (pain {pain:.0f} against "
+                                        f"her resistance {resist:.0f})", "SHE TAPS", "she holds on"):
+                how = "tap"
+            elif po > 0 and self._chance(po, f"{dn} passing out in {poss_word(a)} choke (it has built to {air:.0f} "
+                                          f"against her endurance {endure:.0f})", "SHE PASSES OUT", "she stays awake"):
+                how = "pass_out"
+            if not how:
+                near = float(tcfg.get("near", 0.75))
+                if pain >= near * resist or (choke and air >= near * endure):
+                    # close to her limit: she is fighting the urge to give in (or the dark), and holding
+                    events.append({"type": "tap_resist", "attacker": a, "defender": dn, "submission": name,
+                                   "parts": [h.part for h in hs], "choke": choke and air >= near * endure,
+                                   "over": over >= 0, "pain": round(pain), "resist": round(resist),
+                                   "beats_held": beats})
+            if not how:
+                continue
+            parts = [h.part for h in hs]
+            with_ = list(dict.fromkeys(h.with_part for h in hs if h.with_part))
+            reason = (f"taps out to {poss_word(a)} {name}" if how == "tap" else
+                      f"passes out in {poss_word(a)} {name}")
+            ev = {"type": "tap_out", "how": how, "attacker": a, "defender": dn, "submission": name, "parts": parts,
+                  "with": with_, "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
+                  "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure)}
+            ev["elimination"] = self.eliminate(dn, reason)
+            events.append(ev)
+        return events
+
     def ko_only(self):
         """finish.knockout_only: a fight ends only when someone is KNOCKED OUT by a blow. A pin run to its end can't
         finish her (she kicks out at the last second, spent), and knockouts come more often the lower she is."""
@@ -7803,6 +8021,8 @@ class Engine:
         Returns the elimination result, or None."""
         cfg = (self.rules.get("moves") or {}).get("knockout") or {}
         d = self.get(name)
+        if self.submission_match():
+            return None          # (a submission match: no blow puts her out, only a tap-out or a pass-out)
         if self.ko_only() and not d.eliminated and d.max_health:
             loss = lost / d.max_health * 100.0
             ch = self._ko_only_chance(d, loss, devastating)

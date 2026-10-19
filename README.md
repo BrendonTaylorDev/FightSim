@@ -654,6 +654,48 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 210
+
+**Submission matches** (`finish.submission.enabled`, off by default: `/set finish.submission.enabled true`). Only a
+TAP-OUT or a PASS-OUT ends the fight, and no blow knocks anyone out.
+
+- **Tap-outs are resisted while she can.** Each beat after the second in a submission, choke, coil or any other hold
+  that hurts (not a grab, not a pin), two things are weighed:
+  - **The pain she must resist:** the gripped part's damage, a share of the other gripped parts, and more each beat
+    the hold stays on.
+  - **Her resistance:** her overall health. An adrenaline surge raises it.
+
+  Only pain past her resistance can make her tap, and never on the first beat it gets there: that beat she holds on
+  through it. Near or past her limit, the narrator is told she is fighting the urge ("SHE WON'T TAP"). A healthy
+  fighter can still tap, but only to a part that is very badly hurt and a hold that has been cranked.
+- **Pass-outs.** A choke (a grip on the neck or throat) builds air hunger every beat against her endurance, which is
+  also her health. Past that she may pass out ("SHE FIGHTS THE DARK" while she holds on). A pin held to its end still
+  puts her out.
+- **The stat lines and notes** show the tap-out or pass-out, and the winner by submission or by pass-out.
+
+**New submission holds:** figure-four leg lock, ankle lock, scorpion lock, chicken wing, surfboard stretch, and:
+- Ones a Pokémon's body makes possible: a tail-bound knee crank and a tail strangle (for a fighter with tails), and a
+  jaw lock on the knee.
+- Ones that use the scenery: a root lever (the knee bent back over a humped root or a ridge of rough ground), and a
+  trunk arm wrench (round whatever she lies against).
+
+**Holds go on the hurt side.** A leg lock grips the leg that's already damaged, and its second grip is on the same
+side.
+
+**Variety:** a hold used `submissions.repeat_cap` (2) times is not new any more. The director is told to use another,
+and refused a third one while another can go on her.
+
+**The director in a submission match** is told:
+- Blows only soften her up.
+- Work toward holds, and be inventive with them: tails, jaws, coils, streams, the scenery, improvised holds with any
+  limb.
+- Which holds are used up.
+- **Work the hurt part:** each opponent's worst limb, which holds grip it as she lies, and to keep punishing it
+  until she gives.
+
+**For every fight:** an attack a fighter has thrown `director.worn_after` (4) times among the last twenty is named
+to the director as worn out, with a push toward an improvised technique of her own body or a use of the scenery.
+
 ## Build 209
 
 The Glacia vs Swift fight, narrated a second time from only what happened in each beat, without the narrator's

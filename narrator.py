@@ -3949,6 +3949,42 @@ class Narrator:
                              f"The same grips, not loosened: they keep wrenching as hard as ever and tighten further. From "
                              f"now on it can put her out like any pin. Show her being pinned in it as the last thing that "
                              f"happens.")
+            elif e["type"] == "tap_resist":
+                parts = " and ".join(p.lower() for p in e.get("parts") or [])
+                if e.get("choke"):
+                    lines.append(f"  - SHE FIGHTS THE DARK: the {e['submission']} on {poss(e['defender'])} {parts} is "
+                                 f"running out her air; her sight is greying at the edges and her struggles are "
+                                 f"getting weaker, and she will not let herself go under. Show the fight to stay "
+                                 f"awake: she doesn't give in, and she is still conscious when the beat ends.")
+                else:
+                    lines.append(f"  - SHE WON'T TAP: the {e['submission']} on {poss(e['defender'])} {parts} is "
+                                 + ("past what she can bear, and every part of her wants to give in"
+                                    if e.get("over") else "close to what she can bear")
+                                 + f". Her paw (or tail) twitches toward the ground to tap and she stops it; she "
+                                 f"holds on through will alone, and it shows: the shaking, the sound she makes, the "
+                                 f"thought of giving up and refusing it. She does NOT tap this beat.")
+            elif e["type"] == "tap_out":
+                parts = " and ".join(p.lower() for p in e.get("parts") or [])
+                with_ = " and ".join(e.get("with") or [])
+                if e["how"] == "tap":
+                    lines.append(f"{e['defender']} TAPS OUT at the END of this beat: after the pressure listed above, "
+                                 f"the {e['submission']} on her {parts}" + (f" ({with_})" if with_ else "")
+                                 + f" is more than she can take any longer. She gives up: a paw, a tail or a foot "
+                                 f"slapping the ground again and again, or a cry that says it plainly, and "
+                                 f"{e['attacker']} feels it and lets go. She is AWAKE, beaten and hurting, not out "
+                                 f"cold. Give the moment its weight: how long she held on, what finally made her give "
+                                 f"in, what it costs her to do it, and the release flooding through her. It is the "
+                                 f"last thing that happens, and it ends the match.")
+                else:
+                    lines.append(f"{e['defender']} PASSES OUT at the END of this beat: the {e['submission']} on her "
+                                 f"{parts}" + (f" ({with_})" if with_ else "") + f" has held back her breath and blood "
+                                 f"too long. She fights it to the end without giving up: her struggles weaken, her "
+                                 f"sight greys and narrows, her limbs stop answering, and she goes limp, OUT, still "
+                                 f"breathing. {e['attacker']} feels her go slack and lets go. It is the last thing that "
+                                 f"happens, and it ends the match.")
+                win_ = (e.get("elimination") or {}).get("winner")
+                if win_:
+                    lines.append(f"  - {win_} has won, by {'submission' if e['how'] == 'tap' else 'pass-out'}.")
             elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
                 lines.append(f"THE {e['submission'].upper()} ENDS at the END of this beat: {e['attacker']} lets it go, "
                              f"spent; she can't keep it on any longer. {e['defender']} is left on the ground where she "

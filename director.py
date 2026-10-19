@@ -1951,6 +1951,42 @@ class Director:
             held = big_moment_hint(engine, prefer=who)
             if held:
                 rng_hint = (rng_hint + "\n" + held).strip()
+        if not direction and engine.submission_match():
+            # a submission match: only a tap-out or a pass-out ends it, so the fight has to come to holds
+            rng_hint = (rng_hint + "\nSUBMISSION MATCH: no blow ends this fight, only a TAP-OUT or a PASS-OUT. Blows "
+                        "only soften her up for the hold. Work toward grips: take the submission openings, and put on "
+                        "submissions, chokes (a grip on the neck or throat) and coils, and keep them on and tighten "
+                        "them: the longer one stays on and the more the gripped part hurts, the likelier she is to tap. "
+                        "Be inventive with them: these are Pokemon, so a hold can use tails, jaws, coils, a held stream "
+                        "or the scenery (a knee levered back over a root, an arm wrenched round a trunk, her face ground "
+                        "into the dirt, pressed against a tree), and an improvised hold_start with any limb is as good "
+                        "as a named one. Never the same hold twice running.").strip()
+            done_ = sorted(((n, engine.sub_uses(n)) for n in engine.SUBMISSIONS if engine.sub_uses(n)), key=lambda x: -x[1])
+            if done_:
+                rng_hint += ("\nHOLDS USED SO FAR (they are not new any more: reach for another): "
+                             + ", ".join(f"{n} ({k}x)" for n, k in done_) + ".")
+            for f in engine.active():
+                foe = next((x for x in engine.active() if x.name != f.name), None)
+                if not foe:
+                    continue
+                limbs = [p for p in foe.parts.values() if body_region(p.name) in ("hind_up", "hind_low", "fore_up",
+                                                                                 "fore_low", "neck")]
+                worst = max(limbs, key=lambda p: p.damage, default=None)
+                if not worst or worst.damage < 30:
+                    continue
+                grips = []
+                if foe.name in engine.downed:
+                    grips = [n for n, sh in engine.submission_shapes(f.name, foe.name).items()
+                             if any(c[0] == worst.name for c in sh["contacts"])]
+                rng_hint += (f"\nWORK THE HURT PART: {poss_word(foe.name)} {worst.name.lower()} is her worst "
+                             f"({'badly hurt' if worst.damage >= 90 else 'hurting'}). {f.name} should keep punishing it: "
+                             f"strikes and stomps aimed at it, and a hold that wrenches it"
+                             + (f" ({', '.join(grips)} grips it as she lies now)" if grips else
+                                " (a choke, if it is her neck)" if body_region(worst.name) == "neck" else "")
+                             + ", kept on until she gives.")
+        worn_ = worn_attacks_hint(engine) if not direction else ""
+        if worn_:
+            rng_hint = (rng_hint + "\n" + worn_).strip()
         unused = move_variety_hint(engine, skip=[n for n, o in players.items() if o]) if not direction else ""
         if unused:
             rng_hint = (rng_hint + "\n" + unused).strip()
@@ -2164,6 +2200,31 @@ def move_variety_hint(engine, skip=()):
         return ""
     return ("MOVES NOT USED LATELY (an idea, not an order): " + "; ".join(out) + ". A fighter who uses all she has, "
             "status and set-up moves too, is more interesting than one who leans on her strongest two or three.")
+
+
+def worn_attacks_hint(engine):
+    """director.worn_after (0 = off): attacks a fighter has thrown that many times lately (the last twenty attacks)
+    are not new any more:
+    named, with how many times, so the director reaches for something she hasn't done, an improvised technique of her
+    own body or a use of the scenery. Every beat once one is worn, not by chance."""
+    k = int(engine.rules.get("director", {}).get("worn_after", 4) or 0)
+    if k <= 0:
+        return ""
+    counts = {}
+    for who, m in engine.move_log:
+        counts.setdefault(who, {}).setdefault(m, 0)
+        counts[who][m] += 1
+    out = []
+    for f in engine.active():
+        worn = sorted(((m, n) for m, n in (counts.get(f.name) or {}).items() if n >= k), key=lambda x: -x[1])
+        if worn:
+            out.append(f"{f.name}: " + ", ".join(f"{m} ({n}x)" for m, n in worn))
+    if not out:
+        return ""
+    return ("ATTACKS WORN OUT (used a lot already this fight, not new any more: reach for something else): "
+            + "; ".join(out) + ". Be inventive: these are Pokemon, so an improvised technique of her own body (tails, "
+            "jaws, fins, a coil, a held stream) or a use of the scenery (driving her into a tree or a rock, grinding her "
+            "into the ground, the water) is better than the same move again.")
 
 
 def play_block(engine, players):

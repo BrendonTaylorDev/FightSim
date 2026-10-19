@@ -1170,6 +1170,22 @@ class Display:
                 out.append(f"👊 **{e['attacker']} gets a free blow in** during the {e['during']}: {e['move_name']} on "
                            f"{poss_word(e['defender'])} {e['part']} (power {num(e['power'])}, x{self.rules.get('holds', {}).get('free_blow', {}).get('power_mult', 0.4)} "
                            f"of the move) → +{num(h.get('damage_taken', 0))}% damage, ❤️ -{num(h.get('health_loss', 0))}")
+            elif e["type"] == "tap_resist":
+                out.append(f"😖 {e['defender']} {'fights the dark' if e.get('choke') else 'refuses to tap'} in "
+                           f"{poss_word(e['attacker'])} {e['submission']} (pain {e['pain']} against her resistance "
+                           f"{e['resist']}, beat {e['beats_held']} of it)")
+            elif e["type"] == "tap_out":
+                if not self.tight():
+                    out.append("")
+                out.append(f"🏳️ **{e['defender']} {'TAPS OUT' if e['how'] == 'tap' else 'PASSES OUT'}** in "
+                           f"{poss_word(e['attacker'])} {e['submission']} after {e['beats_held']} beats"
+                           + (f" (pain {e['pain']} against her resistance {e['resist']}: tap-out chance "
+                              f"{e['chance'] * 100:.0f}%)" if e['how'] == 'tap' else
+                              f" (the choke built to {e['air']} against her endurance {e['endure']}: chance "
+                              f"{e['chance'] * 100:.0f}%)"))
+                if (e.get("elimination") or {}).get("winner"):
+                    out.append(f"- 🏆 **Winner: {e['elimination']['winner']}** (by "
+                               f"{'submission' if e['how'] == 'tap' else 'pass-out'})")
             elif e["type"] == "sub_to_pin":
                 if not self.tight():
                     out.append("")
