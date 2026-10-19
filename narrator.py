@@ -4726,7 +4726,8 @@ class Narrator:
                 kind = ("KEEPS the hold she already has on (it never came off: she shifts, renews or tightens the same "
                         "grip, she does not let go and grab again)")
             parts = ", ".join(f"{p['part']} ({self._hold_word(p['power'])} pressure"
-                              + (f", with {p['with']})" if p.get("with") else ")") for p in a["parts"])
+                              + (f", with {self._own_with(a['attacker'], p['with'])})" if p.get("with") else ")")
+                              for p in a["parts"])
             cfg_first = float((self.rules.get("pin" if t == "pin_start" else "holds", {}) or {}).get(
                 "first_beat_damage", 1.0))
             mv = f" with {a['move']['name'].upper()} ({a['move']['about']})" if a.get("move") else ""
@@ -4768,12 +4769,14 @@ class Narrator:
             if carried:
                 lines.append(f"  - ALREADY ON from before, and it stays exactly as it was (it becomes part of the pin; it "
                              f"is not let go and taken again, and nothing else replaces it): "
-                             + ", ".join(f"{p['part']}" + (f" with {p['with']}" if p.get("with") else "")
+                             + ", ".join(f"{p['part']}" + (f" with {self._own_with(a['attacker'], p['with'])}"
+                                                           if p.get("with") else "")
                                          + (f" (NOT {p['asked_with']})" if p.get("asked_with") else "") for p in carried)
                              + ". That grip keeps pressing this beat, as listed further down.")
             if t == "pin_start" and a.get("absorbed"):
                 lines.append(f"  - {a['attacker']} keeps the grips she already had on her, now as part of the pin: "
-                             + ", ".join(x["part"] + (f" ({x['with']})" if x.get("with") else "") for x in a["absorbed"])
+                             + ", ".join(x["part"] + (f" ({self._own_with(a['attacker'], x['with'])})" if x.get("with")
+                                                      else "") for x in a["absorbed"])
                              + ". They don't let go.")
             if a.get("facing") in Engine.FACING_LOOK:
                 lines.append(f"  - {a['defender']} is {Engine.FACING_LOOK[a['facing']]}"
@@ -5924,6 +5927,11 @@ class Narrator:
         for who, start in ps.items():
             if who not in pe and start:     # she is knocked out this beat: where she starts is where she stays
                 bits.append(f"{who}: starts {start}; ends OUT COLD, lying where she was (she does not get up)")
+        wet = getattr(self, "in_water", None) or {}
+        if wet:
+            # in the water or on land (from where the director placed them): nobody swims across dry grass
+            bits += [f"{w}: " + ({"shallow": "IN the shallow water", "deep": "IN deep water"}.get(v) or "on dry land, not in "
+                                 "the water (no swimming)") for w, v in wet.items() if w in pe]
         return ["POSTURE THIS BEAT (certain; the program tracks it): " + " | ".join(bits) + ". A fighter listed as ON "
                 "HER FEET or UP stays up the whole beat: she never lies on the ground, is never under anyone, nobody "
                 "stands over her, and she never has to get up. A fighter ON THE GROUND stays down unless a get-up or "
@@ -10332,6 +10340,141 @@ class Narrator:
             after = after.replace(fix[0], fix[1], 1)
         return after
 
+    def _beat_card(self, key, acts, i, n_parts, seg_words, focus):
+        """narration.card: the facts of this part again, in one fixed note-form block at the very end of the prompt
+        (WHO, WHERE, CONTACTS, THIS PART, MIND, JOB), with every grip's two owners named. "" when it is off."""
+        cfg = (self.rules.get("narration") or {}).get("card") or {}
+        if not cfg.get("enabled"):
+            return ""
+        names = [w for w in (self.strengths or {})]
+        if not names:
+            return ""
+        spec = getattr(self, "species_of", None) or {}
+        grips = list(getattr(self, "grips", None) or [])
+        pinned = set(getattr(self, "pinned_now", None) or set())
+        wet = getattr(self, "in_water", None) or {}
+        pe, ps = getattr(self, "posture_end", None) or {}, getattr(self, "posture_start", None) or {}
+        lines = ["", "", "BEAT CARD (the facts once more, in short; the notes above give the detail, and this card wins "
+                 "if anything seems to disagree):"]
+        who = []
+        for w in names:
+            role = ("holding " + ", ".join(sorted({g[1] for g in grips if g[0] == w}))
+                    if any(g[0] == w for g in grips) else "held by " + ", ".join(sorted({g[0] for g in grips if g[1] == w}))
+                    if w in pinned or any(g[1] == w for g in grips) else "free")
+            who.append(f"{w} ({spec.get(w) or 'fighter'}; {role})")
+        lines.append("- WHO (roles as they stand at the end of the beat): " + "; ".join(who))
+        if len({str(spec.get(w) or "").lower() for w in names}) < len(names):
+            lines.append("  Two of the same kind: name the owner of every paw, tail, jaw and back ('Nerine's tails', "
+                         "'Ripples' paw'); never let 'her' stand for both in one sentence.")
+        where = []
+        for w in names:
+            st, en = ps.get(w), pe.get(w)
+            pos = en if not st or st == en else f"starts {st}, ends {en}"
+            if w in wet:
+                pos += "; " + ({"shallow": "in shallow water", "deep": "in deep water"}.get(wet[w]) or "on land")
+            where.append(f"{w}: {pos or 'as before'}")
+        lines.append("- WHERE: " + " | ".join(where))
+        if grips:
+            lines.append("- CONTACTS (all on at the end of the beat): " + "; ".join(
+                f"{self._own_with(g[0], g[3]) if g[3] else poss(g[0]) + ' grip'} -> {poss(g[1])} {str(g[2]).lower()}"
+                for g in grips))
+        hits = []
+        def told(hs):
+            per = {}
+            for h in hs:
+                per[str(h.get("part", "")).lower()] = self._pain(h.get("damage_after", 0))["label"]
+            return ", ".join(f"{p} (now {l})" for p, l in per.items())
+        for a in acts or []:
+            if not isinstance(a, dict):
+                continue
+            mv = str((a.get("move") or {}).get("name") or a.get("type") or "blow")
+            att, dfn = a.get("attacker") or "?", a.get("defender") or "?"
+            if a.get("dodged"):
+                hits.append(f"{dfn} DODGES {poss(att)} {mv}" + (
+                    f", and her counter lands -> {poss(att)} {told(a['counter_hits'])}" if a.get("counter_hits") else
+                    ": it touches nothing"))
+            elif a.get("hits"):
+                hits.append(f"{poss(att)} {mv} -> {poss(dfn)} {told(a['hits'])}")
+            elif a.get("type") in ("hold_start", "pin_start") and a.get("parts") and not a.get("continuing"):
+                hits.append(f"{att} TAKES HOLD" + (" (a pin)" if a["type"] == "pin_start" else "") + ": " + "; ".join(
+                    (self._own_with(att, p["with"]) if p.get("with") else poss(att) + " grip")
+                    + f" -> {poss(dfn)} {str(p.get('part', '')).lower()}" for p in a["parts"]))
+        if key in ("act", "setup"):
+            now = "nothing lands yet: this part stops at the instant of contact" if hits else "nothing lands"
+        elif key == "after":
+            now = "no new blow: the aftermath of what landed"
+        else:
+            now = "; ".join(hits) if hits else "nothing lands"
+        lines.append(f"- THIS PART: {now}")
+        lead = getattr(self, "_lead_now", None)
+        inner = (getattr(self, "inner", None) or {}).get(lead) if lead else None
+        if inner:
+            lines.append(f"- MIND ({lead}, as her own short thoughts, never copied): "
+                         + "; ".join(inner[:int(cfg.get("inner_lines", 2))]))
+        lines.append(f"- JOB: PART {i} of {n_parts}, about {seg_words} words, past tense"
+                     + (f", told from {poss(lead)} side" if lead else "") + ". "
+                     + re.split(r"(?<=[.!?])\s", str(focus or "").strip())[0])
+        return "\n".join(lines)
+
+    def _own_with(self, who, with_):
+        """What a grip presses with, said as hers by name ("her twin tails" -> "Nerine's twin tails"): with two of
+        the same kind in the fight, "her" leaves the model guessing whose tails are whose."""
+        return re.sub(r"^(?:with )?(?:her|their|its) ", poss(who) + " ", str(with_ or "").strip(), count=1)
+
+    GRIP_LIMBS = {"tails": r"\btails?\b|\bcoils?\b", "jaws": r"\bjaws?\b|\bteeth\b|\bfangs?\b",
+                  "paws": r"\bpaws?\b|\bhands?\b|\bclaws\b", "legs": r"\blegs?\b"}
+    GRIP_VERB = re.compile(r"\b(?:grip\w*|held|hold\w*|press\w*|clamp\w*|wrapp\w*|wound|coil\w*|squeez\w*|"
+                           r"pinn\w*|lock\w*|tighten\w*|dug|dig\w*|bit|bite\w*|sank)\b", re.I)
+
+    def _grip_limb_wrong(self, sent):
+        """A grip told with the wrong limb on the wrong place ("the twin tails tightening on her left upper arm" when
+        the tails are round her right paw and the paws on the arm): what is wrong, or "". Only for a sentence that
+        names one gripped part and one kind of limb, and only when that limb really holds another part."""
+        grips = [g for g in (getattr(self, "grips", None) or []) if g[3]]
+        if not grips or not self.GRIP_VERB.search(sent):
+            return ""
+        low = sent.lower()
+        on = [g for g in grips if re.search(r"\b" + re.escape(g[2].lower()) + r"\b", low)]
+        parts_named = {g[2].lower() for g in on}
+        if len(parts_named) != 1:
+            return ""
+        rest = low
+        for p_ in parts_named:
+            rest = rest.replace(p_, " ")
+        limbs = [k for k, rx in self.GRIP_LIMBS.items() if re.search(rx, rest)]
+        if len(limbs) != 1:
+            return ""
+        rx = self.GRIP_LIMBS[limbs[0]]
+        if any(re.search(rx, str(g[3]).lower()) for g in on):
+            return ""
+        other = [g for g in grips if g[0] == on[0][0] and g[2].lower() not in parts_named and re.search(rx, str(g[3]).lower())]
+        if not other:
+            return ""
+        o, g = other[0], on[0]
+        return (f"the wrong limb on the wrong place: {poss(o[0])} {limbs[0]} are on {poss(o[1])} {o[2].lower()}, and "
+                f"{poss(g[1])} {g[2].lower()} is held with {g[3]}")
+
+    SWIM_CLAIM = re.compile(r"\b(?:swims?|swam|swimming|paddl\w+|(?:drove|drives|driving|shot|shoots|surged|"
+                            r"propelled|pushed) (?:her|him)self (?:through|across|out of|under) the water|"
+                            r"(?:dove|dived|plunged) (?:into|under) the (?:water|lake|shallows|surface)|"
+                            r"out of the water and onto the (?:shore|sand|beach)|"
+                            r"tails?\b[^.!?]{0,40}\b(?:like a propeller|propel\w*))", re.I)
+
+    def _dry_swimmer(self, sent):
+        """The one fighter this sentence has swimming (or driven through the water by her tails) when the engine has
+        her on dry land this beat, or None. Only when the engine knows where everyone is (in_water)."""
+        wet = getattr(self, "in_water", None)
+        if not wet or not self.SWIM_CLAIM.search(sent) or re.search(r"\b(?:wish\w*|want\w*|long\w*|if only|could have|"
+                                                                     r"would|remember\w*|plan\w*|thought)\b", sent, re.I) \
+                or sent.lstrip().startswith("*"):
+            return None
+        whos = [w for w in wet if re.search(r"\b" + re.escape(w) + r"\b", sent)]
+        if not whos:
+            lead = getattr(self, "_lead_now", None)
+            whos = [lead] if lead in wet else ([w for w in wet] if not any(wet.values()) else [])
+        dry = [w for w in whos if not wet.get(w)]
+        return dry[0] if len(dry) == len(whos) and dry else None
+
     def _same_species(self, sp):
         """Are two or more fighters here of this species (so "the other Buizel" is one of them)?"""
         n = 0
@@ -10388,7 +10531,14 @@ class Narrator:
             m = PAIN_LABEL.search(x)
             if m:
                 add(x, f"a pain level used as a label (\"{m.group(0)}\"): say how it FEELS instead")
-            if TAIL_PROPEL.search(x) and not re.search(r"\b(water|lake|shallows|swim\w*|current|waves?)\b", x, re.I):
+            wrong_limb = self._grip_limb_wrong(x)
+            if wrong_limb:
+                add(x, wrong_limb)
+            dry = self._dry_swimmer(x)
+            if dry:
+                add(x, f"{dry} is NOT in the water this beat (she is on land): no swimming, no driving herself "
+                       f"through the water, no tails propelling her")
+            elif TAIL_PROPEL.search(x) and not re.search(r"\b(water|lake|shallows|swim\w*|current|waves?)\b", x, re.I):
                 add(x, "her twin tails only drive her through water; on land they balance her")
             m = gore.search(x) if gore is not None else None
             if m:
@@ -12519,6 +12669,7 @@ class Narrator:
             ask += self._camera_note(key)
             ask += self._rich_part_note(key, seg_words, i == len(plan))
             ask += self._talk_note(so_far)
+            ask += self._beat_card(key, acts, i, len(plan), seg_words, focus)
             n_def = len(self._deferred)
             ctx_ = context
             if i > 1 and cmp_.get("fighters_once"):

@@ -3,7 +3,7 @@
 Written after build 193 (branch `claude/kind-bell-r5ehx4-anchors`). Nothing below is built yet; the user hasn't
 picked. Suggested order: 3 → 1 → 2 → 5 → 7. Every one must be switchable in rules.json (see CLAUDE.md).
 
-## Where things stand (build 197)
+## Where things stand (build 201)
 - Build 192: `narration.rich` (longer beats, INNER LIFE from `engine.inner_state` / `fight_record`, one sense a part,
   closing thoughts, per-blow body detail: `narrator._impact_body`, `BODY_MOVES` / `BODY_GIVES` / `BODY_DEEP`).
 - Build 193: `/sets` (every setting), `/intro on|off`.
@@ -11,13 +11,25 @@ picked. Suggested order: 3 → 1 → 2 → 5 → 7. Every one must be switchable
 - Build 197: `/bench`, the test bench (play.py `_bench_save` / `_bench_run` / `bench`; cases in bench_cases/,
   reports in bench_reports/). Tested here only with the stand-in model, not yet with the real one.
 - New fighter Nerine (a second Buizel, no flotation sac), health 1775. The user doesn't want more balance testing.
+- Builds 198-201 (after the user's 29-beat Ripples vs Nerine fight and the first real `/bench`):
+  - 198: no Spyder kernel crash when a window closes mid-beat (windows kept alive, `_Flag` BooleanVars).
+  - 199: a shaken-off grip is not told tightening (`_shaken_ids`); parts after a pin faint are the winner's only;
+    left-out passages go before the escape (`ESCAPE_TOLD` in `_put_in_order`); scenery broken by a held stream is a
+    must-surface; no blackout unless `_ko_now`; many `_last_scrub` cuts; interludes get the last clean-up.
+  - 200: no pin before its blow (`_place_events` NOT YET note); bite flavor never a claw stroke (`_clean_flavor`);
+    `_blunt_blood` (uses `wound_kinds`); no salt by a lake; `_past_words` for a lone present-tense sentence;
+    pain-change arrows cut.
+  - 201: the beat card (`narration.card`, off; `_beat_card`), `in_water` passed to the narrator with
+    `_dry_swimmer`, `_grip_limb_wrong`, `_own_with` (grips said with their owner).
+- **The first real bench** (`/bench 2 narration.rich.enabled=false`, two pin beats): rich gave about the same words
+  (1566 vs 1547), 8 more calls, fewer repeats (7 vs 11). The model writes about the same per part whatever
+  `length_mult` says; more words would need more parts. Rich's knockout beat had the post-faint part (fixed in 199).
+- Next: the user runs `/bench 3 narration.card.enabled=true` and sends the report. Then idea 2, 5 or 7.
 - None of this is on the other branches yet (`claude/kind-bell-r5ehx4`, `-shorter-notes`).
-- Next: idea 1, the beat card, behind a switch so `/bench` can compare it with the current layout. Ask the user for a
-  bench baseline first.
 - The user asked: commit once per build, not after every fix.
 
 ## The ideas
-(Build 197 built idea 3, the test bench: `/bench`.)
+(Build 197 built idea 3, the test bench: `/bench`. Build 201 built idea 1, the beat card, as a block at the end of each part: `narration.card`.)
 1. **One beat card layout.** Every part's prompt in fixed blocks: FACTS (mandatory, note form) / BODY / MIND
    (inner life) / IDEAS (optional, "never quote") / THIS PART'S JOB (last). Fixed rules first so Ollama's KV cache is
    reused (speed). Biggest change: build behind a switch and measure with (3).

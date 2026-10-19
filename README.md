@@ -654,6 +654,28 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 201
+- **The beat card (`narration.card`, off by default).** A short block at the very end of each part's prompt, right
+  before the model writes:
+  - WHO: each fighter, her kind and her role (holding, held, free);
+  - WHERE: posture, and in the water or on land;
+  - CONTACTS: every grip as owner's limb -> owner's part, both named;
+  - THIS PART: what lands in this part and how much it hurts now (dodges, counters and new grips included), or that
+    nothing lands yet;
+  - MIND: two INNER LIFE facts for the fighter the part is told from;
+  - JOB: the part's number, length, side and focus.
+
+  With two of the same kind it asks for every paw, tail and jaw to be named with its owner. Nothing in it is new: it
+  repeats the notes' facts in one place. Try it with `/bench 3 narration.card.enabled=true`, or turn it on with
+  `/set narration.card.enabled true`.
+- **No swimming on dry land.** The narrator now knows who is in the water (from where the director places each
+  fighter), the posture line says it, and a sentence that has a fighter on land swimming, diving in or driven through
+  the water by her tails is caught. The old tails check let any sentence that mentioned water through.
+- **The wrong limb on a grip is caught** ("the twin tails tightening on her left upper arm" when the tails are round
+  her right paw and her paws hold the arm).
+- **Grips are said with their owner in the notes** ("with Nerine's twin tails", not "with her twin tails").
+- INNER LIFE no longer says "nothing of Ripples' has touched her yet" after a counter has hit her.
+
 ## Build 200
 The problems left open after build 199:
 - **A pin that starts after this beat's attack isn't told before it.** The parts before the blow lands are told that

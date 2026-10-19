@@ -7971,7 +7971,7 @@ class Engine:
             out.append(f"she has landed {n_land} of her {n_try} attacks so far" + (
                 ": everything she throws is getting through" if n_land == n_try else
                 ": nothing she throws is getting through" if n_land == 0 else ""))
-        if not hit_by and self.turn > 1 and rivals:
+        if not hit_by and self.turn > 1 and rivals and not any(p.damage > 0 for p in f.parts.values()):
             out.append(f"nothing of {poss_word(rv)} has touched her yet")
         # what her worst wounds stop her doing (one line a region, the worst first)
         seen = set()
