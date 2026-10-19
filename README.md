@@ -654,6 +654,39 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 211
+
+More variety without hard caps, and new things checked against the fighters' bodies so nothing impossible goes on.
+
+- **No caps.** No hold or move is ever locked out for being used. The director is shown which holds have been used,
+  and which attacks a fighter keeps reaching for (`director.worn_after`), only as a nudge toward something new.
+- **Invented submissions.** At a submission opening, the director may make up a hold of its own: a name, the parts it
+  grips, and what grips each. The engine checks every grip against both bodies:
+  - the parts must be hers;
+  - the grip must use a part the holder really has, so no paws on a bird, no jaws on a beak, no tails on a fighter
+    without one.
+
+  An invented hold is then a submission like any other: it wrenches every beat, can make her tap, and counts among
+  the holds used.
+- **Every grip is checked the same way:** holds and pins too.
+- **Improvised attacks:**
+  - Their names must use a body she has ("talon rake" is refused for a Buizel).
+  - Their type must be Normal, Fighting, one of her own types, or the type of a move she knows. Ripples (Water, and
+    Ice Fang) can improvise Ice; Nerine can't improvise Fire.
+- **Conjured weapons** (`moves.conjure`): a fighter may make a weapon of her own element and keep it for a few beats:
+  an ice blade frozen out of the lake, a whip of water. While she is ARMED, her improvised blows land as its type, x1.2.
+  The narrator is told when she makes it, that she still has it, and when it gives out.
+- **More holds:** sleeper hold, head scissors, triangle choke, knee bar, and a coil crush (tails wound round the ribs).
+- **Grinding holds** (`submissions.grind`): a submission works a part down rather than smashing it:
+  - about half the usual damage on a part that's still sound, rising to x1.3 on a part worn to nothing;
+  - the part's toughness worn twice as fast.
+
+  So a hold hurts little at first and more every beat it stays on, and a second hold on a limb already worked bites
+  far harder.
+- **A higher bar for fresh fighters:** tap-out resistance at full health is now 160 (was 130). A healthy fighter
+  still can tap, but later.
+- **Fixed:** a pin by a bird could be told as "her beak, teeth pressed hard into it".
+
 ## Build 210
 
 **Submission matches** (`finish.submission.enabled`, off by default: `/set finish.submission.enabled true`). Only a
@@ -682,8 +715,8 @@ TAP-OUT or a PASS-OUT ends the fight, and no blow knocks anyone out.
 **Holds go on the hurt side.** A leg lock grips the leg that's already damaged, and its second grip is on the same
 side.
 
-**Variety:** a hold used `submissions.repeat_cap` (2) times is not new any more. The director is told to use another,
-and refused a third one while another can go on her.
+**Variety:** the director is shown the holds used so far as a nudge toward new ones (build 211: no cap on any of
+them).
 
 **The director in a submission match** is told:
 - Blows only soften her up.

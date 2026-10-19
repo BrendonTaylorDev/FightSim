@@ -4694,6 +4694,16 @@ class Narrator:
                     nots = [WEAPON_NOT[w] for w in ("claws", "teeth", "tail") if w not in mine]
                     lines.append("  (Delivered with " + " or ".join(WEAPON_SAY[w] for w, _ in WEAPONS if w in mine)
                                  + ", as the move says" + (": not " + ", not ".join(nots) if nots else "") + ".)")
+                if m.get("weapon"):
+                    # a weapon she made of her own element (moves.conjure): made this beat, or still in her grip
+                    lines.append(f"  - HER {m['weapon'].upper()}: "
+                                 + (f"she MAKES it in this beat, out of her own {m['type']} power and what the place "
+                                    f"gives her (show it forming: the water drawn up and freezing, the shape taking an "
+                                    f"edge), and strikes with it at once. "
+                                    if m.get("conjured_now") else "she still has it from before, and strikes with it. ")
+                                 + f"It is {'an' if m['type'][:1] in 'AEIOU' else 'a'} {m['type']}-type weapon: the blow lands as {m['type']}, a little harder "
+                                 f"for the edge or weight of it. It lasts a few beats, then gives out (melts, "
+                                 f"crumbles, splashes away).")
                 if not m.get("improvised") and m.get("type"):
                     lines.append(f"  (Show it as the {m['type']}-type move it is. Don't add another element: no "
                                  f"electricity, fire, ice, or water unless the move itself is that type.)")
@@ -5390,7 +5400,7 @@ class Narrator:
         "confused": ("her eyes swim and she sways, unsure where anything is", "she can't trust her own sense of where things are",
                      "{other} sees her swaying, lost"),
     }
-    STATUS_WORDS = {"fury": "furious", "adrenaline": "on an adrenaline surge", "protecting": "behind her Protect barrier",
+    STATUS_WORDS = {"armed": "armed with the weapon she made", "fury": "furious", "adrenaline": "on an adrenaline surge", "protecting": "behind her Protect barrier",
                     "countering": "set to counter", "mirroring": "behind her Mirror Coat", "airborne": "in the air"}
     STATUS_ENDS = {
         "flinched": "the freeze lets go of her and she can move again; {other} sees her come back",
@@ -5411,6 +5421,7 @@ class Narrator:
         "protecting": "the barrier thins and is gone",
         "countering": "she lets the set go; nothing came to send back",
         "mirroring": "the sheen fades off her fur",
+        "armed": "the weapon she made gives out in her grip: it melts, crumbles or splashes away, and her paws are empty",
     }
 
     def _status_story(self, s, other=None):

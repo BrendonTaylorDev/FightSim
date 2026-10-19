@@ -123,6 +123,12 @@ face, a shove into a pool, a throw, a pin-breaking kick - with "move": "improvis
 (2-4 words), an "improvised_type" (usually Normal, or the fighter's own type), a severity for how hard it
 lands, and the part(s) it hits. The engine tracks it like any other move.
 Use "move": "none" only for environmental damage: slammed into a wall, landing on stone, dragged across rock.
+Improvise from what her body really has (a Buizel's twin tails, forearm fins and jaws; a bird's beak, talons and
+wings) and from a power she really has: an improvised move is Normal or Fighting, or a type of her own or of a move
+she knows. "conjure" (usually ""): she MAKES A WEAPON of her own element and keeps it a few beats, named here (a
+Water and Ice fighter freezing lake water into a blade, a Water fighter spinning a whip of water): it goes with an
+improvised strike of that type that uses it, and her improvised blows with it land as that type, a little harder,
+until it is gone.
 
 RANGE: mix close-range attacks (claws, bites, tackles, holds) with ranged and special ones (beams, blasts, pulses,
 waves, lightning, sound, status moves like Hypnosis or Thunder Wave). Pokemon battles use both; roughly a third
@@ -368,12 +374,13 @@ def action_schema(engine):
             "feint": {"type": "boolean"},
             "carry": {"type": "boolean"},
             "leap_from": {"type": "string"},
+            "conjure": {"type": "string"},
         },
         # Every field is required: local models tend to skip optional ones.
         # Fields that don't apply to the chosen action are simply ignored by the engine.
         "required": ["intent", "action", "move", "improvised_name", "improvised_type", "attacker", "defender", "part", "severity",
                      "count", "hits", "launch", "reposition", "landing", "sustain", "pinned_against", "charge_into", "hold_id",
-                     "ramp", "flavor", "feint", "carry", "leap_from"],
+                     "ramp", "flavor", "feint", "carry", "leap_from", "conjure"],
     }
 
 
@@ -841,6 +848,13 @@ def resolve(engine, b):
         if not dfn:
             raise ValueError("'submission' needs a defender")
         name = str(b.get("improvised_name") or b.get("submission") or "").strip().lower()
+        grips = [(_fit_part(engine, dfn, h["part"]), short_phrase(h.get("with") or "", 9))
+                 for h in (b.get("hits") or []) if isinstance(h, dict) and h.get("part")]
+        if name and name not in engine.SUBMISSIONS and grips and not any(n in name for n in engine.SUBMISSIONS):
+            # a hold of the director's own invention: the engine checks it against both bodies
+            res = engine.start_custom_submission(att, dfn, name, grips, flavor, enforce=not manual)
+            res["intent"] = intent
+            return res, tuple(res.get("hold_ids") or ())
         if name not in engine.SUBMISSIONS:
             fits = list(engine.submission_shapes(att, dfn))
             name = next((n for n in engine.SUBMISSIONS if n in f"{name} {b.get('flavor', '')}".lower()),
@@ -891,9 +905,25 @@ def resolve(engine, b):
             own_ = ", ".join(m["name"] for m in engine.get(b.get("attacker")).moves)
             raise ValueError(f"'{named_}' is a move {b.get('attacker')} doesn't know. Use one of hers ({own_}), or "
                              f"name an improvised blow by what it is (a kick, a tail swipe, a shoulder)")
+        if not manual and exact_:
+            why = engine.grip_problem(engine.get(b.get("attacker")), named_)
+            if why:
+                raise ValueError(f"'{named_}' can't be done: {why}. Name an improvised blow by what her body has: "
+                                 f"{', '.join(engine.get(b.get('attacker')).parts)}")
+            ty_ = str(b.get("improvised_type") or "Normal")
+            if not engine.can_wield_type(b.get("attacker"), ty_):
+                raise ValueError(f"{b.get('attacker')} has no {ty_} power to improvise with: an improvised move is "
+                                 f"Normal or Fighting, or a type of her own or of a move she knows "
+                                 f"({', '.join(engine.wieldable_types(b.get('attacker')))})")
+        conj_ = str(b.get("conjure") or "").strip()
+        if conj_ and conj_.lower() not in ("none", "no", "false") and not manual:
+            # she makes a weapon of her own element and keeps it a few beats (an ice blade frozen out of the water)
+            engine.conjure(b.get("attacker"), conj_, b.get("improvised_type") or "Normal")
         target = "spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1 else "targeted"
         move = engine.improvised_move(b.get("improvised_name"), b.get("improvised_type"), b.get("severity"),
-                                      target, b.get("flavor", ""))
+                                      target, b.get("flavor", ""), who=b.get("attacker"))
+        if conj_ and move.get("weapon"):
+            move["conjured_now"] = True
     elif mv_name in ("none", "") and act in ("strike", "combo") and not manual:
         # a plain blow with no move named: it lands as a plain close technique, so every rule applies to it like any
         # close move (a dive from the air and who can reach whom, guards, feints, a pummel's lighter blows and rolled
@@ -1080,6 +1110,12 @@ def resolve(engine, b):
             if key not in merged or power > merged[key][1]:
                 merged[key] = (part, power, ramp, short_phrase(h.get("with", ""), 9))
         contacts = list(merged.values())
+        if not manual:
+            for c in contacts:
+                why = engine.grip_problem(engine.get(att), c[3] if len(c) > 3 else "")
+                if why:
+                    raise ValueError(f"that grip can't go on as described: {why}. Grip with what she has: "
+                                     f"{', '.join(engine.get(att).parts)}")
         if not manual:
             # a face-down fighter can't have her chest pressed (and a face-up one her back): fit the contacts
             fitted, note = engine.fit_to_facing(dfn, [c[0] for c in contacts], flavor)
@@ -1961,9 +1997,9 @@ class Director:
                         "or the scenery (a knee levered back over a root, an arm wrenched round a trunk, her face ground "
                         "into the dirt, pressed against a tree), and an improvised hold_start with any limb is as good "
                         "as a named one. Never the same hold twice running.").strip()
-            done_ = sorted(((n, engine.sub_uses(n)) for n in engine.SUBMISSIONS if engine.sub_uses(n)), key=lambda x: -x[1])
+            done_ = sorted(engine.subs_used().items(), key=lambda x: -x[1])
             if done_:
-                rng_hint += ("\nHOLDS USED SO FAR (they are not new any more: reach for another): "
+                rng_hint += ("\nHOLDS USED SO FAR (a nudge, not a rule: something new reads better than a repeat): "
                              + ", ".join(f"{n} ({k}x)" for n, k in done_) + ".")
             for f in engine.active():
                 foe = next((x for x in engine.active() if x.name != f.name), None)
@@ -2408,7 +2444,7 @@ def fuller_pin(engine, pinner, target, look, contacts, at_least=0):
     options = [
         ("jaw", t.get("jaws"), [] if any(regions.get(p) == "neck" for p in used_p) else
          free([n for n in names if regions[n] == "neck" and not (down and "throat" in n.lower())]),
-         1, lambda w: f"{w}, teeth pressed hard into it"),
+         1, lambda w: f"{w}, {'the hooked tip' if plan == 'avian' or 'beak' in str(w) else 'teeth'} pressed hard into it"),
         ("weight|chest", t.get("weight"),
          free([n for n in names if regions[n] in (("back_up", "back_low") if down else ("chest",))]), 1,
          lambda w: ("her full weight, bearing down" if down else
@@ -3368,7 +3404,10 @@ def submission_urge(engine):
                 f"'submission' with \"improvised_name\": \"{name}\". It wrenches her ({s['strain']}) every beat, "
                 f"harder each beat, for a few beats; it is not a pin. {h.name} still has {s['free']} free: she can use "
                 f"it on her as a second action in the same beat. Other holds that fit: "
-                f"{', '.join(n for n in shapes if n != name) or 'none'}.")
+                f"{', '.join(n for n in shapes if n != name) or 'none'}. Or INVENT one of her own that her body and "
+                f"the place allow: give it a short name in \"improvised_name\" and put the parts of {target.name} it "
+                f"grips in \"hits\", the worst first, each with \"with\" = what of {h.name} grips it (her paws, "
+                f"her twin tails, her jaws, her weight). The engine checks it against both bodies.")
     return ""
 
 

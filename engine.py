@@ -526,10 +526,12 @@ class Engine:
         return names
 
     # ---------- core math ----------
-    def _apply_damage(self, defender, part_name, power, cap=None):
+    def _apply_damage(self, defender, part_name, power, cap=None, grind=None):
         """One instance of damage, using the bracket rules. Returns every number involved. cap: {"mult", "health_mult"}
         upper limits on the bracket's multipliers (a pin's steady pressure doesn't tear into a worn part the way a
-        blow does: pin.pressure_cap)."""
+        blow does: pin.pressure_cap). grind (submissions.grind): a wrench that hurts little while the part is still
+        sound and wears it down fast, so it bites harder and harder the longer the part is worked: its damage x
+        from_mult on a sound part up to to_mult on a worn-out one, its wear on the part x wear_mult."""
         r = self.rules
         p = defender.part(part_name)
         # the damage roll: every instance of damage (a move, a press, a landing, an impact) lands a little harder or
@@ -549,6 +551,10 @@ class Engine:
         scale = float(r.get("damage", {}).get("damage_scale", 1.0))
         bmult, hmult = self.resistance_mults(cond_b, bracket)
         bmult *= self.vulnerability(p)
+        if grind:
+            worn_ = 1.0 - max(0.0, min(1.0, float(cond_b) / 100.0))
+            bmult *= float(grind.get("from_mult", 0.5)) + (float(grind.get("to_mult", 1.3))
+                                                           - float(grind.get("from_mult", 0.5))) * worn_
         capped = False
         if cap:
             if cap.get("mult") is not None and bmult > float(cap["mult"]):
@@ -572,6 +578,9 @@ class Engine:
             share = start_r / sound
             wear *= share ** float(rel.get("wear_exp", 0.6))
             cap_res = cap_res * share if cap_res > 0 else 0.0
+        if grind:
+            wear *= float(grind.get("wear_mult", 2.0))
+            cap_res *= float(grind.get("wear_mult", 2.0))
         if cap_res > 0 and wear > cap_res:
             wear = cap_res   # resistance.max_loss_per_hit: no single blow, however devastating, wears a part past this
         p.resistance = max(r["resistance"]["minimum"], res_b - wear)
@@ -1067,7 +1076,8 @@ class Engine:
                 # (what is_ranged reads, so the record of a blow says ranged or close the way the move does: Close
                 # Combat is a spread delivered close, Flame Wheel a charge)
                 **({"ranged": move["ranged"]} if "ranged" in move else {}),
-                **({"charge": True} if move.get("charge") else {})}
+                **({"charge": True} if move.get("charge") else {}),
+                **({"weapon": move["weapon"], "conjured_now": bool(move.get("conjured_now"))} if move.get("weapon") else {})}
 
     def _use_move(self, fighter, move):
         """Limited moves (fighters.json 'uses') run out. Raises if none are left; otherwise uses one."""
@@ -1111,9 +1121,37 @@ class Engine:
             return False, f"{d.name} is in a hold"
         return True, ""
 
-    def improvised_move(self, name, mtype, severity, target="targeted", about=""):
-        """A move the director invents on the spot. Power comes from how hard it lands."""
+    def wieldable_types(self, who):
+        """The types she can improvise with: Normal, Fighting, her own types, and the types of the moves she knows."""
+        f = self.get(who)
+        return list(dict.fromkeys(["Normal", "Fighting"] + list(f.types or []) + [str(m.get("type")) for m in f.moves
+                                                                                 if m.get("type")]))
+
+    def can_wield_type(self, who, mtype):
+        return str(mtype or "Normal").lower() in {t.lower() for t in self.wieldable_types(who)}
+
+    def conjure(self, who, weapon, mtype):
+        """moves.conjure: she makes a weapon of her own element (an ice blade frozen out of the water, a whip of
+        water) and holds it for conjure.beats beats (ARMED): her improvised blows with it land as its type, x
+        conjure.power_mult. Only from a type she can wield; a new one replaces the old."""
+        cfg = (self.rules.get("moves") or {}).get("conjure") or {}
+        if not cfg.get("enabled", True):
+            raise ValueError("conjured weapons are off (rules.json moves.conjure)")
+        f = self.get_active(who)
+        if not self.can_wield_type(f.name, mtype) or str(mtype).lower() in ("normal", "fighting"):
+            raise ValueError(f"{f.name} can only conjure a weapon from an element she has "
+                             f"({', '.join(t for t in self.wieldable_types(f.name) if t not in ('Normal', 'Fighting'))})")
+        f.learned["weapon"] = {"name": " ".join(str(weapon).split()[:5]), "type": str(mtype).title()}
+        self.set_status(f, "armed", int(cfg.get("beats", 3)))
+        return f.learned["weapon"]
+
+    def improvised_move(self, name, mtype, severity, target="targeted", about="", who=None):
+        """A move the director invents on the spot. Power comes from how hard it lands. A fighter who is ARMED with a
+        conjured weapon hits with it: its type, and moves.conjure.power_mult harder."""
         table = self.rules.get("moves", {}).get("improvised_power", {"light": 15, "solid": 25, "heavy": 35, "brutal": 45})
+        wpn = (self.get(who).learned.get("weapon") if who and self.has(self.get(who), "armed") else None)
+        if wpn:
+            mtype = wpn.get("type") or mtype
         sev = str(severity or "solid").lower()
         sev = {"firm": "solid", "crushing": "heavy"}.get(sev, sev)
         chart = self.rules.get("moves", {}).get("type_chart", {})
@@ -1126,9 +1164,15 @@ class Engine:
                              r"torrent|volley|flamethrower|bubbles?)\b", words)) and not re.search(
             r"\b(?:punch|kick|bite|claw|slash|jab|knee|elbow|headbutt|tackle|slam|stomp|rake|chop|swipe|grab|"
             r"shove|ram|body)\b", words)
-        return {"name": name, "type": mtype, "power": table.get(sev, table.get("solid", 25)),
-                "target": target if target in ("targeted", "spread") else "targeted",
-                "about": about or "an improvised attack", "improvised": True, "ranged": far}
+        power = table.get(sev, table.get("solid", 25))
+        if wpn:
+            power = round(power * float(((self.rules.get("moves") or {}).get("conjure") or {}).get("power_mult", 1.2)), 2)
+        out = {"name": name, "type": mtype, "power": power,
+               "target": target if target in ("targeted", "spread") else "targeted",
+               "about": about or "an improvised attack", "improvised": True, "ranged": far}
+        if wpn:
+            out["weapon"] = wpn["name"]
+        return out
 
     def move_attack(self, attacker, *args, **kw):
         """A named move (or an improvised `move` dict): see _move_attack. A confused attacker who passes her confusion
@@ -4416,6 +4460,51 @@ class Engine:
                          ("back_up|back_low", "main", {"biped": "her knees, driven into her back"})],
             "free": {"biped": "her tails"},
             "strain": "her shoulders hauled back to their limit, her spine bent up off the ground"},
+        "sleeper hold": {
+            "facing": ("face-down", "on her side"), "by": ("biped",),
+            "look": {"biped": "behind her, one arm locked round her neck and the other pressing her head forward into "
+                              "the crook of it, her legs hooked round her middle"},
+            "contacts": [("neck", "main", {"biped": "her arm, locked round it from behind and squeezing"}),
+                         ("chest|belly", "second", {"biped": "her legs, hooked round her middle"})],
+            "free": {"biped": "her tails"},
+            "strain": "the blood to her head squeezed off from both sides, the dark coming in at the edges"},
+        "head scissors": {
+            "facing": ("face-up", "on her side"), "by": ("biped", "quadruped"),
+            "look": {"biped": "sitting with her legs scissored round the neck and squeezing, both paws hauling the head "
+                              "back against them",
+                     "quadruped": "lying with her hind legs scissored round the neck and squeezing"},
+            "contacts": [("neck", "main", {"biped": "her legs, scissored round it and squeezing",
+                                           "quadruped": "her hind legs, scissored round it"}),
+                         ("head:head", "second", {"biped": "both paws, hauling it back", "quadruped": "her forepaws"})],
+            "free": {"biped": "her tails", "quadruped": "her tail and her jaws"},
+            "strain": "the neck crushed between the thighs, the head hauled back against them"},
+        "triangle choke": {
+            "facing": ("face-up",), "by": ("biped",), "needs": "arm",
+            "look": {"biped": "her legs locked in a triangle round the neck and one trapped arm, pulling the head down "
+                              "into the squeeze"},
+            "contacts": [("neck", "main", {"biped": "her legs, locked in a triangle round it"}),
+                         ("arm", "second", {"biped": "the same legs, trapping it against her own neck"})],
+            "free": {"biped": "her paws and her tails"},
+            "strain": "her own trapped arm pressed into her neck, the squeeze closing from both sides"},
+        "knee bar": {
+            "facing": ("face-down", "on her side"), "by": ("biped",), "needs": "leg",
+            "look": {"biped": "the hurt leg trapped between her thighs and hugged to her chest as she arches back, "
+                              "bending the knee the wrong way"},
+            "contacts": [("leg_joint", "main", {"biped": "her hips, arching into it and bending it backward"}),
+                         ("foot", "second", {"biped": "both arms, hugging it to her chest"})],
+            "free": {"biped": "her tails"},
+            "strain": "the knee bent backward against her hips, the leg hyperextended"},
+        "coil crush": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("biped", "quadruped", "serpent"), "has": "tails",
+            "look": {"biped": "her tails wound twice round her ribs and squeezing, both paws locking them tight",
+                     "quadruped": "her tails wound round her ribs and squeezing",
+                     "serpent": "coils wound round her ribs and tightening"},
+            "contacts": [("chest", "main", {"biped": "her tails, wound round it and squeezing",
+                                            "quadruped": "her tails, wound round it", "serpent": "her coils, wound round it"}),
+                         ("belly", "second", {"biped": "the lower turn of the tails", "quadruped": "the lower turn of her tails",
+                                              "serpent": "the lower coil"})],
+            "free": {"biped": "her paws and her mouth", "quadruped": "her jaws", "serpent": "her jaws"},
+            "strain": "the ribs squeezed in, each breath shorter than the last"},
         "limb wrench": {
             "facing": ("face-down", "face-up", "on her side"), "by": ("quadruped",), "needs": "arm",
             "look": {"quadruped": "one forelimb clamped in her jaws and twisted and shaken, a forepaw pinning her "
@@ -4513,6 +4602,78 @@ class Engine:
                              "used": self.sub_uses(name)}
         return out
 
+    # what a grip's words need her body to have ("her twin tails" needs tails): (words, part names that show she has it)
+    GRIP_NEEDS = [(r"\b(?:paws?|hands?|arms?|forearms?|fists?|elbows?|fingers?)\b", r"arm|paw|hand|foreleg"),
+                  (r"\btails?\b", r"tail"), (r"\bwings?\b", r"wing"), (r"\btalons?\b", r"talon"),
+                  (r"\bhorns?\b", r"horn"), (r"\bfins?\b", r"fin"),
+                  (r"\b(?:legs?|knees?|feet|foot|heels?|thighs?|shins?)\b", r"thigh|leg|knee|foot|hock|talon"),
+                  (r"\bcoils?\b", r"^(?!.*(?:thigh|leg|knee|foot|hock|talon)).*$")]
+
+    def grip_problem(self, f, with_):
+        """Why her body can't grip with this ('' when it can): the grip's words ask for a part she has none of."""
+        names = " | ".join(n.lower() for n in f.parts)
+        w = str(with_ or "").lower()
+        if re.search(r"\b(?:teeth|fangs|jaws?)\b", w) and "beak" in names:
+            return f"{f.name} has a beak, not teeth or jaws"
+        for words, has in self.GRIP_NEEDS:
+            m = re.search(words, w)
+            if m and not re.search(has, names):
+                return f"{f.name} has no {m.group(0)} to grip with"
+        return ""
+
+    def start_custom_submission(self, attacker, defender, name, grips, flavor="", enforce=False):
+        """A submission hold of the director's own invention (not in SUBMISSIONS): "grips" = [(her part, what grips
+        it)], 1 to 3 of them; the first wrenches hardest. It is checked against both bodies, so nothing impossible goes
+        on: every part must be hers, and every grip must use a part the holder really has (no paws on a bird, no
+        tails on a fighter without one). Otherwise it is a submission like any other: it wrenches every beat, harder
+        each beat, counts toward the holds used, and can make her tap."""
+        a, d = self.get_active(attacker), self.get_active(defender)
+        cfg = self.rules.get("submissions") or {}
+        key = " ".join(str(name or "").lower().split())[:40] or "improvised hold"
+        grips = [(p, w) for p, w in grips if p in d.parts][:3]
+        if not grips:
+            raise ValueError(f"an invented submission needs the parts of {d.name} it grips (in 'hits'), from her body: "
+                             f"{', '.join(d.parts)}")
+        for _p, w in grips:
+            why = self.grip_problem(a, w)
+            if why:
+                raise ValueError(f"the {key} can't go on as described: {why}. Grip with what she has: "
+                                 f"{', '.join(a.parts)}")
+        if enforce:
+            if not cfg.get("enabled", True):
+                raise ValueError("submission holds are off (rules.json submissions.enabled)")
+            if d.name not in self.downed:
+                raise ValueError(f"{d.name} is on her feet: a submission hold needs her on the ground first (on her "
+                                 f"feet, a hold_start is the way to grab and wrench)")
+            if self.pinned_by(d.name) or a.name in self.downed or self.pinned_by(a.name) or self.pinning(a.name):
+                raise ValueError(f"{a.name} isn't free to lock a hold on {d.name} right now")
+            if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
+                raise ValueError(f"no submission opening on {d.name} this beat. Choose another action")
+        main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
+        ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
+        contacts = [(p, main if i == 0 else second, ramp if i == 0 else ramp2, short_phrase(w, 9) if w else "")
+                    for i, (p, w) in enumerate(grips)]
+        res = self.start_holds(a.name, d.name, contacts, flavor or key, pin=False, enforce=enforce)
+        for hid in res.get("hold_ids") or []:
+            if hid in self.holds:
+                self.holds[hid].sub = key
+        self.__dict__.setdefault("sub_window", {})[d.name] = False
+        self._count("submission", d.name)
+        self._count(f"subname:{key}", a.name)
+        res["submission"] = {"name": key, "look": flavor or key, "free": "", "invented": True,
+                             "strain": f"the {', '.join(p.lower() for p, _ in grips)} wrenched where it is held",
+                             "max_beats": int(cfg.get("max_beats", 3))}
+        return res
+
+    def subs_used(self):
+        """{hold name: times put on} for every submission used this fight, the invented ones too."""
+        out = {}
+        for k, v in self.tally.items():
+            if k.startswith("subname:"):
+                n = k.split(":", 1)[1].rsplit("|", 1)[0]
+                out[n] = out.get(n, 0) + int(v)
+        return out
+
     def sub_uses(self, name):
         """How many times this submission hold has been put on anyone this fight."""
         return sum(int(v) for k, v in self.tally.items() if k.startswith(f"subname:{name}|"))
@@ -4596,12 +4757,6 @@ class Engine:
             lie = self.facing_of(d.name) if d.name in self.downed else "on her feet"
             raise ValueError(f"{a.name} can't put {d.name} in a {key} as she is ({lie}). She could: "
                              f"{', '.join(shapes) or 'none right now'}")
-        cap_ = int(cfg.get("repeat_cap", 2) or 0)
-        if enforce and cap_ and self.sub_uses(key) >= cap_:
-            others = [n for n in shapes if self.sub_uses(n) < cap_]
-            if others:
-                raise ValueError(f"the {key} has been used {self.sub_uses(key)} times this fight already: it is not "
-                                 f"new any more. Use another hold (she could: {', '.join(others)})")
         s = shapes[key]
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
@@ -5499,7 +5654,7 @@ class Engine:
             return f"the blow {who[:-2] if who.endswith(chr(39) + 's') else who.rstrip(chr(39))} struck breaking free"
         if low == "struggle":
             return f"{who} struggling"
-        if low in self.SUBMISSIONS:
+        if low in self.SUBMISSIONS or self.sub_uses(low):
             return f"{who} {low}"
         # her own move first (the fighter's file), then the move list only under that very name: a near miss in the
         # list is another move ('Slash' is not 'Flash, a blinding flash of light')
@@ -6848,7 +7003,9 @@ class Engine:
                      if as_pin else h.power) * first
             self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or ('coils' if h.coil else 'hold'))}")
             cap = self.pin_cap() if in_pin else self.sub_cap() if h.sub else None
-            hit = self._apply_damage(d, h.part, round(power, 2), cap=cap)
+            gcfg = (self.rules.get("submissions") or {}).get("grind") or {}
+            grind = gcfg if (h.sub or h.locked) and gcfg.get("enabled", True) else None
+            hit = self._apply_damage(d, h.part, round(power, 2), cap=cap, grind=grind)
             h.turns_active += 1
             if h.coil and not d.eliminated:
                 # coils tighten every beat (holds.coil: tighten, max_power). Round her body or throat they squeeze her
