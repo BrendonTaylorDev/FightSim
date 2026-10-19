@@ -11,7 +11,7 @@ def A(att, action, **k):
 exec(open(os.path.join(OUT, "plan.py")).read())
 NAR = open(sys.argv[1]).read()
 secs = {int(m.group(1)): (m.group(2), m.group(3).strip()) for m in
-        re.finditer(r"^## Beat (\d+) — ([^\n]*)\n(.*?)(?=^## Beat |\n---\n\*Winner)", NAR, re.S | re.M)}
+        re.finditer(r"^## Beat (\d+) — ([^\n]*)\n(.*?)(?=^## Beat |^---\s*$|\Z)", NAR, re.S | re.M)}
 S = json.load(open(os.path.join(OUT, "stats.json")))
 MAX = {G: 2300.0, W: 1550.0}
 TIERS = [(300, "devastated"), (150, "excruciating"), (90, "very painful"), (60, "hurting"), (30, "sore"), (0, "minor")]

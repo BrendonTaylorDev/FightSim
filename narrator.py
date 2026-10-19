@@ -3133,7 +3133,7 @@ class Narrator:
         cfg = (self.rules.get("narration") or {}).get("style_read") or {}
         return cfg if cfg.get("enabled", True) else None
 
-    def _record_style(self, actions):
+    def _record_style(self, actions, events=()):
         """Once a beat: what each attacker did (manhandled her: grabbed, threw, slammed, dragged, charged her into
         something; or fought close; or from range), and which pieces of scenery each fighter was put into."""
         now = int(getattr(self, "beat_now", 0) or 0)
@@ -3144,8 +3144,25 @@ class Narrator:
         hits = self.__dict__.setdefault("_scenery_hits", {})
         upright = [str(h.get("name") or "").lower() for h in ((getattr(self, "scene_cfg", None) or {}).get("hazards") or [])
                    if h.get("upright") and h.get("name")]
+        # what each has seen the other do, for WHAT SHE HAS LEARNED OF HER
+        seen = self.__dict__.setdefault("_read_log", {})
+        for e in events or ():
+            if e.get("type") == "get_up" and e.get("stands") and e.get("fighter"):
+                seen.setdefault(e["fighter"], {}).setdefault("rises", 0)
+                seen[e["fighter"]]["rises"] += 1
         for a in actions or []:
             who, m = a.get("attacker"), a.get("move") or {}
+            if who and a.get("dodged") and a.get("defender"):
+                d_ = seen.setdefault(a["defender"], {})
+                d_["dodges"] = d_.get("dodges", 0) + 1
+            if who and m.get("name") and not m.get("improvised") and (a.get("hits") or a.get("dodged")):
+                mv_ = seen.setdefault(who, {}).setdefault("moves", {})
+                mv_[m["name"]] = mv_.get(m["name"], 0) + 1
+            if who and a.get("hits") and a.get("defender") and not a.get("environment"):
+                aim_ = seen.setdefault(who, {}).setdefault("aims", {})
+                pt = str(a["hits"][0].get("part") or "").lower()
+                if pt:
+                    aim_[pt] = aim_.get(pt, 0) + 1
             if not who or (not a.get("hits") and a.get("type") not in ("grapple_start", "hold_start")):
                 continue
             charged = a.get("charge") and not a["charge"].get("skipped")
@@ -3159,15 +3176,38 @@ class Narrator:
                 if name and a.get("defender"):
                     hits.setdefault((a["defender"], name), []).append((now, who, srf))
 
-    def _style_lines(self, actions):
+    def _style_lines(self, actions, events=()):
         """narration.style_read: (1) from the fourth beat, how each fighter has ACTUALLY been fighting this fight (up
         close and physical, or from range), so the prose keeps her style even where her description says otherwise;
         (2) THE SAME PLACE AGAIN: a fighter put into a piece of scenery she was put into before remembers it."""
         cfg = self._style_cfg()
         if not cfg:
             return []
-        self._record_style(actions)
+        self._record_style(actions, events)
         now, out = int(getattr(self, "beat_now", 0) or 0), []
+        every = max(1, int(cfg.get("every", 3)))
+        if cfg.get("opponent_read", True) and now >= int(cfg.get("read_from", 5)) and now % every == 1 % every:
+            # WHAT SHE HAS LEARNED OF HER: the other's real habits so far, for her thoughts about her to reason from
+            seen = self.__dict__.get("_read_log") or {}
+            live = [w for w in (self.strengths or {}) if w not in (getattr(self, "out_names", None) or ())]
+            for me in live:
+                for o in [w for w in live if w != me][:1]:
+                    so, facts = seen.get(o) or {}, []
+                    aim = max((so.get("aims") or {}).items(), key=lambda kv: kv[1], default=None)
+                    if aim and aim[1] >= 2:
+                        facts.append(f"{o} keeps coming back to her {aim[0]} ({aim[1]} times now)")
+                    mv = max((so.get("moves") or {}).items(), key=lambda kv: kv[1], default=None)
+                    if mv and mv[1] >= 3:
+                        facts.append(f"{o} reaches for {mv[0]} again and again ({mv[1]} times)")
+                    if (so.get("rises") or 0) >= 2:
+                        facts.append(f"{o} has been put down and got back up {so['rises']} times")
+                    if (so.get("dodges") or 0) >= 2:
+                        facts.append(f"{o} has slipped {so['dodges']} of her attacks")
+                    if facts:
+                        out.append(f"WHAT {me.upper()} HAS LEARNED OF {o.upper()} (real things from this fight: let them "
+                                   f"into her thoughts about the other, and let her view of her change as the fight goes "
+                                   f"on, into wariness, respect, irritation, pity or wanting it over, whichever fits "
+                                   f"her): " + "; ".join(facts) + ".")
         if now >= int(cfg.get("from_beat", 4)) and now % max(1, int(cfg.get("every", 3))) == 0:
             reads = []
             for who, kinds in (self.__dict__.get("_style_log") or {}).items():
@@ -3763,7 +3803,7 @@ class Narrator:
         for e in pins:  # the struggle outcome goes first so it can't get lost under the pressure lines
             lines += self._pin_lines(e)
         lines += self._still_hurts_lines()
-        lines += self._style_lines(actions)
+        lines += self._style_lines(actions, bundle.get("also_this_beat") or [])
         pairs = {}
         eng = getattr(self, "engine", None)
         self._sub_of = {}
@@ -12978,6 +13018,13 @@ class Narrator:
             # (narration.rich: more room, and what each fighter has learned this fight for her thoughts)
             words = int(words * float(rich_.get("length_mult", 1.6)))
             context += self._inner_note()
+            # (narration.rich.quiet_mult: a beat where nobody is hurt, a breather or two attacks cancelling in the
+            # air, is a pause in the fight; told at full length it gets padded, told short it lands)
+            hurt_ = any(a.get("hits") or a.get("counter_hits") for a in acts) or pin_events or any(
+                e.get("type") in ("hold_ongoing", "hold_start", "get_up", "collapse", "eliminated")
+                for e in bundle.get("also_this_beat") or [])
+            if not hurt_:
+                words = int(words * float(rich_.get("quiet_mult", 0.55)))
         self._last_context, self._last_words = context, words  # for topping up a beat that comes out short
         actor, receivers = self.actors(bundle)
         plan = self._segments(actor, receivers, words, n)

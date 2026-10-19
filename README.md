@@ -654,6 +654,30 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 209
+
+The Glacia vs Swift fight, narrated a second time from only what happened in each beat, without the narrator's
+notes: `sim/test_fights/glacia_vs_swift/Glacia_vs_Swift_unguided.html`, from `narration_unguided.md`. It has the same
+view as the guided export. Set against the guided version, two things stood out, and both are now in the program and
+switchable:
+
+- **What she has learned of her** (`narration.style_read.opponent_read`, from `read_from`, every `every` beats). In
+  the unguided telling, the thoughts are mostly each fighter reading the other: she laughs when she's hurt, she keeps
+  going for my wing, she keeps getting up, and the reader's view changes as the fight goes. The narrator now gets
+  each fighter's read of the other from what has really happened:
+  - the part she keeps coming back to;
+  - the move she reaches for again and again;
+  - how many times she has been put down and got back up;
+  - how many attacks she has slipped.
+
+  It also gets permission to let her view of the other shift: wariness, respect, irritation, pity or wanting it over.
+- **Quiet beats told short** (`narration.rich.quiet_mult`, 0.55). A beat where nobody is hurt (a breather, two
+  attacks cancelling out) used to be asked for the full ~750 words and came out padded. It is now about 410, which
+  usually means one part.
+
+Also fixed: `replay.py` (the export of a hand-narrated fight) dropped the last beat's narration. The Glacia vs Swift
+export sent with build 208 had no story for beat 26; both exports are now complete.
+
 ## Build 208
 
 From test fight 6: Glacia (Articuno) against Swift (Swellow) on the mountain shelf, knockouts only, no pins. It is in
