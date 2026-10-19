@@ -654,6 +654,24 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 220
+
+Three things from Claude's own test-fight narration, put into the engine and the narrator:
+
+- **What she tries to get out of a hold** (`narration.hold_tries`). Each beat she's held, the narrator is told one real way out of that kind of hold:
+  - a choke: tuck the chin, haul the arm down for a breath;
+  - a leg lock: turn with the twist, drop her weight, peel back a finger.
+
+  Arm locks, tails, body holds and the head have their own. The tries she already made in this hold are listed, so she never tries the same thing twice. They go from thought-out, to wild once she's hurting or a few beats in, to spent near the end. The engine's "she fights the grip" note uses the same try.
+- **The hold under the blow** (`narration.hold_tries.under_blow`). A blow that lands on her while she's held brings the reader back to the grip afterwards, still on under everything.
+- **Game plans** (`director.game_plan`, `narration.plan_notes`):
+  - Each fighter comes in meaning to take one part of the other apart: legs, neck, head, core, arms or tail. In a submission match it's mostly legs, arms or neck, finished with a hold.
+  - A fighter with a `/focus` has her focus as her plan.
+  - The plan is rolled from a copy of the dice, so it never changes the fight's own rolls.
+  - The director is reminded of it on about a third of the beats.
+  - The first beat shows each plan as a look and a thought.
+  - On the 2nd, 4th, 7th and 11th time she lands on that part, the narrator is told it's her plan working. From the 3rd, the other knows it too.
+
 ## Build 219
 
 - **Breaking out of a submission goes by her own health, like a pin.** Before, a fresh fighter had only about a 10% chance a beat to break a submission, and it barely changed with her health. Now a beat's chance comes from her health: about 33% at full, 25% at three quarters, 17% at half, 10% at a quarter. Below that it keeps falling, but never under 3%: very unlikely, never impossible. Over the three tries before the hold would turn into a pin, she gets out about 70% of the time from full health, 55% from three quarters, 38% from half, 12% from a quarter. It is a little higher when the holder is hurt or the grip is light, and still grows with every beat the hold stays on. In a submission match, any hold that hurts (a choke, a plain grip) is broken the same way, since any of them can make her tap (`match_holds`). Settings: `submissions.escape` (`points`, `grow`, `holder_hurt`, `grip_weight`, `floor`); `/set submissions.escape.enabled false` brings back the old chance.

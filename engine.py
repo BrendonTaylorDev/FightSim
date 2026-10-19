@@ -7470,7 +7470,10 @@ class Engine:
         plans = self.__dict__.setdefault("game_plans", {})
         plan = plans.get(f.name)
         foes = [o for o in self.active() if o.team != f.team]
-        if plan and any(o.name == plan["against"] for o in foes):
+        focus = "/".join(str(z) for z in self.focus_for(f.name) if str(z).lower() not in self.INJURED_WORDS)
+        if plan and any(o.name == plan["against"] for o in foes) and (not focus or plan["zone"] == focus):
+            # (the finish follows the match as it is now: a /set during the fight changes it)
+            plan["finish"] = "hold" if self.submission_match() else "wear"
             return plan
         if not foes:
             return None     # (the one it was against is gone: she makes a new one against whoever is left)
