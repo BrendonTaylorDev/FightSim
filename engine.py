@@ -526,12 +526,13 @@ class Engine:
         return names
 
     # ---------- core math ----------
-    def _apply_damage(self, defender, part_name, power, cap=None, grind=None):
+    def _apply_damage(self, defender, part_name, power, cap=None, grind=None, health_scale=1.0):
         """One instance of damage, using the bracket rules. Returns every number involved. cap: {"mult", "health_mult"}
         upper limits on the bracket's multipliers (a pin's steady pressure doesn't tear into a worn part the way a
         blow does: pin.pressure_cap). grind (submissions.grind): a wrench that hurts little while the part is still
         sound and wears it down fast, so it bites harder and harder the longer the part is worked: its damage x
-        from_mult on a sound part up to to_mult on a worn-out one, its wear on the part x wear_mult."""
+        from_mult on a sound part up to to_mult on a worn-out one, its wear on the part x wear_mult. health_scale: the
+        health lost x this, the part's damage and wear untouched (a long hold's build climbs slower in health)."""
         r = self.rules
         p = defender.part(part_name)
         # the damage roll: every instance of damage (a move, a press, a landing, an impact) lands a little harder or
@@ -587,7 +588,7 @@ class Engine:
         # health lost: damage x loss_per_damage_point x the bracket's health_mult (a soft, worn-down part costs more)
         # x how much the part matters to the whole body (health.part_weights: a throat far more than an ear)
         vital = self.part_weight(p.name)
-        raw_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital
+        raw_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital * health_scale
         health_loss = self._soften_loss(defender, raw_loss, power)
         defender.health = self._floor(hp_b - health_loss)
         # the health the soft cap kept from her doesn't vanish: a share of it wears the part down further
@@ -7000,16 +7001,21 @@ class Engine:
             # loosely (submissions.damage_cap): a wrench hurts more than being held down, but it doesn't run away
             as_pin = in_pin and not h.locked
             bcfg = self.rules.get("holds", {}).get("build") or {}
+            health_scale = 1.0
             if not in_pin and not fresh and h.change_per_turn >= 0 and bcfg.get("enabled", True):
-                # a hold kept on without breaking bites deeper each beat (holds.build), whatever its own ramp
-                ramp = min(float(bcfg.get("max", 1.5)), 1.0 + float(bcfg.get("per_beat", 0.08)) * h.turns_active)
+                # a hold kept on without breaking bites deeper each beat (holds.build), whatever its own ramp: into the
+                # part at per_beat, into her overall health more slowly (health_per_beat; the pain at pain_per_beat)
+                ramp = min(float(bcfg.get("max", 1.25)), 1.0 + float(bcfg.get("per_beat", 0.04)) * h.turns_active)
+                h_ramp = min(float(bcfg.get("health_max", 1.1)),
+                             1.0 + float(bcfg.get("health_per_beat", 0.02)) * h.turns_active)
+                health_scale = h_ramp / ramp
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp
                      if as_pin else h.power * ramp) * first
             self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or ('coils' if h.coil else 'hold'))}")
             cap = self.pin_cap() if in_pin else self.sub_cap() if h.sub else None
             gcfg = (self.rules.get("submissions") or {}).get("grind") or {}
             grind = gcfg if (h.sub or h.locked) and gcfg.get("enabled", True) else None
-            hit = self._apply_damage(d, h.part, round(power, 2), cap=cap, grind=grind)
+            hit = self._apply_damage(d, h.part, round(power, 2), cap=cap, grind=grind, health_scale=health_scale)
             h.turns_active += 1
             if h.coil and not d.eliminated:
                 # coils tighten every beat (holds.coil: tighten, max_power). Round her body or throat they squeeze her
@@ -8069,7 +8075,7 @@ class Engine:
             # and the grip itself: how hard it is pressing right now, which climbs the longer it stays on (its own
             # tightening and holds.build), on top of what the part already carries (tap.press of that pressure)
             bcfg = self.rules.get("holds", {}).get("build") or {}
-            presses = sorted((h.power * (min(float(bcfg.get("max", 1.5)), 1.0 + float(bcfg.get("per_beat", 0.08))
+            presses = sorted((h.power * (min(float(bcfg.get("pain_max", 1.5)), 1.0 + float(bcfg.get("pain_per_beat", 0.08))
                                              * max(0, h.turns_active - 1)) if bcfg.get("enabled", True) else 1.0)
                               for h in hs), reverse=True)
             pain += float(tcfg.get("press", 1.5)) * (presses[0] + float(tcfg.get("second_part", 0.4)) * sum(presses[1:]))

@@ -654,6 +654,14 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 216
+
+- **A long hold builds at three rates.** `holds.build` (a hold kept on bites deeper every beat it lasts) used one rate for everything: 0.08 a beat, up to x1.5. In the seed-11 submission match that put 232 damage into the last beat. It now has three:
+  - **Pain** (what she must resist to keep from tapping): still 0.08 a beat, up to x1.5 (`pain_per_beat`, `pain_max`). The pressure to tap climbs as before.
+  - **The gripped part** (its damage and wear): 0.04 a beat, up to x1.25 (`per_beat`, `max`). The limb still gets worse the longer it is worked.
+  - **Her overall health**: 0.02 a beat, up to x1.1 (`health_per_beat`, `health_max`). A long hold wrecks the limb and makes her want to tap long before it empties her.
+- Put the old behaviour back with `/set holds.build.per_beat 0.08`, `/set holds.build.max 1.5`, `/set holds.build.health_per_beat 0.08` and `/set holds.build.health_max 1.5`.
+
 ## Build 215
 
 Holds you can picture. Switch it all off with `narration.hold_position.enabled false`.
