@@ -654,6 +654,21 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 200
+The problems left open after build 199:
+- **A pin that starts after this beat's attack isn't told before it.** The parts before the blow lands are told that
+  the pinner is not on her yet (beat 22 had Nerine "settling onto Ripples' chest" before the Water Pulse).
+- **A bite is never told as a claw stroke.** The director's flavor for a bite move ("ice-fang swipe") has its
+  swipe/slash/claws turned into a bite and fangs.
+- **The "stroke from hip to shoulder" story block** is only offered for a blow to the chest, belly or back (it was
+  offered for an ear slash, and the narrator turned it round onto the attacker).
+- **No blood where nothing has cut.** "Matted with blood and dirt" on a fighter, or a named part, that only blunt
+  blows, water and grips have hurt loses the blood (a bite or a claw anywhere on her lets it stand).
+- **No salt by a lake.** "The salty tang of the lake" and "brackish" lose the salt, unless the place is the sea.
+- **A lone present-tense sentence is mended.** The copy-editing call only runs when a part has two or more of them;
+  one on its own ("Her heartbeat thuds in her ears") now has its common verbs put into the past without a call.
+- **A pain change copied from the notes is cut** ("a brutal squeeze, hurting → very painful").
+
 ## Build 199
 Fixes from the 29-beat Ripples vs Nerine fight:
 - **A grip torn off by a hit is no longer told tightening first.** The notes had said both "the hold tightens" and

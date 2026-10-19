@@ -2117,7 +2117,8 @@ PRESENT_POSS = re.compile(r"\b(?:[A-Z][a-z]+(?:'s|’s|'|’)|[Hh]er|[Tt]he Abso
                           r"(?:is|are|has|presses|comes|digs|rests|grips|clamps|works|twists|trembles|stutters|whirls|"
                           r"flares|heaves|sinks|burns|throbs|aches|pulses|holds|bites|drives|catches|shakes|tightens|"
                           r"pounds|races|screams|stays|seeps|clings|drips|writhes|lolls|sprawls|laps|picks up|rises|"
-                          r"hangs|seems|spreads|drifts|slides|shifts|fades|watches|waits|blurs|"
+                          r"hangs|seems|spreads|drifts|slides|shifts|fades|watches|waits|blurs|thuds|stops|tilts|"
+                          r"favors|favours|breathes|swims|beats down|"
                           r"dig|press|tremble|stutter|whirl|flare|heave)\b")
 
 # a sentence about how a part hurts (for "the same hurt told again and again")
@@ -5081,6 +5082,40 @@ class Narrator:
                     out.append((sent, w))
         return out
 
+    BLOOD_WITH = [(re.compile(r"\b(with|in) (?:sweat and |dirt and |water and )?blood and (\w+)", re.I), r"\1 \2"),
+                  (re.compile(r"\b(with|in) (\w+) and blood\b", re.I), r"\1 \2"),
+                  (re.compile(r"\b(?:and |, )?(?:dark|matted|stained|streaked|slick|wet|sticky|crusted) with blood\b", re.I), ""),
+                  (re.compile(r"\bblood-(matted|soaked|slick|wet|streaked)\b", re.I), r"\1")]
+
+    def _blunt_blood(self, text):
+        """Blood where nothing has cut: a fighter (or the part named) that only blunt blows, water and grips have
+        hurt has no blood to show ("the fur matted with blood and dirt" after a tail drive -> "matted with dirt").
+        A bite or a claw anywhere on her lets it stand. (The engine's wound kinds: play.py sets wound_kinds.)"""
+        kinds = getattr(self, "wound_kinds", None)
+        if not kinds or "blood" not in text.lower():
+            return text
+        cut = {}
+        for key, ks in kinds.items():
+            who, _, part = key.partition("|")
+            if ks & {"claw", "bite"}:
+                cut.setdefault(who, set()).add(part.lower())
+        out = []
+        for para in text.split("\n"):
+            sents = []
+            for sent in re.split(r"(?<=[.!?…])\s+", para):
+                if "blood" in sent.lower():
+                    whos = [w for w in self.strengths if w in sent] or [w for w in self.strengths if w.lower() in para.lower()][:1]
+                    if len(whos) == 1:
+                        parts = cut.get(whos[0], set())
+                        named = [p for p in {k.partition("|")[2].lower() for k in kinds if k.startswith(whos[0] + "|")}
+                                 if p and p in sent.lower()]
+                        if not parts or (named and not any(p in parts for p in named)):
+                            for rx, rep in self.BLOOD_WITH:
+                                sent = rx.sub(rep, sent)
+                sents.append(sent)
+            out.append(" ".join(sents))
+        return "\n".join(out)
+
     def _arena_leaks(self, text):
         """Sentences with cave things (the sample passages are set in a sea cave) when the fight is somewhere else."""
         scene_low = (str(getattr(self, "_scene_text", "") or "") + " " + str(getattr(self, "scene_words", "") or "")).lower()
@@ -5143,6 +5178,11 @@ class Narrator:
                 if not bad:
                     keep.append(bit)
             att = att if len(keep) == len(bits) else ""
+        m_ = a.get("move") or {}
+        if att and re.search(r"\b(?:bite|fang|crunch|jaws)\b", str(m_.get("name") or "").lower()):
+            # a bite told as a claw stroke ("ice-fang swipe"): it is her teeth
+            att = re.sub(r"(?i)\b(?:swipe|slash|rake|claw strike|scratch)\b", "bite", att)
+            att = re.sub(r"(?i)\bclaws\b", "fangs", att)
         return " ".join(x for x in [att] + theirs if x)
 
     def _effect_note(self, a, m):
@@ -11343,7 +11383,7 @@ class Narrator:
         text = _balance_marks(text)  # cuts above can split a thought: re-pair its marks
         text = _italic_sounds(text)  # "she hissed, hss, and..." -> "*hss*": the sound shown (and coloured) as a sound
         text = _drop_hanging_leadins(text)
-        text = self._fit_limbs(self._drop_note_copies(self._drop_note_lists(self._last_scrub(text))))
+        text = self._fit_limbs(self._drop_note_copies(self._drop_note_lists(self._blunt_blood(self._last_scrub(text)))))
         text = _mend_orphans(text)
         # "slammed into the wall—grunt—and the muscles spasmed": a reaction word from the notes left as a stage direction
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
@@ -11481,6 +11521,13 @@ class Narrator:
         text = re.sub(r"(?i),?\s*(?:\()?her own (?:covering|fur|coat|skin|scales|feathers) there,? any swelling or mark(?:\))?", "", text)
         text = re.sub(r"(?i),?\s*watching (?:it|them) obey or not", "", text)
         text = re.sub(r"(?i)[,;]?\s*what she made of what she saw", "", text)
+        # a pain change copied from the notes ("a brutal squeeze, hurting → very painful."): the arrow is the notes'
+        text = re.sub(r"[ \t]*[,;:]?[ \t]*\(?\b[A-Za-z][\w ]{0,25}?[ \t]*(?:→|->)[ \t]*[\w ]{1,25}\)?(?=[.,;!?…])", "", text)
+        # salt by a lake ("the salty tang of the lake", "the brackish tang of the nearby lake"): fresh water has none
+        place = " ".join(str(v) for v in (getattr(self, "scene_cfg", None) or {}).values() if isinstance(v, str)).lower()
+        if place and not re.search(r"\b(?:sea|ocean|tide|tidal|salt|brine|reef|surf|wreck|beach of shingle)\b", place):
+            text = re.sub(r"(?i)\b(?:salty|salt|brackish|briny) (tang|taste|smell|scent|bite)\b", r"\1", text)
+            text = re.sub(r"(?i)\bthe salt of the (lake|water|lake water|pool|river|stream)\b", r"the \1", text)
         # three choices strung with "or" ("her shoulder or limb or body curled"): a note's menu, copied. The first stays
         text = re.sub(r"\b(her|a|the) ([a-z]+) or ([a-z]+) or ([a-z]+)\b", r"\1 \2", text)
         text = re.sub(r"\n{3,}", "\n\n", text)
@@ -12637,6 +12684,16 @@ class Narrator:
                 put(e.get("attacker"), f"{poss(e.get('attacker'))} FREE BLOW on {poss(e.get('defender'))} "
                                        f"{str(e.get('part', '')).lower()}, quick and told once, her grip staying as it was",
                     "pinner")
+        # a pin that starts after this beat's attack: the parts before the attack lands are told with nobody on her
+        pins_ = [a for a in acts if a.get("type") in ("pin_start", "pin_forced") and not a.get("continuing")
+                 and not a.get("joined")]
+        if pins_ and any(a.get("type") == "instant" and a.get("hits") for a in acts[:acts.index(pins_[0])]):
+            p_ = pins_[0]
+            for i in range(min(take_i, len(keys))):
+                out.setdefault(i, []).append(
+                    f"NOT YET IN THIS PART: the pin. {p_.get('attacker')} is NOT on {p_.get('defender')} and holds "
+                    f"nothing of her here; she pins her only AFTER the attack lands (a later part tells it). Tell "
+                    f"them as they stand before the blow.")
         for a in acts:
             att = a.get("attacker")
             if a.get("recoil"):
@@ -12700,7 +12757,7 @@ class Narrator:
             return text
         before = self._present_sents(text, prior)
         if len(before) < 2 and not any(self._is_block_copy(s) for s in before):
-            return text
+            return self._past_words(text, before)
         n = self.rules.get("narration", {})
         if self.progress:
             self.progress(f"putting {len(before)} present-tense sentences into the past tense")
@@ -12720,7 +12777,27 @@ class Narrator:
         out = (out or "").strip()
         if not out or abs(len(out.split()) - len(text.split())) > 0.15 * len(text.split()):
             return text          # it dropped or added something: keep what we had
-        return out if len(self._present_sents(out, prior)) < len(before) else text
+        out = out if len(self._present_sents(out, prior)) < len(before) else text
+        return self._past_words(out, self._present_sents(out, prior))
+
+    # the present-tense verbs that slip through most, and their past: for the odd sentence the copy editor isn't
+    # called for (one alone) or left as it was
+    PAST_OF = {"thuds": "thudded", "pulses": "pulsed", "favors": "favored", "favours": "favoured", "breathes": "breathed",
+               "stops": "stopped", "throbs": "throbbed", "aches": "ached", "tightens": "tightened", "presses": "pressed",
+               "grips": "gripped", "holds": "held", "feels": "felt", "knows": "knew", "sees": "saw", "takes": "took",
+               "makes": "made", "comes": "came", "goes": "went", "sits": "sat", "stands": "stood", "tries": "tried",
+               "shakes": "shook", "burns": "burned", "trembles": "trembled", "shifts": "shifted", "tilts": "tilted",
+               "pounds": "pounded", "rises": "rose", "hurts": "hurt", "drips": "dripped", "clings": "clung",
+               "spreads": "spread", "seems": "seemed", "watches": "watched", "waits": "waited", "digs": "dug",
+               "sinks": "sank", "heaves": "heaved", "twists": "twisted", "keeps": "kept", "lets": "let"}
+
+    def _past_words(self, text, sents):
+        """The flagged present-tense sentences, their common verbs put into the past one word at a time (no call)."""
+        rx = re.compile(r"\b(" + "|".join(self.PAST_OF) + r")\b")
+        for sent in sents or []:
+            if sent in text and not sent.lstrip().startswith(("*", "\"", "“")):
+                text = text.replace(sent, rx.sub(lambda m: self.PAST_OF[m.group(1)], sent), 1)
+        return text
 
     def _tell_missing_events(self, written, keys):
         """After the attacks: anything else that happened this beat and is still missing from the whole passage (the
