@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 204
+An audit of the code added in builds 198-203. Seven bugs, all in the new clean-ups and checks, each of which could
+spoil good prose or miss what it was meant to catch:
+- **The camera clean-up cut real movement.** "Pulling back, she struck again" lost "Pulling back". Only a real camera
+  move ("Pulling back from the fighters, the clearing...") is cut now.
+- **"Eight beats ago" was missed** at the start of a sentence (capitals), and "a few beats ago" would have become
+  "a few earlier".
+- **The blood clean-up could leave a broken sentence** ("The fur was matted with blood." became "The fur was.");
+  it now keeps "The fur was matted."
+- **The italics fix could strip real thoughts.** A thought about the other fighter ("*Ripples is favoring her left
+  arm; she can't hold that guard forever*") lost its italics. Only past-tense narration that opens with a name does.
+- **Aqua Jet counted as swimming on dry land.** A fighter using a Water move this beat may be carried by water on land.
+- **The wrong-limb check misread whose paws were whose.** "Ripples' paws scrabbled at the grip" (her own paws) was
+  treated as the holder's, and "Nerine's paws" was read as Ripples' paws, which hid a real mistake.
+- **The beat card listed landings and scenery as attacks** with no attacker ("?'s"). They are left to their own lines.
+
 ## Build 203
 - **A takedown is never left out.** When a pin starts on a fighter who was on her feet and neither the drafts nor
   the fixes told how she was taken down (beat 3 of the build-201 fight started with her already pinned), the program

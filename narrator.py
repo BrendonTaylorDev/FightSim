@@ -1886,7 +1886,9 @@ def _unitalic_narration(text, names):
 
     def fix(m):
         inner = m.group(2)
-        if who.search(inner) and re.search(r"\b(?:she|her)\b", inner) and not re.search(r"\b(?:I|I'm|me|my)\b", inner):
+        if (who.match(inner.lstrip()) and re.search(r"\b(?:she|her)\b", inner)
+                and re.search(r"\b(?:was|were|had|could|narrowed|watched|felt|saw|looked|moved)\b", inner)
+                and not re.search(r"\b(?:I|I'm|I'll|me|my|you)\b", inner)):
             return m.group(1) + inner
         return m.group(0)
     return rx.sub(fix, text)
@@ -5112,7 +5114,7 @@ class Narrator:
 
     BLOOD_WITH = [(re.compile(r"\b(with|in) (?:sweat and |dirt and |water and )?blood and (\w+)", re.I), r"\1 \2"),
                   (re.compile(r"\b(with|in) (\w+) and blood\b", re.I), r"\1 \2"),
-                  (re.compile(r"\b(?:and |, )?(?:dark|matted|stained|streaked|slick|wet|sticky|crusted) with blood\b", re.I), ""),
+                  (re.compile(r"\b(dark|matted|stained|streaked|slick|wet|sticky|crusted) with blood\b", re.I), r"\1"),
                   (re.compile(r"\bblood-(matted|soaked|slick|wet|streaked)\b", re.I), r"\1")]
 
     def _blunt_blood(self, text):
@@ -10446,6 +10448,8 @@ class Narrator:
         for a in acts or []:
             if not isinstance(a, dict):
                 continue
+            if a.get("environment") or not a.get("attacker"):
+                continue        # (a landing or the place itself: told in its own lines)
             mv = str((a.get("move") or {}).get("name") or a.get("type") or "blow")
             att, dfn = a.get("attacker") or "?", a.get("defender") or "?"
             if a.get("dodged"):
@@ -10502,7 +10506,8 @@ class Narrator:
             # "her left upper arm", or both sides at once: "her upper arms"
             p = part.lower()
             bare = re.sub(r"^(?:left|right) ", "", p)
-            return re.search(r"\b" + re.escape(p) + r"\b", low) or (bare != p and re.search(
+            # (a bare limb word, "paws", is the holder's limbs as often as hers: only longer names count in the plural)
+            return re.search(r"\b" + re.escape(p) + r"\b", low) or (bare != p and " " in bare and re.search(
                 r"\b" + re.escape(bare) + r"s\b", low))
         on = [g for g in grips if named(g[2])]
         parts_named = {re.sub(r"^(?:left|right) ", "", g[2].lower()) for g in on}
@@ -10517,6 +10522,8 @@ class Narrator:
         rx = self.GRIP_LIMBS[limbs[0]]
         if any(re.search(rx, str(g[3]).lower()) for g in on):
             return ""
+        if re.search(r"\b" + re.escape(on[0][1].lower()) + r"(?:'s|’s|'|’)\s+(?:\w+\s+){0,2}(?:" + rx + ")", low):
+            return ""       # "Ripples' paws scrabbled at the grip": her own limbs, not the holder's
         other = [g for g in grips if g[0] == on[0][0] and re.sub(r"^(?:left|right) ", "", g[2].lower()) not in parts_named
                  and re.search(rx, str(g[3]).lower())]
         if not other and len(on) > 1:
@@ -10544,11 +10551,14 @@ class Narrator:
                                                                      r"would|remember\w*|plan\w*|thought)\b", sent, re.I) \
                 or sent.lstrip().startswith("*"):
             return None
+        # a Water move this beat (Aqua Jet: wrapped in water, driven by it) may carry her on land
+        watery = {a.get("attacker") for a in (getattr(self, "_acts_now", None) or []) if isinstance(a, dict)
+                  and str((a.get("move") or {}).get("type") or "").lower() == "water"}
         whos = [w for w in wet if re.search(r"\b" + re.escape(w) + r"\b", sent)]
         if not whos:
             lead = getattr(self, "_lead_now", None)
             whos = [lead] if lead in wet else ([w for w in wet] if not any(wet.values()) else [])
-        dry = [w for w in whos if not wet.get(w)]
+        dry = [w for w in whos if not wet.get(w) and w not in watery]
         return dry[0] if len(dry) == len(whos) and dry else None
 
     def _same_species(self, sp):
@@ -11729,9 +11739,12 @@ class Narrator:
         text = re.sub(r"\b(Her|His) voice: (an?) ", r"She gave \2 ", text)
         # a camera move told as the story ("Pulling back from the fighters, the clearing opened out"): the place stays
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))(?:Pulling|Pull|Zooming|Cutting|Panning|Drawing) (?:back|out|away|wide)"
-                      r"(?: from [^,.]{1,40})?,\s*(\w)", lambda m: m.group(1) + m.group(2).upper(), text)
+                      r"(?: from (?:the fighters|the two(?: of them)?|them|the fight|the struggle)|(?=,\s*the "
+                      r"(?:clearing|arena|place|scene|world|cave|gorge|forest|beach)\b)),\s*(\w)",
+                      lambda m: m.group(1) + m.group(2).upper(), text)
         # "Eight beats ago": the game's word for time
-        text = re.sub(r"\b(?:\w+|\d+) beats? ago\b", "earlier", text)
+        text = re.sub(r"(?i)\b(?:a few|a couple of|several|a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) beats? ago\b",
+                      "earlier", text)
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))earlier\b", r"\1Earlier", text)
         # a run of bare sounds ("Pip. Yp. Eek."): the first one says it
         snd = r"\*?(?:[BCDFGHJKLMNPQRSTVWXZ][bcdfghjklmnpqrstvwxz-]{0,5}|Eek|Eep|Ip|Pip|Yip|Yp|Hah|Ah+|Oof|Ugh|Gah|Ack|Ki-?ki|Ki-ii|Ya+h)[.!-]\*?"
