@@ -654,6 +654,19 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 205
+Fixes from an audit of `/bench` and `/sets`:
+- **The newest saved beats are kept.** Saved beats were sorted by file name, so after a few fights (fight10 before
+  fight2, a new run's fight1 before last week's) the newest could be deleted the moment they were saved, and `/bench`
+  told old beats. They are sorted by when they were saved now.
+- **A saved beat that can't be read is skipped** (a broken file, or one from an older build) instead of closing the
+  game. A report or `/sets all` file that can't be written gives a message instead of a crash.
+- **Both tellings use the model you have now**, not the one active when the beat was saved, and an override of
+  `narration.phrase_memory.*` takes effect.
+- **After `/bench`, `/set narration.phrase_memory.*` works again** (the phrase memory had kept a detached copy of the
+  settings), and the game's dice are no longer left on the bench's fixed seed.
+- **Windows paths keep their backslashes** in commands (`/sets all C:\Users\night\out.md`).
+
 ## Build 204
 An audit of the code added in builds 198-203. Seven bugs, all in the new clean-ups and checks, each of which could
 spoil good prose or miss what it was meant to catch:

@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-19 build 204-guided (an audit of builds 198-203: seven cleanups that could damage good prose made safe; build 203: a takedown the story left out is put in; the wrong-limb check sees both sides and grips an escape ended; build 202: fixes from the first build-201 fight: no type matchup named, bracketed sounds set as sounds, open thoughts closed, narration never in italics, the attacker part stops at contact; build 201: the beat card, narration.card, off until you try it; no swimming on dry land; the wrong limb on a grip caught; grips said with their owner; build 200: the open problems: no pin told before the blow that starts it, bites never told as claw strokes, no blood where nothing cut, no salt in a lake, lone present-tense slips mended, pain-change arrows cut; build 199: fixes from the Ripples vs Nerine fight: no grip tightened after a hit tears it off, the loser stays out after a knockout, left-out passages before the escape, scenery that breaks is named, meta lines and copied note labels cut, interludes cleaned like beats; build 198: no kernel crash when a window closes mid-beat; build 197: /bench, the narration test bench; build 196: left-out passages in order, no get-up told twice, fragments cut, shorter interlude; build 195: fixes from a full Ripples vs Nerine fight: no copied note lines, familiar-smell wording cleaned, more sound tags; build 194: one telling a blow, rich length 1.5, hands in landings, no past on the first beat; build 193: /sets lists every setting, /intro off skips the opening passage; build 192: richer narration: longer beats, the body under each blow, inner life from the engine, one sense a part; a new Buizel, Nerine; build 191: fixes from a full fight: soaked said when it starts, no borrowed elemental moves, get-ups where she lies, sound tags and camera lines cleaned; build 190: a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
+VERSION = "2026-10-19 build 205-guided (/bench and /sets fixes: newest beats kept, unreadable cases skipped, live model and phrase memory, Windows paths; build 204: an audit of builds 198-203: seven cleanups that could damage good prose made safe; build 203: a takedown the story left out is put in; the wrong-limb check sees both sides and grips an escape ended; build 202: fixes from the first build-201 fight: no type matchup named, bracketed sounds set as sounds, open thoughts closed, narration never in italics, the attacker part stops at contact; build 201: the beat card, narration.card, off until you try it; no swimming on dry land; the wrong limb on a grip caught; grips said with their owner; build 200: the open problems: no pin told before the blow that starts it, bites never told as claw strokes, no blood where nothing cut, no salt in a lake, lone present-tense slips mended, pain-change arrows cut; build 199: fixes from the Ripples vs Nerine fight: no grip tightened after a hit tears it off, the loser stays out after a knockout, left-out passages before the escape, scenery that breaks is named, meta lines and copied note labels cut, interludes cleaned like beats; build 198: no kernel crash when a window closes mid-beat; build 197: /bench, the narration test bench; build 196: left-out passages in order, no get-up told twice, fragments cut, shorter interlude; build 195: fixes from a full Ripples vs Nerine fight: no copied note lines, familiar-smell wording cleaned, more sound tags; build 194: one telling a blow, rich length 1.5, hands in landings, no past on the first beat; build 193: /sets lists every setting, /intro off skips the opening passage; build 192: richer narration: longer beats, the body under each blow, inner life from the engine, one sense a part; a new Buizel, Nerine; build 191: fixes from a full fight: soaked said when it starts, no borrowed elemental moves, get-ups where she lies, sound tags and camera lines cleaned; build 190: a rebuilt /help; builds 188-189 merged with the latest fixes: a direction can ask for a devastating blow or a submission on a fighter put down that beat, holds are part of the paragraph plan, notes copied word for word are cut; damage marks and poses on the pictures; undo and saves keep everything. TRIAL BRANCH: the shorter-notes trial plus engine-led narration: a paragraph plan whose blows open on fact lines the program writes, a left-out blow put back by its fact line instead of a rewrite, marks that say when they were made, and dice-rolled tactical reads; /set narration.guided.enabled false turns it all off, /set narration.compact.enabled false the shorter notes)"
 
 HELP = """
 =============================================================================================
@@ -1025,7 +1025,8 @@ class Session:
             with open(os.path.join(folder, name), "wb") as fh:
                 pickle.dump({"args": args, "state": state, "version": VERSION, "beat": self.eng.turn,
                              "fight": self.fight_no}, fh)
-            old = sorted(f for f in os.listdir(folder) if f.endswith(".pkl"))
+            old = sorted((f for f in os.listdir(folder) if f.endswith(".pkl")),
+                         key=lambda f: os.path.getmtime(os.path.join(folder, f)))     # (by when, not by name)
             for f in old[:max(0, len(old) - int(cfg.get("keep", 30)))]:
                 os.remove(os.path.join(folder, f))
         except Exception as e:
@@ -1050,8 +1051,14 @@ class Session:
         for f in saved:
             shutil.copy2(os.path.join(HERE, f), os.path.join(tmp, f))
         log = []
+        rstate = random.getstate()
         try:
             self.narrator.__dict__.update(pickle.loads(pickle.dumps(case["state"])))
+            # today's model and a phrase memory built from today's (and the override's) rules, not the saved ones
+            for k in ("model", "host", "style"):
+                if k in keep_dict:
+                    self.narrator.__dict__[k] = keep_dict[k]
+            self.narrator.__dict__.pop("_pm", None)
             rules = _copy.deepcopy(self.eng.rules)
             for path, value in overrides:
                 node, key, _ = _rule_path(rules, path)
@@ -1064,8 +1071,10 @@ class Session:
             secs = time.time() - t0
             calls = len(narrator_mod.CALL_LOG)
         finally:
+            random.setstate(rstate)
             self.narrator.__dict__.clear()
             self.narrator.__dict__.update(keep_dict)
+            self.narrator.__dict__.pop("_pm", None)     # (rebuilt on next use, reading the live rules again)
             for f in self.BENCH_FILES:
                 p = os.path.join(HERE, f)
                 if f in saved:
@@ -1093,7 +1102,8 @@ class Session:
         import pickle
         cfg = self._bench_cfg()
         folder = os.path.join(HERE, cfg.get("folder", "bench_cases"))
-        files = sorted(f for f in os.listdir(folder) if f.endswith(".pkl")) if os.path.isdir(folder) else []
+        files = sorted((f for f in os.listdir(folder) if f.endswith(".pkl")),
+                       key=lambda f: os.path.getmtime(os.path.join(folder, f))) if os.path.isdir(folder) else []
         if not files:
             print("No saved beats yet: play a beat or two first (narration.bench.save keeps them)."); return
         files = files[-n:]
@@ -1103,8 +1113,13 @@ class Session:
         rows, report = [], [f"# Bench {time.strftime('%Y-%m-%d %H:%M')}", "", f"- A: your settings as they are",
                             f"- B: {label_b}", f"- {VERSION.split(' (')[0]}", ""]
         for i, f in enumerate(files):
-            with open(os.path.join(folder, f), "rb") as fh:
-                case = pickle.load(fh)
+            try:
+                with open(os.path.join(folder, f), "rb") as fh:
+                    case = pickle.load(fh)
+            except Exception as e:      # (a broken file, or one from a build whose classes have changed)
+                note_failure(f"/bench reading {f}", e)
+                print(f"  [{f}: can't be read, skipped]")
+                continue
             seed = 1000 + i
             out = {}
             for side, ov in (("A", []), ("B", overrides)):
@@ -1134,10 +1149,14 @@ class Session:
                          f"{t['rewrites']:>8}  {t['repeats']:>7}")
         report[6:6] = ["```"] + lines[1:] + ["```", ""]
         rep_dir = os.path.join(HERE, cfg.get("reports", "bench_reports"))
-        os.makedirs(rep_dir, exist_ok=True)
         path = os.path.join(rep_dir, f"bench_{time.strftime('%Y%m%d_%H%M%S')}.md")
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write("\n".join(report))
+        try:
+            os.makedirs(rep_dir, exist_ok=True)
+            with open(path, "w", encoding="utf-8") as fh:
+                fh.write("\n".join(report))
+        except OSError as e:
+            note_failure("/bench writing its report", e)
+            path = f"(not written: {e})"
         print("\n".join(lines) + f"\n(repeats: 5-word runs used twice in one beat; rewrites: fixes the checks asked for)"
               f"\nBoth tellings of every beat, side by side: {path}")
 
@@ -2368,8 +2387,11 @@ def _sets_file(rules, path):
         for p, val, n in leaves:
             out.append(f"- `/set {p} {json.dumps(val, ensure_ascii=False)}`" + (f": {' '.join(str(n).split())}" if n else ""))
         out.append("")
-    with open(path, "w", encoding="utf-8") as fh:
-        fh.write("\n".join(out))
+    try:
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write("\n".join(out))
+    except OSError as e:        # (open in another program, a folder that isn't there): an error message, not a crash
+        raise ValueError(f"can't write {path}: {e}")
     return sum(1 for x in out if x.startswith("- `/set"))
 
 
@@ -2596,7 +2618,8 @@ def handle_command(s, line):
         if beats:
             s.play_beat(manual=beats)
         return
-    parts = shlex.split(line[1:])
+    # (backslashes kept: a Windows path such as C:\Users\night\out.md must come through whole)
+    parts = shlex.split(line[1:].replace("\\", "\\\\"))
     if not parts:
         return
     cmd, a = parts[0].lower(), parts[1:]
