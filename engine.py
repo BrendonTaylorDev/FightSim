@@ -7018,7 +7018,7 @@ class Engine:
             if not in_pin and hc.get("enabled", True):
                 # a hold kept on a worn part wrecks the part, but costs her overall health only so much more for the
                 # wear (holds.health_cap.health_mult): the limb goes long before she is emptied
-                hm = float(hc.get("health_mult", 1.3))
+                hm = float(hc.get("health_mult", 1.1))
                 cap = dict(cap or {"health_only": True})
                 if cap.get("health_mult") is None or float(cap["health_mult"]) > hm:
                     cap["health_mult"] = hm
