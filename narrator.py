@@ -2553,6 +2553,26 @@ class Narrator:
                 and not (air and self.AIR_NOT.search(o))]
         return keep or opts
 
+    def _limb_fit(self, text, who):
+        """A note written for a furred body with paws, said for hers: a bird presses a wing to a hurt, not a paw, and
+        hisses through her beak, not her teeth; a fighter in the air turns, she doesn't get up or put weight on it."""
+        has = self._feats_of(who) if who else set()
+        if not has or not text:
+            return text
+        if "arms" not in has and "forelegs" not in has:
+            limb, limbs = ("wing", "wings") if "wings" in has else ("coil", "coils")
+            text = re.sub(r"\b(?:both forelegs or arms|both arms|both paws)\b", f"both {limbs}", text)
+            text = re.sub(r"\ba (?:hand or paw|paw or hand|paw|hand)\b", f"a {limb}", text)
+            text = re.sub(r"\bpaws\b", limbs, text)
+            text = re.sub(r"\bpaw\b", limb, text)
+        if "beak" in has:
+            text = re.sub(r"\bthrough (?:her|bared) teeth\b", "through her beak", text)
+            text = re.sub(r"\bteeth gritted\b", "beak clamped shut", text)
+        if self._in_air(who):
+            text = text.replace(" as she gets up or turns", " as she turns in the air")
+            text = text.replace("then favoring it and testing weight on it", "then drawn up tight under her")
+        return self._in_coat(text, who)
+
     # (and in the air, nothing at all under her: no ground to scrabble at, no feet to plant)
     AIR_NOT = re.compile(r"\bground\b|\bfeet\b|\bfooting\b|\bplant(?:s|ed|ing)?\b|\bdust\b", re.I)
 
@@ -2575,7 +2595,7 @@ class Narrator:
                 if g == "tail" and "tails" in self._feats_of(who or ""):
                     opts = [re.sub(r"\bthe tail\b", "the tails", o) for o in opts]   # (twin tails: never one tail)
                 opts = self._fit_body(opts, who)
-                return opts[seed % len(opts)]
+                return self._limb_fit(opts[seed % len(opts)], who)
         return "a flinch away from the spot"
 
     def _voice_family(self, who):
@@ -3029,7 +3049,11 @@ class Narrator:
                                                             "screwed shut, the world swimming for a moment"),
         (r"shoulder|arm|paw|hand|wing|fin|foreleg", "she hugs the limb to her body, hissing through her teeth, "
                                                     "rocking with it"),
-        (r"leg|thigh|knee|hock|foot|hind|tail", "the leg nearly folds; she hops or limps off it, can't put weight "
+        (r"tail", "her tail clamps in tight and she twists round toward it as if she could get away from it, a sharp "
+                  "sound forced out of her, the tail jerking with every breath",
+                  "she curls round toward her tail where she lies, the tail jerking and clamping, a sharp sound forced "
+                  "out of her with every breath"),
+        (r"leg|thigh|knee|hock|foot|hind", "the leg nearly folds; she hops or limps off it, can't put weight "
                                                 "on it, a whimper or a snarl escaping",
                                                 "she grabs at the leg and rocks or rolls with the pain, a whimper or "
                                                 "a snarl escaping"),
@@ -3065,7 +3089,7 @@ class Narrator:
         if not row:
             return ""
         down = dfn in (getattr(self, "on_ground", None) or ()) or (land and not a.get("kept_feet"))
-        how = row[2] if down and len(row) > 2 else row[1]
+        how = self._limb_fit(row[2] if down and len(row) > 2 else row[1], dfn)
         held = dfn in {g[1] for g in (self.grips or []) if len(g) > 1} or \
             dfn in (getattr(self, "pinned_now", None) or ())
         return (f"  - ON AN OLD WOUND: her {h['part'].lower()} was already {self._pain(h['damage_before'])['label']} "
@@ -3082,7 +3106,8 @@ class Narrator:
         if not cfg or not cfg.get("climb", True) or not dfn or a.get("sustain"):
             return ""
         m = a.get("move") or {}
-        if m.get("auto_spill_parts") or m.get("spillover_parts") or (m.get("target") == "spread" and Engine.is_ranged(m)):
+        if m.get("auto_spill_parts") or m.get("spillover_parts") or m.get("target") == "whole_body" or (
+                m.get("target") == "spread" and Engine.is_ranged(m)):
             return ""        # one blow or one blast landing everywhere at once: nothing to climb
         hs = [h for h in a.get("hits") or [] if h.get("defender", dfn) == dfn]
         if len(hs) < 2 or self._pain_rank(max(h["damage_after"] for h in hs)) < 2:
@@ -3193,11 +3218,14 @@ class Narrator:
                 old = sorted(old, key=lambda p: -float(dmg.get(str(p).lower(), dmg.get(p, 0)) or 0))[:2]
                 ago = min(now - parts[p] for p in old)
                 it = "it" if len(old) == 1 else "them"
-                out.append(f"STILL FEELING IT: {poss_word(who)} {' and '.join(p.lower() for p in old)} "
+                f_ = self._feats_of(who)
+                nurse = (f"a paw pressed to {it} or rubbing {it}" if not f_ or f_ & {"arms", "forelegs"} else
+                         f"the hurt kept guarded and turned away, her beak going to {it} to smooth the feathers there"
+                         if "beak" in f_ else "the hurt kept guarded and turned away")
+                out.append(self._limb_fit(f"STILL FEELING IT: {poss_word(who)} {' and '.join(p.lower() for p in old)} "
                            f"{'has' if len(old) == 1 else 'have'} not let her be since {'last beat' if ago == 1 else 'the beat before last'}"
-                           f": somewhere in this beat (once or twice, never every sentence) she nurses {it}: a paw pressed to "
-                           f"{it} or rubbing {it}, a wince or a sharp breath when she moves, favouring {it} as she gets up or "
-                           f"turns, a stiffness the other fighter might notice.")
+                           f": somewhere in this beat (once or twice, never every sentence) she nurses {it}: {nurse}, a wince or a sharp breath when she moves, favouring {it} as she gets up or "
+                           f"turns, a stiffness the other fighter might notice.", who))
         return out
 
     def _pressure_line(self, h, with_=""):
@@ -3423,6 +3451,8 @@ class Narrator:
                   "pressed flat and then rebounding"],
         "claw": ["the claws catch first: fur and skin drag and stretch taut along the line of the cut before they part",
                  "the skin is pulled with the claws for a moment, stretched, before it gives along the cut"],
+        "blade": ["the edge of it parts the fur over the {part} in one thin, clean line before the sting arrives",
+                  "a thin cold line drawn across the {part}, the fur sheared flat along it, and then the burn"],
         "bite": ["the teeth sink in and the skin round them is dragged taut, the {part} pulled toward the biter",
                  "the pressure of the jaws closing: fur bunched, skin stretched tight round each tooth"],
         "blast": ["the force flattens her fur back against the {part} and shoves the skin under it",
@@ -3509,7 +3539,8 @@ class Narrator:
         rnd = _r.Random(zlib.crc32(f"body|{getattr(self, 'beat_now', 0)}|{a.get('attacker')}|{h['part']}".encode()))
         m = a.get("move") or {}
         name = f"{m.get('name', '')} {m.get('about', '')} {a.get('flavor') or ''}".lower()
-        kind = ("claw" if re.search(r"\b(?:slash|claw|swipe|scratch|rake|(?<!upper)cut)\w*", name) else
+        kind = ("blade" if re.search(r"\b(?:slash|cut)\w*", name) and Engine.is_ranged(m) else
+                "claw" if re.search(r"\b(?:slash|claw|swipe|scratch|rake|(?<!upper)cut)\w*", name) else
                 "bite" if re.search(r"bite|fang|crunch|jaws", name) else
                 "shock" if m.get("type") == "Electric" else "cold" if m.get("type") == "Ice" else
                 "blast" if m.get("target") in ("spread", "whole_body") or re.search(r"\b(?:beam|blast|pulse|jet|gun|wave)\w*", name)
@@ -3518,7 +3549,7 @@ class Narrator:
         reg = {"fore_up": "fore", "fore_low": "fore", "hind_up": "hind", "hind_low": "hind", "back_up": "back",
                "back_low": "back"}.get(reg, reg)
         part = h["part"].lower()
-        gives = rnd.choice(self.BODY_GIVES[kind]).format(part=part)
+        gives = self._in_coat(rnd.choice(self.BODY_GIVES[kind]).format(part=part), dfn)
         held = told_motion or (dfn in (getattr(self, "pinned_now", None) or ()) or a.get("target_against") or a.get("point_blank")
                 or dfn in (getattr(self, "on_ground", None) or ()) or a.get("moved") or a.get("launch")
                 or any(g[1] == dfn for g in (getattr(self, "grips", None) or [])))
@@ -3575,7 +3606,7 @@ class Narrator:
             b_, a_ = self._pain(h["damage_before"])["label"], self._pain(h["damage_after"])["label"]
             if b_ != a_ and a_ in ("excruciating", "devastated", "numb with shock"):
                 self._breaking.append((h["defender"], h["part"], a_))
-        lines.append("  - Hardest hit: " + ", ".join(f"{h['part']} ({self._strength(h['damage_taken'])} blow)" for h in worst))
+        lines.append("  - Hardest hit: " + ", ".join(f"{h['part']} (a {self._hit_size(h)} blow)" for h in worst))
         tough = [h for h in hits if h["damage_taken"] < 5 and h not in worst]   # (a light surge: the hardest-hit stay out)
         if tough:
             lines.append("  - Barely felt: " + ", ".join(h["part"] for h in tough[:6]))
@@ -3963,6 +3994,13 @@ class Narrator:
                 end = self.STATUS_ENDS.get(e["status"])
                 if self._in_air(e["fighter"]) and e["status"] in ("off_balance", "staggered"):
                     end = "she steadies in the air, her wingbeats even again, and her guard comes back up"  # (no feet)
+                elif e["status"] == "airborne":
+                    # her time on the wing runs out: that is a landing, not a feeling wearing off
+                    lines.append(f"{e['fighter']} COMES DOWN at the end of this beat: her wings have carried her as long "
+                                 f"as they can for now, and she drops out of the air and LANDS, on her feet, on the ground "
+                                 f"(tired, not knocked down). Show the landing: the last wingbeats, the touch-down, her "
+                                 f"weight settling, the wings folding, and her opponent seeing her come within reach.")
+                    continue
                 elif e["fighter"] in (getattr(self, "on_ground", None) or ()) and e["status"] in ("off_balance", "staggered"):
                     # (she is lying down: no feet to get back under her)
                     end = "the lurch goes out of her; lying where she is, she gets her bearings back"
@@ -4530,7 +4568,8 @@ class Narrator:
                             f"she GOES DOWN, ending up "
                             + (Engine.FACING_LOOK.get(sl.get("facing"), "on the ground") if isinstance(sl, dict) else "on the ground")
                             + ". The fall hurts nothing new. Show the near miss AND the slip." if sl else
-                            "She stays on her feet. Show the near miss: the move, the dodge, how close it came.")
+                            ("She stays up in the air. " if self._in_air(who) else "She stays on her feet. ")
+                            + "Show the near miss: the move, the dodge, how close it came.")
                          + intent)
             mc = a.get("missed_charge")
             if mc:
@@ -4572,6 +4611,9 @@ class Narrator:
                 # names one of them
                 picked = {w for w, rx in WEAPONS if re.search(rx, fl, re.I)} & mine
                 mine = picked or mine
+                if re.search(r"\bwings?\b", f"{m['name']} {m.get('about') or ''}", re.I) and not any(
+                        re.search(rx, f"{m['name']} {m.get('about') or ''}", re.I) for _w, rx in WEAPONS):
+                    mine = set()      # (a wing move: "rakes her wing" in the order is not a claw swipe)
                 if mine and len(mine) <= 2 and not a.get("dodged"):
                     nots = [WEAPON_NOT[w] for w in ("claws", "teeth", "tail") if w not in mine]
                     lines.append("  (Delivered with " + " or ".join(WEAPON_SAY[w] for w, _ in WEAPONS if w in mine)
@@ -5209,9 +5251,10 @@ class Narrator:
         else:
             body = rng.choice(["her body follows the blow", "the force of it turns her and carries her",
                                "she is knocked off her line", "her weight goes with the hit before she can stop it"])
-        land = rng.choice(["her paws scraping and skidding for grip", "one paw dragging as she catches herself",
+        land = rng.choice(self._fit_body(["her paws scraping and skidding for grip", "one paw dragging as she catches herself",
                            "she ends half-turned, her side to her opponent", "she has to put a hand or paw down to stop",
-                           "her guard swings wide as she rights herself", "she ends somewhere she didn't choose to be"])
+                           "a wing flung out against the ground to stop herself",
+                           "her guard swings wide as she rights herself", "she ends somewhere she didn't choose to be"], who))
         head = f"{st['head']}; " if st.get("head") else ""
         tail = (" She is very close to going down: show her nearly falling and only just not." if "close to going down"
                 in st.get("steps", "") else "")
@@ -6222,10 +6265,15 @@ class Narrator:
             if who not in pe and start:     # she is knocked out this beat: where she starts is where she stays
                 bits.append(f"{who}: starts {start}; ends OUT COLD, lying where she was (she does not get up)")
         wet = getattr(self, "in_water", None) or {}
-        if wet:
+        # (only where the arena has water to be in: on a mountain shelf "not in the water" is just noise)
+        sc_ = getattr(self, "scene_cfg", None) or {}
+        watery = any(v for v in wet.values()) or bool(re.search(r"(?i)water|shallows|lake|river|pool|sea\b|stream|pond|"
+                                                                  r"surf|tide", " ".join([str(sc_.get("text") or "")] + [
+            str(h.get("name") or "") for h in sc_.get("hazards") or []])))
+        if wet and watery:
             # in the water or on land (from where the director placed them): nobody swims across dry grass
             bits += [f"{w}: " + ({"shallow": "IN the shallow water", "deep": "IN deep water"}.get(v) or "on dry land, not in "
-                                 "the water (no swimming)") for w, v in wet.items() if w in pe]
+                                 "the water (no swimming)") for w, v in wet.items() if w in pe and (v or not self._in_air(w))]
         return ["POSTURE THIS BEAT (certain; the program tracks it): " + " | ".join(bits) + ". A fighter listed as ON "
                 "HER FEET or UP stays up the whole beat: she never lies on the ground, is never under anyone, nobody "
                 "stands over her, and she never has to get up. A fighter ON THE GROUND stays down unless a get-up or "
@@ -12496,6 +12544,11 @@ class Narrator:
                   "her head hangs between breaths and comes up late",
                   "every small movement costs her a visible flinch and a gasp"],
     }
+    # a hurt fighter seen on the wing: what a hurt flyer looks like from outside
+    SEEN_AIR = ["her wingbeats have gone ragged, and she loses a little height between strokes",
+                "she flies lopsided, favouring one side",
+                "she has to beat harder just to stay where she is",
+                "her turns have gone wide and slow"]
     SEEN_PART = [(r"head|ear|eye|jaw|muzzle|nose|cheek|horn|antenna|beak",
                   "she shakes her head as if to clear it, and squints past the hurt"),
                  (r"throat|neck", "she swallows carefully, and her breath rasps"),
@@ -12585,11 +12638,14 @@ class Narrator:
             for k in [k for k in told if k[0] < now_b - 1]:
                 told.pop(k)
             rnd = random.Random(zlib.crc32(f"seen|{getattr(self, 'beat_now', 0)}|{o}".encode()))
-            signs = self._fresh_signs(o, self.SEEN_HURT[t], 2, rnd)
+            pool = [self._limb_fit(x, o) for x in self._fit_body(self.SEEN_HURT[t], o)]
+            if self._in_air(o):
+                pool = self.SEEN_AIR + [x for x in pool if not self.AIR_NOT.search(x)]
+            signs = self._fresh_signs(o, pool, 2, rnd) if len(pool) >= 2 else pool
             wp = worst(o, 1)
             if wp:
                 # the worst wound's own sign, but not every beat: when it was offered last beat, only the general ones
-                part_sign = next((sg for rx, sg in self.SEEN_PART if re.search(rx, wp[0][0])), None)
+                part_sign = next((self._limb_fit(sg, o) for rx, sg in self.SEEN_PART if re.search(rx, wp[0][0])), None)
                 if part_sign and self._fresh_signs(o, [part_sign + f" (her {wp[0][0]})", ""], 1, rnd)[0]:
                     signs.append(part_sign + f" (her {wp[0][0]})")
             out += (f" WHAT {lead.upper()} SEES OF {poss_word(o).upper()} HURT (pick one or two, in your own words, as {lead} "

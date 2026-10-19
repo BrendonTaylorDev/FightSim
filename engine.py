@@ -5379,12 +5379,13 @@ class Engine:
         mv = own or dex
         art = re.compile(r"(?:an?|the)\s", re.I)
         about = next((str(m.get("about") or "") for m in (own, dex) if m and art.match(str(m.get("about") or ""))),
-                     "" if not own or re.match(r"\w+s\b", str(own.get("about") or "")) else str(own.get("about") or ""))
+                     "" if not own or re.match(r"[\w-]+s\b", str(own.get("about") or "")) else str(own.get("about") or ""))
         if about:
             noun = re.split(r"\s+(?:across|into|from|that|with|to|which)\b|[,:;(]", about, maxsplit=1)[0].strip()
             noun = re.sub(r"^(?:a|an|the)\s+", "", noun, flags=re.I)
         else:
-            noun = {"Normal": "blow", "Fighting": "blow"}.get((mv or {}).get("type"), "blow") if mv else low
+            # (an 'about' that is a verb, "flash-freezes the target": the move by its own name)
+            noun = "blow" if not mv or mv.get("type") in ("Normal", "Fighting") else mv.get("name") or what
         if turned:
             mine = who.rstrip("'s").rstrip("'") == str(hurt)
             return f"her own {noun}, sent back at her" if mine else f"{who} {noun}, turned back on her"

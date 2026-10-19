@@ -1,0 +1,695 @@
+{
+"1": {
+"start": {
+"Glacia": 2300.0,
+"Swift": 1550.0
+},
+"end": {
+"Glacia": 2269.36,
+"Swift": 1549.5
+},
+"parts": {
+"Glacia|Chest": [
+0.0,
+20.23
+],
+"Glacia|Right Wing": [
+0.0,
+6.66
+]
+}
+},
+"2": {
+"start": {
+"Glacia": 2269.36,
+"Swift": 1549.5
+},
+"end": {
+"Glacia": 2268.86,
+"Swift": 1522.56
+},
+"parts": {
+"Swift|Left Wing": [
+0.0,
+15.53
+],
+"Swift|Left Wingtip": [
+0.0,
+9.75
+],
+"Swift|Chest": [
+0.0,
+6.09
+]
+}
+},
+"3": {
+"start": {
+"Glacia": 2268.86,
+"Swift": 1522.56
+},
+"end": {
+"Glacia": 2188.24,
+"Swift": 1522.06
+},
+"parts": {
+"Glacia|Lower Back": [
+0.0,
+46.38
+],
+"Glacia|Belly": [
+0.0,
+14.89
+],
+"Glacia|Right Thigh": [
+0.0,
+11.1
+]
+}
+},
+"4": {
+"start": {
+"Glacia": 2188.24,
+"Swift": 1522.06
+},
+"end": {
+"Glacia": 2187.74,
+"Swift": 1247.43
+},
+"parts": {
+"Swift|Upper Back": [
+0.0,
+7.68
+],
+"Swift|Beak": [
+0.0,
+11.06
+],
+"Swift|Lower Back": [
+0.0,
+10.15
+],
+"Swift|Left Shoulder": [
+0.0,
+9.39
+],
+"Swift|Right Shoulder": [
+0.0,
+10.3
+],
+"Swift|Head": [
+0.0,
+13.78
+],
+"Swift|Left Talon": [
+0.0,
+12.82
+],
+"Swift|Right Talon": [
+0.0,
+13.27
+],
+"Swift|Chest": [
+6.09,
+19.34
+],
+"Swift|Right Wing": [
+0.0,
+15.89
+],
+"Swift|Left Thigh": [
+0.0,
+14.76
+],
+"Swift|Right Thigh": [
+0.0,
+13.73
+],
+"Swift|Belly": [
+0.0,
+16.48
+],
+"Swift|Left Wing": [
+15.53,
+34.72
+],
+"Swift|Forked Tail": [
+0.0,
+20.85
+],
+"Swift|Neck": [
+0.0,
+18.89
+],
+"Swift|Right Wingtip": [
+0.0,
+20.97
+],
+"Swift|Left Wingtip": [
+9.75,
+32.36
+],
+"Swift|Throat": [
+0.0,
+24.92
+],
+"Swift|Head Plumes": [
+0.0,
+20.85
+],
+"Swift|Left Eye": [
+0.0,
+23.33
+],
+"Swift|Right Eye": [
+0.0,
+24.0
+]
+}
+},
+"5": {
+"start": {
+"Glacia": 2187.74,
+"Swift": 1247.43
+},
+"end": {
+"Glacia": 2187.24,
+"Swift": 1187.84
+},
+"parts": {
+"Swift|Belly": [
+16.48,
+37.78
+]
+}
+},
+"6": {
+"start": {
+"Glacia": 2187.24,
+"Swift": 1187.84
+},
+"end": {
+"Glacia": 2186.74,
+"Swift": 1131.23
+},
+"parts": {
+"Swift|Chest": [
+19.34,
+39.89
+],
+"Swift|Forked Tail": [
+47.52,
+79.07
+]
+}
+},
+"7": {
+"start": {
+"Glacia": 2186.74,
+"Swift": 1131.23
+},
+"end": {
+"Glacia": 2083.99,
+"Swift": 1100.67
+},
+"parts": {
+"Swift|Forked Tail": [
+79.07,
+115.25
+],
+"Glacia|Left Wing": [
+0.0,
+103.75
+],
+"Glacia|Left Shoulder": [
+0.0,
+25.49
+]
+}
+},
+"8": {
+"start": {
+"Glacia": 2083.99,
+"Swift": 1100.67
+},
+"end": {
+"Glacia": 2074.48,
+"Swift": 983.76
+},
+"parts": {
+"Swift|Right Wing": [
+15.89,
+56.96
+],
+"Swift|Chest": [
+39.89,
+82.03
+]
+}
+},
+"9": {
+"start": {
+"Glacia": 2074.48,
+"Swift": 983.76
+},
+"end": {
+"Glacia": 1823.42,
+"Swift": 837.82
+},
+"parts": {
+"Swift|Right Wingtip": [
+20.97,
+52.93
+],
+"Glacia|Chest": [
+20.23,
+121.64
+],
+"Glacia|Throat": [
+0.0,
+41.83
+],
+"Swift|Throat": [
+24.92,
+75.55
+],
+"Swift|Right Shoulder": [
+10.3,
+22.52
+]
+}
+},
+"10": {
+"start": {
+"Glacia": 1823.42,
+"Swift": 837.82
+},
+"end": {
+"Glacia": 1779.69,
+"Swift": 835.56
+},
+"parts": {
+"Glacia|Crest": [
+0.0,
+16.59
+],
+"Glacia|Left Eye": [
+0.0,
+19.8
+],
+"Glacia|Head": [
+0.0,
+13.4
+]
+}
+},
+"11": {
+"start": {
+"Glacia": 1779.69,
+"Swift": 835.56
+},
+"end": {
+"Glacia": 1719.36,
+"Swift": 833.3
+},
+"parts": {
+"Glacia|Beak": [
+0.0,
+45.93
+],
+"Glacia|Crest": [
+16.59,
+53.85
+],
+"Glacia|Right Wingtip": [
+0.0,
+39.94
+]
+}
+},
+"12": {
+"start": {
+"Glacia": 1719.36,
+"Swift": 833.3
+},
+"end": {
+"Glacia": 1716.13,
+"Swift": 831.04
+},
+"parts": {}
+},
+"13": {
+"start": {
+"Glacia": 1716.13,
+"Swift": 831.04
+},
+"end": {
+"Glacia": 1538.44,
+"Swift": 828.78
+},
+"parts": {
+"Glacia|Left Wing": [
+122.26,
+303.02
+]
+}
+},
+"14": {
+"start": {
+"Glacia": 1538.44,
+"Swift": 828.78
+},
+"end": {
+"Glacia": 1534.31,
+"Swift": 827.02
+},
+"parts": {}
+},
+"15": {
+"start": {
+"Glacia": 1534.31,
+"Swift": 827.02
+},
+"end": {
+"Glacia": 1451.1,
+"Swift": 824.76
+},
+"parts": {
+"Glacia|Head": [
+13.4,
+63.26
+],
+"Glacia|Beak": [
+45.93,
+59.1
+]
+}
+},
+"16": {
+"start": {
+"Glacia": 1451.1,
+"Swift": 824.76
+},
+"end": {
+"Glacia": 1445.99,
+"Swift": 526.46
+},
+"parts": {
+"Swift|Upper Back": [
+7.68,
+15.9
+],
+"Swift|Left Shoulder": [
+9.39,
+21.51
+],
+"Swift|Lower Back": [
+10.15,
+20.91
+],
+"Swift|Beak": [
+11.06,
+20.65
+],
+"Swift|Right Shoulder": [
+22.52,
+36.13
+],
+"Swift|Head": [
+13.78,
+28.12
+],
+"Swift|Left Talon": [
+12.82,
+24.94
+],
+"Swift|Right Talon": [
+13.27,
+24.45
+],
+"Swift|Right Thigh": [
+13.73,
+31.44
+],
+"Swift|Left Thigh": [
+14.76,
+28.4
+],
+"Swift|Left Wing": [
+34.72,
+53.55
+],
+"Swift|Belly": [
+37.78,
+58.6
+],
+"Swift|Right Wing": [
+56.96,
+87.29
+],
+"Swift|Chest": [
+82.03,
+103.63
+],
+"Swift|Neck": [
+18.89,
+37.36
+],
+"Swift|Left Wingtip": [
+32.36,
+57.68
+],
+"Swift|Right Wingtip": [
+52.93,
+76.85
+],
+"Swift|Head Plumes": [
+20.85,
+48.12
+],
+"Swift|Forked Tail": [
+115.25,
+150.77
+],
+"Swift|Throat": [
+75.55,
+111.88
+],
+"Swift|Left Eye": [
+23.33,
+44.98
+],
+"Swift|Right Eye": [
+24.0,
+45.15
+]
+}
+},
+"17": {
+"start": {
+"Glacia": 1445.99,
+"Swift": 526.46
+},
+"end": {
+"Glacia": 1215.9,
+"Swift": 308.48
+},
+"parts": {
+"Swift|Throat": [
+157.07,
+157.07
+],
+"Glacia|Left Wing": [
+303.02,
+540.93
+],
+"Glacia|Left Wingtip": [
+0.0,
+47.74
+],
+"Swift|Beak": [
+20.65,
+43.06
+]
+}
+},
+"18": {
+"start": {
+"Glacia": 1215.9,
+"Swift": 308.48
+},
+"end": {
+"Glacia": 1210.79,
+"Swift": 145.08
+},
+"parts": {
+"Swift|Chest": [
+103.63,
+200.37
+],
+"Swift|Upper Back": [
+15.9,
+19.92
+],
+"Swift|Right Shoulder": [
+36.13,
+44.57
+],
+"Swift|Right Thigh": [
+31.44,
+40.45
+]
+}
+},
+"19": {
+"start": {
+"Glacia": 1210.79,
+"Swift": 145.08
+},
+"end": {
+"Glacia": 1190.81,
+"Swift": 122.99
+},
+"parts": {
+"Glacia|Right Wing": [
+6.66,
+26.97
+],
+"Swift|Right Wing": [
+87.29,
+93.7
+]
+}
+},
+"20": {
+"start": {
+"Glacia": 1190.81,
+"Swift": 122.99
+},
+"end": {
+"Glacia": 1185.7,
+"Swift": -81.07
+},
+"parts": {
+"Swift|Right Wing": [
+93.7,
+164.17
+],
+"Swift|Forked Tail": [
+150.77,
+254.0
+]
+}
+},
+"21": {
+"start": {
+"Glacia": 1185.7,
+"Swift": -81.07
+},
+"end": {
+"Glacia": 1075.25,
+"Swift": -95.59
+},
+"parts": {
+"Glacia|Head": [
+63.26,
+102.3
+],
+"Glacia|Left Eye": [
+19.8,
+30.24
+],
+"Glacia|Neck": [
+0.0,
+7.16
+]
+}
+},
+"22": {
+"start": {
+"Glacia": 1075.25,
+"Swift": -95.59
+},
+"end": {
+"Glacia": 1069.06,
+"Swift": -241.96
+},
+"parts": {
+"Swift|Chest": [
+200.37,
+414.11
+]
+}
+},
+"23": {
+"start": {
+"Glacia": 1069.06,
+"Swift": -241.96
+},
+"end": {
+"Glacia": 1040.97,
+"Swift": -256.48
+},
+"parts": {
+"Glacia|Right Wing": [
+26.97,
+53.8
+]
+}
+},
+"24": {
+"start": {
+"Glacia": 1040.97,
+"Swift": -256.48
+},
+"end": {
+"Glacia": 1035.28,
+"Swift": -270.5
+},
+"parts": {}
+},
+"25": {
+"start": {
+"Glacia": 1035.28,
+"Swift": -270.5
+},
+"end": {
+"Glacia": 926.48,
+"Swift": -285.02
+},
+"parts": {
+"Glacia|Left Shoulder": [
+25.49,
+49.8
+],
+"Glacia|Left Wing": [
+540.93,
+552.46
+],
+"Glacia|Neck": [
+7.16,
+17.52
+]
+}
+},
+"26": {
+"start": {
+"Glacia": 926.48,
+"Swift": -285.02
+},
+"end": {
+"Glacia": 923.14,
+"Swift": -426.53
+},
+"parts": {
+"Swift|Chest": [
+414.11,
+467.23
+],
+"Swift|Neck": [
+37.36,
+49.24
+]
+}
+}
+}

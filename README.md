@@ -654,6 +654,41 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 208
+
+From test fight 6: Glacia (Articuno) against Swift (Swellow) on the mountain shelf, knockouts only, no pins. It is in
+`sim/test_fights/glacia_vs_swift/`:
+- **`Glacia_vs_Swift_full_fight.html`:** the full fight as the game's own export. It has the hand-written narration,
+  each beat's health and part damage, the fighter cards with damage marks, and the stat lines and rolls.
+- **`replay.py`:** remakes the export from `narration.md`.
+- The bug list.
+
+This fight is meant as the baseline for comparing the real narrator's output.
+
+Notes fitted to the fighter's body:
+- One helper now rewords the newer notes for the body they describe: a wing for a paw, a beak for teeth, her own
+  covering for fur, and nothing about standing or getting up while she is in the air. It covers the opponent-watch
+  signs, still feeling it, old wounds, stumbles and where-it-shows tells.
+- A bird nursing a hurt keeps it guarded, her beak smoothing the feathers there.
+- A hurt flyer seen from outside has signs of her own: ragged wingbeats, losing height, flying lopsided.
+- A tail now has its own old-wound reaction, so it is no longer treated as a leg.
+
+Flight:
+- When a flyer's time in the air runs out, she comes down and lands, and the note says so. It no longer says she
+  "shakes off being in the air".
+- A dodge in the air says she stays up, not that she stays on her feet.
+
+Moves:
+- Wing moves (Steel Wing) no longer take a weapon from the director's words ("rakes" made it a claw strike).
+- Slashes thrown from range (Air Slash) have their own body detail, not "the claws catch first".
+- A whole-body move's "hardest hit" sizes now match its per-part lines.
+- Whole-body moves no longer get the "reactions climb" note.
+
+Scene and summary:
+- "On dry land, not in the water" appears only where the arena has water.
+- The injury report names a move whose description starts with a verb by its name ("Glacia's Freeze-Dry", not
+  "Glacia's flash-freezes the target").
+
 ## Build 207
 
 From test fight 5: Ripples against Nerine in the lakeside clearing, knockouts only and no pins, with Nerine played as

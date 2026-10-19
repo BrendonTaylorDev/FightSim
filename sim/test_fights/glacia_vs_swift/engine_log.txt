@@ -1,0 +1,793 @@
+################ BEAT 1
+##### STDOUT
+────────────────────────────────────────
+Attack 1 — Swift → Glacia: QUICK ATTACK (targeted — Chest, Right Wing, energy 100→90)
+Swift's blow caught Glacia on the chest, and the shock ran on into her right wing.
+----------------------------------------
+⚔️ **Swift → Glacia**: Swift opens at once: a streak across the shelf straight into the big bird's
+      chest
+  Power **64** = base 32 × 1 (Normal vs Ice/Flying) × 2 (targeted)
+  Jarred next to it (Right Wing): power 16 (×0.5)
+    Chest
+    Right Wing
+  Total: +26.89% damage  ·  ❤️ Glacia 2300% → **2269.86%** (-30.14)
+⏳ Beat 1 health: ❤️ Glacia 2269.36% (-0.5% exertion) | ❤️ Swift 1549.5% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift's blow sliding off the Chest it was aimed at 5%, rolled 32 → on target
+    Glacia dodging Swift's attack 18%, rolled 91 → it lands
+    Swift's Quick Attack landing devastatingly 2%, rolled 9 → no
+    Glacia rocked by the blow to her Chest 38%, rolled 57 → she takes it where she is
+----------------------------------------
+
+################ BEAT 2
+##### STDOUT
+────────────────────────────────────────
+Attack 2 — Glacia → Swift: ICE BEAM (spread — Left Wing, Left Wingtip, Chest, energy 92→74)
+Glacia's cold struck Swift's left wing, and the shock ran on into her left wingtip and chest.
+----------------------------------------
+🪽 **Glacia takes to the air** (up for 7 beats; only ranged attacks reach her)
+⚔️ **Glacia → Swift**: Glacia lifts off the shelf without hurry, turns in the air and lays a beam of
+      white cold across the swallow's wing
+💥 **CLASH**: Swift meets it with AIR SLASH (force with luck: 89.1 against 137.9) — Glacia's pushes
+      THROUGH, landing at ×0.35
+  Power **92.5** = base 37 × 2 (Ice vs Normal/Flying, super effective!) × 1.25 (spread)
+  Jarred next to it (Left Wingtip, Chest): power 37 (×0.5)
+    Left Wing
+    Left Wingtip
+    Chest
+  Total: +31.37% damage  ·  ❤️ Swift 1549.5% → **1523.06%** (-26.44)
+↪️ Swift rocked by the left wing hit: she flinches in on herself from the cold, muscles going tight
+      around the spot, and she is square again at once
+⏳ Beat 2 health: ❤️ Glacia 2268.86% (-0.5% exertion) | ❤️ Swift 1522.56% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift meeting Glacia's Ice Beam with an attack of her own 15%, rolled 5 → CLASH
+    the clash: Glacia's Ice Beam 138 against Swift's Air Slash 89 → it pushes through
+    Glacia's Ice Beam landing devastatingly 2%, rolled 13 → no
+    Swift frozen by Ice Beam 10%, rolled 57 → no
+    Swift rocked by the blow to her Left Wing 38%, rolled 19 → it moves her
+----------------------------------------
+
+################ BEAT 3
+##### STDOUT
+────────────────────────────────────────
+Attack 3 — Swift → Glacia: AERIAL ACE (targeted — Lower Back, Belly, Right Thigh, energy 74→64)
+Swift's talons caught Glacia hard on the lower back, jarring her belly and right thigh as well.
+----------------------------------------
+🪽 **Swift takes to the air** (up for 7 beats; only ranged attacks reach her)
+⚔️ **Swift → Glacia**: Swift goes up in a corkscrew, gets above her and cuts down across her back
+🪽🪽 **Air-to-air pass**: both on the wing, closing at speed · speed built: 1 pass
+🎯 Off target: aimed at Glacia's Upper Back, lands on her Lower Back
+  Power **110.4** = base 48 × 1 (Flying vs Ice/Flying) × 2 (targeted) × 1.15 (closing on her at
+        speed in the air)
+  Jarred next to it (Belly, Right Thigh): power 27.6 (×0.5)
+    Lower Back
+    Belly
+    Right Thigh
+  Total: +72.37% damage  ·  ❤️ Glacia 2268.86% → **2188.74%** (-80.12)
+⏳ Beat 3 health: ❤️ Glacia 2188.24% (-0.5% exertion) | ❤️ Swift 1522.06% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift's blow sliding off the Upper Back it was aimed at 10.0%, rolled 9.7 → it lands beside it
+    Glacia dodging Swift's attack 17%, rolled 78 → it lands
+    Swift's Aerial Ace landing devastatingly 2%, rolled 47 → no
+    Glacia knocked out of the air 11%, rolled 30 → she stays up
+    Glacia raking back at Swift as they cross 30%, rolled 50 → no
+    the shelf doing something by itself 5%, rolled 60 → nothing
+----------------------------------------
+
+################ BEAT 4
+##### STDOUT
+────────────────────────────────────────
+Attack 4 — Glacia → Swift: BLIZZARD (whole body, energy 84→54)
+----------------------------------------
+⚔️ **Glacia → Swift**: she beats her wings once and the air between them fills with driving snow
+  Power **30** = base 15 × 2 (Ice vs Normal/Flying, super effective!) × 1 (whole-body)
+  22 parts of Swift hit:
+  - Res 123% 🟦 → 117.45% 🟦 (1), 0.10× ×3 scale, +7.68% each: Upper Back 0→7.68%🟢
+  - Res 112% 🟦 → 105.67% 🟦 (1), 0.12× ×3 scale, +11.06% each: Beak 0→11.06%🟢
+  - Res 112% 🟦 → 105.89% 🟦 (1), 0.12× ×3 scale, +10.15% each: Lower Back 0→10.15%🟢
+  - Res 112% 🟦 → 106.33% 🟦 (1), 0.12× ×3 scale, +9.39% each: Left Shoulder 0→9.39%🟢
+  - Res 112% 🟦 → 105.74% 🟦 (1), 0.12× ×3 scale, +10.3% each: Right Shoulder 0→10.3%🟢
+  - Res 103% 🟦 → 96.47% 🟩 (1), 0.15× ×3 scale, +13.78% each: Head 0→13.78%🟢
+  - Res 103% 🟦 → 96.43% 🟩 (1), 0.15× ×3 scale, +12.82% each: Left Talon 0→12.82%🟢
+  - Res 103% 🟦 → 96.19% 🟩 (1), 0.15× ×3 scale, +13.27% each: Right Talon 0→13.27%🟢
+  - Res 100.11% 🟦 → 94.15% 🟩 (1), 0.16× ×3 scale, +13.25% each: Chest 6.09→19.34%🟢
+  - Res 97% 🟩 → 89.56% 🟩 (1), 0.16× ×3 scale, +15.89% each: Right Wing 0→15.89%🟢
+  - Res 97% 🟩 → 89.83% 🟩 (1), 0.16× ×3 scale, +14.76% each: Left Thigh 0→14.76%🟢
+  - Res 97% 🟩 → 90.29% 🟩 (1), 0.16× ×3 scale, +13.73% each: Right Thigh 0→13.73%🟢
+  - Res 93% 🟩 → 86.31% 🟩 (1), 0.18× ×3 scale, +16.48% each: Belly 0→16.48%🟢
+  - Res 90.39% 🟩 → 82.9% 🟩 (1), 0.20× ×3 scale, +19.19% each: Left Wing 15.53→34.72%🟡
+  - Res 82% 🟩 → 75.17% 🟩 (1), 0.24× ×3 scale, +20.85% each: Forked Tail 0→20.85%🟢
+  - Res 77% 🟩 → 71.92% 🟩 (1), 0.25× ×3 scale, +18.89% each: Neck 0→18.89%🟢
+  - Res 77% 🟩 → 70.63% 🟩 (1), 0.25× ×3 scale, +20.97% each: Right Wingtip 0→20.97%🟢
+  - Res 74.38% 🟩 → 67.98% 🟩 (1), 0.27× ×3 scale, +22.61% each: Left Wingtip 9.75→32.36%🟡
+  - Res 71% 🟩 → 64.79% 🟩 (1), 0.25× ×3 scale, +24.92% each: Throat 0→24.92%🟢
+  - Res 62% 🟩 → 56.98% 🟩 (1), 0.26× ×3 scale, +20.85% each: Head Plumes 0→20.85%🟢
+  - Res 56% 🟩 → 51.36% 🟩 (1), 0.27× ×3 scale, +23.33% each: Left Eye 0→23.33%🟢
+  - Res 56% 🟩 → 51.23% 🟩 (1), 0.27× ×3 scale, +24% each: Right Eye 0→24%🟢
+  Total: +358.17% damage  ·  ❤️ Swift 1522.06% → **1247.93%** (-274.13)
+⏳ Beat 4 health: ❤️ Glacia 2187.74% (-0.5% exertion) | ❤️ Swift 1247.43% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift meeting Glacia's Blizzard with an attack of her own 15%, rolled 34 → no
+    Glacia's Blizzard landing devastatingly 2%, rolled 45 → no
+    Swift frozen by Blizzard 10%, rolled 55 → no
+    Swift knocked out of the air 25%, rolled 71 → she stays up
+    the shelf doing something by itself 5%, rolled 42 → nothing
+----------------------------------------
+
+################ BEAT 5
+##### STDOUT
+────────────────────────────────────────
+Attack 5 — Swift → Glacia: STEEL WING (targeted, DODGED, energy 74→64)
+----------------------------------------
+💨 **Glacia dodges** Swift's STEEL WING (dodge chance 16% · how: slips aside)
+Calculations: Base 56, Steel vs Ice/Flying ×2 (super effective!), targeted ×2 × 1.26 (closing on her
+      at speed in the air, 1 pass of speed behind it) → Effective 283.36. Res loss 59.51 each (power
+      × 0.21; the damage scale doesn't change it). (no hit)
+↩️ **Glacia counters!**
+    Belly
+  Total: +21.3% damage  ·  ❤️ Swift 1247.43% → **1204.86%** (-42.57)
+⏳ Beat 5 health: ❤️ Glacia 2187.24% (-0.5% exertion) | ❤️ Swift 1187.84% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift's blow sliding off the Left Wing it was aimed at 20%, rolled 99 → on target
+    Glacia dodging Swift's attack 16%, rolled 15 → DODGED
+    Glacia countering after the dodge 35%, rolled 23 → she counters
+    Glacia raking back at Swift as they cross 30%, rolled 28 → she rakes back
+    the shelf doing something by itself 5%, rolled 81 → nothing
+----------------------------------------
+
+################ BEAT 6
+##### STDOUT
+────────────────────────────────────────
+Attack 6 — Glacia → Swift: AIR SLASH (spread — Chest, Forked Tail, energy 64→46)
+The wind found Swift's chest and forked tail.
+----------------------------------------
+⚔️ **Glacia → Swift**: Air Slash
+  Power **37.5** = base 30 × 1 (Flying vs Normal/Flying) × 1.25 (spread)
+    Chest
+    Forked Tail
+  Total: +52.09% damage  ·  ❤️ Swift 1187.84% → **1131.89%** (-55.95)
+⏳ Beat 6 health: ❤️ Glacia 2186.74% (-0.5% exertion) | ❤️ Swift 1131.23% (-0.5% exertion, -0.16%
+      injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift meeting Glacia's Air Slash with an attack of her own 15%, rolled 95 → no
+    Swift dodging Glacia's attack 5%, rolled 69 → it lands
+    Glacia's Air Slash landing devastatingly 2%, rolled 52 → no
+    Swift flinched by Air Slash 30%, rolled 78 → no
+    Swift knocked out of the air 15%, rolled 87 → she stays up
+    the shelf doing something by itself 5%, rolled 33 → nothing
+----------------------------------------
+
+################ BEAT 7
+##### STDOUT
+────────────────────────────────────────
+Attack 7 — Swift → Glacia: STEEL WING (targeted — Left Wing, Left Shoulder, energy 74→64)
+----------------------------------------
+⚔️ **Swift → Glacia**: Swift doubles back, wings flashing hard and grey, and rakes the Articuno's
+      left wing as she passes
+🪽🪽 **Air-to-air pass**: both on the wing, closing at speed · speed built: 2 passes
+↩️ **Glacia rakes back at Swift as they cross**
+    Forked Tail
+  Total: +36.19% damage  ·  ❤️ Swift 1131.23% → **1101.69%** (-29.54)
+  Power **283.36** = base 56 × 2 (Steel vs Ice/Flying, super effective!) × 2 (targeted) × 1.26
+        (closing on her at speed in the air, 1 pass of speed behind it)
+  Jarred next to it (Left Shoulder): power 70.84 (×0.5)
+    Left Wing
+    Left Shoulder
+  Total: +129.24% damage  ·  ❤️ Glacia 2186.74% → **2091.64%** (-95.1)
+🪶 **Glacia strains her hurt Left Wing** to stay in the air → +5.05% damage, ❤️ -6.24
+⏳ Beat 7 health: ❤️ Glacia 2083.99% (-0.5% exertion, -0.91% injuries) | ❤️ Swift 1100.67% (-0.5%
+      exertion, -0.52% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift's blow sliding off the Left Wing it was aimed at 20%, rolled 80 → on target
+    Glacia dodging Swift's attack 16%, rolled 48 → it lands
+    Swift's Steel Wing landing devastatingly 2%, rolled 40 → no
+    Glacia knocked out of the air 23%, rolled 60 → she stays up
+    Glacia raking back at Swift as they cross 30%, rolled 10 → she rakes back
+    the shelf doing something by itself 5%, rolled 19 → nothing
+----------------------------------------
+
+################ BEAT 8
+##### STDOUT
+────────────────────────────────────────
+Attack 8 — Glacia → Swift: FREEZE-DRY (spread — Right Wing, Chest, energy 56→38)
+The cold found Swift's right wing and chest.
+----------------------------------------
+⚔️ **Glacia → Swift**: a breath of cold so dry it smokes, laid along the swallow's right wing
+  Power **70** = base 28 × 2 (Ice vs Normal/Flying, super effective!) × 1.25 (spread)
+    Right Wing
+    Chest
+  Total: +83.22% damage  ·  ❤️ Swift 1100.67% → **985.34%** (-115.33)
+🪶 **Glacia strains her hurt Left Wing** to stay in the air → +6.41% damage, ❤️ -8.11
+⏳ Beat 8 health: ❤️ Glacia 2074.48% (-0.5% exertion, -0.91% injuries) | ❤️ Swift 983.76% (-0.5%
+      exertion, -1.08% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift meeting Glacia's Freeze-Dry with an attack of her own 15%, rolled 61 → no
+    Swift dodging Glacia's attack 5%, rolled 15 → it lands
+    Glacia's Freeze-Dry landing devastatingly 2%, rolled 25 → no
+    Swift frozen by Freeze-Dry 10%, rolled 99 → no
+    Swift knocked out of the air 22%, rolled 47 → she stays up
+    the shelf doing something by itself 5%, rolled 45 → nothing
+----------------------------------------
+
+################ BEAT 9
+##### STDOUT
+────────────────────────────────────────
+Attack 9 — Swift → Glacia: BRAVE BIRD (targeted — Chest, Throat, energy 74→64)
+----------------------------------------
+⚔️ **Swift → Glacia**: Swift folds her wings and throws her whole body, wrapped in blue fire
+🪽🪽 **Air-to-air pass**: both on the wing, closing at speed · speed built: 3 passes
+↩️ **Glacia rakes back at Swift as they cross**
+    Right Wingtip
+  Total: +31.96% damage  ·  ❤️ Swift 859.85% → **840.08%** (-19.77)
+  Power **264.96** = base 96 × 1 (Flying vs Ice/Flying) × 2 (targeted) × 1.38 (closing on her at
+        speed in the air, 2 passes of speed behind it)
+  Jarred next to it (Throat): power 66.24 (×0.5)
+    Chest
+              (softened from 147.96)
+    Throat
+  Total: +143.24% damage  ·  ❤️ Glacia 2074.48% → **1835.81%** (-238.67)
+💢 **Recoil**: Swift's own Brave Bird jars back into her (power 52.99)
+    Throat
+              (softened from 134.41)
+    Right Shoulder
+  Total: +62.84% damage  ·  ❤️ Swift 983.76% → **859.85%** (-123.91)
+🪶 **Glacia strains her hurt Left Wing** to stay in the air → +7.05% damage, ❤️ -9.16
+- Glacia is no longer airborne
+⏳ Beat 9 health: ❤️ Glacia 1823.42% (-0.5% exertion, -2.73% injuries) | ❤️ Swift 837.82% (-0.5%
+      exertion, -1.76% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift's blow sliding off the Chest it was aimed at 5%, rolled 10 → on target
+    Glacia dodging Swift's attack 9%, rolled 95 → it lands
+    Swift's Brave Bird landing devastatingly 2%, rolled 53 → no
+    Brave Bird: thrown 40%, rolled 98 → no
+    Glacia knocked out of the air 29%, rolled 86 → she stays up
+    Glacia breathless by the blow to her Chest 30%, rolled 70 → no
+    Glacia raking back at Swift as they cross 30%, rolled 20 → she rakes back
+    the shelf doing something by itself 5%, rolled 49 → nothing
+----------------------------------------
+
+################ BEAT 10
+##### STDOUT
+────────────────────────────────────────
+Attack 10 — Glacia → Swift: HURRICANE (whole body, energy 48→18)
+----------------------------------------
+⚔️ **Glacia → Swift**: she turns the wind itself on the swallow and slams her out of the sky onto
+      the scree
+💥 **CLASH**: Swift meets it with AIR SLASH (force with luck: 76.2 against 37.6) — Swift's TURNS IT
+      BACK onto Glacia at ×0.51
+    Crest
+    Left Eye
+    Head
+  Total: +49.79% damage  ·  ❤️ Glacia 1823.42% → **1782.92%** (-40.5)
+😩 **Glacia overcommits**, sloppy with tiredness (×0.6) — off balance after it
+- Swift is no longer airborne
+⏳ Beat 10 health: ❤️ Glacia 1779.69% (-0.5% exertion, -2.73% injuries) | ❤️ Swift 835.56% (-0.5%
+      exertion, -1.76% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Glacia overcommitting, sloppy with tiredness 12%, rolled 3 → SLOPPY
+    Swift meeting Glacia's Hurricane with an attack of her own 15%, rolled 3 → CLASH
+    the clash: Glacia's Hurricane 38 against Swift's Air Slash 76 → it is turned back
+    the shelf doing something by itself 5%, rolled 89 → nothing
+----------------------------------------
+
+################ BEAT 11
+##### STDOUT
+────────────────────────────────────────
+Attack 11 — Swift → Glacia: AERIAL ACE (targeted — Beak, Crest, Right Wingtip, energy 48→38)
+The talons found Glacia's beak and right wingtip, the force of it jarring her crest.
+----------------------------------------
+🪽 **Swift takes to the air** (up for 6 beats; only ranged attacks reach her)
+⚔️ **Swift → Glacia**: Swift is off the scree in a flash and cuts back down across the grounded
+      Articuno's head
+🪽 **Dive from above** (×1.3 power) — she climbs back up · speed built: 1 pass (her next dive lands
+      harder)
+💨 **Strafing pass**: her speed carries her round for a second, quicker blow on Glacia's Right
+      Wingtip (power 52.42, listed last)
+🎯 Off target: aimed at Glacia's Head, lands on her Beak
+  Power **149.76** = base 48 × 1 (Flying vs Ice/Flying) × 2 (targeted) × 1.2 (caught off balance) ×
+        1.3 (diving from above)
+  Jarred next to it (Crest): power 37.44 (×0.5)
+    Beak
+    Crest
+    Right Wingtip
+  Total: +123.12% damage  ·  ❤️ Glacia 1779.69% → **1722.59%** (-57.1)
+- Glacia is no longer off balance
+⏳ Beat 11 health: ❤️ Glacia 1719.36% (-0.5% exertion, -2.73% injuries) | ❤️ Swift 833.3% (-0.5%
+      exertion, -1.76% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift's blow sliding off the Head it was aimed at 15%, rolled 0 → it lands beside it
+    Glacia dodging Swift's attack 6%, rolled 48 → it lands
+    Swift's Aerial Ace landing devastatingly 3%, rolled 79 → no
+    Glacia knocked staggering by the blow to her Beak 19%, rolled 40 → she holds her ground
+    Glacia rocked by the blow to her Beak 55%, rolled 95 → she takes it where she is
+    Glacia catching Swift as she dives 15%, rolled 72 → no
+    Glacia striking back as Swift goes past 10%, rolled 17 → no
+    Swift climbing back up after the dive 69%, rolled 13 → back up
+    Swift coming round for a strafing pass 21%, rolled 15 → she strafes
+    the shelf doing something by itself 5%, rolled 7 → nothing
+----------------------------------------
+
+################ BEAT 12
+##### STDOUT
+────────────────────────────────────────
+Attack 12 — Glacia → Swift: ICE SHARD (targeted, energy 28→18)
+----------------------------------------
+⚔️ **Glacia → Swift**: without moving her feet she flicks a dart of ice up at the swallow's wing
+💥 **CLASH**: Swift meets it with AIR SLASH (force with luck: 96.4 against 110.4) — they CANCEL OUT:
+      nothing lands
+⏳ Beat 12 health: ❤️ Glacia 1716.13% (-0.5% exertion, -2.73% injuries) | ❤️ Swift 831.04% (-0.5%
+      exertion, -1.76% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Glacia overcommitting, sloppy with tiredness 12%, rolled 83 → no
+    Swift meeting Glacia's Ice Shard with an attack of her own 15%, rolled 2 → CLASH
+    the clash: Glacia's Ice Shard 110 against Swift's Air Slash 96 → they cancel out
+    the shelf doing something by itself 5%, rolled 22 → nothing
+----------------------------------------
+  >> HER OWN WOUNDS (once in this part, in her body and her head): Glacia takes stock of her left wing (very painful): how each feels right now, what it stops her doing, a glance down at it or a test of it, and what she thinks of it. WHAT GLACIA SEES OF SWIFT'S HURT (pick one or two, in your own words, as Glacia watches her; then what Glacia makes of it, coldly or not): a hitch at the top of each breath, quickly hidden; the ears flick back each time the hurt part is moved; the tail drags or hangs still, its rhythm gone (her forked tail).
+  >> HER OWN WOUNDS (once in this part, in her body and her head): Swift takes stock of her forked tail (very painful): how each feels right now, what it stops her doing, a glance down at it or a test of it, and what she thinks of it. WHAT SWIFT SEES OF GLACIA'S HURT (pick one or two, in your own words, as Swift watches her; then what Swift makes of it, coldly or not): a small wince crosses her face whenever she shifts her weight; a hitch at the top of each breath, quickly hidden; the hurt limb is held in close and kept out of use (her left wing).
+  >> HER OWN WOUNDS (once in this part, in her body and her head): Glacia takes stock of her left wing (very painful): how each feels right now, what it stops her doing, a glance down at it or a test of it, and what she thinks of it. WHAT GLACIA SEES OF SWIFT'S HURT (pick one or two, in your own words, as Glacia watches her; then what Glacia makes of it, coldly or not): a hitch at the top of each breath, quickly hidden; the ears flick back each time the hurt part is moved; the tail drags or hangs still, its rhythm gone (her forked tail).
+  >> HER OWN WOUNDS (once in this part, in her body and her head): Swift takes stock of her forked tail (very painful): how each feels right now, what it stops her doing, a glance down at it or a test of it, and what she thinks of it. WHAT SWIFT SEES OF GLACIA'S HURT (pick one or two, in your own words, as Swift watches her; then what Swift makes of it, coldly or not): a small wince crosses her face whenever she shifts her weight; a hitch at the top of each breath, quickly hidden; the hurt limb is held in close and kept out of use (her left wing).
+################ BEAT 13
+##### STDOUT
+────────────────────────────────────────
+Attack 13 — Swift → Glacia: STEEL WING (targeted — Left Wing, energy 27→17)
+The wing found Glacia's left wing.
+----------------------------------------
+⚔️ **Swift → Glacia**: Swift drops on her from above and brings a steel-hard wing down across the
+      wing she has already hurt twice
+😩 **Swift overcommits**, sloppy with tiredness (×0.6) — off balance after it
+🪽 **Dive from above** (×1.3 power) — she climbs back up · speed built: 2 passes (her next dive lands
+      harder)
+  Power **192.19** = base 56 × 2 (Steel vs Ice/Flying, super effective!) × 2 (targeted) × 0.6
+        (overcommitted, sloppy with tiredness) × 1.43 (diving from above, with the speed of 1 pass
+        behind it)
+    Left Wing
+              (softened from 241.8)
+  Total: +180.79% damage  ·  ❤️ Glacia 1716.13% → **1543.07%** (-173.06)
+🥴 **Glacia is staggered** (1 beat: several steps, close to going down to her right)
+⏳ Beat 13 health: ❤️ Glacia 1538.44% (-0.5% exertion, -4.13% injuries) | ❤️ Swift 828.78% (-0.5%
+      exertion, -1.76% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift overcommitting, sloppy with tiredness 12%, rolled 10 → SLOPPY
+    Swift's blow sliding off the Left Wing it was aimed at 20%, rolled 75 → on target
+    Glacia dodging Swift's attack 10%, rolled 19 → it lands
+    Swift's Steel Wing landing devastatingly 2%, rolled 3 → no
+    Glacia's left wing going numb 30%, rolled 76 → it doesn't
+    Glacia knocked staggering by the blow to her Left Wing 75%, rolled 33 → she stumbles
+    Glacia catching Swift as she dives 15%, rolled 54 → no
+    Glacia striking back as Swift goes past 10%, rolled 83 → no
+    Swift climbing back up after the dive 69%, rolled 6 → back up
+    Swift coming round for a strafing pass 21%, rolled 74 → no
+    the shelf doing something by itself 5%, rolled 35 → nothing
+----------------------------------------
+
+################ BEAT 14
+##### STDOUT
+----------------------------------------
+⏸️ **Breather**: she stands on the shelf with her hurt wing held half open, breathing the cold in
+      slowly, watching the swallow circle
+- Glacia is no longer staggered
+- Swift is no longer off balance
+⏳ Beat 14 health: ❤️ Glacia 1534.31% (-4.13% injuries) | ❤️ Swift 827.02% (-1.76% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    the shelf doing something by itself 5%, rolled 57 → nothing
+----------------------------------------
+  >> STILL FEELING IT: Glacia's left wing has not let her be since last beat: somewhere in this beat (once or twice, never every sentence) she nurses it: a paw pressed to it or rubbing it, a wince or a sharp breath when she moves, favouring it as she gets up or turns, a stiffness the other fighter might notice.
+  >> HER OWN WOUNDS (once in this part, in her body and her head): Glacia takes stock of her chest (very painful): how each feels right now, what it stops her doing, a glance down at it or a test of it, and what she thinks of it. WHAT GLACIA SEES OF SWIFT'S HURT (pick one or two, in your own words, as Glacia watches her; then what Glacia makes of it, coldly or not): she keeps half-turning the hurt side away; her breathing has gone short and quick, the ribs working under the fur.
+  >> HER OWN WOUNDS (once in this part, in her body and her head): Glacia takes stock of her chest (very painful): how each feels right now, what it stops her doing, a glance down at it or a test of it, and what she thinks of it. WHAT GLACIA SEES OF SWIFT'S HURT (pick one or two, in your own words, as Glacia watches her; then what Glacia makes of it, coldly or not): she keeps half-turning the hurt side away; her breathing has gone short and quick, the ribs working under the fur.
+  >> WHAT SWIFT SEES OF GLACIA'S HURT (pick one or two, in your own words, as Swift watches her; then what Swift makes of it, coldly or not): a wince she can no longer hide each time she moves; her mouth hangs a little open; she breathes through it now; the hurt limb is held in close and kept out of use (her left wing).
+################ BEAT 15
+##### STDOUT
+────────────────────────────────────────
+Attack 14 — Swift → Glacia: PECK (targeted — Head, Beak, energy 37→27)
+Swift's beak caught Glacia hard on the head, and the shock ran on into her beak.
+----------------------------------------
+⚔️ **Swift → Glacia**: Swift hovers in her face and pecks, three fast jabs at the crown
+🪽 **Dive from above** (×1.3 power) — **Glacia catches her and drags her out of the air**
+  Power **90.48** = base 29 × 1 (Flying vs Ice/Flying) × 2 (targeted) × 1.56 (diving from above,
+        with the speed of 2 passes behind it)
+  Jarred next to it (Beak): power 22.62 (×0.5)
+    Head
+    Beak
+  Total: +63.03% damage  ·  ❤️ Glacia 1534.31% → **1456.21%** (-78.1)
+🥴 **Glacia is staggered** (1 beat: a single step backward)
+🧗 Swift stays down this beat: she only just went down, so there is no get-up roll yet (the first one
+      is next beat)
+⏳ Beat 15 health: ❤️ Glacia 1451.1% (-0.5% exertion, -4.61% injuries) | ❤️ Swift 824.76% (-0.5%
+      exertion, -1.76% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift's blow sliding off the Head it was aimed at 25%, rolled 90 → on target
+    Glacia dodging Swift's attack 14%, rolled 87 → it lands
+    Swift's Peck landing devastatingly 2%, rolled 61 → no
+    Glacia knocked staggering by the blow to her Head 42%, rolled 12 → she stumbles
+    Glacia catching Swift as she dives 15%, rolled 6 → she catches her
+    the shelf doing something by itself 5%, rolled 9 → nothing
+----------------------------------------
+
+################ BEAT 16
+##### STDOUT
+────────────────────────────────────────
+Attack 15 — Glacia → Swift: BLIZZARD (whole body, energy 48→18)
+----------------------------------------
+⚔️ **Glacia → Swift**: the whole sky over the shelf goes white
+  Power **25.5** = base 15 × 2 (Ice vs Normal/Flying, super effective!) × 1 (whole-body) × 0.85
+        (still staggering)
+  22 parts of Swift hit:
+  - Res 117.45% 🟦 → 111.6% 🟦 (1), 0.11× ×3 scale, +8.21% each: Upper Back 7.68→15.9%🟢
+  - Res 106.33% 🟦 → 99.41% 🟩 (1), 0.14× ×3 scale, +12.12% each: Left Shoulder 9.39→21.51%🟢
+  - Res 105.89% 🟦 → 99.74% 🟩 (1), 0.14× ×3 scale, +10.76% each: Lower Back 10.15→20.91%🟢
+  - Res 105.67% 🟦 → 100.88% 🟦 (1), 0.14× ×3 scale, +9.59% each: Beak 11.06→20.65%🟢
+  - Res 99.63% 🟩 → 92.57% 🟩 (1), 0.16× ×3 scale, +13.61% each: Right Shoulder 22.52→36.13%🟡
+  - Res 96.47% 🟩 → 90.41% 🟩 (1), 0.17× ×3 scale, +14.35% each: Head 13.78→28.12%🟢
+  - Res 96.43% 🟩 → 90.69% 🟩 (1), 0.17× ×3 scale, +12.12% each: Left Talon 12.82→24.94%🟢
+  - Res 96.19% 🟩 → 90.91% 🟩 (1), 0.17× ×3 scale, +11.18% each: Right Talon 13.27→24.45%🟢
+  - Res 90.29% 🟩 → 82.54% 🟩 (1), 0.20× ×3 scale, +17.71% each: Right Thigh 13.73→31.44%🟡
+  - Res 89.83% 🟩 → 83.94% 🟩 (1), 0.20× ×3 scale, +13.64% each: Left Thigh 14.76→28.4%🟢
+  - Res 82.9% 🟩 → 76.2% 🟩 (1), 0.25× ×3 scale, +18.84% each: Left Wing 34.72→53.55%🟡
+  - Res 79.77% 🟩 → 71.81% 🟩 (1), 0.27× ×3 scale, +20.83% each: Belly 37.78→58.6%🟡
+  - Res 75.62% 🟩 → 68.41% 🟨 (1), 0.30× ×3 scale, +21.99% each: Right Wing 56.96→78.95%🟠
+  - Res 73.15% 🟩 → 66.52% 🟨 (1), 0.31× ×3 scale, +21.6% each: Chest 82.03→103.63%🔴
+  - Res 71.92% 🟩 → 67.58% 🟩 (1), 0.28× ×3 scale, +18.48% each: Neck 18.89→37.36%🟡
+  - Res 67.98% 🟩 → 61.22% 🟨 (1), 0.31× ×3 scale, +25.32% each: Left Wingtip 32.36→57.68%🟡
+  - Res 63.44% 🟩 → 57.35% 🟨 (1), 0.35× ×3 scale, +23.92% each: Right Wingtip 52.93→76.85%🟠
+  - Res 56.98% 🟩 → 51.18% 🟩 (1), 0.32× ×3 scale, +27.27% each: Head Plumes 20.85→48.12%🟡
+  - Res 55.66% 🟨 → 46.86% 🟧 (1), 0.43× ×3 scale, +35.52% each: Forked Tail 115.25→150.77%🟣
+  - Res 52.16% 🟨 → 42.34% 🟨 (1), 0.41× ×3 scale, +36.33% each: Throat 75.55→111.88%🔴
+  - Res 51.36% 🟩 → 47.76% 🟩 (1), 0.33× ×3 scale, +21.65% each: Left Eye 23.33→44.98%🟡
+  - Res 51.23% 🟩 → 47.73% 🟩 (1), 0.33× ×3 scale, +21.15% each: Right Eye 24→45.15%🟡
+  Total: +416.19% damage  ·  ❤️ Swift 824.76% → **533.34%** (-291.42)
+↪️ Swift rocked by the throat hit: she flinches in on herself from the cold, muscles going tight
+      around the spot
+🧗 **Swift gets up** on the third try (using the bare rock; pushes straight up)
+      get-up roll 0.35 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+   💥 the drop on try 2 hurts: Right Wing damage 78.95% → **87.29%** · ❤️ -0.58 (softened from 11.08)
+- Glacia is no longer staggered
+⏳ Beat 16 health: ❤️ Glacia 1445.99% (-0.5% exertion, -4.61% injuries) | ❤️ Swift 526.46% (-0.5%
+      exertion, -5.79% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Glacia overcommitting, sloppy with tiredness 12%, rolled 48 → no
+    Glacia's Blizzard landing devastatingly 2%, rolled 78 → no
+    Swift frozen by Blizzard 10%, rolled 67 → no
+    Swift rocked by the blow to her Throat 55%, rolled 22 → it moves her
+    Swift knocked out by the blow 4%, rolled 71 → she stays conscious
+    Swift's drop back down hurting 60%, rolled 72 → it doesn't hurt
+    Swift's drop back down hurting 60%, rolled 2 → it jars her
+    the shelf doing something by itself 5%, rolled 11 → nothing
+----------------------------------------
+
+################ BEAT 17
+##### STDOUT
+────────────────────────────────────────
+Attack 16 — Swift → Glacia: BRAVE BIRD (targeted — Left Wing, Left Wingtip, energy 29→19)
+----------------------------------------
+🪽 **Swift takes to the air** (up for 5 beats; only ranged attacks reach her)
+⚔️ **Swift → Glacia**: Swift hauls herself into the air and throws everything she has left at the
+      ruined wing
+🪽 **Dive from above** (×1.3 power) — she climbs back up · speed built: 1 pass (her next dive lands
+      harder)
+↩️ **Glacia strikes Swift as she goes past**
+    Throat
+              (softened from 605.56)
+  Total: +88.14% damage  ·  ❤️ Swift 419.87% → **318.17%** (-101.7)
+  Power **249.6** = base 96 × 1 (Flying vs Ice/Flying) × 2 (targeted) × 1.3 (diving from above)
+  Jarred next to it (Left Wingtip): power 62.4 (×0.5)
+    Left Wing
+              (the part counts +237.91: past 300% its number climbs slowly) · 🫥 it goes NUMB for 1
+              beat
+              (softened from 1163.33)
+    Left Wingtip
+  Total: +479.11% damage  ·  ❤️ Glacia 1445.99% → **1221.01%** (-224.98)
+💢 **Recoil**: Swift's own Brave Bird jars back into her (power 49.92)
+    Beak
+    Throat
+              (softened from 215.72)
+  Total: +67.59% damage  ·  ❤️ Swift 526.46% → **419.87%** (-106.59)
+🥴 **Glacia is staggered** (1 beat: several steps, close to going down to her right)
+🔥 **Swift: ADRENALINE SURGE!** (3 beats: harder hits, better escapes and dodges, energy refill)
+⏳ Beat 17 health: ❤️ Glacia 1215.9% (-0.5% exertion, -4.61% injuries) | ❤️ Swift 308.48% (-0.5%
+      exertion, -9.19% injuries, now spent)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift overcommitting, sloppy with tiredness 12%, rolled 33 → no
+    Swift's blow sliding off the Left Wing it was aimed at 20%, rolled 62 → on target
+    Glacia dodging Swift's attack 10%, rolled 97 → it lands
+    Swift's Brave Bird landing devastatingly 3%, rolled 27 → no
+    Glacia's left wing going numb 30%, rolled 27 → it goes NUMB
+    Brave Bird: thrown 40%, rolled 68 → no
+    Glacia doubled over by the blow to her Left Wing 15%, rolled 95 → no
+    Glacia knocked staggering by the blow to her Left Wing 75%, rolled 41 → she stumbles
+    Glacia catching Swift as she dives 15%, rolled 80 → no
+    Glacia striking back as Swift goes past 10%, rolled 8 → she strikes back
+    Swift climbing back up after the dive 55%, rolled 1 → back up
+    Swift coming round for a strafing pass 10%, rolled 99 → no
+    the shelf doing something by itself 5%, rolled 96 → nothing
+----------------------------------------
+
+################ BEAT 18
+##### STDOUT
+────────────────────────────────────────
+Attack 17 — Glacia → Swift: ICE BEAM (spread — Chest, energy 28→10)
+Impact — Swift knocked out of the air: the bare rock
+----------------------------------------
+⚔️ **Glacia → Swift**: a beam of white cold straight up into the swallow's breast
+🩹 Swift is guarding her Throat (blows there ×0.85; her back is open, ×1.1)
+🪶 **Swift is knocked out of the air**: she falls
+  Power **78.62** = base 37 × 2 (Ice vs Normal/Flying, super effective!) × 1.25 (spread) × 0.85
+        (still staggering)
+    Chest
+              13.88 from the softened health
+              (softened from 266.57)
+  Total: +96.74% damage  ·  ❤️ Swift 308.48% → **180.71%** (-127.77)
+🪨 **Swift lands hard** (knocked out of the air: the bare rock), ends up face-up
+- the bare rock (solid, power 13 each): Upper Back, Right Shoulder, Right Thigh
+    Upper Back
+    Right Shoulder
+    Right Thigh
+  Total: +21.49% damage  ·  ❤️ Swift 180.71% → **157.57%** (-23.14)
+🧗 Swift stays down this beat: she only just went down, so there is no get-up roll yet (the first one
+      is next beat)
+🫥 **Glacia's Left Wing: the numbness wears off** and the pain floods back (540.93%)
+- Glacia is no longer staggered
+⏳ Beat 18 health: ❤️ Glacia 1210.79% (-0.5% exertion, -4.61% injuries) | ❤️ Swift 145.08% (-0.5%
+      exertion, -11.99% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Glacia overcommitting, sloppy with tiredness 12%, rolled 42 → no
+    Swift meeting Glacia's Ice Beam with an attack of her own 15%, rolled 97 → no
+    Swift dodging Glacia's attack 3%, rolled 26 → it lands
+    Glacia's Ice Beam landing devastatingly 2%, rolled 18 → no
+    Swift frozen by Ice Beam 10%, rolled 53 → no
+    Swift knocked out of the air 48%, rolled 21 → she falls
+    Swift breathless by the blow to her Chest 30%, rolled 45 → no
+    Swift tumbling on after the landing 30%, rolled 80 → she stops where she lands
+    the landing finding every sore spot on Swift 3%, rolled 99 → no
+    Swift rolling through the landing 2%, rolled 66 → she stays down
+    Swift knocked out by the fall out of the sky 24%, rolled 65 → she stays conscious
+    the shelf doing something by itself 5%, rolled 54 → nothing
+----------------------------------------
+
+################ BEAT 19
+##### STDOUT
+────────────────────────────────────────
+Attack 18 — Swift → Glacia: AERIAL ACE (targeted — Right Wing, energy 59→49)
+Swift's talons raked Glacia's right wing.
+Swift beat her wings hard at last and pushed up onto her talons, swaying.
+----------------------------------------
+⚔️ **Swift → Glacia**: one more cut, low
+🛡️ **Glacia blocks** with her Right Wing (chance 2.9%): it lands there instead, at ×0.45
+  Power **120** = base 48 × 1 (Flying vs Ice/Flying) × 2 (targeted) × 1.25 (adrenaline)
+    Right Wing
+  Total: +20.31% damage  ·  ❤️ Glacia 1210.79% → **1195.92%** (-14.87)
+🧗 **Swift gets up** on the third try (using the bare rock; climbs what she leans on)
+      get-up roll 0.34 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+   💥 the drop on try 2 hurts: Right Wing damage 87.29% → **93.7%** · ❤️ -8.97
+⏳ Beat 19 health: ❤️ Glacia 1190.81% (-0.5% exertion, -4.61% injuries) | ❤️ Swift 122.99% (-0.5%
+      exertion, -12.62% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift throwing everything into one last blow 50%, rolled 55 → no
+    Swift overcommitting, sloppy with tiredness 12%, rolled 89 → no
+    Swift's blow sliding off the Neck it was aimed at 45%, rolled 97 → on target
+    Glacia dodging Swift's attack 11%, rolled 84 → it lands
+    Glacia getting a guard up against Swift's Aerial Ace 3%, rolled 1 → BLOCKED
+    Swift's drop back down hurting 60%, rolled 19 → it jars her
+    the shelf doing something by itself 5%, rolled 65 → nothing
+----------------------------------------
+
+################ BEAT 20
+##### STDOUT
+────────────────────────────────────────
+Attack 19 — Glacia → Swift: FREEZE-DRY (spread — Right Wing, Forked Tail, energy 20→2)
+The cold found Swift's right wing and forked tail.
+----------------------------------------
+⚔️ **Glacia → Swift**: a breath of smoking cold over the swallow's good wing
+🩹 Swift is guarding her Throat (blows there ×0.85; her back is open, ×1.1)
+  Power **70** = base 28 × 2 (Ice vs Normal/Flying, super effective!) × 1.25 (spread)
+    Right Wing
+              from the softened health
+              (softened from 100.87)
+    Forked Tail
+              (softened from 121.55)
+  Total: +173.7% damage  ·  ❤️ Swift 122.99% → **-66.55%** (-189.54)
+- Swift's adrenaline surge is over
+⏳ Beat 20 health: ❤️ Glacia 1185.7% (-0.5% exertion, -4.61% injuries) | ❤️ Swift -81.07% (-0.5%
+      exertion, -14.02% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Glacia overcommitting, sloppy with tiredness 12%, rolled 33 → no
+    Swift meeting Glacia's Freeze-Dry with an attack of her own 15%, rolled 98 → no
+    Swift dodging Glacia's attack 4%, rolled 32 → it lands
+    Glacia's Freeze-Dry landing devastatingly 2%, rolled 88 → no
+    Swift frozen by Freeze-Dry 10%, rolled 28 → no
+    Swift knocked out by the blow 24%, rolled 66 → she stays conscious
+    Swift collapsing on her own (below zero) 3%, rolled 25 → she stays up
+    the shelf doing something by itself 5%, rolled 28 → nothing
+----------------------------------------
+
+################ BEAT 21
+##### STDOUT
+────────────────────────────────────────
+Attack 20 — Swift → Glacia: QUICK ATTACK (targeted — Head, Left Eye, Neck, energy 59→49)
+Swift's blow caught Glacia hard on the head, jarring her left eye and neck as well.
+----------------------------------------
+⚔️ **Swift → Glacia**: a last streak straight at her head
+😩 **Swift overcommits**, sloppy with tiredness (×0.6) — off balance after it
+🩹 Glacia is guarding her Left Wing (blows there ×0.85; her right side is open, ×1.1)
+  Power **38.4** = base 32 × 1 (Normal vs Ice/Flying) × 2 (targeted) × 0.6 (overcommitted, sloppy
+        with tiredness)
+  Jarred next to it (Left Eye, Neck): power 9.6 (×0.5)
+    Head
+    Left Eye
+    Neck
+  Total: +56.65% damage  ·  ❤️ Glacia 1185.7% → **1081.44%** (-104.26)
+⏳ Beat 21 health: ❤️ Glacia 1075.25% (-0.5% exertion, -5.69% injuries) | ❤️ Swift -95.59% (-0.5%
+      exertion, -14.02% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift throwing everything into one last blow 50%, rolled 78 → no
+    Swift overcommitting, sloppy with tiredness 12%, rolled 9 → SLOPPY
+    Swift's blow sliding off the Head it was aimed at 25%, rolled 82 → on target
+    Glacia dodging Swift's attack 9%, rolled 63 → it lands
+    Swift's Quick Attack landing devastatingly 2%, rolled 96 → no
+    Glacia rocked by the blow to her Head 55%, rolled 72 → she takes it where she is
+    Swift collapsing on her own (below zero) 10%, rolled 49 → she stays up
+    the shelf doing something by itself 5%, rolled 36 → nothing
+----------------------------------------
+
+################ BEAT 22
+##### STDOUT
+────────────────────────────────────────
+Attack 21 — Glacia → Swift: ICE SHARD (targeted — Chest, energy 12→2)
+Glacia's cold smashed into Swift's chest.
+----------------------------------------
+⚔️ **Glacia → Swift**: a dart of ice into the swallow's chest
+🩹 Swift is guarding her Forked Tail (blows there ×0.85)
+  Power **115.2** = base 24 × 2 (Ice vs Normal/Flying, super effective!) × 2 (targeted) × 1.2
+        (caught off balance)
+    Chest
+              (the part counts +213.74: past 300% its number climbs slowly)
+              7.06 from the softened health
+              (softened from 1375.4)
+  Total: +257.14% damage  ·  ❤️ Swift -95.59% → **-227.44%** (-131.85)
+😮 **Swift is breathless** (1 beat)
+↪️ Swift rocked by the chest hit: she flinches in on herself from the cold, muscles going tight
+      around the spot, more than a blow that size should
+- Swift is no longer off balance
+⏳ Beat 22 health: ❤️ Glacia 1069.06% (-0.5% exertion, -5.69% injuries) | ❤️ Swift -241.96% (-0.5%
+      exertion, -14.02% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Glacia overcommitting, sloppy with tiredness 12%, rolled 28 → no
+    Glacia's blow sliding off the Chest it was aimed at 3%, rolled 62 → on target
+    Swift meeting Glacia's Ice Shard with an attack of her own 15%, rolled 75 → no
+    Swift dodging Glacia's attack 3%, rolled 57 → it lands
+    Glacia's Ice Shard landing devastatingly 4%, rolled 69 → no
+    Swift's chest going numb 30%, rolled 96 → it doesn't
+    Swift chilled by Ice Shard 50%, rolled 64 → no
+    Swift breathless by the blow to her Chest 30%, rolled 9 → breathless
+    Swift rocked by the blow to her Chest 74%, rolled 4 → it moves her
+    Swift knocked out by the blow 50%, rolled 64 → she stays conscious
+    Swift collapsing on her own (below zero) 12%, rolled 96 → she stays up
+    the shelf doing something by itself 5%, rolled 57 → nothing
+----------------------------------------
+
+################ BEAT 23
+##### STDOUT
+────────────────────────────────────────
+Attack 22 — Swift → Glacia: WING ATTACK (targeted — Right Wing, energy 56→0)
+Swift's wing slammed into Glacia's right wing.
+----------------------------------------
+⚔️ **Swift → Glacia**: a beat of her wing across the ruined one
+🔥 **LAST STAND**: Swift puts everything she has left into it (×1.3; energy → 0)
+🛡️ **Glacia blocks** with her Right Wing (chance 2.7%): it lands there instead, at ×0.45
+  Power **106.08** = base 48 × 1 (Flying vs Ice/Flying) × 2 (targeted) × 0.85 (the wind knocked out
+        of her) × 1.3 (last stand)
+    Right Wing
+  Total: +26.83% damage  ·  ❤️ Glacia 1069.06% → **1047.16%** (-21.9)
+- Swift is no longer breathless
+⏳ Beat 23 health: ❤️ Glacia 1040.97% (-0.5% exertion, -5.69% injuries) | ❤️ Swift -256.48% (-0.5%
+      exertion, -14.02% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift throwing everything into one last blow 50%, rolled 38 → LAST STAND
+    Swift's blow sliding off the Left Wing it was aimed at 20%, rolled 45 → on target
+    Glacia dodging Swift's attack 8%, rolled 49 → it lands
+    Glacia getting a guard up against Swift's Wing Attack 3%, rolled 0 → BLOCKED
+    Swift collapsing on her own (below zero) 13%, rolled 74 → she stays up
+    the shelf doing something by itself 5%, rolled 75 → nothing
+----------------------------------------
+
+################ BEAT 24
+##### STDOUT
+----------------------------------------
+⏸️ **Breather**: she has nothing left for that: she hangs back and drags in air
+⏳ Beat 24 health: ❤️ Glacia 1035.28% (-5.69% injuries) | ❤️ Swift -270.5% (-14.02% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift collapsing on her own (below zero) 13%, rolled 25 → she stays up
+    the shelf doing something by itself 5%, rolled 56 → nothing
+----------------------------------------
+  >> STILL FEELING IT: Swift's chest has not let her be since the beat before last: somewhere in this beat (once or twice, never every sentence) she nurses it: a paw pressed to it or rubbing it, a wince or a sharp breath when she moves, favouring it as she gets up or turns, a stiffness the other fighter might notice.
+  >> HER OWN WOUNDS (once in this part, in her body and her head): Glacia takes stock of her chest (very painful): how each feels right now, what it stops her doing, a glance down at it or a test of it, and what she thinks of it. WHAT GLACIA SEES OF SWIFT'S HURT (pick one or two, in your own words, as Glacia watches her; then what Glacia makes of it, coldly or not): every small movement costs her a visible flinch and a gasp; her body heaves with every breath, the whole of her moving with it.
+  >> HER OWN WOUNDS (once in this part, in her body and her head): Glacia takes stock of her chest (very painful): how each feels right now, what it stops her doing, a glance down at it or a test of it, and what she thinks of it. WHAT GLACIA SEES OF SWIFT'S HURT (pick one or two, in your own words, as Glacia watches her; then what Glacia makes of it, coldly or not): every small movement costs her a visible flinch and a gasp; her body heaves with every breath, the whole of her moving with it.
+  >> WHAT SWIFT SEES OF GLACIA'S HURT (pick one or two, in your own words, as Swift watches her; then what Swift makes of it, coldly or not): she sways a little where she stands before she catches it; her whole body rises and falls with each breath, the sides heaving.
+################ BEAT 25
+##### STDOUT
+────────────────────────────────────────
+Attack 23 — Swift → Glacia: PECK (targeted — Left Shoulder, Left Wing, Neck, energy 20→10)
+The beak found Glacia's left shoulder, the force of it jarring her left wing and neck.
+----------------------------------------
+⚔️ **Swift → Glacia**: a jab at the crown
+🩹 Glacia is guarding her Left Wing (blows there ×0.85; her right side is open, ×1.1)
+  Power **58** = base 29 × 1 (Flying vs Ice/Flying) × 2 (targeted)
+  Jarred next to it (Left Wing, Neck): power 14.5 (×0.5)
+    Left Shoulder
+    Left Wing
+              (the part counts +11.53: past 300% its number climbs slowly)
+              (softened from 102.08)
+    Neck
+  Total: +65.16% damage  ·  ❤️ Glacia 1035.28% → **932.67%** (-102.61)
+↪️ Glacia rocked by the left wing hit: her body twists away to the right with it
+🫠 **Swift collapses on her own** (-18% health: her body gives out, face-down) — collapse chance 13%;
+      she can try to get up as usual
+🧗 Swift stays down this beat: she only just went down, so there is no get-up roll yet (the first one
+      is next beat)
+⏳ Beat 25 health: ❤️ Glacia 926.48% (-0.5% exertion, -5.69% injuries) | ❤️ Swift -285.02% (-0.5%
+      exertion, -14.02% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Swift overcommitting, sloppy with tiredness 12%, rolled 73 → no
+    Swift's blow sliding off the Left Shoulder it was aimed at 15%, rolled 21 → on target
+    Glacia dodging Swift's attack 12%, rolled 77 → it lands
+    Swift's Peck landing devastatingly 2%, rolled 64 → no
+    Glacia rocked by the blow to her Left Wing 55%, rolled 1 → it moves her
+    Swift collapsing on her own (below zero) 13%, rolled 6 → she COLLAPSES
+    the shelf doing something by itself 5%, rolled 60 → nothing
+----------------------------------------
+
+################ BEAT 26
+##### STDOUT
+────────────────────────────────────────
+Attack 24 — Glacia → Swift: AIR SLASH (spread — Chest, Neck, energy 32→14)
+Glacia's wind smashed into Swift's chest, jarring her neck as well.
+----------------------------------------
+⚔️ **Glacia → Swift**: a blade of air
+  Power **37.5** = base 30 × 1 (Flying vs Normal/Flying) × 1.25 (spread)
+  Jarred next to it (Neck): power 15 (×0.5)
+    Chest
+              (the part counts +53.12: past 300% its number climbs slowly) · 🫥 it goes NUMB for 2
+              beats
+              (softened from 689.45)
+    Neck
+              (softened from 31.76)
+  Total: +114.82% damage  ·  ❤️ Swift -285.02% → **-426.53%** (-141.51)
+💥 **KNOCKOUT: Swift is out cold** — the blow (it cost her 9% of her full health; knockout chance
+      52.0%) (lying face-down) · she fades out
+- 🏆 **Winner: Glacia** (by knockout)
+⏳ Beat 26 health: ❤️ Glacia 923.14% (-0.5% exertion, -2.84% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Glacia overcommitting, sloppy with tiredness 12%, rolled 69 → no
+    Glacia's Air Slash landing devastatingly 3%, rolled 99 → no
+    Swift's chest going numb 30%, rolled 9 → it goes NUMB
+    Swift flinched by Air Slash 30%, rolled 82 → no
+    Swift breathless by the blow to her Chest 30%, rolled 97 → no
+    Swift doubled over by the blow to her Chest 15%, rolled 45 → no
+    Swift rocked by the blow to her Chest 74%, rolled 27 → it moves her
+    Swift knocked out by the blow 52%, rolled 21 → KNOCKED OUT
+----------------------------------------
+*** Swift is out: knocked out cold by the blow ***
+*** Winner: Glacia ***
+(The match is over. Keep pressing Enter to watch the aftermath: the loser may stir and even get back up. Type what happens to steer it, or /undo.)
+🩹 INJURY REPORT (what each will feel when it's over): Glacia won, but she paid for it. The left wing, where Swift's reckless dive and Swift's sharp jab landed: black with bruising, stiff and swollen for days; her chest took Swift's blur of speed straight and Swift's reckless dive: stiff by morning and tender to the touch; her head took Swift's sharp jab and Swift's blur of speed straight: bruised and aching; she'll favour it for days
+   Swift lost, and her body will remember every part of it. The chest, where Glacia's fast-flung chunk of ice and Glacia's blade of air landed: black with bruising, stiff and swollen for days; the forked tail, where Glacia's howling blizzard and Glacia's flash-freezes the target landed: swollen tight; it won't bear a touch for a week; her throat, from the recoil of her own Brave Bird and Glacia's blow as swift went past: it will throb every time she moves for days to come; her right wing took Swift's fall trying to get up and Glacia's flash-freezes the target: bruised deep and slow to mend
+📜 FIGHT SUMMARY
+  Key moments:
+   • beat 2: Glacia and Swift meet head-on in a clash (−2%)
+   • beat 4: Glacia's Blizzard hammers Swift's whole body (−18%)
+   • beat 10: Glacia and Swift meet head-on in a clash
+   • beat 12: Glacia and Swift meet head-on in a clash
+   • beat 16: Glacia's Blizzard hammers Swift's whole body (−19%)
+   • beat 17: Swift gets a surge of adrenaline
+   • beat 19: Glacia blocks Swift's Aerial Ace
+   • beat 20: Glacia's Freeze-Dry hammers Swift's forked tail (−12%)
+   • beat 23: Swift throws everything she has left into one last Wing Attack on Glacia's right wing (−1%)
+   • beat 26: Glacia's Air Slash knocks Swift out cold
+  Turning point: beat 4 — Glacia took the lead for good (95% vs 80%)
+  Damage dealt: Glacia 102%, Swift 53%
+  Biggest blow: beat 16, Glacia's Blizzard on Swift's whole body (−19%)
+  Swift's worst injuries: chest (devastated, from Glacia's Ice Shard, Glacia's Air Slash); forked tail (excruciating, from Glacia's Blizzard, Glacia's Freeze-Dry); throat (excruciating, from the recoil of her own Brave Bird, Glacia's blow as Swift went past)
+  Pins / escapes: Glacia 0 / 0, Swift 0 / 0
+  What decided it: Swift's chest was the wound that mattered: once it was ruined (by Glacia's Ice Shard, Glacia's Air Slash) every touch there sapped her; Glacia simply hurt her more (102% of Swift's strength against 53%)
+(The whole fight, with every beat's pictures and stats, was saved to /tmp/fightsim_simrun_ti762iiv/repo/exports/fight1_Glacia_vs_Swift_2026-10-19_1734.html; it is updated as the aftermath goes on. /exportfight saves it again anywhere you like.)
+
