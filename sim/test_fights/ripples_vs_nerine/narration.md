@@ -8,9 +8,15 @@ Styles for this fight: **Nerine** fights as a brawler, quick to close, grab, sho
 trunk and the sand. **Ripples** is patient and stubborn. She keeps her distance, waits for the rush, answers it, and
 binds whatever she can reach with her tails.
 
+**Reading the numbers:** under each beat, *Health* is each fighter's health at the start and end of the beat (Ripples' full health is 1700, Nerine's 1775), with her overall strength as a share of full. In knockouts-only fights it can go below zero. *Damage* is each body part that was hit that beat: its damage before → after and its pain level (minor under 30, sore 30, hurting 60, very painful 90, excruciating 150, devastated 300). A level in capitals is a new one. These are the numbers from the same run the narration follows (`engine_log.txt`).
+
 ---
 
 ## Beat 1 — Quick Attack
+
+> **Health:** Ripples 1700 → 1669 (98% of full, -31) · Nerine 1775 → 1774 (100% of full)
+>
+> **Damage to Ripples:** chest 0 → 17 (minor); right upper arm 0 → 6 (minor)
 
 Nerine didn't circle at all.
 
@@ -40,6 +46,10 @@ Nerine skipped back out of reach on the balls of her feet, grinning, the black c
 
 ## Beat 2 — Water Gun
 
+> **Health:** Ripples 1669 → 1669 (98% of full) · Nerine 1774 → 1750 (99% of full, -24)
+>
+> **Damage to Nerine:** head 0 → 7 (minor); muzzle 0 → 8 (minor); chest 0 → 5 (minor)
+
 Ripples gave ground on purpose: one step back, then another, letting Nerine see her retreat. She chittered low in
 her throat, *Tch-tch*. Her right arm was still tight against her side.
 
@@ -58,6 +68,10 @@ Ripples watched it fall short and filed that away. *Water's nothing to her. Same
 Nerine wiped her eyes with the back of one wrist and laughed through her nose. *That's it? That's what you've got?*
 
 ## Beat 3 — The grab, and the flurry
+
+> **Health:** Ripples 1669 → 1607 (95% of full, -62) · Nerine 1750 → 1750 (99% of full)
+>
+> **Damage to Ripples:** chest 17 → 34 (minor → SORE); right shoulder 0 → 14 (minor); right upper arm 6 → 29 (minor)
 
 She came in through the next spray before Ripples could think of anything else to use. She ducked under it, kept
 low, and closed both webbed paws on Ripples' right upper arm.
@@ -87,6 +101,10 @@ Nerine only grinned wider.
 
 ## Beat 4 — Thrown into the oak
 
+> **Health:** Ripples 1607 → 1554 (91% of full, -53) · Nerine 1750 → 1749 (99% of full)
+>
+> **Damage to Ripples:** upper back 0 → 9 (minor); lower back 0 → 19 (minor); head 0 → 13 (minor); left hip 0 → 7 (minor)
+
 She swung her.
 
 Ripples felt the turn begin through the arm Nerine held. Her feet left the grass and the clearing spun past: sky,
@@ -111,6 +129,10 @@ None of it hurt badly. It all hurt a little, everywhere, and the leaves above he
 She lay there and breathed, watching Nerine shake her paws out on the grass.
 
 ## Beat 5 — The dropping knee
+
+> **Health:** Ripples 1554 → 1445 (85% of full, -109) · Nerine 1749 → 1749 (99% of full)
+>
+> **Damage to Ripples:** stomach 0 → 59 (minor → SORE); lower back 19 → 23 (minor)
 
 Nerine didn't let her finish breathing.
 
@@ -138,6 +160,10 @@ Nerine was already shaking the last of the water out of her fur, dry and fluffed
 
 ## Beat 6 — Ice Fang on the knee
 
+> **Health:** Ripples 1445 → 1445 (85% of full) · Nerine 1749 → 1730 (97% of full, -18)
+>
+> **Damage to Nerine:** left knee 0 → 18 (minor); left foot 0 → 6 (minor); left hip 0 → 4 (minor)
+
 Ripples waited.
 
 Nerine came again, of course. She stepped in close and planted her left leg for a shove, putting her whole weight
@@ -160,6 +186,8 @@ Ripples let go and backed off, chin tucked, throat covered.
 
 ## Beat 7 — A breath
 
+> **Health:** Ripples 1445 → 1445 (85% of full) · Nerine 1730 → 1730 (97% of full)
+
 Neither of them pressed.
 
 Ripples backed off a step, shook her head to clear the ring the oak had put in it, and watched. She kept her
@@ -172,6 +200,10 @@ lashed. Somewhere out on the lake a fish rose, and the ring of it spread across 
 *Come on, then,* Ripples thought. *Come to me again.*
 
 ## Beat 8 — Aqua Jet into the pine
+
+> **Health:** Ripples 1445 → 1444 (85% of full) · Nerine 1730 → 1619 (91% of full, -112)
+>
+> **Damage to Nerine:** chest 5 → 30 (minor); stomach 0 → 6 (minor); left upper arm 0 → 6 (minor); right shoulder 0 → 4 (minor); upper back 0 → 20 (minor); left shoulder 0 → 21 (minor); right thigh 0 → 15 (minor)
 
 She did.
 
@@ -207,6 +239,8 @@ She stepped back.
 
 ## Beat 9 — Up the bark
 
+> **Health:** Ripples 1444 → 1444 (85% of full) · Nerine 1619 → 1619 (91% of full)
+
 Nerine spat lake water into the pine needles at the foot of the trunk. She rolled onto her front, dug her claws into
 the bark and climbed her own body back up it, glaring the whole way. Her chest heaved. By the time she was standing
 her fur was spiky with water and resin, and the last of the reeling had cleared from her eyes.
@@ -216,6 +250,10 @@ She bared her teeth at Ripples. *Lucky.*
 Ripples didn't think it had been luck.
 
 ## Beat 10 — Scruff and bite
+
+> **Health:** Ripples 1444 → 1304 (77% of full, -140) · Nerine 1619 → 1618 (91% of full)
+>
+> **Damage to Ripples:** chest 34 → 88 (sore → HURTING); neck 0 → 20 (minor)
 
 Nerine shoved off the trunk and came in so fast that Ripples' guard was still where she had left it.
 
@@ -248,6 +286,10 @@ hitch at the top of each breath that she hid at once.
 
 ## Beat 11 — Slammed down on the roots
 
+> **Health:** Ripples 1304 → 1240 (73% of full, -64) · Nerine 1618 → 1618 (91% of full)
+>
+> **Damage to Ripples:** upper back 9 → 20 (minor); lower back 23 → 40 (minor → SORE); head 13 → 33 (minor → SORE)
+
 Nerine still had the scruff. She reached down with the other paw, caught Ripples' arm, and lifted.
 
 Ripples' feet left the ground. For one long moment her full weight hung between Nerine's paws. Then Nerine brought
@@ -272,6 +314,12 @@ to. *That one's not going anywhere.*
 
 ## Beat 12 — Tail Bind from the ground
 
+> **Health:** Ripples 1240 → 1235 (73% of full, -5) · Nerine 1618 → 1608 (91% of full, -9)
+>
+> **Damage to Ripples:** upper back 20 → 24 (minor)
+>
+> **Damage to Nerine:** right knee 0 → 8 (minor); right thigh 15 → 20 (minor)
+
 Nerine stood too close.
 
 Both of Ripples' tails whipped up off the ground and round Nerine's right leg, one over the knee and one round the
@@ -293,6 +341,10 @@ working under the fur. *She's hurt. She's hurt and she's holding on anyway.*
 
 ## Beat 13 — The struggle starts
 
+> **Health:** Ripples 1235 → 1234 (73% of full, -1) · Nerine 1608 → 1597 (90% of full, -11)
+>
+> **Damage to Nerine:** right knee 8 → 17 (minor); right thigh 20 → 25 (minor)
+
 Nerine hopped. She yanked. She chopped down at the coils with the edge of her paw, and they only sank deeper. The
 fur and flesh squeezed up round them in a ridge.
 
@@ -307,6 +359,10 @@ flared and she let it go.
 *Hurting. Fine. Hurting doesn't make me let go.*
 
 ## Beat 14 — Water Gun at point-blank, and the wrench
+
+> **Health:** Ripples 1234 → 1233 (73% of full, -1) · Nerine 1597 → 1525 (86% of full, -72)
+>
+> **Damage to Nerine:** head 7 → 15 (minor); throat 0 → 12 (minor); chest 30 → 38 (minor → SORE); right knee 17 → 31 (minor → SORE); right thigh 25 → 32 (minor → SORE)
 
 With Nerine's leg caught, Ripples turned her face up and spat the hardest jet she had straight into it.
 
@@ -328,6 +384,10 @@ wrench, and her leg came free.
 Ripples was left holding nothing.
 
 ## Beat 15 — The shoulder barge and the fallen trunk
+
+> **Health:** Ripples 1233 → 950 (56% of full, -283) · Nerine 1525 → 1524 (86% of full)
+>
+> **Damage to Ripples:** chest 88 → 208 (hurting → EXCRUCIATING); right upper arm 29 → 48 (minor → SORE); upper back 24 → 44 (minor → SORE); left shoulder 0 → 21 (minor); right thigh 0 → 14 (minor)
 
 Nerine shook her leg out once and went straight back in, shoulder down.
 
@@ -367,6 +427,12 @@ Nerine's own breath was coming hard. Her right knee ached from the bind, and she
 
 ## Beat 16 — The pummel against the trunk
 
+> **Health:** Ripples 950 → 643 (38% of full, -306) · Nerine 1524 → 1516 (85% of full, -9)
+>
+> **Damage to Ripples:** stomach 59 → 154 (sore → EXCRUCIATING); left thigh 0 → 12 (minor); left knee 0 → 79 (minor → HURTING); lower back 40 → 60 (sore); right thigh 14 → 18 (minor); right knee 0 → 5 (minor); upper back 44 → 54 (sore)
+>
+> **Damage to Nerine:** left upper arm 6 → 15 (minor)
+
 Nerine dropped to one knee over her and started chopping.
 
 Ripples was on her side with nowhere to roll. The ground was under her and the trunk was behind her, and her arms
@@ -404,6 +470,10 @@ the leg out. *Whatever that was, she's done it for the last time.*
 
 ## Beat 17 — Crunch on the arm
 
+> **Health:** Ripples 643 → 633 (37% of full, -10) · Nerine 1516 → 1443 (81% of full, -73)
+>
+> **Damage to Nerine:** left upper arm 15 → 72 (minor → HURTING); left paw 0 → 13 (minor); left shoulder 21 → 33 (minor → SORE)
+
 Nerine's forearm was the thing pinning Ripples to the log, so Ripples bit it.
 
 She meant to get the fin. Nerine twisted, and the jaws closed on the upper arm instead, which was worse for Nerine.
@@ -427,6 +497,10 @@ without her quite meaning it to.
 
 ## Beat 18 — Aqua Tail across the back
 
+> **Health:** Ripples 633 → 560 (33% of full, -73) · Nerine 1443 → 1442 (81% of full, -1)
+>
+> **Damage to Ripples:** upper back 54 → 90 (sore → HURTING); left shoulder 21 → 31 (minor → SORE); left hip 7 → 10 (minor)
+
 Nerine spun.
 
 Both tails came round wrapped in water, hissing, whipped in a flat arc across Ripples' upper back. Ripples had her
@@ -447,6 +521,10 @@ She lay there soaked and dripping, her stomach still a hot hole under her ribs.
 *Up,* she told herself. *In a minute. In a minute.*
 
 ## Beat 19 — Dragged by the tails
+
+> **Health:** Ripples 560 → 513 (30% of full, -47) · Nerine 1442 → 1441 (81% of full, -1)
+>
+> **Damage to Ripples:** upper back 90 → 97 (hurting → VERY PAINFUL); lower back 60 → 67 (sore → HURTING); head 33 → 38 (sore); left shoulder 31 → 35 (sore)
 
 Nerine didn't give her the minute.
 
@@ -471,6 +549,10 @@ Nerine stood over her and drew hard breaths. Her left arm hung a little crooked,
 saw the short, quick breathing, and the ribs working. *She's tired too. She's tired too.*
 
 ## Beat 20 — The coils
+
+> **Health:** Ripples 513 → 501 (29% of full, -12) · Nerine 1441 → 1398 (79% of full, -43)
+>
+> **Damage to Nerine:** neck 0 → 9 (minor); throat 12 → 22 (minor)
 
 Nerine bent over her to grab her again.
 
@@ -497,6 +579,12 @@ Ripples: one of Ripples' eyes half-closed on every breath out and opened again o
 
 ## Beat 21 — The struggle builds
 
+> **Health:** Ripples 501 → 467 (27% of full, -34) · Nerine 1398 → 1350 (76% of full, -48)
+>
+> **Damage to Ripples:** left knee 79 → 100 (hurting → VERY PAINFUL)
+>
+> **Damage to Nerine:** neck 9 → 18 (minor); throat 22 → 32 (minor → SORE)
+
 Nerine clawed at the tails round her throat and staggered.
 
 The coils tightened again. Her neck was flattened under them, and every swallow showed as a jerk under the fur.
@@ -522,6 +610,10 @@ can barely stand. How is she still holding on?*
 
 ## Beat 22 — Down to one knee
 
+> **Health:** Ripples 467 → 455 (27% of full, -12) · Nerine 1350 → 1265 (71% of full, -85)
+>
+> **Damage to Nerine:** neck 18 → 33 (minor → SORE); throat 32 → 51 (sore)
+
 Nerine dropped to one knee, still clawing.
 
 The coils tightened a third time. The pressure at her throat went up into something that made her eyes water and
@@ -540,6 +632,10 @@ she had.
 Her soaked fur had started to dry in the sun, she realised dimly. She hadn't noticed it happening.
 
 ## Beat 23 — Brick Break, and the surge
+
+> **Health:** Ripples 455 → 385 (23% of full, -70) · Nerine 1265 → 1264 (71% of full, -1)
+>
+> **Damage to Ripples:** jaw 0 → 23 (minor); head 38 → 47 (sore); throat 0 → 10 (minor)
 
 Nerine gave up on the tails and chopped at Ripples' head instead.
 
@@ -566,6 +662,10 @@ Nerine saw it, and for the first time in the fight, she stepped back.
 
 ## Beat 24 — Crunch
 
+> **Health:** Ripples 385 → 373 (22% of full, -12) · Nerine 1264 → 1134 (64% of full, -130)
+>
+> **Damage to Nerine:** right cheek 0 → 73 (minor → HURTING); head 15 → 32 (minor → SORE); neck 33 → 54 (sore)
+
 Ripples went for the throat the tails had just left.
 
 She lunged up under Nerine's chin, fast in a way she hadn't been since the oak. Nerine was still blowing hard and
@@ -590,6 +690,10 @@ almost as much as the choke had.
 
 ## Beat 25 — Ice Fang, sloppy
 
+> **Health:** Ripples 373 → 360 (21% of full, -12) · Nerine 1134 → 1085 (61% of full, -49)
+>
+> **Damage to Nerine:** left upper arm 72 → 100 (hurting → VERY PAINFUL); chest 38 → 43 (sore); left paw 13 → 19 (minor)
+
 Ripples went for the arm she had already bitten.
 
 Her teeth were white with frost, but the surge had put her a step ahead of her own body. She lunged too far, too
@@ -611,6 +715,10 @@ Ripples stood off balance, swaying, her tails still spinning. The surge was the 
 could feel it draining.
 
 ## Beat 26 — Thrown into the oak again
+
+> **Health:** Ripples 360 → 129 (8% of full, -232) · Nerine 1085 → 1083 (61% of full, -2)
+>
+> **Damage to Ripples:** upper back 97 → 133 (very painful); lower back 67 → 100 (hurting → VERY PAINFUL); stomach 154 → 191 (excruciating); chest 208 → 237 (excruciating)
 
 Nerine tore her arm free and caught Ripples round the middle with the good one.
 
@@ -645,6 +753,10 @@ Ripples' teeth had found it the second time. She rubbed it once, and winced when
 
 ## Beat 27 — Aqua Tail
 
+> **Health:** Ripples 129 → 1 (0% of full, -128) · Nerine 1083 → 1082 (61% of full, -2)
+>
+> **Damage to Ripples:** neck 20 → 55 (minor → SORE); throat 10 → 20 (minor); left ear 0 → 9 (minor)
+
 Ripples didn't stay down. She tried to get up, and that was what brought Nerine back over.
 
 The tails came down wrapped in water, aimed at her head. Ripples got her chin down, and they caught her across the
@@ -666,6 +778,10 @@ Nerine's arm throbbed with every beat of her heart. She nursed it against her si
 stay down?*
 
 ## Beat 28 — Brick Break, and she stands
+
+> **Health:** Ripples 1 → -176 (-10% of full, -177) · Nerine 1082 → 1080 (61% of full, -2)
+>
+> **Damage to Ripples:** head 47 → 102 (sore → VERY PAINFUL); left cheek 0 → 13 (minor); neck 55 → 74 (sore → HURTING)
 
 Nerine chopped at her head.
 
@@ -689,6 +805,10 @@ Nerine stared at her.
 *Oh, you stubborn—* She couldn't decide how the thought ended. Something like respect had got into it.
 
 ## Beat 29 — The last bite
+
+> **Health:** Ripples -176 → -247 (-15% of full, -70) · Nerine 1080 → 1079 (61% of full, -1)
+>
+> **Damage to Ripples:** right shoulder 14 → 30 (minor → SORE); chest 237 → 258 (excruciating); throat 20 → 28 (minor)
 
 Nerine was so tired she nearly fell into the bite herself.
 
