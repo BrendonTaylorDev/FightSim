@@ -654,6 +654,16 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 212
+
+- **Drawn-out cries** (`narration.sounds.drawn_out`): when a part that is very painful or worse is hit or wrenched on
+  a fighter at or under 65% of her strength, her sounds can be long ones. That means an elongated yelp
+  (*Yiiiiip—*), a scream that goes on, a choking squeal dragged out of her with every crank of a hold. Both the hit
+  sounds and the reactions under holds use this.
+- **Fixed:** a blow with a conjured weapon (the ice blade), or with a fin's edge, was told as "delivered with her
+  teeth" or "with her claws" because of words in the order.
+- The submission-match test fight is in `sim/test_fights/submission_match/`.
+
 ## Build 211
 
 More variety without hard caps, and new things checked against the fighters' bodies so nothing impossible goes on.

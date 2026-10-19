@@ -2625,7 +2625,35 @@ class Narrator:
         tier = min(tier, {0: "mid", 1: "high"}.get(band, "raw"), key=["low", "mid", "high", "raw"].index)
         opts = self.VOICE[tier][self._voice_family(who)]
         desc, written = opts[seed % len(opts)]
+        if self._drawn_out(h, level):
+            # a ruined part on a fighter worn down: the sound goes on (narration.sounds.drawn_out)
+            desc, written = self._stretch(desc, written, seed)
         return f"{desc} (*{written}*)"
+
+    DRAWN_OUT = ["a long, drawn-out {d} that won't stop", "{d}, stretched out until her breath runs out",
+                 "{d} that goes on and on, cracking at the end", "{d}, dragged out of her in one long, choking pull"]
+
+    def _drawn_out(self, h, level):
+        """narration.sounds.drawn_out: a very painful (or worse) part, on a fighter at or under from_pct of her
+        strength: her cries are long ones now (an elongated yelp, a scream that goes on, a choking squeal)."""
+        cfg = ((self.rules.get("narration") or {}).get("sounds") or {}).get("drawn_out") or {}
+        if not cfg.get("enabled", True):
+            return False
+        who = h.get("defender", "")
+        left = ((getattr(self, "strengths", None) or {}).get(who) or 100)
+        order = ["minor", "sore", "hurting", "very painful", "excruciating", "devastated", "numb with shock"]
+        lv = order.index(level) if level in order else 0
+        return lv >= order.index(str(cfg.get("from_level", "very painful"))) and left <= float(cfg.get("from_pct", 65))
+
+    @staticmethod
+    def _stretch(desc, written, seed):
+        """'a sharp yelp' (*Yip*) -> 'a long, drawn-out sharp yelp that won't stop' (*Yiiiiip—*)."""
+        import re as _re
+        core = _re.sub(r"\s*(?:bitten off short|cut off short|cut off|bitten off)\b", "", _re.sub(r"^(?:a|an) ", "", desc))
+        d = Narrator.DRAWN_OUT[seed % len(Narrator.DRAWN_OUT)].format(d=core)
+        d = ("a " + d) if not d.startswith("a ") and not d.startswith("an ") and seed % 4 else d
+        w = _re.sub(r"([aeiouyAEIOUY])(?!.*[aeiouyAEIOUY])", lambda m: m.group(1) + m.group(1).lower() * 4, written.rstrip("-—.!"), count=1)
+        return d, w + "—"
 
     def _blow_sound(self, m, a=None):
         name = f"{m.get('name', '')} {m.get('about', '')}".lower()
@@ -3321,6 +3349,12 @@ class Narrator:
         pool = self.HOLD_REACT.get(level) or self.HOLD_REACT["minor"]
         if level in ("minor", "sore") and re.search(r"(?i)neck|throat", str(h.get("part") or "")):
             pool = self.CHOKE_REACT
+        if self._drawn_out(h, level):
+            # a ruined part held and wrenched on a worn fighter: the sounds she makes under it go on and on
+            pool = ["a long, broken yelp that stretches until her breath runs out", "a scream that goes on and on, "
+                    "cracking at the top", "a choking squeal dragged out of her with every crank of it", "a thin, "
+                    "wavering wail that doesn't stop, her whole body shaking under it", "long, gasping whimpers, one "
+                    "after another, each one higher"]
         if self._health_band(h) >= 3:
             pool = self.HOLD_REACT_SPENT["high" if level in ("very painful", "excruciating", "devastated") else "low"]
         opts = self._fit_body(pool, h.get("defender"))
@@ -4687,6 +4721,8 @@ class Narrator:
                 # names one of them
                 picked = {w for w, rx in WEAPONS if re.search(rx, fl, re.I)} & mine
                 mine = picked or mine
+                if m.get("weapon") or re.search(r"\bfins?\b", m["name"], re.I):
+                    mine = set()      # (a weapon she made, or a fin's edge: not her claws or teeth)
                 if re.search(r"\bwings?\b", f"{m['name']} {m.get('about') or ''}", re.I) and not any(
                         re.search(rx, f"{m['name']} {m.get('about') or ''}", re.I) for _w, rx in WEAPONS):
                     mine = set()      # (a wing move: "rakes her wing" in the order is not a claw swipe)
