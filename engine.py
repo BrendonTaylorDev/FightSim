@@ -6999,8 +6999,12 @@ class Engine:
             # a pin now: its bite into a worn part is capped like any pin's. A submission still on is capped too, more
             # loosely (submissions.damage_cap): a wrench hurts more than being held down, but it doesn't run away
             as_pin = in_pin and not h.locked
+            bcfg = self.rules.get("holds", {}).get("build") or {}
+            if not in_pin and not fresh and h.change_per_turn >= 0 and bcfg.get("enabled", True):
+                # a hold kept on without breaking bites deeper each beat (holds.build), whatever its own ramp
+                ramp = min(float(bcfg.get("max", 1.5)), 1.0 + float(bcfg.get("per_beat", 0.08)) * h.turns_active)
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp
-                     if as_pin else h.power) * first
+                     if as_pin else h.power * ramp) * first
             self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or ('coils' if h.coil else 'hold'))}")
             cap = self.pin_cap() if in_pin else self.sub_cap() if h.sub else None
             gcfg = (self.rules.get("submissions") or {}).get("grind") or {}
@@ -8062,12 +8066,26 @@ class Engine:
             dmg = sorted((d.parts[h.part].damage for h in hs if h.part in d.parts), reverse=True) or [0.0]
             pain = (dmg[0] + float(tcfg.get("second_part", 0.4)) * sum(dmg[1:])
                     + float(tcfg.get("per_beat", 15)) * (beats - 1))
+            # and the grip itself: how hard it is pressing right now, which climbs the longer it stays on (its own
+            # tightening and holds.build), on top of what the part already carries (tap.press of that pressure)
+            bcfg = self.rules.get("holds", {}).get("build") or {}
+            presses = sorted((h.power * (min(float(bcfg.get("max", 1.5)), 1.0 + float(bcfg.get("per_beat", 0.08))
+                                             * max(0, h.turns_active - 1)) if bcfg.get("enabled", True) else 1.0)
+                              for h in hs), reverse=True)
+            pain += float(tcfg.get("press", 1.5)) * (presses[0] + float(tcfg.get("second_part", 0.4)) * sum(presses[1:]))
             s_ = max(0.0, min(100.0, self._health_pct(d)))   # (her overall health: what she has left to resist with)
             power = float(tcfg.get("resist_power", 0.8))
             surge = float(tcfg.get("surge_resist", 1.5)) if self.has(d, "adrenaline") else 1.0
             resist = max(10.0, float(tcfg.get("resist", 130)) * (s_ / 100.0) ** power * surge)
             over = pain - resist
-            tap = min(float(tcfg.get("max", 0.85)), max(0.0, over / float(tcfg.get("span", 120))))
+            ceiling = float(tcfg.get("max", 0.85))
+            ccl = tcfg.get("climb") or {}
+            if ccl.get("enabled", True):
+                # THE CEILING CLIMBS: the longer the hold stays on, the likelier giving in can get (start, then
+                # per_beat more each beat after the second), and the more strength she has left, the lower it stays
+                ceiling = min(ceiling, float(ccl.get("start", 0.2)) + float(ccl.get("per_beat", 0.1)) * max(0, beats - 2))
+                ceiling *= max(0.0, 1.0 - float(ccl.get("health_hold", 0.6)) * s_ / 100.0)
+            tap = min(ceiling, max(0.0, over / float(tcfg.get("span", 120))))
             choke = any(re.search(r"(?i)neck|throat", h.part) for h in hs)
             name = next((h.sub for h in hs if h.sub), "") or ("choke" if choke else "hold")
             how, po, air, endure = None, 0.0, 0.0, 0.0

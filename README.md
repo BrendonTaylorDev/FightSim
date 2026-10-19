@@ -654,6 +654,21 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 214
+
+Tap-outs now build with the hold instead of jumping to a high chance.
+
+- **The grip adds pain** (`finish.submission.tap.press`): how hard the hold is pressing right now counts as pain on
+  top of the damage the part already carries.
+- **Holds bite deeper** (`holds.build`): any hold kept on without breaking presses 8% harder each beat, up to 1.5×.
+  This is on top of a tightening grip's own climb.
+- **A ceiling that climbs** (`tap.climb`): the tap chance starts at no more than 20% on the first beat she can tap.
+  It rises 10% each beat the hold stays on, up to `tap.max`. The ceiling is lowered by the health she has left:
+  fresh, it is cut to 40% of that; at 57% health, to 66%. She can still break out every beat.
+- `tap.span` is explained in the section's comments: how far past her limit the pain must go for a 100% chance.
+- In the seed-11 submission match, Ripples now tapped on the second hold's fifth beat at a 40% chance (before: its
+  third beat, at 70%).
+
 ## Build 213
 
 - **Tap refusals that climb** (`narration.tap_build`): in a submission match, each refusal to tap to the same
