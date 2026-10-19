@@ -1980,6 +1980,9 @@ class Director:
             rng_hint = (rng_hint + "\n" + weak).strip()
         if fresh:
             rng_hint = (rng_hint + "\n" + fresh).strip()
+        plan_pull = game_plan_hint(engine) if not direction else ""
+        if plan_pull:
+            rng_hint = (rng_hint + "\n" + plan_pull).strip()
         if not direction and "PIN " not in hint:
             m = re.search(r"\b(" + "|".join(re.escape(f.name) for f in engine.active()) + r")\b", hint or "")
             dcfg = engine.rules.get("director", {})
@@ -2965,6 +2968,33 @@ ENCOURAGE_ALIASES = {"stream": "sustain", "held": "sustain", "beam": "sustain", 
                      "grabs": "grab", "holds": "hold", "pins": "pin", "submissions": "submission", "sub": "submission",
                      "feints": "feint", "flight": "dive", "dives": "dive", "fly": "dive", "carries": "carry",
                      "spikes": "spike", "juggles": "juggle", "launches": "launch"}
+
+
+def game_plan_hint(engine):
+    """director.game_plan: now and then (nudge of the beats, rolled from the names and the beat so it never moves the
+    fight's own dice), remind the director what each fighter came in meaning to take apart. Not for a fighter with a
+    /focus: that one already says so."""
+    import zlib
+    cfg = engine.rules.get("director", {}).get("game_plan") or {}
+    if not cfg.get("enabled", True):
+        return ""
+    out = []
+    for f in engine.active():
+        if engine.focus_for(f.name) or f.name in engine.downed:
+            continue
+        plan = engine.game_plan(f.name)
+        if not plan or zlib.crc32(f"{f.name}|{engine.turn}".encode()) % 1000 >= 1000 * float(cfg.get("nudge", 0.35)):
+            continue
+        o = engine.get(plan["against"])
+        worst = max((o.parts[p] for p in plan["parts"] if p in o.parts), key=lambda p: p.damage, default=None)
+        so_far = (f" So far the worst of them is her {worst.name} ({worst.damage:.0f}%)." if worst and worst.damage >= 20
+                  else "")
+        end = (" and finish it with a hold on one of them, until she gives" if plan["finish"] == "hold" else
+               " and wear them down until they give out under her")
+        out.append(f"GAME PLAN (her own, from before the fight): {f.name} came in meaning to take {poss_word(o.name)} "
+                   f"{plan['zone']} apart ({', '.join(plan['parts'][:6])}){end}.{so_far} A pull, not an order: she comes "
+                   f"back to them when she can, and still takes a better opening where it is.")
+    return "\n".join(out)
 
 
 def encourage_hint(engine):

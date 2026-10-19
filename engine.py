@@ -418,6 +418,7 @@ class Engine:
         self.injury_log = {}   # "Fighter|Part" -> the moves/causes that hurt it, oldest first (for callbacks)
         self.tally = {}        # "thrown|Ripples" -> how many times this fight (thrown, slammed, dragged, charged, down, pinned)
         self.fight_record = {} # fighter -> what she has learned this fight: her moves that land or miss, the ones that hit her
+        self.game_plans = {}   # fighter -> the part of the other she means to take apart (director.game_plan)
         self.plan = {}        # the author's nudges: shape (close/dominate/comeback), winner, targeting
         self._source = ""      # what is dealing damage right now (set by each attack)
         self.rolls = []        # every chance the dice decided this beat: what, the chance, the roll, how it came out
@@ -858,9 +859,9 @@ class Engine:
     _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
                    "injury_amt", "lying_at", "lying_on", "burn_spot", "_story_prev", "_story_now", "_story_pinned", "_story_turned",
                    "_tac_status", "_last_event", "_forced_event", "_overbalanced", "_rock_open", "_slow_not_cold",
-                   "_last_manhandle", "last_pin_shape", "fight_record")
+                   "_last_manhandle", "last_pin_shape", "fight_record", "game_plans")
     # ...those of them that __init__ sets up: put back to this when a snapshot or save doesn't have them (never removed)
-    _SNAP_INIT = {"_last_event": None, "_forced_event": None, "fight_record": {}}
+    _SNAP_INIT = {"_last_event": None, "_forced_event": None, "fight_record": {}, "game_plans": {}}
     # scratch for one attack or one beat (set fresh before it is read), or the session and its settings: never undone
     _NOT_SNAPPED = ("_aim_miss", "_chain_on", "_confusion_passed", "_dev_active", "_dive_now", "_feint_open",
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
@@ -7457,6 +7458,43 @@ class Engine:
         focus = self.rules.get("director", {}).get("focus", {}) or {}
         name = self.get(attacker).name
         return list(focus[name]) if name in focus else (focus.get("*") or [])   # [] of her own = off for her
+
+    def game_plan(self, name):
+        """director.game_plan: the part of her opponent this fighter decided on before the fight began, and means to
+        take apart: a zone of the other's body (rolled once, at the start; her /focus decides it when she has one).
+        Returns {"against", "zone", "parts", "finish", "since"} or None (off, or no one to plan against)."""
+        cfg = self.rules.get("director", {}).get("game_plan") or {}
+        if not cfg.get("enabled", True):
+            return None
+        f = self.get(name)
+        plans = self.__dict__.setdefault("game_plans", {})
+        plan = plans.get(f.name)
+        foes = [o for o in self.active() if o.team != f.team]
+        if plan and any(o.name == plan["against"] for o in foes):
+            return plan
+        if not foes:
+            return None     # (the one it was against is gone: she makes a new one against whoever is left)
+        o = foes[0]
+        import random as _random
+        import zlib
+        # (a copy of the dice, nudged by the names: the plan never moves the fight's own rolls)
+        r = _random.Random(zlib.crc32(f"{f.name}>{o.name}|{self.rng.getstate()[1][:3]}".encode()))
+        zones = [z for z in self.focus_for(f.name) if str(z).lower() not in self.INJURED_WORDS]
+        if not zones:
+            weights = dict(cfg.get("zones") or {"legs": 3, "neck": 2, "head": 2, "core": 2, "arms": 1.5, "tail": 1})
+            if self.submission_match():
+                for z, m in (cfg.get("match_weights") or {"legs": 2, "arms": 1.5, "neck": 1.5}).items():
+                    weights[z] = weights.get(z, 1) * float(m)
+            weights = {z: w for z, w in weights.items() if w > 0 and self.zone_parts(o.name, [z])}
+            if not weights:
+                return None
+            zones = [r.choices(list(weights), list(weights.values()))[0]]
+        parts = self.zone_parts(o.name, zones)
+        if not parts:
+            return None
+        plans[f.name] = plan = {"against": o.name, "zone": "/".join(map(str, zones)), "parts": parts,
+                                "finish": "hold" if self.submission_match() else "wear", "since": self.turn}
+        return plan
 
     def force_recover(self, name, to=None):
         """Your command, after the match: move a knocked-out fighter up to a recovery stage now (default: one

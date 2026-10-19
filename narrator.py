@@ -3064,6 +3064,140 @@ class Narrator:
                    if nxt and worst >= 3 else "")
                 + ". Never the same struggle as last beat told again.")
 
+    # narration.hold_tries: the real ways out of each kind of hold, from the thought-out (early, fresh) to the wild
+    # (hurting, a few beats in) to the spent (worn out, long held). One is named each beat; the ones already tried in
+    # this hold are listed so she never tries the same thing twice, the way a held fighter runs through her options
+    HOLD_TRIES = [
+        ("choke", r"neck|throat|windpipe", {
+            "skill": ["she tucks her chin down hard, trying to wedge it between the grip and her throat",
+                      "she gets both paws on whatever is across her throat and hauls it down an inch, for one breath",
+                      "she turns her head into the crook of the grip, trying to open a gap for air",
+                      "she drives backward into the holder, trying to jam her against something or knock her off "
+                      "balance",
+                      "she pulls at one finger, one coil, one edge of the grip, trying to start it the way you start "
+                      "a knot"],
+            "thrash": ["she claws at whatever is round her neck, raking her own fur with it",
+                       "she bucks and rocks, trying to pitch the holder off her",
+                       "she kicks out at nothing, her legs working as if she could run out of it"],
+            "spent": ["her paws only pat at the grip on her throat now, weaker each time",
+                      "her hands fall away from the grip and come back, slower, and fall away again"]}),
+        ("leg", r"leg|thigh|knee|hock|ankle|foot|shin|hind", {
+            "skill": ["she turns the knee WITH the twist instead of against it, trying to take the angle away",
+                      "she drops her weight low, trying to take the strain off the joint",
+                      "she works her claws in between the holder's fingers and peels at one, the smallest",
+                      "she hooks her free leg round the holder's, trying to pull her off balance",
+                      "she straightens the trapped leg hard, trying to drag it out through the grip",
+                      "she curls up toward the trapped leg, trying to shorten the lever"],
+            "thrash": ["she kicks at the holder with her free foot, wild and hard, even though it costs her her balance",
+                       "she bucks her whole body back and sideways against the grip, like a fish on a line",
+                       "she claws at the arm on her leg, at fur, at anything, with no plan in it"],
+            "spent": ["she pulls at the leg once, weakly, and it goes nowhere",
+                      "she lies still and breathes, gathering herself for one more try that doesn't come"]}),
+        ("arm", r"arm|shoulder|elbow|wrist|paw|hand|foreleg|fin|wing", {
+            "skill": ["she grabs her own trapped limb with her free one and hauls, putting both into it",
+                      "she turns her elbow to follow the twist, trying to take the bend out of the joint",
+                      "she rolls toward the hold instead of away, to ease the angle",
+                      "she shoves her free paw into the holder's face, trying to push her head back and her grip "
+                      "with it"],
+            "thrash": ["she wrenches the trapped limb in short, hard yanks, against the angle",
+                       "she snaps at whatever of the holder she can reach",
+                       "she flails with everything else she has, the trapped limb the one thing she can't move"],
+            "spent": ["the trapped limb only twitches when she tries to pull it",
+                      "she stops pulling and just holds still, because holding still hurts least"]}),
+        ("tail", r"tail", {
+            "skill": ["she clamps her tail down and pulls it toward herself in one long haul",
+                      "she twists round toward her tail, trying to take the pull off its root"],
+            "thrash": ["she spins and snaps at the hands on her tail", "she throws herself forward, as if she could tear "
+                       "the tail free by running"],
+            "spent": ["her tail only twitches in the grip"]}),
+        ("body", r"chest|rib|ruff|belly|stomach|midsection|back|side|flank|torso|hip", {
+            "skill": ["she jams her elbows out from inside the grip, trying to pry it open",
+                      "she drops her weight suddenly, trying to slide down out of it",
+                      "she snaps the back of her head into the holder's face"],
+            "thrash": ["she twists and heaves in the grip, all of her at once", "she claws back over her own shoulder "
+                       "at the holder"],
+            "spent": ["she can only breathe in the grip now, short, shallow breaths it allows her"]}),
+        ("head", r"head|jaw|muzzle|face|ear|nose|cheek|skull", {
+            "skill": ["she turns her face out of the grip, a little at a time", "she pushes the holder's arm up off her "
+                      "face with her forearm"],
+            "thrash": ["she shakes her head violently in the grip", "she bites at whatever is near her mouth"],
+            "spent": ["she lets her head hang in the grip"]}),
+    ]
+
+    def _hold_tries_cfg(self):
+        cfg = (self.rules.get("narration") or {}).get("hold_tries") or {}
+        return cfg if cfg.get("enabled", True) else None
+
+    def _hold_try(self, att, dfn, parts, beats):
+        """narration.hold_tries: what she tries THIS beat to get out of this hold (cached, so the struggle note and the
+        engine's strain note name the same thing), with what she tried in it before. None when off."""
+        cfg = self._hold_tries_cfg()
+        if not cfg or dfn in (getattr(self, "out_names", None) or ()):
+            return None
+        now = int(getattr(self, "beat_now", 0) or 0)
+        cache = self.__dict__.setdefault("_try_now", {})
+        if (att, dfn, now) in cache:
+            return cache[(att, dfn, now)]
+        text = " ".join(str(p) for p in parts).lower()
+        kind, menu = next(((k, m) for k, rx, m in self.HOLD_TRIES if re.search(rx, text)), (None, None))
+        if not menu:
+            return None
+        health = float((self.strengths or {}).get(dfn, 100) or 0)
+        dmg = (getattr(self, "damage_by", None) or {}).get(dfn) or {}
+        worst = max((self._pain_rank(float(dmg.get(str(p).lower(), 0) or 0)) for p in parts), default=0)
+        phase = ("spent" if health < float(cfg.get("spent_below", 25)) or beats >= int(cfg.get("spent_after", 6)) else
+                 "thrash" if (health < float(cfg.get("thrash_below", 50)) or beats >= int(cfg.get("thrash_after", 3))
+                              or worst >= int(cfg.get("thrash_pain", 4))) else "skill")
+        used = self.__dict__.setdefault("_tries_used", {})
+        mine = used.setdefault((att, dfn), [])
+        # (her own phase first; when she has run through those, an untried one from the phase next to it, so a long
+        # hold never tells the same try twice running)
+        near = {"skill": ("thrash",), "thrash": ("skill",), "spent": ()}[phase]
+        opts = next((o for o in ([x for x in self._fit_body(menu[ph], dfn) if x not in mine] for ph in (phase,) + near)
+                     if o), None) or [x for x in self._fit_body(menu[phase], dfn) if not mine or x != mine[-1]] \
+            or self._fit_body(menu[phase], dfn)
+        import zlib
+        pick = opts[zlib.crc32(f"{att}|{dfn}|{now}|{kind}".encode()) % len(opts)]
+        before = list(mine[-int(cfg.get("remember", 4)):])
+        mine.append(pick)
+        cache[(att, dfn, now)] = res = {"try": self._limb_fit(pick, dfn), "phase": phase, "before": before,
+                                        "kind": kind}
+        return res
+
+    def _hold_try_line(self, att, dfn, old):
+        """The try, said: one real way out of THIS hold, which fails, and the ones she has already given up on."""
+        parts = [e["hits"][0]["part"] for e in old if e.get("hits")]
+        t = self._hold_try(att, dfn, parts, max(int(e.get("beats_held") or 1) for e in old))
+        if not t:
+            return ""
+        lead = {"skill": "she still has her head: a thought-out try",
+                "thrash": "there is less thought in it now",
+                "spent": "she has almost nothing left to try with"}[t["phase"]]
+        return (f"  - WHAT {dfn.upper()} TRIES THIS BEAT ({lead}): {t['try']}. Show it, and show that it gets her "
+                f"nowhere against {poss(att)} grip, unless the program says she breaks free below."
+                + (f" She has already tried, in this hold: {'; '.join(t['before'])}. Not those again; she knows "
+                   f"they don't work." if t["before"] else ""))
+
+    def _under_blow_line(self, att, dfn, old, actions):
+        """narration.hold_tries.under_blow: a blow that lands on her while she is held does not stop the hold. The
+        prose follows the blow and forgets the grip; this brings the reader back to it, still on, under everything."""
+        cfg = self._hold_tries_cfg()
+        if not cfg or not cfg.get("under_blow", True) or dfn in (getattr(self, "out_names", None) or ()):
+            return ""
+        grips = ("hold_start", "hold_adjust", "hold_release", "grapple_start", "pin", "submission")
+        blows = [a for a in actions or () if a.get("defender") == dfn and a.get("hits") and not a.get("dodged")
+                 and a.get("type") not in grips and not a.get("environment")]
+        if not blows:
+            return ""
+        parts = " and ".join(dict.fromkeys(e["hits"][0]["part"].lower() for e in old if e.get("hits")))
+        who = blows[0].get("attacker")
+        same = who == att
+        return (f"  - THE HOLD UNDER THE BLOW: through {'her own' if same else poss(who)} blow, {poss(att)} grip on "
+                f"{poss(dfn)} {parts} never loosens"
+                + (" (she strikes with what she has free; the rest of her keeps the hold)" if same else "")
+                + ". After the hit, bring the reader back to it: still there, still pressing, steady under everything "
+                  "else. The worst of it is the two together, not the blow alone.")
+
     # how a body answers a fresh blow on a part that was already badly hurt, by region
     OLD_WOUND = [
         (r"back|spine|hip", "she twists away from it with her back arching, a paw going back to grab at or rub the "
@@ -3264,6 +3398,44 @@ class Narrator:
                            f"{now - then[0]} beat{'s' if now - then[0] != 1 else ''} ago. She knows it as she hits it "
                            f"(the same bark or stone, the same spot on her body remembering): give it a line of "
                            f"recognition, hers or {'the other' if then[1] == d else then[1]}'s.")
+        return out
+
+    def _plan_lines(self, actions):
+        """director.game_plan, told: (1) on the first beat, what each came in meaning to take apart, shown as a look
+        and a thought, never a speech; (2) when a blow lands on that part again, now and then (narration.plan_notes),
+        that it is her plan working, and from the third time that the other knows it too."""
+        cfg = (self.rules.get("narration") or {}).get("plan_notes") or {}
+        plans = getattr(self, "game_plans", None) or {}
+        if not cfg.get("enabled", True) or not plans:
+            return []
+        now, out = int(getattr(self, "beat_now", 0) or 0), []
+        gone = getattr(self, "out_names", None) or ()
+        if now <= int(cfg.get("open_by", 1)) and not self.__dict__.get("_plans_shown"):
+            self._plans_shown = True
+            said = [f"{w} means to take {poss(p['against'])} {p['zone']} apart" for w, p in plans.items() if w not in gone]
+            if said:
+                out.append("WHAT EACH CAME IN FOR (their own plans, from before the fight): " + "; ".join(said)
+                           + ". Show it early, as a look and a thought, never a speech: where her eyes go and stay "
+                             "(the knee, the throat), what she thinks of it ('I'm having your leg'). The other may "
+                             "catch the look, and feel it.")
+        hits = self.__dict__.setdefault("_plan_hits", {})
+        marks = [int(x) for x in cfg.get("at", [2, 4, 7, 11])]
+        for a in actions or ():
+            who, dfn = a.get("attacker"), a.get("defender")
+            p = plans.get(who)
+            if not p or dfn != p.get("against") or a.get("dodged") or dfn in gone:
+                continue
+            on = sorted({h["part"] for h in a.get("hits") or () if h.get("defender", dfn) == dfn
+                         and h.get("part") in p.get("parts", ())})
+            if not on:
+                continue
+            hits[who] = n = hits.get(who, 0) + 1
+            if n in marks:
+                out.append(f"HER PLAN, WORKING: {poss(dfn)} {on[0].lower()} is part of what {who} came in meaning to "
+                           f"take apart ({n} times now she has got to it). A flicker of that in her: satisfaction, "
+                           f"patience, a thought about how long it will hold up"
+                           + (f"; and {dfn} knows it by now: she has felt where it keeps going, and guards it, or "
+                              f"fears it, or hates her for it" if n >= 3 else "") + ".")
         return out
 
     def _still_hurts_lines(self):
@@ -3847,6 +4019,7 @@ class Narrator:
             lines += self._pin_lines(e)
         lines += self._still_hurts_lines()
         lines += self._style_lines(actions, bundle.get("also_this_beat") or [])
+        lines += self._plan_lines(actions)
         pairs = {}
         eng = getattr(self, "engine", None)
         self._sub_of = {}
@@ -3856,6 +4029,8 @@ class Narrator:
         for e in bundle.get("also_this_beat", []):
             if e["type"] == "hold_ongoing":
                 pairs.setdefault((e["attacker"], e["defender"]), []).append(e)
+        for k in [k for k in (self.__dict__.get("_tries_used") or {}) if k not in pairs]:
+            self._tries_used.pop(k)     # the hold is gone: a new one starts her list of tries over
         for (att, dfn), evs in pairs.items():
             pinned = any(p["attacker"] == att and p["defender"] == dfn for p in pins)
             kind = "pin" if pinned else "hold"
@@ -3882,6 +4057,13 @@ class Narrator:
                 fight_line = self._struggle_line(att, dfn, old, pinned)
                 if fight_line:
                     lines.append(fight_line)
+                if not pinned and not all(e.get("grab") for e in old):
+                    try_line = self._hold_try_line(att, dfn, old)
+                    if try_line:
+                        lines.append(try_line)
+                    under = self._under_blow_line(att, dfn, old, actions)
+                    if under:
+                        lines.append(under)
             coiled = [e for e in evs if e.get("coil")]
             scopes = {Engine.coil_scope(e["hits"][0]["part"]) for e in coiled if e.get("hits")}
             if coiled and scopes == {"limb"}:
@@ -4090,6 +4272,10 @@ class Narrator:
                        "claw": "claws at the grip itself and scrabbles at the ground for purchase",
                        "brace": "braces and strains against it with everything she has"}.get(e.get("manner"),
                                                                                            "fights against it")
+                t = self._hold_try(e["attacker"], e["defender"], e.get("parts") or [],
+                                   int(e.get("beats_held") or 2))
+                if t and t["try"].startswith("she "):
+                    how = t["try"][4:]     # the same try the struggle note names, not a second one
                 if e["type"] == "hold_loosened":
                     lines.append(f"THE GRIP LOOSENS BUT STAYS ON: after the pressure listed above, {e['defender']} {how}, "
                                  f"and wins a little slack. {poss(e['attacker'])} grip on her {parts}"

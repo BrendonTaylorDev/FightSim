@@ -1183,6 +1183,12 @@ class Session:
         self.narrator.damage_by = {f.name: {part.name.lower(): part.damage for part in f.parts.values()}
                                    for f in self.eng.active()}
         self.narrator.strengths = {f.name: self.eng.strength(f) for f in self.eng.active()}
+        try:
+            self.narrator.game_plans = {f.name: dict(pl) for f in self.eng.active() for pl in [self.eng.game_plan(f.name)]
+                                        if pl}
+        except Exception as exc:    # (a plan is only a story aid: the beat goes on without it)
+            note_failure("working out the fighters' game plans", exc)
+            self.narrator.game_plans = {}
         # parts gone NUMB for now (numbness): the story may show them dull, and must not give them fresh agony
         self.narrator.numb_parts = {(f.name, part.name.lower()) for f in self.eng.fighters.values()
                                     for part in f.parts.values() if int(getattr(part, "numb", 0) or 0) > 0}
