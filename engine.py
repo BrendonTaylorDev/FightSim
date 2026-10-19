@@ -561,7 +561,8 @@ class Engine:
             if cap.get("mult") is not None and bmult > float(cap["mult"]):
                 bmult, capped = float(cap["mult"]), True
             if cap.get("health_mult") is not None and hmult > float(cap["health_mult"]):
-                hmult, capped = float(cap["health_mult"]), True
+                hmult = float(cap["health_mult"])
+                capped = capped or not cap.get("health_only")
         taken = power * bmult * scale
         p.damage = dmg_b + self._part_added(dmg_b, taken)
         was_numb = int(getattr(p, "numb", 0) or 0) > 0
@@ -7013,6 +7014,14 @@ class Engine:
                      if as_pin else h.power * ramp) * first
             self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or ('coils' if h.coil else 'hold'))}")
             cap = self.pin_cap() if in_pin else self.sub_cap() if h.sub else None
+            hc = self.rules.get("holds", {}).get("health_cap") or {}
+            if not in_pin and hc.get("enabled", True):
+                # a hold kept on a worn part wrecks the part, but costs her overall health only so much more for the
+                # wear (holds.health_cap.health_mult): the limb goes long before she is emptied
+                hm = float(hc.get("health_mult", 1.3))
+                cap = dict(cap or {"health_only": True})
+                if cap.get("health_mult") is None or float(cap["health_mult"]) > hm:
+                    cap["health_mult"] = hm
             gcfg = (self.rules.get("submissions") or {}).get("grind") or {}
             grind = gcfg if (h.sub or h.locked) and gcfg.get("enabled", True) else None
             hit = self._apply_damage(d, h.part, round(power, 2), cap=cap, grind=grind, health_scale=health_scale)

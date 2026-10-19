@@ -654,6 +654,13 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 217
+
+- **A hold on a worn part costs less health.** The extra health a soft, worn-down part costs (the bracket's health multiplier) went as high as x2.07 under a long hold. That multiplier did most of the late climb, more than `holds.build`. A hold (not a pin) now uses at most x1.3 there (`holds.health_cap`, `health_mult` 1.3). Named submissions take the lower of this and `submissions.damage_cap`.
+- **Unchanged:** the part still takes its full damage and wear, and the pain behind a tap-out still climbs at its full rate.
+- **In the seed-11 submission match**, health lost per beat of the second hold is now 44, 87, 75, 100, 100, then 166 in the last beat, where it was 232 in build 215. Ripples taps at 581 instead of 448. The tap chances are the same (20%, 28%, 37%, 48%).
+- **Switch:** `/set holds.health_cap.enabled false` turns it off.
+
 ## Build 216
 
 - **A long hold builds at three rates.** `holds.build` (a hold kept on bites deeper every beat it lasts) used one rate for everything: 0.08 a beat, up to x1.5. In the seed-11 submission match that put 232 damage into the last beat. It now has three:
