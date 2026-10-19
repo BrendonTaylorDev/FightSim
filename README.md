@@ -654,6 +654,12 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 198
+- **No more Spyder kernel crash after closing the window mid-beat.** A closed window (or one from an earlier run)
+  could be cleaned up from the game's thread while it was still writing its last beat. Tk only allows that on the
+  main thread, so the kernel died with "Tcl_AsyncDelete: async handler deleted by the wrong thread". Windows are now
+  kept until the session ends, and their check-box settings never clean up off the main thread.
+
 ## Build 197
 - **`/bench`: the narration test bench.** Each beat's narrator inputs are now kept in bench_cases/ (the last 30;
   `narration.bench`). `/bench 2 narration.rich.length_mult=1.0` tells your last 2 beats twice, once with your settings

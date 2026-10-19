@@ -48,6 +48,26 @@ except Exception:              # pragma: no cover
 snapshot = play.fight_snapshot
 
 
+# Tk may only be torn down on the main thread. A closed window (or the one from an earlier run in Spyder) that is
+# still tied up in reference cycles would otherwise be freed by whichever thread happens to trigger garbage
+# collection, often the game thread finishing its last beat, and that kills the Spyder kernel ("Tcl_AsyncDelete:
+# async handler deleted by the wrong thread"). So every window is kept alive for the rest of the session (a few
+# megabytes at most), on builtins so a re-run in the same Spyder session doesn't drop the old list.
+def _keep_alive(app):
+    keep = getattr(builtins, "_fightsim_windows", None)
+    if keep is None:
+        keep = builtins._fightsim_windows = []
+    keep.append(app)
+
+
+class _Flag(tk.BooleanVar):
+    """A BooleanVar whose clean-up is skipped off the main thread (the same crash, one variable at a time)."""
+
+    def __del__(self):
+        if threading.current_thread() is threading.main_thread():
+            super().__del__()
+
+
 # The game runs on its own thread, but print() and input() are shared by the whole program. They are routed, not
 # swapped: whatever the game's thread prints or asks goes to the window that is open now, and everything else (the
 # Spyder console, a window closed while its last beat was still finishing) keeps the real screen and keyboard. The
@@ -489,6 +509,7 @@ class FighterCard(ttk.Frame):
 class App:
     def __init__(self, args):
         self.root = tk.Tk()
+        _keep_alive(self)
         self.root.title("FightSim")
         self.root.geometry("1600x950")
         self.tip = Tip(self.root)
@@ -526,16 +547,16 @@ class App:
         self.when = ttk.Label(top, text="Waiting for the fight…", font=("Segoe UI", 10, "bold"))
         self.when.pack(side="left")
         o = opts_of(self._rules())
-        self.back_view = tk.BooleanVar(value=bool(o.get("back_view", True)))
-        self.weak_look = tk.BooleanVar(value=bool(o.get("weak_look", True)))
-        self.damage_marks = tk.BooleanVar(value=bool(o.get("damage_marks", True)))
-        self.poses = tk.BooleanVar(value=bool(o.get("poses", True)))
+        self.back_view = _Flag(value=bool(o.get("back_view", True)))
+        self.weak_look = _Flag(value=bool(o.get("weak_look", True)))
+        self.damage_marks = _Flag(value=bool(o.get("damage_marks", True)))
+        self.poses = _Flag(value=bool(o.get("poses", True)))
         ttk.Checkbutton(top, text="Poses", variable=self.poses, command=self.redraw_cards).pack(side="right")
         ttk.Checkbutton(top, text="Damage marks", variable=self.damage_marks, command=self.redraw_cards).pack(side="right")
         ttk.Checkbutton(top, text="Back view", variable=self.back_view, command=self.redraw_cards).pack(side="right")
         ttk.Checkbutton(top, text="Weakened look", variable=self.weak_look,
                         command=self.redraw_cards).pack(side="right")
-        self.follow = tk.BooleanVar(value=True)
+        self.follow = _Flag(value=True)
         ttk.Checkbutton(top, text="Follow the fight", variable=self.follow, command=self.follow_changed).pack(side="right")
         ttk.Button(top, text="▶", width=3, command=lambda: self.step(1)).pack(side="right")
         ttk.Button(top, text="◀", width=3, command=lambda: self.step(-1)).pack(side="right")
