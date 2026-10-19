@@ -654,6 +654,19 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 213
+
+- **Tap refusals that climb** (`narration.tap_build`): in a submission match, each refusal to tap to the same
+  opponent is told further along than the last. The first time, her paw twitches toward the ground and stops. The
+  second, it touches the ground and she drags it back. From the third, it lies flat on the ground, shaking, and she
+  holds it still.
+- **The holder's side:** from the second refusal past what she can bear, the holder feels the twitch through her own
+  arms and her grip tiring. She thinks something of the other still refusing, and may say one low word.
+- **After the tap:** the loser lies curled round the hurt part, and the winner stands over her.
+- **Fixed:** on the beat a fighter tapped out, her posture line said "OUT COLD". It now says she is down and awake.
+- The submission match's narration is rewritten in full as a sample. The match's scripts and bug list are in
+  `sim/test_fights/submission_match/`.
+
 ## Build 212
 
 - **Drawn-out cries** (`narration.sounds.drawn_out`): when a part that is very painful or worse is hit or wrenched on

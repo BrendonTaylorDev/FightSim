@@ -21,6 +21,7 @@ import time as _time
 CALL_LOG = []   # (what wrote it, seconds, prompt characters) for every model call in the current beat
 _PREFIX = [""]  # "interlude " while an interlude is being written
 _STAGE = [""]   # which step of a part's writing is calling (draft, rewrite...), set by Narrator._call
+_ORD = {2: "second", 3: "third", 4: "fourth", 5: "fifth", 6: "sixth"}   # (how many times she has refused to tap)
 
 
 def _chat(*args, **kw):
@@ -3787,6 +3788,8 @@ class Narrator:
         # a fighter who slips as she dodges on slick footing really does go down
         self._landed |= {a.get("defender") for a in actions if a.get("slipped")}
         self._rolled_up = {a.get("defender") for a in actions if a.get("environment") and a.get("kept_feet")}
+        # a fighter who taps out leaves the match awake, not knocked out
+        self._tapped = {e.get("defender") for e in evs if e.get("type") == "tap_out" and e.get("how") == "tap"}
         # holds worked looser this beat (still on): "the coil slackened" is right for these, "let go" is not
         self._loosened = {(e.get("attacker"), e.get("defender")) for e in evs if e.get("type") == "hold_loosened"}
         # charged into the scenery: she hits it either way; whether she then goes down is the crumple roll
@@ -3991,12 +3994,30 @@ class Narrator:
                                  f"getting weaker, and she will not let herself go under. Show the fight to stay "
                                  f"awake: she doesn't give in, and she is still conscious when the beat ends.")
                 else:
-                    lines.append(f"  - SHE WON'T TAP: the {e['submission']} on {poss(e['defender'])} {parts} is "
+                    tb = (self.rules.get("narration") or {}).get("tap_build") or {}
+                    n_ = int(e.get("refusals") or 1) if tb.get("enabled", True) else 1
+                    reach = ("Her paw (or tail) twitches toward the ground to tap and she stops it"
+                             if n_ <= 1 else
+                             "Her paw goes down further than last time: it touches the ground, the fingers already "
+                             "spreading flat to slap it, and she drags it back up" if n_ == 2 else
+                             "Her paw is ON the ground now, lying flat and shaking, and all it has to do is lift and "
+                             "fall: she holds it still, and it is the hardest thing she has ever done")
+                    lines.append(f"  - SHE WON'T TAP" + (f" (the {_ORD.get(n_, str(n_) + 'th')} time she has refused)"
+                                                         if n_ > 1 else "")
+                                 + f": the {e['submission']} on {poss(e['defender'])} {parts} is "
                                  + ("past what she can bear, and every part of her wants to give in"
                                     if e.get("over") else "close to what she can bear")
-                                 + f". Her paw (or tail) twitches toward the ground to tap and she stops it; she "
-                                 f"holds on through will alone, and it shows: the shaking, the sound she makes, the "
-                                 f"thought of giving up and refusing it. She does NOT tap this beat.")
+                                 + f". {reach}; she holds on through will alone, and it shows: the shaking, the "
+                                 f"sound she makes, the thought of giving up and refusing it"
+                                 + (" (no longer a reason now, just a stubbornness she can't explain, or a plea "
+                                    "for it to stop on its own)" if n_ >= 3 else "")
+                                 + ". She does NOT tap this beat.")
+                    if tb.get("enabled", True) and e.get("over") and n_ >= int(tb.get("holder_from", 2)):
+                        lines.append(f"  - WHAT {e['attacker'].upper()} FEELS THROUGH THE GRIP: the twitch toward "
+                                     f"the tap and the stop, coming through her own arms; her own grip tiring and "
+                                     f"holding anyway; what she thinks of {e['defender']} still refusing (coldly, "
+                                     f"or with something like respect or pity, as fits her). She may say one short, "
+                                     f"low thing to her (to give up, not a taunt), or nothing.")
             elif e["type"] == "tap_out":
                 parts = " and ".join(p.lower() for p in e.get("parts") or [])
                 with_ = " and ".join(e.get("with") or [])
@@ -4008,7 +4029,13 @@ class Narrator:
                                  f"{e['attacker']} feels it and lets go. She is AWAKE, beaten and hurting, not out "
                                  f"cold. Give the moment its weight: how long she held on, what finally made her give "
                                  f"in, what it costs her to do it, and the release flooding through her. It is the "
-                                 f"last thing that happens, and it ends the match.")
+                                 f"last thing that happens, and it ends the match."
+                                 + (f" After it: she lies where she dropped, curled round the {parts.split(' and ')[-1]} "
+                                    f"or holding it, the pain with nowhere to go now but out; and {e['attacker']} lets "
+                                    f"go and stands over her, tired and hurting herself: what she makes of the win "
+                                    f"and of the fighter who held on so long (not gloating, unless that is who she "
+                                    f"is)." if ((self.rules.get("narration") or {}).get("tap_build") or {}).get(
+                                        "enabled", True) else ""))
                 else:
                     lines.append(f"{e['defender']} PASSES OUT at the END of this beat: the {e['submission']} on her "
                                  f"{parts}" + (f" ({with_})" if with_ else "") + f" has held back her breath and blood "
@@ -6019,6 +6046,7 @@ class Narrator:
         self._getup_failed = set()
         self._must_manhandle = None
         self._must_rise, self._rolled_up, self._loosened, self._must_event = None, set(), set(), None
+        self._tapped = set()
         self._hurt_now = set()  # nobody is hit in this passage, so any NEW wound in it is invented
         self._calm_beat = len(self.strengths) < 2  # after the match the loser lies where she fell: no posture check
         self._story_tail = _tail(story_so_far, 6000)
@@ -6074,6 +6102,7 @@ class Narrator:
         self._getup_failed = set()
         self._must_manhandle = None
         self._must_rise, self._rolled_up, self._loosened, self._must_event = None, set(), set(), None
+        self._tapped = set()
         self._hurt_now = set()
         self._calm_beat = len(self.strengths) < 2
         self._story_tail = _tail(story_so_far, 6000)
@@ -6385,7 +6414,10 @@ class Narrator:
                 continue
             bits.append(f"{who}: {end} all beat" if not start or start == end else f"{who}: starts {start}; ends {end}")
         for who, start in ps.items():
-            if who not in pe and start:     # she is knocked out this beat: where she starts is where she stays
+            if who not in pe and start and who in (getattr(self, "_tapped", None) or set()):
+                bits.append(f"{who}: starts {start}; ends DOWN where she was, AWAKE (she taps out: beaten, not "
+                            f"knocked out; she does not get up)")
+            elif who not in pe and start:     # she is knocked out this beat: where she starts is where she stays
                 bits.append(f"{who}: starts {start}; ends OUT COLD, lying where she was (she does not get up)")
         wet = getattr(self, "in_water", None) or {}
         # (only where the arena has water to be in: on a mountain shelf "not in the water" is just noise)

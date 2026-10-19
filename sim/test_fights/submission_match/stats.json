@@ -1,0 +1,568 @@
+{
+"1": {
+"start": {
+"Ripples": 1700.0,
+"Nerine": 1775.0
+},
+"end": {
+"Ripples": 1699.5,
+"Nerine": 1718.83
+},
+"parts": {
+"Nerine|Throat": [
+0.0,
+19.82
+],
+"Nerine|Neck": [
+0.0,
+4.5
+]
+}
+},
+"2": {
+"start": {
+"Ripples": 1699.5,
+"Nerine": 1718.83
+},
+"end": {
+"Ripples": 1673.85,
+"Nerine": 1718.33
+},
+"parts": {
+"Ripples|Left Thigh": [
+0.0,
+26.5
+],
+"Ripples|Left Hip": [
+0.0,
+6.48
+]
+}
+},
+"3": {
+"start": {
+"Ripples": 1673.85,
+"Nerine": 1718.33
+},
+"end": {
+"Ripples": 1632.65,
+"Nerine": 1717.83
+},
+"parts": {
+"Ripples|Upper Back": [
+0.0,
+8.34
+],
+"Ripples|Left Shoulder": [
+0.0,
+14.13
+],
+"Ripples|Left Hip": [
+6.48,
+13.53
+],
+"Ripples|Right Shoulder": [
+0.0,
+3.88
+],
+"Ripples|Left Thigh": [
+26.5,
+29.87
+],
+"Ripples|Right Hip": [
+0.0,
+3.92
+],
+"Ripples|Lower Back": [
+0.0,
+3.64
+]
+}
+},
+"4": {
+"start": {
+"Ripples": 1632.65,
+"Nerine": 1717.83
+},
+"end": {
+"Ripples": 1632.65,
+"Nerine": 1717.83
+},
+"parts": {}
+},
+"5": {
+"start": {
+"Ripples": 1632.65,
+"Nerine": 1717.83
+},
+"end": {
+"Ripples": 1622.73,
+"Nerine": 1717.33
+},
+"parts": {
+"Ripples|Right Upper Arm": [
+0.0,
+11.36
+]
+}
+},
+"6": {
+"start": {
+"Ripples": 1622.73,
+"Nerine": 1717.33
+},
+"end": {
+"Ripples": 1575.72,
+"Nerine": 1716.83
+},
+"parts": {
+"Ripples|Right Ear": [
+0.0,
+46.07
+],
+"Ripples|Head": [
+0.0,
+6.99
+],
+"Ripples|Neck": [
+0.0,
+11.03
+]
+}
+},
+"7": {
+"start": {
+"Ripples": 1575.72,
+"Nerine": 1716.83
+},
+"end": {
+"Ripples": 1575.22,
+"Nerine": 1646.23
+},
+"parts": {
+"Nerine|Head": [
+0.0,
+26.28
+],
+"Nerine|Nose": [
+0.0,
+11.97
+],
+"Nerine|Neck": [
+4.5,
+15.54
+]
+}
+},
+"8": {
+"start": {
+"Ripples": 1575.22,
+"Nerine": 1646.23
+},
+"end": {
+"Ripples": 1574.72,
+"Nerine": 1610.87
+},
+"parts": {
+"Nerine|Jaw": [
+0.0,
+14.27
+],
+"Nerine|Head": [
+26.28,
+30.2
+],
+"Nerine|Throat": [
+19.82,
+25.79
+]
+}
+},
+"9": {
+"start": {
+"Ripples": 1574.72,
+"Nerine": 1610.87
+},
+"end": {
+"Ripples": 1548.98,
+"Nerine": 1610.37
+},
+"parts": {
+"Ripples|Upper Back": [
+8.34,
+18.26
+],
+"Ripples|Lower Back": [
+3.64,
+17.97
+]
+}
+},
+"10": {
+"start": {
+"Ripples": 1548.98,
+"Nerine": 1610.37
+},
+"end": {
+"Ripples": 1548.98,
+"Nerine": 1610.37
+},
+"parts": {}
+},
+"11": {
+"start": {
+"Ripples": 1548.98,
+"Nerine": 1610.37
+},
+"end": {
+"Ripples": 1537.22,
+"Nerine": 1609.87
+},
+"parts": {
+"Ripples|Left Upper Arm": [
+0.0,
+13.58
+]
+}
+},
+"12": {
+"start": {
+"Ripples": 1537.22,
+"Nerine": 1609.87
+},
+"end": {
+"Ripples": 1536.72,
+"Nerine": 1591.36
+},
+"parts": {
+"Nerine|Left Paw": [
+0.0,
+27.58
+],
+"Nerine|Left Forearm Fin": [
+0.0,
+7.33
+]
+}
+},
+"13": {
+"start": {
+"Ripples": 1536.72,
+"Nerine": 1591.36
+},
+"end": {
+"Ripples": 1504.5,
+"Nerine": 1590.86
+},
+"parts": {
+"Ripples|Left Thigh": [
+29.87,
+58.68
+],
+"Ripples|Left Hip": [
+13.53,
+20.16
+]
+}
+},
+"14": {
+"start": {
+"Ripples": 1504.5,
+"Nerine": 1590.86
+},
+"end": {
+"Ripples": 1504.5,
+"Nerine": 1590.86
+},
+"parts": {}
+},
+"15": {
+"start": {
+"Ripples": 1504.5,
+"Nerine": 1590.86
+},
+"end": {
+"Ripples": 1479.31,
+"Nerine": 1590.36
+},
+"parts": {
+"Ripples|Upper Back": [
+18.26,
+27.93
+],
+"Ripples|Lower Back": [
+17.97,
+30.61
+]
+}
+},
+"16": {
+"start": {
+"Ripples": 1479.31,
+"Nerine": 1590.36
+},
+"end": {
+"Ripples": 1479.31,
+"Nerine": 1590.36
+},
+"parts": {}
+},
+"17": {
+"start": {
+"Ripples": 1479.31,
+"Nerine": 1590.36
+},
+"end": {
+"Ripples": 1478.81,
+"Nerine": 1556.63
+},
+"parts": {
+"Nerine|Left Ear": [
+0.0,
+24.8
+],
+"Nerine|Right Upper Arm": [
+0.0,
+8.12
+],
+"Nerine|Neck": [
+15.54,
+23.99
+]
+}
+},
+"18": {
+"start": {
+"Ripples": 1478.81,
+"Nerine": 1556.63
+},
+"end": {
+"Ripples": 1478.31,
+"Nerine": 1556.13
+},
+"parts": {}
+},
+"19": {
+"start": {
+"Ripples": 1478.31,
+"Nerine": 1556.13
+},
+"end": {
+"Ripples": 1458.32,
+"Nerine": 1555.63
+},
+"parts": {
+"Ripples|Left Knee": [
+0.0,
+7.83
+],
+"Ripples|Left Thigh": [
+58.68,
+71.41
+]
+}
+},
+"20": {
+"start": {
+"Ripples": 1458.32,
+"Nerine": 1555.63
+},
+"end": {
+"Ripples": 1362.64,
+"Nerine": 1555.13
+},
+"parts": {
+"Ripples|Nose": [
+0.0,
+45.87
+],
+"Ripples|Head": [
+6.99,
+17.19
+],
+"Ripples|Throat": [
+0.0,
+10.69
+],
+"Ripples|Left Knee": [
+7.83,
+18.77
+],
+"Ripples|Left Thigh": [
+71.41,
+85.3
+]
+}
+},
+"21": {
+"start": {
+"Ripples": 1362.64,
+"Nerine": 1555.13
+},
+"end": {
+"Ripples": 1330.11,
+"Nerine": 1554.63
+},
+"parts": {
+"Ripples|Left Knee": [
+18.77,
+31.91
+],
+"Ripples|Left Thigh": [
+85.3,
+102.26
+]
+}
+},
+"22": {
+"start": {
+"Ripples": 1330.11,
+"Nerine": 1554.63
+},
+"end": {
+"Ripples": 1285.39,
+"Nerine": 1554.13
+},
+"parts": {
+"Ripples|Left Knee": [
+31.91,
+47.59
+],
+"Ripples|Left Thigh": [
+102.26,
+124.65
+]
+}
+},
+"23": {
+"start": {
+"Ripples": 1285.39,
+"Nerine": 1554.13
+},
+"end": {
+"Ripples": 1229.03,
+"Nerine": 1554.13
+},
+"parts": {
+"Ripples|Left Knee": [
+47.59,
+66.48
+],
+"Ripples|Left Thigh": [
+124.65,
+149.88
+]
+}
+},
+"24": {
+"start": {
+"Ripples": 1229.03,
+"Nerine": 1554.13
+},
+"end": {
+"Ripples": 1227.29,
+"Nerine": 1553.63
+},
+"parts": {}
+},
+"25": {
+"start": {
+"Ripples": 1227.29,
+"Nerine": 1553.63
+},
+"end": {
+"Ripples": 1192.32,
+"Nerine": 1553.13
+},
+"parts": {
+"Ripples|Upper Back": [
+27.93,
+38.45
+],
+"Ripples|Lower Back": [
+30.61,
+47.74
+]
+}
+},
+"26": {
+"start": {
+"Ripples": 1192.32,
+"Nerine": 1553.13
+},
+"end": {
+"Ripples": 1173.89,
+"Nerine": 1552.63
+},
+"parts": {
+"Ripples|Left Thigh": [
+149.88,
+158.82
+]
+}
+},
+"27": {
+"start": {
+"Ripples": 1173.89,
+"Nerine": 1552.63
+},
+"end": {
+"Ripples": 1126.5,
+"Nerine": 1552.13
+},
+"parts": {
+"Ripples|Left Knee": [
+66.48,
+80.82
+],
+"Ripples|Left Thigh": [
+158.82,
+176.7
+]
+}
+},
+"28": {
+"start": {
+"Ripples": 1126.5,
+"Nerine": 1552.13
+},
+"end": {
+"Ripples": 1036.7,
+"Nerine": 1551.63
+},
+"parts": {
+"Ripples|Chest": [
+0.0,
+25.56
+],
+"Ripples|Left Knee": [
+80.82,
+99.37
+],
+"Ripples|Left Thigh": [
+176.7,
+193.32
+]
+}
+},
+"29": {
+"start": {
+"Ripples": 1036.7,
+"Nerine": 1551.63
+},
+"end": {
+"Ripples": 964.1,
+"Nerine": 1551.63
+},
+"parts": {
+"Ripples|Left Knee": [
+99.37,
+122.0
+],
+"Ripples|Left Thigh": [
+193.32,
+220.04
+]
+}
+}
+}

@@ -8093,11 +8093,15 @@ class Engine:
             if not how:
                 near = float(tcfg.get("near", 0.75))
                 if pain >= near * resist or (choke and air >= near * endure):
-                    # close to her limit: she is fighting the urge to give in (or the dark), and holding
+                    # close to her limit: she is fighting the urge to give in (or the dark), and holding. How many
+                    # times she has refused her (in this grip or an earlier one) lets the telling climb toward the tap
+                    prev = d.learned.get("tap_refused") or ["", 0]
+                    refusals = (prev[1] + 1) if prev[0] == a else 1
+                    d.learned["tap_refused"] = [a, refusals]
                     events.append({"type": "tap_resist", "attacker": a, "defender": dn, "submission": name,
                                    "parts": [h.part for h in hs], "choke": choke and air >= near * endure,
                                    "over": over >= 0, "pain": round(pain), "resist": round(resist),
-                                   "beats_held": beats})
+                                   "beats_held": beats, "refusals": refusals})
             if not how:
                 continue
             parts = [h.part for h in hs]
