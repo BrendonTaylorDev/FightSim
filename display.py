@@ -285,8 +285,11 @@ class Display:
         if rolls:
             def pair(c, r_):
                 # (whole numbers, unless they round to the same one: then a decimal shows which side it fell on)
-                a_, b_ = f"{c * 100:.0f}", f"{r_ * 100:.0f}"
-                return (a_, b_) if a_ != b_ else (f"{c * 100:.1f}", f"{r_ * 100:.1f}")
+                for d_ in (0, 1, 2, 3):
+                    a_, b_ = f"{c * 100:.{d_}f}", f"{r_ * 100:.{d_}f}"
+                    if a_ != b_:
+                        break
+                return a_, b_
             items = [f"{r['what']} → {r['result']}" if r.get("plain") else
                      "{0} {1}%, rolled {2} → {3}".format(r['what'], *pair(r['chance'], r['roll']), r['result'])
                      for r in rolls]
@@ -702,7 +705,7 @@ class Display:
                 out += self.hits_block(a["attacker"], mc["hits"])
         elif t == "instant":
             fl = a.get("flavor") or (a.get("move") or {}).get("name", "") if isinstance(a.get("move"), dict) else a.get("flavor", "")
-            fl = re.sub(r"\b([Aa]) (?=[AEIOU])", r"\1n ", str(fl or ""))     # (the director's "a Aqua Tail")
+            fl = re.sub(r"\b([Aa]) (?=[AEIOUaeiou])", r"\1n ", str(fl or ""))     # (the director's "a Aqua Tail")
             out.append(f"⚔️ **{a['attacker']} → {a['defender']}**" + (f": {fl}" if fl else ""))
             cl = a.get("clash")
             if cl:

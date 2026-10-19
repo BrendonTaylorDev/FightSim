@@ -2612,7 +2612,7 @@ class Narrator:
         # blades or a wall of wind (Air Slash) are no claws: they sound like cut air
         wind = "wind" in story_blocks.kind_of(m.get("name", ""), m.get("about", "")) and not re.search(r"\bclaws?\b", name)
         kind = ("wind" if wind else
-                "claw" if re.search(r"slash|claw|swipe|scratch|rake|cut", name) else
+                "claw" if re.search(r"\b(?:slash|claw|swipe|scratch|rake|(?<!upper)cut)\w*", name) else
                 "bite" if re.search(r"bite|fang|crunch|jaws", name) else
                 "shock" if m.get("type") == "Electric" else "cold" if m.get("type") == "Ice" else
                 "water" if m.get("type") == "Water" else
@@ -2792,7 +2792,8 @@ class Narrator:
                     out.append(self._hit_line(hits[k], k + 1, against=str(l.get("surface") or "the ground")))
                     k += 1
         out += [self._hit_line(h, i + 1) for i, h in enumerate(hits[k:], k)]
-        return out
+        old = self._old_wound_line(a)       # a hard landing on a part already hurting (narration.build_up)
+        return out + ([old] if old else [])
 
     def _hit_line(self, h, n=None, how=None, against=None):
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
@@ -2976,6 +2977,149 @@ class Narrator:
                 or not self._must_parts:
             self._must_parts.append(h["part"])
 
+    def _build_cfg(self):
+        cfg = (self.rules.get("narration", {}) or {}).get("build_up") or {}
+        return cfg if cfg.get("enabled", True) else None
+
+    def _pain_rank(self, dmg):
+        labels = [t["label"] for t in sorted(pain_tiers(self.rules), key=lambda t: t["min"])]
+        lab = self._pain(dmg)["label"]
+        return labels.index(lab) if lab in labels else 0
+
+    # how a held fighter fights it, by how long it has gone on and how much it hurts now (narration.build_up)
+    STRUGGLE = [
+        "she tests it: braces, shifts her weight, tries one strong pull to see what gives",
+        "she squirms and twists against it, grunting, her breath quickening, trying angle after angle",
+        "she thrashes now: kicking, clawing at the gripping limb, bucking her whole body, the sounds coming out of "
+        "her louder and rougher",
+        "it is DESPERATE: frantic, graceless heaves with everything she has, her cries cracking, breath coming in "
+        "sobbing gasps, scrabbling at anything she can reach, close to panic",
+    ]
+
+    def _struggle_line(self, att, dfn, old, pinned):
+        """narration.build_up: a hold or pin that has gone on, and hurts more, makes the held fighter fight it harder
+        and more desperately, so the struggle climbs from beat to beat (and within the beat) instead of staying one note."""
+        cfg = self._build_cfg()
+        if not cfg or not cfg.get("holds", True) or dfn in (getattr(self, "out_names", None) or ()):
+            return ""
+        beats = max(int(e.get("beats_held") or 1) for e in old)
+        worst = max(self._pain_rank(e["hits"][0]["damage_after"]) for e in old if e.get("hits"))
+        sub = bool(getattr(self, "_sub_of", {}).get((att, dfn)))
+        if beats < 2:
+            return ""
+        level = min(3, beats - 1 + max(0, worst - 3) + (1 if sub else 0))
+        nxt = self.STRUGGLE[min(3, level + 1)] if level < 3 else ""
+        return (f"  - HER STRUGGLE BUILDS ({beats} beat(s) {'under' if pinned else 'in'} it, and it hurts more): "
+                f"{dfn} fights it harder than before; {self.STRUGGLE[level]}"
+                + (f". Let it climb inside this part too: it starts there and, as the pain grows, edges towards: {nxt}"
+                   if nxt and worst >= 3 else "")
+                + ". Never the same struggle as last beat told again.")
+
+    # how a body answers a fresh blow on a part that was already badly hurt, by region
+    OLD_WOUND = [
+        (r"back|spine|hip", "she twists away from it with her back arching, a paw going back to grab at or rub the "
+                            "spot, wincing and gasping, a low sound forced out of her",
+                            "she rolls onto her side or curls, arching her back against the ground, a paw going "
+                            "back to grab at or rub the spot, wincing and gasping, a low sound forced out of her"),
+        (r"chest|rib|ruff|flank|side", "she curls round her side, a paw clamped to her ribs, each breath a short, "
+                                       "hitching gasp she has to fight for"),
+        (r"stomach|belly|midsection", "she folds round her middle, both forelegs or arms hugging it, retching or "
+                                      "groaning, slow to straighten"),
+        (r"head|ear|eye|jaw|muzzle|nose|cheek|neck|throat", "she clutches at her head or face, shaking it, eyes "
+                                                            "screwed shut, the world swimming for a moment"),
+        (r"shoulder|arm|paw|hand|wing|fin|foreleg", "she hugs the limb to her body, hissing through her teeth, "
+                                                    "rocking with it"),
+        (r"leg|thigh|knee|hock|foot|hind|tail", "the leg nearly folds; she hops or limps off it, can't put weight "
+                                                "on it, a whimper or a snarl escaping",
+                                                "she grabs at the leg and rocks or rolls with the pain, a whimper or "
+                                                "a snarl escaping"),
+    ]
+
+    def _old_wound_line(self, a):
+        """narration.build_up: a hard blow or landing on a part that was ALREADY badly hurt is not one more flinch:
+        the pain compounds, and now and then (old_wound_chance) she is taken over by it for a moment (rolling, grabbing
+        at it, arching, gasping, rubbing it), by where it is."""
+        cfg = self._build_cfg()
+        if not cfg or not cfg.get("old_wounds", True) or a.get("knockout") or not a.get("hits"):
+            return ""
+        dfn = a.get("defender")
+        if not dfn or dfn in (getattr(self, "out_names", None) or ()):
+            return ""
+        land = bool(a.get("environment") or a.get("manhandle") in ("throw", "slam"))
+        from_ = int(cfg.get("old_wound_from", 2))       # 2 = hurting already
+        cand = [h for h in a["hits"] if h.get("defender", dfn) == dfn and self._pain_rank(h["damage_before"]) >= from_
+                and float(h.get("damage_taken") or 0) >= float(cfg.get("old_wound_hit", 20))]
+        for x in a["hits"]:     # any blow or landing that leaves a part excruciating keeps hurting after, too
+            if x.get("defender", dfn) == dfn and self._pain_rank(x["damage_after"]) >= from_ + 1 \
+                    and (land or self._pain_rank(x["damage_before"]) < self._pain_rank(x["damage_after"])):
+                    self._still_hurts.setdefault(dfn, {})[x["part"]] = int(getattr(self, "beat_now", 0) or 0)
+        if not cand:
+            return ""
+        h = max(cand, key=lambda x: x["damage_after"])
+        self._still_hurts.setdefault(dfn, {})[h["part"]] = int(getattr(self, "beat_now", 0) or 0)
+        import zlib
+        roll = (zlib.crc32(f"old|{getattr(self, 'beat_now', 0)}|{dfn}|{h['part']}".encode()) % 1000) / 1000
+        if roll >= float(cfg.get("old_wound_chance", 0.6)) + (0.25 if land else 0):
+            return ""
+        row = next((r_ for r_ in self.OLD_WOUND if re.search(r_[0], h["part"], re.I)), None)
+        if not row:
+            return ""
+        down = dfn in (getattr(self, "on_ground", None) or ()) or (land and not a.get("kept_feet"))
+        how = row[2] if down and len(row) > 2 else row[1]
+        held = dfn in {g[1] for g in (self.grips or []) if len(g) > 1} or \
+            dfn in (getattr(self, "pinned_now", None) or ())
+        return (f"  - ON AN OLD WOUND: her {h['part'].lower()} was already {self._pain(h['damage_before'])['label']} "
+                f"before this, so it does not just hurt more, it takes her over for a moment"
+                + (" (held as she is, she can only writhe where she is caught)" if held else "")
+                + f": {how}. Give it time, with her breath and sounds in it, before she can do anything else; it is "
+                  f"worse than any flinch so far.")
+
+    def _climb_line(self, a):
+        """narration.build_up: several blows on one fighter in one attack each land on a body already hurt by the one
+        before, so her reactions climb (a flinch, then a cry, then she is reeling) instead of repeating."""
+        cfg = self._build_cfg()
+        dfn = a.get("defender")
+        if not cfg or not cfg.get("climb", True) or not dfn or a.get("sustain"):
+            return ""
+        m = a.get("move") or {}
+        if m.get("auto_spill_parts") or m.get("spillover_parts") or (m.get("target") == "spread" and Engine.is_ranged(m)):
+            return ""        # one blow or one blast landing everywhere at once: nothing to climb
+        hs = [h for h in a.get("hits") or [] if h.get("defender", dfn) == dfn]
+        if len(hs) < 2 or self._pain_rank(max(h["damage_after"] for h in hs)) < 2:
+            return ""
+        return (f"  - HER REACTIONS CLIMB: each of these lands on a body still answering the one before, so no two "
+                f"reactions are alike and each is bigger than the last (a flinch, then a sound torn out of her, then "
+                f"breath gone ragged and balance going); the last one is the worst.")
+
+    @property
+    def _still_hurts(self):
+        """{fighter: {part: beat}}: a part that took a hard blow or landing on top of an old wound, and when."""
+        return self.__dict__.setdefault("_still_hurts_d", {})
+
+    def _still_hurts_lines(self):
+        """narration.build_up: a bad blow on an old wound does not end with one mention. For carry_beats beats after,
+        the fighter still feels it now and then: nursing it, a wince when she moves it, a hand going to it."""
+        cfg = self._build_cfg()
+        if not cfg or not cfg.get("carry_on", True):
+            return []
+        now, keep = int(getattr(self, "beat_now", 0) or 0), int(cfg.get("carry_beats", 2))
+        out = []
+        for who, parts in list(self._still_hurts.items()):
+            for part, b in list(parts.items()):
+                if now - b > keep or now < b:
+                    parts.pop(part)
+            if who in (getattr(self, "out_names", None) or ()) or who not in (self.strengths or {}):
+                continue
+            old = [p for p, b in parts.items() if 0 < now - b <= keep]
+            if old:
+                ago = min(now - parts[p] for p in old)
+                out.append(f"STILL FEELING IT: {poss_word(who)} {' and '.join(p.lower() for p in old)} "
+                           f"{'has' if len(old) == 1 else 'have'} not let her be since {'last beat' if ago == 1 else 'the beat before last'}"
+                           f": somewhere in this beat (once or twice, never every sentence) she nurses it: a paw pressed to "
+                           f"it or rubbing it, a wince or a sharp breath when she moves it, favouring it as she gets up or "
+                           f"turns, a stiffness the other fighter might notice.")
+        return out
+
     def _pressure_line(self, h, with_=""):
         """One compact line per pin/hold contact, so long pins don't drown the beat in repetition."""
         before, after = self._pain(h["damage_before"]), self._pain(h["damage_after"])
@@ -3149,7 +3293,7 @@ class Narrator:
             if "GROUND" not in str((getattr(self, "posture_start", None) or {}).get(dfn, "")).upper():
                 return ""   # she was up when it landed and it put her down: the fall is the movement, told below
             kind = "down"
-        elif re.search(r"slash|claw|swipe|scratch|rake|cut", name):
+        elif re.search(r"\b(?:slash|claw|swipe|scratch|rake|(?<!upper)cut)\w*", name):
             kind = "claw"
         elif re.search(r"bite|fang|crunch|jaws", name):
             kind = "bite"
@@ -3235,7 +3379,7 @@ class Narrator:
         (r"shoulder",
          ["the arm below it goes dead and tingling all the way down to the paw", "the joint is jolted in its socket, a "
           "hot wrench under the muscle", "the blow's shock runs down the limb and her paw splays open on its own"]),
-        (r"upper arm|forearm|\barm\b|foreleg|forepaw|\bpaw\b|hand|wrist|elbow",
+        (r"upper arm|forearm|\barm\b|foreleg|forepaw|(?<!hind )\bpaw\b|hand|wrist|elbow",
          ["the shock jumps down the limb and her toes splay", "the limb goes numb for an instant and comes back "
           "throbbing", "the whole limb hums with the blow", "her grip opens without her meaning it to"]),
         (r"\bfin\b",
@@ -3278,10 +3422,10 @@ class Narrator:
         rnd = _r.Random(zlib.crc32(f"body|{getattr(self, 'beat_now', 0)}|{a.get('attacker')}|{h['part']}".encode()))
         m = a.get("move") or {}
         name = f"{m.get('name', '')} {m.get('about', '')} {a.get('flavor') or ''}".lower()
-        kind = ("claw" if re.search(r"slash|claw|swipe|scratch|rake|cut", name) else
+        kind = ("claw" if re.search(r"\b(?:slash|claw|swipe|scratch|rake|(?<!upper)cut)\w*", name) else
                 "bite" if re.search(r"bite|fang|crunch|jaws", name) else
                 "shock" if m.get("type") == "Electric" else "cold" if m.get("type") == "Ice" else
-                "blast" if m.get("target") in ("spread", "whole_body") or re.search(r"beam|blast|pulse|jet|gun|wave", name)
+                "blast" if m.get("target") in ("spread", "whole_body") or re.search(r"\b(?:beam|blast|pulse|jet|gun|wave)\w*", name)
                 else "blunt")
         reg = body_region(h["part"])
         reg = {"fore_up": "fore", "fore_low": "fore", "hind_up": "hind", "hind_low": "hind", "back_up": "back",
@@ -3294,11 +3438,12 @@ class Narrator:
         size = self._strength_key(float(h.get("damage_taken") or 0))
         # (a shock or cold locks or stiffens her rather than shoving her; a glancing blow doesn't snap her head round)
         moves = ("" if held or reg not in self.BODY_MOVES or kind in ("shock", "cold") or size == "glancing"
-                 else rnd.choice(self.BODY_MOVES[reg]))
+                 or self._in_air(dfn) else rnd.choice(self.BODY_MOVES[reg]))
         # what it does inside the part and past it (the teeth ringing from a blow to the cheek, the jaw knocked open):
         # two ideas for a solid blunt one, one for a glancing one, and the after-feel of a cut, a bite, a shock, cold
         deep = next((ideas for rx, ideas in self.BODY_DEEP if re.search(rx, part)), [])
         n_deep = 0 if not deep else 1 if size == "glancing" or kind not in ("blunt", "blast") else 2
+        deep = [d for d in deep if d in self._fit_body(deep, dfn)] if deep else deep
         inside = rnd.sample(deep, min(n_deep, len(deep)))
         if kind in self.BODY_AFTER:
             inside.append(rnd.choice(self.BODY_AFTER[kind]))
@@ -3497,6 +3642,7 @@ class Narrator:
         pins = [e for e in bundle.get("also_this_beat", []) if e["type"] == "pin_progress"]
         for e in pins:  # the struggle outcome goes first so it can't get lost under the pressure lines
             lines += self._pin_lines(e)
+        lines += self._still_hurts_lines()
         pairs = {}
         eng = getattr(self, "engine", None)
         self._sub_of = {}
@@ -3528,6 +3674,10 @@ class Narrator:
                 lines.append(f"{poss(att)} {kind} keeps pressing {dfn} (held {(min if pinned else max)(e['beats_held'] for e in old)} "
                              f"beat(s)); pressure lands ONLY on these spots, no new strikes:")
                 lines += [self._pressure_line(e["hits"][0], e.get("with", "")) for e in old]
+            if old:
+                fight_line = self._struggle_line(att, dfn, old, pinned)
+                if fight_line:
+                    lines.append(fight_line)
             coiled = [e for e in evs if e.get("coil")]
             scopes = {Engine.coil_scope(e["hits"][0]["part"]) for e in coiled if e.get("hits")}
             if coiled and scopes == {"limb"}:
@@ -4737,6 +4887,12 @@ class Narrator:
             body_line = self._impact_body(a, told_motion=bool(mv_line))
             if body_line:
                 lines.append(body_line)
+            old_line = self._old_wound_line(a)
+            if old_line:
+                lines.append(old_line)
+            climb = self._climb_line(a)
+            if climb:
+                lines.append(climb)
             if a.get("counter_hits"):
                 lines.append(f"  - It caught one target, but another dodged and countered {a['attacker']}:")
                 lines += [self._hit_line(h) for h in a["counter_hits"]]
@@ -5586,6 +5742,8 @@ class Narrator:
         self._landed, self._slammed, self._charge_beat, self._one_strike = set(), set(), False, None
         self._weapons_ok, self._attackers, self._no_getup = None, set(), set()
         self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
+        self._getup_who = self._getup_event = None
+        self._getup_failed = set()
         self._must_manhandle = None
         self._must_rise, self._rolled_up, self._loosened, self._must_event = None, set(), set(), None
         self._hurt_now = set()  # nobody is hit in this passage, so any NEW wound in it is invented
@@ -5639,6 +5797,8 @@ class Narrator:
         self._landed, self._slammed, self._charge_beat, self._one_strike = set(), set(), False, None
         self._weapons_ok, self._attackers, self._no_getup = None, set(), set()
         self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
+        self._getup_who = self._getup_event = None
+        self._getup_failed = set()
         self._must_manhandle = None
         self._must_rise, self._rolled_up, self._loosened, self._must_event = None, set(), set(), None
         self._hurt_now = set()
@@ -12198,7 +12358,98 @@ class Narrator:
         if last and key not in ("dwell", "watch", "read") and cfg.get("closing_thoughts", True):
             out += (" Before the part ends, give EACH fighter who is still conscious a few sentences of her own mind: "
                     "how she reads the fight now and what she means to do about it (an intention, not a new move).")
+        out += self._wound_watch_note(key)
         return out
+
+    # what a hurt body looks like from outside, by how far gone she is (narration.rich.wound_watch)
+    SEEN_HURT = {
+        "hurting": ["her breathing has gone short and quick, the ribs working under the fur",
+                    "a small wince crosses her face whenever she shifts her weight",
+                    "she keeps half-turning the hurt side away",
+                    "a hitch at the top of each breath, quickly hidden",
+                    "the ears flick back each time the hurt part is moved"],
+        "badly": ["her whole body rises and falls with each breath, the sides heaving",
+                  "one eye half-closes on every breath out, then opens again by effort",
+                  "a wince she can no longer hide each time she moves",
+                  "she sways a little where she stands before she catches it",
+                  "her breath catches on the way in, as if it hit something",
+                  "her mouth hangs a little open; she breathes through it now"],
+        "spent": ["her body heaves with every breath, the whole of her moving with it",
+                  "both eyes squeeze on each breath out and are slower to open each time",
+                  "her legs tremble under her when she holds still",
+                  "her head hangs between breaths and comes up late",
+                  "every small movement costs her a visible flinch and a gasp"],
+    }
+    SEEN_PART = [(r"head|ear|eye|jaw|muzzle|nose|cheek|horn|antenna|beak",
+                  "she shakes her head as if to clear it, and squints past the hurt"),
+                 (r"throat|neck", "she swallows carefully, and her breath rasps"),
+                 (r"chest|rib|ruff", "she breathes shallow, not letting her chest fill"),
+                 (r"stomach|belly|midsection|flank", "she hunches a little round her middle"),
+                 (r"back", "she moves stiffly, her back held careful and straight"),
+                 (r"shoulder|upper arm|forearm|arm|paw|hand|wing|fin|foreleg", "the hurt limb is held in close and kept out of use"),
+                 (r"hip|thigh|knee|hock|foot|leg|hind", "her weight stays off the hurt leg, and her step is uneven"),
+                 (r"tail", "the tail drags or hangs still, its rhythm gone")]
+
+    def _worth_stock(self, who, parts):
+        """The wounds she takes stock of this beat: only ones new or worse since she last did (or not looked at for
+        three beats), so the same sore head isn't gone over every beat. The same answer for every part of one beat."""
+        now = int(getattr(self, "beat_now", 0) or 0)
+        memo = self.__dict__.setdefault("_stock_memo", {})
+        if (now, who) in memo:
+            return memo[(now, who)]
+        seen = self.__dict__.setdefault("_stock_seen", {}).setdefault(who, {})
+        pick = [(p, d) for p, d in parts
+                if seen.get(p, (None, -99))[0] != self._pain(d)["label"] or now - seen[p][1] >= 3]
+        for p, d in pick:
+            seen[p] = (self._pain(d)["label"], now)
+        for k in [k for k in memo if k[0] < now - 1]:
+            memo.pop(k)
+        memo[(now, who)] = pick
+        return pick
+
+    def _wound_watch_note(self, key):
+        """narration.rich.wound_watch: the part's fighter takes stock of her own worst wounds once (how they feel,
+        what they stop her doing), and reads her opponent's: a few visible signs the program picks from her real
+        condition (breath, winces, a held limb, a sway), for her to notice and make something of."""
+        cfg = self._rich()
+        if not cfg or not cfg.get("wound_watch", True) or int(getattr(self, "beat_now", 0) or 0) <= 1:
+            return ""
+        lead = getattr(self, "_lead_now", None)
+        names = [w for w in (self.strengths or {}) if w not in (getattr(self, "out_names", None) or [])]
+        if lead not in names or len(names) < 2:
+            return ""
+        dmg = getattr(self, "damage_by", None) or {}
+        at = float(cfg.get("wound_watch_from", 40))
+
+        def worst(w, k=2):
+            return sorted(((p, d) for p, d in (dmg.get(w) or {}).items() if d >= at), key=lambda x: -x[1])[:k]
+
+        def tier(w):
+            st = float((self.strengths or {}).get(w, 100))
+            top = max([d for _p, d in worst(w, 1)] or [0])
+            return "spent" if st < 25 else "badly" if st < 50 or top >= 150 else "hurting" if st < 80 or top >= 60 else ""
+        import zlib
+        out = ""
+        mine = self._worth_stock(lead, worst(lead))
+        if mine:
+            out += (f" HER OWN WOUNDS (once in this part, in her body and her head): {lead} takes stock of "
+                    + " and ".join(f"her {p} ({self._pain(d)['label']})" for p, d in mine)
+                    + ": how each feels right now, what it stops her doing, a glance down at it or a test of it, and "
+                      "what she thinks of it.")
+        for o in [w for w in names if w != lead][:1]:
+            t = tier(o)
+            if not t:
+                continue
+            rnd = random.Random(zlib.crc32(f"seen|{getattr(self, 'beat_now', 0)}|{o}|{key}".encode()))
+            signs = rnd.sample(self.SEEN_HURT[t], 2)
+            wp = worst(o, 1)
+            if wp:
+                part_sign = next((sg for rx, sg in self.SEEN_PART if re.search(rx, wp[0][0])), None)
+                if part_sign:
+                    signs.append(part_sign + f" (her {wp[0][0]})")
+            out += (f" WHAT {lead.upper()} SEES OF {poss_word(o).upper()} HURT (pick one or two, in your own words, as {lead} "
+                    f"watches her; then what {lead} makes of it, coldly or not): " + "; ".join(signs) + ".")
+        return ("\n" + out.strip()) if out else ""
 
     def _camera_note(self, key):
         """How close this part is told (narration.camera): close in on one body, or wide on both and the place."""
@@ -12930,7 +13181,9 @@ class Narrator:
                     out.setdefault(i, []).append(
                         f"NOT IN THIS PART: {poss(who)} get-up (a later part tells it): here she is still on the ground, "
                         f"and no try at getting up is told." if i < got else
-                        f"NOT IN THIS PART: {poss(who)} get-up (told above): she is up now; don't tell any try again.")
+                        f"NOT IN THIS PART: {poss(who)} get-up (told above): "
+                        + ("she is up now" if e.get("stands") else "she is still down after her tries")
+                        + "; don't tell any try again.")
             elif t == "numb_end" and not any(x.get("type") == "numb_end" and x.get("fighter") == who
                                              for x in also[:also.index(e)]):
                 parts_ = " and ".join(dict.fromkeys(x["part"].lower() for x in also

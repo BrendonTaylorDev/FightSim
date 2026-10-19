@@ -654,6 +654,36 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 206
+**Hurt that shows, and builds.** Each part is switchable in rules.json.
+- **Her own wounds** (`narration.rich.wound_watch`): from the second beat, the fighter whose part it is takes stock
+  once of her worst wounds: how they feel, what they stop her doing, a glance at them, what she thinks. Only wounds
+  that are new or worse are offered, so the same sore head isn't gone over every beat.
+- **Reading the other fighter**: two or three visible signs of the opponent's hurt are picked from how far gone she
+  is and where her worst wound is: her body rising and falling with each breath, an eye half-closing on each breath
+  out, winces, a sway, weight kept off a leg, a limb held close. The watcher notices them and makes something of them.
+- **Struggles that build** (`narration.build_up.holds`): every beat a hold, pin or coil goes on, the held fighter
+  fights it harder: she tests it, then squirms, then thrashes, then fights in desperation. When it is very painful,
+  the struggle also climbs within the part.
+- **Old wounds** (`build_up.old_wounds`): a hard blow or landing on a part that was already hurting can take her over
+  for a moment, depending on where it is. A hurt back: she twists and arches, or rolls and curls on the ground, grabs
+  at the spot and rubs it, gasping. A hurt side: she curls round it. A hurt leg: she hops off it. It happens 60% of
+  the time, more for a landing, throw or slam.
+- **Reactions that climb** (`build_up.climb`): several blows in one attack get reactions that grow, the last the worst.
+- **Still feeling it** (`build_up.carry_on`): a part hurt like that, or left excruciating, is felt for two beats after.
+  She nurses it, winces when she moves it, and favours it as she gets up.
+
+Fixes from an audit of the narrator, the stat blocks and the engine:
+- The get-up note, the arm and paw words, and the claw and blast words are matched more exactly.
+- The body detail for a blow fits the body, and no motion is suggested for a fighter in the air.
+- /more and interludes reset the get-up state.
+- The stat blocks show two close numbers with enough decimals to tell them apart, and use "an" before lowercase vowels.
+- Deep water: "across" no longer counts as being in the water, and "shallow" water isn't taken as deep.
+- The inner-life and fight-chronicle tallies skip self-hits and confused hits, count a landed status move, and credit
+  reflected hits to the right fighter.
+- An early return from a guard gives a last stand back. A pin takedown clears where she was lying.
+- The fight summary names the loser correctly in fights of more than two.
+
 ## Build 205
 Fixes from an audit of `/bench` and `/sets`:
 - **The newest saved beats are kept.** Saved beats were sorted by file name, so after a few fights (fight10 before

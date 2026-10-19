@@ -1227,6 +1227,10 @@ class Engine:
         guard = self._guarded(a, d, move)
         if guard:
             guard["flavor"] = flavor
+            if self._last_stand_now:
+                # (it went into a Protect: her once-a-fight last stand isn't spent, and doesn't hang over her next move)
+                a.learned["last_stand_used"] = False
+                self._last_stand_now = None
             return guard
         if target == "status":  # no damage: the move's effects either land or the target dodges
             dodge = self.dodge_roll(a, d, "targeted") if enforce else None
@@ -5493,8 +5497,8 @@ class Engine:
                 self._moment("knockout", f"{poss_word(by)} {mv_} knocks {r.get('fighter')} out cold" if by and mv_ else
                              f"{r.get('fighter')} is knocked out cold", by, r.get("fighter", ""), weight=3)
                 continue
-            if r.get("type") != "instant":
-                continue
+            if r.get("type") != "instant" or r.get("confused_self_hit") or (att and att == dfn):
+                continue        # (a confused fighter hitting herself is nobody's blow on anyone)
             mv = (r.get("move") or {}).get("name") or "a blow"
             land = bool(r.get("environment"))
             if land:
@@ -5504,7 +5508,8 @@ class Engine:
             deal(dfn, r.get("counter_hits"), att)
             deal(dfn, (r.get("pass_counter") or {}).get("hits"), att)
             deal(dfn, (r.get("air_rake") or {}).get("hits"), att)
-            deal(dfn, (r.get("leap") or {}).get("landing_hits"), att)
+            # (a leap's landing hits are the leaper's own legs: nobody dealt them) a reflected blow is the defender's
+            deal(dfn, (r.get("reflected") or {}).get("hits"), att)
             loss = pct(dfn, lost.get(dfn, 0.0))
             hits = r.get("hits") or []
             part = max(hits, key=lambda h: float(h.get("health_loss") or 0))["part"].lower() if hits else ""
@@ -5598,7 +5603,9 @@ class Engine:
         losers = [f for f in self.fighters.values() if f.name != win]
         if not losers:
             return ""
-        lose = max(losers, key=lambda f: ch.get("dealt", {}).get(win, 0)).name
+        # the one who went out (with three or more, never the winner's ally who is still standing): the weakest of them
+        out_ = [f for f in losers if f.eliminated] or losers
+        lose = min(out_, key=lambda f: self.strength(f)).name
         moments = [m for m in ch.get("moments", []) if m["kind"] != "finish"]
         cap = int((self.rules.get("summary") or {}).get("moments", 10))
         per_kind = int((self.rules.get("summary") or {}).get("per_kind", 3))
@@ -6403,6 +6410,7 @@ class Engine:
             self.pressed.pop(d.name, None)  # dragged down from where the charge left her
             self.downed.setdefault(d.name, 0)  # pinned means on the ground
             self.__dict__.setdefault("lying_at", {}).pop(d.name, None)
+            self.__dict__.setdefault("lying_on", {}).pop(d.name, None)   # (taken down here: not on the last fall's ground)
             for h in self.holds.values():      # nobody is "on her feet at point-blank" any more: a grab between these
                 if h.grab and {h.attacker, h.defender} == {a.name, d.name}:     # two is now simply a grip
                     h.grab = False
@@ -6865,12 +6873,14 @@ class Engine:
         self._fresh_status = set()
         return events
 
-    IN_WATER = re.compile(r"\b(?:(?:in|into|through|under|beneath|across|half in|waist-deep in|ankle-deep in|"
+    IN_WATER = re.compile(r"\b(?:(?:in|into|through|under|beneath|half in|waist-deep in|ankle-deep in|"
                           r"knee-deep in|chest-deep in)\s+(?:the\s+|a\s+)?(?:[a-z-]+\s+){0,2}(?:pool|water|channel|"
                           r"shallows|stream|creek|rapids|sump|surf|spring|flooded \w+)|submerged|wading|swimming|"
                           r"half-submerged)\b", re.I)
 
-    DEEP = re.compile(r"\b(?:channel|deep|plunge pool|lake|rapids|creek|chest-deep|waist-deep|swimming|submerged)\b", re.I)
+    # ("ankle-deep" and "knee-deep" are shallow, and so is "the shallow channel")
+    DEEP = re.compile(r"(?<!shallow )\b(?:channel|plunge pool|lake|rapids|creek|swimming|submerged)\b|(?<![\w-])deep\b|"
+                      r"\b(?:chest|waist)-deep\b", re.I)
     SLICK = re.compile(r"\b(?:algae|slick|slippery|wet stone|ice|icy|frozen|mud|muddy|moss|mossy|spray|oil)\b", re.I)
 
     def _where(self, name):
@@ -7926,9 +7936,11 @@ class Engine:
                 continue
             att, dfn = a.get("attacker") or "", str(a.get("defender") or "").split(",")[0].strip()
             mv = (a.get("move") or {}).get("name")
-            if not att or not dfn or not mv or att not in rec or dfn not in rec:
-                continue
-            if any((h.get("defender") or dfn) == dfn for h in a.get("hits") or []):
+            if not att or not dfn or not mv or att not in rec or dfn not in rec or a.get("self_move") \
+                    or a.get("confused_self_hit") or att == dfn:
+                continue        # (a stance or weather move, or a hit on herself: neither lands nor misses)
+            status_landed = a.get("status_applied") and not a.get("missed") and not a.get("dodged")
+            if status_landed or any((h.get("defender") or dfn) == dfn for h in a.get("hits") or []):
                 rec[att]["landed"][mv] = rec[att]["landed"].get(mv, 0) + 1
                 rec[dfn]["hit_by"][mv] = rec[dfn]["hit_by"].get(mv, 0) + 1
             else:
