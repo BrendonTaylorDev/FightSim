@@ -525,15 +525,20 @@ Ripples stepped in again, and her left leg came up off the ground to do it.
 
 Nerine caught it.
 
-It wasn't a grab so much as a gathering. She simply stepped forward into the step and let the leg come to her, and
-then she trapped it. Her right arm went under the thigh and clamped it to her side, and both her paws closed round
-the knee. She took it out of the air as easily as catching a thrown stick.
+It wasn't a grab so much as a gathering. She simply stepped forward into the step, to Ripples' left, and let the
+leg come to her. She turned side-on as it came, and the leg slid in under her right arm. Her arm came down on the
+thigh and clamped it hard against her own ribs. The knee ended up just in front of her chest, and Ripples' shin and
+foot stuck out behind her back, kicking at nothing. Her right paw curled round the outside of the knee, her left paw
+came across and took the inside, and she had it. She took it out of the air as easily as catching a thrown stick.
 
-And then she twisted.
+And then she twisted. She turned the knee the way it doesn't go, wringing it sideways between her paws, while her
+arm kept the thigh pinned to her side so the leg above it couldn't turn with it.
 
 Ripples was on one foot. That was the first thing she understood, and it went through her like ice water. Her
-whole weight was balanced on her right leg, and her left leg was held out in front of her, clamped at the thigh and
-the knee, and nothing she did with the rest of her body would get it back.
+whole weight was balanced on her right leg, hopping to keep it under her, and her left leg was held out in front of
+her under Nerine's arm, clamped at the thigh and the knee. Nerine's shoulder was right there in front of her face,
+and her back, and the arm. Her own paws were free. They could reach all of that, and none of it would give her the
+leg back.
 
 The knee wasn't hurt yet. Nerine's paws were pressed into it firmly, the fur squashed flat under them, the flesh
 bulging out a little at the edges of the grip, and she was turning it. It wasn't hard yet. It was slow and steady,
@@ -598,13 +603,13 @@ her breath coming quicker. She tried to turn the knee with the twist instead of 
 weight. She tried to lift herself. She tried every angle she could think of, one after another, and none of them
 found anything.
 
-And then her paw went toward the ground.
+And then her paw went toward Nerine's shoulder.
 
-She didn't send it. It went on its own. Her right paw dropped from her guard and reached down toward the grass, the
-fingers already spreading flat to slap it. It was the tap, the one thing that would make all of this stop. Her body
-had decided.
+She didn't send it. It went on its own. Her right paw dropped from her guard and reached for the shoulder in front of
+her, the fingers already spreading flat to slap it. It was the tap, the one thing that would make all of this stop.
+Her body had decided.
 
-She caught it an inch from the grass and pulled it back.
+She caught it an inch from the fur and pulled it back.
 
 It shook there in the air, her whole arm shaking, and she held it, and she made it come back up to her chest.
 
@@ -656,7 +661,7 @@ None of it moved the grip at all.
 
 And everything in her wanted to tap. It wasn't close to what she could bear any more. It was past it. She was holding
 on now with nothing but the stubborn, stupid part of her that had always refused to be told. Her tail twitched
-toward the grass, both tails, flicking down, and she held them still by force. Her paw twitched toward the grass and
+toward the grass, both tails, flicking down, and she held them still by force. Her paw twitched toward Nerine's back and
 she pulled it back against her chest and held it there with the other one.
 
 *It's only pain,* she told herself, and it was the most useless thing she'd ever thought. *It's only pain. She can't
@@ -701,19 +706,19 @@ sent a sick little flash up through the knee when they did.
 
 *That's mine,* she thought, very distantly. *That's my knee. I'm going to need that.*
 
-Her paw went down toward the grass again.
+Her paw went to Nerine's shoulder again.
 
-It went further this time. It was almost there. She could feel the cool tips of the grass against her palm. She
-could feel how easy it would be, how small: a slap, two slaps, and then her leg would be her own again and she could
-lie down and stop.
+It went further this time. It got there. Her palm came down on the fur, flat, and she could feel the muscle working
+under it, holding her. She could feel how easy it would be, how small: a slap, two slaps, and then her leg would be
+her own again and she could lie down and stop.
 
 She held on.
 
 She didn't know how. She didn't decide to. It was more that some deep, sullen part of her refused, without
-explaining itself. Her paw shook in the grass and didn't slap it, and after a long moment she dragged it back up
+explaining itself. Her paw shook on Nerine's shoulder and didn't slap it, and after a long moment she dragged it away
 again.
 
-Nerine saw the paw touch the grass and not tap. She saw it shake there. Her own breath caught in her throat.
+Nerine felt the paw land on her shoulder and not tap. She felt it shake there. Her own breath caught in her throat.
 
 *Give,* she thought. *Give. Give. Just give it up.* And then, unwillingly, from somewhere underneath the fight: *How
 is she still holding on? How is she still holding on?*
@@ -736,14 +741,14 @@ had cost Nerine something too.
 
 *Now,* Ripples thought. It was the first clear thought she'd had in a long time. *Now, while she's settling.*
 
-She put her free paw flat against Nerine's chest. She braced her one good leg into the ground. And she shoved.
+She put her free paw flat against Nerine's shoulder. She braced her one good leg into the ground. And she shoved.
 
 It wasn't a strike. It was a push, everything she had left behind it, straight out from the shoulder. Nerine had
 her weight forward over the trapped leg and wasn't ready for it. She was rocked back half a step, her feet sliding
 in the grass. The grip on the knee loosened for the space of a heartbeat as her paws moved to catch her balance, and
 the arm round the thigh lifted a finger's width.
 
-Ripples twisted the leg out through the gap.
+Ripples dragged the leg back out from under the arm.
 
 It came free so suddenly that she nearly went over backward. She fell back two staggering steps, and the second one
 was on the left foot, and the left foot wouldn't take it. The leg folded under her, a slow, sick buckling at the
@@ -888,39 +893,48 @@ didn't like it, and she didn't know what to do with it.
 ## Beat 27 — Caught again
 
 Ripples couldn't step back fast enough. She knew she couldn't, and she tried anyway. And when she tried, her left
-leg came up off the ground, because she couldn't put weight on it to push. It hung there in the air, in front of
-her, exactly where it had been before.
+leg came up off the ground in front of her, because she couldn't put weight on it to push. It hung there in the air,
+exactly where it had been before.
 
 Nerine caught it.
 
-It was the same hold, exactly. Her right arm went under the thigh and clamped it, and both paws closed round the
-knee, and she twisted. Nerine didn't even have to think about it. Her arm went to the place it had been, her paws
-to the places they had been, and the leg fit them as if it had been made for it.
+It was the same hold, exactly, and this time there was nothing to work out. She stepped in on Ripples' left and
+turned side-on, and the leg went in under her right arm as if it had been made to fit there. Her arm came down across
+the thigh and clamped it against her ribs. The knee sat just in front of her chest. Ripples' shin and foot stuck out
+behind Nerine's back. Nerine's right paw curled round the outside of the knee, her left came across and took the
+inside, and she began to wring it, turning the lower leg out sideways against the joint while her arm held the thigh
+still above it.
+
+So they stood hip to hip. Ripples was hopping on her right foot, facing Nerine's shoulder, a foot from her ear. Her
+arms were free. They could reach Nerine's shoulder, her back, the arm across her thigh, the side of her head. None of
+that was the leg.
 
 But this time the leg was already ruined.
 
-The squeeze on the knee was solid, no harder than the first time had been. It hurt, steadily, the joint aching in
-its new, wrong way. The muscle round it was pressed flat under Nerine's paws, the flesh bulging out at the edges,
-and Ripples' claws flexed into the ground with every press as if she could hold on to the earth and stop it.
+The twist on the knee was solid, no harder than the first time had been. It hurt, steadily, the joint aching in its
+new, wrong way. The muscle round it was pressed flat under Nerine's paws, the flesh bulging out at the edges, and
+Ripples' toes, out behind Nerine's back, curled and uncurled in the air with every turn.
 
 The thigh couldn't bear it at all.
 
-It couldn't bear anything. It was excruciating before the arm ever closed round it, and every scrap of pressure on it
-told, every movement, every breath Nerine took. The fur creased into a thick ridge round her arm. Under the fur the
-muscle was hot and swollen and wrong.
+It couldn't bear anything. It was excruciating before the arm ever came down on it, and every scrap of pressure on
+it told: every movement, every breath Nerine took, every time her ribs swelled against it. The fur creased into a
+thick ridge where her arm crossed it. Under the fur the muscle was hot and swollen and wrong.
 
 The sound came out of Ripples before the grip had even finished closing. It started as a gasp and turned into a
 cry, ragged, rising, climbing up through her chest and her throat, *Aaah—aaaaaah—*. It climbed until there was no
-air behind it at all, and then it simply stopped, and she sagged in the grip, panting, her mouth open.
+air behind it at all, and then it simply stopped, and she sagged sideways against Nerine's shoulder, panting, her
+mouth open.
 
-She gulped air. Her free paw beat at Nerine's arm, frantic and aimless. It wasn't trying to pry now, just hitting,
-flat-pawed, the way you'd beat at a door. Her whole body twisted on its one standing leg, back and forth.
+She gulped air. Her free paw beat at Nerine's back, frantic and aimless. It wasn't trying to pry now, just hitting,
+flat-pawed, the way you'd beat at a door. Her whole body twisted on its one standing leg, back and forth, and the
+trapped leg didn't move with it.
 
 *Not again,* she thought. *Not again, not again, not again.*
 
-Nerine held on. Her face was right there, a foot away, and it was set like stone. She watched Ripples move, and
-saw the wince she couldn't hide any more, every time she moved at all. She heard the breath catch on the way in,
-as if it had hit something sharp.
+Nerine held on. Her face was right there, turned toward her over her own shoulder, and it was set like stone. She
+watched Ripples move, and saw the wince she couldn't hide any more every time she moved at all. She heard the breath
+catch on the way in, as if it had hit something sharp.
 
 *She can't hide it now,* Nerine thought. *She's stopped even trying.* And then, harder: *Good. This time I don't
 let go. This time I don't get tired.*
@@ -929,49 +943,52 @@ She settled her weight, and set her feet, and leaned in.
 
 ## Beat 28 — The chop to the chest
 
-Nerine kept the knee twisted under her right arm and drew back her left paw.
+Nerine took her left paw off the knee.
 
-Ripples saw it go back, the same as before. She got her arms up, the same as before. She was too late, the same as
-before: she couldn't step, she couldn't turn, she couldn't do any of the things a body does to soften a blow when
-one leg is held out in front of it. This time Nerine didn't go for her face. She drove the chop straight down into
-the middle of her chest.
+She didn't need it there. Her right arm still had the thigh crushed to her ribs, and her right paw still had the
+outside of the knee. The leg wasn't going anywhere. She drew the free paw back across her own body.
+
+Ripples saw it go back. She got her arms up. She was too late, the same as before: she couldn't step, she couldn't
+turn, she couldn't do any of the things a body does to soften a blow when one leg is held out under somebody else's
+arm. Nerine didn't go for her face this time. She swung the chop back across, hard, edge-on, straight into the
+middle of her chest.
 
 It landed with a hard crack, the sound of something solid being hit squarely. A sharp squeak was knocked out of
-her, *Eek*. Her ribs heaved in short, shallow jerks, and her face tightened all over. Her body jerked back in the
-hold with the force of it, and the grip took it. The leg was held, so the rest of her had nowhere to go. She hung
-there off her own trapped knee, and the jerk ran down her leg into the joint.
+her, *Eek*. Her ribs heaved in short, shallow jerks, and her face tightened all over. Her body jerked backward with
+the force of it, and the grip took it. The leg was held, so the rest of her had nowhere to go. She hung off her own
+trapped knee for a moment, and the jerk ran down her leg into the joint.
 
 And the knee went over a line.
 
-Nerine bore down on it with both paws, heavy, and the flesh round them squeezed out in a ridge. The ache in the
-joint swelled into something bigger, very painful now. That was the same word the thigh had worn a few beats ago.
-A thin, wavering wail came up out of her, *Iiiiiiiih—*, and wouldn't stop. It went on and on, wobbling, her whole
-body shaking under it.
+Nerine's left paw came straight back to the inside of the knee, and she bore down with both paws, heavy, wringing
+it further round, and the flesh between them squeezed out in a ridge. The ache in the joint swelled into something
+bigger: very painful now. That was the same word the thigh had worn a few beats ago. A thin, wavering wail came up
+out of her, *Iiiiiiiih—*, and wouldn't stop. It went on and on, wobbling, her whole body shaking under it.
 
 The thigh was past that. The arm across it dug a trench in her fur, and the muscle under it quivered and jumped,
 and when it jumped she screamed. It wasn't a yelp or a cry. It was a scream that went on and on, *Aaaaaaaaah—*,
 and cracked at the top where her voice couldn't follow it any more.
 
-She thrashed. She kicked at Nerine's shin with the heel of her standing foot, nearly putting herself down. She
-clawed at the arm round her thigh, tearing out tufts of fur. She bucked against the grip with her whole body. Every
+She thrashed. She kicked at Nerine's ankle with the heel of her standing foot, nearly putting herself down. She
+clawed at the arm across her thigh, tearing out tufts of fur. She bucked against the grip with her whole body. Every
 heave was louder and rougher than the last, and none of them moved anything.
 
-She looked down at the knee, once. It was bent a little the wrong way under Nerine's paws, and she couldn't feel
-where the paws ended and the hurt began. She tried to move her toes. They moved, and a white flash went up the
-leg into her hip, and she stopped trying.
+She looked down at the knee, once. It was in front of Nerine's chest, turned out a little the wrong way between her
+paws, and she couldn't feel where the paws ended and the hurt began. She tried to move her toes behind Nerine's
+back. They moved, and a white flash went up the leg into her hip, and she stopped trying.
 
 *That's going to stay,* she thought, very clearly. *Whatever happens now, that's going to stay.*
 
-Her paw went toward the ground.
+Her paw went to Nerine's shoulder.
 
-It went all the way there. Her fingers spread flat on the grass and lay there, shaking. All it had to do was lift
-and fall.
+It went all the way there. Her fingers spread flat on the fur and lay there, shaking. All it had to do was lift and
+fall.
 
 She held it still.
 
-Nerine felt it through her own arms: the paw going down, the whole body straining toward that one small movement,
-and then stopping. She was breathing hard. Her forearm ached. She watched Ripples' sides heave and saw her sway on
-the one leg she had left.
+Nerine felt it land: a small, hot, shaking weight on her shoulder, the fingers spread, the whole body behind it
+straining toward that one small movement, and then stopping. She went still under it, waiting. She was breathing
+hard. Her forearm ached. She felt Ripples' sides heave against her and felt her sway on the one leg she had left.
 
 "Just tap," she said, low.
 
@@ -981,55 +998,35 @@ It wasn't a taunt. Ripples didn't answer.
 
 Ripples braced her good foot.
 
-She planted it in the torn-up grass and pushed against the grip with everything she had left. She was trying to turn
-the leg out through the gap, the way she had before. The way that had worked.
+She planted it in the torn-up grass and drove against the grip with everything she had left. She shoved at
+Nerine's shoulder with both paws and hauled her hips back, trying to drag the leg back out from under the arm, the way
+she had before. The way that had worked.
 
-Nerine felt it coming. She leaned into the twist and kept her weight forward, ready, where it hadn't been last
-time. The gap never opened.
+Nerine felt it coming. She leaned into Ripples instead of away, kept her weight forward over the leg where it hadn't
+been last time, and clamped her arm down. The leg didn't slide an inch.
 
 And the grip came down harder than it had ever been.
 
 It wasn't one sudden wrench. It was a slow, steady deepening, like a tide coming in. Every beat she'd been in it,
-it had sunk a little further, and now it was a long way in. Nerine's paws were sunk hard into the knee, the joint
-flattened under them. Long, gasping whimpers came out of Ripples one after another, *hnn—hnnnn—hnnnnn*, each one a
-little higher than the last.
+it had sunk a little further, and now it was a long way in. Nerine's paws had the knee turned so far out that the
+joint was flattened between them. Long, gasping whimpers came out of Ripples one after another,
+*hnn—hnnnn—hnnnnn*, each one a little higher than the last.
 
-The arm across her thigh had squashed the muscle flat, and the swollen flesh pushed out round it on both sides. When
-Nerine cranked it, a choking squeal was dragged up out of Ripples, *Iiiiiiiih—hk*. It came again with the next crank,
-and the next. It went on until her breath ran out, and it was there again the moment she found more.
-
-Her push turned into something else. It came apart into frantic, graceless heaves, everything she had all at once,
-in no order. She scrabbled at Nerine's arm, at her shoulder, at the ground. She sobbed for air between the cries,
-great ugly gulps, and her cries cracked in the middle and went on in pieces. She was very close to panic. She could
-feel it right there, behind everything, the part of her that would just scream and scream and never stop.
-
-Her paw was flat on the grass again. It had never really left.
-
-She didn't tap.
-
-She couldn't have said why. There was no reason left in it. It wasn't pride any more, or the match, or Nerine. It
-was just a hard, small knot of no somewhere under her breastbone, and it wouldn't untie.
-
-*Please,* she thought. *Please. Let something happen. Anything.*
-
-Nerine was watching her face. One of Ripples' eyes kept half-closing on every breath out, and then opening again
-slowly, by effort. Her mouth hung open. She was breathing through it now, in short, wet pants.
-
-*Five times,* Nerine thought. *She's put her paw on the ground five times and not tapped. How? How is she doing it?*
-
-And under that, something she didn't want to look at: *I don't know how much more of this I want to do to her.*
-
-She didn't let go. She didn't know how to let go and still win.
+The arm across her thigh had squashed the muscle flat against Nerine's ribs, and the swollen flesh pushed out round it
+above and below. When Nerine cranked the knee, the arm cinched with it, and a choking squeal was dragged up out of
+Ripples, *Iiiiiiiih—hk*. It came again with the next crank, and the next. It went on until her breath ran out, and it
+was there again the moment she found more.
 
 ## Beat 30 — The knee
 
-Ripples pried at the grip with her free paw. It was a feeble, pawing thing now, her claws catching in Nerine's fur
-and slipping out again, catching and slipping.
+Ripples pried at the grip with her free paw. It was a feeble, pawing thing now, her claws catching in the fur of
+Nerine's arm and slipping out again, catching and slipping.
 
 Nerine bore down.
 
-The squeeze on the knee was crushing now. Her paws were driven in so hard that the joint gave round them, and the
-fur squeezed up between her fingers in ridges. And the knee went the way the thigh had gone.
+The wrench on the knee was crushing now. Her paws had it turned so far out, and were driven in so hard, that the
+joint gave between them, and the fur squeezed up between her fingers in ridges. And the knee went the way the thigh
+had gone.
 
 Ripples felt it cross. It was the same line, the same sudden opening-up of the floor under the pain, and she knew it
 this time. She knew what it was as it happened, which was worse. The ache in the joint went from very painful to
@@ -1039,26 +1036,28 @@ and something red-hot pushed in between them.
 The sound that came out of her was a long, broken yelp. It started high and stayed high and stretched and stretched,
 *Yiiiiiiiiiiiip—iiip—*, until there was no breath left to stretch it with. Then it broke off in a cough.
 
-She hung there in the grip with her eyes squeezed shut, shaking from her ears to her tails. *Both,* she thought.
-*Both now. The thigh and the knee. There's nothing left of that leg that doesn't hurt.*
+She hung there against Nerine's shoulder with her eyes squeezed shut, shaking from her ears to her tails. *Both,* she
+thought. *Both now. The thigh and the knee. There's nothing left of that leg that doesn't hurt.*
 
 She made herself look at it. She didn't know why. She opened her eyes and looked down, past her own heaving chest,
-at the knee under Nerine's paws. It didn't look like her knee. It looked swollen and strange and turned. When she
-tried to feel her foot below it, there was only a far-off, buzzing ache, as if the foot were somewhere else.
+at the knee in front of Nerine's chest. It didn't look like her knee. It looked swollen and strange, and the shin
+below it went off the wrong way, out behind Nerine's back. When she tried to feel her foot back there, there was only
+a far-off, buzzing ache, as if the foot were somewhere else.
 
 *I'm not going to walk home on that,* she thought, and it was so calm it frightened her.
 
-The thigh was taking a tremendous squeeze under the arm now, everything round it pushed out of its shape. A thin,
-wavering wail came up out of her and wouldn't stop. It wobbled on and on under everything else, like a sound she'd
-left running and forgotten how to turn off.
+The thigh was taking a tremendous squeeze under the arm now, crushed against Nerine's ribs, everything round it
+pushed out of its shape. A thin, wavering wail came up out of her and wouldn't stop. It wobbled on and on under
+everything else, like a sound she'd left running and forgotten how to turn off.
 
 She heaved against it, desperate, and sobbed, and heaved again.
 
-Her paw lay flat on the grass, and shook, and didn't tap. That was six times now. She had stopped counting. She had
-stopped being able to count.
+Her paw lay flat on Nerine's shoulder, and shook, and didn't tap. That was six times now. She had stopped counting.
+She had stopped being able to count.
 
 Nerine felt the knee go. She felt it through her paws, a sort of loosening deep inside the joint, the fight going out
-of it. She heard the yelp. Her ears went flat against her head on their own.
+of it. She heard the yelp, right beside her ear. Her ears went flat against her head on their own. And she felt the
+paw on her shoulder, still there, still shaking, still not moving.
 
 "Ripples," she said. It was the first time she'd said the name all afternoon. "Ripples. Tap."
 
@@ -1071,62 +1070,63 @@ She didn't tap.
 Ripples pried at the grip again. She hardly knew she was doing it. Her paw was just moving at Nerine's arm, the way
 a paw moves in a bad dream.
 
-The hold came down tremendously on the knee now. It was pressed so deep that the muscle round the joint went flat
+The hold came down tremendously on the knee now. It was wrung so far round that the muscle round the joint went flat
 and hard as a board. A scream came out of her that went on and on, *Aaaaaaaaaaah—*, and cracked at the top. It
 cracked again and kept going.
 
 And then the thigh crossed the last line there was.
 
 She hadn't known there was another one. She'd thought excruciating was the bottom of it, the place where pain
-stopped getting worse because there was nowhere worse to go. It wasn't. Nerine's arm sank into the thigh,
-flattening the body there under it. The pain went past excruciating into something she had no word for at all.
-Devastated. It was not a pain in a part of her any more. It was the whole world, and she was a small thing inside it.
+stopped getting worse because there was nowhere worse to go. It wasn't. Nerine's arm sank into the thigh, crushing it
+flat against her ribs. The pain went past excruciating into something she had no word for at all. Devastated. It was
+not a pain in a part of her any more. It was the whole world, and she was a small thing inside it.
 
 What came out of her wasn't a scream. It was quieter than that, and much worse to hear. It was long, gasping
 whimpers, one after another, each one higher than the last, *hnnnn—hnnnnnn—hiiiiiiinnn—*, as if something in her had
 given up on screaming because screaming didn't help.
 
-Her whole body had gone heavy. Her arms were heavy. Her standing leg trembled under her, and her head hung, and her
-breath came in short, shallow sips that didn't seem to reach the bottom of her lungs. She was exhausted, all the way
-through. It was the deep, hollow tiredness of a body that has been fighting for a long time and has nothing left to
-fight with.
+Her whole body had gone heavy. Her arms were heavy. Her standing leg trembled under her, and her head hung forward
+until her brow rested against the back of Nerine's shoulder, and her breath came in short, shallow sips that didn't
+seem to reach the bottom of her lungs. She was exhausted, all the way through. It was the deep, hollow tiredness of
+a body that has been fighting for a long time and has nothing left to fight with.
 
 She looked at the thigh. She couldn't see it properly. Nerine's arm was in the way, sunk in deep, and the fur round
 it was flattened and wet. She didn't need to see it. She knew exactly where it was. It was the only thing she knew.
 
 *It's gone,* she thought. *It's just gone. There's no leg there, there's only this.*
 
-Her paw was on the grass. She couldn't remember putting it there. It lay flat and shook, and the hard little knot
-under her breastbone said no, one more time, so faintly she could hardly hear it.
+Her paw was on Nerine's shoulder. She couldn't remember putting it there. It lay flat and shook, and the hard little
+knot under her breastbone said no, one more time, so faintly she could hardly hear it.
 
 She didn't tap.
 
-Nerine had stopped watching her face. She couldn't any more. She was looking at the grass beside them, at Ripples'
-paw lying flat on it and shaking. Ripples' sides rose and fell against her. Every few breaths the whole small body
-swayed, and Nerine's arms had to catch it.
+Nerine had stopped looking at her face. She couldn't any more. She stared at the grass in front of her own feet and
+felt the paw instead: the weight of it, the heat of it, the shaking that came through her fur into her shoulder.
+Ripples' sides rose and fell against her. Every few breaths the whole small body swayed, and Nerine had to lean into
+it to keep her up.
 
 *Seven,* Nerine thought. *Seven times.* Her own arms were shaking, and not only from the strain. *Please,* she
 thought, and didn't know who she was asking either. *Please just tap.*
 
 ## Beat 32 — The tap
 
-Ripples pried at the grip one last time, if it could still be called that. Her claws hooked in Nerine's fur and
-didn't pull. They just stayed there, hooked, holding on to her.
+Ripples pried at the grip one last time, if it could still be called that. Her claws hooked in the fur of Nerine's
+arm and didn't pull. They just stayed there, hooked, holding on to her.
 
 The thigh went numb.
 
 It happened all at once, between one breath and the next. The pain that had been the whole world suddenly drained
 away from it, and left behind a strange, cold, empty heaviness. The leg was still there under Nerine's arm, crushed
-flat, the fur squeezed up round it in ridges. She just couldn't feel it any more. It was like a held breath, or a
-door shut on a fire.
+flat against her ribs, the fur squeezed up round it in ridges. She just couldn't feel it any more. It was like a held
+breath, or a door shut on a fire.
 
 For one moment she thought, stupidly, *It's stopped. It's over. I held on and it stopped.*
 
 Then the knee told her it wasn't.
 
-With the thigh gone quiet there was nothing left to drown out the knee. Nerine's paws were grinding it down until
-the joint spread flat under them, the fur splayed every way. All of it came through, every turn, every press,
-clear and sharp and enormous. She wrenched against it, again and again, gasping, and her standing leg jerked and
+With the thigh gone quiet there was nothing left to drown out the knee. Nerine's paws were wringing it round until
+the joint spread flat between them, the fur splayed every way. All of it came through, every turn, every press,
+clear and sharp and enormous. She wrenched against it, again and again, gasping, and her standing foot hopped and
 scraped at the ground uselessly. A hoarse sound came out of her on every breath now, rough and cracked, her voice
 worn down to nothing.
 
@@ -1137,16 +1137,16 @@ part of her under the will, the old animal part that doesn't care about matches 
 wanted the pain to end, and it had waited, and waited. It had sat quiet through the knee and the thigh and seven
 refusals. And now it had stopped waiting.
 
-Her paw came down on the grass.
+Her paw came down on Nerine's shoulder.
 
-Once. Twice. Again and again, flat and frantic, slapping the ground. Her tails beat at the earth beside it. Her other
-paw let go of Nerine's fur and hammered at her arm instead. Every part of her that could hit something hit
-something. And the sound went on over all of it, a long, cracked wail that went out across the clearing and over the
-water. A flock of small birds went up out of the oaks all at once, in a whirring cloud, and scattered.
+Once. Twice. Again and again, flat and frantic, slapping it. Her other paw let go of Nerine's arm and hammered at
+her back. Her tails beat at the ground behind her. Every part of her that could hit something hit something. And the
+sound went on over all of it, a long, cracked wail that went out across the clearing and over the water. A flock of
+small birds went up out of the oaks all at once, in a whirring cloud, and scattered.
 
-Nerine let go at once. She had been waiting for it so long that her arms opened before she'd finished hearing it.
+Nerine let go at once. She had been waiting for it so long that her arms opened before she'd finished feeling it.
 
-The leg dropped out of her grip, and Ripples dropped with it.
+The leg dropped out from under her arm, and Ripples dropped with it.
 
 She went down in a heap and curled up on her side in the grass, both paws wrapped round her left knee. The thigh was
 still numb, and that was the strangest part: she could hold it and not feel herself holding it. She drew her good
@@ -1161,9 +1161,10 @@ the numbness, the thigh was starting to wake up again.
 
 Nerine stood over her. Her chest was heaving. Both her forearms ached all the way to the shoulders, and they were
 trembling, and she couldn't make them stop. Her neck still remembered the fin and the trunk. Her left paw was still
-faintly stiff from the ice. She looked down at the small curled-up shape, at the leg, swollen and wrong at the knee.
-She looked at the trench her own arm had left across the thigh. She looked at the long trail of torn grass and earth
-where Ripples had clawed at the ground, beat after beat after beat, rather than give in.
+faintly stiff from the ice. Her right shoulder still felt the small hot shape of a paw, where it had lain so long. She
+looked down at the curled-up shape, at the leg, swollen and wrong at the knee. She looked at the trench her own arm
+had left across the thigh. She looked at the grass round where they had stood, torn into a ragged circle of bare
+earth by one hopping foot, beat after beat after beat, rather than give in.
 
 She had won. She waited to feel it.
 
@@ -1173,8 +1174,8 @@ After a while she sat down in the grass beside her, careful of the leg, not touc
 breathing to slow. The birds came back into the oaks one by one. Out on the lake, the fish rose again, and the rings
 spread out over the still water.
 
-"Seven times," she said at last, quietly. "You put your paw down seven times and didn't tap. I've never seen anyone do
-that."
+"Seven times," she said at last, quietly. "You put your paw on me seven times and didn't tap. I've never seen anyone
+do that."
 
 Ripples didn't answer. She didn't open her eyes.
 

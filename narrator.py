@@ -3698,6 +3698,12 @@ class Narrator:
 
     def describe(self, bundle):
         self._ongoing = any(e["type"] in ("pin_progress", "hold_ongoing") for e in bundle.get("also_this_beat", []))
+        # (holder, held) -> [(part, what grips it)] for the holds still on this beat: a blow struck from inside one
+        self._grips_now = {}
+        for e in bundle.get("also_this_beat", []):
+            if e.get("type") == "hold_ongoing":
+                self._grips_now.setdefault((e["attacker"], e["defender"]), []).append(
+                    ((e.get("hits") or [{}])[0].get("part", ""), e.get("with") or ""))
         self._tiers_used = set()
         self._must_parts = []
         self._fact_lines = []        # (parts it lands on, its facts in note form, a sentence for it): narration.guided
@@ -3996,12 +4002,15 @@ class Narrator:
                 else:
                     tb = (self.rules.get("narration") or {}).get("tap_build") or {}
                     n_ = int(e.get("refusals") or 1) if tb.get("enabled", True) else 1
-                    reach = ("Her paw (or tail) twitches toward the ground to tap and she stops it"
+                    spot = self._tap_spot(e["defender"], e["attacker"])
+                    reach = (f"Her paw (or tail) twitches toward {spot} to tap and she stops it"
                              if n_ <= 1 else
-                             "Her paw goes down further than last time: it touches the ground, the fingers already "
-                             "spreading flat to slap it, and she drags it back up" if n_ == 2 else
-                             "Her paw is ON the ground now, lying flat and shaking, and all it has to do is lift and "
-                             "fall: she holds it still, and it is the hardest thing she has ever done")
+                             f"Her paw goes further than last time: it touches {spot}, the fingers already "
+                             f"spreading flat to slap it, and she drags it back" if n_ == 2 else
+                             f"Her paw is ON {spot} now, lying flat and shaking, and all it has to do is lift and "
+                             f"fall: she holds it still, and it is the hardest thing she has ever done")
+                    if spot != "the ground":
+                        reach = f"(She is on her feet in the hold: the ground is out of reach, so a tap is on {spot}.) " + reach
                     lines.append(f"  - SHE WON'T TAP" + (f" (the {_ORD.get(n_, str(n_) + 'th')} time she has refused)"
                                                          if n_ > 1 else "")
                                  + f": the {e['submission']} on {poss(e['defender'])} {parts} is "
@@ -4024,8 +4033,12 @@ class Narrator:
                 if e["how"] == "tap":
                     lines.append(f"{e['defender']} TAPS OUT at the END of this beat: after the pressure listed above, "
                                  f"the {e['submission']} on her {parts}" + (f" ({with_})" if with_ else "")
-                                 + f" is more than she can take any longer. She gives up: a paw, a tail or a foot "
-                                 f"slapping the ground again and again, or a cry that says it plainly, and "
+                                 + f" is more than she can take any longer. She gives up: "
+                                 + ("a paw, a tail or a foot slapping the ground again and again"
+                                    if (spot := self._tap_spot(e["defender"], e["attacker"])) == "the ground" else
+                                    f"her paw slapping {spot} again and again (she is on her feet in it: the ground is "
+                                    f"out of reach)")
+                                 + f", or a cry that says it plainly, and "
                                  f"{e['attacker']} feels it and lets go. She is AWAKE, beaten and hurting, not out "
                                  f"cold. Give the moment its weight: how long she held on, what finally made her give "
                                  f"in, what it costs her to do it, and the release flooding through her. It is the "
@@ -4410,6 +4423,15 @@ class Narrator:
                          f"are and the grip that keeps them there.")
         if a.get("from_grab") and att and dfn:
             lines.append(f"  - It comes out of the grab {att} already had on her: {dfn} could not slip it.")
+        grips = (getattr(self, "_grips_now", None) or {}).get((att, dfn)) if att and dfn else None
+        if grips and a.get("hits") and a.get("type") not in ("hold_start", "grapple_start", "pin_start", "pin_forced") \
+                and self._hold_position_on():
+            lines.append(f"  - SHE STRIKES FROM INSIDE HER OWN HOLD: {att} still has "
+                         + "; ".join((self._own_with(att, w) if w else "a grip") + f" on {poss(dfn)} {p}"
+                                     for p, w in grips)
+                         + ". The blow comes from what she has free. If it needs a paw that is gripping, that one "
+                           "paw comes off for the blow alone and the rest of the grip holds (show which holds on); "
+                           "the hold does not break.")
         if self._chain_beat:
             self._one_strike = None
         events = list(a.get("knock_on") or []) + [k for s in a.get("status_applied") or [] for k in s.get("knock_on") or []]
@@ -5212,6 +5234,20 @@ class Narrator:
                              f"{sub['strain']}, more every beat it stays on. Show exactly how their bodies lock together, "
                              f"and the first wrench of it. {a['defender']} can't get up while it's on. {a['attacker']} "
                              f"still has {sub['free']} free.")
+            if t == "hold_start" and not kept and not a.get("continuing") and self._hold_position_on():
+                down = getattr(self, "on_ground", None) or set()
+                up = lambda w: "down on the ground" if w in down else "on her feet"
+                grips = "; ".join((self._own_with(a["attacker"], p["with"]) if p.get("with") else "a grip")
+                                  + f" on her {p['part']}" for p in a["parts"])
+                lines.append(f"  - DRAW THE POSITION, plainly, once, early in the passage, so the reader can see it: "
+                             f"{a['attacker']} is {up(a['attacker'])} and {a['defender']} is {up(a['defender'])}; which "
+                             f"way each faces and which side of her {a['attacker']} is on; what each of "
+                             f"{poss(a['attacker'])} limbs is doing ({grips}) and what she still has free; where the "
+                             f"trapped part sits and points (under her arm, across her lap, out in front, behind her "
+                             f"back) and which way the force goes on it (bent back, twisted, crushed, pulled). Use plain "
+                             f"directions (left, right, in front, behind, under, across), not only how it feels. "
+                             f"Everything {a['defender']} does in it (prying, hitting, tapping) has to fit this "
+                             f"position: she can only reach what is near her.")
             if a.get("taken_down"):
                 td = a.get("takedown") or {}
                 self._takedown = (a["attacker"], a["defender"])   # checked afterwards: the passage has to show it
@@ -6400,6 +6436,18 @@ class Narrator:
             return []
         rx = re.compile(r"\b(" + "|".join(map(re.escape, words)) + r")\b", re.I)
         return [(m.group(1), sent) for sent in re.split(r"(?<=[.!?…])\s+|\n+", text) for m in [rx.search(sent)] if m]
+
+    def _hold_position_on(self):
+        return bool(((self.rules.get("narration") or {}).get("hold_position") or {}).get("enabled", True))
+
+    def _tap_spot(self, who, holder):
+        """Where a held fighter's tap can land (narration.hold_position): the ground if she is down, the one holding
+        her if she is on her feet."""
+        if not self._hold_position_on():
+            return "the ground"
+        ps = str((getattr(self, "posture_start", None) or {}).get(who) or "").upper()
+        down = ps.startswith(("ON THE GROUND", "OUT OF")) if ps else who in (getattr(self, "on_ground", None) or set())
+        return "the ground" if down else f"{poss(holder)} arm or shoulder"
 
     def _posture_lines(self):
         """Who is up and who is down this beat, straight from the engine, as the first thing the narrator reads."""

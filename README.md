@@ -654,6 +654,20 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 215
+
+Holds you can picture. Switch it all off with `narration.hold_position.enabled false`.
+
+- **Draw the position:** on a hold's first beat, the narrator is asked to set it out plainly, once: where each
+  fighter is and which way she faces, what each of the holder's limbs grips and what she has free, where the trapped
+  part points, and which way the force goes on it. Everything the held fighter does in it has to fit.
+- **Blows from inside a hold:** a strike by a fighter whose hold is still on is told as coming from what she has
+  free. If it needs a gripping paw, that paw comes off for the blow alone and the grip holds.
+- **Taps she can reach:** a fighter held on her feet taps the holder's arm or shoulder, not the ground she can't
+  reach. Refusals climb the same way as before.
+- The re-run of the seed-11 submission match is rewritten to match: the first hold is drawn plainly in beat 19, and its
+  taps in beats 20–22 and all of beats 27–32 follow it.
+
 ## Build 214
 
 Tap-outs now build with the hold instead of jumping to a high chance.
