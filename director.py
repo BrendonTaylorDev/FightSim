@@ -916,7 +916,7 @@ def resolve(engine, b):
                                  f"Normal or Fighting, or a type of her own or of a move she knows "
                                  f"({', '.join(engine.wieldable_types(b.get('attacker')))})")
         conj_ = str(b.get("conjure") or "").strip()
-        if conj_ and conj_.lower() not in ("none", "no", "false") and not manual:
+        if conj_ and conj_.lower() not in ("none", "no", "false"):
             # she makes a weapon of her own element and keeps it a few beats (an ice blade frozen out of the water)
             engine.conjure(b.get("attacker"), conj_, b.get("improvised_type") or "Normal")
         target = "spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1 else "targeted"
