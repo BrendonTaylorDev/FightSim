@@ -416,7 +416,7 @@ class Display:
         out = []
         for k in events:
             if k["type"] == "pin_broken":
-                out.append(f"💥 **{k['attacker']}'s pin on {k['defender']} is broken** after {num(k['seconds'])} s: "
+                out.append(f"💥 **{poss_word(k['attacker'])} pin on {k['defender']} is broken** after {num(k['seconds'])} s: "
                            f"{k['why']}")
             elif k["type"] == "pin_left":
                 out.append(f"💥 **{k['attacker']} is off the pin on {k['defender']}** ({k['why']}); "
@@ -427,12 +427,13 @@ class Display:
             elif k["type"] == "hold_end" and k.get("shaken"):
                 out.append(f"💥 **The hit breaks {poss_word(k['attacker'])} hold** on {poss_word(k['defender'])} {k['part']} "
                            f"(#{k['hold_id']}) after {k['beats_held']} beat{'s' if k['beats_held'] != 1 else ''} — "
-                           f"{k['reason']} (chance to lose it {k['chance'] * 100:.0f}%)")
+                           f"{k['reason']}" + (f": it cost her {k['share'] * 100:.0f}% of her health at once" if k.get("share") else "")
+                           + f" (chance to lose it {k['chance'] * 100:.0f}%)")
             elif k["type"] == "hold_end" and str(k.get("reason", "")).endswith("took off"):
                 out.append(f"🔓 **{k['attacker']} lets go** of {poss_word(k['defender'])} {k['part']} (#{k['hold_id']}) "
                            f"as she takes off")
             elif k["type"] == "hold_end" and str(k.get("reason", "")).startswith("reversed"):
-                out.append(f"🔄 **{k['attacker']}'s grab is turned round on her**: {k['defender']} has hold of her now "
+                out.append(f"🔄 **{poss_word(k['attacker'])} grab is turned round on her**: {k['defender']} has hold of her now "
                            f"(#{k['hold_id']} ends)")
             elif k["type"] == "hold_end":
                 out.append(f"🔓 **{k['attacker']} loses her grip** on {poss_word(k['defender'])} {k['part']} "
@@ -483,7 +484,7 @@ class Display:
             out.append(verdict)
         kg = e.get("kept_grip")
         if kg:
-            out.append(f"- 🦷 {kg['attacker']} hangs on: {kg.get('with') or 'her jaws'} stay on {d}'s {kg['part']} "
+            out.append(f"- 🦷 {kg['attacker']} hangs on: {kg.get('with') or 'her jaws'} stay on {poss_word(d)} {kg['part']} "
                        f"(the pin is over; that bite goes on as a hold, #{kg['hold_id']})")
         if e.get("pressure_hits"):
             out += self.hits_block(d, e["pressure_hits"])
@@ -781,12 +782,12 @@ class Display:
                 out += self.hits_block(a["attacker"], a["pass_counter"]["hits"])
             if a.get("strafe"):
                 out.append(f"💨 **Strafing pass**: her speed carries her round for a second, quicker blow on "
-                           f"{a['defender']}'s {a['strafe']['part']} (power {num(a['strafe']['power'])}, listed last)")
+                           f"{poss_word(a['defender'])} {a['strafe']['part']} (power {num(a['strafe']['power'])}, listed last)")
             if a.get("aim") and a["aim"].get("path"):
-                out.append(f"🎯 Part of it strays: the stretch meant for {a['defender']}'s {a['aim']['aimed']} catches "
+                out.append(f"🎯 Part of it strays: the stretch meant for {poss_word(a['defender'])} {a['aim']['aimed']} catches "
                            f"her {a['aim']['landed']} instead; the rest lands as aimed")
             elif a.get("aim"):
-                out.append(f"🎯 Off target: aimed at {a['defender']}'s {a['aim']['aimed']}, lands on her "
+                out.append(f"🎯 Off target: aimed at {poss_word(a['defender'])} {a['aim']['aimed']}, lands on her "
                            f"{a['aim']['landed']}")
             if a.get("carried"):
                 out.append(f"🦅 **{a['attacker']} carries {a['defender']} up** ({a['carried']['height']}) and drops her")
@@ -947,7 +948,7 @@ class Display:
                             if self.rules.get("pin", {}).get("fade", {}).get("enabled", True) else
                             f"- Same clock: {num(a.get('seconds') or 0)} / {a.get('duration', 60)} s. Her presses start ")
                            + ("next beat" if float(self.rules.get("pin", {}).get("first_beat_damage", 1.0)) <= 0 else "now")
-                           + f"; {a['defender']}'s escape odds are halved while both hold her.")
+                           + f"; {poss_word(a['defender'])} escape odds are halved while both hold her.")
             elif t == "pin_start" and not a.get("continuing"):
                 pf = float(self.rules.get("pin", {}).get("first_beat_damage", 1.0))
                 fcfg = self.rules.get("pin", {}).get("fade", {})
@@ -1006,7 +1007,7 @@ class Display:
                        f"{a['beats_held']} beats: {a['reason']}")
             if a.get("pin_ended"):
                 pe = a["pin_ended"]
-                out.append(f"- 📌 That ends {pe['attacker']}'s pin on {pe['defender']} at {num(pe['seconds'])} s.")
+                out.append(f"- 📌 That ends {poss_word(pe['attacker'])} pin on {pe['defender']} at {num(pe['seconds'])} s.")
         elif t == "eliminated" and a.get("knockout"):
             out.append(f"💥 **KNOCKOUT: {a['fighter']} is out cold** — the {a.get('how', 'blow')} (it cost her "
                        f"{a.get('loss_pct', 0):.0f}% of her full health; knockout chance {a.get('chance', 0) * 100:.1f}%)"
@@ -1212,7 +1213,7 @@ class Display:
                     roll = ((f"\n      " if self.clear() else " — ")
                             + f"get-up roll {e['score']:g} (needs {need} to rise on try 1 / 2 / 3"
                             + ("; up anyway: nobody stays down this long unless pinned" if e.get("forced") else "") + ")")
-                    grips = [f"{g['by']}'s grip on her {g['part']} stays on" for g in e.get("held") or []]
+                    grips = [f"{poss_word(g['by'])} grip on her {g['part']} stays on" for g in e.get("held") or []]
                     if grips:
                         roll += ("\n      " if self.clear() else " · ") + "; ".join(grips)
                 out.append((f"🧗 **{e['fighter']} gets up** on the {ordinal} try (using {e.get('grab') or e.get('ground') or 'the ground'}{way('getup_rise', e.get('rise'), '; ')})"
@@ -1251,7 +1252,7 @@ class Display:
                            f"and dodges, energy refill)")
             elif e["type"] == "status_tick" and e["status"] == "burned":
                 h = e["hits"][0]
-                out.append(f"🔥 {e['fighter']}'s burn: {h['part']} {num(h['damage_before'])}% → {num(h['damage_after'])}%")
+                out.append(f"🔥 {poss_word(e['fighter'])} burn: {h['part']} {num(h['damage_before'])}% → {num(h['damage_after'])}%")
             elif e["type"] == "weather_end":
                 out.append(f"🌤️ The {e['kind']} clears")
             elif e["type"] == "status_tick" and e.get("hits"):

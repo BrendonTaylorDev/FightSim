@@ -654,6 +654,42 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 207
+
+From test fight 5: Ripples against Nerine in the lakeside clearing, knockouts only and no pins, with Nerine played as
+a brawler. It is in `sim/test_fights/ripples_vs_nerine/`: the narration written by hand from the engine's notes, the
+engine log, the scripts that played it, and the bug list.
+
+New, and switchable (`narration.style_read`, on by default):
+- **How each has fought so far.** From the fourth beat on, every third beat, the narrator is told how each fighter has
+  really been fighting, counted from her attacks: up close and physical (grabs, throws, slams, charges into the
+  scenery), from range, or trading blows. That way a fighter keeps the style she has shown, even when her description
+  says she usually fights another way.
+- **The same place again.** A fighter put into a tree, rock or wall she was put into earlier remembers it as she hits
+  it.
+
+Narration fixes:
+- The opponent-watch signs rotate and come in one part of the beat, not every part.
+- Taking stock of her own wounds happens once a beat, and a wound comes up again only when it gets worse or after
+  `narration.rich.wound_watch_again` (5) beats.
+- "Her reactions climb" no longer says the last blow is the worst when it wasn't. It names the worst blow instead.
+- "Still feeling it" names at most the worst two parts, and says "them" for two.
+- A fighter held only by the leg or neck is no longer "held with nothing free to cover herself".
+- A blow that shakes her grip loose no longer also says "she keeps her grip". One grip on two parts comes off in
+  one line.
+- No percentages are given to the narrator when a grip is shaken loose.
+- "Not very effective" no longer says her body shrugs off a charge into a tree or a blow that did a lot of damage.
+- The off-balance wear-off has a lying-down version.
+- Light grips on the neck or throat get choke reactions, not "unbothered".
+- A hit on a downed fighter no longer says "she stays down" when she gets up later in the beat.
+- "Ripples's" is fixed in about a dozen notes, stat lines and story-line slots.
+
+Engine fixes:
+- BOUND and CONSTRICTED end once the coil that caused them is off.
+- "Arms trapped in the coils" now applies only to coils round the body.
+- A slam says "slammed down", not "thrown".
+- The injury report's words follow the pain level, so an excruciating chest is no longer "sore and stiff tomorrow".
+
 ## Build 206
 **Hurt that shows, and builds.** Each part is switchable in rules.json.
 - **Her own wounds** (`narration.rich.wound_watch`): from the second beat, the fighter whose part it is takes stock

@@ -1,0 +1,879 @@
+################ BEAT 1
+##### STDOUT
+────────────────────────────────────────
+Attack 1 — Nerine → Ripples: QUICK ATTACK (targeted — Chest, Right Upper Arm, energy 100→90)
+The blow found Ripples' chest, jarring her right upper arm as well.
+----------------------------------------
+⚔️ **Nerine → Ripples**: no circling: she blurs straight in, shoulder-first, into the chest
+  Power **40** = base 20 × 1 (Normal vs Water) × 2 (targeted)
+  Jarred next to it (Right Upper Arm): power 10 (×0.5)
+    Chest
+    Right Upper Arm
+  Total: +22.81% damage  ·  ❤️ Ripples 1700% → **1669.99%** (-30.01)
+⏳ Beat 1 health: ❤️ Ripples 1669.49% (-0.5% exertion) | ❤️ Nerine 1774.5% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine's blow sliding off the Chest it was aimed at 5%, rolled 32 → on target
+    Ripples dodging Nerine's attack 18%, rolled 91 → it lands
+    Nerine's Quick Attack landing devastatingly 2%, rolled 9 → no
+    Ripples rocked by the blow to her Chest 38%, rolled 57 → she takes it where she is
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 2
+##### STDOUT
+────────────────────────────────────────
+Attack 2 — Ripples → Nerine: WATER GUN (spread — Head, Muzzle, Chest, energy 100→82)
+Ripples' water caught Nerine on the head, muzzle and chest.
+----------------------------------------
+⚔️ **Ripples → Nerine**: steps back and puts a jet of water in her face to keep her off
+  Power **12.5** = base 20 × 0.5 (Water vs Water, not very effective) × 1.25 (spread)
+    Head
+    Muzzle
+    Chest
+  Total: +20.19% damage  ·  ❤️ Nerine 1774.5% → **1750.54%** (-23.96)
+💧 **Nerine is soaked** (3 beats)
+⏳ Beat 2 health: ❤️ Ripples 1668.99% (-0.5% exertion) | ❤️ Nerine 1750.04% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine meeting Ripples' Water Gun with an attack of her own 15%, rolled 95 → no
+    Nerine dodging Ripples' attack 9%, rolled 63 → it lands
+    Ripples' Water Gun landing devastatingly 2%, rolled 6 → no
+    Ripples' Water Gun going into Nerine's mouth 30%, rolled 54 → no
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 3
+##### STDOUT
+────────────────────────────────────────
+Attack 3 — Nerine → Ripples: BRICK BREAK (targeted — Chest, Right Shoulder, Right Upper Arm, energy
+      94→78)
+Nerine's fist caught Ripples on the chest.
+The fist found Ripples' right upper arm.
+----------------------------------------
+🔗 **Chain, link 1 of 2**
+🤼 **Nerine takes hold of Ripples** (her Right Upper Arm with her paws; energy 100→94)
+- While the grab holds, neither can dodge the other. Ripples rolls to wrench free each beat (about
+      32% now) and can hit back.
+🔗 **Chain, link 2 of 2** — at point-blank in the grab: no dodging it
+⚔️ **Nerine → Ripples**: short chopping paw blows into the chest at no distance
+👊 Pummel in the grab: 3 short blows, each ×0.6 of one full blow (power 33.6 each) — it ends when she
+      twists enough to spoil the next one
+- (point-blank: Nerine has hold of her opponent, so no dodge either way)
+  Power **56** = base 28 × 1 (Fighting vs Water) × 2 (targeted)
+    Chest
+    Right Shoulder
+    Right Upper Arm
+  Total: +48.98% damage  ·  ❤️ Ripples 1668.99% → **1612.94%** (-56.05)
+↪️ Ripples rocked by the right upper arm hit: her body jerks in the hold with the blow, and the grip
+      on her has to take it
+🔒 **Nerine on Ripples** (holds #1), the grip closing: beat 1 of the hold
+    Right Upper Arm
+  Total: +5.36% damage  ·  ❤️ Ripples 1612.94% → **1607.8%** (-5.14)
+⏳ Beat 3 health: ❤️ Ripples 1607.3% (-0.5% exertion) | ❤️ Nerine 1749.54% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nerine's attack 18%, rolled 68 → it lands
+    Nerine's pummel turning into a frenzy 8%, rolled 10 → no
+    pummel blow 2 landing on Chest again 50%, rolled 56 → somewhere new
+    pummel blow 3 landing on Right Shoulder again 50%, rolled 68 → somewhere new
+    Ripples rocked by the blow to her Right Upper Arm 38%, rolled 8 → it moves her
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 4
+##### STDOUT
+────────────────────────────────────────
+Impact — Ripples thrown by Nerine: an old oak → the root-knotted ground
+----------------------------------------
+🤾 **Nerine throws Ripples** (ends up face-up; energy 83→71; out of the grab: no slipping it)
+- an old oak (heavy, power 25 each): Upper Back, Lower Back, Head
+- the root-knotted ground (solid, power 15 each): Left Hip, Lower Back
+    Upper Back
+    Lower Back (hit 1)
+    Head
+    Left Hip
+    Lower Back (hit 2)
+  Total: +47.83% damage  ·  ❤️ Ripples 1607.3% → **1554.51%** (-52.79)
+🔓 **Nerine loses her grip** on Ripples' Right Upper Arm (#1): Ripples was thrown
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+⏳ Beat 4 health: ❤️ Ripples 1554.01% (-0.5% exertion) | ❤️ Nerine 1749.04% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples tumbling on after the landing 30%, rolled 34 → she stops where she lands
+    Ripples rolling through the landing 45%, rolled 82 → she stays down
+    the clearing doing something by itself 5%, rolled 60 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 5
+##### STDOUT
+────────────────────────────────────────
+Attack 4 — Nerine → Ripples: DROPPING KNEE (targeted — Stomach, Lower Back, improvised, energy
+      76→69)
+Nerine's blow caught Ripples hard on the stomach and lower back.
+Ripples got her feet under her at last and stood, swaying.
+----------------------------------------
+⚔️ **Nerine → Ripples**: drops a knee into her middle as she lies among the roots
+  Power **77** = base 35 × 1 (Normal vs Water) × 2 (targeted) × 1.1 (down, nowhere to roll with it)
+    Stomach
+              (softened from 121.5)
+    Lower Back
+  Total: +63.85% damage  ·  ❤️ Ripples 1554.01% → **1445.98%** (-108.03)
+⬇️ Driven down into the root-knotted ground (face-up) with every blow: Lower Back
+🧗 **Ripples gets up** on the first try (using the root-knotted ground; climbs what she leans on)
+      get-up roll 0.85 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+- Nerine is no longer soaked
+⏳ Beat 5 health: ❤️ Ripples 1445.48% (-0.5% exertion) | ❤️ Nerine 1748.54% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine's blow sliding off the Stomach it was aimed at 2%, rolled 35 → on target
+    Nerine's Dropping Knee landing devastatingly 3%, rolled 47 → no
+    the clearing doing something by itself 5%, rolled 42 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 6
+##### STDOUT
+────────────────────────────────────────
+Attack 5 — Ripples → Nerine: ICE FANG (targeted — Left Knee, Left Foot, Left Hip, energy 100→90)
+Ripples' jaws bit into Nerine's left knee, the force of it jarring her left foot and left hip.
+----------------------------------------
+⚔️ **Ripples → Nerine**: from the ground, snaps freezing teeth onto the knee that's planted
+  Power **30** = base 30 × 0.5 (Ice vs Water, not very effective) × 2 (targeted)
+  Jarred next to it (Left Foot, Left Hip): power 7.5 (×0.5)
+    Left Knee
+    Left Foot
+    Left Hip
+  Total: +27.23% damage  ·  ❤️ Nerine 1748.54% → **1730.76%** (-17.78)
+❄️ **Nerine is chilled** (2 beats)
+⏳ Beat 6 health: ❤️ Ripples 1444.98% (-0.5% exertion) | ❤️ Nerine 1730.26% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples' blow sliding off the Left Knee it was aimed at 37%, rolled 89 → on target
+    Nerine dodging Ripples' attack 18%, rolled 36 → it lands
+    Ripples' Ice Fang landing devastatingly 2%, rolled 49 → no
+    Nerine chilled by Ice Fang 50%, rolled 17 → chilled
+    Nerine rocked by the blow to her Left Knee 38%, rolled 40 → she takes it where she is
+    the clearing doing something by itself 5%, rolled 81 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 7
+##### STDOUT
+----------------------------------------
+⏸️ **Breather**: backs off a step, shakes her head clear and watches, letting Nerine come
+⏳ Beat 7 health: ❤️ Ripples 1444.98% (no change) | ❤️ Nerine 1730.26% (no change)
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 33 → nothing
+----------------------------------------
+################ BEAT 8
+##### STDOUT
+────────────────────────────────────────
+Attack 6 — Ripples → Nerine: AQUA JET (targeted — Chest, Stomach, Left Upper Arm, Right Shoulder,
+      Upper Back, Left Shoulder, Right Thigh, energy 100→52)
+Then Ripples' blow struck Nerine's whole body, worst of all the chest.
+----------------------------------------
+⚔️ **Ripples → Nerine**: as Nerine rushes in again Ripples meets her low in a sheath of water and
+      drives her back into a pine
+🐏 **Charge** the whole way across into a tall pine: carried inside the water the whole way (4 more
+      contacts), slam power 43.75, then Ripples' body crushes her against it — pressed against it,
+      still up
+  Power **30** = base 30 × 0.5 (Water vs Water, not very effective) × 2 (targeted)
+  ▸ the charge
+    Chest (hit 1)
+  ▸ carried inside the water
+    Chest (hit 2)
+    Stomach
+    Left Upper Arm
+    Right Shoulder
+  ▸ slam: a tall pine
+    Upper Back
+    Left Shoulder
+    Right Thigh
+  ▸ crush
+    Chest (hit 3)
+  Total: +96.85% damage  ·  ❤️ Nerine 1730.26% → **1619.02%** (-111.24)
+💧 **Nerine is soaked** (3 beats)
+🧱 **Nerine crumples** at the foot of a tall pine (on her side) — crumple chance 63%
+🌀 Nerine is reeling (1 beat): she can strike, but can't start a pin
+🧗 Nerine stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+- Nerine is no longer chilled
+⏳ Beat 8 health: ❤️ Ripples 1444.48% (-0.5% exertion) | ❤️ Nerine 1618.52% (-0.5% exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples' blow sliding off the Chest it was aimed at 5%, rolled 28 → on target
+    Nerine dodging Ripples' attack 9%, rolled 68 → it lands
+    Ripples' Aqua Jet landing devastatingly 2%, rolled 23 → no
+    a tall pine breaking under Nerine 10%, rolled 19 → it holds
+    Nerine crumpling at a tall pine 63%, rolled 44 → she crumples
+    the clearing doing something by itself 5%, rolled 19 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 9
+##### STDOUT
+----------------------------------------
+⏸️ **Breather**: spits out lake water at the foot of the pine and claws her way up the bark, glaring
+🧗 **Nerine gets up** on the first try (using a tall pine; rolls onto her front first)
+      get-up roll 0.76 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+- Nerine is no longer reeling
+⏳ Beat 9 health: ❤️ Ripples 1444.48% (no change) | ❤️ Nerine 1618.52% (no change)
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 45 → nothing
+----------------------------------------
+################ BEAT 10
+##### STDOUT
+────────────────────────────────────────
+Attack 7 — Nerine → Ripples: BITE (targeted — Chest, Neck, energy 94→84)
+Nerine's jaws bit down hard on Ripples' chest, and the shock ran on into her neck.
+----------------------------------------
+🔗 **Chain, link 1 of 2**
+🤼 **Nerine takes hold of Ripples** (her Neck with her paw; energy 100→94)
+- While the grab holds, neither can dodge the other. Ripples rolls to wrench free each beat (about
+      30% now) and can hit back.
+🔗 **Chain, link 2 of 2** — at point-blank in the grab: no dodging it
+⚔️ **Nerine → Ripples**: Bite
+🎯 Off target: aimed at Ripples's Left Shoulder, lands on her Chest
+- (point-blank: Nerine has hold of her opponent, so no dodge either way)
+  Power **70.4** = base 32 × 1 (Dark vs Water) × 2 (targeted) × 1.1 (held, can't cover up)
+  Jarred next to it (Neck): power 17.6 (×0.5)
+    Chest
+              0.16 from the softened health
+              (softened from 97.55)
+    Neck
+  Total: +66.47% damage  ·  ❤️ Ripples 1444.48% → **1320.67%** (-123.81)
+😵 **Ripples is flinched** (1 beat)
+↪️ Ripples rocked by the chest hit: the jaws wrench at her and her body goes with them as far as it
+      can
+🔒 **Nerine on Ripples** (holds #2), the grip closing: beat 1 of the hold
+    Neck
+  Total: +6.71% damage  ·  ❤️ Ripples 1320.67% → **1305.15%** (-15.52)
+⏳ Beat 10 health: ❤️ Ripples 1304.09% (-0.5% exertion, -0.56% injuries) | ❤️ Nerine 1618.02% (-0.5%
+      exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nerine's attack 16%, rolled 61 → it lands
+    Nerine's blow sliding off the Left Shoulder it was aimed at 8%, rolled 7 → it lands beside it
+    Nerine's Bite landing devastatingly 3%, rolled 85 → no
+    Ripples flinched by Bite 30%, rolled 10 → flinched
+    Ripples rocked by the blow to her Chest 55%, rolled 34 → it moves her
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 11
+##### STDOUT
+────────────────────────────────────────
+Impact — Ripples lifted and slammed down by Nerine: the root-knotted ground
+----------------------------------------
+🏋️ **Nerine lifts Ripples and slams her down** (ends up face-up; energy 89→77; out of the grab: no
+      slipping it)
+- the root-knotted ground (brutal, power 31 each): Upper Back, Lower Back, Head
+    Upper Back
+    Lower Back
+    Head
+  Total: +48.3% damage  ·  ❤️ Ripples 1304.09% → **1241.15%** (-62.94)
+🔓 **Nerine loses her grip** on Ripples' Neck (#2): Ripples was thrown
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+- Ripples is no longer flinched
+- Nerine is no longer soaked
+⏳ Beat 11 health: ❤️ Ripples 1240.09% (-0.5% exertion, -0.56% injuries) | ❤️ Nerine 1617.52% (-0.5%
+      exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    the clearing doing something by itself 5%, rolled 49 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 12
+##### STDOUT
+----------------------------------------
+🔒 **Hold (TAIL BIND): Ripples on Nerine** — from the ground she whips both tails round Nerine's
+      right leg and wrenches
+  Power **10** every beat = base 10 × 1 (Normal vs Water) × 1 (hold)
+  Pressing on:
+    Right Knee ← with her twin tails  ·  power 10 each beat, tightening +3 a beat
+    Right Thigh ← with her twin tails  ·  power 10 each beat, tightening +3 a beat
+- The grip bites as it closes: its first pressure lands this beat (listed below), then every beat
+      until released.
+🔒 **Ripples on Nerine** (holds #3, #4), the grip closing: beat 1 of the hold
+    Right Knee
+    Right Thigh
+  Total: +12.18% damage  ·  ❤️ Nerine 1617.52% → **1608.78%** (-8.74)
+🧗 **Ripples gets up** on the second try (using the root-knotted ground; pushes straight up)
+      get-up roll 0.65 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+   💥 the drop on try 1 hurts: Upper Back damage 19.81% → **23.8%** · ❤️ -4.25
+⏳ Beat 12 health: ❤️ Ripples 1234.78% (-0.5% exertion, -0.56% injuries) | ❤️ Nerine 1608.28% (-0.5%
+      exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples' drop back down hurting 60%, rolled 54 → it jars her
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 13
+##### STDOUT
+----------------------------------------
+⏸️ **Breather**: hops and yanks and chops at the tails
+🔒 **Ripples on Nerine** (holds #3, #4), beat 2 of the hold
+    Right Knee
+    Right Thigh
+  Total: +14.06% damage  ·  ❤️ Nerine 1608.28% → **1597.91%** (-10.37)
+⏳ Beat 13 health: ❤️ Ripples 1233.72% (-0.5% exertion, -0.56% injuries) | ❤️ Nerine 1597.41% (-0.5%
+      exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine breaking Ripples' hold on her 10%, rolled 80 → it holds
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 14
+##### STDOUT
+────────────────────────────────────────
+Attack 8 — Ripples → Nerine: WATER GUN (spread — Head, Throat, Chest, energy 94→76)
+Then Ripples' blow struck Nerine's head.
+----------------------------------------
+⚔️ **Ripples → Nerine**: from the ground, a jet up
+  Power **13.75** = base 20 × 0.5 (Water vs Water, not very effective) × 1.25 (spread) × 1.1 (held,
+        can't cover up)
+    Head
+    Throat
+    Chest
+  Total: +28.86% damage  ·  ❤️ Nerine 1597.41% → **1542.08%** (-55.33)
+💧 **Nerine is soaked** (3 beats)
+🔒 **Ripples on Nerine** (holds #3, #4), beat 3 of the hold
+    Right Knee
+    Right Thigh
+  Total: +21.76% damage  ·  ❤️ Nerine 1542.08% → **1525.47%** (-16.61)
+💥 **Nerine breaks Ripples' hold** on her Right Knee, Right Thigh (#3, #4) after 3 beats — break-free
+      chance this beat 11% · how: one hard wrench
+⏳ Beat 14 health: ❤️ Ripples 1232.66% (-0.5% exertion, -0.56% injuries) | ❤️ Nerine 1524.97% (-0.5%
+      exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples' Water Gun landing devastatingly 3%, rolled 20 → no
+    Ripples' Water Gun going into Nerine's mouth 30%, rolled 61 → no
+    Nerine breaking Ripples' hold on her 11%, rolled 8 → she breaks free
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 15
+##### STDOUT
+────────────────────────────────────────
+Attack 9 — Nerine → Ripples: SHOULDER BARGE (targeted — Chest, Right Upper Arm, Upper Back, Left
+      Shoulder, Right Thigh, improvised, energy 97→82)
+----------------------------------------
+⚔️ **Nerine → Ripples**: shakes the leg out and goes straight back in, shoulder down, and runs
+      Ripples backward into the fallen trunk
+🐏 **Charge** the whole way across into the fallen trunk: slam power 43.75, then Nerine's body
+      crushes her against it — pressed against it, still up
+  Power **63** = base 35 × 1 (Normal vs Water) × 2 (targeted) × 0.9 (her right thigh bound)
+  Jarred next to it (Right Upper Arm): power 15.75 (×0.5)
+  ▸ the charge
+    Chest (hit 1)
+              5.42 from the softened health
+              (softened from 171.86)
+    Right Upper Arm (hit 1)
+  ▸ slam: the fallen trunk
+    Upper Back
+    Left Shoulder
+    Right Thigh
+  ▸ crush
+    Chest (hit 2)
+              11.39 from the softened health
+              (softened from 207.05)
+    Right Upper Arm (hit 2)
+              from the softened health
+              (softened from 6)
+  Total: +193.49% damage  ·  ❤️ Ripples 1232.66% → **954.83%** (-277.83)
+🧱 **Ripples crumples** at the foot of the fallen trunk (on her side) — crumple chance 75%
+🌀 Ripples is reeling (1 beat): she can strike, but can't start a pin
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+⏳ Beat 15 health: ❤️ Ripples 949.71% (-0.5% exertion, -4.62% injuries) | ❤️ Nerine 1524.47% (-0.5%
+      exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine's blow sliding off the Chest it was aimed at 5%, rolled 34 → on target
+    Ripples dodging Nerine's attack 15%, rolled 83 → it lands
+    Nerine's Shoulder Barge landing devastatingly 2%, rolled 39 → no
+    the fallen trunk breaking under Ripples 20%, rolled 98 → it holds
+    the slam into the fallen trunk shaking something loose 20%, rolled 66 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 35 → no
+    Ripples breathless by the blow to her Chest 30%, rolled 55 → no
+    Ripples crumpling at the fallen trunk 75%, rolled 13 → she crumples
+    the clearing doing something by itself 5%, rolled 89 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 16
+##### STDOUT
+────────────────────────────────────────
+Attack 10 — Nerine → Ripples: BRICK BREAK (targeted — Stomach, Left Thigh, Left Knee, Lower Back,
+      Right Thigh, Right Knee, energy 87→59)
+----------------------------------------
+⚔️ **Nerine → Ripples**: keeps her pressed to the moss with one forearm and chops at her middle
+👊 Pummel on her where she is down: 7 short blows, each ×0.6 of one full blow (power 32.66 each) — it
+      ends when the one being hit ANSWERS with a blow of her own
+  Power **54.43** = base 28 × 1 (Fighting vs Water) × 2 (targeted) × 0.9 (her right thigh bound) ×
+        1.08 (down, nowhere to roll with it)
+    Stomach (hit 1)
+              (softened from 123.79)
+    Stomach (hit 2)
+              (softened from 142.14)
+    Left Thigh
+              (softened from 8.86)
+    Left Knee (hit 1)
+              from the softened health
+              (softened from 15.04)
+    Left Knee (hit 2)
+              from the softened health
+              (softened from 20.98)
+    Left Knee (hit 3)
+              from the softened health
+              (softened from 24.02)
+    Lower Back
+              from the softened health
+              26.07)
+    Stomach (hit 3)
+              (softened from 36.05)
+    Stomach (hit 4)
+              (softened from 38.24)
+    Right Thigh
+              from the softened health
+              (softened from 3.18)
+    Right Knee
+              from the softened health
+              from 3.01)
+  Total: +213.53% damage  ·  ❤️ Ripples 949.71% → **657.24%** (-292.47)
+↩️ **Ripples answers** after the last of them, and that stops it:
+    Left Upper Arm
+  Total: +9.48% damage  ·  ❤️ Nerine 1524.47% → **1516.27%** (-8.2)
+⬇️ Driven down into the grass (on her side) with every blow: Stomach, Right Thigh, Right Knee
+🧗 **Ripples gets up** on the third try (using the fallen trunk; climbs what she leans on)
+      get-up roll 0.33 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+   💥 the drop on try 1 hurts: Upper Back damage 43.5% → **49.29%** · ❤️ -1.9 (softened from 7.06)
+   💥 the drop on try 2 hurts: Upper Back damage 49.29% → **54.49%** · ❤️ -1.7 (softened from 6.66)
+- Ripples is no longer reeling
+- Nerine is no longer bound
+⏳ Beat 16 health: ❤️ Ripples 643.37% (-0.5% exertion, -9.77% injuries) | ❤️ Nerine 1515.77% (-0.5%
+      exertion)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine's pummel turning into a frenzy 10%, rolled 65 → no
+    pummel blow 2 landing on Stomach again 50%, rolled 24 → same spot
+    pummel blow 3 landing on Stomach again 50%, rolled 59 → somewhere new
+    pummel blow 4 landing on Left Thigh again 50%, rolled 83 → somewhere new
+    pummel blow 5 landing on Left Knee again 50%, rolled 35 → same spot
+    pummel blow 6 landing on Left Knee again 50%, rolled 46 → same spot
+    pummel blow 7 landing on Left Knee again 50%, rolled 58 → somewhere new
+    Ripples breathless by the blow to her Stomach 30%, rolled 91 → no
+    Ripples knocked out by the pummel 0%, rolled 44 → she stays conscious
+    Ripples' drop back down hurting 60%, rolled 48 → it jars her
+    Ripples' drop back down hurting 60%, rolled 26 → it jars her
+    the clearing doing something by itself 5%, rolled 7 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 17
+##### STDOUT
+────────────────────────────────────────
+Attack 11 — Ripples → Nerine: CRUNCH (targeted — Left Upper Arm, Left Paw, Left Shoulder, energy
+      91→81)
+Ripples' jaws caught Nerine hard on the left upper arm, and the shock ran on into her left paw and left shoulder.
+----------------------------------------
+⚔️ **Ripples → Nerine**: twists her head down and bites the forearm that's pinning her
+🎯 Off target: aimed at Nerine's Left Forearm Fin, lands on her Left Upper Arm
+  Power **80** = base 40 × 1 (Dark vs Water) × 2 (targeted)
+  Jarred next to it (Left Paw, Left Shoulder): power 20 (×0.5)
+    Left Upper Arm
+    Left Paw
+    Left Shoulder
+  Total: +82.11% damage  ·  ❤️ Nerine 1515.77% → **1443.38%** (-72.39)
+↪️ Nerine rocked by the left upper arm hit: she wrenches back against the teeth and her body jerks
+      with them as she pulls free, and she is square again at once
+- Nerine is no longer soaked
+⏳ Beat 17 health: ❤️ Ripples 633.1% (-0.5% exertion, -9.77% injuries) | ❤️ Nerine 1442.6% (-0.5%
+      exertion, -0.28% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples' blow sliding off the Left Forearm Fin it was aimed at 48%, rolled 44 → it lands beside
+          it
+    Nerine dodging Ripples' attack 16%, rolled 78 → it lands
+    Ripples' Crunch landing devastatingly 2%, rolled 15 → no
+    Nerine flinched by Crunch 25%, rolled 95 → no
+    Nerine knocked staggering by the blow to her Left Upper Arm 12%, rolled 40 → she holds her
+          ground
+    Nerine rocked by the blow to her Left Upper Arm 55%, rolled 49 → it moves her
+    the clearing doing something by itself 5%, rolled 22 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 18
+##### STDOUT
+────────────────────────────────────────
+Attack 12 — Nerine → Ripples: AQUA TAIL (targeted — Upper Back, Left Shoulder, energy 69→59, 4 left)
+Impact — Ripples knocked down: the ground
+Then Nerine's blow struck Ripples' upper back.
+----------------------------------------
+⚔️ **Nerine → Ripples**: spins and whips both water-wrapped tails across her back as she turns away
+🩹 Ripples is guarding her Chest (blows there ×0.85; her back is open, ×1.1)
+  Power **40** = base 40 × 0.5 (Water vs Water, not very effective) × 2 (targeted)
+  Jarred next to it (Left Shoulder): power 10 (×0.5)
+    Upper Back
+    Left Shoulder
+  Total: +34.1% damage  ·  ❤️ Ripples 633.1% → **589.38%** (-43.72)
+💧 **Ripples is soaked** (3 beats)
+🪨 **Ripples lands hard** (knocked down: the ground), ends up face-up
+- the ground (light, power 7 each): Upper Back, Left Shoulder, Left Hip
+    Upper Back
+    Left Shoulder
+    Left Hip
+  Total: +14.68% damage  ·  ❤️ Ripples 589.38% → **571.02%** (-18.36)
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+⏳ Beat 18 health: ❤️ Ripples 560.35% (-0.5% exertion, -10.17% injuries) | ❤️ Nerine 1441.82% (-0.5%
+      exertion, -0.28% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine's blow sliding off the Upper Back it was aimed at 10%, rolled 83 → on target
+    Ripples dodging Nerine's attack 10%, rolled 36 → it lands
+    Nerine's Aqua Tail landing devastatingly 2%, rolled 37 → no
+    Aqua Tail: knocked down 15%, rolled 30 → no
+    Ripples rocked by the blow to her Upper Back 55%, rolled 96 → she takes it where she is
+    the landing finding every sore spot on Ripples 3%, rolled 8 → no
+    Ripples rolling through the landing 7%, rolled 95 → she stays down
+    Ripples sitting down hard 15%, rolled 41 → flat on the ground
+    Ripples knocked out by the blow 3%, rolled 54 → she stays conscious
+    the clearing doing something by itself 5%, rolled 35 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 19
+##### STDOUT
+────────────────────────────────────────
+Impact — Ripples dragged by Nerine: the wet sand at the waterline → a boulder at the edge
+----------------------------------------
+⛓️ **Nerine drags Ripples across the ground** (she stays down, face-up; energy 64→56)
+- the wet sand at the waterline (light, power 9 each): Upper Back, Lower Back
+- a boulder at the edge (light, power 7 each): Head, Left Shoulder
+    Upper Back
+    Lower Back
+    Head
+    Left Shoulder
+  Total: +22.98% damage  ·  ❤️ Ripples 560.35% → **525.3%** (-35.05)
+💧 **Ripples is soaked** (3 beats; from the shallows)
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+⏳ Beat 19 health: ❤️ Ripples 513.33% (-0.5% exertion, -11.47% injuries) | ❤️ Nerine 1441.04% (-0.5%
+      exertion, -0.28% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples fighting off Nerine's grab (drag) 8%, rolled 28 → she is taken
+    Ripples knocked out by the blow 3%, rolled 12 → she stays conscious
+    the clearing doing something by itself 5%, rolled 57 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 20
+##### STDOUT
+Then Ripples' twin tails closed on Nerine's neck and locked there.
+----------------------------------------
+🔒 **Hold (TAIL BIND): Ripples on Nerine** — as Nerine bends over her, both tails whip up round her
+      neck and cinch
+  Power **10** every beat = base 10 × 1 (Normal vs Water) × 1 (hold)
+  Pressing on:
+    Neck ← with her twin tails  ·  power 10 each beat, tightening +3 a beat
+    Throat ← with her twin tails  ·  power 10 each beat, tightening +3 a beat
+- The grip bites as it closes: its first pressure lands this beat (listed below), then every beat
+      until released.
+🔒 **Ripples on Nerine** (holds #5, #6), the grip closing: beat 1 of the hold
+    Neck
+    Throat
+  Total: +18.22% damage  ·  ❤️ Nerine 1441.04% → **1398.7%** (-42.34)
+🧗 **Ripples can't get up** this beat, but **gets as far as sitting up** (3 tries; down 1 beat)
+      get-up roll 0.15 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+⏳ Beat 20 health: ❤️ Ripples 501.36% (-0.5% exertion, -11.47% injuries) | ❤️ Nerine 1397.92% (-0.5%
+      exertion, -0.28% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples getting as far as sitting up 40%, rolled 18 → she sits up
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 21
+##### STDOUT
+----------------------------------------
+⏸️ **Breather**: claws at the tails round her throat, staggering
+🔒 **Ripples on Nerine** (holds #5, #6), beat 2 of the hold
+    Neck
+    Throat
+              (softened from 25.21)
+  Total: +19.58% damage  ·  ❤️ Nerine 1397.92% → **1350.53%** (-47.39)
+🧗 **Ripples gets up** on the third try (using the ground; one ugly heave)
+      get-up roll 0.34 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+   💥 the drop on try 1 hurts: Left Knee damage 79.35% → **90.21%** · ❤️ -10.86
+   💥 the drop on try 2 hurts: Left Knee damage 90.21% → **100.47%** · ❤️ -10.66
+⏳ Beat 21 health: ❤️ Ripples 467.41% (-0.5% exertion, -11.92% injuries) | ❤️ Nerine 1349.75% (-0.5%
+      exertion, -0.28% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine breaking Ripples' hold on her 17%, rolled 67 → it holds
+    Ripples' drop back down hurting 60%, rolled 51 → it jars her
+    Ripples' drop back down hurting 60%, rolled 45 → it jars her
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 22
+##### STDOUT
+----------------------------------------
+⏸️ **Breather**: drops to a knee, still clawing, face darkening
+🔒 **Ripples on Nerine** (holds #5, #6), beat 3 of the hold
+    Neck
+    Throat
+              (softened from 51.64)
+  Total: +33.35% damage  ·  ❤️ Nerine 1349.75% → **1265.64%** (-84.11)
+🫳 **Nerine works Ripples' hold looser** on her Neck, Throat: it stays on, pressing at 16.5 / 16.5
+      from the next beat (was 22 / 22) — a near miss on the break-free roll (22 against 15% · how:
+      pries at it)
+- Ripples is no longer soaked
+⏳ Beat 22 health: ❤️ Ripples 454.99% (-0.5% exertion, -11.92% injuries) | ❤️ Nerine 1264.86% (-0.5%
+      exertion, -0.28% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine breaking Ripples' hold on her 15%, rolled 22 → it holds
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 23
+##### STDOUT
+────────────────────────────────────────
+Attack 13 — Nerine → Ripples: BRICK BREAK (targeted — Jaw, Head, Throat, energy 49→39)
+The fist found Ripples' jaw, jarring her head and throat as well.
+----------------------------------------
+⚔️ **Nerine → Ripples**: gives up
+🩹 Ripples is guarding her Chest (blows there ×0.85; her back is open, ×1.1)
+🎯 Off target: aimed at Ripples's Head, lands on her Jaw
+  Power **42** = base 28 × 1 (Fighting vs Water) × 2 (targeted) × 0.75 (arms trapped in the coils)
+  Jarred next to it (Head, Throat): power 10.5 (×0.5)
+    Jaw
+    Head
+    Throat
+  Total: +40.94% damage  ·  ❤️ Ripples 454.99% → **397.37%** (-57.62)
+↪️ Ripples rocked by the jaw hit: it rocks her back, but she keeps her grip, more than a blow that
+      size should
+💥 **The hit breaks Ripples' hold** on Nerine's Neck (#5) after 3 beats — Brick Break shook it loose:
+      it cost her 3% of her health at once (chance to lose it 17%)
+💥 **The hit breaks Ripples' hold** on Nerine's Throat (#6) after 3 beats — Brick Break shook it
+      loose: it cost her 3% of her health at once (chance to lose it 17%)
+🔥 **Ripples: ADRENALINE SURGE!** (3 beats: harder hits, better escapes and dodges, energy refill)
+⏳ Beat 23 health: ❤️ Ripples 384.95% (-0.5% exertion, -11.92% injuries) | ❤️ Nerine 1264.08% (-0.5%
+      exertion, -0.28% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine's blow sliding off the Head it was aimed at 25%, rolled 20 → it lands beside it
+    Nerine's Brick Break landing devastatingly 2%, rolled 43 → no
+    Ripples rocked by the blow to her Jaw 74%, rolled 69 → it moves her
+    Ripples losing her grip to Brick Break (3% of her health at once) 17%, rolled 5 → she loses it
+    Ripples knocked out by the blow 10%, rolled 19 → she stays conscious
+    the clearing doing something by itself 5%, rolled 9 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 24
+##### STDOUT
+────────────────────────────────────────
+Attack 14 — Ripples → Nerine: CRUNCH (targeted — Right Cheek, Head, Neck, energy 100→90)
+The jaws found Nerine's right cheek, the force of it jarring her head and neck.
+----------------------------------------
+⚔️ **Ripples → Nerine**: the surge hits and she lunges up
+🎯 Off target: aimed at Nerine's Throat, lands on her Right Cheek
+  Power **100** = base 40 × 1 (Dark vs Water) × 2 (targeted) × 1.25 (adrenaline)
+  Jarred next to it (Head, Neck): power 25 (×0.5)
+    Right Cheek
+    Head
+    Neck
+              (softened from 54.55)
+  Total: +110.85% damage  ·  ❤️ Nerine 1264.08% → **1135.26%** (-128.82)
+🥴 **Nerine is staggered** (1 beat: two or three steps toward Ripples, dragged by the jaws)
+- Nerine is no longer constricted
+⏳ Beat 24 health: ❤️ Ripples 372.53% (-0.5% exertion, -11.92% injuries) | ❤️ Nerine 1134.28% (-0.5%
+      exertion, -0.48% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples overcommitting, sloppy with tiredness 12%, rolled 27 → no
+    Ripples' blow sliding off the Throat it was aimed at 56%, rolled 0 → it lands beside it
+    Nerine dodging Ripples' attack 4%, rolled 38 → it lands
+    Ripples' Crunch landing devastatingly 2%, rolled 47 → no
+    Nerine flinched by Crunch 25%, rolled 40 → no
+    Nerine knocked staggering by the blow to her Right Cheek 22%, rolled 4 → she stumbles
+    the clearing doing something by itself 5%, rolled 11 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 25
+##### STDOUT
+────────────────────────────────────────
+Attack 15 — Ripples → Nerine: ICE FANG (targeted — Left Upper Arm, Chest, Left Paw, energy 95→85)
+The jaws found Nerine's left upper arm, jarring her chest and left paw as well.
+----------------------------------------
+⚔️ **Ripples → Nerine**: goes for the arm she bit before, teeth white with frost
+😩 **Ripples overcommits**, sloppy with tiredness (×0.6) — off balance after it
+  Power **27** = base 30 × 0.5 (Ice vs Water, not very effective) × 2 (targeted) × 1.25 (adrenaline)
+        × 1.2 (caught staggering) × 0.6 (overcommitted, sloppy with tiredness)
+  Jarred next to it (Chest, Left Paw): power 6.75 (×0.5)
+    Left Upper Arm
+    Chest
+    Left Paw
+  Total: +38.02% damage  ·  ❤️ Nerine 1134.28% → **1086.5%** (-47.78)
+↪️ Nerine rocked by the left upper arm hit: the bite yanks her off her line, half a step toward
+      Ripples, and lets go
+- Nerine is no longer staggered
+⏳ Beat 25 health: ❤️ Ripples 360.11% (-0.5% exertion, -11.92% injuries) | ❤️ Nerine 1084.89% (-0.5%
+      exertion, -1.11% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples overcommitting, sloppy with tiredness 12%, rolled 2 → SLOPPY
+    Ripples' blow sliding off the Left Upper Arm it was aimed at 12%, rolled 30 → on target
+    Nerine dodging Ripples' attack 8%, rolled 76 → it lands
+    Ripples' Ice Fang landing devastatingly 3%, rolled 72 → no
+    Nerine chilled by Ice Fang 50%, rolled 51 → no
+    Nerine rocked by the blow to her Left Upper Arm 55%, rolled 43 → it moves her
+    the clearing doing something by itself 5%, rolled 96 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 26
+##### STDOUT
+────────────────────────────────────────
+Impact — Ripples thrown by Nerine: an old oak → the root-knotted ground
+----------------------------------------
+🤾 **Nerine throws Ripples** (ends up on her side; energy 45→33)
+- an old oak (brutal, power 36 each): Upper Back, Lower Back
+- the root-knotted ground (solid, power 16 each): Stomach, Chest
+    Upper Back
+    Lower Back
+    Stomach
+              from 202.54)
+    Chest
+              from the softened health
+              (softened from 157.4)
+  Total: +135.08% damage  ·  ❤️ Ripples 360.11% → **141.92%** (-218.19)
+🧗 Ripples stays down this beat: she only just went down, so there is no get-up roll yet (the first
+      one is next beat)
+- Ripples' adrenaline surge is over
+- Ripples is no longer off balance
+⏳ Beat 26 health: ❤️ Ripples 128.6% (-0.5% exertion, -12.82% injuries) | ❤️ Nerine 1083.28% (-0.5%
+      exertion, -1.11% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Ripples dodging Nerine's attack 7%, rolled 51 → it lands
+    Ripples tumbling on after the landing 30%, rolled 91 → she stops where she lands
+    the landing finding every sore spot on Ripples 3%, rolled 75 → no
+    Ripples rolling through the landing 2%, rolled 64 → she stays down
+    Ripples knocked out by the slam 24%, rolled 38 → she stays conscious
+    the clearing doing something by itself 5%, rolled 54 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 27
+##### STDOUT
+────────────────────────────────────────
+Attack 16 — Nerine → Ripples: AQUA TAIL (targeted — Neck, Throat, Left Ear, energy 38→28, 3 left)
+Nerine's blow caught Ripples hard on the neck, jarring her throat and left ear as well.
+----------------------------------------
+⚔️ **Nerine → Ripples**: walks over and brings both water-wrapped tails down on her head
+🎯 Off target: aimed at Ripples's Head, lands on her Neck
+  Power **44** = base 40 × 0.5 (Water vs Water, not very effective) × 2 (targeted) × 1.1 (down,
+        nowhere to roll with it)
+  Jarred next to it (Throat, Left Ear): power 11 (×0.5)
+    Neck (hit 1)
+              (softened from 76.19)
+    Throat
+              (softened from 24.49)
+    Left Ear
+    Neck (hit 2)
+  Total: +55.4% damage  ·  ❤️ Ripples 128.6% → **13.89%** (-114.71)
+💧 **Ripples is soaked** (3 beats)
+⬇️ Driven down into the root-knotted ground (on her side) with every blow: Neck
+🧗 **Ripples can't get up** this beat (3 tries; down 1 beat)
+      get-up roll 0.03 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+⏳ Beat 27 health: ❤️ Ripples 0.57% (-0.5% exertion, -12.82% injuries) | ❤️ Nerine 1081.67% (-0.5%
+      exertion, -1.11% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine's blow sliding off the Head it was aimed at 12%, rolled 5 → it lands beside it
+    Nerine's Aqua Tail landing devastatingly 3%, rolled 25 → no
+    Nerine's Aqua Tail going into Ripples' mouth 30%, rolled 48 → no
+    Aqua Tail: knocked down 15%, rolled 77 → no
+    Ripples knocked out by the blow 48%, rolled 62 → she stays conscious
+    Ripples getting as far as sitting up 40%, rolled 69 → she stays lying
+    Ripples' drop back down hurting 60%, rolled 62 → it doesn't hurt
+    the clearing doing something by itself 5%, rolled 65 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 28
+##### STDOUT
+────────────────────────────────────────
+Attack 17 — Nerine → Ripples: BRICK BREAK (targeted — Head, Left Cheek, Neck, energy 33→23)
+The fist found Ripples' head, the force of it jarring her left cheek and neck.
+----------------------------------------
+⚔️ **Nerine → Ripples**: a chop to the side of the head
+  Power **61.6** = base 28 × 1 (Fighting vs Water) × 2 (targeted) × 1.1 (down, nowhere to roll with
+        it)
+  Jarred next to it (Left Cheek, Neck): power 15.4 (×0.5)
+    Head (hit 1)
+              from the softened health
+              (softened from 96.08)
+    Left Cheek
+    Neck
+              (softened from 53.85)
+    Head (hit 2)
+  Total: +86.65% damage  ·  ❤️ Ripples 0.57% → **-160.98%** (-161.55)
+⬇️ Driven down into the root-knotted ground (on her side) with every blow: Head
+🧗 **Ripples gets up** on the third try (using the root-knotted ground; one ugly heave)
+      get-up roll 0.24 (needs 0.7 / 0.45 / 0.2 to rise on try 1 / 2 / 3)
+⏳ Beat 28 health: ❤️ Ripples -176.5% (-0.5% exertion, -15.02% injuries) | ❤️ Nerine 1080.06% (-0.5%
+      exertion, -1.11% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine's blow sliding off the Head it was aimed at 12%, rolled 48 → on target
+    Nerine's Brick Break landing devastatingly 3%, rolled 46 → no
+    Ripples knocked out by the blow 49%, rolled 82 → she stays conscious
+    Ripples' drop back down hurting 60%, rolled 93 → it doesn't hurt
+    the clearing doing something by itself 5%, rolled 28 → nothing
+----------------------------------------
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+################ BEAT 29
+##### STDOUT
+────────────────────────────────────────
+Attack 18 — Nerine → Ripples: BITE (targeted — Right Shoulder, Chest, Throat, energy 28→18)
+The jaws found Ripples' right shoulder, and the shock ran on into her chest and throat.
+----------------------------------------
+⚔️ **Nerine → Ripples**: a hard bite
+😩 **Nerine overcommits**, sloppy with tiredness (×0.6) — off balance after it
+🩹 Ripples is guarding her Chest (blows there ×0.85; her back is open, ×1.1)
+🎯 Off target: aimed at Ripples's Neck, lands on her Right Shoulder
+  Power **38.4** = base 32 × 1 (Dark vs Water) × 2 (targeted) × 0.6 (overcommitted, sloppy with
+        tiredness)
+  Jarred next to it (Chest, Throat): power 9.6 (×0.5)
+    Right Shoulder
+    Chest
+              10.58 from the softened health
+              (softened from 139.33)
+    Throat
+              (softened from 20.86)
+  Total: +45.58% damage  ·  ❤️ Ripples -176.5% → **-247%** (-70.5)
+💥 **KNOCKOUT: Ripples is out cold** — the blow (it cost her 4% of her full health; knockout chance
+      32.5%) (lying on her side) · she crumples
+- 🏆 **Winner: Nerine** (by knockout)
+⏳ Beat 29 health: ❤️ Nerine 1079% (-0.5% exertion, -0.55% injuries)
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine overcommitting, sloppy with tiredness 12%, rolled 7 → SLOPPY
+    Nerine's blow sliding off the Neck it was aimed at 45%, rolled 9 → it lands beside it
+    Ripples dodging Nerine's attack 7%, rolled 23 → it lands
+    Nerine's Bite landing devastatingly 2%, rolled 49 → no
+    Ripples flinched by Bite 30%, rolled 34 → no
+    Ripples rocked by the blow to her Chest 74%, rolled 32 → it moves her
+    Ripples knocked out by the blow 32%, rolled 0 → KNOCKED OUT
+----------------------------------------
+*** Ripples is out: knocked out cold by the blow ***
+*** Winner: Nerine ***
+(The match is over. Keep pressing Enter to watch the aftermath: the loser may stir and even get back up. Type what happens to steer it, or /undo.)
+🩹 INJURY REPORT (what each will feel when it's over): Ripples lies out cold, and when she wakes it will all be waiting for her. The chest, where the fall onto the root-knotted ground and Nerine's hard bite landed: sore and stiff tomorrow, tender for a few days; her stomach, from being driven down into the grass and the fall onto the root-knotted ground: stiff by morning and tender to the touch; the upper back, where the fall onto the wet sand at the waterline and the fall onto an old oak landed: bruised, and grumbling about it by morning; her head, from Nerine's hard chopping strike and being driven down into the root-knotted ground: bruised, and grumbling about it by morning
+   Nerine won, but she paid for it. The left upper arm, where Ripples' crushing bite and Ripples' freezing bite landed: a dull ache, gone in a day or two
+📜 FIGHT SUMMARY
+  Key moments:
+   • beat 15: Nerine's Shoulder Barge hammers Ripples' chest (−16%)
+   • beat 16: Nerine's Brick Break hammers Ripples' stomach (−17%)
+   • beat 23: Ripples gets a surge of adrenaline
+   • beat 26: Ripples' landing slams her stomach into the ground (−13%)
+   • beat 29: Nerine's Bite knocks Ripples out cold
+  Turning point: beat 4 — Nerine took the lead for good (98% vs 91%)
+  Damage dealt: Ripples 38%, Nerine 103%
+  Biggest blow: beat 16, Nerine's Brick Break on Ripples' stomach (−17%)
+  Ripples' worst injuries: chest (excruciating, from landing on the root-knotted ground, Nerine's Bite); stomach (excruciating, from being driven down into the grass, landing on the root-knotted ground); upper back (very painful, from landing on the wet sand at the waterline, landing on an old oak)
+  Pins / escapes: Ripples 0 / 0, Nerine 0 / 0
+  What decided it: Ripples' chest was the wound that mattered: once it was ruined (by landing on the root-knotted ground, Nerine's Bite) every touch there sapped her; Nerine simply hurt her more (103% of Ripples' strength against 38%)
+(The whole fight, with every beat's pictures and stats, was saved to /tmp/fightsim_simrun_z7fmlbwd/repo/exports/fight1_Ripples_vs_Nerine_2026-10-19_1702.html; it is updated as the aftermath goes on. /exportfight saves it again anywhere you like.)
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):

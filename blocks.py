@@ -360,5 +360,8 @@ class Blocks:
             key, text, _ = pool.pop(i)
             self.uses[key] = self.uses.get(key, 0) + 1
             self.last[key] = self.turn
+            # a name in a possessive slot ("{foe}'s") takes the game's possessive rule: Ripples', not Ripples's
+            text = re.sub(r"\{(\w+)\}'s\b", lambda m: ("{%s}'" % m.group(1)) if str(fmt.get(m.group(1), "")).endswith("s")
+                          else m.group(0), text)
             out.append(SLOT.sub(lambda m: str(fmt[m.group(1)]), text))
         return out

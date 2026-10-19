@@ -2595,7 +2595,8 @@ class Engine:
         out = []
         if self.has(a, "stiff"):
             out.append(("stiff from the pin", float(cfg.get("stiff_power_mult", 0.85))))
-        if self.has(a, "constricted") and any(h.coil and h.defender == a.name for h in self.holds.values()):
+        if self.has(a, "constricted") and any(h.coil and h.defender == a.name and self.coil_scope(h.part) == "body"
+                                              for h in self.holds.values()):
             out.append(("arms trapped in the coils", float(cfg.get("constricted_power_mult", 0.75))))
         if self.has(a, "bound"):
             out.append((f"her {str(a.learned.get('bound_part') or 'limb').lower()} bound",
@@ -3204,7 +3205,7 @@ class Engine:
                 bad.append(f"{f.name}: energy is {f.energy}")
             for p in f.parts.values():
                 if not fin(p.damage) or p.damage < -0.01 or not fin(p.resistance):
-                    bad.append(f"{f.name}'s {p.name}: damage {p.damage}, resistance {p.resistance}")
+                    bad.append(f"{poss_word(f.name)} {p.name}: damage {p.damage}, resistance {p.resistance}")
             for st, n in f.status.items():
                 if not isinstance(n, (int, float)) or n <= 0:
                     bad.append(f"{f.name}: status {st} has {n} beats left")
@@ -3219,7 +3220,7 @@ class Engine:
             if h.attacker not in active or h.defender not in active:
                 bad.append(f"hold {h.id} ({h.attacker} on {h.defender}) involves someone out of the fight")
             elif h.part not in self.get(h.defender).parts:
-                bad.append(f"hold {h.id} grips {h.defender}'s '{h.part}', a part she doesn't have")
+                bad.append(f"hold {h.id} grips {poss_word(h.defender)} '{h.part}', a part she doesn't have")
             if not fin(h.power) or h.power < 0:
                 bad.append(f"hold {h.id} has power {h.power}")
         for key, p in self.pins.items():
@@ -3777,7 +3778,7 @@ class Engine:
             # how she ends up. Usually flat on the ground; sometimes slumped SITTING against the last upright thing she
             # hit, or sat down hard by a plain knockdown; and a thrown fighter with strength left may ROLL THROUGH the
             # landing and come up on her feet (she still takes every impact).
-            why = f"{d.name} was {'thrown' if thrown else 'knocked down'}"
+            why = f"{d.name} was {'slammed down' if slam else 'thrown' if thrown else 'knocked down'}"
             share = max(0.0, min(1.0, self.strength(d) / 100.0))
             rt = float(dcfg.get("roll_through", 0.2)) * share
             # a strong fighter knocked or thrown down often springs straight back up: the stronger, the likelier
@@ -5428,7 +5429,7 @@ class Engine:
             lead_key = ("lost" if f.eliminated or (win and f.name != win and self.get(win).team != f.team) else
                         ("won_fresh" if s >= 70 else "won_hurt" if s >= 35 else "won_wrecked") if win else "standing")
             lead = f"{f.name} {pick(self.REPORT_LEAD[lead_key], 'lead')}"
-            worst = sorted((p for p in f.parts.values() if p.damage >= 90), key=lambda p: -p.damage)[:4]
+            worst = sorted((p for p in f.parts.values() if p.damage >= 60), key=lambda p: -p.damage)[:4]
             if not worst:
                 rows.append(f"{lead}: bruised here and there, nothing that will last")
                 continue
@@ -5437,7 +5438,8 @@ class Engine:
                 causes = [c for c in self.injury_log.get(f"{f.name}|{p.name}", []) if c]
                 causes = list(dict.fromkeys(self._cause_words(c, f.name) for c in causes[-2:]))
                 cause = " and ".join(causes) or "the fight"
-                sev = "deep" if p.damage >= 300 else "sore" if p.damage >= 150 else "light"
+                # by its pain level: excruciating or worse is deep, very painful sore, less than that light
+                sev = "deep" if p.damage >= 150 else "sore" if p.damage >= 90 else "light"
                 hurt = pick(self.REPORT_HURT[sev], p.name)
                 frame = self.REPORT_FRAMES[(zlib.crc32(f"{f.name}|{p.name}".encode()) + i) % len(self.REPORT_FRAMES)]
                 bits.append(frame.format(part=p.name.lower(), cause=cause, hurt=hurt))
@@ -6614,7 +6616,7 @@ class Engine:
             out.append({"type": "hold_end", "shaken": True, "hold_id": h.id, "attacker": h.attacker,
                         "defender": h.defender, "part": h.part, "with": h.with_part, "beats_held": h.turns_active,
                         "chance": ch, "flavor": h.flavor,
-                        "reason": f"{why} shook it loose: it cost her {share * 100:.0f}% of her health at once"})
+                        "reason": f"{why} shook it loose", "share": round(share, 3)})
         return out
 
     def _hold_break_tick(self, skip_hold_ids=()):
@@ -6832,6 +6834,12 @@ class Engine:
         ad = self._cfg("adrenaline")
         events += self.numb_tick()
         for f in self.fighters.values():
+            # bound and constricted come from coils: once no coil of that kind is on her, they end with this beat
+            scopes = {self.coil_scope(h.part) for h in self.holds.values() if h.coil and h.defender == f.name}
+            for st, keep in (("bound", {"limb"}), ("constricted", {"throat", "body"})):
+                if st in f.status and not scopes & keep:
+                    f.status[st] = 1
+                    self._fresh_status.discard((f.name, st))
             for st in list(f.status):
                 if (f.name, st) in self._fresh_status:
                     continue
@@ -8393,7 +8401,7 @@ class Engine:
                             if self.fade_mode() else f"({p['seconds']} of {p['duration']} seconds)")
                          + (": a double pin, both pressing at once." if len(who) > 1 else "."))
         if self.holds:
-            lines.append("HOLDS (still gripping): " + "; ".join(f"{h.attacker} has {h.defender}'s {h.part}"
+            lines.append("HOLDS (still gripping): " + "; ".join(f"{h.attacker} has {poss_word(h.defender)} {h.part}"
                                                                + (f" ({h.with_part})" if h.with_part else "")
                                                                for h in self.holds.values())
                          + ". No other grip is on: nothing else is wrapped around, clamped on, or holding anyone.")
@@ -8547,7 +8555,7 @@ class Engine:
             for h in self.holds.values():
                 in_pin = any(p["defender"] == h.defender for p in self.pins.values())
                 odds = self.hold_break_chance(h.attacker, h.defender) if not in_pin else 0
-                lines.append(f"   hold_id {h.id}: {h.attacker} has {h.defender}'s {h.part} — "
+                lines.append(f"   hold_id {h.id}: {h.attacker} has {poss_word(h.defender)} {h.part} — "
                              f"\"{h.flavor}\" (power {h.power}, held {h.turns_active} beats"
                              + (f"; the engine rolls each beat whether {h.defender} breaks it: about {odds * 100:.0f}% now"
                                 if odds > 0 else "") + ")"
@@ -8579,10 +8587,10 @@ class Engine:
                          + (f"beat {int(p.get('beats', 0)) + 1} of it; she is about {float(p.get('fade', 0.0)):.0f}% of "
                             f"the way to passing out (it usually takes about "
                             f"{self.rules.get('pin', {}).get('fade', {}).get('typical_beats', 6)} beats, sometimes "
-                            f"more, sometimes fewer; nobody in the story knows). The engine rolls {p['defender']}'s "
+                            f"more, sometimes fewer; nobody in the story knows). The engine rolls {poss_word(p['defender'])} "
                             if self.fade_mode() else
                             f"{p['seconds']} of {p['duration']} seconds. The engine runs the clock and rolls "
-                            f"{p['defender']}'s ")
+                            f"{poss_word(p['defender'])} ")
                          + f"struggles every beat. Keep it going with 'breather' (or 'hold_adjust' to bear down); "
                          f"the pinner does NOT start another pin. {p['defender']} may also strike {' or '.join(crew)} with a free limb.")
         return "\n".join(lines)
