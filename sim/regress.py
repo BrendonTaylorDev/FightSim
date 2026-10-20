@@ -383,6 +383,26 @@ def passage_check():
     return problems
 
 
+def tap_last_check():
+    """narration.tap_last: a part before the last that tells the match-ending pass-out or tap has it taken out (and
+    the holder letting go right after), for the end of the beat to tell; a refusal to tap stays."""
+    import json
+    import narrator
+    with open(os.path.join(H.ROOT, "rules.json"), encoding="utf-8") as fh:
+        n = narrator.Narrator("none", json.load(fh))
+    n.strengths, problems = {"Ripples": 600, "Nerine": 300}, []
+    n._tap_end = ("Nerine", "Ripples", "pass_out", "choke")
+    out = n._cut_early_end("Ripples felt Nerine's struggles weaken. Her limbs stopped answering, and she went limp. "
+                           "Ripples let go of her neck. The other Buizel slid down, her body limp.\n\nThe wind blew.")
+    if "went limp" in out or "let go" in out or "slid down" in out or "struggles weaken" not in out:
+        problems.append(f"the early pass-out was not taken out cleanly: {out!r}")
+    n._tap_end = ("Nerine", "Ripples", "tap", "armbar")
+    out = n._cut_early_end("Nerine would not tap. Nerine's paw slapped the ground, again and again. Ripples let go.")
+    if out != "Nerine would not tap.":
+        problems.append(f"the early tap was not taken out cleanly: {out!r}")
+    return problems
+
+
 def main(argv):
     verbose = "-v" in argv
     want = [a.lower() for a in argv if not a.startswith("-")]
@@ -412,6 +432,13 @@ def main(argv):
         probs = passage_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  story passages keep to the hard rules  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "tap told last" for w in want):
+        t = time.time()
+        probs = tap_last_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  the tap or pass-out is told last  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "whole fights" for w in want):

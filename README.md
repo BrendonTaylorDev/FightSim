@@ -654,6 +654,15 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 236
+
+- **The tap-out or pass-out is told last** (`narration.tap_last`, on): in beat 31 of your build-228 Ripples vs Nerine
+  fight, part 1 had Nerine go limp in Ripples' choke, and part 2 then had her wrench Ripples' knee. Now, when a beat is
+  written in parts, every part before the last is told the ending isn't its to tell, the check that the ending was
+  shown waits for the end, and a part that tells it anyway has those sentences cut (with the holder letting go right
+  after). The end of the beat then tells it, after everything else. `/set narration.tap_last false` lets any part
+  tell it, as before.
+
 ## Build 235
 
 Fixes from your Ripples vs Nerine submission fight (played on build 228). Each problem was checked against the current

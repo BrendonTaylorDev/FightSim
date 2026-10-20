@@ -7692,6 +7692,54 @@ class Narrator:
                    + " Only then did she draw fully away."
         return text.rstrip() + "\n\n" + waits + " Only then did she let go and ease her weight off."
 
+    def _tap_last_on(self):
+        """narration.tap_last: the tap-out or pass-out that ends the match this beat is kept to the last part."""
+        return bool(getattr(self, "_tap_end", None)) and bool(
+            (self.rules.get("narration") or {}).get("tap_last", True))
+
+    def _cut_early_end(self, text):
+        """A part before the last that tells the match-ending tap or pass-out anyway (beat 31 of the build-228
+        Ripples vs Nerine match: Nerine went limp in part 1, then wrenched Ripples' knee in part 2) has those
+        sentences taken out, with the holder letting go right after them; the end of the beat tells it instead
+        (the left-out check puts it at the end of the last part)."""
+        te = getattr(self, "_tap_end", None)
+        if not te or not text:
+            return text
+        who, by = te[0], te[1]
+        names = list(dict.fromkeys(list(self.strengths) + [who, by]))
+        cut, after, prev = [], False, ""
+        for sent, whos, named in _who_said(text, names, getattr(self, "aliases", None), self._leads_for(text)):
+            if not sent.strip():
+                continue
+            # (her, or "she" right after a sentence about her going: "Ripples felt Nerine's struggles weaken. Her
+            # limbs stopped answering, and she went limp")
+            in_it = [w for w in (who, by) if re.search(r"\b" + re.escape(w) + r"\b", sent)]
+            near = who in whos or who in in_it or (not in_it and re.search(r"\b" + re.escape(who) + r"\b", prev))
+            prev = sent
+            if near:
+                m = TAP_SHOWN.search(sent) if te[2] == "tap" else OUT_SAID.search(sent)
+                if m and not _NOT_REALLY.search(sent[:m.start()]) and not re.search(
+                        r"\b(?:almost|nearly|wouldn't|would not|won't|will not|refus\w+|not yet|never)\b", sent[:m.start()], re.I):
+                    cut.append(sent)
+                    after = True
+                    continue
+            if after and (who in whos or not in_it or who in in_it) and re.search(r"\b(?:limp|slack|unresponsive|motionless|lifeless)\b", sent, re.I):
+                cut.append(sent)      # "The other Buizel slid to the ground, her body limp and unresponsive."
+                continue
+            if after and FREED_HER.search(sent) and (by in whos or by in sent):
+                cut.append(sent)      # "Ripples let go, her jaws unclamping from Nerine's neck."
+                continue
+            after = False
+        if not cut:
+            return text
+        if self.progress:
+            self.progress(f"{who} gave out too early in the beat: kept for the end")
+        for sent in cut:
+            text = text.replace(sent, "", 1)
+        text = re.sub(r"[ \t]{2,}", " ", text)
+        text = re.sub(r" +\n", "\n", text)
+        return re.sub(r"\n{3,}", "\n\n", text).strip()
+
     def _ensure_faint(self, text):
         """A pin held to the end puts her out, so the passage has to show it. When the cuts took it (or it was never
         written), a closing passage is written for it; if even that fails, plain sentences say it."""
@@ -10340,7 +10388,8 @@ class Narrator:
                           f"and she passes out under the pin. End with her last seconds, her body going limp and "
                           f"still, her eyes closing, and {self._faint[1]} easing off")
         te = getattr(self, "_tap_end", None)
-        if te and coverage and (self.rules.get("narration") or {}).get("tap_shown", True):
+        if te and coverage and (self.rules.get("narration") or {}).get("tap_shown", True) \
+                and not getattr(self, "_tap_hold_back", False):
             full = (prior or "") + "\n" + text
             if te[2] == "tap" and not TAP_SHOWN.search(full):
                 issues.append(f"it never showed {te[0]} tapping out: this is the beat she gives up in {poss(te[1])} "
@@ -14573,7 +14622,12 @@ class Narrator:
                    f"Focus of this part: {focus}"
                    + "".join(" " + x for x in extras.get(i - 1, [])) + f" {DETAIL}"
                    + (" Do not finish the beat yet; later parts will continue it." if i < len(plan) else
-                      " This is the final part: bring the beat to rest."))
+                      " This is the final part: bring the beat to rest.")
+                   + (f" NOT IN THIS PART: {(te_ := self._tap_end)[0]} "
+                      + ("tapping out" if te_[2] == "tap" else "passing out")
+                      + f". She is still fighting {te_[1]} here; giving out is the LAST thing in the beat, after "
+                        f"everything else, and the final part tells it."
+                      if i < len(plan) and self._tap_last_on() else ""))
             # the receiving side is where every hit has to have shown up by (checked against everything so far)
             check = key == "take" or (i == len(plan) and "take" not in [k for k, _, _ in plan])
             self._sample_want = self._sample_tags(key, acts, pin_events, also_now)
@@ -14606,7 +14660,13 @@ class Narrator:
                 # how each blow lands (the body under it, how it moves her, its sound, the reaction to each hit) only in
                 # the part where the blows land; any other part gets what each blow is, and where
                 ctx_ = self._blow_facts_only(ctx_)
+            # (the tap or pass-out that ends the match is the last thing in the beat: no part before the last may
+            # demand it, and one that tells it anyway has it taken out, for the end to tell: narration.tap_last)
+            self._tap_hold_back = i < len(plan) and self._tap_last_on()
             part = self._call(ctx_ + ask, seg_words, coverage=check, prior=so_far)
+            if self._tap_hold_back:
+                part = self._cut_early_end(part)
+            self._tap_hold_back = False
             written.append(self._drop_repeats(part, so_far) if so_far else part)  # no re-telling earlier parts
             part_msgs.append(self._deferred[-1] if len(self._deferred) > n_def else None)
             part_leads.append(self._lead_now)
