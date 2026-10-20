@@ -4802,6 +4802,25 @@ class Engine:
                 return pick(hit)
         return None
 
+    @staticmethod
+    def sub_is_choke(shape):
+        """A submission shape whose main grip is on the neck or throat: a choke (a sleeper, a triangle, head scissors)."""
+        return any(role == "main" and body_region(part) == "neck" for part, role, _ in shape.get("contacts") or ())
+
+    def pick_submission(self, shapes, rng=None):
+        """One submission to offer from `shapes`: a choke only choke_share of the time when there is anything else to
+        offer (finish.submission.choke_share), so a submission match ends in a lock on a limb or the body far more
+        often than in a choke. Returns its name, or None when there are no shapes."""
+        if not shapes:
+            return None
+        rng = rng or self.rng
+        chokes = sorted(n for n, v in shapes.items() if self.sub_is_choke(v))
+        others = sorted(n for n in shapes if n not in chokes)
+        share = float(((self.rules.get("finish") or {}).get("submission") or {}).get("choke_share", 0.1))
+        if chokes and others:
+            return rng.choice(chokes if rng.random() < share else others)
+        return rng.choice(chokes or others)
+
     def submission_shapes(self, attacker, defender, side=None):
         """The submission holds THIS attacker could put on THIS defender as she lies now: {name: {"look",
         "contacts": [(part, role, with)], "free", "strain"}}. side ("Left"/"Right"): the side the direction named,

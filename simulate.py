@@ -46,7 +46,7 @@ def _pick_action(eng, rng, f, d):
             and rng.random() < 0.7:
         shapes = eng.submission_shapes(f.name, d.name)
         if shapes:
-            return dict(a, action="submission", improvised_name=rng.choice(sorted(shapes)))
+            return dict(a, action="submission", improvised_name=eng.pick_submission(shapes, rng))
     held = [h for h in eng.holds.values() if h.sub and h.attacker == f.name and h.defender == d.name]
     if held and not eng.sub_stuck(d, held) and rng.random() < 0.5:
         return dict(a, action="breather")    # keeps cranking the submission

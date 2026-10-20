@@ -206,7 +206,8 @@ Beat types:
   hold_id 0 to end ALL of the attacker's holds on the defender (e.g. breaking free of a whole pin). Say how in flavor.
 - submission: VERY RARE, and only when the beat's notes say there is a SUBMISSION OPENING. A wrestling hold that
   WRENCHES (a camel clutch, a crossface, a Boston crab, an armbar, a leg lock, a tail crank, a limb wrench): it does
-  damage every beat, harder each beat, and it is NOT a pin (no clock, nobody passes out from it). Put the hold's name
+  damage every beat, harder each beat, and it is NOT a pin (no clock; only a choke on her neck can make her pass
+  out, and chokes are the rare ones: most are locks on a limb or the body). Put the hold's name
   in "improvised_name" ("camel clutch"); the engine sets the grips. While it's on, the holder can use what she still
   has free on her at point-blank as a second action in the same beat or later (a jet of water into the back of the
   head during a camel clutch): she can't cover up, so it lands hard.
@@ -2069,12 +2070,19 @@ class Director:
             # a submission match: only a tap-out or a pass-out ends it, so the fight has to come to holds
             rng_hint = (rng_hint + "\nSUBMISSION MATCH: no blow ends this fight, only a TAP-OUT or a PASS-OUT. Blows "
                         "only soften her up for the hold. Work toward grips: take the submission openings, and put on "
-                        "submissions, chokes (a grip on the neck or throat) and coils, and keep them on and tighten "
-                        "them: the longer one stays on and the more the gripped part hurts, the likelier she is to tap. "
+                        "submissions, locks on a limb or the body and coils, and keep them on and tighten them: the "
+                        "longer one stays on and the more the gripped part hurts, the likelier she is to tap. A CHOKE "
+                        "(a grip on the neck or throat) is the RARE finish, now and then, not the usual one: most "
+                        "matches are won by an arm, a leg, a tail, the back or the body cranked until she taps. "
                         "Be inventive with them: these are Pokemon, so a hold can use tails, jaws, coils, a held stream "
                         "or the scenery (a knee levered back over a root, an arm wrenched round a trunk, her face ground "
                         "into the dirt, pressed against a tree), and an improvised hold_start with any limb is as good "
                         "as a named one. Never the same hold twice running.").strip()
+            choked = any(any(role == "main" and "neck" in spec for spec, role, _ in
+                             (engine.SUBMISSIONS.get(n) or {}).get("contacts") or ()) for n in engine.subs_used())
+            if choked:
+                rng_hint += ("\nA CHOKE HAS ALREADY BEEN TRIED in this match: the holds from here on go on a limb, the "
+                             "back or the body, not the neck.")
             done_ = sorted(engine.subs_used().items(), key=lambda x: -x[1])
             if done_:
                 rng_hint += ("\nHOLDS USED SO FAR (a nudge, not a rule: something new reads better than a repeat): "
@@ -3511,14 +3519,18 @@ def submission_urge(engine):
             continue
         h = max(holders, key=engine.strength)
         shapes = engine.submission_shapes(h.name, target.name)
-        name = engine.rng.choice(sorted(shapes))
+        name = engine.pick_submission(shapes)
         s = shapes[name]
+        choke_ = engine.sub_is_choke(s)
         return (f"SUBMISSION OPENING (very rare): {target.name} is down and {h.name} can lock her in a {name.upper()} "
                 f"({s['look']}). Unless the story clearly calls for something else, {h.name} does it this beat: action "
                 f"'submission' with \"improvised_name\": \"{name}\". It wrenches her ({s['strain']}) every beat, "
                 f"harder each beat, for a few beats; it is not a pin. {h.name} still has {s['free']} free: she can use "
                 f"it on her as a second action in the same beat. Other holds that fit: "
-                f"{', '.join(n for n in shapes if n != name) or 'none'}. Or INVENT one of her own that her body and "
+                f"{', '.join(n for n in shapes if n != name and (choke_ or not engine.sub_is_choke(shapes[n]))) or 'none'}"
+                + ("" if choke_ else " (a lock, not a choke: most submissions are won on a limb or the body, and a "
+                   "choke only now and then)")
+                + f". Or INVENT one of her own that her body and "
                 f"the place allow: give it a short name in \"improvised_name\" and put the parts of {target.name} it "
                 f"grips in \"hits\", the worst first, each with \"with\" = what of {h.name} grips it (her paws, "
                 f"her twin tails, her jaws, her weight). The engine checks it against both bodies.")

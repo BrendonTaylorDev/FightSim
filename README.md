@@ -654,6 +654,23 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 234
+
+Submission matches end in a choke only now and then, for variety: most are won by a lock on a limb, the back or the
+body.
+
+- **`finish.submission.choke_share`** (0.1): when a submission opening is offered (to the director, and in
+  `/simulate`), it offers a choke (a sleeper, a triangle, head scissors, a camel clutch: a hold whose main grip is on
+  the neck) only this share of the time when a lock on a limb or the body also fits. A lock's offer lists only the
+  other locks. 1 = any fitting hold, as before.
+- **The director** is told a choke is the rare finish, not the usual one (the submission-match hint used to push it
+  toward chokes), and once a choke has been tried in a match, to go for a limb or the body.
+- **Game plans:** in a submission match the plan to finish on her neck is half as likely (`director.game_plan.
+  match_weights.neck` 1.5 to 0.75).
+- **Measured** with `/simulate`-style fights (Ripples, Nerine and Nocturne in pairs, 115 submission matches): 17% end
+  in a choke (taps and pass-outs on the neck), 79% in a tap to a limb or body lock. A choke finishes far more surely
+  than a lock once it is on: offered every time it fits, chokes ended 72% of matches; never offered, 8%.
+
 ## Build 233
 
 Chokes can go all the way, the two kinds of choke are told apart, and two Swellows fought in the clock tower
