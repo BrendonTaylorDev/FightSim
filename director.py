@@ -687,6 +687,25 @@ def _held_not_holder(engine, att, hold_id, dfn):
     return bool(on_me) and not mine
 
 
+ESCAPE_WORDS = re.compile(r"\b(?:escape\w*|writh\w*|twists? (?:free|loose|out)|head ?-?butt\w*|break\w* free|"
+                          r"wrench\w* free|struggl\w*|squirm\w*|thrash\w*|wriggl\w*)\b", re.I)
+
+
+def _escape_worded(engine, att, hold_id, dfn, flavor):
+    """The held fighter's name when this hold_release comes from the HOLDER but its words are the held fighter
+    fighting free (holds.release_as_escape); else ""."""
+    if not (engine.rules.get("holds", {}).get("release_as_escape") or {}).get("enabled", True):
+        return ""
+    if not ESCAPE_WORDS.search(str(flavor or "")) or re.search(r"\blet(?:s|ting)? go\b|\breleas\w* (?:her|the) "
+                                                               r"(?:grip|hold) to\b", str(flavor or ""), re.I):
+        return ""
+    me = engine.get(att).name
+    hs = ([engine.holds[hold_id]] if hold_id in engine.holds else
+          [h for h in engine.holds.values() if h.attacker == me and (not dfn or h.defender.lower() == str(dfn).lower())])
+    hs = [h for h in hs if h.attacker == me and h.defender != me]
+    return hs[0].defender if hs else ""
+
+
 def _own_pin(engine, att, hold_id, dfn):
     """True if this hold_release would free `att` from a pin she is under (which only a struggle can do)."""
     me = engine.get(att).name
@@ -1110,6 +1129,15 @@ def resolve(engine, b):
             if key not in merged or power > merged[key][1]:
                 merged[key] = (part, power, ramp, short_phrase(h.get("with", ""), 9))
         contacts = list(merged.values())
+        if len(contacts) == 1 and not contacts[0][3]:
+            # a grip with nothing named to hold it with ("wraps her twin tails around her knee", and no "with"): the
+            # limb the flavor names, so the story and the checks know what holds her
+            m_ = re.search(r"\b(?:her |its |their )?((?:twin |sickle |long )?tails?|jaws|teeth|fangs|fore ?paws|paws|"
+                           r"claws|hind legs|legs|arms|horn|wings|talons|coils)\b", str(flavor or ""), re.I)
+            if re.search(r"\bbit(?:e|es|ing|ten)\b|\bsinks? (?:her )?teeth\b", str(flavor or ""), re.I):
+                contacts = [contacts[0][:3] + ("her jaws",)]     # (she bites her tail: her jaws, not the tail)
+            elif m_:
+                contacts = [contacts[0][:3] + ("her " + m_.group(1).lower(),)]
         if not manual:
             for c in contacts:
                 why = engine.grip_problem(engine.get(att), c[3] if len(c) > 3 else "")
@@ -1199,6 +1227,11 @@ def resolve(engine, b):
         # the HELD fighter "releasing" a grip that is on her: that is a break-out, and the engine rolls those at
         # the end of every beat. This beat she strains against it; the roll says whether it gives.
         res = {"type": "breather", "focus": engine.get(att).name, "flavor": "straining against the hold"}
+    elif act == "hold_release" and not manual and _escape_worded(engine, att, b.get("hold_id"), dfn, flavor):
+        # the HOLDER "releasing" a grip in words that are the held fighter fighting free ("Head butts Ripples in the
+        # nose ... she writhes and twists to escape the hold"): that is her break-out try, and the dice decide it
+        held = _escape_worded(engine, att, b.get("hold_id"), dfn, flavor)
+        res = {"type": "breather", "focus": held, "flavor": flavor or "straining against the hold"}
     elif act == "hold_release":
         hid = b.get("hold_id")
         if hid in engine.holds:

@@ -654,6 +654,31 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 229
+
+Fixes from a 20-beat Ripples vs Nerine submission match (lakeside, both on the legs, a tail knee lock, a root lever and a tail choke).
+
+**Engine and director:**
+
+- **A held fighter's escape never ends the hold by itself** (`holds.release_as_escape`, on). In beat 11 the director wrote a release of Ripples' root lever in words that were Nerine's escape ("head butts Ripples in the nose ... she writhes and twists to escape the hold"), and the lever simply ended after one beat. Now a release given to the holder in such words is the held fighter's try at breaking out, and the end-of-beat break roll decides it. A release that says she lets go is still a release.
+- **A grip knows what holds her.** "Wraps her twin tails around her knee" came with no limb named, so the stat block said only "Left Knee", the beat card said "Ripples' grip", and the story had her claws tear loose from it. When the director names none, the limb is taken from its own words (a bite is the jaws).
+- **The notes' feelings come in note form.** What a hurt part costs her ("her left knee badly hurt: worse footing, slower to push off") and her own grip held through a get-up are no longer whole sentences, because the model copied them in word for word ("Nerine's left knee was badly hurt: she couldn't push off or spring away as she could"; "Ripples' own grip on Nerine's Throat stayed on too: she did not let go of it"). "Put on the ground 3 times" is said in words.
+- **The tap on her feet has one place:** the holder's arm. The story had copied "toward Ripples' arm or shoulder".
+
+**Narration cleanups:**
+
+- **Thoughts that run on are mended:** "*She's favoring that hip* Noting the slight limp" becomes "*She's favoring that hip*, noting the slight limp", and "*...* Ripples noted," gets its comma.
+- **More of her past is cut:** "I've taken worse than this", "I've been here before, and I got out", "I've been hit before", "endured many times before", "a sound Ripples had heard before", "from the long day's running".
+- **The tense editor leaves thoughts alone:** "*I need to end this.*" had come back as "I needed to end this".
+- **Held, not pinned:** with no pin on (none in a submission match), "despite being pinned" and "keep her pinned" say held. Ears pinned back stay.
+- **Left-out hits go before the fall they caused:** Nerine's foot was struck after she had already crumpled at the pine.
+- **Smaller fixes:**
+  - The narrator talking about its own parts ("That was for the next part.") is cut.
+  - Body parts copied with capitals ("Nerine's Throat") are lower case.
+  - "To a water type" is just her.
+  - "But minor:" and "in a way that was still minor" are said plainly.
+  - The "what the last moment left in her" idea is reworded: the story kept opening on "The last moment left her...".
+
 ## Build 228
 
 Fixes from a Nerine vs Ripples submission fight (lakeside, legs focus, a knee bite that ended in a tap).

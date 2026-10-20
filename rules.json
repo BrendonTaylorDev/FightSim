@@ -1012,6 +1012,8 @@
     }
   ],
   "holds": {
+    "_release_as_escape_comment": "A release the director writes for the HOLDER in words that are the held fighter fighting free ('head butts her in the nose, she writhes and twists to escape the hold'): before build 229 the hold simply ended. Now it is the held fighter's try at breaking out, and the end-of-beat break roll decides it. A release that says she lets go stays a release. enabled false goes back to ending it.",
+    "release_as_escape": {"enabled": true},
     "_second_limb_comment": "A second limb put on a spot one of her grips already holds (her tails bound round the knee her jaws are on): before build 228 the new grip was folded into the old one and its pressure lost. Now both stay on, said together ('her jaws and twin tails'), and the hold presses at the stronger of the two plus add x the weaker. enabled false goes back to folding it in.",
     "second_limb": {"enabled": true, "add": 0.5},
     "_free_blow_comment": "free_blow: each beat a pin or a submission is on (not the beat it closes), the chance the one holding her gets a quick extra blow in with what she has free: one of her own moves (a jab, a bite, a Water Gun at point-blank) at power_mult of its power, costing energy_share of its energy. Rare and light, and separate from the punishment for a failed escape. 0 = never.",

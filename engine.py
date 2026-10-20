@@ -8754,18 +8754,18 @@ class Engine:
                 f"They are apart now, no clock is running, and {e['pinner']} would need a brand-new pin.")
 
     # what a badly hurt part of each region costs her, in the fight (for her thoughts: narration.rich.inner)
-    WOUND_COST = {"head": "her head is ringing: she is a beat slower to read what comes at her",
-                  "neck": "every breath scrapes past it, and she can't take a full one",
-                  "shoulder": "that side won't lift or guard the way it did",
-                  "fore_up": "that limb is weaker now: blows from it, and her guard on that side, cost her",
-                  "fore_low": "that limb is weaker now: blows from it, and her guard on that side, cost her",
-                  "chest": "deep breaths hurt, so she breathes shallow and tires sooner",
-                  "belly": "twisting and bending pull at it: every turn is paid for",
-                  "back_up": "turning and rising pull at it", "back_low": "turning and rising pull at it",
-                  "hind_up": "her footing is worse: she can't push off or spring away as she could",
-                  "hind_low": "her footing is worse: she can't push off or spring away as she could",
-                  "tail": "her balance is off, and her tail answers slower"}
-    JAW_COST = "biting or opening her mouth hurts her own jaw now"
+    WOUND_COST = {"head": "a ringing head, a beat slower to read what comes at her",
+                  "neck": "every breath scraping past it, never a full one",
+                  "shoulder": "that side slow to lift or guard",
+                  "fore_up": "a weaker limb: blows from it, and her guard on that side, cost more",
+                  "fore_low": "a weaker limb: blows from it, and her guard on that side, cost more",
+                  "chest": "deep breaths hurting, so shallow breathing and sooner tired",
+                  "belly": "every twist and bend pulling at it",
+                  "back_up": "turning and rising pulling at it", "back_low": "turning and rising pulling at it",
+                  "hind_up": "worse footing, slower to push off or spring away",
+                  "hind_low": "worse footing, slower to push off or spring away",
+                  "tail": "balance off, the tail answering slower"}
+    JAW_COST = "biting or opening her mouth hurting her own jaw"
 
     def record_inner(self, results):
         """Keep what each fighter has learned this fight (her moves that land and miss, the ones that hit her, the
@@ -8837,7 +8837,7 @@ class Engine:
             cost = self.JAW_COST if re.search(r"\b(?:jaw|muzzle|snout|mouth)\b", p.name, re.I) else self.WOUND_COST.get(reg)
             if cost and cost not in seen:
                 seen.add(cost)
-                out.append(f"her {p.name.lower()} is badly hurt: {cost}")
+                out.append(f"her {p.name.lower()} badly hurt (in note form, never copied: {cost})")
         en = float(getattr(f, "energy", 100) or 0)
         if en < float(cfg.get("low_energy", 30)):
             out.append("she is running low on energy: every big move now costs more than she has to spare")
@@ -8979,7 +8979,8 @@ class Engine:
             elif pins >= 1:
                 bits.append(f"she has already fought her way out of {'a pin' if pins == 1 else str(pins) + ' pins'}")
             if downs >= 3:
-                bits.append(f"she has been put on the ground {downs} times")
+                bits.append(f"she has been put on the ground "
+                            + ({3: "three times", 4: "four times", 5: "five times"}.get(downs) or "again and again"))
             lost = float(before.get(f.name, me)) - me
             fade = float((pinned.get(f.name) or {}).get("fade", 0) or 0)
             fade = max(fade, 55 if me <= 5 else 30 if me < 25 else 0)     # (her own strength counts: fade_words)

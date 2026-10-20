@@ -1870,7 +1870,14 @@ PROMPT_LINE = re.compile(r"^\s*[*_\-\s]*(?:POSTURE THIS BEAT|WHAT HAPPENS IN THI
 PAST_FIGHTS = re.compile(r"\b(?:ha[ds]|have) (?:faced|fought|battled|beaten|survived|seen off) (?:worse|tougher|stronger|"
                          r"bigger|harder|fiercer|deadlier|better)\b|\b(?:battled|fought|faced) (?:earlier|before|long ago)\b|"
                          r"\b(?:in|from|of) (?:her|his|their) (?:past|previous|earlier|other|old|many) (?:fights|battles|"
-                         r"opponents|rivals)\b", re.I)
+                         r"opponents|rivals)\b"
+                         # her life before this fight said another way ("I've taken worse", "I've been here before, and I
+                         # got out", "a sound Ripples had heard before", "from the long day's running")
+                         r"|\b(?:I'?ve|I’ve|I have|she'?d|she’d|she had|he'?d|he had) (?:taken|had|seen) worse\b"
+                         r"|\b(?:I'?ve|I’ve|I have|she'?d|she’d|she had) been (?:here|hit|hurt|through (?:worse|this)) before\b"
+                         r"|\bendured (?:it )?(?:many|countless|a hundred|so many) times(?: before)?\b"
+                         r"|\ba sound (?:that )?(?:she|[A-Z][a-z]+) had heard (?:many times )?before\b"
+                         r"|\bfrom (?:the|a) long day'?s\b|\bthe battles (?:she|he) had (?:endured|fought|survived)\b", re.I)
 
 
 # a comparison with her life before the fight ("unlike anything she had ever felt", "a different kind of hurt from
@@ -1976,7 +1983,8 @@ def _balance_marks(text):
     return "\n".join(fixed)
 
 
-_RUN_ON = re.compile(r"(\*[^*\n]*?[A-Za-z'’])\*[ \t]+(Her|His|Its|A|The|Every|Each)\b([^.!?\n]{0,90}?[.!?])")
+_RUN_ON = re.compile(r"(\*[^*\n]*?[A-Za-z'’])\*[ \t]+(Her|His|Its|A|The|Every|Each|[A-Z][a-z]+ing|[A-Z][a-z]+(?= "
+                     r"(?:noted|thought|decided|told herself|reminded herself|realised|realized)\b))\b([^.!?\n]{0,90}?[.!?])")
 
 
 def _thought_run_on(text):
@@ -1987,7 +1995,11 @@ def _thought_run_on(text):
         rest = m.group(2) + m.group(3)
         words = rest.split()
         first = words[:4]
-        if any(w.lower().endswith("ing") for w in first[1:]) and len(words) <= 16 and not re.search(
+        if len(words) > 1 and re.match(r"(?:noted|thought|decided|told|reminded|realised|realized)\b", words[1]):
+            return m.group(1) + "*, " + rest          # (her name and the tag: "*...*, Ripples noted, ...")
+        if words[0].endswith("ing") and len(words) <= 16:
+            return m.group(1) + "*, " + m.group(2).lower() + m.group(3)   # ("*...*, noting the slight limp")
+        if any(w.lower().rstrip(".!?,;").endswith("ing") for w in first[1:]) and len(words) <= 16 and not re.search(
                 r"\b(was|were|had|is|did|went|came|ran|felt|made|took)\b", " ".join(words[:5]), re.I):
             return m.group(1) + "*, " + m.group(2).lower() + m.group(3)
         return m.group(1) + ".* " + rest
@@ -6249,8 +6261,9 @@ class Narrator:
                          + ("; still on once she is up (she rises dragging it)" if e["stands"] else "; she strains at it")
                          + ". Show it in your own words.")
         for g in e.get("holding") or []:
-            lines.append(f"  - {poss(who)} own grip on {poss(g['on'])} {g['part']}"
-                         + (f" ({g['with']})" if g.get("with") else "") + " stays on too: she does not let go of it.")
+            lines.append(f"  - HER OWN GRIP STAYS ON: {poss(who)} on {poss(g['on'])} {str(g['part']).lower()}"
+                         + (f" ({g['with']})" if g.get("with") else "") + ", held through the get-up. Show it in your "
+                         "own words.")
         if e["stands"]:
             lines.append(f"  - This MUST be in the passage: its last paragraphs show {who} standing.")
         return lines
@@ -6877,7 +6890,8 @@ class Narrator:
             return "the ground"
         ps = str((getattr(self, "posture_start", None) or {}).get(who) or "").upper()
         down = ps.startswith(("ON THE GROUND", "OUT OF")) if ps else who in (getattr(self, "on_ground", None) or set())
-        return "the ground" if down else f"{poss(holder)} arm or shoulder"
+        # (one place, not "arm or shoulder": the model copied the choice into the story word for word)
+        return "the ground" if down else f"{poss(holder)} arm"
 
     def _posture_lines(self):
         """Who is up and who is down this beat, straight from the engine, as the first thing the narrator reads."""
@@ -12830,7 +12844,11 @@ class Narrator:
         # the model talking about its own writing ("It is now written." / "The paragraph above has a word count of
         # 60."), and the notes' labels copied in ("Inside it and past it: a high ringing..." / "Her thought: ...")
         text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))[^.!?…\n]{0,80}\b(?:word count|the paragraph above|the passage above|"
-                      r"this paragraph|as requested|as instructed)\b[^.!?…\n]{0,120}[.!?…]+[ \t]*", r"\1", text)
+                      r"this paragraph|as requested|as instructed|the next part|later parts?|this part of the beat)\b[^.!?…\n]{0,120}"
+                      r"[.!?…]+[ \t]*", r"\1", text)
+        # the part's own job said aloud ("But Ripples didn't see it. Not yet. That was for the next part."): the stub
+        # left in front of it goes too
+        text = re.sub(r"(?m)(^|(?<=[.!?…]\s))Not yet\.[ \t]*(?=\n|$)", r"\1", text)
         text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))(?:It|This) is (?:now )?(?:written|done|complete)\.[ \t]*", r"\1", text)
         text = re.sub(r"(?i)\binside it and past it[:,]\s*(\w)", lambda m: m.group(1).upper(), text)
         text = re.sub(r"\b(?:Her|His) thoughts?:\s*", "", text)
@@ -12848,6 +12866,16 @@ class Narrator:
                           if w != hitter]:
                 text = re.sub(r"\b" + re.escape(other) + r"(?= (?:could see|saw|took in|surveyed|admired) the (?:damage|"
                               r"harm|wreck\w*) (?:she|that she) had (?:inflicted|done|wrought|caused)\b)", hitter, text)
+        # a pin where there is none (no pins in a submission match; a grip on her knee is not a pin): "despite being
+        # pinned" / "keep her pinned" / "her body was pinned" say held instead. Ears pinned back stay as they are.
+        if not (getattr(self, "pinned_now", None) or ()) and not getattr(self, "_pin_holds", None):
+            held_ = "held" if getattr(self, "grips", None) else "down"
+            text = re.sub(r"\b(being|keep (?:her|him)|kept (?:her|him)|(?:body|she|he) (?:was|is)|was|is) pinned\b"
+                          r"(?! (?:back|flat|to (?:her|his|its) (?:skull|head)))", lambda m: m.group(1) + " " + held_, text)
+        # a minor hurt said with the notes' word ("The grip was a solid squeeze, but minor: the pressure was not
+        # crushing" / "hurt in a way that was still minor")
+        text = re.sub(r",? but minor:\s*", ", though ", text)
+        text = re.sub(r"(?i)\bin a way that was still minor\b", "only a little", text)
         # the same label with her name ("Ripples' thought: I need to end this."), as the card's MIND line gives it
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))[A-Z][\w-]*(?:'s|’s|'|’) (?:inner )?thoughts?:\s*", r"\1", text)
         text = re.sub(r"\b(Her|His) voice: (an?) ", r"She gave \2 ", text)
@@ -12879,6 +12907,20 @@ class Narrator:
                       r"(?:not very|super|super-|barely) effective(?: on| against| for) (?:her|it)\b", "", text)
         text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))[^.!?…\n]{0,60}\b(?:not very|super) effective\b[^.!?…\n]{0,60}[.!?…]+[ \t]*",
                       r"\1", text)
+        # a body part with the game's capitals copied from the notes ("her grip on Nerine's Throat"): lower case after
+        # a possessive, an article or "her"
+        names_ = sorted({p_ for parts_ in (getattr(self, "damage_by", None) or {}).values() for p_ in parts_
+                         if " " in p_ or len(p_) > 3}, key=len, reverse=True)
+        if names_:
+            rx_ = re.compile(r"((?:'s|’s|s'|s’|\bher|\bhis|\bits|\bthe|\ba) )(" + "|".join(
+                re.escape(n_.title()) for n_ in names_) + r")\b")
+            text = rx_.sub(lambda m: m.group(1) + m.group(2).lower(), text)
+        # a type named as a kind of fighter ("doing little more than that to a water type"): her body, not the label
+        text = re.sub(r"(?i)\b(?:to|on|against|for) an? (?:water|ice|fire|grass|electric|dark|normal|fighting|steel|"
+                      r"psychic|ground|rock|flying|dragon|fairy|ghost|poison|bug)[- ]type(?: like (?:her|him))?\b",
+                      "to her", text)
+        text = re.sub(r"(?i)\b(?:a|the) (?:water|ice|fire|grass|electric|dark|steel|ground|rock|dragon)[- ]type(?:'s)?\b",
+                      lambda m: "a body like hers" if not m.group(0).lower().endswith("'s") else "her", text)
         # a sound in brackets that the list above doesn't know ("a quick chirrup of surprise (Prrt)"): set as a sound
         not_sound = {w.lower() for w in (getattr(self, "strengths", None) or {})} | {"yes", "no", "and", "the", "she", "her"}
 
@@ -14362,6 +14404,12 @@ class Narrator:
         out = (out or "").strip()
         if not out or abs(len(out.split()) - len(text.split())) > 0.15 * len(text.split()):
             return text          # it dropped or added something: keep what we had
+        # thoughts stay in her own present tense ("*I need to end this.*" came back "I needed to end this"): every
+        # span in italics is put back as it was, when the editor kept the same number of them
+        was, now = re.findall(r"\*[^*\n]+\*", text), re.findall(r"\*[^*\n]+\*", out)
+        if was and len(was) == len(now):
+            it = iter(was)
+            out = re.sub(r"\*[^*\n]+\*", lambda m: next(it), out)
         out = out if len(self._present_sents(out, prior)) < len(before) else text
         return self._past_words(out, self._present_sents(out, prior))
 
@@ -14460,6 +14508,8 @@ class Narrator:
                 # the tap (or the pass-out) is the last thing that happens: the end of the last part
                 last_ = max(k for k, w in enumerate(written) if w)
                 written[last_] = (written[last_].rstrip() + "\n\n" + text.strip()).strip()
+            elif "hits landing" in issue and self._before_fall(written, at, text):
+                written = self._before_fall(written, at, text)     # (a blow comes before the fall it caused)
             elif re.search(r"get(?:s|ting)? up|getting to her feet|rise|rising|on her feet|stand", issue, re.I):
                 written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()     # (the get-up itself: last)
             else:
@@ -14474,6 +14524,26 @@ class Narrator:
     ESCAPE_TOLD = re.compile(r"\b(?:the pin (?:was|is) (?:over|broken)|the pin broke|threw (?:her|him) off|"
                              r"(?:broke|breaks|tore|wrenched|twisted) (?:free|loose|out)|rolled clear|wriggled free|"
                              r"slid(?:e|ing)? out from under|bucked (?:her|him) off|shoved (?:her|him) off)\b", re.I)
+
+    def _before_fall(self, written, at, text):
+        """A left-out hit put in front of the first paragraph (from part `at` on) where someone hit this beat goes
+        down: Nerine's foot was struck after she had already crumpled at the foot of the pine. The new list, or None
+        when nobody falls in those parts."""
+        down = {a.get("defender") for a in (getattr(self, "_acts_now", None) or []) if isinstance(a, dict)
+                and a.get("environment")} | set(getattr(self, "_landed", None) or ()) | {
+            w for w, _how in (getattr(self, "_must_down", None) or [])}
+        down = {w for w in down if w}
+        if not down:
+            return None
+        written = list(written)
+        for k in range(at, len(written)):
+            paras = (written[k] or "").split("\n\n")
+            for j, para in enumerate(paras):
+                if any(w in para for w in down) and (FALL.search(para) or SLID_DOWN.search(para)):
+                    paras.insert(j, text.strip())
+                    written[k] = "\n\n".join(paras).strip()
+                    return written
+        return None
 
     def _put_in_order(self, written, at, text):
         """A passage for something the drafts left out, put where it belongs: in front of the first paragraph (from
