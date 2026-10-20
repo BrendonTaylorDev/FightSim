@@ -654,6 +654,45 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 238
+
+Submission matches that need more than one tap-out, and fixes from a build-237 Ripples vs Nerine fight.
+
+- **Several tap-outs** (`finish.submission.taps`, off until you turn it on):
+  - `taps.needed` sets how many tap-outs end the match. With 3, the third tap wins. A tap before that makes the
+    holder let go, and the fight goes on. Her limit and her refusals start again for the next hold.
+  - `taps.different_parts` is the share of those taps (a percentage) that must come from a body part no earlier tap
+    used. It is rounded up to a number of parts. With 3 taps: up to 33 means any parts, 34–66 means at least two
+    different parts, and 67–100 means all three different.
+  - A tap counts for the worst-hurt gripped part. Once no repeats are left, a grip on a used-up part can't make her
+    tap at all.
+  - `taps.pass_out_counts`: a pass-out in a choke counts as one of the taps (on by default).
+  - The screen says "tap 1 of 3" and which parts can't count again. The story is told the match is not over.
+- **Steering onto a part that still counts** (`taps.steer`). Each fighter has a target part: the worst-hurt part
+  that still counts, a limb first. It sticks from beat to beat so the damage builds there, and is picked again after
+  each tap.
+  - The director is told the tally, the used-up parts, and to soften the target with blows and then hold it.
+  - A blow aimed at a used-up part always moves onto the target. Any other blow moves there `steer.strikes` of the
+    time (0.6).
+  - A grip on a used-up part moves onto the target. Any other grip moves there `steer.holds` of the time (0.9).
+  - The submission openings offered favour holds that grip the target.
+- **Cuts the program makes by itself** (`narration.cuts`, each switchable):
+  - **First beat:** a past that can't be there is cut ("still sore from the earlier blows", "from her last dive").
+  - **Repeated aches:** only two sentences a beat may just say how one hurt part feels (`cuts.ache_repeat`). In the
+    last log the right-thigh ache was told four times.
+  - **Copied labels:** "Nerine's plain blow hit" becomes "Nerine's blow hit".
+  - **Hand-over lines:** "Nerine's reaction would follow." is cut.
+  - **Run-on thoughts:** "That leg needs to go Her mind…" gets its full stop.
+- **Other fixes:**
+  - "Ripple's body" becomes "Ripples' body" (a name ending in s, given the wrong possessive).
+  - A grip the director filed under an attack move (a hold called "Aqua Jet") is a plain grip. Before, the story
+    told a charge and a grip at once.
+  - The only blow on a part, told without its name ("her right thigh took the brunt of it"), counts as told. The
+    Knee Stomp is no longer written a second time.
+  - A failed get-up says her paws skid out from under her, not "what she pushes off with skids".
+  - An empty "Breather:" line now says who catches her breath.
+  - A mistyped `/set` path gets a guess: `finish_submission.enabled` → "Did you mean finish.submission.enabled?"
+
 ## Build 237
 
 A more readable story pane in the window (`python window.py`), with pointers to where the numbers come from. All of

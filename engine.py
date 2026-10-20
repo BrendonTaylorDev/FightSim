@@ -4821,13 +4821,25 @@ class Engine:
         """A submission shape whose main grip is on the neck or throat: a choke (a sleeper, a triangle, head scissors)."""
         return any(role == "main" and body_region(part) == "neck" for part, role, _ in shape.get("contacts") or ())
 
-    def pick_submission(self, shapes, rng=None):
+    def pick_submission(self, shapes, rng=None, defender=None):
         """One submission to offer from `shapes`: a choke only choke_share of the time when there is anything else to
         offer (finish.submission.choke_share), so a submission match ends in a lock on a limb or the body far more
         often than in a choke. Returns its name, or None when there are no shapes."""
         if not shapes:
             return None
         rng = rng or self.rng
+        if self._taps_rule():
+            # finish.submission.taps: a hold whose every grip is on a part her taps have used up can't end anything:
+            # keep to holds that still count, and (taps.steer.holds of the time) one on the part being worked
+            defender = self.get(defender) if isinstance(defender, str) else defender
+            if defender is not None:
+                spent = set(self.spent_tap_parts(defender))
+                live = {n: v for n, v in shapes.items() if any(c[0] not in spent for c in v["contacts"])}
+                shapes = live or shapes
+                aim = self.tap_target(defender)
+                on_aim = {n: v for n, v in shapes.items() if any(c[0] == aim for c in v["contacts"])}
+                if on_aim and rng.random() < self.tap_steer("holds"):
+                    shapes = on_aim
         chokes = sorted(n for n, v in shapes.items() if self.sub_is_choke(v))
         others = sorted(n for n in shapes if n not in chokes)
         share = float(((self.rules.get("finish") or {}).get("submission") or {}).get("choke_share", 0.1))
@@ -8571,6 +8583,13 @@ class Engine:
                 po = min(float(ccfg.get("max", 0.85)), max(0.0, (air - endure) / float(ccfg.get("span", 70))))
             # she holds on the first beat it goes past her limit, whatever it costs her: only after that can she
             # give in (d.learned keeps which grip she has already fought through once)
+            # finish.submission.taps: a body part her taps have already used may no longer count toward the tally;
+            # a grip on such a part (and nothing new besides) can't make her give in, so it doesn't roll
+            tap_part = self._tap_part(d, sorted(hs, key=lambda h: -(d.parts[h.part].damage if h.part in d.parts
+                                                                   else 0.0)))
+            spent = tap_part is None
+            if spent:
+                tap = po = 0.0
             key_ = f"{a}|{name}|{min(h.id for h in hs)}"
             first_over = tap > 0 and d.learned.get("tap_limit") != key_
             if first_over:
@@ -8593,17 +8612,43 @@ class Engine:
                     ev_ = {"type": "tap_resist", "attacker": a, "defender": dn, "submission": name,
                            "parts": [h.part for h in hs], "choke": choke and air >= near * endure,
                            "over": over >= 0, "pain": round(pain), "resist": round(resist),
-                           "beats_held": beats, "refusals": refusals}
+                           "beats_held": beats, "refusals": refusals, "spent": spent}
                     ev_.update(self._tap_tells(d, refusals, over, resist, ev_["choke"]))
                     events.append(ev_)
             if not how:
                 continue
             parts = [h.part for h in hs]
             with_ = list(dict.fromkeys(h.with_part for h in hs if h.with_part))
+            taps_ = self._taps_rule()
+            if taps_ and (how == "tap" or taps_.get("pass_out_counts", True)):
+                given = list(d.learned.get("taps_given") or []) + [tap_part]
+                d.learned["taps_given"] = given
+                need = self.taps_needed()
+                if len(given) < need:
+                    # NOT YET THE END: she tapped (or blacked out), so the grip comes off and the match goes on;
+                    # her limit and her refusals start again for the next hold
+                    d.learned.pop("tap_limit", None)
+                    d.learned.pop("tap_refused", None)
+                    d.learned.pop("tap_ways", None)
+                    d.learned.pop("tap_target", None)
+                    ev = {"type": "tap_count", "how": how, "attacker": a, "defender": dn, "submission": name,
+                          "parts": parts, "with": with_, "part": tap_part, "tap_no": len(given), "needed": need,
+                          "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
+                          "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure),
+                          "spent_parts": self.spent_tap_parts(d)}
+                    if how == "tap" and self._tap_vary_on():
+                        ev["way"] = self.vary("tap_way")
+                    events.append(ev)
+                    try:
+                        events.append(self.release_between(a, dn, "let go after she tapped"))
+                    except ValueError as exc:
+                        self.note_failure("tap_count release", exc)
+                    continue
             reason = (f"taps out to {poss_word(a)} {name}" if how == "tap" else
                       f"passes out in {poss_word(a)} {name}")
             ev = {"type": "tap_out", "how": how, "attacker": a, "defender": dn, "submission": name, "parts": parts,
                   "with": with_, "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
+                  "tap_no": len(d.learned.get("taps_given") or []) or 1,
                   "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure)}
             if how == "tap" and self._tap_vary_on():
                 ev["way"] = self.vary("tap_way")
@@ -8614,6 +8659,79 @@ class Engine:
                 d.recovery = max(0, len(stages) - 2)
             events.append(ev)
         return events
+
+    def _taps_rule(self):
+        """finish.submission.taps (when on): how many tap-outs end the match, and how many of them must come from a
+        body part no earlier tap used. None when off (the first tap-out ends it)."""
+        t = (((self.rules.get("finish") or {}).get("submission") or {}).get("taps") or {})
+        return t if t.get("enabled", False) else None
+
+    def taps_needed(self):
+        t = self._taps_rule()
+        return max(1, int(t.get("needed", 1))) if t else 1
+
+    def taps_distinct_needed(self):
+        """How many different body parts her taps must come from: different_parts (a percentage) of the taps
+        needed, rounded up, and never fewer than one. With 3 taps: up to 33% = any parts, 34-66% = at least two
+        different parts, 67-100% = all three different."""
+        t = self._taps_rule()
+        if not t:
+            return 1
+        pct = max(0.0, min(100.0, float(t.get("different_parts", 0))))
+        return max(1, min(self.taps_needed(), math.ceil(pct / 100.0 * self.taps_needed() - 1e-9)))
+
+    def taps_given(self, who):
+        f = self.get(who) if isinstance(who, str) else who
+        return list(f.learned.get("taps_given") or []) if f else []
+
+    def spent_tap_parts(self, who):
+        """The body parts a tap on would no longer count for her: the parts her earlier taps used, once only as
+        many repeats are left as the different-parts rule allows."""
+        given = self.taps_given(who)
+        if not self._taps_rule() or not given:
+            return []
+        repeats_left = (self.taps_needed() - self.taps_distinct_needed()) - (len(given) - len(set(given)))
+        return [] if repeats_left > 0 else list(dict.fromkeys(given))
+
+    def tap_steer(self, kind):
+        """finish.submission.taps.steer: how hard the fight is pushed toward a body part that still counts for a
+        tap (kind "strikes" or "holds": the chance a blow or a hold is moved onto it). 0 when off."""
+        t = self._taps_rule()
+        st = (t or {}).get("steer") or {}
+        if not t or not st.get("enabled", True):
+            return 0.0
+        return max(0.0, min(1.0, float(st.get(kind, {"strikes": 0.6, "holds": 0.9}.get(kind, 0.0)))))
+
+    # where a hold can make her tap: a limb, the shoulders, the back, the body, the tail (not her head; her neck
+    # only as a choke, and chokes are the rare finish)
+    TAP_TARGET_REGIONS = ("fore_up", "fore_low", "hind_up", "hind_low", "shoulder", "back_up", "back_low", "belly",
+                          "chest", "tail")
+
+    def tap_target(self, who):
+        """finish.submission.taps.steer: the body part of hers the fight is working toward the next tap on. It
+        sticks from beat to beat (so the damage builds on one part), and is chosen again when it stops counting:
+        the worst-hurt part that still counts, a limb before the body. None when the steer is off."""
+        d = self.get(who) if isinstance(who, str) else who
+        if not d or not (self.tap_steer("strikes") or self.tap_steer("holds")):
+            return None
+        spent = set(self.spent_tap_parts(d))
+        cur = d.learned.get("tap_target")
+        if cur in d.parts and cur not in spent:
+            return cur
+        cands = [p for p in d.parts.values() if p.name not in spent and "base" not in p.name.lower()
+                 and body_region(p.name) in self.TAP_TARGET_REGIONS]
+        if not cands:
+            return None
+        limb = ("fore_up", "fore_low", "hind_up", "hind_low", "tail")
+        pick = max(cands, key=lambda p: (p.damage + (25 if body_region(p.name) in limb else 0), self.rng.random()))
+        d.learned["tap_target"] = pick.name
+        return pick.name
+
+    def _tap_part(self, d, hs):
+        """The body part a tap in these holds (worst-hurt first) would count for: the first one that still counts,
+        or None when every gripped part is spent. With the taps rule off, simply the worst-hurt part."""
+        spent = set(self.spent_tap_parts(d))
+        return next((h.part for h in hs if h.part not in spent), None)
 
     def _tap_vary_on(self):
         return bool(((self.rules.get("narration") or {}).get("tap_build") or {}).get("vary", True))

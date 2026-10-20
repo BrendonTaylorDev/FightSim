@@ -5,7 +5,7 @@ The director can SEE the numbers but never calculates anything.
 """
 import json
 import re
-from engine import note_failure, short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR, match_part, \
+from engine import note_failure, ordinal, short_phrase, poss_word, body_region, _BODY_REGION_NEAR as _BODY_NEAR, match_part, \
     _REGIONS as ENGINE_REGIONS
 from blocks import kind_of
 
@@ -558,11 +558,83 @@ def _apply_variety(engine, att, dfn, b):
     return b
 
 
+def _apply_tap_steer(engine, att, dfn, b, kind):
+    """finish.submission.taps.steer: with taps that must come from different body parts, the fight is pushed onto
+    the part of hers that still counts (engine.tap_target). A blow aimed at a part her taps have used up always
+    moves onto it, and any other blow moves there taps.steer.strikes of the time; a grip on a used-up part moves
+    onto it, and any other grip taps.steer.holds of the time (kind "strikes" or "holds")."""
+    try:
+        aim = engine.tap_target(dfn)
+    except (ValueError, KeyError):
+        return b
+    if not aim:
+        return b
+    spent = set(engine.spent_tap_parts(dfn))
+    chance = engine.tap_steer(kind)
+
+    def fit(p):
+        try:
+            return _fit_part(engine, dfn, p)
+        except ValueError:
+            return None
+    if dfn in engine.downed:
+        fitted, _ = engine.fit_to_facing(dfn, [aim])
+        if fitted and fitted[0] != aim:
+            return b      # (she is lying on it: not where a blow or a grip can get at it this beat)
+    if kind == "strikes":
+        name = fit(b.get("part")) if b.get("part") else None
+        if name == aim or (name not in spent and engine.rng.random() >= chance):
+            return b
+        b = dict(b, part=aim, _aimed=True)
+        if b.get("hits"):
+            hs = [dict(h) for h in b["hits"]]
+            if hs:
+                hs[0]["part"] = aim
+            b["hits"] = hs
+        return b
+    hs = [dict(h) for h in (b.get("hits") or []) if isinstance(h, dict) and h.get("part")]
+    if not hs and b.get("part"):
+        hs = [{"part": b["part"], "severity": b.get("severity")}]
+    if not hs or any(fit(h["part"]) == aim for h in hs):
+        return b
+    i = next((k for k, h in enumerate(hs) if fit(h["part"]) in spent), None)
+    if i is None and engine.rng.random() < chance:
+        i = 0
+    if i is None:
+        return b
+    hs[i]["part"] = aim
+    return dict(b, hits=hs, part=hs[0]["part"])
+
+
 def _same_part(engine, who, asked, name):
     try:
         return _fit_part(engine, who, asked) == name
     except ValueError:
         return False
+
+
+def taps_hint(engine):
+    """finish.submission.taps: the tap tally for the director (how many each fighter has given, how many end it),
+    which parts no longer count, and the part to work toward the next one: soften it with blows, then hold it."""
+    if not engine._taps_rule():
+        return ""
+    need, distinct = engine.taps_needed(), engine.taps_distinct_needed()
+    out = [f"TAP COUNT: this match is won by the {ordinal(need)} tap-out" + ("" if need == 1 else ", not the first") + (f", and her taps must come from {distinct} different body parts" if distinct > 1
+                                         else "") + ". A tap before that ends the hold, not the match."]
+    for f in engine.active():
+        foe = next((x for x in engine.active() if x.team != f.team), None)
+        given, spent, aim = engine.taps_given(f), engine.spent_tap_parts(f), engine.tap_target(f)
+        line = f"{f.name} has tapped {len(given)} of {need}" + (f" ({', '.join(p.lower() for p in given)})"
+                                                                  if given else "")
+        if spent:
+            line += (f"; a hold on her {', '.join(p.lower() for p in spent)} can NO LONGER make her tap (those "
+                     f"parts are used up)")
+        if aim and foe:
+            line += (f". {foe.name} WORKS HER {aim.upper()} next: strikes aimed at it to wear it down, then a hold "
+                     f"on it (a lock, a submission, an improvised grip with that part first in \"hits\"), kept on and "
+                     f"tightened until she taps")
+        out.append(line + ".")
+    return "\n".join(out)
 
 
 def variety_hint(engine):
@@ -902,6 +974,9 @@ def resolve(engine, b):
         b = _apply_focus(engine, att, dfn, b)
         if not b.get("_aimed"):
             b = _apply_variety(engine, att, dfn, b)
+    if (not manual and dfn and engine._taps_rule() and act in ("strike", "combo", "hold_start", "submission")
+            and engine.get(att).name not in (getattr(engine, "ordered", None) or ())):
+        b = _apply_tap_steer(engine, att, dfn, b, "strikes" if act in ("strike", "combo") else "holds")
     started = ()
     if not manual and act in ("grapple", "hold_start", "pin", "submission", "throw", "slam", "drag"):
         # confusion spoils a grab, a pin or a throw as surely as a blow: she may hurt herself instead
@@ -927,6 +1002,17 @@ def resolve(engine, b):
             fits = list(engine.submission_shapes(att, dfn))
             name = next((n for n in engine.SUBMISSIONS if n in f"{name} {b.get('flavor', '')}".lower()),
                         fits[0] if fits else name)
+        if not manual and engine._taps_rule() and engine.get(att).name not in (getattr(engine, "ordered", None) or ()):
+            # finish.submission.taps.steer: a named hold that grips only used-up parts (or misses the part being
+            # worked, taps.steer.holds of the time) gives way to one that grips the part being worked
+            shapes = engine.submission_shapes(att, dfn)
+            aim, spent = engine.tap_target(dfn), set(engine.spent_tap_parts(dfn))
+            cts = [c[0] for c in (shapes.get(name) or {}).get("contacts") or ()]
+            if shapes and cts and (all(c in spent for c in cts) or (aim and aim not in cts)):
+                alt = engine.pick_submission(shapes, defender=dfn)
+                alt_cts = [c[0] for c in shapes[alt]["contacts"]]
+                if all(c in spent for c in cts) or (aim in alt_cts and engine.rng.random() < engine.tap_steer("holds")):
+                    name = alt
         res = engine.start_submission(att, dfn, name, flavor, enforce=not manual)
         res["intent"] = intent
         return res, tuple(res.get("hold_ids") or ())
@@ -1046,6 +1132,13 @@ def resolve(engine, b):
         # "Forepaw slam to the head" filed as a hold: it lands as the blow it is (damage now, nothing left gripping)
         was_hold, act = act, "combo"
         b = dict(b, action="combo")
+    if act == "hold_start" and not manual and move is not None and move.get("target") != "hold":
+        # a grip filed under an attack move ("hold_start" with Aqua Jet): the grip is her paws or tails on her, not
+        # the move, so it doesn't carry the move's name (the story then told a charge and a grip at once)
+        if re.fullmatch(r"(?i)\s*(?:an? |her )?%s\s*[.!]?\s*" % re.escape(move["name"]), str(flavor or "")):
+            flavor = "grabs hold"
+        move = None
+        b = dict(b, move="none")
     if (move is not None and act == "strike" and b.get("carry") is True and not engine.is_ranged(move)
             and not move.get("charge") and not move.get("carry") and move.get("target", "targeted") == "targeted"
             and engine.can_carry(att, dfn)[0]):
@@ -2093,14 +2186,17 @@ class Director:
             if choked:
                 rng_hint += ("\nA CHOKE HAS ALREADY BEEN TRIED in this match: the holds from here on go on a limb, the "
                              "back or the body, not the neck.")
+            tally = taps_hint(engine)
+            if tally:
+                rng_hint += "\n" + tally
             done_ = sorted(engine.subs_used().items(), key=lambda x: -x[1])
             if done_:
                 rng_hint += ("\nHOLDS USED SO FAR (a nudge, not a rule: something new reads better than a repeat): "
                              + ", ".join(f"{n} ({k}x)" for n, k in done_) + ".")
             for f in engine.active():
                 foe = next((x for x in engine.active() if x.name != f.name), None)
-                if not foe:
-                    continue
+                if not foe or tally:
+                    continue      # (with a tap count, the TAP COUNT lines name the part to work)
                 limbs = [p for p in foe.parts.values() if body_region(p.name) in ("hind_up", "hind_low", "fore_up",
                                                                                  "fore_low", "neck")]
                 worst = max(limbs, key=lambda p: p.damage, default=None)
@@ -3529,7 +3625,7 @@ def submission_urge(engine):
             continue
         h = max(holders, key=engine.strength)
         shapes = engine.submission_shapes(h.name, target.name)
-        name = engine.pick_submission(shapes)
+        name = engine.pick_submission(shapes, defender=target.name)
         s = shapes[name]
         choke_ = engine.sub_is_choke(s)
         return (f"SUBMISSION OPENING (very rare): {target.name} is down and {h.name} can lock her in a {name.upper()} "

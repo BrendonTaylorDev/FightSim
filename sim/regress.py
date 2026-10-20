@@ -403,6 +403,64 @@ def tap_last_check():
     return problems
 
 
+def taps_check():
+    """finish.submission.taps: the tally, the used-up parts, the target the fight is pushed onto, and the cuts the
+    program makes by itself (narration.cuts), and the /set guess for a mistyped path."""
+    import director, play as P
+    path = os.path.join(H.ROOT, "rules.json")
+    with open(path, encoding="utf-8") as fh:
+        before = fh.read()
+    try:
+        return _taps_check(director, P)
+    finally:
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(before)      # (its /set lines save to rules.json: the fights after it must not be submission matches)
+
+
+def _taps_check(director, P):
+    s = H.session(3, fighters="Nerine,Ripples", settings=["/set finish.submission.enabled true",
+                                                           "/set finish.submission.taps.enabled true",
+                                                           "/set finish.submission.taps.needed 3",
+                                                           "/set finish.submission.taps.different_parts 50"])
+    e, problems = s.eng, []
+    if (e.taps_needed(), e.taps_distinct_needed()) != (3, 2):
+        problems.append(f"3 taps at 50% should need 2 different parts, got {e.taps_distinct_needed()}")
+    d = e.get("Ripples")
+    d.learned["taps_given"] = ["Right Thigh"]
+    if e.spent_tap_parts(d):
+        problems.append("one repeat is allowed at 50%, but the first tap's part is already used up")
+    d.learned["taps_given"] = ["Right Thigh", "Right Thigh"]
+    if e.spent_tap_parts(d) != ["Right Thigh"]:
+        problems.append(f"after the one repeat, the right thigh should be used up: {e.spent_tap_parts(d)}")
+    aim = e.tap_target(d)
+    if not aim or aim == "Right Thigh":
+        problems.append(f"the target should be a part that still counts, not {aim}")
+    b = director._apply_tap_steer(e, "Nerine", "Ripples", {"part": "Right Thigh"}, "strikes")
+    if b.get("part") != aim:
+        problems.append(f"a blow on a used-up part should move onto the target {aim}: {b.get('part')}")
+    b = director._apply_tap_steer(e, "Nerine", "Ripples", {"hits": [{"part": "Right Thigh"}]}, "holds")
+    if b["hits"][0]["part"] != aim:
+        problems.append(f"a grip on a used-up part should move onto the target {aim}: {b['hits']}")
+    if "TAP COUNT" not in director.taps_hint(e) or "NO LONGER" not in director.taps_hint(e):
+        problems.append("the director is not told the tally and the used-up parts")
+    n = s.narrator
+    n.strengths, n.beat_now, n.damage_by = {"Ripples": 90, "Nerine": 100}, 1, {"Ripples": {"Right Thigh": 60}}
+    out = n._program_cuts(["Her right thigh ached. Her right thigh throbbed. Her right thigh burned. Her legs were "
+                           "still sore from the earlier blows. Nerine's plain blow hit her. Nerine's reaction would "
+                           "follow."])[0]
+    for bad in ("burned", "earlier blows", "plain blow", "would follow"):
+        if bad in out:
+            problems.append(f"'{bad}' was not cut: {out!r}")
+    if n._name_possessives("Ripple's body") != "Ripples' body":
+        problems.append("Ripple's was not mended to Ripples'")
+    try:
+        P._rule_path(e.rules, "finish_submission.enabled")
+    except ValueError as x:
+        if "finish.submission.enabled" not in str(x):
+            problems.append(f"no guess for the mistyped path: {x}")
+    return problems
+
+
 def textpane_check():
     """The window's story pane (textpane.py): story and numbers told apart, the rows' changes and the rolls'
     outcomes coloured, the pointers' numbers taken from the lines they explain, and shown only now and then."""
@@ -483,6 +541,13 @@ def main(argv):
         probs = textpane_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  the window's story pane sorts and explains the numbers  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "tap count" for w in want):
+        t = time.time()
+        probs = taps_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  several taps from different parts, and the program's own cuts  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "whole fights" for w in want):

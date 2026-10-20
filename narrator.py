@@ -40,7 +40,7 @@ def _chat(*args, **kw):
         CALL_LOG.append((who, _time.time() - t, size))
 
 import userprompt
-from engine import tier_for, pain_tiers, Engine, body_region, in_covering, poss_word, note_failure
+from engine import tier_for, pain_tiers, Engine, body_region, in_covering, poss_word, note_failure, ordinal
 
 CRAFT_RULES = """You are the narrator of a fight story. A rules engine has ALREADY decided what happens.
 You turn WHAT HAPPENS IN THIS BEAT into prose.
@@ -4521,7 +4521,10 @@ class Narrator:
                                      f"is out of reach)") + ", or a cry that says it plainly")
                                  + f", and "
                                  f"{e['attacker']} feels it and lets go. She is AWAKE, beaten and hurting, not out "
-                                 f"cold. Give the moment its weight: how long she held on, what finally made her give "
+                                 f"cold. "
+                                 + (f"It is her {ordinal(e['tap_no'])} tap of the match, the one that ends it. "
+                                    if e.get("tap_no", 1) > 1 else "")
+                                 + f"Give the moment its weight: how long she held on, what finally made her give "
                                  f"in, what it costs her to do it, and the release flooding through her. It is the "
                                  f"last thing that happens, and it ends the match."
                                  + (f" After it: she lies where she dropped, curled round the {parts.split(' and ')[-1]} "
@@ -4540,6 +4543,25 @@ class Narrator:
                 win_ = (e.get("elimination") or {}).get("winner")
                 if win_:
                     lines.append(f"  - {win_} has won, by {'submission' if e['how'] == 'tap' else 'pass-out'}.")
+            elif e["type"] == "tap_count":
+                # finish.submission.taps: a tap that counts but doesn't end the match (one of several needed)
+                parts = " and ".join(p.lower() for p in e.get("parts") or [])
+                left = e["needed"] - e["tap_no"]
+                lines.append(
+                    f"{e['defender']} " + ("TAPS OUT" if e["how"] == "tap" else "BLACKS OUT for a moment")
+                    + f" at the END of this beat: the {e['submission']} on her {parts} is more than she can take"
+                    + (", and she gives up: " + (self.TAP_WAYS[e["way"]].format(
+                        spot=self._tap_spot(e["defender"], e["attacker"])) if e.get("way") in self.TAP_WAYS else
+                        "a paw slapping the ground, or a cry that says it plainly")
+                       if e["how"] == "tap" else ": her sight greys out and she goes slack, and comes round gasping "
+                                                 "as the grip comes off")
+                    + f". {e['attacker']} feels it and LETS GO. THE MATCH IS NOT OVER: that is her "
+                    f"{ordinal(e['tap_no'])} tap of the {e['needed']} that end it ({left} more to go). Show the "
+                    f"tap, the grip coming off, and the two of them parting, hurting and breathing hard; she is "
+                    f"still in it, and both of them know what it cost her."
+                    + (f" (A hold on her {', '.join(p.lower() for p in e['spent_parts'])} can't count again: her "
+                       f"next tap has to come from somewhere else, and {e['attacker']} knows it.)"
+                       if e.get("spent_parts") else ""))
             elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
                 lines.append(f"THE {e['submission'].upper()} ENDS at the END of this beat: {e['attacker']} lets it go, "
                              f"spent; she can't keep it on any longer. {e['defender']} is left on the ground where she "
@@ -6353,7 +6375,7 @@ class Narrator:
         fails = list(e.get("fails") or [])
         fail_way = lambda k, i: {
             "gives_out": f"partway up, her {hurt} {verb} out and she drops back down hard",
-            "slips": f"what she pushes off with skids under her and she goes down again",
+            "slips": f"her paws skid out from under her as she pushes up, and she goes down again",
             "dizzy": "she gets partway up, everything tilts around her, and she sinks back down",
             "breath": "she gets partway up, has no air for it, and folds back down, gasping",
         }.get(fails[i] if i < len(fails) else None, f"partway up, her {hurt} {verb} out and she drops back down hard")
@@ -12880,8 +12902,17 @@ class Narrator:
                        num_predict=int(words * 1.8) + 80,
                        extra_options={k: n.get(k) for k in ("repeat_penalty", "repeat_last_n", "top_p", "min_p")})
         self._learn_ratio(len(system) + len(user_msg), int(n.get("context_window", 8192)), int(words * 1.8) + 80)
-        return _clean(out, cut_off={"length": True, "stop": False}.get(getattr(llm, "last_done_reason", None)),
-                      open_end=bool(getattr(self, "_open_end", False)))
+        out = _clean(out, cut_off={"length": True, "stop": False}.get(getattr(llm, "last_done_reason", None)),
+                     open_end=bool(getattr(self, "_open_end", False)))
+        return self._name_possessives(out)
+
+    def _name_possessives(self, text):
+        """"Ripple's body": a fighter whose name ends in s, given the possessive of the name without it. It is her
+        name with a bare apostrophe (Ripples'), as everywhere else in the story."""
+        for name in (self.strengths or {}):
+            if len(name) > 3 and name.endswith("s"):
+                text = re.sub(r"\b%s(['’])s\b" % re.escape(name[:-1]), lambda m: name + m.group(1), text)
+        return text
 
     def intro(self, scene, fighter_notes):
         """The arena and the fighters arriving, before anyone attacks."""
@@ -14761,6 +14792,7 @@ class Narrator:
                         self._part_leads[sents[0]] = part_leads[k]
                     if sents:
                         self._pov_marks.append((sents[:3], part_leads[k] or "Both"))
+        written = self._program_cuts(written)
         written = self._trim_past_contact(written, [k for k, _, _ in plan])
         written = self._tell_missing_attacks(written, [k for k, _, _ in plan])
         written = self._tell_missing_events(written, [k for k, _, _ in plan])
@@ -14887,6 +14919,15 @@ class Narrator:
                 for w in re.findall(r"[A-Za-z]+", mv) if len(w) >= 4 and w.lower() not in ("attack", "strike", "blow")]
         rx = "|".join(([trx] if trx else []) + wrx)
         found = _mentions_sided if sided else _mentions
+        others = [x for x in (getattr(self, "_acts_now", None) or []) if x is not a and x.get("hits")
+                  and x.get("defender") == a["defender"] and main in {h["part"].lower() for h in x["hits"]}]
+        if not others and any(re.search(r"\b(?:hard hit|the blow|the hit|the impact|took the brunt|(?:was|were) "
+                                         r"(?:hit|struck)|caught (?:her|it)|slammed (?:in)?to|crashed (?:in)?to|"
+                                         r"drove (?:down )?in(?:to)?|landed)\b", s_, re.I)
+                              and (a["attacker"] in s_ or a["defender"] in s_) and found(s_.lower(), main)
+                              for s_ in sents_all):
+            return True     # (the only blow on that part this beat, told without its name: "her right thigh took
+            #                  the brunt of it" is the Knee Stomp)
         return bool(rx) and any(re.search(r"\b(?:" + rx + r")\b", s_, re.I) and (a["attacker"] in s_ or a["defender"] in s_)
                                 and any(found(s_.lower(), p) for p in parts) for s_ in sents_all)
         # (a part by its key word: "the blast hit Nocturne across her chest" tells a blow on her Chest Ruff)
@@ -15265,6 +15306,73 @@ class Narrator:
     TAKE_FEEL = re.compile(r"\b(?:pain|agony|yelp\w*|cr(?:y|ied)|squeal\w*|gasp\w*|flinch\w*|winc\w*|stagger\w*|"
                            r"buckl\w*|reel\w*|throb\w*|ache\w*|ached|burn\w*|sting\w*|jolt\w*|shudder\w*|whimper\w*|"
                            r"shriek\w*|scream\w*|grunt\w*|howl\w*|groan\w*|hiss\w*)\b", re.I)
+
+    # on the first beat nobody has been hit before: "still sore from the earlier blows", "from her last dive"
+    FIRST_BEAT_PAST = re.compile(r"(?i)\b(?:earlier|previous|last|other|old|past) (?:blows?|hits?|strikes?|exchanges?|"
+                                 r"rounds?|bouts?|fights?|wounds?|injur(?:y|ies)|bruises?)\b|\bstill (?:sore|aching|"
+                                 r"hurting|stiff|tender|smarting) from\b|\bthe (?:old|earlier) (?:pain|hurt|ache)\b")
+    FIRST_BEAT_CLAUSE = re.compile(r"(?i),? (?:still )?(?:left )?from (?:her|the) (?:last|earlier|previous) "
+                                   r"(?:dive|swim|fight|bout|match|run|round)\b")
+    # the hand-over between parts said out loud: "Nerine's reaction would follow."
+    META_HANDOFF = re.compile(r"^(?:[A-Z][a-z]+(?:'s|’s|'|’)|Her|The other's) (?:reaction|response|answer|turn|"
+                              r"reply) (?:would|will) (?:follow|come)(?: next| later| soon)?[.!]?$")
+    # a sentence about how a hurt part FEELS (no blow, grip or move in it): only so many of those for one part
+    ACHE_EVENT = re.compile(r"(?i)\b(?:hit|struck|strik\w+|slam\w*|land\w*|charg\w+|kick\w*|bit|bite\w*|stomp\w*|"
+                            r"knee[ds]? (?:her|into)|grab\w*|grip\w*|held|hold\w*|lock\w*|fell|fall\w*|crumpl\w+|"
+                            r"went down|rose|got up|push\w* (?:herself )?up|drove|driv\w+|smash\w*|crash\w*|"
+                            r"buckl\w+|gave (?:way|out)|wrench\w*|twist\w*|caught)\b")
+
+    def _program_cuts(self, written):
+        """Mends the program makes to the finished parts by itself (no model call), each switchable:
+        narration.cuts.first_beat_past: on the first beat, a past that can't be there (earlier blows, her last dive).
+        narration.cuts.ache_repeat: a hurt part's ache told again and again: past ache_repeat (a number, 0 = off)
+        sentences that only say how one part feels (no blow, grip or move in them), the rest are cut.
+        narration.cuts.labels: a move label copied as words ("Nerine's plain blow hit" -> "Nerine's blow hit").
+        narration.cuts.handoff: the hand-over between parts said out loud ("Nerine's reaction would follow.").
+        narration.cuts.run_on_thought: a thought run straight into the next words ("That leg needs to go Her mind
+        racing" -> "... go. Her mind ...")."""
+        cfg = (self.rules.get("narration") or {}).get("cuts") or {}
+        if not cfg.get("enabled", True):
+            return written
+        first = int(getattr(self, "beat_now", 0) or 0) <= 1
+        limit = int(cfg.get("ache_repeat", 2) or 0)
+        dmg_by = getattr(self, "damage_by", None) or {}
+        told = {}
+        out = []
+        for w in written:
+            if not w:
+                out.append(w)
+                continue
+            paras = []
+            for para in w.split("\n\n"):
+                sents = [x for x in re.split(r"(?<=[.!?…])\s+", para.strip()) if x]
+                kept = []
+                for x in sents:
+                    if cfg.get("labels", True):
+                        x = re.sub(r"\b([Pp])lain ([Bb])low(s?)\b(?!['’])", lambda m: m.group(2) + "low" + m.group(3), x)
+                        x = re.sub(r"\b(?:[Aa]n? |[Tt]he )?[Bb]low (?=blow\b)", "", x)
+                    if cfg.get("run_on_thought", True):
+                        x = re.sub(r"(?<=[a-z]) (?=(?:Her|She|The|Its) [a-z])", ". ", x)
+                    if cfg.get("handoff", True) and self.META_HANDOFF.match(x.strip()):
+                        continue
+                    if first and cfg.get("first_beat_past", True):
+                        x = self.FIRST_BEAT_CLAUSE.sub("", x)
+                        if self.FIRST_BEAT_PAST.search(x) and len(sents) > 1:
+                            continue
+                    if limit and HURT_SAID.search(x) and not self.ACHE_EVENT.search(x):
+                        whos = [n for n in dmg_by if re.search(r"\b%s\b" % re.escape(n), x)]
+                        hit = [(n, p) for n, parts in dmg_by.items() if not whos or n in whos
+                               for p, v in parts.items() if v >= 30 and _mentions_exact(x.lower(), p)]
+                        over = False
+                        for key in hit:
+                            told[key] = told.get(key, 0) + 1
+                            over = over or told[key] > limit
+                        if over and hit and len(sents) > 1 and (kept or x is not sents[-1]):
+                            continue
+                    kept.append(x)
+                paras.append(" ".join(kept))
+            out.append("\n\n".join(p for p in paras if p.strip()))
+        return out
 
     def _trim_past_contact(self, written, keys):
         """narration.trim_past_contact: the attacker's part runs on past the instant her blow lands, into how it feels

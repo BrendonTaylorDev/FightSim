@@ -251,7 +251,7 @@ class Pointers:
             return out
         if re.search(r"refuses to tap in|fights the dark in", line) and self._due("tap_resist"):
             out += self._tap_note(line)
-        elif re.search(r"TAPS OUT\*{0,2} in", line) and self._due("tap_out"):
+        elif re.search(r"TAPS OUT\*{0,2}(?: \(tap \d+ of \d+[^)]*\))? in", line) and self._due("tap_out"):
             out += self._tap_note(line)
         elif re.search(r"PASSES OUT\*{0,2} in", line) and self._due("pass_out"):
             m2 = re.search(r"built to (\d+) against her endurance (\d+): chance (\d+)%", line)

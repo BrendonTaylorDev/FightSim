@@ -1071,7 +1071,8 @@ class Display:
             if a.get("winner"):
                 out.append(f"- 🏆 **Winner: {a['winner']}**")
         elif t == "breather":
-            out.append(f"⏸️ **Breather**: {a.get('flavor', '')}")
+            out.append(f"⏸️ **Breather**" + (f": {a['flavor']}" if str(a.get("flavor") or "").strip() else
+                                             f" ({a['attacker']} catches her breath)" if a.get("attacker") else ""))
         elif t == "heal":
             out.append(f"💚 **{a['fighter']} recovers**" + (f": {a['flavor']}" if a.get("flavor") else ""))
             for c in a.get("parts", []):
@@ -1199,7 +1200,9 @@ class Display:
             elif e["type"] == "tap_out":
                 if not self.tight():
                     out.append("")
-                out.append(f"🏳️ **{e['defender']} {'TAPS OUT' if e['how'] == 'tap' else 'PASSES OUT'}** in "
+                out.append(f"🏳️ **{e['defender']} {'TAPS OUT' if e['how'] == 'tap' else 'PASSES OUT'}**"
+                           + (f" (tap {e['tap_no']} of {e['tap_no']}: the last one)" if e.get("tap_no", 1) > 1 else "")
+                           + " in "
                            f"{poss_word(e['attacker'])} {e['submission']} after {e['beats_held']} beats"
                            + (f" (pain {e['pain']} against her resistance {e['resist']}: tap-out chance "
                               f"{e['chance'] * 100:.0f}%)" if e['how'] == 'tap' else
@@ -1208,6 +1211,19 @@ class Display:
                 if (e.get("elimination") or {}).get("winner"):
                     out.append(f"- 🏆 **Winner: {e['elimination']['winner']}** (by "
                                f"{'submission' if e['how'] == 'tap' else 'pass-out'})")
+            elif e["type"] == "tap_count":
+                if not self.tight():
+                    out.append("")
+                out.append(f"🏳️ **{e['defender']} {'TAPS' if e['how'] == 'tap' else 'BLACKS OUT'}: tap {e['tap_no']} "
+                           f"of {e['needed']}** in {poss_word(e['attacker'])} {e['submission']} after {e['beats_held']} "
+                           f"beats, on her {e['part']}"
+                           + (f" (pain {e['pain']} against her resistance {e['resist']}: chance "
+                              f"{e['chance'] * 100:.0f}%)" if e['how'] == 'tap' else
+                              f" (the choke built to {e['air']} against her endurance {e['endure']}: chance "
+                              f"{e['chance'] * 100:.0f}%)"))
+                out.append(f"- the grip comes off and the match goes on ({e['needed'] - e['tap_no']} more to end it)"
+                           + (f"; her {', '.join(p.lower() for p in e['spent_parts'])} can't count for another tap"
+                              if e.get("spent_parts") else ""))
             elif e["type"] == "sub_to_pin":
                 if not self.tight():
                     out.append("")
