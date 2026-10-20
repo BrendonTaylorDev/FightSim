@@ -6,6 +6,10 @@ import re
 from engine import tier_for, pain_tiers, poss_word
 
 
+# where the clear layout breaks a long stat line (0 = never: the window wraps them itself)
+WRAP_WIDTH = 100
+
+
 def num(x):
     """40 -> '40', 6.0 -> '6', 5.55 -> '5.55', 12.8 -> '12.8'."""
     s = f"{float(x):.2f}".rstrip("0").rstrip(".")
@@ -164,12 +168,23 @@ class Display:
                 loss = h["res_before"] - h["res_after"]
                 lpd0 = float(self.rules["resistance"].get("loss_per_damage", 0) or 0)   # wear by the damage done (/wear)
                 ro = float(h.get("res_overflow") or 0)
-                full = (h["power"] * lpp0 + h["damage_taken"] * lpd0) * rs + ro
-                how_res = ((f"= power {num(h['power'])} × {num(lpp0)}" if not lpd0 else
-                            f"= (power {num(h['power'])} × {num(lpp0)} + damage {num(h['damage_taken'])} × {num(lpd0)})")
-                           + ("" if rs == 1 else f" × {num(rs)} resistance scale")
-                           + (f" + {num(ro)} from the softened health" if ro > 0.005 else "")
-                           if abs(full - loss) < 0.03 else "(it can't go lower)")
+                wm = h.get("wear_math") or []
+                full = (h["power"] * lpp0 + h["damage_taken"] * lpd0) * rs
+                for _w, f_ in wm:
+                    full *= float(f_)
+                full = (float(h["wear_cap"]) if h.get("wear_cap") is not None else full) + ro
+                if h.get("wear_cap") is not None:
+                    # no single hit wears a part past resistance.max_loss_per_hit (scaled like the wear itself)
+                    how_res = (f"(capped: at most {num(h['wear_cap'])} a hit)"
+                               + (f" + {num(ro)} from the softened health" if ro > 0.005 else ""))
+                elif abs(full - loss) < 0.03:
+                    how_res = ((f"= power {num(h['power'])} × {num(lpp0)}" if not lpd0 else
+                                f"= (power {num(h['power'])} × {num(lpp0)} + damage {num(h['damage_taken'])} × {num(lpd0)})")
+                               + ("" if rs == 1 else f" × {num(rs)} resistance scale")
+                               + "".join(f" × {num(f_)} ({w_})" for w_, f_ in wm)
+                               + (f" + {num(ro)} from the softened health" if ro > 0.005 else ""))
+                else:
+                    how_res = "(it can't go lower)" if h.get("res_floor", True) else ""
                 k = cell_of[id(h)]     # (grouping can reorder the hits: each row keeps its own numbers)
                 dmg, res, hp = cells[k:k + 3]
                 out.append(f"    {label}")
@@ -206,10 +221,12 @@ class Display:
             lines.append(indent + cur)
         return lines
 
-    def soft_wrap(self, text, width=100):
+    def soft_wrap(self, text, width=None):
         """Clear layout: a line too long for the window is broken at a word, with the rest indented under it, so
-        the console doesn't chop it mid-word."""
-        if not self.clear() or not text:
+        the console doesn't chop it mid-word. WRAP_WIDTH 0 (the window, rules.json window.text.unwrap): no breaks,
+        the window's pane wraps the lines itself."""
+        width = WRAP_WIDTH if width is None else width
+        if not self.clear() or not text or not width:
             return text
         import textwrap
         out = []

@@ -34,7 +34,9 @@ import tkinter as tk
 from tkinter import ttk
 
 import play
-from engine import species_of, body_region
+import display
+import textpane
+from engine import species_of, body_region, note_failure
 
 from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_color, text_on, short,
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
@@ -586,7 +588,27 @@ class App:
         self.cards_frame.bind("<Configure>", lambda e: self.cards_canvas.configure(
             scrollregion=self.cards_canvas.bbox("all")))
 
-        self.text = tk.Text(right, wrap="word", font=("Georgia", 11), padx=10, pady=8, undo=False,
+        # above the story: the switches for the numbers, their pointers, and the text size (rules.json window.text)
+        to = textpane.opts(self._rules())
+        if to.get("unwrap", True):
+            display.WRAP_WIDTH = 0      # (the pane wraps the stat lines itself, indented under their start)
+        self.pointers = textpane.Pointers(self._rules())
+        self.font_size = int(to.get("font_size", 12) or 12)
+        bar = ttk.Frame(right)
+        bar.pack(side="top", fill="x", pady=(0, 4))
+        self.show_numbers = _Flag(value=bool(to.get("numbers", True)))
+        self.show_pointers = _Flag(value=str(to.get("pointers", "occasional")).lower() not in ("off", "false", "none"))
+        ttk.Label(bar, text="The story", font=("Segoe UI", 10, "bold")).pack(side="left")
+        ttk.Button(bar, text="A+", width=3, command=lambda: self.text_size(1)).pack(side="right")
+        ttk.Button(bar, text="A−", width=3, command=lambda: self.text_size(-1)).pack(side="right")
+        ttk.Checkbutton(bar, text="Pointers (where the numbers come from)", variable=self.show_pointers,
+                        command=self.text_switches).pack(side="right", padx=4)
+        ttk.Checkbutton(bar, text="Numbers", variable=self.show_numbers,
+                        command=self.text_switches).pack(side="right", padx=4)
+        self.show_progress = _Flag(value=bool(to.get("progress", True)))
+        ttk.Checkbutton(bar, text="Progress", variable=self.show_progress,
+                        command=self.text_switches).pack(side="right", padx=4)
+        self.text = tk.Text(right, wrap="word", font=("Georgia", 11), padx=12, pady=8, undo=False,
                             background="#fffdf8", foreground="#1f2937")
         tsb = ttk.Scrollbar(right, orient="vertical",
                             command=lambda *a: (self.text.yview(*a), self.user_scroll()))
@@ -597,15 +619,12 @@ class App:
         bottom.pack(side="bottom", fill="x", pady=(6, 0))
         tsb.pack(side="right", fill="y")
         self.text.pack(side="left", fill="both", expand=True)
-        self.text.tag_configure("bold", font=("Georgia", 11, "bold"))
-        self.text.tag_configure("italic", font=("Georgia", 11, "italic"), foreground="#7c3aed")
-        self.text.tag_configure("pov", font=("Georgia", 12, "bold"), foreground="#b45309", spacing1=8, spacing3=4)
-        self.text.tag_configure("mech", font=("Consolas", 9), foreground="#4b5563")
-        self.text.tag_configure("mechbold", font=("Consolas", 9, "bold"), foreground="#111827")
-        self.text.tag_configure("progress", font=("Segoe UI", 9, "italic"), foreground="#9ca3af")
-        self.text.tag_configure("input", font=("Consolas", 10, "bold"), foreground="#2563eb")
-        self.text.tag_configure("rule", foreground="#d1d5db")
-        self._glyph_tags = set()
+        self._glyph_tags, self._indent_tags = set(), set()
+        self.style_text()
+        if to.get("hover", True):
+            self.text.tag_bind("term", "<Enter>", self.term_tip)
+            self.text.tag_bind("term", "<Motion>", self.term_tip)
+            self.text.tag_bind("term", "<Leave>", lambda _e: self.tip.hide())
         self.text.configure(state="disabled")
 
         self.prompt = ttk.Label(bottom, text=">", font=("Consolas", 10, "bold"))
@@ -704,40 +723,135 @@ class App:
             self.write_lines(self.pending)
             self.pending = ""
 
+    def style_text(self):
+        """The story pane's look, at the current text size: the story in a reading face with room between
+        paragraphs, the numbers in a shaded block in a fixed face, their rows coloured by what they measure (damage
+        red, resistance blue, health green), the pointers in a band of their own under them."""
+        fs, t = self.font_size, self.text
+        mono = max(7, fs - 3)
+        t.configure(font=("Georgia", fs))
+        t.tag_configure("story", font=("Georgia", fs), spacing1=1, spacing3=3, lmargin1=4, lmargin2=4)
+        t.tag_configure("gap", font=("Georgia", max(4, fs // 2)))
+        t.tag_configure("bold", font=("Georgia", fs, "bold"))
+        t.tag_configure("italic", font=("Georgia", fs, "italic"), foreground="#7c3aed")
+        t.tag_configure("pov", font=("Georgia", fs + 1, "bold"), foreground="#b45309", spacing1=10, spacing3=4)
+        shade = "#f3f5f9"
+        t.tag_configure("mech", font=("Consolas", mono), foreground="#4b5563", background=shade)
+        t.tag_configure("head", font=("Consolas", mono + 1, "bold"), foreground="#111827", background=shade,
+                        spacing1=6)
+        t.tag_configure("part", font=("Consolas", mono, "bold"), foreground="#111827", background=shade, spacing1=3)
+        t.tag_configure("total", font=("Consolas", mono, "bold"), foreground="#111827", background="#e8ecf3",
+                        spacing1=2, spacing3=2)
+        t.tag_configure("mechbold", font=("Consolas", mono, "bold"), foreground="#111827", background=shade)
+        for tag, col in (("dmg", "#b91c1c"), ("res", "#1d4ed8"), ("hp", "#047857")):
+            t.tag_configure(tag, foreground=col)
+            t.tag_configure(tag + "bold", foreground=col, font=("Consolas", mono, "bold"))
+        t.tag_configure("hit", foreground="#15803d", font=("Consolas", mono, "bold"))
+        t.tag_configure("miss", foreground="#6b7280")
+        t.tag_configure("pointer", font=("Segoe UI", max(7, fs - 2), "italic"), foreground="#0f766e",
+                        background="#ecfdf5", lmargin1=28, lmargin2=44, rmargin=12, spacing1=1, spacing3=3)
+        t.tag_configure("progress", font=("Segoe UI", max(7, fs - 3), "italic"), foreground="#9ca3af")
+        t.tag_configure("input", font=("Consolas", fs - 1, "bold"), foreground="#2563eb", spacing1=6)
+        t.tag_configure("rule", foreground="#d1d5db")
+        try:
+            t.tag_configure("term", underline=True, underlinefg="#9ca3af")
+        except tk.TclError:     # (an older Tk: plain underline)
+            t.tag_configure("term", underline=True)
+        # a wrapped stat line goes on indented under its own start: one tag for each depth of indent
+        try:
+            from tkinter import font as tkfont
+            self._char_w = tkfont.Font(family="Consolas", size=mono).measure("0") or 7
+        except Exception as exc:
+            note_failure("the story pane's character width", exc)
+            self._char_w = 7
+        for tag in self._indent_tags:
+            n = int(tag[3:])
+            t.tag_configure(tag, lmargin1=0, lmargin2=self._char_w * (n + 4))
+        self.text_switches()
+
+    def text_switches(self):
+        """The Numbers and Pointers switches: hidden lines stay in the pane (the beat slider still finds them)."""
+        self.text.tag_configure("numbers", elide=not self.show_numbers.get())
+        self.text.tag_configure("progress_hide", elide=not self.show_progress.get())
+        self.text.tag_configure("pointer_hide", elide=not (self.show_pointers.get() and self.show_numbers.get()))
+
+    def text_size(self, d):
+        self.font_size = max(8, min(22, self.font_size + d))
+        self.style_text()
+
+    def _indent_tag(self, line):
+        n = textpane.indent_of(line)
+        tag = f"ind{n}"
+        if tag not in self._indent_tags:
+            self._indent_tags.add(tag)
+            self.text.tag_configure(tag, lmargin1=0, lmargin2=self._char_w * (n + 4))
+        return tag
+
     def write_lines(self, chunk):
         at_end = self.follow.get() or self.text.yview()[1] >= 0.999
         self._writing = True
         self.text.configure(state="normal")
         for line in chunk.splitlines(keepends=True):
             body = line.rstrip("\n")
-            s = body.strip()
-            if re.match(r"^—\s.+\s—$", s):
-                self.text.insert("end", line, "pov")
-            elif re.match(r"^\s*\[.*\]\s*$", body):
-                self.text.insert("end", line, "progress")
-            elif re.match(r"^-{8,}$|^={8,}$|^─{8,}$|^═{8,}$", s):
-                self.text.insert("end", line, "rule")
-            elif re.match(r"^[^>]*> ", body) and s.endswith(tuple("abcdefghijklmnopqrstuvwxyz0123456789")) and len(s) < 80 \
-                    and body.startswith(tuple("> ABCDEFGHIJKLMNOPQRSTUVWXYZ")) and "> " in body[:20]:
-                self.text.insert("end", line, "input")
-            elif re.match(r"^\s{2,}\S|^[⚔🔒📌🎲⏳💡🧗🪽🔗💥💢🪨🌀🌊🔐🤾🏋⛓⏸🩹📜⏱💨🛡🫳🫥↩🧱🌅🔥⚡💧😵🧠🌦🦅🪶🤚🧊]", body) \
-                    or re.match(r"^\s*(Total|Calculations|Power|Rolls|Beat \d)", body):
-                self.styled(line, "mech")
+            k = textpane.kind_of(body)
+            # (a blank line inside or after a block of numbers goes with them when they are hidden)
+            in_nums = getattr(self, "_last_kind", "") in ("head", "row", "part", "total", "mech", "rule")
+            if k != "blank":
+                self._last_kind = k
+            if k in ("pov", "progress", "rule", "input"):
+                self.text.insert("end", line, (k,) + (("numbers",) if k == "rule" else ("progress_hide",)
+                                                      if k == "progress" else ()))
+            elif k == "blank":
+                self.text.insert("end", line, ("gap",) + (("numbers",) if in_nums else ()))
+            elif k == "story":
+                self.styled(line, None, ("story",))
             else:
-                self.styled(line)
+                self.mech_line(line, k)
+                for note in self.pointers.feed(body):
+                    self.text.insert("end", "ⓘ " + note + "\n", ("pointer", "pointer_hide"))
         self.text.configure(state="disabled")
         if at_end:
             self.text.see("end")
         self._writing = False
 
-    def styled(self, line, base=None):
+    def mech_line(self, line, k):
+        """One line of numbers: shaded, wrapped under its own indent, its row name and change coloured, the words
+        with a hover tip underlined."""
+        start = self.text.index("end-1c")
+        base = {"head": "head", "part": "part", "total": "total"}.get(k, "mech")
+        self.styled(line, base, ("numbers", self._indent_tag(line)))
+        # (the line as it went in: no ** marks, the coloured icons drawn as one sign each. Each span is found by
+        # its own words, so an icon Tk counts differently can't shift it)
+        shown = self.text.get(start, "end-1c").rstrip("\n")
+        found = sorted(textpane.spans(shown) + [(a, b, "term") for a, b, _ in textpane.terms(shown)])
+        for a, b, tag in found:
+            sub = shown[a:b]
+            at = self.text.search(sub, start, stopindex=f"{start} lineend", exact=True) if sub.strip() else ""
+            if at:
+                self.text.tag_add(tag, at, f"{at}+{len(sub)}c")
+
+    def term_tip(self, e):
+        """The hover tip on an underlined term: what the number is and which setting it comes from."""
+        idx = self.text.index(f"@{e.x},{e.y}")
+        rng = self.text.tag_prevrange("term", f"{idx}+1c")
+        word = self.text.get(*rng) if rng else ""
+        line = self.text.get(f"{idx} linestart", f"{idx} lineend")
+        key = textpane.term_key(word)
+        text = textpane.tip(key, line, self._rules()) if key else ""
+        if text:
+            import textwrap
+            self.tip.show(e.x_root, e.y_root, "\n".join(textwrap.wrap(text, 70)))
+        else:
+            self.tip.hide()
+
+    def styled(self, line, base=None, more=()):
         """**bold** and *thoughts and sounds*, as the console shows them."""
         pos = 0
-        extra = (base,) if base else ()
+        extra = ((base,) if base else ()) + tuple(more)
         for m in re.finditer(r"\*\*(.+?)\*\*|\*(?!\s)([^*\n]+?)\*", line):
             self.put(line[pos:m.start()], extra)
             if m.group(1) is not None:
-                self.put(m.group(1), ("mechbold",) if base else ("bold",))
+                self.put(m.group(1), extra + (("mechbold",) if base else ("bold",)))
             else:
                 self.put(m.group(2), extra + ("italic",) if not base else extra)
             pos = m.end()

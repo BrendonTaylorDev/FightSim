@@ -586,6 +586,7 @@ class Engine:
         # so a part that takes a great deal of damage also softens faster
         wear = power * r["resistance"]["loss_per_power"] + taken * float(r["resistance"].get("loss_per_damage", 0) or 0)
         wear = wear * rscale
+        wear_math = []      # what scaled the wear beyond power x loss_per_power x resistance_scale (for the stat lines)
         cap_res = float(r["resistance"].get("max_loss_per_hit", 0) or 0)
         rel = r["resistance"].get("relative") or {}
         start_r, sound = float(getattr(p, "start_resistance", 0) or 0), float(rel.get("sound", 85))
@@ -594,15 +595,19 @@ class Engine:
             # sound part's (a little faster, by wear_exp), and the per-hit cap counts in condition too
             share = start_r / sound
             wear *= share ** float(rel.get("wear_exp", 0.6))
+            wear_math.append(["a part that starts soft wears in proportion", round(share ** float(rel.get("wear_exp", 0.6)), 3)])
             cap_res = cap_res * share if cap_res > 0 else 0.0
         if grind:
             wear *= float(grind.get("wear_mult", 2.0))
             cap_res *= float(grind.get("wear_mult", 2.0))
+            wear_math.append(["a submission grinds it down", float(grind.get("wear_mult", 2.0))])
         elif slow:
             wear *= float(slow.get("wear_mult", 1.5))
             cap_res *= float(slow.get("wear_mult", 1.5))
+            wear_math.append(["a hold wears it first", float(slow.get("wear_mult", 1.5))])
+        wear_cap = None
         if cap_res > 0 and wear > cap_res:
-            wear = cap_res   # resistance.max_loss_per_hit: no single blow, however devastating, wears a part past this
+            wear = wear_cap = cap_res   # resistance.max_loss_per_hit: no single blow, however devastating, wears a part past this
         p.resistance = max(r["resistance"]["minimum"], res_b - wear)
         # health lost: damage x loss_per_damage_point x the bracket's health_mult (a soft, worn-down part costs more)
         # x how much the part matters to the whole body (health.part_weights: a throat far more than an ear)
@@ -666,6 +671,8 @@ class Engine:
             "health_mult": hmult, "vital": vital, "health_loss": round(health_loss, 2),
             "health_raw": round(raw_loss, 2), "softened": round(raw_loss - health_loss, 2) > 0.01,
             "res_overflow": round(res_over, 2),
+            "wear_math": wear_math, "wear_cap": round(wear_cap, 2) if wear_cap is not None else None,
+            "res_floor": p.resistance <= r["resistance"]["minimum"] and res_b - wear < r["resistance"]["minimum"],
             "health_before": round(hp_b, 2), "health_after": round(defender.health, 2),
             "max_health": defender.max_health,
             "pain_tier": pain_a["label"],

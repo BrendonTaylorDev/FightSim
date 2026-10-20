@@ -403,6 +403,43 @@ def tap_last_check():
     return problems
 
 
+def textpane_check():
+    """The window's story pane (textpane.py): story and numbers told apart, the rows' changes and the rolls'
+    outcomes coloured, the pointers' numbers taken from the lines they explain, and shown only now and then."""
+    import json
+    import textpane as T
+    with open(os.path.join(H.ROOT, "rules.json"), encoding="utf-8") as fh:
+        rules = json.load(fh)
+    problems = []
+    lines = ["Nocturne's jaws caught Ripples on the left thigh.",
+             "    Left Thigh",
+             "        damage      🟢 0% → 🟢 17.76%           +17.76 = power 49.49 (rolled ×0.99) × 0.12 × scale 3",
+             "        resistance  🟦 113% → 🟦 102.61%        -10.39 = power 49.49 × 0.3 × 0.7 resistance scale",
+             "        health      ❤️ 1700% → ❤️ 1686.62%      -13.38 = damage 17.76 × 1.84 × 0.51 × vital 0.8",
+             "  Total: +27.61% damage  ·  ❤️ Ripples 1700% → **1677.52%** (-22.48)",
+             "⏳ Beat 1 health: ❤️ Nocturne 1679.5% (-0.5% exertion)",
+             "    Ripples dodging Nocturne's attack 18%, rolled 26 → it lands"]
+    want = ["story", "part", "row", "row", "row", "total", "head", "mech"]
+    got = [T.kind_of(x) for x in lines]
+    if got != want:
+        problems.append(f"lines sorted as {got}, not {want}")
+    if "miss" not in [t for _, _, t in T.spans(lines[-1])]:
+        problems.append("a roll over its chance is not shown as a miss")
+    P, notes = T.Pointers(rules), []
+    for x in lines:
+        notes += P.feed(x)
+    if not any("+17.76" in n and "49.49" in n and "113%" in n for n in notes):
+        problems.append(f"no damage pointer with the row's own numbers: {notes}")
+    again = []
+    for x in lines[1:5]:
+        again += P.feed(x)
+    if again:
+        problems.append("the part pointer came back at once (it should wait pointer_gap beats)")
+    if not T.tip(T.term_key("(rolled ×0.99)"), lines[2], rules):
+        problems.append("no hover tip for the damage roll")
+    return problems
+
+
 def main(argv):
     verbose = "-v" in argv
     want = [a.lower() for a in argv if not a.startswith("-")]
@@ -439,6 +476,13 @@ def main(argv):
         probs = tap_last_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  the tap or pass-out is told last  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "story pane" for w in want):
+        t = time.time()
+        probs = textpane_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  the window's story pane sorts and explains the numbers  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "whole fights" for w in want):

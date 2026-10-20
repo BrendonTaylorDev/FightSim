@@ -654,6 +654,38 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 237
+
+A more readable story pane in the window (`python window.py`), with pointers to where the numbers come from. All of
+it is in rules.json `window.text`.
+
+- **The story and the numbers look different.** The story is in a reading face with room between paragraphs. Each
+  block of numbers sits on a shaded band in a fixed face, with its first line in bold. In the damage, resistance and
+  health rows, the row name and its change are coloured: damage red, resistance blue, health green. A roll that came
+  in under its chance is shown in green; one that didn't, in grey.
+- **Switches above the pane:**
+  - **Numbers** hides every stat line, leaving only the story. The lines stay in the pane, so the beat slider still
+    works.
+  - **Progress** hides the narrator's "[writing part 1/2]" lines.
+  - **Pointers** turns the notes below on or off.
+  - **A− / A+** change the text size. `window.text.font_size` sets the starting size.
+- **Pointers** (`window.text.pointers`: occasional, always or off): a short teal note under a set of numbers, using
+  those same numbers. For example: "Damage +17.76 = the hit's power 49.49 (the dice moved it ×0.99) × 0.12, what this
+  part takes at its resistance of 113% × the damage scale 3". There are notes for a part's three rows, a tap refusal
+  or tap-out (pain against her resistance, and the chance), a pass-out (air against her endurance), a blow's power, a
+  grip's power, the beat's health drain, the rolls and a loosened hold. "occasional" shows each kind once, then
+  again only after `pointer_gap` beats (6).
+- **Hover tips** (`window.text.hover`): the underlined terms in the numbers (the damage roll, scale, vital, the
+  resistance scale, a submission's grind, pain against her resistance, air against her endurance, exertion,
+  injuries, a grip's ramp, a move's power, a break-free chance) show what the number is and which setting it comes
+  from when you rest the mouse on them.
+- **No more broken lines** (`window.text.unwrap`): in the window, stat lines are no longer cut at 100 characters as
+  on the console. The pane wraps them itself, with the rest indented under the line's start.
+- **Fixed: resistance rows said "(it can't go lower)" when it could.** That note appeared whenever the wear wasn't
+  the plain power × 0.3 × 0.7. Holds, submissions and soft parts wear faster, and some hits hit the per-hit cap. The
+  row now gives the real working, such as "× 2 (a submission grinds it down)" or "(capped: at most 24.5 a hit)". It
+  says "it can't go lower" only when the part really is at its minimum.
+
 ## Build 236
 
 - **The tap-out or pass-out is told last** (`narration.tap_last`, on): in beat 31 of your build-228 Ripples vs Nerine
