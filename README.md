@@ -654,6 +654,35 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 233
+
+Chokes can go all the way, the two kinds of choke are told apart, and two Swellows fought in the clock tower
+(`sim/test_fights/swift_vs_gale`: the script, the beat files and a full narration of the 24 beats).
+
+- **Full chokes** (`narration.full_chokes`, on): the hard rule on breathing no longer says "only for a few seconds".
+  A choke may cut off her air or the blood to her head completely, and held long enough she passes out, which is
+  how a choke ends a pin or a submission match. She only faints, only when the events say so, and breathes again
+  once it lets go. Off: the old rule.
+- **Air or blood:** every beat a grip is on her neck, the notes name its kind (the engine's `choke_kind`, now on
+  every hold event) and how far it has gone: an AIR choke shuts the windpipe (no breath, slow, panic first), a BLOOD
+  choke squeezes the sides of the neck (she still breathes, but her head fills, roars and greys, quick), and jaws,
+  hands or a bird's talons closed round the throat do both. A submission hold on the neck is told as a choke that can
+  take her out, not as one she "will not pass out from".
+- **The choke comes off:** when the grip on her neck is broken, slammed loose or escaped, the narrator is told her air
+  and blood rush back (the whooping breaths, the grey pulling back).
+- **Talons in the air** (`flight.air_grab`, on): a flyer can grab another flyer up there if she has talons, feet,
+  claws, or the hands and arms some flyers have (a Charizard). Locked together they tumble down and land on their
+  feet, the grip still on. Before, every grab in the air was refused.
+- **Passages:** chokes by kind and by how long (`choke: air, blood, both`; `air: gone` for one held long), the
+  pass-out itself (`choke_out`), and for birds a hard blow on a wing or a beak (`limb: wing, beak`), the fall when she
+  is knocked out of the air (`air_fall`) and the tumble down locked together (`air_tumble`).
+- **Fixes:**
+  - A "struggle" when nothing holds her becomes a breather without its flavor ("thrashes on her back and snaps at
+    the feet holding her" with nobody holding her).
+  - A bird nursing a hurt beak or head no longer "smooths it with her beak": she shakes her head or works her beak.
+- **New fighter:** Gale, a second Swellow: older, patient, a talon fighter (Pluck and Endeavor in place of Facade and
+  Peck).
+
 ## Build 232
 
 Story passages: a new library, `story_passages.txt`, of 88 finished showpieces, each two to four sentences long. They

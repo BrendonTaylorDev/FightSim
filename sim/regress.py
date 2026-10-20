@@ -180,6 +180,16 @@ CASES = [
        A("Talon", "Ripples", "strike", move="Wing Attack", part="Chest", flavor="a slash as she falls"),
        A("Talon", "Ripples", "strike", move="Brave Bird", part="Upper Back", flavor="straight down")]],
      lambda r, e, s: _any(r, lambda x: x.get("carried"))),
+    ("talons lock on in the air (flight.air_grab)", "Gale,Swift", _all(_no_guard, _airborne("Gale"), _airborne("Swift")),
+     [[A("Gale", "Swift", "grapple", part="Right Wing", hits=[{"part": "Right Wing", "with": "her talons, clamped on it"}])]],
+     lambda r, e, s: _any(r, lambda x: x.get("type") == "grapple_start" and any(
+         k.get("tumble") for k in x.get("knock_on") or ())) and not s.eng.has(s.eng.get("Swift"), "airborne")),
+    ("a grip on the neck says its kind of choke", "Nocturne,Ripples", _down("Ripples"),
+     [[A("Nocturne", "Ripples", "hold_start", part="Neck", hits=[{"part": "Neck", "with": "her jaws", "severity": "firm"}])],
+      [A("Nocturne", "Ripples", "breather")]],
+     lambda r, e, s: _any(r, lambda x: x.get("type") == "hold_start" and any(
+         p.get("choke_kind") == "both" for p in x.get("parts") or ())) or _any(
+         e, lambda x: x.get("type") == "hold_ongoing" and x.get("choke_kind") == "both")),
     ("flyer hit out of the air", "Cinder,Talon", _airborne("Talon"),
      [[A("Cinder", "Talon", "combo", move="Flamethrower", hits=[{"part": "Left Wing"}, {"part": "Chest"}],
          launch="knocked down")]],
@@ -354,7 +364,7 @@ def passage_check():
     import narrator
     with open(os.path.join(H.ROOT, "story_passages.txt"), encoding="utf-8") as fh:
         entries = blocks.parse(fh.read())
-    known = {"hit", "cut", "bite", "choke", "held", "holding", "pinned_start", "pinned", "pinning", "landing", "knockout"}
+    known = {"hit", "cut", "bite", "choke", "choke_out", "held", "holding", "pinned_start", "pinned", "pinning", "landing", "air_fall", "air_tumble", "knockout"}
     bad = re.compile(r"\b(?:gaping|torn|tore|tears? (?:open|into)|shred\w*|snap\w*|broke|broken|break\w*|fractur\w*|"
                      r"shatter\w*|sever\w*|kill\w*|die|dies|dying|dead|death|pool\w*|spray\w*|soak\w*|expos\w*|"
                      r"gush\w*|stream\w*|beat|sob\w*|weep\w*|wept)\b", re.I)

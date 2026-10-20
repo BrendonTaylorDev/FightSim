@@ -4033,13 +4033,18 @@ class Engine:
                 return {"type": "hold_start", "hold_id": h.id, "attacker": a.name, "defender": d.name,
                         "part": pname, "power": h.power, "change_per_beat": h.change_per_turn,
                         "flavor": flavor, "with": h.with_part, "existing": True,
-                        "asked_with": asked if keep_with else ""}
+                        "asked_with": asked if keep_with else "", "choke_kind": self._hold_choke_kind(h)}
         h = Hold(self.next_hold_id, a.name, d.name, pname, power, change_per_turn, flavor, 0, with_part)
         self.holds[h.id] = h
         self.next_hold_id += 1
         return {"type": "hold_start", "hold_id": h.id, "attacker": a.name, "defender": d.name,
                 "part": pname, "power": power, "change_per_beat": change_per_turn, "flavor": flavor,
-                "with": with_part, "existing": False}
+                "with": with_part, "existing": False, "choke_kind": self._hold_choke_kind(h)}
+
+    def _hold_choke_kind(self, h):
+        """For a grip on the neck or throat, which kind of choke it is (choke_kind: "blood", "air" or "both"), so the
+        story can tell a squeeze on the sides of the neck from a windpipe crushed shut; "" for any other grip."""
+        return self.choke_kind(h.attacker, h.with_part, h.coil) if body_region(h.part) == "neck" else ""
 
     @staticmethod
     def _limb_kind(with_part):
@@ -5186,6 +5191,8 @@ class Engine:
             return "blood"                       # a cat's clutch: from her side or on top, forelegs hooked round
         if re.search(r"closed round|throttl|round (?:the|her) throat", w):
             return "both"                        # hands round the throat: the windpipe and the sides together
+        if re.search(r"\btalons?\b|\bclaws?\b|\bfeet\b|\bfoot\b", w) and plan == "avian":
+            return "both"                        # a bird's grasping foot closes all the way round, like a hand
         rounds = re.search(r"\bround\b|\baround\b|\blocked\b|\bsqueez|\bgrip|\bclamp|\bboth sides\b|\bsides of\b|"
                            r"between her (?:thighs|legs|knees)", w)
         if re.search(r"\bhind ?legs?\b|\bthighs?\b|\blegs\b", w) and rounds:
@@ -6683,8 +6690,12 @@ class Engine:
                                  f"{who.name} is on the ground: she has to be on her feet to {why}")
         if any(p["defender"] in (a.name, d.name) for p in self.pins.values()):
             raise ValueError("there is a pin going on: no grapple until it ends")
-        if enforce and (self.has(d, "airborne") or self.has(a, "airborne")):
-            raise ValueError(f"{(d if self.has(d, 'airborne') else a).name} is in the air: no grabbing until she comes down")
+        tumble = enforce and self._air_grab_ok(a, d)
+        if enforce and not tumble and (self.has(d, "airborne") or self.has(a, "airborne")):
+            raise ValueError(f"{(d if self.has(d, 'airborne') else a).name} is in the air: no grabbing until she comes down"
+                             + (" (she can grab another flyer up there only with talons, feet, hands or arms to grab with)"
+                                if self.has(d, "airborne") and self.has(a, "airborne") and self._air_grab_cfg().get(
+                                    "enabled", True) else ""))
         if enforce and a.name in self.pressed:
             raise ValueError(f"{a.name} is still pressed against the scenery: she can't grab anyone this beat")
         if self.grabbed_by(a.name, d.name):
@@ -6705,7 +6716,11 @@ class Engine:
         for st in ("asleep", "frozen"):
             if not enforce:
                 a.status.pop(st, None)
-        grounded = self._out_of_air((a, d), "the grab")   # (your own command only: the director's is refused above)
+        # (the director's grab in the air is refused above, unless it is talons locking on in the air: flight.air_grab)
+        grounded = self._out_of_air((a, d), "the grab: locked together in the air, the two of them tumble down"
+                                    if tumble else "the grab")
+        for k in grounded if tumble else ():
+            k["tumble"] = True
         pname = d.part(part).name
         # the grab she already had on her from the other side ends: you can't be held by her and holding her at once
         # (said on screen and in the story: knock_on)
@@ -6726,6 +6741,18 @@ class Engine:
                 "hold_ids": [] if st.get("existing") else [st["hold_id"]], "existing": bool(st.get("existing")),
                 "flavor": flavor, "energy": [round(before), round(a.energy)],
                 "break_chance": self.hold_break_chance(a.name, d.name), "knock_on": grounded + reversed_}
+
+    def _air_grab_cfg(self):
+        return (self.rules.get("flight") or {}).get("air_grab") or {}
+
+    def _air_grab_ok(self, a, d):
+        """flight.air_grab: two flyers both in the air, and the one grabbing has something to grab with up there
+        (talons, feet, or the hands and arms some flyers have): she can lock on in the air, and the two of them come down together."""
+        cfg = self._air_grab_cfg()
+        if not cfg.get("enabled", True) or not (self.has(a, "airborne") and self.has(d, "airborne")):
+            return False
+        return any(re.search(cfg.get("grip_parts", r"\btalons?\b|\bfeet\b|\bfoot\b|\bclaws?\b|\bhands?\b|\bpaws?\b|\barms?\b"), p, re.I)
+                   for p in a.parts)
 
     def _out_of_air(self, fighters, what):
         """A grab or a pin happens on the ground: any of `fighters` still flying comes down for it. Returns a knock_on
@@ -7100,7 +7127,8 @@ class Engine:
                 "hold_ids": [h["hold_id"] for h in started if not h["existing"]],
                 "parts": [{"part": h["part"], "power": h["power"], "change_per_beat": h["change_per_beat"],
                            "with": h.get("with", ""), "existing": bool(h.get("existing")),
-                           "asked_with": h.get("asked_with", "")} for h in started]}
+                           "asked_with": h.get("asked_with", ""), "choke_kind": h.get("choke_kind", "")}
+                          for h in started]}
 
     def regrab_wait(self, a, d):
         """Beats left before `a` may grip `d` again after `d` tore free of her (holds.break.regrab_after); 0 = free."""
@@ -7376,6 +7404,7 @@ class Engine:
                            "first": fresh, "first_mult": first if fresh else None,
                            "defender": h.defender, "flavor": h.flavor, "with": h.with_part, "grab": bool(h.grab),
                            "coil": bool(h.coil), "sub": h.sub or h.locked,
+                           "choke_kind": self._hold_choke_kind(h),
                            "beats_held": h.turns_active, "hits": [hit], "tags": self._tags([hit])})
             if not fresh:
                 # a tightening grip climbs to holds.max_power and no further (coils have their own cap above); an easing

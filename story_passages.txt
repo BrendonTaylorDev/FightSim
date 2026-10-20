@@ -1,5 +1,6 @@
 # STORY PASSAGES: short, finished showpieces (two to four sentences) for the big moments of a fight: a heavy blow
-# landing, a cut, a bite, a choke, a hold, a pin, a landing, a knockout.
+# landing, a cut, a bite, a choke, a hold, a pin, a landing, a knockout, and for flyers a blow on a wing or a beak,
+# a fall out of the air and a tumble down locked together.
 #
 # HOW THEY ARE USED (narration -> passages in rules.json). Now and then (not every beat: "chance", and never two
 # beats running: "min_gap_beats") the program finds the biggest moment of a part and offers ONE passage that fits
@@ -15,11 +16,16 @@
 # a passage can add its own conditions after a " | " at its end. Slots: {part} (the body part, lower case, e.g.
 # "left shoulder"), {foe} (the one doing it to her). "she" and "her" are always the one it happens to, except in
 # the "pinning" and "holding" groups, where she is the one doing it.
-# Conditions: size, level, zone, has, state, kind, held, fade (the same words as story_blocks.txt).
+# Conditions: size, level, zone, has, state, kind, held, fade (the same words as story_blocks.txt), limb ("wing"
+# or "beak": the part struck is one), air ("gone":
+# a choke held long, with narration.full_chokes on) and choke (the kind of choke, as the engine reads the grip:
+# "blood" squeezes the sides of the neck, she still breathes but her head fills and greys; "air" shuts the windpipe;
+# "both" for jaws or hands closed round the throat).
 #
 # EVERY PASSAGE MUST BE TRUE WHENEVER ITS CONDITIONS HOLD. So: no new events (she does not fall, step, stagger or
 # get free unless the group is about exactly that), nothing beyond the hard rules (no gaping wounds, no breaking
-# bones, breath only ever stopped for a moment), no weapon the move may not use (a cut is "it", not "claws"), and no
+# bones; a choke may cut her air or blood off completely, "air: gone", only with narration.full_chokes on, and
+# only the choke_out group has her pass out), no weapon the move may not use (a cut is "it", not "claws"), and no
 # body part she may not have (paws, ears, fur only under a has: condition; the program also drops any passage that
 # names a part her body lacks).
 
@@ -115,15 +121,41 @@ Teeth sank into her {part}, and everything in her went cold and still with a dee
 # ---------------------------------------------------------------------------------------------------------------
 # CHOKE: a hold on her neck or throat (her breath is squeezed, never stopped for more than a moment)
 # ---------------------------------------------------------------------------------------------------------------
-== choke | held: early
+== choke | held: early | choke: air, both
 The grip closed round her {part} and squeezed, and the air she had been about to breathe stopped somewhere below it. There was a horrible moment of nothing, of pressure and a rising, pounding fullness in her head; then she found a thread of air and dragged it in, thin and whistling.
 She felt the hold settle on her {part} like a band drawn tight. Her next breath had to fight its way through it, a narrow, rasping pull that brought her only half of what she needed, and the pressure throbbed in her temples.
 The pressure on her {part} came on all at once, and her breath went from easy to impossible between one heartbeat and the next. She clawed at the air with her lungs and got a little of it, a hoarse sip, and her pulse pounded thick and loud behind her eyes.
 
-== choke | held: middle, long
+== choke | held: middle, long | choke: air, both
 Every breath she took now was a thin, fought-for thread. The hold on her {part} had not eased, and the pressure had become a world of its own: the drumming in her ears, the heat in her face, the slow, frightening narrowing of each pull of air.
 Her breath came and went in short, rasping sips around the grip on her {part}. Her head felt too full, as if it were swelling with every heartbeat, and the edges of everything had begun to waver; but each time the dark crept closer, a little air found its way in and pushed it back.
 She could hear her own breathing now, a high, scraping whistle squeezed through the hold on her {part}. Her chest heaved for more than it was given. The pressure did not let up, and she felt her strength beginning to drain into the effort of simply drawing air.
+
+== choke | held: long | air: gone | choke: air, both
+There was no air now, none at all. Her chest heaved against the hold on her {part} and drew on nothing, again and again, and the pressure in her head swelled until it seemed to fill the whole world, a deep, roaring fullness with her own pulse thundering inside it.
+The grip on her {part} had closed the last of it off. Her mouth worked on empty air; her chest jerked and strained and found nothing to pull; and somewhere behind her eyes the light began to thin and grey, as if the world were slowly being turned down.
+
+== choke | held: early | choke: blood
+The grip closed on the sides of her {part}, and she could still breathe; that was the strange part. Air went in and out of her, but almost at once a heavy, swelling pressure began to build in her head, and her own pulse started to pound in her ears like something trying to get out.
+She felt it squeeze in from both sides of her {part}, not on her breath but beneath it, and a hot fullness rose into her face and behind her eyes. She dragged in a breath, then another, and neither of them helped at all.
+The hold found the sides of her {part} and pressed, and something in her head answered at once: a thick, rushing roar, as if she had dived too deep, and a faint shimmer at the very edges of her sight.
+
+== choke | held: middle, long | choke: blood
+She was breathing, she was sure she was breathing, and still the world was going away from her. The roar in her ears had swallowed every other sound, and the edges of her sight had gone soft and grey and were creeping inward while the grip on her {part} squeezed and squeezed.
+Her head felt huge and hot and far too full, every heartbeat a heavy blow against the inside of her skull. She could feel the strength sliding out of her limbs, not from pain but from somewhere deeper, as though the grip on her {part} were slowly turning her down.
+
+== choke | held: long | air: gone | choke: blood
+It was quiet inside the choke in a way nothing else had been. The sound of the fight had gone far away, muffled under the heavy drumming of her own blood, and the edges of everything had begun to soften and close in while {foe} held on and did not ease at all.
+There was air in her chest and it did her no good at all. The blood to her head had been held back for too long; the grey had come in from every side, the roar in her ears had gone soft and deep, and her struggles had begun to feel like something happening far away, to someone else.
+
+# ---------------------------------------------------------------------------------------------------------------
+# CHOKE OUT: she passes out in a choke (a choke held until she goes, or a pin ended by the choke)
+# ---------------------------------------------------------------------------------------------------------------
+== choke_out | choke: blood, both
+Her struggles grew small and far apart, and then they were only the memory of struggles. The grey at the edges of her sight rolled inward all at once, soft and heavy, and the pounding in her head faded with it into a deep, muffled stillness, and she went limp in {foe}'s hold.
+She fought the dark for as long as she had anything to fight it with. Then the last of her air was gone, and the light narrowed to a single point, and the point went out; her body sagged into the grip, slack and quiet, and her eyes slid half closed. | choke: air, both
+The choke took her slowly and then all at once. One moment she was still straining, chest heaving on nothing; the next her muscles simply let go, the fight running out of her like warmth out of a stone, and she hung loose and still in {foe}'s grip. | choke: air, both
+At the very end it did not even hurt. The roaring in her ears softened to a hush, the pressure turned heavy and warm, and the world folded quietly in on itself until there was nothing left of it at all.
 
 # ---------------------------------------------------------------------------------------------------------------
 # HELD: a grip or a hold on her (any part but the neck)
@@ -182,6 +214,40 @@ She held the pin with her whole body, low and heavy, feeling every twist of {foe
 Beneath her, {foe} heaved and strained, and she rode each effort out the way one rides out a wave, sinking with it, pressing down as it passed. Her breath came hard and fast against the other's, and her grip did not loosen.
 
 # ---------------------------------------------------------------------------------------------------------------
+# WINGS AND BEAKS: a hard blow on a feathered wing, or on a beak ("limb" is the part struck)
+# ---------------------------------------------------------------------------------------------------------------
+== hit | limb: wing | has: feathers | level: hurting, very painful
+The blow went into her {part} at the root of the long feathers, and for one stroke the wing simply stopped answering her: it flinched in against her side instead of driving down, and the air she had been riding slid out from under it. Then the hurt came, hot and deep in the joint, and every stroke after it had to be made through it.
+She felt it land along the whole length of her {part}, a hard, flat jolt that ran from the leading edge right out to the tips of the flight feathers. The wing shuddered; the feathers along it lifted and stood out ruffled; and when she brought it down again there was a dull, spreading ache in it that had not been there before.
+It caught her {part} at full stretch, the worst way, with nothing to give into. She heard the feathers rattle against each other, felt the wing jar back on its joint, and a thin, involuntary sound came out of her as the ache settled into it and began to throb with every stroke.
+
+== hit | limb: wing | has: feathers | level: excruciating, devastated
+Her {part} would not lie right any more. She held it a little out from her body, the feathers along it standing awry, and each time she worked it the pain flared up through the joint and into her shoulder so sharply that her whole body flinched with it.
+The blow found her {part} where it was already hurt, and the pain went through it in a white, shaking wave. The wing dropped, trailing for a moment before she could haul it in again; when she did, it trembled against her side, and the long feathers at its tip shivered with every breath she took.
+Everything in her flying had gone into that {part}, and now every stroke of it was a small, private agony. She worked it anyway, short and stiff and uneven, her other wing doing more than its share, and the pain rode on every movement like a weight hung from the joint.
+
+== hit | limb: beak | level: hurting, very painful, excruciating, devastated
+The blow came square onto her {part}, and the shock of it went straight back into her skull: a hard, ringing jolt that made her eyes water and her head jerk aside. For a moment she could only hold her head low and still, beak half open, while the ache spread back from the tip into the bones of her face.
+Her {part} took it hard, and the jar ran back through her whole head like a struck bell. She clicked it shut, slowly, testing it, and the movement sent a deep, dull throb up between her eyes that made her blink and blink again.
+The force of it drove her {part} aside, and the pain followed a heartbeat later, spreading out from the hinge of it until her whole face ached. She shook her head once, sharply, as if she could shake it off, and found that shaking it only made it worse.
+
+# ---------------------------------------------------------------------------------------------------------------
+# AIR FALL: knocked out of the air, she falls and hits the ground (told from her side)
+# ---------------------------------------------------------------------------------------------------------------
+== air_fall
+The air let go of her. One moment it was there under her wings, solid and familiar; the next she was simply dropping, wings flailing at nothing, the room wheeling past in a smear of brass and light, and then the ground came up and struck her with a flat, jarring force that drove every bit of breath out of her body.
+She tried to catch herself and could not. Her wings opened and grabbed at the air and found it too thin to hold, and she went down through it twisting, a tumble of feathers and frantic strokes, until the ground stopped her all at once and the jolt of it rang through her from head to tail.
+There was a long, sick moment of falling, when the sense of up and down came loose inside her and her wings thrashed uselessly against the rushing air. Then the impact: hard, heavy, final, a shock that went through her whole small body, and she lay where it had left her with her wings sprawled out and the room still turning slowly around her.
+
+# ---------------------------------------------------------------------------------------------------------------
+# AIR TUMBLE: grabbed in the air by another flyer, the two of them come down together (told from her side)
+# ---------------------------------------------------------------------------------------------------------------
+== air_tumble
+The grip closed on her and her flight went with it. Suddenly there were two of them in the air and neither one flying: wings hammering out of time, feathers tangling, the whole knot of them dropping and turning while {foe} held on, until the ground came up and they came down onto it together, still locked.
+She felt {foe} take hold, and the sky turned over. They fell together in a storm of beating wings, too close to fly, too tangled to separate, the air full of the rush of it, and found their feet on the ground at the bottom of it with the grip still on her and nowhere left to go.
+For a moment they hung in the air together, wings thrashing, each of them dragging at the sky and the sky giving neither of them anything. Then they were falling, spinning down in a tight, violent tangle, and the ground arrived under their feet hard enough to jar her to the bone, and {foe} still had her.
+
+# ---------------------------------------------------------------------------------------------------------------
 # LANDING: thrown, slammed or knocked off her feet onto the ground
 # ---------------------------------------------------------------------------------------------------------------
 == landing
@@ -198,4 +264,4 @@ She hit the ground with a heavy, graceless thud, and the jolt of it burned all a
 The pain did not get worse; it simply got farther away. Sound went first, the world going muffled and soft, and then the light drew in from the edges like a tide going out, and the last thing she knew was the strange, heavy peace of letting go.
 Something in her let go all at once. The fight, the hurt, the will that had kept her going this long, all of it slipped quietly out of her, and her body went slack and still, and her eyes slid closed.
 She tried to hold on, and for a moment she did; then the darkness at the edges of her sight rose up and took her gently, and everything went quiet.
-There was no last effort, no final defiance. The light simply went out of her eyes, slowly, and her body sagged and settled as though a string that had been holding it up had quietly been cut.
+There was no last effort, no final defiance. The focus simply went out of her eyes, slowly, and her body sagged and settled as though a string that had been holding it up had quietly been cut.

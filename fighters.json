@@ -1763,6 +1763,116 @@
       ]
     },
     {
+      "name": "Gale",
+      "bench": true,
+      "description": "A female Swellow, older than she looks. Cool, patient and cruel in the way of a hunter; she circles high and waits, lets the other spend herself, then drops out of the sun and takes hold with her talons. Light and fragile like all her kind, but she has learned to fight close.",
+      "appearance": "Swellow. A sleek, small swallow. Glossy dark BLUE back, wings and head, a shade deeper than most, with a RED face and throat and a cream-white breast. Two long, thin feathers stream back from her head; the left one is shorter, an old break. Sharp, narrow black beak. Long, pointed blue WINGS (she has no arms or paws). Small grey feet with hooked, black-tipped claws. A deeply forked tail of two long, scissor-like feathers, one with a notch near its tip.",
+      "voice": "Low for a swallow, dry and unhurried; says little and means it. A short, harsh 'kek' when she strikes; in pain a thin, hissing whistle through her beak she tries to swallow.",
+      "tells": "She tilts her head to watch with one eye; she goes very still before she dives; her tail fans open slowly when she is pleased; she clicks her beak when she is hurt and won't show it; she sleeks her feathers flat and tight.",
+      "types": [
+        "Normal",
+        "Flying"
+      ],
+      "health": 1550,
+      "body": {
+        "Head": 103,
+        "Beak": 112,
+        "Left Eye": 56,
+        "Right Eye": 56,
+        "Neck": 77,
+        "Throat": 71,
+        "Chest": 103,
+        "Belly": 93,
+        "Upper Back": 123,
+        "Lower Back": 112,
+        "Left Shoulder": 112,
+        "Right Shoulder": 112,
+        "Left Wing": 97,
+        "Right Wing": 97,
+        "Left Wingtip": 77,
+        "Right Wingtip": 77,
+        "Left Thigh": 97,
+        "Right Thigh": 97,
+        "Left Talon": 103,
+        "Right Talon": 103,
+        "Forked Tail": 82,
+        "Head Plumes": 62
+      },
+      "moves": [
+        {
+          "name": "Brave Bird",
+          "type": "Flying",
+          "power": 96,
+          "target": "targeted",
+          "about": "a reckless dive",
+          "effects": [
+            {
+              "launch": "thrown",
+              "chance": 0.4
+            }
+          ],
+          "charge": true
+        },
+        {
+          "name": "Aerial Ace",
+          "type": "Flying",
+          "power": 48,
+          "target": "targeted",
+          "about": "an unavoidable slash"
+        },
+        {
+          "name": "Quick Attack",
+          "type": "Normal",
+          "power": 32,
+          "target": "targeted",
+          "about": "a blur of speed straight into the target",
+          "charge": true
+        },
+        {
+          "name": "Wing Attack",
+          "type": "Flying",
+          "power": 48,
+          "target": "targeted",
+          "about": "strikes with spread wings"
+        },
+        {
+          "name": "Steel Wing",
+          "type": "Steel",
+          "power": 56,
+          "target": "targeted",
+          "about": "steel-hard wings"
+        },
+        {
+          "name": "Air Slash",
+          "type": "Flying",
+          "power": 40,
+          "target": "spread",
+          "about": "a blade of air",
+          "effects": [
+            {
+              "status": "flinched",
+              "chance": 0.3,
+              "beats": 1
+            }
+          ]
+        },
+        {
+          "name": "Pluck",
+          "type": "Flying",
+          "power": 48,
+          "target": "targeted",
+          "about": "a snatching, wrenching strike of the beak"
+        },
+        {
+          "name": "Endeavor",
+          "type": "Normal",
+          "power": 64,
+          "target": "targeted",
+          "about": "a desperate, all-out strike, harder the more she is hurt"
+        }
+      ]
+    },
+    {
       "name": "Zephyr",
       "bench": true,
       "description": "A female Pidgeot. Proud, watchful and graceful; a large hawk-like bird who commands the wind, buffeting opponents with gales from above and diving at blinding speed.",

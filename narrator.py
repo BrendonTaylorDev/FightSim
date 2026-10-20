@@ -290,6 +290,17 @@ RULE_THROAT = ("- NECK AND THROAT BITES are allowed and can be brutal: jaws clam
                "and shoulders. Keep it within the TONE rule: nothing torn out, the neck never bends at a wrong angle or snaps.")
 RULE_BREATH = ("- BREATHING can be knocked out, choked off, or blocked by a hold, but only for a few seconds at a time: the "
                "fighter always gets air again. Breathing never stops for good.")
+# narration.full_chokes (on by default): the breathing rule as it stands with a choke allowed to go all the way
+RULE_BREATH_FULL = ("- BREATHING can be knocked out, choked off, or blocked by a hold. A CHOKE may cut her off COMPLETELY, "
+                    "and the two kinds are different: an AIR choke presses the windpipe shut (she can't breathe: her "
+                    "chest heaving on nothing, a burning need, slow), a BLOOD choke squeezes the sides of the neck (she "
+                    "can still breathe, but the blood to her head is held back: a pounding fullness, a roaring in her "
+                    "ears, the world greying and narrowing, quick); jaws or hands closed round the throat do both. Tell "
+                    "the kind the notes name. Held long enough, that is how a choke ends, with her passing out (when "
+                    "the events say so). She faints, never more: once it lets go she breathes again. Breathing never "
+                    "stops for good, and nobody dies.")
+BREATH_BULLET = re.compile(r"- BREATHING can be knocked out, choked off, or blocked by a hold, but only for a few seconds "
+                           r"at a time:\s+the\s+fighter always gets air again\. Breathing never stops for good\.")
 RULE_TAILS = "- BODIES AS THEY ARE: a Buizel's twin tails drive her through WATER; on land they only balance her."
 
 
@@ -3714,7 +3725,11 @@ class Narrator:
                 ago = min(now - parts[p] for p in old)
                 it = "it" if len(old) == 1 else "them"
                 f_ = self._feats_of(who)
+                # (her beak can't tend her beak: a hurt beak or head is clicked, shaken or held low instead)
+                beak_hurt = any(re.search(r"\bbeak\b|\bhead\b|\beye\b", str(p), re.I) for p in old)
                 nurse = (f"a paw pressed to {it} or rubbing {it}" if not f_ or f_ & {"arms", "forelegs"} else
+                         f"the hurt kept guarded, her head given a short shake or held low and still, her beak "
+                         f"clicking or working open and shut" if "beak" in f_ and beak_hurt else
                          f"the hurt kept guarded and turned away, her beak going to {it} to smooth the feathers there"
                          if "beak" in f_ else "the hurt kept guarded and turned away")
                 out.append(self._limb_fit(f"STILL FEELING IT: {poss_word(who)} {' and '.join(p.lower() for p in old)} "
@@ -4354,6 +4369,9 @@ class Narrator:
                              f"clamp itself lands on these spots (it is the grip biting in, not a separate strike), and it "
                              f"stays on:")
                 lines += [self._pressure_line(e["hits"][0], e.get("with", "")) for e in new]
+            ck = next((e.get("choke_kind") for e in evs if e.get("choke_kind") and not e.get("coil")), "")
+            if ck and self._full_chokes():
+                lines.append(self._choke_kind_line(dfn, ck, max(e["beats_held"] for e in evs)))
         for e in bundle.get("also_this_beat", []):
             if e["type"] == "hold_ongoing":
                 pass  # listed above, grouped per attacker
@@ -4542,6 +4560,7 @@ class Narrator:
                                          f"grip comes away"}.get(e.get("manner"), "the twist, pull, or shove that gets her loose")
                              + f"; {e['attacker']} is left with nothing in her grip. It does no damage, nobody falls, and "
                              f"no new attack follows it. When the beat ends, nothing of {poss(e['attacker'])} is on her.")
+                lines += self._choke_off_lines(e["defender"], e.get("parts") or [])
             elif e["type"] in ("hold_loosened", "hold_strain"):
                 parts = " and ".join(e.get("parts") or [])
                 with_ = " and ".join(dict.fromkeys(e.get("with") or []))
@@ -4790,6 +4809,7 @@ class Narrator:
                            + (f" ({k['with']})" if k.get("with") else "") + f": {k['reason']}. Show it come off as the "
                            f"blow lands (it goes slack, slides away, is torn loose); {k['defender']} is free of it "
                            f"from that moment, and it is NOT on her when the beat ends.")
+                out += self._choke_off_lines(k["defender"], [x["part"] for x in same])
             elif k["type"] == "hold_end" and str(k.get("reason", "")).endswith("took off"):
                 out.append(f"  - {k['attacker']} LETS GO of {poss(k['defender'])} {k['part']} as she lifts into the air: "
                            f"that hold is over, and {k['defender']} is free of it from that moment.")
@@ -4801,6 +4821,11 @@ class Narrator:
                 out.append(f"  - {k['attacker']} LOSES HER GRIP on {poss(k['defender'])} {k['part']} ({k['reason']}): "
                            f"that hold is over. Show it come off as it happens (torn loose, wrenched away as she goes "
                            f"down); {k['defender']} is free of it from that moment.")
+                out += self._choke_off_lines(k["defender"], [k.get("part")])
+            elif k["type"] == "out_of_air" and k.get("tumble"):
+                out.append(f"  - {k['fighter']} WAS IN THE AIR: the grab locks the two of them together up there, wings "
+                           f"tangling and beating out of time, and they TUMBLE down to the ground together and come down "
+                           f"on their feet, the grip still on. She is no longer flying.")
             elif k["type"] == "out_of_air":
                 out.append(f"  - {k['fighter']} WAS IN THE AIR: {k['why']} brings her down to the ground first (dragged "
                            f"down out of the air, or landing to make it). She is no longer flying.")
@@ -5695,9 +5720,13 @@ class Narrator:
             lines.append(f"{a['attacker']} {kind} {a['defender']}{mv}: {a.get('flavor', '')}{intent}")
             sub = a.get("submission")
             if sub:
+                from engine import body_region as region_   # (body_region is imported further down this function)
+                choke_ = any(region_(str(p.get("part") or "")) == "neck" for p in a.get("parts") or ())
+                out_ = ("she passes out only if the events say so. It is a CHOKE: it may cut off her air or the blood "
+                        "to her head completely" if choke_ and self._full_chokes() else "she will not pass out from it")
                 lines.append(f"  - A SUBMISSION HOLD: a {sub['name'].upper()} (a wrestling name for you; the story shows "
                              f"what it does to her body, never the name), {sub['look']}. It is NOT a pin: there is "
-                             f"no clock, nobody is counting, and she will not pass out from it. It is about the STRAIN: "
+                             f"no clock, nobody is counting, and {out_}. It is about the STRAIN: "
                              f"{sub['strain']}, more every beat it stays on. Show exactly how their bodies lock together, "
                              f"and the first wrench of it. {a['defender']} can't get up while it's on. {a['attacker']} "
                              f"still has {sub['free']} free.")
@@ -6796,7 +6825,7 @@ class Narrator:
     def _escape_lines(self, e):
         """An escape: the blow that frees her, and where both fighters are once the pin is gone."""
         a, d = e["attacker"], e["defender"]
-        out = []
+        out = self._choke_off_lines(d, e.get("pressed") or [])      # (a pin that had her by the throat)
         self._escaped = list(getattr(self, "_escaped", None) or []) + [(d, m) for m in [a] + list(e.get("helpers") or [])]
         if e.get("hits_on_pinner"):
             # checked afterwards: the blow itself has to be in the story, not only the pain it leaves. In a double
@@ -8061,6 +8090,14 @@ class Narrator:
         for a in acts:
             if take and a.get("knockout") and a.get("fighter"):
                 out.append(("knockout", a["fighter"], f"{a['fighter']} going out", {}, {}))
+        # passing out in a choke: a choke held until she goes, or a pin the choke ended
+        for e in list(also or ()) + list(pin_events or ()):
+            if take and e.get("defender") and (
+                    (e.get("type") == "tap_out" and e.get("how") == "pass_out" and
+                     any(body_region(str(p_)) == "neck" for p_ in e.get("parts") or ())) or
+                    (e.get("complete") and (e.get("out_cause") or {}).get("cause") == "choking")):
+                out.append(("choke_out", e["defender"], f"{e['defender']} passing out in the choke",
+                            {"foe": e.get("attacker")}, {"choke": (e.get("out_cause") or {}).get("kind") or "both"}))
         for e in pin_events or ():
             a_, d_ = e.get("attacker"), e.get("defender")
             if not a_ or not d_ or e.get("struggle") == "escape" or e.get("complete"):
@@ -8077,25 +8114,34 @@ class Narrator:
                     out.append(("pinned_start", a["defender"], f"{a['defender']} pinned", {"foe": a.get("attacker")}, {}))
                 if act:
                     out.append(("pinning", a.get("attacker"), f"{a.get('attacker')} pinning her", {"foe": a["defender"]}, {}))
+        # grabbed in the air by another flyer: the tumble down together is the moment, more than the grip itself
+        for a in acts:
+            if take and a.get("defender") and a.get("type") == "grapple_start" and any(
+                    k.get("tumble") for k in a.get("knock_on") or ()):
+                out.append(("air_tumble", a["defender"], f"{a['defender']} locked with {a.get('attacker')} and tumbling "
+                            f"down out of the air", {"foe": a.get("attacker")}, {}))
         # holds: one that locks on now, or one still on from before (any part: the neck makes it a choke)
         held = []
         for a in acts:
             if a.get("type") in ("hold_start", "grapple_start") and a.get("defender"):
                 for p in a.get("parts") or [{}]:
-                    held.append((a.get("attacker"), a["defender"], str(p.get("part") or ""), 0, bool(a.get("submission"))))
+                    held.append((a.get("attacker"), a["defender"], str(p.get("part") or ""), 0, bool(a.get("submission")),
+                                 p.get("choke_kind") or ""))
         for e in also or ():
             if e.get("type") == "hold_ongoing" and not e.get("coil"):
                 for h in e.get("hits") or [{}]:
                     held.append((e.get("attacker"), e.get("defender"), str(h.get("part") or ""),
-                                 int(e.get("beats_held") or 1), bool(e.get("sub"))))
-        for a_, d_, part, beats, sub in held:
+                                 int(e.get("beats_held") or 1), bool(e.get("sub")), e.get("choke_kind") or ""))
+        for a_, d_, part, beats, sub, ck in held:
             if not a_ or not d_ or not part:
                 continue
             when = "early" if beats <= 1 else "middle" if beats <= 3 else "long"
             neck = body_region(part) == "neck"
             if take:
                 out.append(("choke" if neck else "held", d_, f"{d_} in {poss(a_)} hold on her {part.lower()}",
-                            {"part": part.lower(), "foe": a_}, {"held": when, "_sub": sub}))
+                            {"part": part.lower(), "foe": a_},
+                            {"held": when, "_sub": sub, "choke": (ck or "both") if neck else "",
+                             "air": "gone" if neck and when == "long" and self._full_chokes() else ""}))
             if act:
                 out.append(("holding", a_, f"{a_} keeping her hold", {"foe": d_}, {}))
         if take:
@@ -8103,6 +8149,9 @@ class Narrator:
                 d_ = a.get("defender")
                 if d_ and (a.get("manhandle") in ("throw", "slam") or (a.get("environment") and a.get("launch"))) \
                         and self._blk_posture(d_, end=True) & {"down", "pinned"}:
+                    if a.get("launch") == "knocked out of the air":
+                        out.append(("air_fall", d_, f"{d_} knocked out of the air and hitting the ground",
+                                    {"foe": a.get("attacker")}, {}))
                     out.append(("landing", d_, f"{d_} hitting the ground", {"foe": a.get("attacker")}, {}))
             # the blow that did the most, on each fighter this part is told for
             best = {}
@@ -8126,7 +8175,7 @@ class Narrator:
                 part = str(h["part"]).lower()
                 fmt = {"part": part, "foe": a.get("attacker")}
                 ctx = {"level": lv, "size": self._strength_key(taken), "zone": story_blocks.ZONE_OF.get(body_region(part)),
-                       "kind": kinds}
+                       "kind": kinds, "limb": next((w for w in ("wing", "beak") if re.search(rf"\b{w}", part)), "")}
                 what = f"{poss(a.get('attacker') or 'the')} blow landing on {poss(who)} {part}"
                 if kinds & {"claw", "talon", "horn"}:
                     out.append(("cut", who, what, fmt, ctx))
@@ -8161,8 +8210,8 @@ class Narrator:
                 sub = ctx.pop("_sub", False)
                 ceil = self._pain_ceiling(who)
                 ex = [rx for need_, rx in INTENSE_IDEAS if ceil and ceil[0] < need_]
-                if sub:
-                    ex.append(re.compile(r"\bdark\w*|\bgrey\b", re.I))      # a submission hold: she never passes out
+                if sub and not (cat == "choke" and self._full_chokes()):
+                    ex.append(re.compile(r"\bdark\w*|\bgrey\b", re.I))      # a submission lock: she never passes out
                 part = str(fmt.get("part") or "")
                 if part.endswith("s") and not part.endswith(("ss", "us")):
                     ex.append(re.compile(r"\bit (?:throbbed|jerked|hung|felt|belonged)\b", re.I))      # "twin tails"
@@ -9751,7 +9800,10 @@ class Narrator:
             # (the throat-bite rule stays: it is the ceiling every other attack is measured against)
             parts[0] = _cut_bullet(_cut_bullet(parts[0], "BREATHING can be"), "BODIES AS THEY ARE")
             need = self._rules_needed()
-            extra += [r for k, r in (("breath", RULE_BREATH), ("tails", RULE_TAILS)) if k in need]
+            extra += [r for k, r in (("breath", RULE_BREATH_FULL if self._full_chokes() else RULE_BREATH),
+                                     ("tails", RULE_TAILS)) if k in need]
+        if self._full_chokes():
+            parts[0] = BREATH_BULLET.sub(lambda m: RULE_BREATH_FULL, parts[0])
         if cmp_.get("craft_trim"):
             i_ = parts[0].find("Craft:\n")
             if i_ >= 0:
@@ -9872,6 +9924,37 @@ class Narrator:
         if not c.get("enabled", False):
             return {}
         return {k: bool(v) for k, v in c.items() if not str(k).startswith("_") and k != "enabled"}
+
+    @staticmethod
+    def _choke_kind_line(dfn, kind, beats):
+        """narration.full_chokes: what kind of choke a grip on her neck is, and how far it has gone by now (an air
+        choke and a blood choke feel different; jaws or hands round the throat do both)."""
+        far = "it is closing her off" if beats <= 1 else "it has cut her off almost completely" if beats <= 3 else \
+            "it has cut her off COMPLETELY by now"
+        how = {"blood": f"a BLOOD CHOKE: it squeezes the SIDES of {poss(dfn)} neck, so she can still breathe, but the "
+                        f"blood to her head is held back: a pounding fullness behind her eyes, a roaring in her ears, "
+                        f"the edges of everything greying and drawing in. It works quickly",
+               "air": f"an AIR CHOKE: it presses the FRONT of {poss(dfn)} throat, the windpipe, shut: her breath "
+                      f"whistles thin or will not come at all, her chest heaving on nothing, a burning need for air. It "
+                      f"works slowly, and the panic comes before the grey",
+               "both": f"a choke on AIR AND BLOOD together: it crushes the front of {poss(dfn)} throat and squeezes the "
+                       f"sides at once, so her breath will not come AND the pressure swells behind her eyes, a roaring "
+                       f"in her ears, the grey creeping in"}.get(kind)
+        return (f"  - THE CHOKE is {how}; {far}. Show it as that kind. She passes out only if the events say so; "
+                f"until then she is fighting it.") if how else ""
+
+    def _choke_off_lines(self, who, parts):
+        """narration.full_chokes: a grip on her neck comes off, and her air and blood come back (the whooping breath,
+        the pressure draining from her head), told once, as it lets go."""
+        if not self._full_chokes() or not any(body_region(str(p or "")) == "neck" for p in parts):
+            return []
+        return [f"  - THE CHOKE IS OFF {who}: as it lets go her air and blood come back in a rush: great ragged, "
+                f"whooping breaths dragged in, coughing, the pressure draining out of her head, the grey pulling back "
+                f"from the edges, her sight and hearing coming back to her. Show it once, as it happens."]
+
+    def _full_chokes(self):
+        """narration.full_chokes (on by default): a choke may cut off her air or blood completely, until she passes out."""
+        return bool((self.rules.get("narration", {}) or {}).get("full_chokes", True))
 
     def _rules_needed(self):
         """Which of the beat-only hard rules this beat can use: a bite or a grip at the neck or throat ("throat"),

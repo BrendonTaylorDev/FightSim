@@ -867,6 +867,10 @@ def resolve(engine, b):
         # fought by the dice every beat anyway), rather than throwing the whole beat away as invalid
         act = "breather"
         b = dict(b, action="breather")
+        if not any(h.defender == engine.get(att).name for h in engine.holds.values()):
+            # (and nothing holds her at all: her flavor was written for a grip that isn't there, "thrashes on her back
+            # and snaps at the feet that hold her", so it goes)
+            b["flavor"], flavor = "", ""
     if act == "struggle":
         dfn = dfn or att
     elif act in ("strike", "combo", "hold_start", "pin", "eliminate", "quickpin", "pin_success", "pin_escape",
@@ -2971,7 +2975,7 @@ def director_prompt(engine):
     scene swaps the cave's stalactites and boulders for its own features, so the model isn't handed things that
     aren't there.)"""
     if engine.scene_name == "sea cave":
-        return DIRECTOR_PROMPT
+        return _air_grab_text(engine, DIRECTOR_PROMPT)
     props = engine.scene_props()
     ground, rough = engine.scene_word("ground"), engine.scene_word("rough")
     hz = [h["name"] for h in engine.scene_cfg.get("hazards") or []]
@@ -2999,7 +3003,16 @@ def director_prompt(engine):
     out = DIRECTOR_PROMPT
     for old, new in swaps:
         out = out.replace(old, new)
-    return out
+    return _air_grab_text(engine, out)
+
+
+def _air_grab_text(engine, text):
+    """flight.air_grab: a flyer in the air CAN be grabbed by another flyer up there with talons or feet."""
+    if not ((engine.rules.get("flight") or {}).get("air_grab") or {}).get("enabled", True):
+        return text
+    return text.replace("A fighter in the air can't be grabbed or pinned; a",
+                        "A fighter in the air can't be grabbed or pinned, except that another flyer up there with "
+                        "talons, feet or hands can \"grapple\" her: they lock together and tumble down to the ground; a")
 
 
 def scene_block(engine, scene):
