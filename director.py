@@ -718,6 +718,16 @@ def _unrolled_words(engine, act, att, flavor):
         return flavor
     if act in ("hold", "submission", "grapple_hold") and TAKEDOWN_WORDS.search(flavor):
         return _drop_clauses(flavor, TAKEDOWN_WORDS) or "a tight grip"
+    if act == "breather":
+        # a pause's words striking the other ("Head butts Ripples in the nose"): a blow the engine never resolved
+        foes = [re.escape(f.name) for f in engine.active() if f.name.lower() != str(att).lower()]
+        if foes:
+            blow = re.compile(r"\b(?:head[- ]?butt\w*|butts?|butted|strik(?:es|ing)|struck|hits?|punch\w*|kicks?|kicked|"
+                              r"slams?|slammed|bites?|bit|claws?|clawed|rakes?|raked|swipes?|swiped|smash\w*|jabs?|"
+                              r"jabbed|elbows?|lashes|lashed|chops?|chopped|batters?|pounds?)\s+(?:at\s+|into\s+)?(?:"
+                              + "|".join(foes) + r")\b", re.I)
+            if blow.search(flavor):
+                flavor = _drop_clauses(flavor, blow) or "catching her breath"
     if act == "breather" and GRIP_WORDS.search(flavor):
         me = engine.get(att).name
         if not any(me in (h.attacker, h.defender) for h in engine.holds.values()) and not engine.pinned_by(me) \

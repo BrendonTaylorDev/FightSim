@@ -2531,9 +2531,16 @@ class Engine:
             out["pulses"].append(pulse)
         out["held"] = 1 + len(out["pulses"])
         if back and not out["broke"] and out["pulses"]:
-            # she slides down whatever she was pressed against (only if the stream really held her there)
-            self.knock_down(d.name, parts=back, why=f"{d.name} was driven down against {against}")
-            out["knock_on"], self._knock_on = self._knock_on, []
+            if cfg.get("crumple", True) and not out["was_down"]:
+                # moves.sustain.crumple: held there on her feet, she is left pressed against it, and at the end of the
+                # beat she crumples or keeps her feet like anyone a charge has crushed against the scenery (the
+                # stronger she is, the likelier she stays up)
+                self.pressed[d.name] = {"surface": against, "by": f"{poss_word(a.name)} {move['name']}"}
+                out["pressed"] = True
+            else:
+                # she slides down whatever she was pressed against (only if the stream really held her there)
+                self.knock_down(d.name, parts=back, why=f"{d.name} was driven down against {against}")
+                out["knock_on"], self._knock_on = self._knock_on, []
         out["facing"] = self.facing_of(d.name)
         return out
 
@@ -5973,7 +5980,7 @@ class Engine:
         low = what.lower()
         if low == "pin":
             return f"the weight of {who} pin"
-        if low in ("hold", "coils"):
+        if low in ("hold", "coils", "tails"):
             return f"{who} {low}"
         if low == "escape":
             return f"the blow {who[:-2] if who.endswith(chr(39) + 's') else who.rstrip(chr(39))} struck breaking free"
@@ -7390,7 +7397,9 @@ class Engine:
                 health_scale = h_ramp / ramp
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp
                      if as_pin else h.power * ramp) * first
-            self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or ('coils' if h.coil else 'hold'))}")
+            # (a coil made of tails is her tails: a Buizel's Tail Bind is not "Nerine's coils")
+            coil_word = "tails" if re.search(r"\btails?\b", str(h.with_part or ""), re.I) else "coils"
+            self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or (coil_word if h.coil else 'hold'))}")
             cap = self.pin_cap() if in_pin else self.sub_cap() if h.sub else None
             hc = self.rules.get("holds", {}).get("health_cap") or {}
             if not in_pin and hc.get("enabled", True):
@@ -8512,6 +8521,9 @@ class Engine:
             pairs.setdefault((h.attacker, h.defender), []).append(h)
         for (a, dn), hs in pairs.items():
             d = self.fighters.get(dn.lower())
+            holder = self.fighters.get(str(a).lower())
+            if self.winner() or (holder is not None and holder.eliminated):
+                continue      # (the match ended a moment ago, or the one holding her is out: that grip is gone)
             if not d or d.eliminated or self.pinned_by(dn) or max(h.turns_active for h in hs) < 2:
                 continue
             beats = max(h.turns_active for h in hs)

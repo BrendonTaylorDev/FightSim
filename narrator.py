@@ -5578,6 +5578,9 @@ class Narrator:
                 lie = f", ending up {Engine.FACING_LOOK[fc]}" if fc in Engine.FACING_LOOK else ""
                 if sus["against"] and not sus["broke"] and sus.get("was_down"):
                     lines.append(f"  - When it finally stops, she is still on the ground where she was{lie}.")
+                elif sus["against"] and not sus["broke"] and sus.get("pressed"):
+                    lines.append(f"  - When it finally stops, she is still pressed against {sus['against']}, on her "
+                                 f"feet (whether she slides down it or keeps her feet is told at the end of the beat).")
                 elif sus["against"] and not sus["broke"]:
                     lines.append(f"  - When it finally stops, she slides down {sus['against']} to the ground{lie}.")
             elif a.get("charge") and not a["charge"].get("skipped"):
@@ -13207,6 +13210,8 @@ class Narrator:
         part.") goes. Only when swearing is off (narration.swearing) for the curse."""
         n = self.rules.get("narration", {}) or {}
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        # a tap-refusal note's label copied as prose ("What kept her holding on: that it was HER."): said as hers
+        text = re.sub(r"\bWhat (?:keeps|kept) her holding on:\s*", "She held on for one reason: ", text)
         if n.get("hit_counts", True):
             text = self._hit_counts(text)
         if n.get("mend_fragments", True):

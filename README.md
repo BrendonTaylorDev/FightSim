@@ -654,6 +654,25 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 235
+
+Fixes from your Ripples vs Nerine submission fight (played on build 228). Each problem was checked against the current
+code first; several were already fixed in builds 229-234 (a hold with no limb named takes it from the director's
+words; a pause's words about a grip that isn't there go; no throat grip from the ground).
+
+- **A held stream into the scenery** (`moves.sustain.crumple`, on): Nerine's Water Gun pressed Ripples into a pine
+  twice, and both times she ended up on the ground with nothing on screen saying so. She always slid down it. Now she
+  is left pressed against it and, at the end of the beat, crumples or keeps her feet with the same roll as a charge
+  (the weaker she is, the likelier she goes down), shown on screen either way. Off: she always slides down.
+- **No tap after the match is won:** in the beat Nerine passed out, Ripples was still rolled to "refuse to tap" in
+  Nerine's hold. Once the match is won, or the one holding her is out, nobody rolls to tap.
+- **Tails, not coils:** the injury report said "Nerine's coils" for a Buizel's Tail Bind. A coil made of tails is
+  now "her tails".
+- **A pause that strikes:** a breather worded as a blow on the other ("Head butts Ripples in the nose") loses that
+  clause; nothing resolved it.
+- **A copied note label:** "What kept her holding on: that it was HER." (the tap-refusal note's label) is mended to
+  "She held on for one reason: that it was HER."
+
 ## Build 234
 
 Submission matches end in a choke only now and then, for variety: most are won by a lock on a limb, the back or the

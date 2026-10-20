@@ -80,6 +80,8 @@
       "down_mult": 0.5, "held_mult": 0.5, "open_mult": 0.6, "shaky_mult": 1.3, "harder_mult": 0.3},
     "ground_back": {"_comment": "A blow driven down into a fighter lying on the ground (face-up, face-down or on her side; not sitting up) drives her into the ground too: the parts she lies on take a light hit with each blow (power from severity.environment, x mult; x shallow_mult lying in shallow water; none in deep water). Blunt blows and blasts only, not rakes or bites. On top of moves.vulnerable.down.", "enabled": true, "power": "light", "mult": 1.0, "shallow_mult": 0.5},
     "sustain": {
+      "_crumple_comment": "crumple (on by default, since build 235): a held stream that presses a fighter on her feet into the scenery leaves her pressed against it, and at the end of the beat she crumples to the ground or keeps her feet with the same roll as a charge crushing her there (moves.charge.crumple: the weaker she is, the likelier she goes down), shown on screen either way. false: she always slides down it.",
+      "crumple": true,
       "max_pulses": 4,
       "pulse_mult": 0.6,
       "energy_per_pulse": 6,
