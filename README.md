@@ -654,6 +654,27 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 224
+
+**Holds wear the part down before they tear into it** (`holds.slow_bite`, on). In the Ripples vs Nerine match, one grip on Nerine's hip took it from 10% to 293% damage in eight beats. As the hip's resistance fell, the hold's damage multiplier climbed about 4–5×, on top of the grip's own tightening. Now every hold that presses (submissions, coils and plain grips; not a pin's own presses) gets three changes:
+
+- **A flatter climb.** The multiplier still climbs as the part softens, but only as (worn ÷ sound) ^ `exp`. At 0.5, a ×4 climb becomes ×2.
+- **A light start.** A hold that doesn't already grind (submissions do) bites at `start_mult` (0.5) on a sound part, rising to its full bite on a worn-out one.
+- **More wear.** Such a hold wears the part's resistance ×`wear_mult` (1.4).
+
+The same hip grip held 8 beats now leaves the hip at 151% damage with 15 resistance left, instead of 277% with 40 left. Its damage still climbs every beat (6, 8, 11, 16, 17, 25, 33, 35%). Nocturne vs Ripples balance is unchanged: Nocturne wins 164 of 300, against 163 before.
+
+**Narration:**
+
+- **Filler trimmed** (`narration.filler_trim`, on).
+  - The stock tails go: ", a stark contrast to…", ", a constant reminder of…", ", a testament to…". Whatever follows a ", but" stays.
+  - A sentence that is only scenery (breeze, leaves, birds, lapping water, light, with nobody in it) is kept at most `max_ambient` (2) times a beat and once a paragraph.
+  - A scenery sentence that repeats one from this beat or the last is cut.
+  - The narrator is also asked for fewer of both.
+- **Who holds whom** (`narration.roles_note`, on). While a grip is on, every part of the beat is told plainly who is gripping and who is held, so the two don't swap (the kimura beat had Nerine both holding and held).
+- **Earlier blows stay what they were.** The notes on what has hit her before now say an attack keeps its own move. "The knee she had bitten into twice" was really a Quick Attack and a Water Gun.
+- **Scraps from cuts are removed.** A sentence left starting mid-clause ("drifted to her, …") goes, and so does a paragraph left as one or two words with no ending ("I").
+
 ## Build 223
 
 Fixes from the Ripples vs Nerine submission match (legs vs tail).

@@ -527,13 +527,16 @@ class Engine:
         return names
 
     # ---------- core math ----------
-    def _apply_damage(self, defender, part_name, power, cap=None, grind=None, health_scale=1.0):
+    def _apply_damage(self, defender, part_name, power, cap=None, grind=None, health_scale=1.0, slow=None):
         """One instance of damage, using the bracket rules. Returns every number involved. cap: {"mult", "health_mult"}
         upper limits on the bracket's multipliers (a pin's steady pressure doesn't tear into a worn part the way a
         blow does: pin.pressure_cap). grind (submissions.grind): a wrench that hurts little while the part is still
         sound and wears it down fast, so it bites harder and harder the longer the part is worked: its damage x
         from_mult on a sound part up to to_mult on a worn-out one, its wear on the part x wear_mult. health_scale: the
-        health lost x this, the part's damage and wear untouched (a long hold's build climbs slower in health)."""
+        health lost x this, the part's damage and wear untouched (a long hold's build climbs slower in health).
+        slow (holds.slow_bite): a hold's pressure wears the part's resistance first and bites into it only slowly:
+        its damage mult climbs from what it was on the sound part only as (worn / sound) ** exp, and its wear x
+        wear_mult (holds already grinding keep their own wear)."""
         r = self.rules
         p = defender.part(part_name)
         # the damage roll: every instance of damage (a move, a press, a landing, an impact) lands a little harder or
@@ -557,6 +560,17 @@ class Engine:
             worn_ = 1.0 - max(0.0, min(1.0, float(cond_b) / 100.0))
             bmult *= float(grind.get("from_mult", 0.5)) + (float(grind.get("to_mult", 1.3))
                                                            - float(grind.get("from_mult", 0.5))) * worn_
+        if slow:
+            # what this grip's mult was on the part while it was sound: the climb from there is flattened
+            b0 = self.resistance_mults(self.condition(p, getattr(p, "start_resistance", 0) or p.resistance))[0]
+            b0 *= self.vulnerability(p) * (float(grind.get("from_mult", 0.5)) if grind else 1.0)
+            if b0 > 0 and bmult > b0:
+                bmult = b0 * (bmult / b0) ** float(slow.get("exp", 0.6))
+            if not grind:
+                # and, like a submission's grind, it bites lightly while the part is sound (start_mult), fully on
+                # a worn-out one
+                worn_ = 1.0 - max(0.0, min(1.0, float(cond_b) / 100.0))
+                bmult *= float(slow.get("start_mult", 0.6)) + (1.0 - float(slow.get("start_mult", 0.6))) * worn_
         capped = False
         if cap:
             if cap.get("mult") is not None and bmult > float(cap["mult"]):
@@ -584,6 +598,9 @@ class Engine:
         if grind:
             wear *= float(grind.get("wear_mult", 2.0))
             cap_res *= float(grind.get("wear_mult", 2.0))
+        elif slow:
+            wear *= float(slow.get("wear_mult", 1.5))
+            cap_res *= float(slow.get("wear_mult", 1.5))
         if cap_res > 0 and wear > cap_res:
             wear = cap_res   # resistance.max_loss_per_hit: no single blow, however devastating, wears a part past this
         p.resistance = max(r["resistance"]["minimum"], res_b - wear)
@@ -7291,7 +7308,10 @@ class Engine:
                     cap["health_mult"] = hm
             gcfg = (self.rules.get("submissions") or {}).get("grind") or {}
             grind = gcfg if (h.sub or h.locked) and gcfg.get("enabled", True) else None
-            hit = self._apply_damage(d, h.part, round(power, 2), cap=cap, grind=grind, health_scale=health_scale)
+            scfg = self.rules.get("holds", {}).get("slow_bite") or {}
+            slow = scfg if scfg.get("enabled", True) and not in_pin else None
+            hit = self._apply_damage(d, h.part, round(power, 2), cap=cap, grind=grind, health_scale=health_scale,
+                                     slow=slow)
             h.turns_active += 1
             if h.coil and not d.eliminated:
                 # coils tighten every beat (holds.coil: tighten, max_power). Round her body or throat they squeeze her

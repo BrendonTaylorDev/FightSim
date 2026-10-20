@@ -136,9 +136,10 @@ Hard rules (these override everything else):
 Craft:
 - Third person, PAST tense ("she lunged", not "she lunges"), every sentence; only italic thoughts may be in the
   present.
-- PREFER CONCRETE WORDS to stock phrases ("a symphony of", "the tension was palpable", "ready to clash"); one now
-  and then is fine, a string of them is not.
-- THE PLACE: small sensory touches that fit it (a smell, an insect, a sound) are welcome now and then; don't add
+- PREFER CONCRETE WORDS to stock phrases ("a symphony of", "the tension was palpable", "ready to clash", "a stark
+  contrast to", "a constant reminder of", "a testament to"); one now and then is fine, a string of them is not.
+- THE PLACE: small sensory touches that fit it (a smell, an insect, a sound) are welcome now and then, one or two a
+  beat, each a new one; the breeze, the leaves and the lapping water need not come back every paragraph. Don't add
   landmarks, structures or creatures that would change the scene.
 - TELL EACH THING ONCE: an action (testing the ground, shaking off water) or a blow happens once in a part; never
   tell the same hit a second time later in the passage.
@@ -178,7 +179,7 @@ Craft:
 CRAFT_SHORT = """Craft:
 - Third person, PAST tense ("she lunged", not "she lunges"), every sentence; only italic thoughts may be in the
   present.
-- Concrete words over stock phrases ("a symphony of", "palpable"). Concrete physical detail: exactly where contact
+- Concrete words over stock phrases ("a symphony of", "palpable", "a stark contrast to", "a constant reminder of"). Concrete physical detail: exactly where contact
   lands, weight, grip, texture, temperature, sound, breath, the quality of each pain (sharp, hot, deep, numb,
   grinding). Show it, don't announce it. No filler ("she knows she has to", "she feels the pain", "she does not
   falter"); never repeat a sentence, an image or a phrase.
@@ -1879,6 +1880,12 @@ def _mend_orphans(text):
                   lambda m: m.group(1) + (m.group(2) or " ") + m.group(3).upper(), text, flags=re.M)
     text = re.sub(r"([.!?])[ \t]+\.(?=\s|$)", r"\1", text)
     text = re.sub(r"(?m)^[ \t]*[.,][ \t]*", "", text)
+    # a sentence whose start was cut away, left beginning mid-clause ("drifted to her, a contrast to the damp."):
+    # it goes (never a sound or a thought, which start with their marks)
+    text = re.sub(r"(?m)(^|(?<=[.!?\"”])[ \t]+)(?:[a-z][a-z'’]*)(?=[ ,])[^.!?\n*\"“”]*[.!?](?=\s|$)", r"\1", text)
+    # a paragraph left as a scrap of a word or two with no end to it ("I", "She could"): it goes
+    text = "\n".join(l for l in text.split("\n")
+                     if not (l.strip() and len(l.split()) <= 3 and not re.search(r"[.!?…*\"”“:]\s*$", l.strip())))
     return re.sub(r"[ \t]{2,}", " ", text)
 
 
@@ -11223,6 +11230,28 @@ class Narrator:
             after = after.replace(fix[0], fix[1], 1)
         return after
 
+    def _roles_note(self):
+        """narration.roles_note: while a grip is on, who holds whom, said plainly in every part, so the holder and
+        the held never swap (the holder told as the one being crushed, in her own part). Not with the beat card,
+        which has its own WHO line."""
+        n = self.rules.get("narration") or {}
+        if not n.get("roles_note", True) or (n.get("card") or {}).get("enabled", False):
+            return ""
+        grips = [g for g in (getattr(self, "grips", None) or []) if len(g) >= 3 and g[0] != g[1]]
+        if not grips:
+            return ""
+        pairs = {}
+        for g in grips:
+            pairs.setdefault((g[0], g[1]), []).append(
+                (self._own_with(g[0], g[3]) if len(g) > 3 and g[3] else poss(g[0]) + " grip")
+                + f" on {poss(g[1])} {str(g[2]).lower()}")
+        out = []
+        for (holder, held), how in pairs.items():
+            out.append(f"{holder} HOLDS {held} ({'; '.join(how[:3])}): {holder} is the one gripping, pressing and "
+                       f"keeping it on; {held} is the one held, hurting in it and fighting it. Never the other way "
+                       f"round, whoever's side this part is told from")
+        return "\n\nWHO HOLDS WHOM (true all through this part): " + " | ".join(out) + "."
+
     def _beat_card(self, key, acts, i, n_parts, seg_words, focus):
         """narration.card: the facts of this part again, in one fixed note-form block at the very end of the prompt
         (WHO, WHERE, CONTACTS, THIS PART, MIND, JOB), with every grip's two owners named. "" when it is off."""
@@ -12437,6 +12466,7 @@ class Narrator:
         text = self._drop_seen(text)
         text = self._drop_said_repeats(text)
         text = self._cut_retold(self._drop_self_repeats(text))
+        text = self._trim_filler(text)
         text = self._keep_subjects(raw, text)   # a cut can take the sentence that said who "she" is
         text = self._ensure_faint(self._ensure_getup(self._top_up(text, story_so_far)))
         text = self._ensure_takedown(text)
@@ -12617,6 +12647,57 @@ class Narrator:
             text = re.sub(r"(?:(?<=^)|(?<=[.!?…]\s)|(?<=\n))\*?(?:Damn|Dammit|Damn it|Damn this|Damn her|Damn you)[^.!?\n]{0,20}[.!?]+\*?\s*",
                           "", text)
         return text
+
+    # the stock tails the model hangs on a sentence: ", a stark contrast to the cool breeze", ", a constant
+    # reminder of the blows she had taken", ", a testament to her strength"
+    _TAIL_END = r"[^.!?;\n]*?(?=,\s*(?:but|and|yet|though|while)\b|[.!?;\n]|$)"
+    STOCK_TAIL = re.compile(r"(?:,|—|–)\s*(?:a|in)\s+(?:(?:stark|sharp|striking)\s+)?contrast\s+(?:to|with)\s" + _TAIL_END
+                            + r"|(?:,|—|–)\s*a\s+(?:\w+\s+)?testament\s+to\s" + _TAIL_END
+                            + r"|(?:,|—|–)\s*a\s+(?:constant|stark|grim|painful|harsh|sharp|bitter|cruel|steady|"
+                            r"relentless|vivid|nagging)\s+reminder\s+(?:of|that)\s" + _TAIL_END, re.I)
+    # a sentence that is only the place: the breeze, the leaves, birds, the water lapping, light and shadow
+    AMBIENT = re.compile(r"\b(?:breeze|wind|gust|leaves|rustl\w*|birds?|birdsong|chirp\w*|trill\w*|lapp\w*|waves?|"
+                         r"sunlight|sunbeams?|sun|dappl\w*|shadows?|clouds?|insects?|canopy|pines?|oaks?)\b", re.I)
+
+    def _trim_filler(self, text):
+        """narration.filler_trim: the stock tails cut from a sentence (", a stark contrast to...", ", a constant
+        reminder of...", ", a testament to..."), and the place said only so often: a sentence that is nothing but
+        scenery (the breeze, the leaves, the birds, the water, the light; nobody in it) is kept at most
+        max_ambient times a beat, never twice in one paragraph, and never when it says what an earlier one this beat
+        or last beat already said. The beat's opening sentence and a paragraph's only sentence are kept."""
+        cfg = (self.rules.get("narration") or {}).get("filler_trim") or {}
+        if not cfg.get("enabled", True) or not text:
+            return text
+        text = self.STOCK_TAIL.sub("", text)
+        names = [n for n in (getattr(self, "aliases", None) or {})] + list(getattr(self, "strengths", {}) or {})
+        who = re.compile(r"\b(?:she|her|hers|herself|" + "|".join(re.escape(n) for n in names if n) + r")\b", re.I)
+        stop = self._STOP if hasattr(self, "_STOP") else frozenset()
+
+        def words(x):
+            return {w for w in re.findall(r"[a-z]+", x.lower()) if w not in stop and len(w) > 3}
+        cap = int(cfg.get("max_ambient", 2))
+        seen = [words(x) for x in (getattr(self, "_ambient_prev", None) or [])]
+        kept, used, first = [], [], True
+        for para in text.split("\n"):
+            sents = re.split(r"(?<=[.!?…])\s+(?=[A-Z*\"“])", para.strip()) if para.strip() else []
+            out, here = [], 0
+            for sent in sents:
+                scenic = (len(self.AMBIENT.findall(sent)) >= 1 and not who.search(sent) and "*" not in sent
+                          and '"' not in sent and "“" not in sent)
+                if scenic and not first and len(sents) > 1:
+                    w = words(sent)
+                    again = any(len(w & o) >= 3 for o in seen)
+                    if len(used) >= cap or here >= 1 or again:
+                        continue
+                if scenic:
+                    used.append(sent)
+                    seen.append(words(sent))
+                    here += 1
+                out.append(sent)
+                first = False
+            kept.append(" ".join(out) if sents else para)
+        self._ambient_prev = used
+        return re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
 
     def _cut_retold(self, text):
         """One short model pass over the finished beat: which sentences tell an event AGAIN that the passage already
@@ -13004,7 +13085,9 @@ class Narrator:
             return ""
         return ("INNER LIFE (true, worked out by the program from the fight so far; for each fighter's thoughts, "
                 "worries and plans, NEVER as new events or new injuries. Never copy a line: turn it into her own "
-                "short thought, first person and in her own words, or into what she does about it):\n"
+                "short thought, first person and in her own words, or into what she does about it. An attack named "
+                "here stays the attack it was: never remember it as this beat's move, or as a bite, a claw or a kick "
+                "it wasn't):\n"
                 + "\n".join(lines) + "\n"
                 + ("" if (self.rules.get("narration") or {}).get("old_memories") else
                    "What she knows comes from THIS fight only: no earlier fights, no other opponents, no training, no "
@@ -13744,6 +13827,7 @@ class Narrator:
                         "just 'a sound'; the full rules for sounds come with the part where the blows land.")
             ask += self._camera_note(key)
             ask += self._rich_part_note(key, seg_words, i == len(plan))
+            ask += self._roles_note()
             ask += self._talk_note(so_far)
             ask += self._beat_card(key, acts, i, len(plan), seg_words, focus)
             n_def = len(self._deferred)
