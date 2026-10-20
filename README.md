@@ -654,6 +654,23 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 226
+
+**Refusing to tap no longer runs the same three steps every match** (`narration.tap_build.vary`, on). Before, the first refusal was always a paw twitching toward the ground, the second always a paw touching it, and the third on always a flat, shaking paw. Now each refusal shows ONE sign picked by dice from a set for how near she is (`variety.tap_tell_first`, `tap_tell_closer`, `tap_tell_edge`): claws curling, a swallowed word, a paw she traps under herself, half a word turned into a snarl, a 'no' said out loud, tears she doesn't notice, and more. She never shows a sign she used in her last few refusals. How near she is goes mostly by how often she has refused. Pain far past what she can bear pushes it a step nearer, and one time in five she finds a little more in herself and it drops a step back.
+
+- Past her limit she also gets a reason she is holding on (`variety.tap_reason`): pride, anger, that it is HER, hoping the grip slips, plain stubbornness, or a plea for it to stop on its own. The last two only come after she has refused a few times.
+- The holder gets a feeling about it (`variety.tap_holder`): cold, respect, pity, impatience, worry that the limb is about to give, or her own tiredness.
+- A choke's fight against the dark (`variety.tap_dark`) and the tap itself (`variety.tap_way`: slaps, frantic pats, a cry, one quiet word, her body giving in first) vary the same way.
+- The narrator is told these are the program's picks, to tell in its own way or swap for a sign of the same weight. A general rule joins the prompt as well: what happens twice in a fight never looks the same twice, and stays plain rather than strange.
+- `vary false` brings back the fixed three steps.
+
+**High and low damage rolls are told** (`narration.roll_notes`, on). Every hit already rolls ±17% (`damage.roll`). A blow that comes up in the outer 30% of that range is now told why: it caught her just right, landed flush, found her breathing out; or she turned a fraction, half rolled with it, braced in time. Landings get the same (came down on an edge, or on the flat). Each hit keeps its own pick across the prompts it appears in, and recent picks aren't reused. The numbers don't change, so the balance doesn't either.
+
+**Sample passages for submission matches.** `style_sample_scenes.txt` has new sections: `tap resist`, `tap resist take`, `tap out` and `tap out take`, written with {A} and {B} so they show in any fight. Each shows a different sign of refusing. A part of a beat now gets the passage for the side it is told from.
+
+- Fixed: a beat where a fighter was only held, with no new attack, used the "two fighters sizing each other up" passages. It now gets hold passages.
+- The hand-written narration of the scripted test fight (Ripples vs Nerine, seed 21: a heel hook, an escape, then a knee crank and the tap) is in `sim/test_fights/submission_varied/narration.md`.
+
 ## Build 225
 
 **The beat card is on by default** (`narration.card.enabled`, now true). On the build-222 bench it was the better of the two: it stayed with the fight (both fighters' wounds, Nerine stirring, Ripples' bad footing) where the plain prompt drifted into scenery. Its thoughts were cleaner, and it had fewer warnings on the last beat. Its two faults there are what build 224 fixes:

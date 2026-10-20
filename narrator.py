@@ -92,7 +92,9 @@ Hard rules (these override everything else):
   is plainly up again before the beat ends. A fighter who is held or pinned may fight it in any way that fits
   her body, as long as the grip is as the notes say when the beat ends. When a note says "this time" or "one
   way", it is the program's pick for variety: tell it, in your own staging. When a note gives examples in
-  brackets, they are only examples. Never trade a fixed fact for a better picture.
+  brackets, they are only examples. Never trade a fixed fact for a better picture. What happens twice in a fight
+  (a grip cranked again, a refusal to tap, a hit on the same hurt part) never looks the same twice: find a new
+  sign of it, not the same one louder, and keep it plain and true rather than strange.
 - Plain prose only: no headings, no "# Beat", no "From X's perspective:" labels, no horizontal rules.
 - The MOVE decides how each hit lands: a body charge (Aqua Jet) hits with the whole body, a bite with teeth,
   a slash with claws, a tail move with the tail. Don't swap in claws or teeth the move doesn't use.
@@ -2927,7 +2929,52 @@ class Narrator:
                 + ("" if raw else f"; her reaction: " + ("small: a startled grunt, more shock than pain"
                                                         if h.get("numb") else
                    f"{self._reaction_size(h, after['label'], size == 'glancing')}"))
+                + self._roll_note(h, seed, against)
                 + f"); {change}{tough}{self._numb_note(h, bool(raw))}.")
+
+    # narration.roll_notes: a blow whose damage roll came up near the top or the bottom of its range
+    ROLL_GOOD = [
+        "it caught her just right, on the exact spot, and did a little more than a blow like it should",
+        "it landed flush, with all the weight behind it and nothing to spill it",
+        "she was moving INTO it, not away, and that made it worse",
+        "she had just let her breath out, and it found her soft",
+    ]
+    ROLL_BAD = [
+        "she turned a fraction as it came, and it caught her a little off-line, a touch less than it might have",
+        "she half rolled with it, and took the edge off it",
+        "it came in a hair late, off the very end of its reach",
+        "she had braced for it, and it met her braced",
+    ]
+    ROLL_LAND_GOOD = ["she came down just wrong, on an edge, all her weight on it",
+                      "nothing broke the fall: she hit flat and hard"]
+    ROLL_LAND_BAD = ["she came down just right, on the flat, and it spread out",
+                     "she half caught herself, and it took some of the fall"]
+
+    def _roll_note(self, h, seed, against=None):
+        """A blow that rolled high or low (damage.roll): one way it caught her a little better or a little worse,
+        for the narrator to use. The numbers already hold it; this is only the picture. narration.roll_notes."""
+        cfg = (self.rules.get("narration") or {}).get("roll_notes") or {}
+        spread = float((self.rules.get("damage") or {}).get("roll", 0) or 0)
+        roll = h.get("roll")
+        if not cfg.get("enabled", True) or spread <= 0 or roll is None or h.get("devastating") or h.get("jarred"):
+            return ""
+        edge = float(cfg.get("edge", 0.7)) * spread
+        if abs(float(roll) - 1.0) < edge:
+            return ""
+        good = float(roll) > 1.0
+        pool = ((self.ROLL_LAND_GOOD if good else self.ROLL_LAND_BAD) if against else
+                (self.ROLL_GOOD if good else self.ROLL_BAD))
+        # one pick per blow (it is written into several prompts), and not one of the last few blows' picks
+        memo = self.__dict__.setdefault("_roll_memo", {})
+        if seed not in memo:
+            recent = list(memo.values())[-3:]
+            free = [p for p in pool if p not in recent] or pool
+            memo[seed] = free[sum(map(ord, seed)) % len(free)]
+            for k in list(memo)[:-12]:
+                memo.pop(k)
+        pick = memo[seed]
+        return (f"; {'a lucky one for the attacker' if good else 'a little luck for her'}: {pick} (already in the "
+                f"numbers above; tell it only if it fits)")
 
     # a blow on a part that was ALREADY badly hurt. Three things set how raw the reaction is: how hurt the part was
     # (very painful < excruciating < devastated), how big THIS blow is (a brush on a ruined part still hurts, but far
@@ -4250,19 +4297,26 @@ class Narrator:
                 parts = " and ".join(p.lower() for p in e.get("parts") or [])
                 if e.get("choke"):
                     lines.append(f"  - SHE FIGHTS THE DARK: the {e['submission']} on {poss(e['defender'])} {parts} is "
-                                 f"running out her air; her sight is greying at the edges and her struggles are "
-                                 f"getting weaker, and she will not let herself go under. Show the fight to stay "
+                                 f"running out her air; "
+                                 + (f"this beat it shows as {self.TAP_DARK[e['dark']]} (the program's pick; in your "
+                                    f"own words)" if e.get("dark") in self.TAP_DARK else
+                                    "her sight is greying at the edges and her struggles are getting weaker")
+                                 + f", and she will not let herself go under. Show the fight to stay "
                                  f"awake: she doesn't give in, and she is still conscious when the beat ends.")
                 else:
                     tb = (self.rules.get("narration") or {}).get("tap_build") or {}
                     n_ = int(e.get("refusals") or 1) if tb.get("enabled", True) else 1
                     spot = self._tap_spot(e["defender"], e["attacker"])
-                    reach = (f"Her paw (or tail) twitches toward {spot} to tap and she stops it"
-                             if n_ <= 1 else
-                             f"Her paw goes further than last time: it touches {spot}, the fingers already "
-                             f"spreading flat to slap it, and she drags it back" if n_ == 2 else
-                             f"Her paw is ON {spot} now, lying flat and shaking, and all it has to do is lift and "
-                             f"fall: she holds it still, and it is the hardest thing she has ever done")
+                    if e.get("tell"):
+                        reach = self.TAP_TELLS.get(e["tell"], "").format(spot=spot)
+                        reach = reach[:1].upper() + reach[1:]
+                    else:
+                        reach = (f"Her paw (or tail) twitches toward {spot} to tap and she stops it"
+                                 if n_ <= 1 else
+                                 f"Her paw goes further than last time: it touches {spot}, the fingers already "
+                                 f"spreading flat to slap it, and she drags it back" if n_ == 2 else
+                                 f"Her paw is ON {spot} now, lying flat and shaking, and all it has to do is lift and "
+                                 f"fall: she holds it still, and it is the hardest thing she has ever done")
                     if spot != "the ground":
                         reach = f"(She is on her feet in the hold: the ground is out of reach, so a tap is on {spot}.) " + reach
                     lines.append(f"  - SHE WON'T TAP" + (f" (the {_ORD.get(n_, str(n_) + 'th')} time she has refused)"
@@ -4270,20 +4324,29 @@ class Narrator:
                                  + f": the {e['submission']} on {poss(e['defender'])} {parts} is "
                                  + ("past what she can bear, and every part of her wants to give in"
                                     if e.get("over") else "close to what she can bear")
-                                 + f". {reach}; she holds on through will alone, and it shows: the shaking, the "
-                                 f"sound she makes, the thought of giving up and refusing it"
-                                 + (" (no longer a reason now, just a stubbornness she can't explain, or a plea "
-                                    "for it to stop on its own)" if n_ >= 3 else "")
-                                 + ". She does NOT tap this beat.")
+                                 + (f". This beat, the sign of it (the program's pick, so no two refusals look "
+                                    f"alike; tell it in your own way, or a sign of the same weight that fits her "
+                                    f"body, never one already used this fight): {reach}"
+                                    + (f". What keeps her holding on: {self.TAP_REASONS[e['reason']]}"
+                                       if e.get("reason") in self.TAP_REASONS else "")
+                                    + ". She does NOT tap this beat." if e.get("tell") else
+                                    f". {reach}; she holds on through will alone, and it shows: the shaking, the "
+                                    f"sound she makes, the thought of giving up and refusing it"
+                                    + (" (no longer a reason now, just a stubbornness she can't explain, or a plea "
+                                       "for it to stop on its own)" if n_ >= 3 else "")
+                                    + ". She does NOT tap this beat."))
                     if self._hold_exchange():
                         lines.append(f"  - She may answer {e['attacker']} if spoken to, or speak first: one short "
                                      f"line through her teeth (a refusal, a 'no', her name), or nothing.")
                     if tb.get("enabled", True) and e.get("over") and n_ >= int(tb.get("holder_from", 2)):
-                        lines.append(f"  - WHAT {e['attacker'].upper()} FEELS THROUGH THE GRIP: the twitch toward "
-                                     f"the tap and the stop, coming through her own arms; her own grip tiring and "
-                                     f"holding anyway; what she thinks of {e['defender']} still refusing (coldly, "
-                                     f"or with something like respect or pity, as fits her). She may say one short, "
-                                     f"low thing to her (to give up, not a taunt), or nothing.")
+                        lines.append(f"  - WHAT {e['attacker'].upper()} FEELS THROUGH THE GRIP: the refusal "
+                                     f"coming through her own arms; her own grip tiring and holding anyway; what she "
+                                     f"thinks of {e['defender']} still refusing ("
+                                     + (self.TAP_HOLDER[e["holder"]] + ", if that fits her; or her own"
+                                        if e.get("holder") in self.TAP_HOLDER else
+                                        "coldly, or with something like respect or pity, as fits her")
+                                     + f"). She may say one short, low thing to her (to give up, not a taunt), or "
+                                     f"nothing.")
             elif e["type"] == "tap_out":
                 parts = " and ".join(p.lower() for p in e.get("parts") or [])
                 with_ = " and ".join(e.get("with") or [])
@@ -4291,11 +4354,16 @@ class Narrator:
                     lines.append(f"{e['defender']} TAPS OUT at the END of this beat: after the pressure listed above, "
                                  f"the {e['submission']} on her {parts}" + (f" ({with_})" if with_ else "")
                                  + f" is more than she can take any longer. She gives up: "
-                                 + ("a paw, a tail or a foot slapping the ground again and again"
-                                    if (spot := self._tap_spot(e["defender"], e["attacker"])) == "the ground" else
-                                    f"her paw slapping {spot} again and again (she is on her feet in it: the ground is "
-                                    f"out of reach)")
-                                 + f", or a cry that says it plainly, and "
+                                 + (self.TAP_WAYS[e["way"]].format(spot=(spot := self._tap_spot(e["defender"],
+                                                                                              e["attacker"])))
+                                    + ("" if spot == "the ground" else " (she is on her feet in it: the ground is out "
+                                                                       "of reach)")
+                                    if e.get("way") in self.TAP_WAYS else
+                                    ("a paw, a tail or a foot slapping the ground again and again"
+                                     if (spot := self._tap_spot(e["defender"], e["attacker"])) == "the ground" else
+                                     f"her paw slapping {spot} again and again (she is on her feet in it: the ground "
+                                     f"is out of reach)") + ", or a cry that says it plainly")
+                                 + f", and "
                                  f"{e['attacker']} feels it and lets go. She is AWAKE, beaten and hurting, not out "
                                  f"cold. Give the moment its weight: how long she held on, what finally made her give "
                                  f"in, what it costs her to do it, and the release flooding through her. It is the "
@@ -6713,6 +6781,68 @@ class Narrator:
     def _hold_position_on(self):
         return bool(((self.rules.get("narration") or {}).get("hold_position") or {}).get("enabled", True))
 
+    # fighting the urge to tap (engine variety tap_tell_*): one sign a beat, nearer the tap as she weakens
+    TAP_TELLS = {
+        # first signs
+        "twitch": "her paw twitches toward {spot} to tap, and she stops it",
+        "curl": "her claws curl against {spot}, scraping, and she makes them go still",
+        "word": "a sound starts in her throat that could become 'enough', and she swallows it",
+        "breath": "her breathing goes short and high, the first edge of panic, and she drags it back down",
+        "tail": "her tail (or a free foot) lifts as if to slap {spot}, and she presses it flat again",
+        "eyes": "her eyes go to {spot} and stay there a moment too long before she tears them away",
+        # nearer
+        "touch": "her paw touches {spot}, the fingers already spreading flat to slap it, and she drags it back",
+        "hover": "her free paw comes up and hangs over {spot}, trembling, and she can make it go neither down nor "
+                 "away",
+        "pin_paw": "she traps her own free paw so it can't tap: jammed under her if she is down, clamped hard to her "
+                   "side if she is up",
+        "half_word": "half a word gets out (the start of 'stop', or 'I—') before she turns it into a snarl",
+        "bite": "she bites down on her lip, or the inside of her cheek, to keep the word in",
+        "grab_ground": "she knots her free paw into whatever it can reach (the ground, her own fur, the fur of the "
+                       "one holding her) and hangs on to it, so it can't tap",
+        # at the edge
+        "flat": "her paw is ON {spot}, lying flat and shaking; all it has to do is lift and fall, and she holds it "
+                "still",
+        "stops_fighting": "for a moment she stops fighting the hold at all, and everything she has left goes into not "
+                          "tapping",
+        "no_aloud": "she is saying 'no' out loud, over and over, to herself as much as to anyone",
+        "tears": "tears are running and she doesn't seem to notice; she still won't give it",
+        "hangs": "her paw rises off {spot}, ready to fall, and stays there in the air, shaking, and doesn't fall",
+        "laugh": "a broken, breathless sound comes out of her that is almost a laugh, at herself for still refusing "
+                 "(only if it fits who she is; otherwise a sob she cuts off)",
+    }
+    TAP_REASONS = {
+        "pride": "pride: she will not be the one who gave up",
+        "anger": "anger at the one doing this to her, hot enough to hold the pain off a little longer",
+        "not_her": "that it is HER: she could give in to anyone else, but not to this one",
+        "slip": "the hope that the grip will slip if she lasts one more breath (it doesn't, this beat)",
+        "stubborn": "no reason any more, only a stubbornness she couldn't explain if she tried",
+        "plea": "nothing but a wordless plea for it to stop on its own, so that she doesn't have to be the one",
+    }
+    TAP_DARK = {
+        "grey": "her sight greying and narrowing to a tunnel",
+        "roar": "a roaring in her ears that drowns out everything, her own heartbeat loud in it",
+        "heavy": "her limbs going heavy and slow, her struggles coming further apart",
+        "claw": "her paws clawing at the grip on her throat, weaker each time",
+        "count": "her mind narrowing to one thing, the next breath that doesn't come",
+    }
+    TAP_HOLDER = {
+        "cold": "coldly: it only means the hold needs more",
+        "respect": "with something like respect for how long she has lasted",
+        "pity": "with a flicker of pity she doesn't let into her grip",
+        "impatient": "with impatience: she wants this over",
+        "worry": "with a worry she won't show, that something in the limb she is wrenching is about to give",
+        "tired": "with her own tiredness: she is not sure who will break first, the grip or the refusal",
+    }
+    TAP_WAYS = {
+        "slap": "a paw slapping {spot} again and again",
+        "frantic": "a fast, frantic patting on {spot}, three or four at once, as if she were afraid it might not "
+                   "count",
+        "cry": "a cry that says it plainly ('enough', or 'stop'), and a slap on {spot} with it",
+        "word": "one word, quiet and clear, and then her paw on {spot}, twice",
+        "body": "her body giving in before her mind does: her paw slaps {spot} on its own, and she lets it",
+    }
+
     def _tap_spot(self, who, holder):
         """Where a held fighter's tap can land (narration.hold_position): the ground if she is down, the one holding
         her if she is on her feet."""
@@ -9100,8 +9230,21 @@ class Narrator:
             add("aftermath", "aftermath take")
             self._sample_rounds = {}
             return tags
+        # a submission match: a tap-out, or a fighter refusing to tap (finish.submission), comes first; the passage
+        # follows whose side this part is told from (the held one's, the holder's, or both)
+        tap = (next((e for e in also or () if e.get("type") == "tap_out" and e.get("how") == "tap"), None)
+               or next((e for e in also or () if e.get("type") == "tap_resist" and not e.get("choke")), None))
+        if tap:
+            act_t, take_t = (("tap out", "tap out take") if tap["type"] == "tap_out" else
+                             ("tap resist", "tap resist take"))
+            lead = getattr(self, "_lead_now", None)
+            if both or lead not in (tap["attacker"], tap["defender"]):
+                add(act_t, take_t)
+            else:
+                tags.append(take_t if lead == tap["defender"] else act_t)
+        held = any(e.get("type") == "hold_ongoing" and not e.get("grab") for e in also or ())
         if acts and all(t in ("breather", "none", "take_off", "land_flight", "time_passes") for t in types) \
-                and not pin_events:
+                and not pin_events and not held:
             # nobody attacks: a passage of two fighters reading each other, never one of a blow landing
             tags = ["read", "watch"]
             counts = self.__dict__.setdefault("_sample_counts", {})

@@ -10,7 +10,8 @@
 # the same passage every time. A passage that names a fighter who is not in the current fight is skipped.
 # Tags the program asks for: opening; strike act, strike take, strike take light (the part ends minor or sore), strike take mid (hurting or very painful), strike take hard (a blow that leaves a part excruciating or worse), strike take worn (the one hit is tired or spent overall), pinned take (a blow on a fighter who is pinned, held or down, with nowhere to go), knockdown take (the blow puts her down); chain; breaking point; sustain take; grab, grab take;
 # pummel; throw, throw take; getup; dodge; pin start, pin start take; pin hold, pin struggle; escape; faint;
-# aftermath, aftermath take; clash, clash take; dive, dive take; sputter take; coil, coil take; escape aftermath.
+# aftermath, aftermath take; clash, clash take; dive, dive take; sputter take; coil, coil take; escape aftermath; tap resist, tap resist take (a submission
+# match: she fights the urge to tap); tap out, tap out take.
 # super effective act, super effective take (an attack her body has no answer for); resisted act, resisted take (one
 # her body is made to take, or that can't touch her).
 # A tag nothing answers to falls back to the next one asked for, then to the first section.
@@ -6431,3 +6432,61 @@ She crept closer, belly low, until she could smell {B}: dust and sweat and the s
 She burst out of the grass in one long bound, mane flaring out around her head, and her jaws opened wide as she came down. She aimed for the shoulder on the hurt side and her teeth closed on it with all the force of her landing behind them. She felt the bite go in, the give of the hide and the hard muscle beneath resisting her, and the jolt of the impact ran back up through her jaws into her skull and down her neck.
 
 {B} let out a sharp cry and wrenched away. She let go and dropped back, her jaws aching from the force of it. On {B}'s shoulder there was a ring of deep pinpricks, beading with small drops of red. Her mane stood bristling round her face, and the thorn tree rattled in the wind.
+
+# ---- Submission matches (build 226): refusing to tap, and the tap. Each passage shows a DIFFERENT sign of
+# refusing, so the narrator sees that no two refusals have to look alike. {A} holds, {B} is held.
+
+== tap resist take
+{A} leaned back into the hold, and {B}'s knee answered before she did: a deep, wrong pressure on the inside of the joint, as if it were being asked to bend a way it had never been built for.
+
+She pointed her foot and stiffened the whole leg into one hard line, hoping the heel would slide out of the grip like a wet stone. It moved the width of a claw. The grip shifted to follow it, and for one breath the twist eased. Then it came back tighter.
+
+The word was right there. She could feel the shape of it behind her teeth, short and easy, and she set her teeth into her own bottom lip and held them there until she tasted copper.
+
+*It slipped once. It'll slip again.*
+
+== tap resist take
+She tried to roll with it. If she could get onto her side, the way the twist ran, the arm would have somewhere to go other than further. She threw her shoulders over and got halfway before {A} dragged her flat again, and the elbow took the whole of the turn.
+
+The sound that came out of her started low, climbed, and came apart at the top.
+
+After that she lay still. It wasn't surrender. Every muscle she had was called off the hold and given a different job, and the job was her free paw. She trapped it under her own hip and lay on it, hard, as if it might get away from her.
+
+*Not to her. Anyone else. Not to her.*
+
+== tap resist take
+Somewhere along the way her eyes had started to stream. She didn't know when. The wet ran down into the fur under her ears and she didn't blink it away; she didn't seem to know it was there. Her breath came in short pulls that caught at the top.
+
+"No," she was saying. She didn't remember starting. "No. No." It wasn't for {A}. It was for the paw that kept drifting toward the ground, and for the part of her that was so very tired.
+
+There was no reason left in it. Not pride now, not the fight: only the one thing her body kept asking, *please*, and not of {A} either. *Just stop. Let it stop by itself.*
+
+== tap resist
+Through her own arms {A} felt the struggling stop, and waited for the tap that should come next. It didn't. She looked down the length of the trapped leg at {B}'s face, eyes screwed shut, jaw working, and something in her own chest went quiet for a moment.
+
+Her forearms were burning. The grip was costing her too now, a steady ache from her paws to her shoulders, and she kept it anyway, a finger's width at a time.
+
+"You've done enough," she said, low. It came out sounding more like a fact than a taunt.
+
+{B} didn't answer.
+
+== tap resist
+{A} heard the refusal and kept the pressure on, and didn't let anything show on her face. Under her paws, though, she could feel the joint doing something she didn't like: a looseness that hadn't been there a beat ago, a give at the far end of the twist. She didn't know what it was, or how much more of this it had in it.
+
+*Tap. Come on. Don't make me find out.*
+
+She adjusted her grip so the strain would run straighter, and hated a little that she knew how.
+
+== tap out take
+It wasn't the pain that did it in the end; she had been carrying that for a long time. It was the next turn of the hold coming on top of it, and something in {B} simply stopped holding.
+
+Her paw left her chest and hit the ground beside her, flat, then again, and again, much harder than it needed to, as if she were afraid one wouldn't count.
+
+The grip was gone at once. She didn't move away. She couldn't. She curled onto her side round the leg as far as it would let her, one paw cupped over the knee without quite touching it, and all the pain that had had nowhere to go came out at once. Her breath shook coming in and shook going out. She was awake for every second of it.
+
+== tap out
+{A} felt the slaps come up through the ground before she heard them, and let go at once. Both paws came off, and she rolled away onto her back in the grass, panting, her arms trembling now that there was nothing left to hold.
+
+After a while she got up and stood over {B}. She found she didn't feel like crowing. She'd had to take that knee apart to get the tap, and even then it had been the knee that gave up, not {B}.
+
+She sat down beside her and waited for her breathing to slow.

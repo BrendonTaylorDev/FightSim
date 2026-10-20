@@ -937,6 +937,14 @@ class Engine:
         "getup_fail": {"gives_out": 4, "slips": 2, "dizzy": 2, "breath": 2},
         "getup_rise": {"push": 4, "roll": 2, "lean": 3, "lurch": 2},
         "bite_rock": {"drag": 3, "shake": 2, "yank": 2, "wrench_free": 2},
+        # fighting the urge to tap out (finish.submission): one sign a beat, from the set for how near she is
+        "tap_tell_first": {"twitch": 3, "curl": 3, "word": 2, "breath": 2, "tail": 2, "eyes": 2},
+        "tap_tell_closer": {"touch": 3, "hover": 3, "pin_paw": 2, "half_word": 2, "bite": 2, "grab_ground": 2},
+        "tap_tell_edge": {"flat": 3, "stops_fighting": 3, "no_aloud": 2, "tears": 2, "hangs": 2, "laugh": 1},
+        "tap_reason": {"pride": 3, "anger": 3, "not_her": 3, "slip": 2, "stubborn": 2, "plea": 2},
+        "tap_dark": {"grey": 3, "roar": 2, "heavy": 2, "claw": 3, "count": 2},
+        "tap_holder": {"cold": 3, "respect": 3, "pity": 2, "impatient": 2, "worry": 2, "tired": 2},
+        "tap_way": {"slap": 4, "frantic": 3, "cry": 3, "word": 2, "body": 2},
         "takedown": {"tackle": 3, "leg_hook": 3, "sweep": 3, "hip_throw": 3, "shoulder_drive": 2, "drag_down": 2,
                      "spin_down": 2, "trip_back": 2, "pull_forward": 2, "ride_down": 2},
     }
@@ -8476,10 +8484,12 @@ class Engine:
                     prev = d.learned.get("tap_refused") or ["", 0]
                     refusals = (prev[1] + 1) if prev[0] == a else 1
                     d.learned["tap_refused"] = [a, refusals]
-                    events.append({"type": "tap_resist", "attacker": a, "defender": dn, "submission": name,
-                                   "parts": [h.part for h in hs], "choke": choke and air >= near * endure,
-                                   "over": over >= 0, "pain": round(pain), "resist": round(resist),
-                                   "beats_held": beats, "refusals": refusals})
+                    ev_ = {"type": "tap_resist", "attacker": a, "defender": dn, "submission": name,
+                           "parts": [h.part for h in hs], "choke": choke and air >= near * endure,
+                           "over": over >= 0, "pain": round(pain), "resist": round(resist),
+                           "beats_held": beats, "refusals": refusals}
+                    ev_.update(self._tap_tells(d, refusals, over, resist, ev_["choke"]))
+                    events.append(ev_)
             if not how:
                 continue
             parts = [h.part for h in hs]
@@ -8489,6 +8499,8 @@ class Engine:
             ev = {"type": "tap_out", "how": how, "attacker": a, "defender": dn, "submission": name, "parts": parts,
                   "with": with_, "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
                   "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure)}
+            if how == "tap" and self._tap_vary_on():
+                ev["way"] = self.vary("tap_way")
             ev["elimination"] = self.eliminate(dn, reason)
             if how == "tap" and cfg.get("tap_awake", True):
                 # she gave up: she is awake, beaten and hurting, not knocked out (the recovery stage before "up")
@@ -8496,6 +8508,40 @@ class Engine:
                 d.recovery = max(0, len(stages) - 2)
             events.append(ev)
         return events
+
+    def _tap_vary_on(self):
+        return bool(((self.rules.get("narration") or {}).get("tap_build") or {}).get("vary", True))
+
+    def _tap_tells(self, d, refusals, over, resist, choke):
+        """narration.tap_build.vary: HOW she is shown fighting the urge to tap this beat, picked from the variety
+        sets (never the sign she showed last time). How near she is goes mostly by how often she has refused, but
+        pain far past what she can bear pushes it a step nearer, and now and then she finds a little more in herself
+        and it comes a step back. Past her limit, a reason she is still holding on; and what the holder feels."""
+        if not self._tap_vary_on():
+            return {}
+        used = list(d.learned.get("tap_ways") or [])
+        out = {}
+        if choke:
+            out["dark"] = self.vary("tap_dark", skip=used)
+            pick = [out["dark"]]
+        else:
+            stage = min(3, refusals)
+            if over >= 0.25 * resist:
+                stage = min(3, stage + 1)
+            elif stage > 1 and self.rng.random() < 0.2:
+                stage -= 1
+            out["stage"] = stage
+            out["tell"] = self.vary(("tap_tell_first", "tap_tell_closer", "tap_tell_edge")[stage - 1], skip=used)
+            pick = [out["tell"]]
+            if over >= 0:
+                # the longer she refuses, the less of a reason she has left: stubbornness and a plea climb
+                late = {"stubborn": 1.0 + refusals, "plea": 1.0 + refusals} if refusals >= 3 else None
+                early = ("stubborn", "plea") if refusals < 2 else ()
+                out["reason"] = self.vary("tap_reason", skip=list(used) + list(early), scale=late)
+                out["holder"] = self.vary("tap_holder", skip=used)
+                pick += [out["reason"], out["holder"]]
+        d.learned["tap_ways"] = (used + pick)[-6:]
+        return out
 
     def ko_only(self):
         """finish.knockout_only: a fight ends only when someone is KNOCKED OUT by a blow. A pin run to its end can't
