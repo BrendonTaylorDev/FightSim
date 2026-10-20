@@ -654,6 +654,31 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 231
+
+Shorter notes for the narrator, with every rule kept, plus three fixes from the Ripples vs Nerine fight. On a scripted
+six-beat test, the average call went from 40.3k to 34.8k characters (-14%), and the parts where no blow lands from
+about 45k to 36k. All switches are under `narration.compact`.
+
+- **rules_trim:** the hard rules in fewer words. Rules that were said two or three times (only the listed events, in
+  order; the tone; nobody dying) are said once. None is dropped, and the program's checks still catch a slip of any of
+  them afterwards.
+- **author_trim:** story_prompt.txt as the narrator reads it leaves out its TONE section (the hard rules now carry
+  every point of it), the note on where the length is set, and the grapple/chain/tumble bullet in a beat that has
+  none. The file is untouched, and the director still reads all of it.
+- **blow_detail_where_landed:** how each blow lands (the body under it, how it moves her, its sound, the reaction
+  ideas, the ways to sell a devastating blow) goes only to the part where it lands. The attacker's side, the
+  aftermath and a watcher's part get what each blow is, where, and how hard. The "keep writing" top-up gets the
+  short version too.
+- **repair_lean:** a call that writes one paragraph again keeps the facts, the plan and the beat card, but not
+  the part's building blocks, depth or camera notes.
+- **Near-repeats:** a short sentence that opens with the same named subject doing the same thing ("Nerine's right
+  hip throbbed, ..." twice) is told once.
+- **The attacker's part stops at contact** (`narration.trim_past_contact`): sentences after her blow lands about the
+  one hit feeling it are cut from her part, when the next part tells it anyway.
+- **Fragments mended** (`narration.mend_fragments`): "Nerine's left paw, her forearm fin flaring wide as..." gets a
+  plain verb ("came up"; tails "swept round").
+
 ## Build 230
 
 Fixes from the 20-beat Ripples vs Nerine submission fight (build 228).

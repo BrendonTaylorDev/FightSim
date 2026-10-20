@@ -208,6 +208,82 @@ CRAFT_SHORT = """Craft:
 - Stop when this beat's events are fully told.
 """
 
+# narration.compact.rules_trim: the Hard rules in fewer words. Every rule is kept; only the ones said two or three
+# times in different words (the events listed and nothing else, in order; the tone; nobody dying) are said once
+HARD_SHORT = """Hard rules (these override everything else):
+- Narrate ONLY the events listed under WHAT HAPPENS IN THIS BEAT, in their order (Hit 1, then Hit 2; several
+  numbered actions each with its own impact; a carry-over part struck by the same motion, just after the main
+  target), each attack distinct. Never invent attacks, hits, injuries, falls, escapes or outcomes (the director
+  creates new attacks so the engine can track them; anything you add is untracked), and never decide what happens
+  after this beat. PREVIOUS BEATS are already told: never retell, summarize or repeat them, and refer back only to
+  what really appears there.
+- The listed body parts are the truth, even where a move description names another. The MOVE decides what hits:
+  a body charge (Aqua Jet) the whole body, a bite teeth, a slash claws, a tail move the tail; never swap in claws
+  or teeth the move doesn't use.
+- Each hit has an IMPACT (the moment: a heavy blow makes them cry out and stagger even on fresh tissue) and a
+  LASTING pain level (afterward). Show both: a big hit can land hard and leave only a dull ache. The LASTING state
+  must match the level: never call a part useless, ruined, broken, crushed or dead, or have it drag or stop
+  working, unless it is EXCRUCIATING or DEVASTATED ("hurting" is slower and guarded, not disabled); "very
+  painful" and worse visibly change how she moves, breathes and sounds from then on. Older injuries under CURRENT
+  CONDITION keep hurting and affecting movement.
+- No numbers, percentages, game terms or colors as pain levels ("red pain", "went black", "a yellow ache"):
+  describe the feeling. The pain-level names (minor, sore, hurting, very painful,
+  excruciating, devastated, numb with shock) and toughness words are guidance: show them, never quote them.
+- TONE (hard rule, and the author's): a Pokemon battle, intense and physical, with only a LITTLE gore, and when in
+  doubt less. Allowed: bruising, swelling, scratches, small cuts, a thin trickle of blood, a split lip, the sting
+  of a bite, a bite that breaks the skin. Never: gaping wounds, torn or shredded flesh, exposed bone, muscle or
+  insides, blood pooling, spraying or soaking, anything severed, death or dying (nobody dies, is maimed, drowns or
+  disappears; the worst is fainting; no killing words like "for
+  the kill", though "finish her" means winning). Heavy damage shows through pain, trembling, strained breathing,
+  cries, and finally fainting.
+- BREATHING can be knocked out, choked off, or blocked by a hold, but only for a few seconds at a time: the
+  fighter always gets air again. Breathing never stops for good.
+- NECK AND THROAT BITES may be brutal (jaws clamping, teeth sinking in, her head wrenched side to side, the choked
+  gasp, pain flaring through neck and shoulders), and EVERY OTHER ATTACK MAY BE AS BRUTAL AS THAT, AND NO MORE: a
+  limb wrenched to its limit, a body ground into the floor, a blow that folds her, a grip that crushes until she
+  cries out, the attacker bearing down and refusing to ease, as brutal as the hit's IMPACT and pain level (a light
+  hit never is). That is the CEILING: nothing torn out, no neck or joint bent the wrong way, popped or snapped.
+- BONES can be bruised or cracked (a cracked rib, a jarred joint); broken, fractured or shattered ONLY where
+  CURRENT CONDITION says "can break".
+- Anatomy and colors ONLY from each fighter's APPEARANCE (no hooves on an Absol, no antennae on a Buizel). The
+  SCENE is fixed: use its ground, water, light and what stands in it; never invent another arena or add things it
+  doesn't name. POSITIONS are exact (standing, face-down, in water, coiled...); they change only through the
+  listed actions.
+- WHAT IS FIXED AND WHAT IS YOURS. FIXED by the program: who acts and with which move; which parts are hit and how
+  hard; whether an attack lands or misses; which grips and pins are on or off when the beat ends; who ends the
+  beat on her feet, on the ground (and which way she lies, or sitting), or out. YOURS: how it gets there: the
+  approach, the angle, the feint, what a grab catches hold of, footwork, how a body twists, slides, skids or folds
+  on the way, what the arena does (spray, echo, grit), sounds, breath, looks, thoughts. One who ends on her feet
+  may stumble, be driven back, even touch a knee or a paw down for an instant, if she is plainly up again before
+  the beat ends; one held or pinned may fight it any way her body can, if the grip is as the notes say at the
+  end. "This time" or "one way" in a note is the program's pick for variety: tell it in your own staging;
+  examples in brackets are only examples. Never trade a fixed fact for a better picture. What happens twice (a
+  grip cranked again, a refusal to tap, a hit on the same hurt part) never looks the same twice: a new sign of it,
+  not the same one louder, plain and true rather than strange.
+- Plain prose only: no headings, no "# Beat", no "From X's perspective:" labels, no horizontal rules.
+- Never predict or hint at outcomes not yet decided ("there would be no escape", "she knew she'd lose", "this was
+  over"); a pin holding or an escape is rolled later. No backstory, shared history, friendships, alliances or
+  signals that aren't in their descriptions; fighters cooperate only on the same team.
+- OVERALL STRENGTH OUTRANKS PART PAIN (hard rule). Part pain decides how that PART feels (screams, flinching,
+  favoring it, not using it); the OVERALL strength under CURRENT CONDITION decides how the WHOLE fighter copes. One
+  who is fresh or winded overall stays in it even with an agonizing part: knocked down, she gets back up; hit hard,
+  she recovers within moments and attacks with everything else. Collapsing, going limp, being unable to rise, eyes
+  rolling back or losing consciousness are only for one spent or past the limit overall.
+- Nobody blacks out, faints, or stays unconscious unless a pin has just been completed on her, or she lost and
+  CURRENT CONDITION says she is still out cold or stirring. Even past the limit she stays conscious: dazed,
+  wobbling, dropping to the ground, but awake and trying.
+- NO HEALING unless a recovery is listed: injuries never fade or stop hurting on their own, no berries or healing
+  moves, lost strength doesn't come back. NOTHING carries over unless CURRENT CONDITION or POSITIONS says so: a
+  grip, bite or hold not listed has been let go.
+- VOICES: thoughts, cries and words follow each fighter's VOICE. THOUGHTS: each fighter who acts or is hit gets at
+  least one brief thought in italics (*like this*), in her own voice, reacting to what just happened (surprise,
+  anger, a plan, stubbornness), never a prediction of how it ends.
+- REACTIONS: varied and fitted to the species (her TELLS): gasps, winces, eyes squeezing shut, ears pinning, tails
+  lashing, breath hissing out, a stagger caught. Never the same reaction twice in a beat, never the same opening
+  image as the previous beat.
+
+"""
+
 # narration.compact.rules_when_needed: hard rules only for beats that can use them (sent with the beat's own rules)
 RULE_THROAT = ("- NECK AND THROAT BITES are allowed and can be brutal: jaws clamping the neck or throat, teeth sinking in, "
                "the attacker twisting and wrenching her head side to side, the choked gasp, the pain flaring through neck "
@@ -1357,6 +1433,11 @@ def _mentions(text_lower, part):
         if re.search(r"\b" + re.escape(stem) + r"(?:s|es)?\b", text_lower):
             return True
     return False
+
+
+# sentence openings too common to say two sentences repeat each other (a near-repeat needs a named subject)
+_OPENER_WORDS = set("she he her his it its the a an and but then they their this that there with as in on at for so "
+                    "when while one all every each no not now still even just".split())
 
 
 def _mentions_sided(text_lower, part):
@@ -9499,6 +9580,10 @@ class Narrator:
                         .replace("excruciating, devastated, numb with shock)", "excruciating, devastated)"))
         cmp_ = self._compact()
         extra = []
+        if cmp_.get("rules_trim"):
+            a_, b_ = parts[0].find("Hard rules (these override"), parts[0].find("Craft:\n")
+            if 0 <= a_ < b_:
+                parts[0] = parts[0][:a_] + HARD_SHORT + parts[0][b_:]
         if cmp_.get("rules_when_needed"):
             # rules for things that happen only in some beats leave the fixed rules and come with the beat that needs them
             # (the throat-bite rule stays: it is the ceiling every other attack is measured against)
@@ -9573,6 +9658,8 @@ class Narrator:
             if sample:
                 passages.append(sample)
         story = _story_sections(userprompt.story_prompt(self.rules), getattr(self, "_pin_beat", True))
+        if cmp_.get("author_trim") and story:
+            story = self._author_trim(story, bool(cmp_.get("rules_trim")))
         if cmp_.get("beat_rules_in_message") and story:
             # the author's instructions are the same every part: before the style sample, which changes part to part,
             # so the longest possible start of the prompt stays the same and Ollama reuses its work on it
@@ -9596,6 +9683,26 @@ class Narrator:
             parts.append(self._beat_rules)
             self._beat_rules = ""
         return "\n\n".join(parts)
+
+    def _author_trim(self, story, tone_in_rules):
+        """narration.compact.author_trim: the author's instructions without what the narrator already has: the TONE
+        section, when the trimmed hard rules carry every point of it (rules_trim), the note on where the length is
+        set, and the bullet on grapples, chains and tumbles in a beat that has none (the beat's own notes explain the
+        one it has). The file itself is untouched, and the director still reads all of it."""
+        acts = [a for a in (getattr(self, "_acts_now", None) or []) if isinstance(a, dict)]
+        close = any(a.get("chain") or a.get("tumble") or a.get("grapple") or "grapple" in str(a.get("type") or "")
+                    or a.get("point_blank") for a in acts)
+        out, skip_section, skip_bullet = [], False, False
+        for line in story.splitlines():
+            if re.fullmatch(r"[A-Z][A-Z &/-]{2,}", line.strip()):
+                skip_section = tone_in_rules and line.strip() == "TONE"
+                skip_bullet = False
+            elif line.startswith("- "):
+                skip_bullet = (not close and line.startswith("- Now and then a fight gets close and fast"))
+                line = re.sub(r"\s*\(Length per beat is set in [^)]*\)", "", line)
+            if not (skip_section or skip_bullet):
+                out.append(line)
+        return "\n".join(out).strip()
 
     def _compact(self):
         """narration.compact: which of the shorter-notes changes are on ({} when compact is off)."""
@@ -12074,6 +12181,11 @@ class Narrator:
         before = "\n".join(p for p in paras[max(0, i - 3):i] if p.strip())[-700:]
         after = "\n".join(p for p in paras[i + 1:i + 4] if p.strip())[:500]
         want = max(12, len(para.split()))
+        if self._compact().get("repair_lean"):
+            # (mending one paragraph: what the part had for writing a whole part, its building blocks, how deep, the
+            # camera, is left out; the facts, the plan and the card stay)
+            user_msg = re.sub(r"\n\n(?:BUILDING BLOCKS for this part|DEPTH for this part|CAMERA for this part)\b.*?"
+                              r"(?=\n\n|\Z)", "", user_msg, flags=re.S)
         ask = (user_msg + "\n\nThat part is written. ONE paragraph of it has to be written again; everything else stays "
                "exactly as it is.\n"
                + (f"JUST BEFORE IT:\n<<<\n{before}\n>>>\n" if before else "It is the first paragraph.\n")
@@ -12633,6 +12745,9 @@ class Narrator:
                            or ([x for x in w if x != "the"][:2] == [x for x in w2 if x != "the"][:2]
                                and len(ws - {"the"}) >= 5 and len((ws & s2) - {"the"}) / len((ws | s2) - {"the"}) >= 0.5)
                            or (len(w2) >= 6 and w[1:6] == w2[1:6])   # the same clause after the subject
+                           # "Nerine's right hip throbbed, a sharp and hot pain..." after "Nerine's right hip throbbed,
+                           # a dull ache...": the same named subject doing the same thing again, said short
+                           or (len(w2) >= 4 and w[:4] == w2[:4] and w[0] not in _OPENER_WORDS and len(w) <= 18)
                            or (runs and any(r in " ".join(w2) for r in runs)) for w2, s2 in seen):
                         changed = True
                         continue
@@ -12781,6 +12896,36 @@ class Narrator:
             self._pm = pm if pm.enabled else None
         return self._pm
 
+    FINITE = re.compile(r"\b(?:\w+ed|was|were|is|are|had|has|did|could|would|should|might|must|can|will|felt|took|made|"
+                        r"came|went|saw|knew|gave|got|ran|fell|rose|held|met|struck|bit|sank|tore|drove|threw|caught|"
+                        r"kept|left|lay|stood|sat|shook|spread|hit|cut|let|set|put|swung|clung|dug|shot|burst|stuck|"
+                        r"spun|slid|split|began|found|brought|bent|bore|wore|broke|woke|ate|drew|grew|flew|blew|hung|"
+                        r"leapt|leaped|lit|meant|paid|said|sent|slept|spoke|stole|swept|thought|told|won|wound|wrung)\b",
+                        re.I)
+    FRAGMENT = re.compile(r"^(\s*(?:[A-Z][\w-]+(?:'s|’s|'|’)|Her|His|Its|The) (?:\w+ ){0,2}(\w+)),(\s+(?:her|his|its|the) "
+                          r"(?:\w+ ){0,3}?\w+ing\b.*)$")
+
+    def _mend_fragments(self, text):
+        """A sentence a cut left with no verb of its own ("Nerine's left paw, her forearm fin flaring wide as she met
+        Ripples' attack"): when what it opens on is a body part, it gets a plain verb ("Nerine's left paw came up,
+        ..."); anything else is left as it is (narration.mend_fragments)."""
+        parts = self._part_words() | {"paw", "paws", "tail", "tails", "jaws", "foreleg", "forelegs", "fin", "fins",
+                                      "claws", "head", "body", "leg", "legs", "arm", "arms"}
+        out = []
+        for para in text.split("\n"):
+            sents = []
+            for x in _SENT.split(para.strip()) if para.strip() else []:
+                m = self.FRAGMENT.match(x)
+                if m and m.group(2).lower() in parts:
+                    main = re.split(r"\b(?:as|while|when|because|until|before|after|that|which|who|and)\b",
+                                    m.group(3), 1)[0]
+                    if not self.FINITE.search(main):
+                        verb = "swept round" if m.group(2).lower().startswith("tail") else "came up"
+                        x = f"{m.group(1)} {verb},{m.group(3)}"
+                sents.append(x)
+            out.append(" ".join(sents) if para.strip() else para)
+        return "\n".join(out)
+
     _COUNT_WORDS = {"one": 1, "a single": 1, "only one": 1, "just one": 1, "two": 2, "three": 3, "four": 4,
                     "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
     HIT_COUNT = re.compile(r"\b([A-Z][\w-]+) (had|has) landed (one|a single|only one|just one|two|three|four|five|six|"
@@ -12816,6 +12961,8 @@ class Narrator:
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
         if n.get("hit_counts", True):
             text = self._hit_counts(text)
+        if n.get("mend_fragments", True):
+            text = self._mend_fragments(text)
         # a move's NAME used as a label ("a pulsing blast of water, Water Pulse." / "Ripples' Aqua Jet missed its mark"
         # / "with her own Thunderbolt"): the label goes, or the move becomes plain "attack"
         names_ = sorted((x for x in (getattr(self, "_move_names", None) or set()) if x and x[0].isupper()), key=len,
@@ -13156,6 +13303,13 @@ class Narrator:
         context = getattr(self, "_last_context", "")
         if not text or not target or not context or floor <= 0 or have >= floor * target:
             return text
+        cmp_ = self._compact()
+        if cmp_.get("blow_detail_where_landed"):
+            # (everything has landed already: what each blow is and where, not how it lands; the fighters as later
+            # parts see them)
+            context = self._blow_facts_only(context)
+            if cmp_.get("fighters_once"):
+                context = _compact_fighters(context)
         need = max(120, target - have)
         if self.progress:
             self.progress(f"the beat came out short ({have} of ~{target} words) after removing repeats: writing more")
@@ -14193,6 +14347,10 @@ class Narrator:
                 # the fighters in full in part 1; after that, how they look, show pain and sound, without the rest
                 ctx_ = context.replace(f"FIGHTERS:\n{fighter_notes}\n\n",
                                        f"FIGHTERS (as in part 1):\n{_compact_fighters(fighter_notes)}\n\n", 1)
+            if cmp_.get("blow_detail_where_landed") and not check and key not in ("take", "all"):
+                # how each blow lands (the body under it, how it moves her, its sound, the reaction to each hit) only in
+                # the part where the blows land; any other part gets what each blow is, and where
+                ctx_ = self._blow_facts_only(ctx_)
             part = self._call(ctx_ + ask, seg_words, coverage=check, prior=so_far)
             written.append(self._drop_repeats(part, so_far) if so_far else part)  # no re-telling earlier parts
             part_msgs.append(self._deferred[-1] if len(self._deferred) > n_def else None)
@@ -14288,6 +14446,7 @@ class Narrator:
                         self._part_leads[sents[0]] = part_leads[k]
                     if sents:
                         self._pov_marks.append((sents[:3], part_leads[k] or "Both"))
+        written = self._trim_past_contact(written, [k for k, _, _ in plan])
         written = self._tell_missing_attacks(written, [k for k, _, _ in plan])
         written = self._tell_missing_events(written, [k for k, _, _ in plan])
         return "\n\n".join(w for w in written if w).strip()
@@ -14744,6 +14903,101 @@ class Narrator:
             if text:
                 written = self._put_in_order(written, at, text)
                 seen = "\n".join(w for w in written if w)
+        return written
+
+    _LANDING_ONLY = re.compile(r"^(?:\s+- (?:THE BODY UNDER IT|HOW IT MOVES HER|THE SOUND OF THE BLOW|This is ONE strike)|"
+                               r"TELLING THE HURT:|Impact examples are suggestions)")
+
+    @staticmethod
+    def _drop_paren(line, opener):
+        """`line` with the parenthesis that opens with `opener` (and everything nested in it) taken out."""
+        at = line.find(opener)
+        if at < 0:
+            return line
+        depth = 0
+        for k in range(at, len(line)):
+            depth += {"(": 1, ")": -1}.get(line[k], 0)
+            if depth == 0:
+                return (line[:at].rstrip() + line[k + 1:]).replace(" ;", ";")
+        return line
+
+    def _blow_facts_only(self, context):
+        """The notes for a part where no blow lands (the attacker's side up to contact, the aftermath, a watcher's
+        moment): WHAT HAPPENS IN THIS BEAT keeps each attack, each hit's part, size and lasting pain, but not how it
+        lands (the body under it, how it moves her, the sound, the reaction ideas for each hit). Those go with the
+        part where it lands (narration.compact.blow_detail_where_landed)."""
+        head = "WHAT HAPPENS IN THIS BEAT (the only events you may narrate):\n"
+        at = context.find(head)
+        if at < 0:
+            return context
+        at += len(head)
+        body, cut = context[at:].split("\n"), False
+        out = []
+        for line in body:
+            if self._LANDING_ONLY.match(line):
+                cut = True
+                continue
+            m = re.match(r"(\s+- A DEVASTATING BLOW \([^)]*\): [^.]*\.)", line)
+            if m:
+                line, cut = m.group(1) + " (How it lands and what it does goes with the part where it lands.)", True
+            elif re.match(r"\s+- Hit \d+:", line) and "(impact, e.g." in line:
+                line, cut = self._drop_paren(line, "(impact, e.g."), True
+            out.append(line)
+        if not cut:
+            return context
+        return context[:at] + "\n".join(out)
+
+    TAKE_FEEL = re.compile(r"\b(?:pain|agony|yelp\w*|cr(?:y|ied)|squeal\w*|gasp\w*|flinch\w*|winc\w*|stagger\w*|"
+                           r"buckl\w*|reel\w*|throb\w*|ache\w*|ached|burn\w*|sting\w*|jolt\w*|shudder\w*|whimper\w*|"
+                           r"shriek\w*|scream\w*|grunt\w*|howl\w*|groan\w*|hiss\w*)\b", re.I)
+
+    def _trim_past_contact(self, written, keys):
+        """narration.trim_past_contact: the attacker's part runs on past the instant her blow lands, into how it feels
+        to the one she hit ("Nerine's hip seized, a raw yelp tearing out of her"), and the next part, which is the
+        one hit's own, tells it again. Sentences after the attacker's part's last blow landing that are about the one
+        hit feeling it are cut from her part, only when that next part tells the one hit at all."""
+        if not (self.rules.get("narration", {}) or {}).get("trim_past_contact", True):
+            return written
+        acts = [a for a in (getattr(self, "_acts_now", None) or []) if isinstance(a, dict)
+                and a.get("type") == "instant" and a.get("hits") and not a.get("environment")]
+        if not acts or "act" not in keys or "take" not in keys:
+            return written
+        k_act, k_take = keys.index("act"), keys.index("take")
+        if k_take != k_act + 1 or k_take >= len(written) or not written[k_act] or not written[k_take]:
+            return written
+        hurt = {a["defender"] for a in acts if a.get("defender")}
+        parts = {h["part"].lower() for a in acts for h in a["hits"]}
+        if not hurt or not any(d in written[k_take] for d in hurt):
+            return written
+        sents = [(j, s_) for j, para in enumerate(written[k_act].split("\n")) for s_ in _SENT.split(para.strip()) if s_]
+        last = None
+        for i, (_j, s_) in enumerate(sents):
+            low = s_.lower()
+            if IMPACT_NOW.search(s_) and any(_mentions_sided(low, p) for p in parts) and not RECALLED.search(
+                    s_[:IMPACT_NOW.search(s_).start()]):
+                last = i
+        if last is None:
+            return written
+        cut = set()
+        for i in range(last + 1, len(sents)):
+            s_ = sents[i][1]
+            if s_.lstrip().startswith(("*", "\"", "“")):
+                continue
+            first = re.match(r"\s*([A-Z][\w-]+)", s_)
+            about = (first and first.group(1) in hurt) or any(re.match(r"\s*" + re.escape(poss_word(d)) + r"?", s_)
+                                                              for d in hurt)
+            if about and self.TAKE_FEEL.search(s_):
+                cut.add(i)
+        if not cut:
+            return written
+        paras = {}
+        for i, (j, s_) in enumerate(sents):
+            if i not in cut:
+                paras.setdefault(j, []).append(s_)
+        lines = written[k_act].split("\n")
+        new = "\n".join(" ".join(paras.get(j, [])) if line.strip() else line for j, line in enumerate(lines))
+        written = list(written)
+        written[k_act] = re.sub(r"\n{3,}", "\n\n", new).strip()
         return written
 
     def _segments(self, actor, receivers, words, n):
