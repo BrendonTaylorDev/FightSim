@@ -654,6 +654,12 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 222
+
+- **Wrist and ankle holds are harder to lock in and easier to get out of** (`submissions.small_joints`). This covers a submission whose hardest grip is on a paw, a hand, a foot or a talon, like the wrist lock, heel hook, toe hold or wrist bite.
+  - **Locking it in:** when she goes for one, it locks only about half the time (`set_chance` 0.5). The more health the defender has lost, the more often it locks (+ `set_hurt` 0.4 × the health she has lost). When it doesn't lock, she gets her hands on it and the limb slips out: she turns with it, yanks it back, stiffens it, or scrambles free. Nothing is wrenched, no damage is done, and the opening is spent.
+  - **Getting out:** once one is on, her break-free chance is ×1.5 (`escape_mult`).
+
 ## Build 221
 
 More kinds of holds, on more of the body:

@@ -27,6 +27,7 @@ WAYS = {
                    "shove": "shoves her back"},
     "hold_strain": {"pry": "pries at it", "twist": "twists against it", "claw": "claws at it and the ground",
                     "brace": "braces and strains"},
+    "sub_slip": {"turn": "turns the limb with it", "yank": "yanks it back", "fist": "stiffens it", "kick": "scrambles free"},
     "struggle": {"buck": "bucks", "bridge": "bridges", "twist": "twists to one side", "limb": "wrenches at a trapped limb",
                  "kick": "kicks out", "squirm": "tries to slide out"},
     "getup_fail": {"gives_out": "a hurt limb gives out", "slips": "her footing slips", "dizzy": "everything tilts",
@@ -1081,6 +1082,10 @@ class Display:
                        f"(flight.weak_takeoff)")
         elif t == "land_flight":
             out.append(f"🪶 **{a['fighter']} comes down** out of the air and lands")
+        elif t == "sub_slipped":
+            out.append(f"🫳 **{a['attacker']} goes for a {a.get('submission', 'hold')}** on {poss_name(a['defender'])} "
+                       f"{str(a.get('part') or '').lower()} and it slips out before it locks (it locks "
+                       f"{a.get('chance', 0) * 100:.0f}% of the time{way('sub_slip', a.get('manner'))})")
         elif t == "reposition" and a.get("resisted"):
             out.append(f"💪 **{a['defender']} fights off being moved** ({a['attacker']} tried: {a['how']}): she stays "
                        f"{a.get('before') or 'as she lay'} (chance {a.get('chance', 0) * 100:.0f}%{way('hold_strain', a.get('manner'))})")

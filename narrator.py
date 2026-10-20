@@ -5539,6 +5539,18 @@ class Narrator:
             lines.append(f"{poss(a['attacker'])} hold on {poss(a['defender'])} {a['part']} {how}"
                          + (f" ({label.rstrip('.')})" if label else "")
                          + ". The grip is on for the whole beat and still on when it ends.")
+        elif t == "sub_slipped":
+            part = str(a.get("part") or "").lower()
+            how = {"turn": "she turns the whole limb with the twist before it can lock, and it comes round out of the "
+                           "grip",
+                   "yank": "she yanks it back hard the instant she feels the grip close, and it tears loose",
+                   "fist": "she clenches and stiffens it so there is nothing to bend, and it slides out",
+                   "kick": "she kicks or shoves at the holder with everything else, and in the scramble it comes "
+                           "free"}.get(a.get("manner"), "it twists out of the grip before it can lock")
+            lines.append(f"{a['attacker']} GOES FOR A {str(a.get('submission') or 'hold').upper()} on {poss(a['defender'])} "
+                         f"{part} and gets her hands on it, but it does NOT lock: a {part} is small and quick, and "
+                         f"{a['defender']} gets it out first. This time: {how}. Show the try, the grip closing, and the "
+                         f"slip. No hold is on when the beat ends; nothing is wrenched, and it does no damage.{intent}")
         elif t == "hold_end":
             parts = ", ".join(a.get("parts") or [a.get("part", "")])
             lines.append(f"{poss(a['attacker'])} hold on {a['defender']} ({parts}) ENDS: {a.get('reason', '')}")

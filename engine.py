@@ -913,6 +913,7 @@ class Engine:
         "hold_break": {"wrench": 3, "pry": 2, "slip": 2, "shove": 2},
         "tumble": {"rolling": 4, "skidding": 3, "bouncing": 2, "cartwheeling": 2},
         "hold_strain": {"pry": 3, "twist": 3, "claw": 2, "brace": 2},
+        "sub_slip": {"turn": 3, "yank": 3, "fist": 2, "kick": 2},
         "struggle": {"buck": 3, "bridge": 3, "twist": 3, "limb": 3, "kick": 2, "squirm": 2, "headbutt": 2,
                      "bite": 2, "shrimp": 2, "roll": 2, "claw": 2, "pry": 2, "tuck": 2, "limp": 1, "reach": 1,
                      "power": 1},
@@ -4834,6 +4835,9 @@ class Engine:
                 raise ValueError(f"{a.name} isn't free to lock a hold on {d.name} right now")
             if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
                 raise ValueError(f"no submission opening on {d.name} this beat. Choose another action")
+            slip = self._small_joint_slip(a, d, key, [grips[0][0]], flavor or key)
+            if slip:
+                return slip
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
         contacts = [(p, main if i == 0 else second, ramp if i == 0 else ramp2, short_phrase(w, 9) if w else "")
@@ -4895,6 +4899,30 @@ class Engine:
         ruined = any(h.part in d.parts and d.parts[h.part].damage >= float(cfg.get("stuck_damage", 300)) for h in hs)
         return self.strength(d) < float(cfg.get("stuck_below", 25)) or ruined
 
+    SMALL_JOINT = re.compile(r"(?i)\b(?:paw|hand|wrist|foot|feet|ankle|heel|hoof|talon|claw)s?\b")
+
+    def small_joint(self, part):
+        """A wrist or an ankle (a paw, a hand, a foot, a talon): the small joints at the ends of the limbs."""
+        return body_region(part) in ("fore_low", "hind_low") and bool(self.SMALL_JOINT.search(str(part)))
+
+    def _small_joint_slip(self, a, d, key, parts, look=""):
+        """submissions.small_joints: a hold whose hardest grip is on a wrist or an ankle is harder to lock in: she
+        gets her hands on it, but the small joint turns out of the grip before it locks. set_chance of the time it
+        locks, more the more hurt the defender is (set_hurt x her lost health). Returns the slip (an action of its
+        own) or None when it locks."""
+        sj = (self.rules.get("submissions") or {}).get("small_joints") or {}
+        if not sj.get("enabled", True) or not parts or not self.small_joint(parts[0]):
+            return None
+        lost = 1.0 - max(0.0, min(1.0, d.health / max(1.0, d.max_health)))
+        ch = min(0.95, float(sj.get("set_chance", 0.5)) + float(sj.get("set_hurt", 0.4)) * lost)
+        if self._chance(ch, f"{a.name} locking the {key} on {poss_word(d.name)} {parts[0].lower()}", "it locks",
+                        "it slips"):
+            return None
+        self.__dict__.setdefault("sub_window", {})[d.name] = False    # (the opening is spent on the try)
+        return {"type": "sub_slipped", "attacker": a.name, "defender": d.name, "submission": key,
+                "part": parts[0], "parts": list(parts), "look": look, "chance": round(ch, 2),
+                "manner": self.vary("sub_slip")}
+
     def sub_break_chance(self, ch, d, hs):
         """The break-free chance against a submission. With submissions.escape on, it comes from her own health (the
         escape.points curve, like a pin's), a little higher when the holder is hurt or the grip light, never under
@@ -4919,6 +4947,11 @@ class Engine:
             ch *= self._break_mods(a, d, hs)
         else:
             ch *= float(cfg.get("break_mult", 0.8))
+        sj = cfg.get("small_joints") if isinstance(cfg.get("small_joints"), dict) else {}
+        if sj.get("enabled", True) and self.small_joint(max(hs, key=lambda h: h.power).part):
+            # a wrist or an ankle is easier to twist out of than a knee or a neck: a small grip, and she can turn
+            # the whole limb with it (submissions.small_joints.escape_mult)
+            ch *= float(sj.get("escape_mult", 1.5))
         if stuck:
             ch *= float(cfg.get("stuck_mult", 0.6))
         else:
@@ -4976,6 +5009,10 @@ class Engine:
             raise ValueError(f"{a.name} can't put {d.name} in a {key} as she is ({lie}). She could: "
                              f"{', '.join(shapes) or 'none right now'}")
         s = shapes[key]
+        if enforce:
+            slip = self._small_joint_slip(a, d, key, [p for p, role, _w in s["contacts"] if role == "main"], s["look"])
+            if slip:
+                return slip
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
         contacts = [(p, main if role == "main" else second, ramp if role == "main" else ramp2, w)
