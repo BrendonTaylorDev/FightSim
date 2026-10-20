@@ -691,6 +691,40 @@ ESCAPE_WORDS = re.compile(r"\b(?:escape\w*|writh\w*|twists? (?:free|loose|out)|h
                           r"wrench\w* free|struggl\w*|squirm\w*|thrash\w*|wriggl\w*)\b", re.I)
 
 
+TAKEDOWN_WORDS = re.compile(r"\b(?:throw\w*|threw|hurl\w*|slam\w*|toss\w*|flip\w*|(?:take|takes|taking|took|bring\w*|"
+                            r"brought|drag\w*|knock\w*|sweep\w*|swept|pull\w*|yank\w*|wrestl\w*) (?:her|\w+) (?:down|over|"
+                            r"off her feet)|to the ground|off (?:her|its) feet|onto (?:her|its) (?:back|side|front)|"
+                            r"pin\w*)\b", re.I)
+GRIP_WORDS = re.compile(r"\b(?:jaws|teeth|fangs|grip|hold|coils?|tails? (?:round|around)|clutch\w*|grasp|clamp\w*|"
+                        r"vice|vise)\b", re.I)
+
+
+def _drop_clauses(flavor, rx):
+    """The director's words with every clause matching rx taken out ("..., and uses her momentum to throw her to the
+    ground" goes); "" when nothing is left."""
+    bits = re.split(r"(,\s*(?:and\s+|then\s+)?|\s+and\s+(?:then\s+)?|;\s*)", str(flavor or ""))
+    keep = [b.strip() for k, b in enumerate(bits) if not k % 2 and b.strip() and not rx.search(b)]
+    if not keep:
+        return ""
+    return keep[0] if len(keep) == 1 else ", ".join(keep[:-1]) + " and " + keep[-1]
+
+
+def _unrolled_words(engine, act, att, flavor):
+    """holds.unrolled_words: the director's words for a hold telling a takedown the engine didn't roll ("uses her
+    momentum to throw Nerine to the ground") lose that clause; a breather's words about a grip on her ("wriggling
+    free of Nerine's jaws") lose it when nothing holds her any more."""
+    if not (engine.rules.get("holds", {}).get("unrolled_words") or {}).get("enabled", True) or not flavor:
+        return flavor
+    if act in ("hold", "submission", "grapple_hold") and TAKEDOWN_WORDS.search(flavor):
+        return _drop_clauses(flavor, TAKEDOWN_WORDS) or "a tight grip"
+    if act == "breather" and GRIP_WORDS.search(flavor):
+        me = engine.get(att).name
+        if not any(me in (h.attacker, h.defender) for h in engine.holds.values()) and not engine.pinned_by(me) \
+                and not engine.pinning(me):
+            return _drop_clauses(flavor, GRIP_WORDS) or "catching her breath"
+    return flavor
+
+
 def _escape_worded(engine, att, hold_id, dfn, flavor):
     """The held fighter's name when this hold_release comes from the HOLDER but its words are the held fighter
     fighting free (holds.release_as_escape); else ""."""
@@ -1172,6 +1206,8 @@ def resolve(engine, b):
             if len(contacts) > 1 and (len(str(flavor or "")) > 90 or len(contacts) > len(merged)):
                 bits = [f"{(c[3] or 'pressure').split(',')[0]} on her {c[0].lower()}" for c in contacts]
                 flavor = ", ".join(bits[:-1]) + " and " + bits[-1]
+        if not manual and act != "pin":
+            flavor = _unrolled_words(engine, "hold", att, flavor)
         res = engine.start_holds(att, dfn, contacts, flavor, pin=(act == "pin"), move=move_info, enforce=not manual)
         res["facing"] = engine.facing_of(dfn)
         # a takedown that turned her over moved the presses (throat -> neck) and their words with them
@@ -1295,6 +1331,8 @@ def resolve(engine, b):
             # "collapsed leg gives out again": a pause can't make anyone fall, rise, or fail to rise (the engine rolls
             # those); it is only a pause
             flavor = "catching her breath"
+        if not manual:
+            flavor = _unrolled_words(engine, "breather", att, flavor)
         res = {"type": "breather", "focus": att, "flavor": flavor}
         who = engine.get(att).name
         if not was_involved and not engine.pinned_by(who) and not engine.pinning(who) and not any(

@@ -684,7 +684,9 @@ ROLLING = re.compile(r"\b(roll\w*|flip\w*|turn\w* over|twist\w* onto)\b", re.I)
 STANDING = re.compile(r"\b(on(?:to)? (?:her|his|its) (?:feet|paws|legs|talons|hind legs)|made it (?:up|upright)|(?:stood|stands|standing|upright)|got (?:up|to (?:her|his) "
                       r"feet)|made it up|hauled (?:herself|himself) up|(?:rose|risen) (?:to|up|unsteadily|shakily)|"
                       r"back up|to (?:her|his) feet|(?:regained|found|kept) (?:her|his) (?:feet|footing)|"
-                      r"(?:pushed|levered|dragged|pulled|forced) (?:herself|himself) (?:up|upright)|was up)\b", re.I)
+                      r"(?:pushed|levered|dragged|pulled|forced) (?:herself|himself) (?:up|upright)|was up|"
+                      r"(?:lurched|heaved) (?:herself |himself )?up(?:right)?(?! (?:on|onto) (?:an? |one |her |his )?"
+                      r"(?:elbow|knee|haunch)))\b", re.I)
 
 
 # signs of more than one attempt at getting up
@@ -1354,6 +1356,22 @@ def _mentions(text_lower, part):
         stem = w[:-1] if w.endswith("s") and len(w) > 4 else w
         if re.search(r"\b" + re.escape(stem) + r"(?:s|es)?\b", text_lower):
             return True
+    return False
+
+
+def _mentions_sided(text_lower, part):
+    """Like _mentions, but a sided part (her right thigh) isn't found in the other side's (her left thigh): the key
+    word counts only where the opposite side's word doesn't come just before it."""
+    side = next((w for w in ("left", "right") if re.search(r"\b" + w + r"\b", part.lower())), "")
+    if not side:
+        return _mentions(text_lower, part)
+    other = "right" if side == "left" else "left"
+    words = [w for w in re.findall(r"[a-z]+", part.lower()) if w not in _SKIP_WORDS] or part.lower().split()
+    for w in words:
+        stem = w[:-1] if w.endswith("s") and len(w) > 4 else w
+        for m in re.finditer(r"\b" + re.escape(stem) + r"(?:s|es)?\b", text_lower):
+            if not re.search(r"\b" + other + r"(?:\s+\w+)?\s*$", text_lower[max(0, m.start() - 25):m.start()]):
+                return True
     return False
 
 
@@ -9150,7 +9168,7 @@ class Narrator:
                 if any(GRIPPED.search(x) and re.search(r"\b" + re.escape(key) + r"s?\b", x)
                        for x in re.split(r"(?<=[.!?…])\s+|\n+", seen)):
                     continue
-            elif _mentions(seen, parts[0]):
+            elif (_mentions_sided if self._guided("sided_check") else _mentions)(seen, parts[0]):
                 continue
             # (a part that picks up at contact opens on the blow; a beat told in one part has its wind-up first)
             at = 1 if getattr(self, "_fact_key", "") == "all" and len(paras) > 1 else 0
@@ -11950,8 +11968,14 @@ class Narrator:
                              r"(?:met|found|sank|bit|raked|struck|slammed|caught|landed|dug|tore|connected|clamped)\b"
                              r"[^.!?]{0,40}\b(?:" + re.escape(x) + r"(?:'s|’s|'|’)?|her (?:\w+ ){0,2}(?:arm|forearm|fin|"
                              r"wing|neck|throat|wound|shoulder|side|flank|leg|paw|face|cheek|head|chest|back))\b", re.I)
+            # (the feel of her under the teeth: "the solid resistance of Nerine's leg against her teeth")
+            rx2 = re.compile(r"\b(?:resistance|give|feel|weight|crunch|taste|warmth) of (?:" + re.escape(x) +
+                             r"(?:'s|’s|'|’)|her) (?:\w+ ){0,2}?(?:\w+) (?:against|under|between|in) (?:her|"
+                             + "|".join(re.escape(poss_word(f)) for f in foes) + r") (?:teeth|jaws|fangs|claws|paws?)\b",
+                             re.I)
             for sent, whos, named in self._said(text):
-                if (x in whos or x in sent) and any(f in sent for f in foes + ["Her", "her"]) and rx1.search(sent) \
+                if (x in whos or x in sent) and any(f in sent for f in foes + ["Her", "her"]) \
+                        and (rx1.search(sent) or rx2.search(sent)) \
                         and not re.search(r"\bhad\b|\bwould\b|\bnearly\b|\balmost\b|\bmissed\b|\bwhere\b", sent, re.I):
                     add(sent, f"{x} got out of the way: nothing touched her this beat. Show it missing her")
         # jaws said to be on a part that something else is holding
@@ -12757,12 +12781,41 @@ class Narrator:
             self._pm = pm if pm.enabled else None
         return self._pm
 
+    _COUNT_WORDS = {"one": 1, "a single": 1, "only one": 1, "just one": 1, "two": 2, "three": 3, "four": 4,
+                    "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
+    HIT_COUNT = re.compile(r"\b([A-Z][\w-]+) (had|has) landed (one|a single|only one|just one|two|three|four|five|six|"
+                           r"seven|eight|nine|ten|\d+) ((?:clean |solid |good |real |true )?(?:hit|blow|strike)s?)"
+                           r"(?= (?:so far|all fight|in the whole fight|on (?:her|him))\b|[,.;:!])")
+
+    def _hit_counts(self, text):
+        """A count of blows the story made up ("Ripples had landed one hit so far", seven beats into the fight): the
+        number is put right from the attacks that really landed (narration.hit_counts)."""
+        seen = self.__dict__.get("_read_log") or {}
+
+        def fix(m):
+            who = m.group(1)
+            if who not in seen:
+                return m.group(0)
+            real = sum((seen[who].get("aims") or {}).values())
+            said = self._COUNT_WORDS.get(m.group(3).lower()) or (int(m.group(3)) if m.group(3).isdigit() else 0)
+            if not real or said == real:
+                return m.group(0)
+            noun = re.sub(r"s$", "", m.group(4))
+            words = {v: k for k, v in self._COUNT_WORDS.items() if " " not in k}
+            num = words.get(real, str(real)) if real < 11 else "blow after blow"
+            if num == "blow after blow":
+                return f"{who} {m.group(2)} landed blow after blow"
+            return f"{who} {m.group(2)} landed {num} {noun}{'s' if real > 1 else ''}"
+        return self.HIT_COUNT.sub(fix, text)
+
     def _last_scrub(self, text):
         """What the rewrites let through, mended without another call: a stock "a symphony of pain" says "pain"; a short
         bare curse standing as its own sentence ("Damn this.") goes; a line copied from the notes ("Continue with the next
         part.") goes. Only when swearing is off (narration.swearing) for the curse."""
         n = self.rules.get("narration", {}) or {}
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        if n.get("hit_counts", True):
+            text = self._hit_counts(text)
         # a move's NAME used as a label ("a pulsing blast of water, Water Pulse." / "Ripples' Aqua Jet missed its mark"
         # / "with her own Thunderbolt"): the label goes, or the move becomes plain "attack"
         names_ = sorted((x for x in (getattr(self, "_move_names", None) or set()) if x and x[0].isupper()), key=len,
@@ -14345,7 +14398,10 @@ class Narrator:
         if re.search(r"\b" + re.escape(mv) + r"\b", seen, re.I):
             return True
         parts = {h["part"].lower() for h in a["hits"]}
-        if any(ps & parts and line in seen for ps, line in getattr(self, "_facts_put", None) or []):
+        sided = self._guided("sided_check")
+        main = max(a["hits"], key=lambda h: float(h.get("damage_taken") or 0))["part"].lower()
+        if any((main in {p.lower() for p in ps} if sided else ps & parts) and line in seen
+               for ps, line in getattr(self, "_facts_put", None) or []):
             return True     # (the program put this blow back in itself: narration.guided.fact_lines)
         trx = TYPE_SHOWN.get(str(a["move"].get("type", "")).lower())
         # what it strikes with (a bite: jaws, teeth; a kick: kicked...) counts as much as its element does: "her jaws
@@ -14356,8 +14412,9 @@ class Narrator:
         wrx += [re.escape(w.lower()[:-1] if w.lower().endswith("s") else w.lower()) + r"\w*"
                 for w in re.findall(r"[A-Za-z]+", mv) if len(w) >= 4 and w.lower() not in ("attack", "strike", "blow")]
         rx = "|".join(([trx] if trx else []) + wrx)
+        found = _mentions_sided if sided else _mentions
         return bool(rx) and any(re.search(r"\b(?:" + rx + r")\b", s_, re.I) and (a["attacker"] in s_ or a["defender"] in s_)
-                                and any(_mentions(s_.lower(), p) for p in parts) for s_ in sents_all)
+                                and any(found(s_.lower(), p) for p in parts) for s_ in sents_all)
         # (a part by its key word: "the blast hit Nocturne across her chest" tells a blow on her Chest Ruff)
 
     def _present_sents(self, text, prior=""):
@@ -14386,6 +14443,13 @@ class Narrator:
         if len(before) < 2 and not any(self._is_block_copy(s) for s in before):
             return self._past_words(text, before)
         n = self.rules.get("narration", {})
+        if n.get("tense_words_first", True):
+            # the program's own verb swap first (no call): only what it can't mend goes to the copy editor
+            mended = self._past_words(text, before)
+            left = self._present_sents(mended, prior)
+            if len(left) < 2 and not any(self._is_block_copy(s) for s in left):
+                return mended
+            text, before = mended, left
         if self.progress:
             self.progress(f"putting {len(before)} present-tense sentences into the past tense")
         try:
@@ -14422,14 +14486,24 @@ class Narrator:
                "shakes": "shook", "burns": "burned", "trembles": "trembled", "shifts": "shifted", "tilts": "tilted",
                "pounds": "pounded", "rises": "rose", "hurts": "hurt", "drips": "dripped", "clings": "clung",
                "spreads": "spread", "seems": "seemed", "watches": "watched", "waits": "waited", "digs": "dug",
-               "sinks": "sank", "heaves": "heaved", "twists": "twisted", "keeps": "kept", "lets": "let"}
+               "sinks": "sank", "heaves": "heaved", "twists": "twisted", "keeps": "kept", "lets": "let",
+               "is": "was", "are": "were", "has": "had", "does": "did", "gets": "got", "pulls": "pulled",
+               "pushes": "pushed", "lunges": "lunged", "slams": "slammed", "staggers": "staggered",
+               "stumbles": "stumbled", "gasps": "gasped", "narrows": "narrowed", "flattens": "flattened",
+               "steadies": "steadied", "wraps": "wrapped", "squeezes": "squeezed", "turns": "turned", "flares": "flared",
+               "radiates": "radiated", "shoots": "shot", "tenses": "tensed", "thinks": "thought", "finds": "found",
+               "jolts": "jolted", "glares": "glared", "growls": "growled", "hisses": "hissed", "winces": "winced",
+               "sways": "swayed", "leans": "leaned"}
 
     def _past_words(self, text, sents):
         """The flagged present-tense sentences, their common verbs put into the past one word at a time (no call)."""
         rx = re.compile(r"\b(" + "|".join(self.PAST_OF) + r")\b")
         for sent in sents or []:
             if sent in text and not sent.lstrip().startswith(("*", "\"", "“")):
-                text = text.replace(sent, rx.sub(lambda m: self.PAST_OF[m.group(1)], sent), 1)
+                # (a thought or a line of speech inside the sentence keeps its own tense)
+                bits = re.split(r"(\*[^*\n]+\*|\"[^\"\n]+\"|“[^”\n]+”)", sent)
+                new = "".join(b if k % 2 else rx.sub(lambda m: self.PAST_OF[m.group(1)], b) for k, b in enumerate(bits))
+                text = text.replace(sent, new, 1)
         return text
 
     def _tell_missing_events(self, written, keys):
@@ -14494,8 +14568,17 @@ class Narrator:
             if not text:
                 continue
             if "failed tries at getting up" in issue and getattr(self, "_getup_who", None):
-                # the failed tries come BEFORE she stands: put them in front of the sentence where she rises
+                # the failed tries come BEFORE she stands: put them in front of the first paragraph where she is
+                # already trying again (a "second attempt" told in an earlier part: the first try goes before it),
+                # else in front of the sentence where she rises
                 placed = False
+                tried = self._first_try_at(written, self._getup_who)
+                if tried is not None:
+                    k, j = tried
+                    paras = written[k].split("\n\n")
+                    paras.insert(j, text.strip())
+                    written[k] = "\n\n".join(paras).strip()
+                    continue
                 for k, w in enumerate(written):
                     spot = self._rise_at(w or "", self._getup_who)
                     if spot is not None:
@@ -14524,6 +14607,21 @@ class Narrator:
     ESCAPE_TOLD = re.compile(r"\b(?:the pin (?:was|is) (?:over|broken)|the pin broke|threw (?:her|him) off|"
                              r"(?:broke|breaks|tore|wrenched|twisted) (?:free|loose|out)|rolled clear|wriggled free|"
                              r"slid(?:e|ing)? out from under|bucked (?:her|him) off|shoved (?:her|him) off)\b", re.I)
+
+    GETUP_LATER_TRY = re.compile(r"\b(?:second|third|fourth|next|another) (?:attempt|try|time)\b|\b(?:tried|tries|try) "
+                                 r"again\b|\bonce more\b", re.I)
+
+    def _first_try_at(self, written, who):
+        """Where `who` is first told trying again at getting up (a "second attempt", "tried again"), as (part,
+        paragraph), so a left-out first try goes in front of it; None when no later try is told."""
+        for k, w in enumerate(written):
+            paras = (w or "").split("\n\n")
+            for j, para in enumerate(paras):
+                if self.GETUP_LATER_TRY.search(para) and (self.GETUP_TRY.search(para) or STANDING.search(para)
+                                                          or re.search(r"\b(?:rise|get up|stand|her feet)\b", para)) \
+                        and (who in para or who in "\n".join(paras[:j])):
+                    return k, j
+        return None
 
     def _before_fall(self, written, at, text):
         """A left-out hit put in front of the first paragraph (from part `at` on) where someone hit this beat goes

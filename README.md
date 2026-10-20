@@ -654,6 +654,26 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 230
+
+Fixes from the 20-beat Ripples vs Nerine submission fight (build 228).
+
+- **No throat grip from the ground** (`holds.ground_reach`): a fighter lying down can't put a new grip on a standing
+  fighter's head, neck, throat, shoulders or back (sitting up, only her head is out of reach). The director is told to
+  grip low or get up first. Beat 19 had Ripples, face-down, choking a standing Nerine and then getting up inside it.
+- **The director's words no longer tell what wasn't rolled** (`holds.unrolled_words`): a hold worded as a throw to the
+  ground loses that clause, and a breather "wriggling free of her jaws" loses it once nothing holds her.
+- **Get-up tries in order:** a left-out first try goes in front of a "second attempt" already told, not in front of
+  the moment she stands. "Lurched up" counts as on her feet, so the get-up isn't added twice.
+- **A blow on one side isn't told by the other** (`narration.guided.sided_check`): Aqua Tail on her right thigh was
+  counted as told by "her left thigh twitched", and a fact line for a part a blow only jarred no longer stands for the
+  whole blow.
+- **Made-up hit counts put right** (`narration.hit_counts`): "Ripples had landed one hit so far" takes the real count.
+- **A missed or turned-aside bite never meets her:** "the solid resistance of Nerine's leg against her teeth" after
+  a bite she turned aside is caught.
+- **Tense mended by the program first** (`narration.tense_words_first`): more common verbs, thoughts and speech left
+  alone; the copy-editing call is made only when the swap can't mend it.
+
 ## Build 229
 
 Fixes from a 20-beat Ripples vs Nerine submission match (lakeside, both on the legs, a tail knee lock, a root lever and a tail choke).

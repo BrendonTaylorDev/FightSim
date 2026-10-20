@@ -6945,6 +6945,20 @@ class Engine:
             if new_pin and a.name in self.downed and d.name not in self.downed:
                 raise ValueError(f"{a.name} is on the ground and {d.name} is on her feet: {a.name} can't pin her from "
                                  f"down there. She attacks from where she lies, or gets up first")
+            gr = self.rules.get("holds", {}).get("ground_reach") or {}
+            if not pin and gr.get("enabled", True) and a.name in self.downed and d.name not in self.downed \
+                    and not on_top:
+                # lying on the ground, she can't put a new grip on a standing fighter's throat or head
+                sit = self.facing.get(a.name) == "sitting up"
+                high = set(gr.get("sitting" if sit else "lying") or [])
+                have = {h.part for h in self.holds.values() if h.attacker == a.name and h.defender == d.name}
+                far = [d.part(c[0]).name for c in contacts
+                       if d.part(c[0]).name not in have and body_region(d.part(c[0]).name) in high]
+                if far:
+                    raise ValueError(f"{a.name} is {'sitting' if sit else 'lying'} on the ground and {d.name} is on "
+                                     f"her feet: {a.name} can't reach {poss_word(d.name)} {far[0].lower()} from down "
+                                     f"there. Grip something low (a leg, a foot, a hip, her tail), strike, or get up "
+                                     f"first")
         woke = []
         if not enforce:
             # your own command has a sleeping or frozen fighter grab someone: then she is awake to do it (a
