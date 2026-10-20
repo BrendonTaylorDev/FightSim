@@ -2260,6 +2260,11 @@ def _issue_label(i):
                            else "other")
 
 
+# signs of refusing to tap (build 227): a submission-hold idea that is one of these is not offered in a beat whose
+# notes already give her one (the engine's tap_tell pick)
+SUB_TAP_SIGN = re.compile(r"\bbites? down on (?:something|her)|\b(?:her|own) (?:bottom )?lip\b|\bstops? fighting\b|"
+                          r"\bsaying no\b|\bnot giving in\b|\bstreaming\b|\btears?\b", re.I)
+
 class Narrator:
     def __init__(self, model, rules, host="http://localhost:11434", style=""):
         self.model, self.rules, self.host, self.style = model, rules, host, style
@@ -8584,6 +8589,43 @@ class Narrator:
             if take and e_.get("type") == "hold_ongoing" and e_.get("coil"):
                 side[0] = "take"
                 add(f"{e_.get('defender')}, in the coils", B.pick("constriction", 1))
+        # a submission hold (finish.submission; narration.sub_blocks): what it is like by now from the side this part
+        # is told from: the one held (sub_held) or the one holding it (sub_hold), by how long it has been on and how
+        # badly the worst of the held parts hurts
+        if self.rules.get("narration", {}).get("sub_blocks", True):
+            lead_ = getattr(self, "_lead_now", None)
+            seen_ = set()
+            for e_ in also or ():
+                if e_.get("type") != "hold_ongoing" or e_.get("coil") or e_.get("grab") or not e_.get("sub"):
+                    continue
+                a_, d_ = e_.get("attacker"), e_.get("defender")
+                if (a_, d_) in seen_ or not a_ or not d_:
+                    continue
+                seen_.add((a_, d_))
+                beats_ = int(e_.get("beats_held") or 0)
+                held_w = "early" if beats_ <= 1 else "middle" if beats_ <= 3 else "long"
+                held_parts = {str(h.get("part") or "").lower() for x in also or () if x.get("type") == "hold_ongoing"
+                              and x.get("attacker") == a_ and x.get("defender") == d_ for h in x.get("hits") or ()}
+                worst_ = next(((p, lv) for p, lv, _ in self._worst_parts(d_, 12, "sore") if p in held_parts), None)
+                part_, lv_ = worst_ or (next(iter(sorted(held_parts - {""})), ""), None)
+                held_side = lead_ == d_ or (lead_ not in (a_, d_) and take)
+                hold_side = lead_ == a_ or (lead_ not in (a_, d_) and act)
+                # the engine already picked how she shows refusing to tap this beat: no second sign of it here
+                sign_x = SUB_TAP_SIGN if any(x.get("type") == "tap_resist" and x.get("defender") == d_
+                                             for x in also or ()) else None
+                if held_side and take:
+                    side[0] = "take"
+                    add(f"{d_}, in the hold", B.pick("sub_held", 1, held=held_w, level=lv_, has=feats(d_),
+                                                     state=state(d_), fmt={"part": part_, "foe": a_}, exclude=sign_x))
+                    self._offer_line(add, f"a finished line for {d_} in the hold", "sub_held",
+                                     fmt={"part": part_, "foe": a_}, exclude=[sign_x] if sign_x else None,
+                                     held=held_w, level=lv_, has=feats(d_))
+                if hold_side and act:
+                    side[0] = "act"
+                    add(f"{a_}, working the hold", B.pick("sub_hold", 1, held=held_w, has=feats(a_), state=state(a_),
+                                                          fmt={"part": part_, "foe": d_}))
+                    self._offer_line(add, f"a finished line for {a_} working the hold", "sub_hold",
+                                     fmt={"part": part_, "foe": d_}, held=held_w, has=feats(a_))
         # --- after the match
         if acts and all(t == "aftermath" for t in types):
             win = next((a.get("winner") for a in acts if a.get("winner")), None)
@@ -9242,6 +9284,8 @@ class Narrator:
                 add(act_t, take_t)
             else:
                 tags.append(take_t if lead == tap["defender"] else act_t)
+        if any(a.get("submission") for a in acts) and self.rules.get("narration", {}).get("sub_blocks", True):
+            add("sub start", "sub start take")      # a submission hold locking on (build 227); ahead of coil and grab
         held = any(e.get("type") == "hold_ongoing" and not e.get("grab") for e in also or ())
         if acts and all(t in ("breather", "none", "take_off", "land_flight", "time_passes") for t in types) \
                 and not pin_events and not held:

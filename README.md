@@ -654,6 +654,26 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 227
+
+**A full submission match, narrated by hand, and the engine fed from it.** `sim/test_fights/submission_varied/full_fight.md` is Ripples vs Nerine on seed 21, all 28 beats, about 17,700 words. Each beat is told in the same parts the program asks the narrator for: the side of the one who acts, up to the moment of contact, then the side of the one it happens to. It follows the engine's notes for every beat: hit sizes, lasting pain levels, sounds, which way she falls, and the refusal signs the dice picked. `Ripples_vs_Nerine_full_fight.html` is the same fight exported with both fighters' cards on every beat. `replay.py` rebuilds it.
+
+**Submission holds get their own ideas and finished lines** (`narration.sub_blocks`, on). Before, a beat with a submission hold on got only general ideas: reactions, thoughts, breath. Now each part is also offered one idea and one finished line for what the hold is like by now, from the side the part is told from:
+
+- `sub_held` (story_blocks.txt and story_lines.txt) is for the one in the hold: she works out that nobody is counting; the slack she won was only a breath before the next crank; she watches a cloud because it is easier than the knee; pride is the last thing holding her.
+- `sub_hold` is for the one holding it: she settles into it like someone threading a needle; her own grip tires and she holds anyway; a refusal only means the hold needs more; she feels a give in the joint and doesn't like it.
+- They go by how long the hold has been on (`held: early, middle, long`) and how badly the worst held part hurts (`level`).
+- In a beat where the engine has already picked her sign of refusing to tap, ideas that are a second sign (a bitten lip, a "no", stopping fighting the hold, tears) aren't offered.
+- `false` turns them off.
+
+**More sample passages.** `style_sample_scenes.txt` has 16 new sections from this fight, written with {A} and {B} so they show in any fight:
+
+- `sub start` and `sub start take` are new tags, for a submission hold locking on. They are asked for ahead of the coil and grab passages, so a hold that also binds with a tail no longer gets a chest-coil passage.
+- Three new `tap resist take` passages, two `tap resist`, one each of `tap out` and `tap out take`.
+- One each of `strike act` (a chop), `strike take mid` (a leg), `throw take`, `getup` (a failed try, then the slow way up), `dodge`, `resisted take` (water against a water body) and `breaking point`.
+
+**More ideas and lines for the rest of a fight:** get-ups, landings, dodges, a watcher's thoughts, a weak water or ice hit on a water body, an off-target blow that missed the place it wanted, and leg hurts.
+
 ## Build 226
 
 **Refusing to tap no longer runs the same three steps every match** (`narration.tap_build.vary`, on). Before, the first refusal was always a paw twitching toward the ground, the second always a paw touching it, and the third on always a flat, shaking paw. Now each refusal shows ONE sign picked by dice from a set for how near she is (`variety.tap_tell_first`, `tap_tell_closer`, `tap_tell_edge`): claws curling, a swallowed word, a paw she traps under herself, half a word turned into a snarl, a 'no' said out loud, tears she doesn't notice, and more. She never shows a sign she used in her last few refusals. How near she is goes mostly by how often she has refused. Pain far past what she can bear pushes it a step nearer, and one time in five she finds a little more in herself and it drops a step back.

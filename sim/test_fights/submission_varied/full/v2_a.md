@@ -155,7 +155,7 @@ Neither of them was bad. They were just there, loud and new, and the ground was 
 Above her, the pine branches turned slowly against the blue, and a few needles came down. One landed on her
 nose. She didn't have the breath to blow it off.
 
-She made herself take stock, the way she always did after a fall: everything in order, from the top. Head, fine.
+She made herself take stock: everything in order, from the top. Head, fine.
 Neck, fine. Shoulders: the left one was going to bruise, she could feel it gathering. Back, sore along a line.
 Hip, nothing much. Thigh, still hot from the knee. Feet, both there. Nothing broken, nothing that wouldn't work.
 Just a body that had been picked up and thrown at a tree root, and was saying so.

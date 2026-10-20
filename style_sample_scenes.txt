@@ -8,7 +8,7 @@
 # Edit freely, add sections, or give a section more tags (comma-separated). Lines starting with # are notes.
 # SEVERAL sections may answer to the same tag: the program takes turns among them, so the narrator is not shown
 # the same passage every time. A passage that names a fighter who is not in the current fight is skipped.
-# Tags the program asks for: opening; strike act, strike take, strike take light (the part ends minor or sore), strike take mid (hurting or very painful), strike take hard (a blow that leaves a part excruciating or worse), strike take worn (the one hit is tired or spent overall), pinned take (a blow on a fighter who is pinned, held or down, with nowhere to go), knockdown take (the blow puts her down); chain; breaking point; sustain take; grab, grab take;
+# Tags the program asks for: opening; strike act, strike take, strike take light (the part ends minor or sore), strike take mid (hurting or very painful), strike take hard (a blow that leaves a part excruciating or worse), strike take worn (the one hit is tired or spent overall), pinned take (a blow on a fighter who is pinned, held or down, with nowhere to go), knockdown take (the blow puts her down); chain; breaking point; sustain take; grab, grab take; sub start, sub start take (a submission hold locking on; falls back to grab);
 # pummel; throw, throw take; getup; dodge; pin start, pin start take; pin hold, pin struggle; escape; faint;
 # aftermath, aftermath take; clash, clash take; dive, dive take; sputter take; coil, coil take; escape aftermath; tap resist, tap resist take (a submission
 # match: she fights the urge to tap); tap out, tap out take.
@@ -6490,3 +6490,189 @@ The grip was gone at once. She didn't move away. She couldn't. She curled onto h
 After a while she got up and stood over {B}. She found she didn't feel like crowing. She'd had to take that knee apart to get the tap, and even then it had been the knee that gave up, not {B}.
 
 She sat down beside her and waited for her breathing to slow.
+
+# ---- build 227: from the Ripples vs Nerine submission match, written in full (sim/test_fights/submission_varied)
+
+== sub start | has_b: legs | has_a: arms
+{B} was trying to get her legs under her without being seen to. {A} watched her do it: the free foot sliding in a little across the grass, the hip shifting, the weight easing over a hair at a time. It was very patient. It was the most patient thing {A} had ever watched anyone do flat on her back.
+
+She didn't wait for it to work.
+
+She stepped in over the hurt leg, one foot either side of it, and dropped into a crouch. The thigh went between her knees, and she clamped them in on it and hooked her shins round behind it, so the leg was trapped from the hip down in a tangle of her own. Then she bent forward, reached down past the knee, and scooped {B}'s heel up into the crook of her elbow, tight against her ribs. The foot was warm and much smaller in her arm than she'd expected. She could feel the tendons along the back of the ankle, hard as cords. She set her other paw over her own wrist to lock it.
+
+*There,* she thought. *Now let's see you get up.*
+
+She turned it. Not much. She turned her whole upper body a little way to the outside, and the heel went with it, and she felt the twist go up the leg like the turn of a key: through the ankle, through the shin, and into the knee, until the joint went tight and hard and strange under the strain.
+
+Under her, {B}'s whole body went rigid.
+
+== sub start take | has_b: legs
+It was the knee. Everything was the knee.
+
+She hadn't understood what {A} was doing until it was done. A shadow over her, a weight across her thigh, her foot lifted off the grass, and then the turn. The heel was clamped somewhere hard and warm, and it was being turned, slowly, outward, and the turn came up through her ankle as if the bones of her leg were one long rod, and arrived in her knee.
+
+The pain was deep and wrong. It wasn't the bright sharp thing a blow was. It was a pressure inside the joint that built and kept building, as if the knee were being asked to bend a way it had never been made to bend and was being told, firmly, that it would.
+
+{B} bucked. Once, hard, her back coming up off the grass in an arch, a single violent heave of her whole body. Nothing moved. The knees round her thigh clamped tighter, and the heel stayed where it was, and she fell back flat and lay there shaking.
+
+*All right,* she thought. *Think.*
+
+There was no clock. Nobody was counting. That was what she understood, slowly, lying there. {A} wasn't trying to hold her down for anything. {A} was trying to make her give up, and the only thing that would end this was {B} herself.
+
+She looked away from the knee, up into the branches, and set her jaw.
+
+== tap resist take
+The twist came back worse than it had been, as if the slack she'd won had only been a breath drawn before it. It went into the joint and kept going, and the pressure in there turned into something with edges. She strained against it until every muscle she had was shaking, and then she couldn't strain any more, and she sagged back with a groan that came up out of her chest low and long and broken in the middle.
+
+She was thrashing. She noticed it as if it were happening to someone else: a leg kicking at the grass, paws clawing at the turf, her back bucking against the ground, all of it together and none of it doing anything.
+
+And the way out was right there. She could feel the shape of it. A slap on the ground, two, and it would stop. Her paw knew how. It was lying flat in the grass beside her hip, and every part of her was asking it to lift and come down.
+
+She set her teeth into her own bottom lip and bit down, hard, until she tasted copper, and held it there until the pain in her lip was the thing she was thinking about: small and sharp and hers, something she was doing to herself instead of something being done to her. The paw stayed where it was.
+
+*It slipped once,* she thought. *If I last one more breath, it'll slip again.*
+
+== tap resist take | has_b: legs
+She tried rolling with it. If she could get onto her side, the way the twist ran, the knee would have somewhere to go other than further. That was all she wanted. She threw her shoulders over and got halfway onto her side, her cheek pressed into the grass, and then the legs locked round her thigh simply didn't come with her. The knee, caught between the half of her that had turned and the half that hadn't, took the whole of the spin.
+
+She came back flat with a sound she'd never heard herself make before. It started low in her chest and climbed, and broke apart at the top into short ragged yelps, one on every breath.
+
+And then, all at once, she stopped fighting the hold at all. Every muscle in her was called off it and given a different job, and the job was her paws. She brought them both up onto her own chest, one over the other, and pressed them down flat, hard, as if they might get away from her. Her whole body went still around that. She lay with her eyes shut and let the knee do whatever it was going to do, because the only thing left that she had any say over was that those paws didn't touch the ground.
+
+*Not to her,* she thought. *Anyone else. Not to her.*
+
+== tap resist take
+Her body tried something by itself: a short, stupid jerk of the trapped limb, the only thing it could still do, as if it had given up asking her and meant to tear loose on its own. It got her nothing. The grip stayed exactly where it was, and the joint paid for it, and a thin high keen slipped out past her teeth that she didn't recognise.
+
+She had no thoughts left that were thoughts. There was the pain, and the ground under her shoulders, and the sky, which had a cloud in it now, small and white and very far away. She watched the cloud. She didn't know why.
+
+Her mouth was open. Her breath came in short pulls that caught at the top, one after another, a little hitch at the end of each. Her paws were still where she'd put them. She'd forgotten they were there, but they were.
+
+There was no reason left in it now. She wasn't thinking about the slack from before, or about {A}, or about why it mattered whose paw went where. She wasn't thinking about anything except the one thing her whole body was asking, and it wasn't asking {A}. It was asking the hold itself. It was asking the afternoon.
+
+*Just stop,* she thought, not in words. *Just let it stop by itself.*
+
+== tap resist
+{A} watched the face at the far end of the trapped leg and adjusted her grip by a claw's width, so the twist would run straighter into the joint.
+
+It was a cold, small thing to do and she did it without hesitating. She'd felt the struggle come through her arm, weak and wild, and felt it give up afterward, and she'd waited a breath for the paws to move. They hadn't.
+
+*Still no?* she thought. *Then it isn't enough yet.*
+
+That was all it meant. Her arm was aching all the way up into her shoulder now, and the joint of her wrist had gone hot under her locking paw, and she was breathing harder than she wanted to be. She shifted her knees and dug them in again, and sat a little lower, and turned her shoulders the last small way they'd go.
+
+{B} made a sound at that, and her paws pressed down harder on her chest, and stayed there.
+
+{A} set her jaw. Somewhere behind her a bird started up and stopped again, very clear in the quiet, and then there was nothing but the two of them breathing.
+
+== tap resist | has_a: arms
+{A} heard the *no* and kept the crank on, and didn't let her face move.
+
+She had both paws on the joint and her whole body bent over the limb, and it was taking everything she had. Her arms burned. She was panting through her open mouth. And she held it, and turned it a little more on every breath, and listened to {B} saying no.
+
+Under her paws, though, she could feel something she didn't like. There was a looseness in the joint that hadn't been there a beat ago: a give, at the very edge of the twist, as if something deep inside it had stopped holding quite as hard as it had been holding. It wasn't a sound. It wasn't anything she could see. It was only a feeling through the pads of her paws, a softness where there ought to have been none.
+
+*What is that?* she thought. *What's that doing?*
+
+She didn't know how much more of this it had in it. She found she didn't want to find out, and the not wanting frightened her a little. She kept her face still, so {B} wouldn't see. But she held the crank where it was, and didn't turn it any further.
+
+== tap out take
+And the hold was what did it. Not the blow before it; that had only been the last thing, the thing that came along on top of everything else. The crank came back on hard over the throbbing in her head, and the grip sank in round the joint and squeezed it out of its shape. And something in {B} simply stopped holding.
+
+She thrashed. There was no aim in it at all. Her paws clawed at the grass and at the air and at {A}'s arms. And then one paw came off the ground and went up, and she watched it from very far away, as if it belonged to someone else.
+
+It came down on the grass beside her, flat.
+
+And then again, and again, much harder than it needed to be, slap, slap, slap, as if she were afraid that one wouldn't count. As if, having done it, she had to make absolutely sure.
+
+The grip let go. The pain that had had nowhere to go for so long went everywhere at once, out of the joint and into all of her. She curled onto her side round it as far as it would let her, one paw cupped over it without quite touching it, and her breath shook coming in and shook going out. She was awake for every second of it.
+
+== tap out
+{A} felt the slaps come up through the ground before she heard them.
+
+She let go at once. Both paws came off together, and she unwound herself from the trapped limb, fast, and rolled away onto her back in the grass and lay there with her arms and her chest burning, panting at the sky.
+
+It was over. She'd won. She waited to feel it.
+
+After a while she got up and stood over the other one, favouring nothing, because nothing on her was badly hurt. She looked down at {B}, curled in the crushed grass with her face hidden, and found that she didn't feel like crowing. She'd thought she would. She'd thought, all fight, about how it would feel when this one finally gave up.
+
+She'd had to take that joint apart to get it. And even then it had been the joint that gave up, not {B}.
+
+*I don't think I could have lasted that,* {A} thought. It was not a comfortable thought.
+
+She sat down in the grass beside her, close enough to touch and not touching, and waited for her breathing to slow.
+
+== strike act | kind: punch
+Something was different about the way {B} was standing. {A} noticed it as she straightened: the other one had always stood square before, weight even, ready to go either way. Now she was leaning, very slightly, onto one foot. The other knee was soft and a little bent, and every so often her ears flicked back when she shifted on it.
+
+*There,* {A} thought. *That's the one.*
+
+It irritated her, a little, that {B} was still standing at all. She'd been thrown and tripped, and she kept just getting up and squaring up again with that same calm face. {A} wanted that face to change.
+
+She didn't feint this time. She came in from the side {B} was guarding least, because {B} was so busy keeping the leg back, and lifted her paw high and stiff with the edge of it turned down like the blade of an axe. The trick was not to stop at the surface. The trick was to aim at the far side of the thing and go through.
+
+She picked the spot she wanted, just to the outside of the joint, and put the paw there with all of her behind it.
+
+== strike take mid | has_b: legs
+It landed with a meaty smack right on the side of her knee, and every muscle in the leg seized at once.
+
+The force ran down the shin into her foot, a solid jarring knock that made her toes clench, and up into the hip, all in the same instant, so that the whole of that side of her seemed to lock solid around that one point. A short, startled yelp jumped out of her, *yeep*, high and thin, before she could catch it. Then she let out the breath she'd been holding behind it, long and ragged, through her teeth.
+
+She didn't go down. She hopped once on the other foot, the hurt one lifted clear of the grass as if the ground were hot, and then made herself put it down again. It shook as she set it on the turf. It took her weight. It complained about it in a long, deep, throbbing ache that started in the joint and spread out into the muscles around it, but it took it.
+
+*Hurting,* she thought. *Hurting, not broken. Stand on it.*
+
+She stood on it. When she shifted her weight there was a catch in the knee, a moment where it didn't want to bend, and then it did, slowly. It would be slower now. She'd have to think about it every time she moved.
+
+== throw take
+The sky turned over. The trees swung past upside down, the sun went streaking across her eyes, and then the ground came up and hit her across the back.
+
+It caught her square between the shoulder blades and along the top of one shoulder at the same time, with a hard flat crack that drove the air out of her lungs in a single *huk*. The rest of her came down after, softer, and hardly hurt at all.
+
+She lay there. She didn't roll, didn't try to scramble up at once. Her body simply stayed where it had landed, on its back with her arms flung out, and for a few long moments the only thing she did was breathe. It came back slowly, in short thin pulls that didn't fill anything.
+
+She made herself take stock: everything in order, from the top. Head, fine. Neck, fine. The shoulder was going to bruise; she could feel it gathering. Back, sore along a line. Feet, both there. Nothing that wouldn't work. Just a body that had been picked up and thrown, and was saying so.
+
+*Get up,* she told herself. *In a moment. One more breath first.*
+
+== getup
+She tried to sit up first, one smooth push. It didn't happen. She got her paws flat on the ground and pushed, and came up perhaps halfway, and then the hurt leg simply wasn't there. She had leaned on it without meaning to, and it folded. It didn't hurt worse when it went. It just gave, the way a rotten branch gives, and she dropped back flat with a thump that rattled her teeth.
+
+*Don't lean on it,* she thought. *You know not to lean on it.*
+
+So she did it the slow way. She rolled onto her front first, which hurt her back and made her hiss through her teeth. She got her paws flat under her shoulders. She brought the good knee in under her, all the way, and set it firm. Then the other, slowly, an inch at a time, taking it only as far as it would go without complaining too loudly. She stayed like that for a moment, crouched, her sides going in and out.
+
+Then she pushed up off the good leg and came up onto her feet. It wasn't graceful. She wobbled at the top of it. But she was standing, with her weight on the one leg and the other just touching, and she was breathing harder than she wanted anyone to see.
+
+== dodge
+She saw the hips turn. That was all, but it was enough: {A}'s hips swung, low and hard, and there was only one thing that could come round after a turn like that.
+
+{B} didn't jump. She couldn't have. She twisted instead, from the waist, her body going sideways out of the line of the swing as if it had been pulled by a string, and the blow went past her with a whistle like a whip cracking empty air. She felt the wind of it in her fur. It missed her by a hair. It missed her completely.
+
+{A} came round a step further than she'd meant to, off balance, and caught herself with a small, cross skip.
+
+It was the first thing all fight that had simply missed. {B} had spent the whole afternoon being found by things, and this one had missed. She'd seen it coming and got out of its way.
+
+*I can still do that,* she thought. *I can still see her.*
+
+It wasn't much. She held onto it anyway, because it was something, and it was hers.
+
+== resisted take | kind: water
+It should have been much worse than it was.
+
+{A} had thrown it with everything, water flying off it in a bright fan, and a blow like that across the throat ought to have dropped her coughing to her knees. But the water did nothing. It splashed over her throat and chest and ran away down her front, and her fur shed it, and her body took the rest of it in that easy way it took a wave. The sting was there, a thin raw line under her chin. The jolt in her neck was there. They were small.
+
+She coughed once anyway, a short dry cough, more surprise than hurt. She put a paw to her throat and took it away and looked at it, half expecting to see something on the pads. There was only water.
+
+*That's all?* she thought. *She threw all that, and that's all?*
+
+She saw that {A} knew it, too. {A} had stepped back with her arm still raised, and her face had gone very still, the way a face goes when it has been sure of something and has just found out it was wrong.
+
+== breaking point | has_b: legs
+She got her paws under her and pushed. Halfway up, the knee folded and dropped her, and she landed square on it.
+
+It was a new kind of pain. Sharper, higher, completely different from the long grinding ache that had been there before: a white flash that went off inside the joint like a struck stone and blanked out everything else. A short, cracked yelp got out of her before she could stop it. Then she shut her mouth on the rest and held it in, her teeth clenched and her whole body rigid over the knee, and the pain stayed there, in the knee, where she kept it.
+
+She breathed through her nose. In. Out. The knee had crossed a line in that fall. She could feel it. Whatever it had been before, it was something worse now, something that would not let her forget it for a single step.
+
+*Up,* she thought. *Up anyway.*

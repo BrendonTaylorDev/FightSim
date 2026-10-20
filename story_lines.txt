@@ -4096,3 +4096,52 @@ The metal clanged off her {part} and left barely a scratch.
 The hard edge struck and rang, and her body soaked the ring out of it.
 For all its weight, the steel landed on her {part} like a stick thrown by a child.
 She felt the cold of the metal more than its force, and even the cold was gone quickly.
+
+# ---------------------------------------------------------------------------------------------------------------
+# SUBMISSION HOLDS (build 227, narration.sub_blocks): finished lines for the one in a submission hold (sub_held)
+# and the one holding it (sub_hold), by how long it has been on. Slots: {part} (the worst held part), {foe}.
+# ---------------------------------------------------------------------------------------------------------------
+== sub_held | held: early
+She looked down the length of her own body at the grip, and understood that nobody was counting.
+The strain in her {part} did not come and go with her heartbeat; it built, and then it simply stayed.
+She bucked once, hard, and the grip did not move, and she fell back and lay there shaking.
+Her free foot dug at the ground, pushed, found nothing that would take her anywhere, and stopped. | has: legs
+She breathed in through her teeth, and out, and told herself to think.
+== sub_held | held: middle
+The slack she had won was only a breath drawn before the next crank, and the next crank was worse.
+She set her teeth into her own lip and held them there, so that one of the hurts, at least, was hers.
+For a moment she stopped fighting the hold at all, and everything she had went into not giving in.
+She noticed she was thrashing as if it were happening to someone else.
+The sound that came out of her started low, climbed, and broke apart at the top.
+== sub_held | held: long
+She watched a cloud, small and white and very far away, because the cloud was easier than her {part}.
+There was no reason left in it now, only her whole body asking for it to stop on its own.
+She had given nothing all fight, not one inch, and she was not going to be the one who did.
+She had no thoughts left that were thoughts: only her {part}, the ground under her, and the sky.
+== sub_hold | held: early
+She leaned back into it, and the {part} answered before {foe} did.
+She turned her shoulders a little way to the outside, and felt the twist go up the limb like the turn of a key. | has: arms
+She settled her weight into it, absorbed, like someone threading a needle.
+== sub_hold | held: middle
+She held the twist steady and watched {foe}'s face for the give-up that ought to come next.
+Her own arms were tiring, and she held it anyway. | has: arms
+She hadn't expected {foe} to last this long, and she found she didn't like not having expected it.
+== sub_hold | held: long
+If {foe} was still refusing, then the hold wasn't finished; that was all it meant.
+Under her paws she felt a give in the {part} that hadn't been there before, and she didn't like it at all. | has: arms
+She kept her face still, so {foe} wouldn't see.
+
+# from the same fight
+== effect_take | effect: weak | type: water | vs: water
+The water splashed over her and ran away down her front, and her coat shed it the way it sheds a lake.
+It should have been much worse than it was; the water simply spent itself against her.
+== effect_take | effect: weak | type: ice | vs: water
+The cold soaked into her and stopped, as if her body had been made in cold water and knew what to do with it.
+== off_target
+It hurt a good deal, but it wasn't where it had been aimed, and she could feel how much better that was.
+She turned a fraction at the last moment, and the blow landed an inch from the place it wanted.
+== after_hit | level: hurting | zone: leg
+The leg took her weight and complained about it in a long, deep throb that spread out from her {part}.
+She put her weight back on it, and her {part} told her about it.
+== after_hit | level: sore
+She stood with her teeth clenched and let it ache, and it settled into a heavy, bruised soreness in her {part}.

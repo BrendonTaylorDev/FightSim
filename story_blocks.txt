@@ -12061,3 +12061,80 @@ her lip curls off her teeth, as much anger as pain
 the hurt place makes her gasp, and the gasp turns into a shaky breath out
 she presses against the place and her whole body trembles round her paw | has: arms
 her head drops and she breathes through it with her eyes shut
+
+# ---------------------------------------------------------------------------------------------------------------
+# SUBMISSION HOLDS (build 227, narration.sub_blocks): what a submission hold is like by now, from the side the part
+# is told from. sub_held: the one in it. sub_hold: the one holding it. held: early (just on), middle, long.
+# Written from the Ripples vs Nerine submission match (sim/test_fights/submission_varied/full_fight.md).
+# ---------------------------------------------------------------------------------------------------------------
+== sub_held | held: early
+she looks down the length of her own body at the grip, working out exactly what it is doing to her
+she understands, slowly, that nobody is counting: the only thing that ends this is her giving up
+the strain in her {part} doesn't come and go with her heartbeat; it builds, and then it simply stays
+her free leg digs at the ground, pushes, finds nothing that takes her anywhere, and stops | has: legs
+she bucks once, hard, her whole body in it, and the grip doesn't move; she falls back and lies there shaking
+she breathes in through her teeth, out, in, and tells herself to think
+she shifts the {part} a little inside the grip, looking for give, and finds none
+the pain isn't the bright sharp thing a blow is; it is a pressure in the {part} that keeps on building
+she looks away from the {part}, up at anything else, and sets her jaw
+== sub_held | held: middle
+the slack she won a moment ago turns out to be only a breath drawn before the next crank, and the next crank is worse
+she bites down on something of her own, her lip or the inside of her cheek, so that one hurt at least is one she chose
+for a moment she stops fighting the grip at all, and everything she has goes into not giving in
+she notices she is thrashing as if it were happening to someone else: kicking, clawing at the ground, none of it doing anything
+she tries to roll with the twist, to give the {part} somewhere to go, and the half of her that turns takes the whole of it
+her claws flex into the ground with each press, sinking in and drawing out, in and out | has: arms
+a sound comes out of her she has never heard herself make: low, then climbing, then breaking apart at the top
+the muscle round the {part} trembles on its own, a fine fast shiver she can feel and can't control
+the thing that ends it is right there, easy, and every part of her is asking for it, the {part} loudest of all
+the {part} is a deep grinding coal of a pain, and every breath she takes has to go round it | level: very painful, excruciating, devastated
+== sub_held | held: long
+she watches some small far thing, a cloud or a branch, because looking at it is easier than feeling
+there are no thoughts left in her that are thoughts: only the {part}, the ground under her shoulders, and the sky
+her body tries something by itself, a short stupid kick or jerk, the only thing it can still do, and gets nothing
+she is saying no, over and over, not to {foe} but to the tired part of herself that wants to stop
+pride is the last thing holding her: she has given nothing all fight, and she will not be the one who gives now
+there is no reason left in it, only her whole body asking for the {part} to stop on its own
+a part of the limb past the grip goes cold, then tingling, then strangely far away, while the {part} doesn't
+her breath comes in short pulls that catch at the top, one after another
+== sub_held | level: devastated
+the {part} doesn't feel like a part of her any more: a hot, pounding thing the grip is wringing
+the first steady press on the {part} is all of it at once, no building, as if a door had been opened on it
+the scream goes on longer than she would have believed she had breath for, cracks at the top, and keeps going
+
+== sub_hold | held: early
+she settles her weight into it, absorbed, like someone threading a needle
+she turns her whole upper body a little to the outside, and feels the twist go up the limb like the turn of a key | has: arms
+she watches the face at the far end of the trapped limb, waiting for the give-up that ought to come
+she locks one paw over her own wrist so the grip can't open | has: arms
+she shifts her knees and sits a little lower into it, and the {part} goes tight and strange under the strain | has: legs
+the limb in her grip is smaller and warmer than she expected, the tendons hard as cords under her fingers | has: arms
+== sub_hold | held: middle
+the slack she gave for a breath makes her angry, and she takes it back with interest
+through her own arms she feels the struggle stop, and waits for the give-up; it doesn't come | has: arms
+something in her own chest goes quiet as she watches {foe} refuse, something that isn't quite pity
+her own grip is tiring: her elbow aches, her wrist is hot, her knees are sore from clamping, and she holds it anyway
+she can't make the {part} give her any more from where she is, and she starts looking for what else she has free
+she hadn't expected {foe} to last this long, and the not expecting it bothers her
+== sub_hold | held: long
+she adjusts her grip a claw's width so the twist runs straighter, coldly: a refusal only means the hold needs more
+under her hands she feels a looseness in the {part} that wasn't there before, a give at the edge of the twist, and doesn't like it | has: arms
+she keeps her face still so {foe} won't see the doubt in it
+she finds she doesn't want to find out how much more the {part} has in it, and the not wanting frightens her a little
+she is panting through her open mouth, her arms burning, and she turns it a little more on every breath anyway | has: arms
+
+# from the same fight, for the moments around the holds
+== getup
+she rolls onto her front first, brings her knees in under her one at a time, the hurt one last and carefully, and pushes up off the good one
+she comes straight up in one movement, no rolling, as if she'd only been lying there to rest
+she gets as far as lifting her shoulders and everything below the waist refuses
+== landing
+she lies where she landed and takes stock from the top: head, neck, shoulders, back, legs; nothing that won't work
+she lets the fall run on into a backward roll, chin tucked, and comes up on her feet on the far side, crooked but up
+the breath won't come at first: her chest has simply forgotten how, and she lies there waiting for it to remember
+== dodge
+she twists from the waist instead of jumping, as if pulled by a string, and it passes a hair from her fur
+she sees the hips turn before anything else does, and that is enough
+== watch_thought
+she has been put down and got back up again, and gets up careful every time: the careful ones are the ones who last
+she wanted that face to change, and it hasn't
