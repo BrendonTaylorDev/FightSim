@@ -1759,6 +1759,12 @@ CONFIRM_SCHEMA = {"type": "object",
                                  "verdict": {"type": "string", "enum": ["fine", "contradiction"]}},
                   "required": ["reading", "verdict"]}
 # problems that mean something is MISSING from a draft (it needs writing again, not a paragraph fixed)
+# a tap-out shown: the tap itself, or her giving up in so many words
+TAP_SHOWN = re.compile(r"(?i)\btap(s|ped|ping)?\b(?!\s+(on|at)\s+(her|the)\s+(shoulder|back))|\bslap(s|ped|ping)\b[^.]{0,40}"
+                       r"\b(ground|sand|grass|earth|floor|dirt|mud|ice|stone|rock|leg|arm|side|flank|shoulder|back)"
+                       r"|\b(gave|gives|giving) (up|in)\b|\b(yield|yielded|yields|submit|submits|submitted|surrender\w*)\b"
+                       r"|\bI quit\b|\benough\b")
+
 MISSING_MARKS = ("never showed", "ESCAPE", "skipped the struggle", "finally getting up", "THE PIN HOLDS this beat",
                  "left out the tumble")
 # she is back on her feet (a get-up nobody rolled)
@@ -1940,6 +1946,24 @@ def _balance_marks(text):
     return "\n".join(fixed)
 
 
+_RUN_ON = re.compile(r"(\*[^*\n]*?[A-Za-z'’])\*[ \t]+(Her|His|Its|A|The|Every|Each)\b([^.!?\n]{0,90}?[.!?])")
+
+
+def _thought_run_on(text):
+    """A thought with no stop, run into the words after it ("*Shit* Her ears flattening as she grunted."): a short
+    -ing fragment after it is joined on as a tag ("*Shit*, her ears flattening as she grunted."); anything else gets
+    the thought's own full stop ("*This is what I do best.* A surge...")."""
+    def fix(m):
+        rest = m.group(2) + m.group(3)
+        words = rest.split()
+        first = words[:4]
+        if any(w.lower().endswith("ing") for w in first[1:]) and len(words) <= 16 and not re.search(
+                r"\b(was|were|had|is|did|went|came|ran|felt|made|took)\b", " ".join(words[:5]), re.I):
+            return m.group(1) + "*, " + m.group(2).lower() + m.group(3)
+        return m.group(1) + ".* " + rest
+    return _RUN_ON.sub(fix, text)
+
+
 _EMPH_IN = re.compile(r"(?<![*\w])\*{1,2}(?![\s*])([^*\n]{1,40}?)(?<![\s*])\*{1,2}(?![*\w])"
                       r"|(?<![_\w])_(?![\s_])([^_\n]{1,40}?)(?<![\s_])_(?![_\w])")
 
@@ -1985,6 +2009,7 @@ def _clean(text, cut_off=None, open_end=False):
     # a stray, unmatched * (a thought marker the model opened or closed by itself)
     text = _balance_marks(text)
     text = _plain_emphasis(text)   # Something *broke*. -> Something broke. (so the checks can read it)
+    text = _thought_run_on(text)
     # common model slips: a tail "hashing" is a tail lashing
     text = re.sub(r"(?i)\b(tails?\W+(?:\w+\W+){0,2}?)hash(ing|ed|es)\b", r"\1lash\2", text)
     text = re.sub(r"(?i)\bhash(ing|ed|es) (behind|back and forth|once|hard|side to side)", r"lash\1 \2", text)
@@ -2207,7 +2232,7 @@ def _issue_label(i):
     if i.startswith("a second reading says"):
         m = re.search(r"contradicts what happened \(([^)]{1,40})\)", i)
         return "second reading: " + (m.group(1) if m else "contradiction")
-    return _slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "stray beam" if "fired a beam" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
+    return _slip_label(i) or ("faint not shown" if ("never showed" in i and "fainting" in i) else "tap-out not shown" if ("never showed" in i and ("tapping out" in i or "passing out in" in i)) else "invented escape" if "THE PIN HOLDS this beat" in i else "fighter who isn't in this fight" if "who is NOT in this fight" in i else "invented fall" if "KEEPS HER FEET this beat" in i else "fighter who is out" if "out of this fight and never landed" in i else "wrong posture" if "ON HER FEET this whole beat" in i else "invented pin" if "NOBODY is pinned" in i else "game terms" if "game terms" in i else "repeated lines" if "stock lines" in i else "too much talking" if "mostly silent" in i else "swearing" if "swore" in i else "broken prose" if "prose broke down" in i else "stray electricity" if "electricity (" in i else "stray beam" if "fired a beam" in i else "get-up not finished" if "finally getting up" in i else "extra get-up tries" if "FIRST try" in i else "missing roll or lift" if ("rolling" in i or "hauling" in i) and "never showed" in i else "wrong way round" if "wrong way round" in i else "invented wound" if "doesn't exist" in i else "invented fall" if "fall or go down" in i else "collapse" if "collapse" in i else "broken bones" if "bones that can't" in i
                            else "graphic words" if "TONE" in i else "seconds counted in a pin" if "a pin has NO clock" in i else "pin clock" if "time wrong" in i or "pin clock" in i
                            else "missing escape" if "ESCAPE" in i
                            else "missing escape blow" if ("breaks free with" in i or "breaks loose for a moment" in i) else "missing attack" if "every attack listed" in i else "missing scenery" if "never showed her hitting" in i else "missing clash move" if "meeting the attack" in i else "missing takedown" if "the takedown" in i else "missing hits" if "never showed" in i else "missing struggle" if "struggle" in i
@@ -4005,6 +4030,9 @@ class Narrator:
         self._rolled_up = {a.get("defender") for a in actions if a.get("environment") and a.get("kept_feet")}
         # a fighter who taps out leaves the match awake, not knocked out
         self._tapped = {e.get("defender") for e in evs if e.get("type") == "tap_out" and e.get("how") == "tap"}
+        # the tap-out (or pass-out) that ends the match: the passage must show it (narration.tap_shown)
+        self._tap_end = next(((e.get("defender"), e.get("attacker"), e.get("how"), e.get("submission") or "hold")
+                              for e in evs if e.get("type") == "tap_out"), None)
         # holds worked looser this beat (still on): "the coil slackened" is right for these, "let go" is not
         self._loosened = {(e.get("attacker"), e.get("defender")) for e in evs if e.get("type") == "hold_loosened"}
         # charged into the scenery: she hits it either way; whether she then goes down is the crumple roll
@@ -9708,6 +9736,16 @@ class Narrator:
             issues.append(f"it never showed {self._faint[0]} fainting: this is the beat she goes under, "
                           f"and she passes out under the pin. End with her last seconds, her body going limp and "
                           f"still, her eyes closing, and {self._faint[1]} easing off")
+        te = getattr(self, "_tap_end", None)
+        if te and coverage and (self.rules.get("narration") or {}).get("tap_shown", True):
+            full = (prior or "") + "\n" + text
+            if te[2] == "tap" and not TAP_SHOWN.search(full):
+                issues.append(f"it never showed {te[0]} tapping out: this is the beat she gives up in {poss(te[1])} "
+                              f"{te[3]}. End with it: her paw slapping the ground (or {te[1]}) again and again, or a "
+                              f"cry that says it plainly, and {te[1]} letting go. She is awake, beaten, not out cold")
+            elif te[2] != "tap" and not self._shown_out(full):
+                issues.append(f"it never showed {te[0]} passing out in {poss(te[1])} {te[3]}: her struggles weaken, "
+                              f"her sight greys, she goes limp, and {te[1]} feels her go slack and lets go")
         sev = getattr(self, "_must_event", None)
         if sev and coverage:
             full = ((prior or "") + "\n" + text).lower()

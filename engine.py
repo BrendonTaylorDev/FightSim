@@ -7598,8 +7598,23 @@ class Engine:
             if wrong:
                 place = self.POS_PLACE.search(clause)
                 clause = place.group(1) if place else ""
+            if clause:
+                # a grip the director named that has ended since (a tap-out, an escape, a release): its piece goes
+                held = {n for h in self.holds.values() for n in (h.attacker, h.defender) if f.name in (h.attacker, h.defender)}
+                keep = []
+                for piece in re.split(r",\s*", clause):
+                    other = [n for n in names if n != f.name and re.search(r"\b" + re.escape(n) + r"\b", piece)]
+                    if other and self.GRIP_WORDS.search(piece) and not any(n in held for n in other):
+                        continue
+                    if piece.strip().upper().startswith("ON HER FEET") or piece.strip() == sure:
+                        continue      # (the engine's own posture is already said)
+                    keep.append(piece)
+                clause = ", ".join(keep)
             out.append(f"{f.name}: {sure}" + (f", {clause}" if clause else ""))
         return "; ".join(out)
+
+    GRIP_WORDS = re.compile(r"(?i)\b(jaws?|teeth|bit(e|ing)|grip\w*|grasp\w*|clamp\w*|coil\w*|wrapp?\w*|bound|binding|"
+                            r"pinch\w*|squeez\w*|hold\w*|held|lock\w*|choke\w*|crank\w*|twist\w*)\b")
 
     RECOVERY_DEFAULT = [
         {"label": "out cold", "look": "unconscious and limp, but breathing slow and steady; unresponsive"},
@@ -8455,6 +8470,10 @@ class Engine:
                   "with": with_, "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
                   "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure)}
             ev["elimination"] = self.eliminate(dn, reason)
+            if how == "tap" and cfg.get("tap_awake", True):
+                # she gave up: she is awake, beaten and hurting, not knocked out (the recovery stage before "up")
+                stages = self.rules.get("recovery", {}).get("stages") or self.RECOVERY_DEFAULT
+                d.recovery = max(0, len(stages) - 2)
             events.append(ev)
         return events
 

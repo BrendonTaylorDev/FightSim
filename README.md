@@ -654,6 +654,16 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 223
+
+Fixes from the Ripples vs Nerine submission match (legs vs tail).
+
+- **A tap-out ends the match.** The game loop only looked for knockouts and pins, so after Nerine tapped, `/auto` kept asking the director for beats with one fighter left ("attacker and defender must be different fighters") and wrote empty pause beats. Now the tap-out (or a pass-out) prints the winner and moves into the aftermath, like a knockout. `/undo` was working; it only had those empty beats to step back through first.
+- **She taps out awake.** A fighter who taps starts the aftermath "awake but down", not "out cold". `finish.submission.tap_awake` (on); a pass-out still starts out cold.
+- **The tap-out is always told.** A beat that ends in a tap-out or pass-out the prose left out gets a short passage for it, like any left-out event (`narration.tap_shown`, on).
+- **Ended grips leave the positions line.** The director's "jaws on Nerine's tail base" stayed in it after every hold had ended; a grip on someone she no longer holds is cut, and "ON HER FEET, ON HER FEET" is said once.
+- **Thoughts no longer run into the next words.** "*Shit* Her ears flattening as she grunted" becomes "*Shit*, her ears flattening as she grunted"; "*This is what I do best* A surge..." gets its full stop.
+
 ## Build 222
 
 - **Wrist and ankle holds are harder to lock in and easier to get out of** (`submissions.small_joints`). This covers a submission whose hardest grip is on a paw, a hand, a foot or a talon, like the wrist lock, heel hook, toe hold or wrist bite.
