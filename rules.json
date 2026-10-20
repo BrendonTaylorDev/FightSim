@@ -765,6 +765,18 @@
       "cooldown_beats": 40,
       "remember": true
     },
+    "_passages_comment": "passages: the library of showpiece passages (story_passages.txt, same format as the blocks): two to four finished sentences for the big moments (a heavy blow, a cut, a bite, a choke, a hold, a pin, a landing, a knockout), each fitted to the part, how hard it landed, how badly it hurts and her body. Rarely, the biggest moment of a part gets ONE: chance is how often a part that has such a moment gets one, min_gap_beats how many beats must pass before another (one per beat at most). place_share of them are offered to be set in word for word in place of the narrator's own telling of that moment; the rest are offered as inspiration only (its senses and rhythm, never its words), and with copy_check a sentence copied from one of those anyway is cut. cooldown_beats: how long before the same passage can come back; used passages are remembered in passages_memory.json (delete it to start again). enabled false: none at all.",
+    "passages": {
+      "enabled": true,
+      "file": "story_passages.txt",
+      "memory_file": "passages_memory.json",
+      "chance": 0.3,
+      "min_gap_beats": 2,
+      "place_share": 0.35,
+      "copy_check": true,
+      "cooldown_beats": 300,
+      "remember": true
+    },
     "_plan_comment": "blocks.plan: the blocks are laid out as numbered steps whose order changes from beat to beat (false: a plain list). blocks.open_and_end: the plan gives an image to open a beat on and one to end it on. arena_detail: one detail of the place the story has not used lately, as background (from the scene's details list in scenes.json). callback_memory: when a part that an earlier blow hurt is hurt again, the narrator is pointed at that earlier blow, once per part in a long while. leaned_words: describing words the last few beats used min_count times or more are named, so the narrator reaches for others.",
     "arena_detail": true,
     "callback_memory": true,

@@ -1,0 +1,201 @@
+# STORY PASSAGES: short, finished showpieces (two to four sentences) for the big moments of a fight: a heavy blow
+# landing, a cut, a bite, a choke, a hold, a pin, a landing, a knockout.
+#
+# HOW THEY ARE USED (narration -> passages in rules.json). Now and then (not every beat: "chance", and never two
+# beats running: "min_gap_beats") the program finds the biggest moment of a part and offers ONE passage that fits
+# it exactly: the part of the body, how hard it landed, how badly it hurts afterwards, her body, the kind of move.
+#   - Most of the time it is offered as INSPIRATION: the narrator reads it for its senses and rhythm and tells the
+#     moment its own way. A sentence it copies from it anyway is cut.
+#   - Sometimes ("place_share") it is offered to be SET IN as it stands, word for word, in place of the narrator's
+#     own telling of that moment.
+# A passage that has been offered is not offered again for a long time ("cooldown_beats"), and the least-offered
+# come first; what has been offered is remembered between fights in passages_memory.json (delete it to reset).
+#
+# FORMAT: as story_blocks.txt. "== category | condition: values" starts a group; each line under it is one passage;
+# a passage can add its own conditions after a " | " at its end. Slots: {part} (the body part, lower case, e.g.
+# "left shoulder"), {foe} (the one doing it to her). "she" and "her" are always the one it happens to, except in
+# the "pinning" and "holding" groups, where she is the one doing it.
+# Conditions: size, level, zone, has, state, kind, held, fade (the same words as story_blocks.txt).
+#
+# EVERY PASSAGE MUST BE TRUE WHENEVER ITS CONDITIONS HOLD. So: no new events (she does not fall, step, stagger or
+# get free unless the group is about exactly that), nothing beyond the hard rules (no gaping wounds, no breaking
+# bones, breath only ever stopped for a moment), no weapon the move may not use (a cut is "it", not "claws"), and no
+# body part she may not have (paws, ears, fur only under a has: condition; the program also drops any passage that
+# names a part her body lacks).
+
+# ---------------------------------------------------------------------------------------------------------------
+# HIT: a blow that lands hard, told from the side of the one it lands on
+# ---------------------------------------------------------------------------------------------------------------
+== hit | level: hurting
+For an instant there was only the sound of it, a flat, heavy note that seemed to come from inside her. Then the hurt arrived in her {part}, late and all at once, and she drew a breath through her teeth and held it until the worst had passed.
+It was not the pain that caught her first but the weight: the whole of the blow going into her {part} and staying there. A hot ache opened under it, spread a little, and settled in to stay, and she knew she would be feeling it with every move she made.
+The blow landed with a dull, solid thud, and her {part} answered with a deep, spreading throb. She kept her face still by an effort she hoped did not show; the ache went on beating under the skin like a second pulse.
+Her breath caught on the impact and came out of her in a short, rough grunt. Heat bloomed in her {part}, and in the moments after it she found herself guarding it more carefully than she meant to.
+
+== hit | level: very painful
+The blow drove into her {part} and the world narrowed to that one place. The pain was bright and enormous, so large it seemed to have a shape, and her breath went out of her in a hard, ragged sound she had not meant to make.
+She felt it land before she understood it: a dense, sickening thump in her {part}, and then the heat of it rising and rising as if it would never crest. Her whole body tightened around it, every muscle drawn in, holding on.
+For a heartbeat nothing came at all, and she thought she had been lucky. Then the pain arrived in her {part} in a great slow wave, deep and hot and pulsing, and the strength drained out of her breath and left it ragged.
+It hit her {part} like a door slammed on it. A white flare of pain went off there and kept going off, again and again with her pulse, and she heard herself make a low, strangled sound through clenched teeth.
+The impact rang through her {part} and on into the rest of her, a shock she felt in her teeth and the roots of her claws. When it ebbed, it left a throbbing heat behind it that answered every breath she took. | has: forelegs
+The blow folded her around her {part} for an instant, all of her curling toward the hurt as if to shield it. She forced herself open again with an effort that cost her, and the pain sat there, swollen and pulsing, waiting for her to move.
+
+== hit | level: excruciating, devastated
+The pain in her {part} was immediate and total, a great white roar that blotted out the fight, the ground, the sound of her own breathing. When it drew back far enough for the world to return, she found herself shaking, and the shaking would not stop.
+Something deep in her {part} gave a hot, sickening throb, and every nerve she had seemed to turn toward it at once. A cry was wrung out of her before she could stop it, raw at the edges, and afterward her breath came in short, shallow pulls, as if breathing deeper might set it off again.
+The blow landed with a sound she felt more than heard, a deep, heavy thud that went down into her {part} and stayed there. Pain followed it in a flood, rising until her vision blurred at the edges and her jaw locked shut against the sound building behind it.
+For a long moment she could not think at all. Her {part} was a single blazing point, and the rest of her had become a frame for it, trembling and taut. She dragged in a breath, and then another, and each one came out of her as a thin, shaking sound.
+It was the kind of pain that had a voice of its own. It screamed in her {part}, and the scream went everywhere, down her spine, into her teeth, into the backs of her eyes, until even holding still hurt. When it eased at last, it eased only to a deep, hot, pounding ache that promised to come roaring back the moment she asked anything of that part.
+The impact went through her {part} like a dropped weight through thin ice. She felt the pain burst and spread, and her body seized up around it, every muscle locking at once. Her breath came back to her in pieces, each one hitching on the hurt.
+
+== hit | level: very painful, excruciating, devastated | zone: head
+The blow whipped her head round and for a moment the world came apart into light and noise. A high ringing filled her skull; her eyes would not settle on anything, and when they did, the edges of everything swam and doubled before they agreed to be one thing again.
+Her head rang with it. There was a bright, flat burst behind her eyes, then a deep ache rolling in after it, and for a few heartbeats she could not make sense of where she was or what her body was doing. She blinked hard and hard again until the shapes in front of her came back together.
+It caught her across the {part}, and the shock of it went straight in behind her eyes. Her sight flickered dark at the edges; there was a taste of metal in her mouth and a hot, swelling pressure building where it had landed.
+
+== hit | level: very painful, excruciating, devastated | zone: chest, belly
+The breath was simply gone. One moment it was in her and the next the blow had driven it out, and her lungs hitched and hitched on nothing while her {part} burned. When the air finally came back, it came in a long, ragged, whooping pull that hurt all the way down.
+It drove into her {part} and folded her up around it. She could not breathe in; she could only hang there for a terrible moment with her mouth open and the hurt spreading, until her body remembered how and dragged in a thin, shaking breath.
+The blow sank deep into her {part}, and the pain did not stay where it landed: it went inward, a sick, hollow ache that seemed to spread through the soft middle of her. Every breath after it had to work its way past the hurt, short and careful and never quite enough.
+
+== hit | level: very painful, excruciating, devastated | zone: neck
+The blow caught her {part} and her breath caught and stuck in her throat. For a horrible instant nothing moved in or out; then it came back to her as a hoarse, scraping gasp, and the hurt settled in under it, thick and hot, every swallow a fresh small agony.
+Her {part} took it, and a sharp, choking pain shot up into her jaw and down into her shoulders. She coughed, and coughing hurt worse, and for a few breaths she could only drag the air in shallow and careful while her eyes watered.
+
+== hit | level: very painful, excruciating, devastated | zone: back
+It landed across her {part}, and the pain ran out from it along her spine in both directions at once, a hot, jagged line from her neck to her hips. Her back drew tight in a long involuntary arch; her breath stuttered and came back short.
+The blow struck her {part}, and she felt her whole frame jar around it. A deep, grinding ache bloomed there and stayed, and for the rest of the moment every small movement she made seemed to tug at it.
+
+== hit | level: very painful, excruciating, devastated | zone: leg
+The blow landed on her {part} and it went hot and heavy all at once, as if it had been filled with lead. Her weight shifted off it before she could stop herself, and when she put it back, the pain came up through the joint in a bright, sickening throb. | has: legs
+Her {part} took it full, and a raw, deep ache spread out from the point of it until the whole limb seemed to be made of it. The muscle there jumped and quivered under the skin, and she could not make it stop. | has: legs
+
+== hit | level: very painful, excruciating, devastated | zone: arm
+Pain flared through her {part} and down into the paw at the end of it, and for a moment her toes curled tight of their own accord. The limb felt suddenly heavy and far away, as if it belonged to someone else, and it throbbed with each heartbeat. | has: arms, forelegs
+It struck her {part}, and the shock ran out along the whole limb to its tip in a hot, tingling flood. The muscle there clenched and would not let go, and when it finally did, it left behind a deep, pulsing ache.
+
+== hit | level: very painful, excruciating, devastated | zone: tail
+The blow caught her {part} and a jolt went up its length and into her spine, so sharp her whole body flinched with it. The {part} jerked once, hard, and then hung heavier than it should, and every small movement of it sent the ache pulsing back up into her. | has: tail
+Pain lit up the length of her {part} like a struck nerve, running all the way up into the base of her spine, and the whole of her flinched in toward it before she could stop herself. | has: tails
+
+== hit | level: very painful, excruciating, devastated | state: tired, spent
+There was so little left in her to meet it with. The blow went into her {part} and nothing in her pushed back; it simply went in, deep, and the pain spread through a body too tired to brace against it. She made a low, worn sound, more breath than voice.
+She had nothing to take it with any more. Her {part} gave under the blow, and the hurt filled her up like water poured into an empty jar, and for a long moment all she could do was hold herself together and breathe.
+
+# ---------------------------------------------------------------------------------------------------------------
+# CUT: a slash, a rake or a cutting edge (only the small cuts the hard rules allow: a sting, a thin line of red)
+# ---------------------------------------------------------------------------------------------------------------
+== cut | kind: claw, talon, horn | level: sore, hurting
+It went across her {part} so fast she felt it only as a cold line drawn there. Then the line began to sting, thin and bright and particular, and she knew without looking that it had cut the skin.
+The stroke caught her {part} and left a fine, stinging line behind it, cold first and then hot. A few beads of red rose along it, and every movement afterwards tugged at the edges.
+A thin, bright sting opened across her {part}, sharp in the way only an edge is sharp. It was not a deep hurt, but it was a busy one, and it kept on reminding her of itself.
+
+== cut | kind: claw, talon, horn | level: very painful, excruciating, devastated
+The stroke caught her {part} in a long, burning line, cold for a heartbeat before the pain came flooding in behind it. A thin trickle of red ran from it, warm, and the sting of it pulsed with her heartbeat.
+It was not the first sting that was worst but the second, when the cut across her {part} seemed to wake up and catch fire along its whole length at once. She hissed through her teeth; a thin thread of blood started from it and ran.
+She felt the edge go into her {part} and drag, a cold, dragging sting that turned to burning almost before she could flinch. The cut throbbed and stung in time with her pulse, and a little red welled up along it and crept down.
+The cut across her {part} burned like a line of fire laid on her. Every small movement pulled at its edges and set it stinging afresh, and the warmth of the thin trickle that ran from it was somehow worse than the pain.
+
+# ---------------------------------------------------------------------------------------------------------------
+# BITE: teeth that close on her
+# ---------------------------------------------------------------------------------------------------------------
+== bite | kind: bite | level: sore, hurting
+The jaws closed on her {part} and she felt each point of each tooth, a ring of bright little pressures that became, all at once, a ring of sting. When they let go, the place throbbed in the shape of the bite.
+Teeth met her {part} with a hard, pinching clamp. It was the pressure she felt first, an awful squeezing grip, and then the sharp sting of the points beneath it, as if the hurt had two layers.
+
+== bite | kind: bite | level: very painful, excruciating, devastated
+The jaws clamped down on her {part} and the pain was immediate and enormous, a crushing pressure with points of fire inside it. She felt the teeth sink, felt them grind as {foe} bore down, and a sound came out of her that was half snarl and half cry.
+The bite on her {part} was a vise with teeth in it. The pressure built and built, deep into the muscle, and the points of it burned like hot nails driven in; she twisted against it and the twisting only drove them deeper.
+Teeth sank into her {part} and held, and the hurt of it spread out from every point at once. She could feel {foe} bearing down, could feel the jaws working for a better grip, and each small shift sent fresh fire through her.
+
+== bite | kind: bite | zone: neck | level: hurting, very painful, excruciating, devastated
+The jaws closed on her {part} and her breath stopped short in her throat. She felt the teeth press in all around, felt the terrible weight of {foe} hanging on them, and the pain went blazing down into her shoulders. Air came back to her only in thin, choked gasps.
+Teeth sank into her {part}, and everything in her went cold and still with a deep, animal alarm. The grip was crushing; she felt her pulse beating against it, felt each tooth as a separate burning point, and her gasp came out strangled and small.
+
+# ---------------------------------------------------------------------------------------------------------------
+# CHOKE: a hold on her neck or throat (her breath is squeezed, never stopped for more than a moment)
+# ---------------------------------------------------------------------------------------------------------------
+== choke | held: early
+The grip closed round her {part} and squeezed, and the air she had been about to breathe stopped somewhere below it. There was a horrible moment of nothing, of pressure and a rising, pounding fullness in her head; then she found a thread of air and dragged it in, thin and whistling.
+She felt the hold settle on her {part} like a band drawn tight. Her next breath had to fight its way through it, a narrow, rasping pull that brought her only half of what she needed, and the pressure throbbed in her temples.
+The pressure on her {part} came on all at once, and her breath went from easy to impossible between one heartbeat and the next. She clawed at the air with her lungs and got a little of it, a hoarse sip, and her pulse pounded thick and loud behind her eyes.
+
+== choke | held: middle, long
+Every breath she took now was a thin, fought-for thread. The hold on her {part} had not eased, and the pressure had become a world of its own: the drumming in her ears, the heat in her face, the slow, frightening narrowing of each pull of air.
+Her breath came and went in short, rasping sips around the grip on her {part}. Her head felt too full, as if it were swelling with every heartbeat, and the edges of everything had begun to waver; but each time the dark crept closer, a little air found its way in and pushed it back.
+She could hear her own breathing now, a high, scraping whistle squeezed through the hold on her {part}. Her chest heaved for more than it was given. The pressure did not let up, and she felt her strength beginning to drain into the effort of simply drawing air.
+
+# ---------------------------------------------------------------------------------------------------------------
+# HELD: a grip or a hold on her (any part but the neck)
+# ---------------------------------------------------------------------------------------------------------------
+== held | held: early
+The grip closed on her {part} and she felt at once how strong it was: not a grab she could shake off, but a hold, set and certain, with all of {foe} behind it. Her first pull against it went nowhere, and the pressure answered by tightening.
+She felt {foe} take hold of her {part}, a hard, deliberate clamp that pinched the muscle against the bone. There was nowhere for the hurt to go; it built under the grip, steady and squeezing, until the part throbbed with it.
+The hold settled on her {part}, and with it came a new and horrible kind of helplessness: wherever she moved, it moved with her, and every pull she made only drove the pressure deeper.
+
+== held | held: middle, long
+The hold on her {part} had become a steady, grinding ache that never let up for a moment. She could feel her own pulse beating against the grip, and with every pulse the hurt seemed to sink a little deeper into her.
+Her {part} had gone hot and throbbing under the grip, and when she tried to work it free, the pressure bit down and a sharp complaint ran through the whole limb. {foe} was not letting go; she could feel it in the patient, unyielding weight of the hold.
+She had stopped feeling the hold as a grip and begun to feel it as a part of her, a hard, aching band around her {part} that pulsed with every heartbeat and flared into fire at the smallest pull.
+
+# ---------------------------------------------------------------------------------------------------------------
+# HOLDING: the one with the grip (she is the one holding)
+# ---------------------------------------------------------------------------------------------------------------
+== holding
+She felt the hold settle home and locked it there, every muscle she had set behind it. Through it she could feel {foe} as a living thing: the frantic pulse, the strain of each pull, the moment each effort failed and the body in her grip had to gather itself to try again.
+The grip was hers now, and she bore down into it with a slow, deliberate patience. She could feel {foe} testing it, could feel each push run up against the hold and spend itself there, and she let none of it through.
+She held on. That was all of it, and it was everything: the burn in her own muscles, the heaving body in her grip, the fierce narrow will to give back none of what she had taken.
+
+# ---------------------------------------------------------------------------------------------------------------
+# PINNED_START: the moment the pin comes down on her
+# ---------------------------------------------------------------------------------------------------------------
+== pinned_start
+The weight came down on her all at once and drove her flat. In an instant the ground was against her and {foe} was over her, heavy and certain, and every way she might have moved was suddenly closed. Her breath went out of her in a hard, startled huff.
+She felt the pin take her: the weight settling, the grip finding her, the ground pressing back from underneath, until there was no space left anywhere for her to move into. Panic flickered up bright and hot, and she bucked against it before she had even decided to.
+It happened faster than she could follow. One moment she had room and the next {foe} had her down, a crushing weight bearing down on her that stole half her breath and pinned her where she lay. She could feel the other's breath, hot and fast, close above her.
+The ground came up hard against her, and then {foe} was on her, the whole heavy, living weight of her settling and spreading until it seemed to be everywhere at once. She strained up against it and found no give in it at all.
+
+# ---------------------------------------------------------------------------------------------------------------
+# PINNED: held down, as the pin goes on (by how much fight she has left in her)
+# ---------------------------------------------------------------------------------------------------------------
+== pinned | fade: fighting
+She threw herself against the weight with everything she had. Her muscles burned, her breath roared in and out of her, and for a moment she felt it shift, a little, a hand's width; then {foe} bore down again and the ground pressed back up, and she was where she had been.
+She heaved and twisted under the pin, hunting for any space at all, any angle, any loosening of the weight. Every effort ran into it and stopped short. She could feel {foe} adjusting above her, patient and heavy, answering each push before it could become anything.
+She fought it hard. Her body strained up against the weight in long, shuddering pushes, her breath sawing in and out between her teeth, and every time it held, she gathered herself and drove again.
+
+== pinned | fade: weakening
+Each push against the pin was a little weaker than the one before. She knew it and hated it: the weight above her had not changed, but her strength had begun to run out of her like water, and the ground beneath her seemed to grow harder with every breath.
+Her struggles had slowed into long, heavy efforts with rests between, and the rests were growing longer. The weight on her pressed down and did not tire, and she could feel her breath growing shallow and ragged under it.
+She was still fighting, but the fight had changed. It came from somewhere deeper now, from will rather than muscle, and every effort cost her something she was not sure she would get back.
+
+== pinned | fade: fading, nearly out
+The weight on her had become the whole world. Her struggles came slow and far apart, small and dim, and between them she lay and breathed in short, shallow pulls while the edges of everything grew soft and grey.
+She could barely feel her own efforts any more. Her body tried to rise and the trying ended almost before it began; her breath had gone thin and fluttering, and the darkness at the edges of her sight crept a little closer each time it came.
+She heard her own breath as if from far away, quick and weak. She meant to push again and could not quite remember how; the weight pressed on, steady and endless, and the fight in her guttered like a small flame in the wind.
+
+# ---------------------------------------------------------------------------------------------------------------
+# PINNING: the one on top (she is the one holding the pin)
+# ---------------------------------------------------------------------------------------------------------------
+== pinning
+She bore down and spread her weight to meet every push, her whole body tuned to the one beneath her. She could feel {foe} gathering herself before each effort, the tensing, the drawn breath, and she was ready for each one before it came.
+She held the pin with her whole body, low and heavy, feeling every twist of {foe} beneath her and answering each with a small, patient shift of her own. Her muscles burned with it; she let them burn and did not give an inch.
+Beneath her, {foe} heaved and strained, and she rode each effort out the way one rides out a wave, sinking with it, pressing down as it passed. Her breath came hard and fast against the other's, and her grip did not loosen.
+
+# ---------------------------------------------------------------------------------------------------------------
+# LANDING: thrown, slammed or knocked off her feet onto the ground
+# ---------------------------------------------------------------------------------------------------------------
+== landing
+The ground came up to meet her far faster than she was ready for. She hit it with a force that drove every bit of air out of her body at once, and lay there in the ringing silence after, her mouth open and her chest locked, waiting for her lungs to remember what they were for.
+For a moment there was nothing under her at all, only air and the sickening sense of the world turning. Then the ground struck her, all along her side at once, a great flat blow that jarred through every bone she had, and she lay stunned with the shock still humming in her.
+She landed hard and the impact went through her like a bell struck. Pain came from everywhere at once, her side, her shoulder, her hip, until she could not tell where it was worst; then her breath came back in a ragged gasp and the world swam slowly into place.
+The landing knocked the sense out of her for a heartbeat. When it came back, she was on the ground, a deep, jarring ache spreading through her, and the world above her was tilting slowly back to where it should be.
+She hit the ground with a heavy, graceless thud, and the jolt of it burned all along her side. For a breathless instant she could not move at all; then everything hurt at once, and she dragged in air like someone surfacing from deep water.
+
+# ---------------------------------------------------------------------------------------------------------------
+# KNOCKOUT: she goes out (it happens in this beat: the engine says so)
+# ---------------------------------------------------------------------------------------------------------------
+== knockout
+The pain did not get worse; it simply got farther away. Sound went first, the world going muffled and soft, and then the light drew in from the edges like a tide going out, and the last thing she knew was the strange, heavy peace of letting go.
+Something in her let go all at once. The fight, the hurt, the will that had kept her going this long, all of it slipped quietly out of her, and her body went slack and still, and her eyes slid closed.
+She tried to hold on, and for a moment she did; then the darkness at the edges of her sight rose up and took her gently, and everything went quiet.
+There was no last effort, no final defiance. The light simply went out of her eyes, slowly, and her body sagged and settled as though a string that had been holding it up had quietly been cut.

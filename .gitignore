@@ -14,3 +14,4 @@ exports/
 phrase_memory.json
 bench_cases/
 bench_reports/
+passages_memory.json

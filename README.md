@@ -654,6 +654,31 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 232
+
+Story passages: a new library, `story_passages.txt`, of 88 finished showpieces, each two to four sentences long. They
+cover the big moments of a fight: a heavy blow (by pain level, and by head, chest or belly, neck, back, leg, arm or
+tail), a cut, a bite (with its own neck bites), a choke, a hold and the one holding it, the pin coming down, the
+pinned fighter as her fight runs out, the one on top, a landing, and a knockout. Switches are under
+`narration.passages`; `/passages` shows the counts and turns them on or off.
+
+- **Rare:** in a part with such a moment, `chance` (0.3) of the time, never two beats running (`min_gap_beats`), and
+  one a beat at most. The receiving side comes first: the pinner's or holder's side gets one only when nothing in the
+  beat happens to the other.
+- **Fitted to what the engine resolved:** the same conditions as the blocks (the part, how hard it landed, how badly it
+  hurts afterwards, her body, the kind of move, how long a hold or pin has been on, how much fight she has left). Her
+  injuries' pain ceiling, her body (no paws on a bird) and the scene all filter them, as they filter the blocks.
+- **Set in, or drawn on:** `place_share` (0.35) of them are offered to be set in word for word, in place of the
+  narrator's own telling of that moment. The rest are offered to draw on (their senses and their pacing), and with
+  `copy_check` a sentence copied from one of those anyway is cut.
+- **Repetition:** a passage offered once is not offered again for `cooldown_beats` (300) beats, and the least-offered
+  come first. What has been offered is remembered between fights in passages_memory.json.
+- **Kept to the hard rules:** every passage is written so it is true whenever its conditions hold. None adds an event
+  (nobody falls, steps or gets free unless that is the moment), cuts stay small (a sting, a thin line of red), breath
+  only ever stops for a moment, and a submission hold's choke never darkens toward fainting. A new regress check reads
+  the file: only the slots the program fills, only moments it offers, at most four sentences, and no tearing,
+  breaking, gore or killing words.
+
 ## Build 231
 
 Shorter notes for the narrator, with every rule kept, plus three fixes from the Ripples vs Nerine fight. On a scripted

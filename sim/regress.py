@@ -346,6 +346,33 @@ def sim_fights(n=6):
     return problems
 
 
+def passage_check():
+    """story_passages.txt: every passage fills only the slots the program has, belongs to a moment the program
+    offers, stays short, and says nothing the hard rules forbid (no tearing, breaking, gore or killing words)."""
+    import re
+    import blocks
+    import narrator
+    with open(os.path.join(H.ROOT, "story_passages.txt"), encoding="utf-8") as fh:
+        entries = blocks.parse(fh.read())
+    known = {"hit", "cut", "bite", "choke", "held", "holding", "pinned_start", "pinned", "pinning", "landing", "knockout"}
+    bad = re.compile(r"\b(?:gaping|torn|tore|tears? (?:open|into)|shred\w*|snap\w*|broke|broken|break\w*|fractur\w*|"
+                     r"shatter\w*|sever\w*|kill\w*|die|dies|dying|dead|death|pool\w*|spray\w*|soak\w*|expos\w*|"
+                     r"gush\w*|stream\w*|beat|sob\w*|weep\w*|wept)\b", re.I)
+    problems = [] if entries else ["story_passages.txt has no passages"]
+    for cat, conds, text in entries:
+        where = f"{cat}: {text[:60]}..."
+        if cat not in known:
+            problems.append(f"{where} belongs to no moment the program offers")
+        if set(blocks.SLOT.findall(text)) - {"part", "foe"}:
+            problems.append(f"{where} has a slot the program never fills")
+        m = bad.search(text)
+        if m:
+            problems.append(f"{where} says '{m.group(0)}'")
+        if len([x for x in narrator._SENT.split(text) if x.strip()]) > 4:
+            problems.append(f"{where} is longer than four sentences")
+    return problems
+
+
 def main(argv):
     verbose = "-v" in argv
     want = [a.lower() for a in argv if not a.startswith("-")]
@@ -370,6 +397,13 @@ def main(argv):
         print(f"{'FAIL' if probs else 'ok  '}  undo and replay give the same beat  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p.replace("\n", "\n      "))
+    if not want or any(w in "story passages" for w in want):
+        t = time.time()
+        probs = passage_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  story passages keep to the hard rules  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
     if not want or any(w in "whole fights" for w in want):
         t = time.time()
         probs = sim_fights()

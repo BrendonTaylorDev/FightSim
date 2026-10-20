@@ -8037,6 +8037,161 @@ class Narrator:
             self._line_offers = getattr(self, "_line_offers", 0) + 1
             add(label + " (use it word for word if it fits, or leave it)", fin)
 
+    def _passages(self):
+        """The library of showpiece passages (story_passages.txt, narration.passages): two to four finished sentences
+        for the big moments, in the blocks' format and conditions."""
+        b = getattr(self, "_passage_store", None)
+        cfg = (self.rules.get("narration", {}) or {}).get("passages", {}) or {}
+        if b is None:
+            b = self._passage_store = story_blocks.Blocks(
+                {"narration": {"blocks": {"file": cfg.get("file", "story_passages.txt"),
+                                          "memory_file": cfg.get("memory_file", "passages_memory.json")}}})
+        b.cfg = {"cooldown_beats": int(cfg.get("cooldown_beats", 300)), "remember": bool(cfg.get("remember", True))}
+        b.enabled = bool(cfg.get("enabled", True))
+        b.scene_ban = self._scene_ban()
+        return b
+
+    def _passage_moments(self, key, acts, pin_events, also, actor, receivers):
+        """The big moments of this part a passage could tell, best first: [(category, who, what, fmt, ctx)]. On the
+        side of the one it happens to (take) a knockout, a pin, a choke, a landing, a hold, a cut, a bite or a heavy
+        blow; on the doer's side (act) only the pin or the hold she keeps (a strike is told there only up to contact)."""
+        take, act = key in ("take", "all", "after"), key in ("act", "all")
+        out = []
+        recv = [r for r in (receivers or []) if r]
+        for a in acts:
+            if take and a.get("knockout") and a.get("fighter"):
+                out.append(("knockout", a["fighter"], f"{a['fighter']} going out", {}, {}))
+        for e in pin_events or ():
+            a_, d_ = e.get("attacker"), e.get("defender")
+            if not a_ or not d_ or e.get("struggle") == "escape" or e.get("complete"):
+                continue
+            fade = {"fighting hard": "fighting", "weakening": "weakening", "fading": "fading",
+                    "nearly gone": "nearly out"}.get(e.get("fight_left"), "fighting")
+            if take:
+                out.append(("pinned", d_, f"{d_} under the pin", {"foe": a_}, {"fade": fade}))
+            if act:
+                out.append(("pinning", a_, f"{a_} holding the pin", {"foe": d_}, {}))
+        for a in acts:
+            if a.get("type") in ("pin_start", "pin_forced") and not a.get("continuing") and a.get("defender"):
+                if take:
+                    out.append(("pinned_start", a["defender"], f"{a['defender']} pinned", {"foe": a.get("attacker")}, {}))
+                if act:
+                    out.append(("pinning", a.get("attacker"), f"{a.get('attacker')} pinning her", {"foe": a["defender"]}, {}))
+        # holds: one that locks on now, or one still on from before (any part: the neck makes it a choke)
+        held = []
+        for a in acts:
+            if a.get("type") in ("hold_start", "grapple_start") and a.get("defender"):
+                for p in a.get("parts") or [{}]:
+                    held.append((a.get("attacker"), a["defender"], str(p.get("part") or ""), 0, bool(a.get("submission"))))
+        for e in also or ():
+            if e.get("type") == "hold_ongoing" and not e.get("coil"):
+                for h in e.get("hits") or [{}]:
+                    held.append((e.get("attacker"), e.get("defender"), str(h.get("part") or ""),
+                                 int(e.get("beats_held") or 1), bool(e.get("sub"))))
+        for a_, d_, part, beats, sub in held:
+            if not a_ or not d_ or not part:
+                continue
+            when = "early" if beats <= 1 else "middle" if beats <= 3 else "long"
+            neck = body_region(part) == "neck"
+            if take:
+                out.append(("choke" if neck else "held", d_, f"{d_} in {poss(a_)} hold on her {part.lower()}",
+                            {"part": part.lower(), "foe": a_}, {"held": when, "_sub": sub}))
+            if act:
+                out.append(("holding", a_, f"{a_} keeping her hold", {"foe": d_}, {}))
+        if take:
+            for a in acts:
+                d_ = a.get("defender")
+                if d_ and (a.get("manhandle") in ("throw", "slam") or (a.get("environment") and a.get("launch"))) \
+                        and self._blk_posture(d_, end=True) & {"down", "pinned"}:
+                    out.append(("landing", d_, f"{d_} hitting the ground", {"foe": a.get("attacker")}, {}))
+            # the blow that did the most, on each fighter this part is told for
+            best = {}
+            for a in acts:
+                if a.get("type") != "instant" or a.get("environment"):
+                    continue
+                mv = a.get("move") or {}
+                kinds = story_blocks.kind_of(str(mv.get("name") or ""), str(mv.get("about") or ""), str(a.get("with") or ""))
+                for h in a.get("hits") or ():
+                    who = h.get("defender") or a.get("defender")
+                    if not who or (recv and who not in recv) or not h.get("part"):
+                        continue
+                    taken = float(h.get("damage_taken", 0) or 0)
+                    if who not in best or taken > best[who][0]:
+                        best[who] = (taken, h, a, kinds)
+            for who, (taken, h, a, kinds) in best.items():
+                lv = self._pain(h.get("damage_after", 0))["label"]
+                lv = "devastated" if lv == "numb with shock" else lv
+                if lv == "minor":
+                    continue
+                part = str(h["part"]).lower()
+                fmt = {"part": part, "foe": a.get("attacker")}
+                ctx = {"level": lv, "size": self._strength_key(taken), "zone": story_blocks.ZONE_OF.get(body_region(part)),
+                       "kind": kinds}
+                what = f"{poss(a.get('attacker') or 'the')} blow landing on {poss(who)} {part}"
+                if kinds & {"claw", "talon", "horn"}:
+                    out.append(("cut", who, what, fmt, ctx))
+                if "bite" in kinds:
+                    out.append(("bite", who, what, fmt, ctx))
+                if lv != "sore":
+                    out.append(("hit", who, what, fmt, ctx))
+        # (only the fighters this part is told for: a hold on the one striking is not the moment of her blow)
+        return [m for m in out if m[1] and (m[1] in recv if m[0] not in ("pinning", "holding") and recv else
+                                            m[1] == actor if m[0] in ("pinning", "holding") and actor else True)]
+
+    def _passage_for(self, key, acts, pin_events, also, actor, receivers):
+        """Now and then one showpiece passage for the biggest moment of this part (narration.passages): to set in
+        word for word, or (more often) to draw on. One a beat at most, never two beats running, and the same passage
+        not again for a long while."""
+        cfg = (self.rules.get("narration", {}) or {}).get("passages", {}) or {}
+        if not cfg.get("enabled", True) or key not in ("act", "take", "all", "after"):
+            return ""
+        try:
+            P = self._passages()
+            if not P.enabled or not P.entries:
+                return ""
+            last = getattr(self, "_passage_turn", None)
+            if last is not None and (last == P.turn or P.turn - last < max(1, int(cfg.get("min_gap_beats", 2)))):
+                return ""
+            moments = self._passage_moments(key, acts, pin_events, also, actor, receivers)
+            if key == "act" and self._passage_moments("take", acts, pin_events, also, actor, receivers):
+                return ""       # the beat's one passage is kept for the side it happens to (the pin, the choke, the blow)
+            if not moments or P.rng.random() >= float(cfg.get("chance", 0.3)):
+                return ""
+            for cat, who, what, fmt, ctx in moments:
+                sub = ctx.pop("_sub", False)
+                ceil = self._pain_ceiling(who)
+                ex = [rx for need_, rx in INTENSE_IDEAS if ceil and ceil[0] < need_]
+                if sub:
+                    ex.append(re.compile(r"\bdark\w*|\bgrey\b", re.I))      # a submission hold: she never passes out
+                part = str(fmt.get("part") or "")
+                if part.endswith("s") and not part.endswith(("ss", "us")):
+                    ex.append(re.compile(r"\bit (?:throbbed|jerked|hung|felt|belonged)\b", re.I))      # "twin tails"
+                got = P.pick(cat, 1, fmt={k: v for k, v in fmt.items() if v}, exclude=ex or None,
+                             has=self._blk_feats(who), state=story_blocks.state_of((self.strengths or {}).get(who, 100)),
+                             **{k: v for k, v in ctx.items() if v})
+                if got:
+                    break
+            else:
+                return ""
+        except Exception as exc:
+            note_failure("the story passages (story_passages.txt)", exc)
+            return ""
+        self._passage_turn = P.turn
+        text = got[0]
+        if P.rng.random() < float(cfg.get("place_share", 0.35)):
+            return (f"\n\nA PASSAGE FOR THIS MOMENT ({what}; \"she\" in it is {who}), from the library and fitted to what "
+                    f"the engine resolved: you may set it into this part exactly as it stands, word for word, at the "
+                    f"point where that moment happens, in place of your own telling of it. Everything around it stays "
+                    f"your own, and nothing in it is told twice. If it does not sit well with the rest, leave it out."
+                    f"\n<<<\n{text}\n>>>")
+        if cfg.get("copy_check", True):
+            self.__dict__.setdefault("_passage_keys", set()).update(
+                k for x in _SENT.split(text) for k in [self._copy_key(x)] if len(k.split()) >= 5)
+        return (f"\n\nA PASSAGE TO DRAW ON ({what}; \"she\" in it is {who}): how closely a moment like this can be "
+                f"felt, from another fight. Take its senses, its pacing and its precision, then tell this moment in your "
+                f"own words: never copy its sentences (a copied one is cut), and nothing in it happens unless the "
+                f"events say so.\n<<<\n{text}\n>>>")
+
     def _grip_word(self, who):
         """What a flyer grips her prey with: talons, feet, or hands (from her own part names)."""
         parts = " ".join(((getattr(self, "damage_by", None) or {}).get(who) or {}).keys()).lower()
@@ -9513,6 +9668,11 @@ class Narrator:
             counts[t] = counts.get(t, 0) + 1
         return tags
 
+    @staticmethod
+    def _copy_key(x):
+        """A sentence reduced to its bare words, to tell a copy of a library passage from the story's own words."""
+        return WHITESPACE.sub(" ", re.sub(r"[^\w\s]", "", x.lower())).strip()
+
     def _drop_sample_copies(self, text):
         """Sentences lifted word for word from the style sample (five words or more) are cut: the sample shows a
         manner of telling, and its lines belong to another fight. narration.sample_copy_check turns it off."""
@@ -9530,11 +9690,13 @@ class Narrator:
             self._sample_keys = {k for para in src.split("\n") for x in _SENT.split(para)
                                  for k in [key(x)] if len(k.split()) >= 5}
             self._sample_keys_for = (name, tuple(self.strengths or ()))
-        if not self._sample_keys:
+        # (and a passage offered to draw on this beat, narration.passages: its sentences are not the story's either)
+        lifted = getattr(self, "_passage_keys", None) or set()
+        if not self._sample_keys and not lifted:
             return text
         paras, cut = [], False
         for para in text.split("\n"):
-            kept = [x for x in _SENT.split(para) if not (key(x) in self._sample_keys)]
+            kept = [x for x in _SENT.split(para) if not (key(x) in self._sample_keys or self._copy_key(x) in lifted)]
             cut = cut or len(kept) != len([x for x in _SENT.split(para)])
             paras.append(" ".join(kept).strip())
         if not cut:
@@ -12853,9 +13015,12 @@ class Narrator:
         del CALL_LOG[:]
         self._blocks().next_turn()
         self._lines().next_turn()
+        self._passages().next_turn()
+        self._passage_keys = set()      # passages offered to draw on this beat (copies of them are cut)
         raw = self._narrate(bundle, condition_summary, fighter_notes, scene, story_so_far)
         self._blocks().save()
         self._lines().save()
+        self._passages().save()
         self._injury_prev = {k: list(v) for k, v in (getattr(self, "injury_log", None) or {}).items()}
         self._injury_main_prev = {k: list(v) for k, v in (getattr(self, "injury_main", None) or {}).items()}
         text = self._drop_repeats(raw, story_so_far)
@@ -14290,6 +14455,7 @@ class Narrator:
             self._sample_cast = [actor] + list(receivers or []) if actor else list(receivers or [])
             return self._call(context + f"Write this beat in about {words} words. {DETAIL}"
                               + self._blocks_for("all", acts, pin_events, also_now, actor, receivers, True, True)
+                              + self._passage_for("all", acts, pin_events, also_now, actor, receivers)
                               + self._checklist("all", acts, actor, receivers)
                               + self._paragraph_plan("all", acts, actor, receivers)
                               + self._read_note("all", actor, receivers)
@@ -14329,6 +14495,7 @@ class Narrator:
             b_actor, b_recv = ((going[0]["attacker"], [going[0]["defender"]]) if pin_plan and going
                                and isinstance(going, list) else (actor, receivers))
             ask += self._blocks_for(key, acts, pin_events, also_now, b_actor, b_recv, i == 1, i == len(plan))
+            ask += self._passage_for(key, acts, pin_events, also_now, b_actor, b_recv)
             ask += self._checklist(key, acts, actor, receivers)
             ask += self._paragraph_plan(key, acts, actor, receivers) + self._read_note(key, actor, receivers)
             if cmp_.get("sounds_where_hit") and self._sounds_full:
