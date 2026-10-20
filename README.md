@@ -654,6 +654,15 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 225
+
+**The beat card is on by default** (`narration.card.enabled`, now true). On the build-222 bench it was the better of the two: it stayed with the fight (both fighters' wounds, Nerine stirring, Ripples' bad footing) where the plain prompt drifted into scenery. Its thoughts were cleaner, and it had fewer warnings on the last beat. Its two faults there are what build 224 fixes:
+
+- An earlier blow remembered as the wrong move: the INNER LIFE note now says an attack keeps the move it was. The card prompt gets this note as well.
+- Stock tails and scenery lists: the filler trim cuts them after the model writes.
+
+It costs a little more, about 20% more calls and time on that bench. With the card on, the WHO HOLDS WHOM note is left out, because the card's WHO and CONTACTS lines already name each grip's owners. `/set narration.card.enabled false` goes back to the plain prompt.
+
 ## Build 224
 
 **Holds wear the part down before they tear into it** (`holds.slow_bite`, on). In the Ripples vs Nerine match, one grip on Nerine's hip took it from 10% to 293% damage in eight beats. As the hip's resistance fell, the hold's damage multiplier climbed about 4–5×, on top of the grip's own tightening. Now every hold that presses (submissions, coils and plain grips; not a pin's own presses) gets three changes:
