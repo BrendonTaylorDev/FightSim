@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 228
+
+Fixes from a Nerine vs Ripples submission fight (lakeside, legs focus, a knee bite that ended in a tap).
+
+- **The tap-out is always told.** The draft left out the tap, and the short passage asked for it came back as one more blow ("Her muzzle took the next blow"), which nothing checked. Now that passage has to show the tap (or the pass-out): it is asked for once more, then said in one plain sentence. It always goes at the very end of the beat (`narration.tap_shown`).
+- **The beat card names what the holds do** (`narration.card.hold_events`, on). The card listed only the blows, and because it "wins" over the notes, the model left out her refusals to tap (beats 4 and 5) and the tap itself. Every part after contact now gets a HOLDS THIS BEAT line: a grip closing (marked new, so it is shown clamping on, not already there), its pressure, her refusing to tap, a break-out, and, in the last part, the tap-out. A fighter who taps out or is knocked out that beat stays in the card's WHO and WHERE lines.
+- **A second limb on a held spot keeps its grip** (`holds.second_limb`, on). Nerine's Tail Bind round the knee her jaws already held was folded into the bite, and its pressure was lost. Now both stay on ("her jaws and twin tails"), pressing at the stronger plus half the weaker.
+- **Tapped out, not out cold.** The injury report said Ripples "is out cold" after she tapped out awake. It now says she tapped out.
+- **Narration cleanups:**
+  - "Ripples' thought: …" labels are cut, as "Her thought:" already was.
+  - Pain levels copied as words ("was already very painful before this") become "already badly hurt".
+  - Comparisons with her life before the fight go: "unlike anything she had ever felt", "from anything she'd felt before", "like she used to".
+  - "Tasting blood" counts as blood in the mouth, so it needs a hurt mouth.
+  - "It's going to break." counts as breaking bones.
+  - "Ripples could see the damage she had inflicted", in a beat only Nerine struck, gets the right name.
+
 ## Build 227
 
 **A full submission match, narrated by hand, and the engine fed from it.** `sim/test_fights/submission_varied/full_fight.md` is Ripples vs Nerine on seed 21, all 28 beats, about 17,700 words. Each beat is told in the same parts the program asks the narrator for: the side of the one who acts, up to the moment of contact, then the side of the one it happens to. It follows the engine's notes for every beat: hit sizes, lasting pain levels, sounds, which way she falls, and the refusal signs the dice picked. `Ripples_vs_Nerine_full_fight.html` is the same fight exported with both fighters' cards on every beat. `replay.py` rebuilds it.

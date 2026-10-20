@@ -4022,6 +4022,14 @@ class Engine:
                 # keep_with (the director's beats): jaws that are already on her neck stay jaws; they don't turn
                 # into a horn because the new pin was worded that way. Your own commands may change it.
                 h.with_part = (h.with_part or with_part) if keep_with else (with_part or h.with_part)
+                sl = self.rules.get("holds", {}).get("second_limb") or {}
+                if keep_with and asked and sl.get("enabled", True) and self._limb_kind(asked) and \
+                        self._limb_kind(asked) != self._limb_kind(h.with_part):
+                    # a second limb on the same spot (her tails bound round the knee her jaws already hold): both stay
+                    # on it, and the new one adds a share of its own pressure (holds.second_limb)
+                    h.with_part = f"{h.with_part} and {re.sub(r'^(?:with )?(?:her|their|its) ', '', asked)}"
+                    h.power = max(h.power, power) + float(sl.get("add", 0.5)) * min(h.power, power)
+                    asked = ""
                 return {"type": "hold_start", "hold_id": h.id, "attacker": a.name, "defender": d.name,
                         "part": pname, "power": h.power, "change_per_beat": h.change_per_turn,
                         "flavor": flavor, "with": h.with_part, "existing": True,
@@ -4032,6 +4040,17 @@ class Engine:
         return {"type": "hold_start", "hold_id": h.id, "attacker": a.name, "defender": d.name,
                 "part": pname, "power": power, "change_per_beat": change_per_turn, "flavor": flavor,
                 "with": with_part, "existing": False}
+
+    @staticmethod
+    def _limb_kind(with_part):
+        """What a grip presses with, as a kind (jaws, tails, paws, legs, wings, body), or "" when it doesn't say."""
+        w = str(with_part or "").lower()
+        for kind, rx in (("jaws", r"\b(?:jaws?|teeth|fangs?|bite|mouth)\b"), ("tails", r"\btails?\b|\bcoils?\b"),
+                         ("paws", r"\b(?:paws?|hands?|claws?|arms?|forelegs?)\b"), ("legs", r"\b(?:legs?|knees?|thighs?|feet|foot)\b"),
+                         ("wings", r"\bwings?\b"), ("body", r"\b(?:body|weight|chest)\b")):
+            if re.search(rx, w):
+                return kind
+        return ""
 
     def grab_between(self, x, y):
         """The grab that links these two (either one holding the other), while both are still on their feet; or None."""
@@ -5969,6 +5988,9 @@ class Engine:
                  "is out cold; waking up will be the hard part",
                  "lost, and her body will remember every part of it"],
         "standing": ["is still on her feet, and feeling it", "made it through"],
+        # she gave up awake (finish.submission.tap_awake): beaten, not knocked out
+        "tapped": ["tapped out, awake for every second of it, and it will all be waiting for her",
+                   "gave up in the end, awake and hurting", "lost by tapping out; she felt all of it"],
     }
     REPORT_HURT = {
         "deep": ["black with bruising, stiff and swollen for days", "swollen tight; it won't bear a touch for a week",
@@ -5998,6 +6020,9 @@ class Engine:
             s = self.strength(f)
             lead_key = ("lost" if f.eliminated or (win and f.name != win and self.get(win).team != f.team) else
                         ("won_fresh" if s >= 70 else "won_hurt" if s >= 35 else "won_wrecked") if win else "standing")
+            if lead_key == "lost" and str((self.__dict__.get("out_reason") or {}).get(f.name, "")).startswith(
+                    "taps out") and (self.rules.get("finish", {}).get("submission") or {}).get("tap_awake", True):
+                lead_key = "tapped"
             lead = f"{f.name} {pick(self.REPORT_LEAD[lead_key], 'lead')}"
             worst = sorted((p for p in f.parts.values() if p.damage >= 60), key=lambda p: -p.damage)[:4]
             if not worst:

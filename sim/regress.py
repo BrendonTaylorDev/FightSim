@@ -144,6 +144,13 @@ CASES = [
       [A("Ripples", "Nocturne", "breather")],
       [A("Ripples", "Nocturne", "hold_release")]],
      lambda r, e, s: _any(r, lambda x: x.get("type") == "hold_start")),
+    ("second limb on a held spot", "Nerine,Ripples", None,
+     [[A("Nerine", "Ripples", "hold_start", part="Right Knee", improvised_name="knee bite",
+         hits=[{"part": "Right Knee", "with": "her jaws"}])],
+      [A("Nerine", "Ripples", "hold_start", move="Tail Bind", part="Right Knee",
+         hits=[{"part": "Right Knee", "with": "her twin tails"}])]],
+     lambda r, e, s: _any(r, lambda x: x.get("type") == "hold_start" and any(
+         "jaws" in str(p.get("with")) and "tails" in str(p.get("with")) for p in x.get("parts") or []))),
     ("pin and struggle", "Nocturne,Ripples", _all(_down("Ripples"), _open_pins),
      [[A("Nocturne", "Ripples", "pin", hits=[{"part": "Chest", "severity": "crushing", "with": "her forepaws"},
                                              {"part": "Left Upper Arm", "severity": "firm", "with": "a hind paw"},

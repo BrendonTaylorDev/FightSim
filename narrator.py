@@ -305,7 +305,8 @@ MILD_GORE = re.compile(
 # SEVERE BONE DAMAGE: allowed only in a sentence about a part that may break (devastated, on a fighter whose
 # overall health is below the limit); anywhere else it is rewritten.
 BONE_SEVERE = re.compile(
-    r"\b(shatter\w*|fractur\w*|splinter\w*|broken (?:bones?|limbs?|legs?|arms?|ribs?|forelegs?|jaw|tail|fin)|"
+    r"\b(shatter\w*|fractur\w*|splinter\w*|(?:it'?s|it’s|it is|it was|it'?ll|it’ll) (?:going to |gonna )?(?:break|snap)(?=\s*[.!…*])|"
+    r"broken (?:bones?|limbs?|legs?|arms?|ribs?|forelegs?|jaw|tail|fin)|"
     r"bones? (?:\w+ )?(?:snapp\w*|snap|broken|broke|break\w*|grind\w*|ground)|at (?:an? )?(?:\w+ )?angle that|"
     r"(?:completely|totally|clearly|definitely) broken|like a (?:\w+ )?(?:branch|stick|twig) (?:breaking|snapping|cracking)|(?:snapp\w*|broke) (?:the |her |his )?bone|"
     r"bone grinding|grinding bone|bone against bone|bones? (?:grating|scraping|grinding|rasping) (?:against|on) bone|scraping bone|scrape[sd]? (?:against )?bone|bone yield\w*|"
@@ -1872,6 +1873,26 @@ PAST_FIGHTS = re.compile(r"\b(?:ha[ds]|have) (?:faced|fought|battled|beaten|surv
                          r"opponents|rivals)\b", re.I)
 
 
+# a comparison with her life before the fight ("unlike anything she had ever felt", "a different kind of hurt from
+# anything she'd felt before", "couldn't push off with it like she used to"): the comparison goes, the sentence stays
+PAST_COMPARE = [
+    (re.compile(r"\b(was|felt|seemed) (?:unlike|worse than) (?:anything|any \w+) (?:she|he)(?:\s+had|'d|’d) (?:ever )?"
+                r"(?:felt|known|experienced|had)(?: before)?\b", re.I), r"\1 like nothing else"),
+    (re.compile(r",?\s*\b(?:unlike|worse than|more than) (?:anything|any \w+) (?:she|he)(?:\s+had|'d|’d) (?:ever )?"
+                r"(?:felt|known|experienced|had)(?: before)?\b", re.I), ""),
+    (re.compile(r"\s*\bfrom (?:anything|any \w+) (?:she|he)(?:\s+had|'d|’d) (?:ever )?(?:felt|known)(?: before)?\b",
+                re.I), ""),
+    (re.compile(r",?\s*\b(?:like|the way|as) (?:she|he) used to\b", re.I), ""),
+    (re.compile(r",?\s*\b(?:never|not ever) (?:before )?in (?:her|his) (?:whole )?life\b", re.I), ""),
+]
+
+
+def _past_compare(text):
+    for rx, rep in PAST_COMPARE:
+        text = rx.sub(rep, text)
+    return re.sub(r"\s+([,.!?;])", r"\1", text)
+
+
 def _mend_orphans(text):
     """What a cut leaves behind: a thought tag whose thought is gone ("... strength. , she thought, ." or ". , Cinder
     thought, her mind racing as..."), a doubled full stop. The tag goes; a clause that went on after it keeps going as
@@ -2042,6 +2063,7 @@ def _clean(text, cut_off=None, open_end=False):
                 continue  # a repeated sentence, or a repeated one-line beat like "*Damn it.*" / "Nothing moved."
             if PAST_FIGHTS.search(s):
                 continue  # a memory from before this fight (the hard rules forbid them; nothing in the notes backs it)
+            s = _past_compare(s)
             seen.add(key)
             kept.append(s)
         out_paras.append(" ".join(kept).strip())
@@ -2190,7 +2212,7 @@ HURT_SAID = re.compile(r"\b(?:throb\w*|ach(?:e|ed|es|ing)|burn\w*|sting\w*|pain\
 CUT_IDEA = re.compile(r"\bblood|\bbleed|\bbled\b|\bscratch", re.I)
 
 # blood in her mouth, a trickle, a coppery taste: only for a fighter something has really hurt
-BLOOD_SAID = re.compile(r"\b(?:taste of (?:her own )?blood|blood (?:in|filled|filling) her mouth|trickle of blood|"
+BLOOD_SAID = re.compile(r"\b(?:taste of (?:her own )?blood|tast(?:ed|ing|e) (?:her own )?blood|blood (?:in|filled|filling) her mouth|trickle of blood|"
                         r"blood (?:ran|dripp\w*|trickl\w*|welled|seeped|beaded|oozed)|bled|bleeding|copper(?:y)?|metallic "
                         r"(?:tang|taste))\b", re.I)
 
@@ -11439,13 +11461,18 @@ class Narrator:
                        f"round, whoever's side this part is told from")
         return "\n\nWHO HOLDS WHOM (true all through this part): " + " | ".join(out) + "."
 
-    def _beat_card(self, key, acts, i, n_parts, seg_words, focus):
+    def _beat_card(self, key, acts, i, n_parts, seg_words, focus, last=False):
         """narration.card: the facts of this part again, in one fixed note-form block at the very end of the prompt
         (WHO, WHERE, CONTACTS, THIS PART, MIND, JOB), with every grip's two owners named. "" when it is off."""
         cfg = (self.rules.get("narration") or {}).get("card") or {}
         if not cfg.get("enabled"):
             return ""
         names = [w for w in (self.strengths or {})]
+        # the one who tapped out or was knocked out this beat is still in it: she drops from the strengths only after
+        for a in list(acts or []) + list(getattr(self, "_card_also", None) or []):
+            for w in (a.get("attacker"), a.get("defender")) if isinstance(a, dict) else ():
+                if isinstance(w, str) and w and w not in names and w in (getattr(self, "species_of", None) or {}):
+                    names.append(w)
         if not names:
             return ""
         spec = getattr(self, "species_of", None) or {}
@@ -11468,7 +11495,7 @@ class Narrator:
         where = []
         for w in names:
             st, en = ps.get(w), pe.get(w)
-            pos = en if not st or st == en else f"starts {st}, ends {en}"
+            pos = en if not st or st == en else st if not en else f"starts {st}, ends {en}"
             if w in wet:
                 pos += "; " + ({"shallow": "in shallow water", "deep": "in deep water"}.get(wet[w]) or "on land")
             where.append(f"{w}: {pos or 'as before'}")
@@ -11507,6 +11534,37 @@ class Narrator:
         else:
             now = "; ".join(hits) if hits else "nothing lands"
         lines.append(f"- THIS PART: {now}")
+        # what the holds do this beat (a grip closing, its pressure, her refusing to tap, the tap): the card listed
+        # only the blows, and as it "wins" over the notes the model left these out (narration.card.hold_events)
+        if cfg.get("hold_events", True) and key not in ("act", "setup"):
+            new_ = {(a.get("attacker"), a.get("defender")) for a in acts or [] if isinstance(a, dict)
+                    and a.get("type") == "hold_start" and not a.get("continuing")
+                    and not all(p.get("existing") for p in a.get("parts") or [{}])}
+            also_ = []
+            for e in getattr(self, "_card_also", None) or []:
+                t = e.get("type")
+                if t == "hold_ongoing" and e.get("hits"):
+                    p_ = ", ".join(dict.fromkeys(str(h.get("part", "")).lower() for h in e["hits"]))
+                    limb_ = str(e.get("with") or "").split(",")[0].strip()
+                    grip_ = (self._own_with(e["attacker"], limb_) if re.match(r"(?:with )?(?:her|their|its) ", limb_)
+                             else f"{poss(e['attacker'])} grip ({limb_})" if limb_ else poss(e["attacker"]) + " grip")
+                    also_.append((f"{grip_} CLOSES on " if (e["attacker"], e["defender"]) in new_
+                                  or e.get("first") else f"{grip_} keeps pressing ")
+                                 + f"{poss(e['defender'])} {p_}"
+                                 + (" (show it clamping on: it was not on before this beat)"
+                                    if (e["attacker"], e["defender"]) in new_ or e.get("first") else ""))
+                elif t == "tap_resist":
+                    also_.append(f"{e['defender']} REFUSES TO TAP in {poss(e['attacker'])} hold: show her fighting "
+                                 f"the urge and holding on (she does not tap this beat)")
+                elif t == "tap_out" and last:
+                    also_.append(f"{e['defender']} " + ("TAPS OUT, the last thing that happens: show the tap itself, "
+                                                        f"and {e['attacker']} letting go; she is awake"
+                                                        if e.get("how") == "tap" else
+                                 f"PASSES OUT in {poss(e['attacker'])} hold, the last thing that happens"))
+                elif t == "hold_end" and e.get("broke_free"):
+                    also_.append(f"{e['defender']} BREAKS FREE of {poss(e['attacker'])} hold")
+            if also_:
+                lines.append("- HOLDS THIS BEAT (tell each one): " + "; ".join(dict.fromkeys(also_)))
         lead = getattr(self, "_lead_now", None)
         inner = (getattr(self, "inner", None) or {}).get(lead) if lead else None
         if inner:
@@ -12776,6 +12834,22 @@ class Narrator:
         text = re.sub(r"(?mi)(^|(?<=[.!?…]\s))(?:It|This) is (?:now )?(?:written|done|complete)\.[ \t]*", r"\1", text)
         text = re.sub(r"(?i)\binside it and past it[:,]\s*(\w)", lambda m: m.group(1).upper(), text)
         text = re.sub(r"\b(?:Her|His) thoughts?:\s*", "", text)
+        # a pain level copied from the notes as words ("The joint was already very painful before this"): said plainly
+        text = re.sub(r"(?i)\b(was|were|had been) already (sore|hurting|painful|very painful|excruciating|agonizing|"
+                      r"devastated)(?: before this(?: blow| beat)?)?\b(?! (?:to|from))",
+                      lambda m: m.group(1) + (" already hurt" if m.group(2).lower() in ("sore", "hurting", "painful")
+                                              else " already badly hurt"), text)
+        # the damage "she had inflicted" seen by the one who was hit ("Ripples could see the damage she had inflicted",
+        # in Nerine's half of the beat): the one who struck is the one who sees what she did
+        att_ = {a for a in (getattr(self, "_attackers", None) or set()) if a}
+        if len(att_) == 1:
+            hitter = next(iter(att_))
+            for other in [w for w in set(self.strengths or {}) | set(getattr(self, "species_of", None) or {})
+                          if w != hitter]:
+                text = re.sub(r"\b" + re.escape(other) + r"(?= (?:could see|saw|took in|surveyed|admired) the (?:damage|"
+                              r"harm|wreck\w*) (?:she|that she) had (?:inflicted|done|wrought|caused)\b)", hitter, text)
+        # the same label with her name ("Ripples' thought: I need to end this."), as the card's MIND line gives it
+        text = re.sub(r"(?m)(^|(?<=[.!?…]\s))[A-Z][\w-]*(?:'s|’s|'|’) (?:inner )?thoughts?:\s*", r"\1", text)
         text = re.sub(r"\b(Her|His) voice: (an?) ", r"She gave \2 ", text)
         # a camera move told as the story ("Pulling back from the fighters, the clearing opened out"): the place stays
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))(?:Pulling|Pull|Zooming|Cutting|Panning|Drawing) (?:back|out|away|wide)"
@@ -14016,7 +14090,8 @@ class Narrator:
             ask += self._rich_part_note(key, seg_words, i == len(plan))
             ask += self._roles_note()
             ask += self._talk_note(so_far)
-            ask += self._beat_card(key, acts, i, len(plan), seg_words, focus)
+            self._card_also = also_now
+            ask += self._beat_card(key, acts, i, len(plan), seg_words, focus, last=i == len(plan))
             n_def = len(self._deferred)
             ctx_ = context
             if i > 1 and cmp_.get("fighters_once"):
@@ -14347,11 +14422,27 @@ class Narrator:
                    f"{'2 to 4' if '; and ' not in issue else '4 to 7'} sentences in the same voice and tense as the "
                    f"passage, as it happens, with the body's reaction sized to how hurt she is. Nothing else happens: "
                    f"no new attacks, falls or pins.")
-            try:
-                text = self._generate(context + ask, 80 if "; and " not in issue else 150)
-                text = self._drop_repeats(text, seen) if text else ""
-            except llm.LLMError:
+            te = getattr(self, "_tap_end", None)
+            tap_ask = bool(te and "tapping out" in issue or te and "passing out" in issue)
+            text = ""
+            for _try in range(2 if tap_ask else 1):
+                try:
+                    text = self._generate(context + ask, 80 if "; and " not in issue else 150)
+                    text = self._drop_repeats(text, seen) if text else ""
+                except llm.LLMError:
+                    text = ""
+                # the passage has to show what it was asked for: a tap-out told as one more blow (beat 6 of the
+                # Nerine vs Ripples match: "Her muzzle took the next blow") is asked for again, then said plainly
+                if not tap_ask or (TAP_SHOWN.search(text or "") if te[2] == "tap" else self._shown_out(text or "")):
+                    break
                 text = ""
+            if tap_ask and not text:
+                spot = self._tap_spot(te[0], te[1]).split(" or ")[0]
+                text = (f"{poss(te[0])} paw came up and slapped {spot}, once, then again and again, harder than it "
+                        f"needed to; {te[1]} felt it and let go. It was over, and {te[0]} was awake for all of it."
+                        if te[2] == "tap" else
+                        f"{poss(te[0])} struggles grew weaker and her sight greyed; she went limp, and {te[1]} felt "
+                        f"her go slack and let go.")
             if not text:
                 continue
             if "failed tries at getting up" in issue and getattr(self, "_getup_who", None):
@@ -14365,7 +14456,11 @@ class Narrator:
                         break
                 if placed:
                     continue
-            if re.search(r"get(?:s|ting)? up|getting to her feet|rise|rising|on her feet|stand", issue, re.I):
+            if tap_ask:
+                # the tap (or the pass-out) is the last thing that happens: the end of the last part
+                last_ = max(k for k, w in enumerate(written) if w)
+                written[last_] = (written[last_].rstrip() + "\n\n" + text.strip()).strip()
+            elif re.search(r"get(?:s|ting)? up|getting to her feet|rise|rising|on her feet|stand", issue, re.I):
                 written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()     # (the get-up itself: last)
             else:
                 written = self._put_in_order(written, at, text)
