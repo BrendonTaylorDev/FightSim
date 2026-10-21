@@ -654,6 +654,47 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 242
+
+Selling damage past devastated, and what happens once her health is gone. Both are switchable.
+
+### Ruined: a damage tier past devastated (`ruined`)
+
+Devastated used to cover everything from 300% up (the numb tier at 1000% is off by default), so a part at 400-700%
+had nothing new to say. Now a part past `ruined.min` (500%) is **ruined** (🟤), and that changes what happens:
+
+- **A ruined leg folds under her** when her weight comes onto it (`buckle_chance` 25% a beat while she stands free):
+  she catches herself, off balance for a beat. She doesn't go down.
+- **Her own movement jars it** (`jar_chance` 30%): a deep breath, a turn, her heartbeat; told in the story, no damage.
+- **She can't hold it in any more**: a real blow on a ruined part gets at least a real scream, a brush at least a cry
+  she can't swallow, however strong she still is. Grips on it have their own, rawer reactions.
+- **The one who did it sees it**: a flicker of hesitation, or a cold, settled focus.
+- **Getting up costs more** for each ruined leg (`getup_penalty`, up to two).
+- **In a submission match**, a grip on a ruined part adds `tap_pain` (30) to the pain she must resist.
+- The screen, the pictures and the legends show it in its own colour.
+
+`ruined.enabled false` = those parts stay devastated, as before.
+
+### Below zero health (`below_zero`)
+
+She is never stopped from fighting by it, but past zero the fight changes by stage (her health as a % of her full):
+
+| Stage | At | Her blows | Get-up roll | Tap chance | Each beat |
+|---|---|---|---|---|---|
+| running on nothing | 0% | ×0.9 | -0.1 | ×1 | |
+| greying out | -20% | ×0.85 | -0.15 | ×1.25 | 20%: her sight greys out for a beat (she sways, dodges ×0.3, hits ×0.85); 15%: a second wind (once a fight) |
+| her body overruling her | -50% | ×0.8 | -0.2 | ×1.5 | 25%: her sight greys out |
+
+- **Once a fight, she refuses to go down** (`refuse_moment`): the first time she goes below zero, the story gives her
+  one short passage of it, from what she holds on to: the one in front of her, the part screaming at her, what she
+  came here to do.
+- **A second wind** (`second_surge`): with her one adrenaline surge long spent, one more may come below -20%.
+- **Each new stage is told** as she reaches it, and the health tiers tell them apart (past the limit, greying out, her
+  body overruling her). `health.collapse` still has her body give out on its own now and then below zero.
+- Nocturne against Ripples, 60 knockout fights each way: 32-28 with all of it off, 30-30 with it on.
+
+`below_zero.enabled false` = none of it.
+
 ## Build 241
 
 Two rules for matches that need several tap-outs.

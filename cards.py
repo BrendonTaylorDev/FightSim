@@ -28,11 +28,11 @@ COL, ROW = 158, 17             # label column width, label row height
 # the console's own colour steps (display.py legend)
 RES_STEPS = [(100.0001, "#3b82f6", "tough (over 100%)"), (70, "#22c55e", "70-100%"), (50, "#eab308", "50-70%"),
              (30, "#f97316", "30-50%"), (-1e9, "#ef4444", "under 30%")]
-DMG_STEPS = [(300, "#1f2937", "devastated (300%+)"), (150, "#a855f7", "excruciating (150%+)"),
+DMG_STEPS = [(500, "#78350f", "ruined (500%+)"), (300, "#1f2937", "devastated (300%+)"), (150, "#a855f7", "excruciating (150%+)"),
              (90, "#ef4444", "very painful (90%+)"), (60, "#f97316", "hurting (60%+)"), (30, "#eab308", "sore (30%+)"),
              (-1e9, "#22c55e", "minor")]
 GLOW = {"sore": "#facc15", "hurting": "#fb923c", "very": "#ef4444", "excruciating": "#a855f7",
-        "devastated": "#7f1d1d"}
+        "devastated": "#7f1d1d", "ruined": "#450a0a"}
 
 # where each body region sits on a body (fractions of the picture), for species with no points placed
 SPOTS = {"head": (0.5, 0.07), "neck": (0.5, 0.2), "shoulder": (0.5, 0.31), "chest": (0.5, 0.42),
@@ -394,7 +394,7 @@ def text_on(bg):
 
 def glow_color(dmg):
     """The colour a part glows on the picture: none while it is minor."""
-    return (GLOW["devastated"] if dmg >= 300 else GLOW["excruciating"] if dmg >= 150 else GLOW["very"] if dmg >= 90
+    return (GLOW["ruined"] if dmg >= 500 else GLOW["devastated"] if dmg >= 300 else GLOW["excruciating"] if dmg >= 150 else GLOW["very"] if dmg >= 90
             else GLOW["hurting"] if dmg >= 60 else GLOW["sore"] if dmg >= 30 else None)
 
 

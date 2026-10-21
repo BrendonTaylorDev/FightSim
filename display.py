@@ -73,7 +73,7 @@ class Display:
         return self.STATUS_WORD.get(status, str(status).replace("_", " "))
 
     STATUS_ICON = {"bound": "🪢", "fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "staggered": "🥴", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
-                   "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥",
+                   "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥", "greyed": "🌫️",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
 
     def _status_tag(self, f):
@@ -1301,7 +1301,20 @@ class Display:
                 if not e.get("hits") and not e.get("status_applied"):
                     out.append("- nobody is hurt by it")
         for e in bundle["also_this_beat"]:
-            if e["type"] == "adrenaline":
+            if e["type"] == "adrenaline" and e.get("second"):
+                out.append(f"🔥 **{e['fighter']}: A SECOND WIND** below zero ({e['beats']} beats; once a fight)")
+            elif e["type"] == "ruined_buckle":
+                out.append(f"🟤 {poss_word(e['fighter'])} ruined {e['part']} folds under her: she catches herself "
+                           f"(off balance 1 beat)")
+            elif e["type"] == "ruined_jar":
+                out.append(f"🟤 {poss_word(e['fighter'])} ruined {e['part']} is jarred by her own movement ({e.get('how', '')})")
+            elif e["type"] == "grey_out":
+                out.append(f"🌫️ {poss_word(e['fighter'])} sight greys out (1 beat: dodges and hits worse)")
+            elif e["type"] == "zero_stage":
+                out.append(f"🩸 {e['fighter']} is past {e['at']}% health: {e['stage']}")
+            elif e["type"] == "refuses_to_fall":
+                out.append(f"🩸 {e['fighter']} is below zero health and refuses to go down (once a fight)")
+            elif e["type"] == "adrenaline":
                 out.append(f"🔥 **{e['fighter']}: ADRENALINE SURGE!** ({e['beats']} beats: harder hits, better escapes "
                            f"and dodges, energy refill)")
             elif e["type"] == "status_tick" and e["status"] == "burned":

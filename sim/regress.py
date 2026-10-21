@@ -546,6 +546,38 @@ def _taps_check(director, P):
     return problems
 
 
+def ruined_check():
+    """Build 242: the ruined tier past devastated (a leg that folds, a part jarred by her own movement, more tap
+    pain) and the stages below zero health (her refusal once, sight greying, a second wind)."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    from engine import tier_for, pain_tiers
+    if tier_for(520, pain_tiers(e.rules))["label"] != "ruined":
+        problems.append(f"520% should be ruined: {tier_for(520, pain_tiers(e.rules))['label']}")
+    d = e.get("Ripples")
+    d.parts["Left Thigh"].damage = 600.0
+    e.rules["ruined"].update(buckle_chance=1.0, jar_chance=1.0)
+    evs = e._ruined_tick()
+    if not any(ev["type"] == "ruined_buckle" and ev["fighter"] == "Ripples" for ev in evs) or not e.has(d, "off_balance"):
+        problems.append(f"a ruined leg should fold under her (off balance): {evs}")
+    d.health = -0.3 * d.max_health
+    st = e.zero_stage(d)
+    if not st or st.get("label") != "greying out":
+        problems.append(f"-30% of full should be the greying-out stage: {st}")
+    if not any(lab == "greying out" and m < 1 for lab, m in e.power_extras(d, e.get("Nerine"), "Water")):
+        problems.append(f"the stage below zero doesn't soften her blows: {e.power_extras(d, e.get('Nerine'), 'Water')}")
+    evs = e._below_zero_tick()
+    if not any(ev["type"] == "refuses_to_fall" for ev in evs):
+        problems.append(f"the first time below zero she should refuse to go down: {evs}")
+    evs2 = e._below_zero_tick()
+    if any(ev["type"] == "refuses_to_fall" for ev in evs2):
+        problems.append("the refusal came twice")
+    e.rules["ruined"]["enabled"] = False
+    if tier_for(520, pain_tiers(e.rules))["label"] != "devastated":
+        problems.append("with ruined off, 520% should stay devastated")
+    return problems
+
+
 def textpane_check():
     """The window's story pane (textpane.py): story and numbers told apart, the rows' changes and the rolls'
     outcomes coloured, the pointers' numbers taken from the lines they explain, and shown only now and then."""
@@ -626,6 +658,13 @@ def main(argv):
         probs = textpane_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  the window's story pane sorts and explains the numbers  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "ruined below zero" for w in want):
+        t = time.time()
+        probs = ruined_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  ruined parts past devastated, and the stages below zero health  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "tap count" for w in want):

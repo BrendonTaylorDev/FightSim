@@ -88,6 +88,11 @@ def pain_tiers(rules):
     if (rules.get("narration", {}).get("numb_tier", True) is False
             or (rules.get("numbness") or {}).get("enabled", False)):
         tiers = [t for t in tiers if t.get("label") != "numb with shock"]
+    rc = rules.get("ruined") or {}
+    if not rc.get("enabled", True):
+        tiers = [t for t in tiers if t.get("label") != "ruined"]    # (ruined off: those parts stay devastated)
+    elif rc.get("min") is not None:
+        tiers = [dict(t, min=float(rc["min"])) if t.get("label") == "ruined" else t for t in tiers]
     return tiers
 
 
@@ -2698,6 +2703,11 @@ class Engine:
             out.append(("fury after the pin", float(cfg.get("fury_power_mult", 1.15))))
         if self.has(a, "breathless"):
             out.append(("the wind knocked out of her", float(cfg.get("breathless_power_mult", 0.85))))
+        st0 = self.zero_stage(a)
+        if st0 and float(st0.get("power", 1.0)) != 1.0:
+            out.append((st0.get("label", "running on nothing"), float(st0.get("power", 1.0))))
+        if self.has(a, "greyed"):
+            out.append(("her sight greying out", float(cfg.get("greyed_power_mult", 0.85))))
         if self.has(a, "dazed"):
             out.append(("dazed", float(cfg.get("dazed_power_mult", 0.9))))
         if self._pin_mult(a, d) != 1.0:
@@ -2999,7 +3009,8 @@ class Engine:
                (float(sc.get("off_balance_dodge_mult", 0.6)) if self.has(d, "off_balance") else 1.0) * \
                (float(sc.get("staggered_dodge_mult", 0.6)) if self.has(d, "staggered") else 1.0) * \
                (float(sc.get("dazed_dodge_mult", 0.4)) if self.has(d, "dazed") else 1.0) * \
-               (float(sc.get("doubled_over_dodge_mult", 0.5)) if self.has(d, "doubled_over") else 1.0)
+               (float(sc.get("doubled_over_dodge_mult", 0.5)) if self.has(d, "doubled_over") else 1.0) * \
+               (float(sc.get("greyed_dodge_mult", 0.3)) if self.has(d, "greyed") else 1.0)
         s = max(0.0, min(1.0, self.strength(d) / 100))
         # what she runs on: a biped's or a bird's fore_low is arms or wingtips, not legs
         feet = ("hind_up", "hind_low", "tail") + (("fore_low",) if self.body_plan(d) == "quadruped" else ())
@@ -3613,6 +3624,11 @@ class Engine:
                 score += 0.2
             if self.has(f, "paralyzed"):
                 score -= 0.3
+            # ruined: a leg past ruined.min folds under her as she pushes up on it; below zero she has less to rise with
+            score -= self._ruined_getup(f, regions)
+            st0 = self.zero_stage(f)
+            if st0:
+                score += float(st0.get("getup", 0.0))
             cuts = cfg.get("thresholds", [0.7, 0.45, 0.2])
             tries = next((i + 1 for i, c in enumerate(cuts) if score >= c), None)
             if tries is None and beats >= int(cfg.get("max_beats_down", 4)):
@@ -7489,6 +7505,8 @@ class Engine:
             # body doesn't give out on its own behind it (a collapse the aftermath never told)
             events += self._crumple_tick()
             events += self._collapse_tick()
+            events += self._ruined_tick()
+            events += self._below_zero_tick()
         else:
             self.pressed.clear()
         events += self.get_up_tick()
@@ -8583,6 +8601,11 @@ class Engine:
                                              * max(0, h.turns_active - 1)) if bcfg.get("enabled", True) else 1.0)
                               for h in hs), reverse=True)
             pain += float(tcfg.get("press", 1.5)) * (presses[0] + float(tcfg.get("second_part", 0.4)) * sum(presses[1:]))
+            rcfg_ = self.rules.get("ruined") or {}
+            if rcfg_.get("enabled", True):
+                # a grip on a RUINED part: past anything she can brace against (ruined.tap_pain for each one)
+                pain += float(rcfg_.get("tap_pain", 30)) * sum(1 for h in hs if h.part in d.parts
+                                                                  and self.is_ruined(d.parts[h.part]))
             s_ = max(0.0, min(100.0, self._health_pct(d)))   # (her overall health: what she has left to resist with)
             power = float(tcfg.get("resist_power", 0.8))
             surge = float(tcfg.get("surge_resist", 1.5)) if self.has(d, "adrenaline") else 1.0
@@ -8596,6 +8619,10 @@ class Engine:
                 ceiling = min(ceiling, float(ccl.get("start", 0.2)) + float(ccl.get("per_beat", 0.1)) * max(0, beats - 2))
                 ceiling *= max(0.0, 1.0 - float(ccl.get("health_hold", 0.6)) * s_ / 100.0)
             tap = min(ceiling, max(0.0, over / float(tcfg.get("span", 120))))
+            st0 = self.zero_stage(d)
+            if st0 and tap > 0:
+                # below_zero: the further below zero, the less of her is left to refuse with (stage tap_mult)
+                tap = min(float(tcfg.get("max", 0.85)), tap * float(st0.get("tap_mult", 1.0)))
             choke = any(re.search(r"(?i)neck|throat", h.part) for h in hs)
             name = next((h.sub for h in hs if h.sub), "") or ("choke" if choke else "hold")
             how, po, air, endure = None, 0.0, 0.0, 0.0
@@ -9132,6 +9159,105 @@ class Engine:
                 out.append("she got through that beat without fresh harm, after the beat before took so much")
         return out[:int(cfg.get("max_lines", 6))]
 
+    def is_ruined(self, p):
+        """ruined (since build 242): a part past ruined.min (500%) damage: past devastated, it has stopped working."""
+        rc = self.rules.get("ruined") or {}
+        return rc.get("enabled", True) and p.damage >= float(rc.get("min", 500))
+
+    def ruined_parts(self, f):
+        return [p.name for p in f.parts.values() if self.is_ruined(p)]
+
+    def _leg_regions(self, f):
+        return ("hind_up", "hind_low") + (("fore_up", "fore_low") if self.body_plan(f) == "quadruped" else ())
+
+    def _ruined_getup(self, f, regions):
+        rc = self.rules.get("ruined") or {}
+        legs = [p for p in f.parts.values() if self.is_ruined(p) and body_region(p.name) in regions]
+        return float(rc.get("getup_penalty", 0.15)) * min(2, len(legs))
+
+    def _ruined_tick(self):
+        """ruined: what a part past devastated does to her by itself each beat. A ruined LEG folds under her when
+        she puts weight on it (buckle_chance: she catches herself, off balance for a beat; she doesn't go down). Any
+        ruined part is jarred by her own movement, her breathing, a turn (jar_chance: told, no damage). One of the
+        two a beat at most."""
+        rc = self.rules.get("ruined") or {}
+        if not rc.get("enabled", True):
+            return []
+        events = []
+        for f in self.active():
+            ruined = [p for p in f.parts.values() if self.is_ruined(p)]
+            if not ruined:
+                continue
+            legs = [p for p in ruined if body_region(p.name) in self._leg_regions(f)]
+            free = (f.name not in self.downed and not self.has(f, "airborne") and not self.pinned_by(f.name)
+                    and not any(h.defender == f.name for h in self.holds.values()))
+            if legs and free and self._chance(float(rc.get("buckle_chance", 0.25)),
+                                              f"{poss_word(f.name)} ruined {legs[0].name.lower()} folding under her",
+                                              "it FOLDS", "it holds her"):
+                self.set_status(f, "off_balance", 1)
+                events.append({"type": "ruined_buckle", "fighter": f.name, "part": legs[0].name})
+                continue
+            p = max(ruined, key=lambda x: x.damage)
+            if self._chance(float(rc.get("jar_chance", 0.3)), f"{poss_word(f.name)} own movement jarring her ruined "
+                            f"{p.name.lower()}", "it jars it", "no"):
+                events.append({"type": "ruined_jar", "fighter": f.name, "part": p.name,
+                               "how": self.rng.choice(("a breath too deep", "turning to keep her eyes on the other",
+                                                       "shifting her weight", "her own heartbeat", "a flinch at nothing"))})
+        return events
+
+    def zero_stage(self, f):
+        """below_zero (since build 242): the stage her health has fallen to below zero (health as a share of her
+        full: 0, -20%, -50% by default), as its rules entry, or None while she is above zero."""
+        bz = self.rules.get("below_zero") or {}
+        if not bz.get("enabled", True) or f is None:
+            return None
+        pct = self._health_pct(f)
+        if pct > 0:
+            return None
+        hit = [st for st in (bz.get("stages") or []) if pct <= float(st.get("at", 0))]
+        return min(hit, key=lambda st: float(st.get("at", 0))) if hit else None
+
+    def _below_zero_tick(self):
+        """below_zero: once a beat, for a fighter at or below zero health. The first time she gets there, her
+        refusal (refuse_moment: one passage of her refusing to go down, once a fight). After that, by stage: her
+        sight may grey out for a beat (grey_chance: she sways, dodges poorly, hits softer), and, with her one
+        adrenaline surge long spent, a second one may still come (second_surge, once a fight)."""
+        bz = self.rules.get("below_zero") or {}
+        if not bz.get("enabled", True):
+            return []
+        events = []
+        for f in self.active():
+            st = self.zero_stage(f)
+            if not st:
+                continue
+            idx = sorted((float(x.get("at", 0)) for x in bz.get("stages") or []), reverse=True).index(float(st.get("at", 0)))
+            if "refused_fall" not in f.learned and bz.get("refuse_moment", True):
+                f.learned["refused_fall"] = self.turn
+                plan = (getattr(self, "game_plans", None) or {}).get(f.name) or {}
+                foe = next((o for o in self.active() if o.team != f.team), None)
+                worst = max(f.parts.values(), key=lambda p_: p_.damage)
+                events.append({"type": "refuses_to_fall", "fighter": f.name, "stage": st.get("label"),
+                               "against": foe.name if foe else "", "plan_zone": plan.get("zone", ""),
+                               "worst": worst.name})
+                continue
+            if f.learned.get("zero_stage_seen", -1) < idx:
+                f.learned["zero_stage_seen"] = idx
+                events.append({"type": "zero_stage", "fighter": f.name, "stage": st.get("label"), "at": st.get("at")})
+            if (float(st.get("second_surge", 0)) > 0 and f.adrenaline_used and "second_surge" not in f.learned
+                    and not self.has(f, "adrenaline")
+                    and self._chance(float(st["second_surge"]), f"{f.name} finding a second wind below zero",
+                                     "SECOND WIND", "no")):
+                f.learned["second_surge"] = self.turn
+                beats = int(bz.get("second_surge_beats", 2))
+                self.set_status(f, "adrenaline", beats)
+                events.append({"type": "adrenaline", "fighter": f.name, "beats": beats, "second": True})
+                continue
+            if float(st.get("grey_chance", 0)) > 0 and not self.has(f, "adrenaline") and self._chance(
+                    float(st["grey_chance"]), f"{poss_word(f.name)} sight greying out", "it GREYS", "she stays clear"):
+                self.set_status(f, "greyed", 1)
+                events.append({"type": "grey_out", "fighter": f.name})
+        return events
+
     def strength(self, f):
         """Overall condition as a share of this fighter's OWN full health (fighters start at different totals)."""
         return self._health_pct(f)
@@ -9338,6 +9464,8 @@ class Engine:
         "poisoned": "POISONED: nauseous and shaky, the poison sapping her a little every moment",
         "adrenaline": "ADRENALINE SURGE: pain pushed to the back of her mind, eyes sharp, faster and hitting harder "
                       "than she should be able to",
+        "greyed": "GREYING OUT: for a moment the edges of her sight go grey and the sound goes far away; she sways, "
+                  "a beat behind everything, and drags herself back",
     }
 
     # the same status from a move that is not cold: CHILLED is the engine's word for any slowing
