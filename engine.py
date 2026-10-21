@@ -4030,7 +4030,11 @@ class Engine:
         pname = d.part(part).name
         for h in self.holds.values():  # already pressing that spot: strengthen it, don't stack a second hold
             if (h.attacker, h.defender, h.part) == (a.name, d.name, pname):
-                h.power = max(h.power, power)
+                as_is = keep_with and (self.rules.get("holds", {}).get("keep_as_is") or {}).get("enabled", True)
+                if not as_is:
+                    h.power = max(h.power, power)
+                # (holds.keep_as_is: a grip the director only keeps on presses as it was: its own tightening does
+                # the climbing, and a grip she has worked looser stays looser)
                 h.change_per_turn = change_per_turn
                 asked = with_part if (with_part and h.with_part and with_part.lower() != h.with_part.lower()) else ""
                 # keep_with (the director's beats): jaws that are already on her neck stay jaws; they don't turn
@@ -4038,11 +4042,11 @@ class Engine:
                 h.with_part = (h.with_part or with_part) if keep_with else (with_part or h.with_part)
                 sl = self.rules.get("holds", {}).get("second_limb") or {}
                 if keep_with and asked and sl.get("enabled", True) and self._limb_kind(asked) and \
-                        self._limb_kind(asked) != self._limb_kind(h.with_part):
+                        self._limb_kind(asked) not in self._limb_kinds(h.with_part):
                     # a second limb on the same spot (her tails bound round the knee her jaws already hold): both stay
                     # on it, and the new one adds a share of its own pressure (holds.second_limb)
                     h.with_part = f"{h.with_part} and {re.sub(r'^(?:with )?(?:her|their|its) ', '', asked)}"
-                    h.power = max(h.power, power) + float(sl.get("add", 0.5)) * min(h.power, power)
+                    h.power = (h.power if as_is else max(h.power, power)) + float(sl.get("add", 0.5)) * min(h.power, power)
                     asked = ""
                 return {"type": "hold_start", "hold_id": h.id, "attacker": a.name, "defender": d.name,
                         "part": pname, "power": h.power, "change_per_beat": h.change_per_turn,
@@ -4059,6 +4063,12 @@ class Engine:
         """For a grip on the neck or throat, which kind of choke it is (choke_kind: "blood", "air" or "both"), so the
         story can tell a squeeze on the sides of the neck from a windpipe crushed shut; "" for any other grip."""
         return self.choke_kind(h.attacker, h.with_part, h.coil) if body_region(h.part) == "neck" else ""
+
+    @classmethod
+    def _limb_kinds(cls, with_part):
+        """Every kind a grip presses with ("jaws and twin tails" is both jaws and tails), so a second limb already
+        on the spot is never added again each time the grip is kept."""
+        return {cls._limb_kind(w) for w in re.split(r"\band\b|,", str(with_part or ""))} - {""}
 
     @staticmethod
     def _limb_kind(with_part):
@@ -8523,7 +8533,7 @@ class Engine:
 
     def _tap_out_tick(self):
         """finish.submission: after the pressure lands, everyone held in a submission, a choke, a coil or any other hold
-        that hurts (for at least two beats; not a grab, not a pin) may tap out, and a choke may make her pass out. A tap-out is resisted while she can: the pain she
+        that hurts (for at least two beats; not a pin, and a grab only on a badly hurt part or once her health is gone: tap.grabs) may tap out, and a choke may make her pass out. A tap-out is resisted while she can: the pain she
         must resist (the gripped part's damage, a share of the other gripped parts, and more each beat it stays on)
         against her resistance (tap.resist, scaled by her overall strength; an adrenaline surge raises it). Only pain
         past her resistance can make her tap, likelier the further past it. A choke builds air hunger every beat
@@ -8534,9 +8544,18 @@ class Engine:
             return []
         tcfg, ccfg = cfg.get("tap") or {}, cfg.get("choke") or {}
         events, pairs = [], {}
+        gcfg = tcfg.get("grabs") or {}
         for h in self.holds.values():
-            if h.grab or h.locked:
-                continue      # (a grab only holds her there; a pin has its own pass-out)
+            if h.locked:
+                continue      # (a pin has its own pass-out)
+            if h.grab:
+                # a grab only holds her there, unless (tap.grabs) it is clamped on a part already hurt past
+                # min_damage, or she has no health left: then the grip itself is what she can't bear
+                gd = self.fighters.get(str(h.defender).lower())
+                if not gcfg.get("enabled", True) or not gd or not (
+                        (h.part in gd.parts and gd.parts[h.part].damage >= float(gcfg.get("min_damage", 100)))
+                        or gd.health <= 0):
+                    continue
             pairs.setdefault((h.attacker, h.defender), []).append(h)
         for (a, dn), hs in pairs.items():
             d = self.fighters.get(dn.lower())
@@ -8591,7 +8610,9 @@ class Engine:
             if spent:
                 tap = po = 0.0
             key_ = f"{a}|{name}|{min(h.id for h in hs)}"
-            first_over = tap > 0 and d.learned.get("tap_limit") != key_
+            # (tap.spent_no_grace: with no health left there is nothing to hold on through: no grace beat)
+            first_over = tap > 0 and d.learned.get("tap_limit") != key_ and not (
+                d.health <= 0 and tcfg.get("spent_no_grace", True))
             if first_over:
                 d.learned["tap_limit"] = key_
                 tap = 0.0

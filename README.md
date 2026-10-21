@@ -654,6 +654,28 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 239
+
+Fixes from a build-238 Nerine vs Ripples match set to three tap-outs from three different parts. The match never
+ended: Ripples sat in Nerine's jaws for ten beats with her left thigh past 700% damage and her health far below zero,
+and never once rolled to tap.
+
+- **A grab can make her tap** (`finish.submission.tap.grabs`). Until now only holds that hurt could, never a grab
+  (jaws or paws simply holding on). Now a grab counts once the part it is clamped on is hurt past `min_damage`
+  (100%), or once her health is gone. `grabs.enabled false` goes back.
+- **No grace beat with no health left** (`tap.spent_no_grace`). The first beat past her limit is normally one she
+  holds on through; with her health at zero or below it can already be the tap.
+- **A kept grip presses as it was** (`holds.keep_as_is`). When the director only kept a grip on, it jumped back to
+  the director's pressure, undoing the loosening Ripples had won, and a second limb on the spot ("her jaws and twin
+  tails") was added again every time it was kept: Nerine's jaws went from 6 to 34.5 in one beat. Now the grip's own
+  tightening does the climbing, and the second limb adds its share once.
+- **More program cuts** (`narration.cuts`):
+  - `run_on_thought` also mends a thought in its marks run into the next words ("*I can't give up now* She
+    steeled", "*She's tiring* A satisfied smirk").
+  - `caps`: a note's word copied in capitals ("Her left thigh was RUINED") is written as a word.
+  - `salt`: no "saltwater" or "the saltiness of the water" in a lake or a pool.
+  - `end_stop`: a paragraph that ends with no full stop ("*Let her feel it*") gets one.
+
 ## Build 238
 
 Submission matches that need more than one tap-out, and fixes from a build-237 Ripples vs Nerine fight.

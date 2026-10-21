@@ -458,6 +458,35 @@ def _taps_check(director, P):
     except ValueError as x:
         if "finish.submission.enabled" not in str(x):
             problems.append(f"no guess for the mistyped path: {x}")
+    # build 239: a grab on a ruined part (or once her health is gone) can make her tap; a kept grip with a second
+    # limb adds that limb once, and stays as loose as she worked it
+    d.learned.pop("taps_given", None)
+    st = e.start_hold("Nerine", "Ripples", "Left Thigh", 8, with_part="her jaws")
+    h = e.holds[st["hold_id"]]
+    h.grab, h.turns_active = True, 4
+    d.parts["Left Thigh"].damage, d.health = 300.0, -50.0
+    e.rules["finish"]["submission"]["tap"]["climb"]["start"] = 1.0
+    rolled = []
+    for _ in range(12):
+        evs = e._tap_out_tick()
+        rolled += [ev["type"] for ev in evs]
+        if any(t in ("tap_count", "tap_out") for t in rolled):
+            break
+    if not any(t in ("tap_count", "tap_out") for t in rolled):
+        problems.append(f"a grab on a ruined thigh with no health left never made her tap: {rolled}")
+    e.holds.clear()
+    st = e.start_hold("Nerine", "Ripples", "Left Thigh", 6, with_part="her jaws")
+    for _ in range(3):
+        e.start_hold("Nerine", "Ripples", "Left Thigh", 23, with_part="her twin tails", keep_with=True)
+    h = e.holds[st["hold_id"]]
+    if h.power > 6 + 0.5 * 6 + 1e-6 or "twin tails" not in h.with_part:
+        problems.append(f"a kept grip with a second limb should press 6 + half of 6 once: {h.power} ({h.with_part})")
+    n.scene_cfg = {"kind": "lakeside forest", "name": "The lakeside clearing"}
+    out = n._program_cuts(["*I can't give up now* She steeled herself. Her left thigh was RUINED and raw. "
+                           "The saltwater stung her nose. *Let her feel it*"])[0]
+    for bad in ("now* She", "RUINED", "saltwater", "feel it*"):
+        if bad in out and not (bad == "feel it*" and "feel it.*" in out):
+            problems.append(f"'{bad}' was not mended: {out!r}")
     return problems
 
 

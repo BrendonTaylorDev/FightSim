@@ -15330,12 +15330,18 @@ class Narrator:
         narration.cuts.labels: a move label copied as words ("Nerine's plain blow hit" -> "Nerine's blow hit").
         narration.cuts.handoff: the hand-over between parts said out loud ("Nerine's reaction would follow.").
         narration.cuts.run_on_thought: a thought run straight into the next words ("That leg needs to go Her mind
-        racing" -> "... go. Her mind ...")."""
+        racing" -> "... go. Her mind ...", a thought in its marks too).
+        narration.cuts.caps: a note's word copied in capitals ("was RUINED") written as a word.
+        narration.cuts.salt: no salt in fresh water ("saltwater", "the saltiness of the lake") away from the sea.
+        narration.cuts.end_stop: a paragraph that ends with no full stop gets one."""
         cfg = (self.rules.get("narration") or {}).get("cuts") or {}
         if not cfg.get("enabled", True):
             return written
         first = int(getattr(self, "beat_now", 0) or 0) <= 1
         limit = int(cfg.get("ache_repeat", 2) or 0)
+        place = " ".join(str(v) for v in (getattr(self, "scene_cfg", None) or {}).values() if isinstance(v, str)).lower()
+        fresh = bool(place) and not re.search(r"\b(?:sea|ocean|tide|tidal|salt|brine|reef|surf|wreck|beach of shingle)\b",
+                                              place)
         dmg_by = getattr(self, "damage_by", None) or {}
         told = {}
         out = []
@@ -15352,7 +15358,18 @@ class Narrator:
                         x = re.sub(r"\b([Pp])lain ([Bb])low(s?)\b(?!['’])", lambda m: m.group(2) + "low" + m.group(3), x)
                         x = re.sub(r"\b(?:[Aa]n? |[Tt]he )?[Bb]low (?=blow\b)", "", x)
                     if cfg.get("run_on_thought", True):
-                        x = re.sub(r"(?<=[a-z]) (?=(?:Her|She|The|Its) [a-z])", ". ", x)
+                        # (a thought in its marks too: "*I can't give up now* She steeled" -> "...now.* She")
+                        x = re.sub(r"(?<=[a-z])(\*?) (?=(?:Her|She|The|Its|A|An) [a-z])", r".\1 ", x)
+                    if cfg.get("caps", True):
+                        # a note's word copied in capitals ("Her left thigh was RUINED"): written as a word
+                        x = re.sub(r"(?<=[a-z,] )([A-Z]{4,})\b(?! [A-Z]{2,})", lambda m: m.group(1).lower(), x)
+                    if cfg.get("salt", True) and fresh:
+                        # no salt in fresh water (the lake, a pool): "saltwater", "the saltiness of the water"
+                        x = re.sub(r"(?i)\bsalt ?water\b", lambda m: "Water" if m.group(0)[0] == "S" else "water", x)
+                        x = re.sub(r"(?i)\b(?:the )?(?:salt(?:iness)?|brine) of the (lake|water|lake water|pool)\b",
+                                   r"the taste of the \1", x)
+                        x = re.sub(r"(?i)\bthe taste of salt\b(?! of (?:her|his|its) (?:own )?(?:sweat|tears))",
+                                   "the taste of the water", x)
                     if cfg.get("handoff", True) and self.META_HANDOFF.match(x.strip()):
                         continue
                     if first and cfg.get("first_beat_past", True):
@@ -15370,7 +15387,11 @@ class Narrator:
                         if over and hit and len(sents) > 1 and (kept or x is not sents[-1]):
                             continue
                     kept.append(x)
-                paras.append(" ".join(kept))
+                para_ = " ".join(kept)
+                if cfg.get("end_stop", True) and re.search(r"[A-Za-z]\*?$", para_):
+                    # a paragraph that stops mid-air ("*Let her feel it*"): it gets its full stop
+                    para_ = re.sub(r"([A-Za-z])(\*?)$", r"\1.\2", para_)
+                paras.append(para_)
             out.append("\n\n".join(p for p in paras if p.strip()))
         return out
 
