@@ -712,6 +712,7 @@
    "power": 13,
    "target": "spread",
    "about": "a jet of water",
+   "from": "mouth",
    "sustainable": true
   },
   {
@@ -825,6 +826,7 @@
    "power": 37,
    "target": "spread",
    "about": "a massive high-pressure water blast",
+   "from": "mouth",
    "effects": [
     {
      "launch": "thrown",

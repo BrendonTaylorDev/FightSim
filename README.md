@@ -654,6 +654,75 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 251
+
+From the narration in your build-249 submission match (Ripples vs Nerine, the lakeside clearing).
+
+### Padding (`narration.stock_limit`, `narration.paragraph_cap`)
+
+- **Stock phrases are capped.** The list is `padding_phrases.txt`: "her mind raced", "she could feel", "her breath
+  came in ragged gasps", "every muscle screaming", "she wouldn't give up" and more. Edit it, one per line. Each is
+  allowed once a beat (`per_beat`), and not at all once the last 3 beats used it twice (`window_beats`,
+  `per_window`).
+- **Past the cap it is mended with no model call:**
+  - "could feel the X" becomes "felt the X" (and "could see" "saw").
+  - A phrase in a side clause loses just that clause ("She gritted her teeth, her breath coming in short, sharp
+    bursts" becomes "She gritted her teeth.").
+  - A sentence that is nothing but padding is either swapped for a line built from the fight (`swap_chance` 0.5)
+    or cut.
+  - A sentence that also tells something that happened (a hurt part, a sound, a move) only ever loses the clause.
+- **The swapped lines come from the engine:**
+  - her real worst wound and what it does to her ("She kept the weight off her right knee, and shifted it again
+    when it complained.");
+  - her breath by how far gone she is;
+  - a short thought from what she has learned this fight: the move that keeps hitting her ("*Not the bite
+    again.*"), the one that works, the part she can see her opponent favouring.
+  No swapped line comes back within 3 beats.
+- **Paragraphs:** with rich narration on, each part was asked for at least N paragraphs; now also at most N + 2
+  (`extra`), and it ends when it has nothing more to tell.
+
+### Mends
+
+- **Past tense:** a noun stays a noun. "The frantic heaves of her body" had become "the frantic heaved of her body".
+- **Fragments:** a sentence that already has a verb is no longer given "came up" ("Nerine's ears flicked back
+  came up").
+- **Thought marks:** a closing `*` with no opening one gets its opening at the start of the thought
+  ("I can't hold on much longer.*").
+- **Leftovers:** "Hnk, escaping her lips." becomes "Hnk escaped her lips."; a last clause that repeats the sentence
+  goes ("her step was uneven, …, and her step was uneven"); "The thought was a frantic plea" with no thought
+  before it goes.
+
+### Places (`narration.positions_check`)
+
+- A position on, against or beside something that has broken goes. Nerine stood "on the boulder" every beat after
+  she was driven through it. The narrator is told what has broken too, and a sentence with someone standing,
+  sitting or leaning on it is cut.
+- While she is down, held or holding at the foot of what a charge drove her into, the director's "in the shallows"
+  becomes "by an old oak".
+- The soaked line names only the place ("pinned face-down by )" came from the director's words cut at 60
+  characters).
+
+### Whose it is (`narration.wrong_owner`)
+
+These sentences are now cut:
+- a frost, burn or shock wound on the one that element never touched (Nerine "feeling the sting of the icy
+  wound");
+- her "own" move that only the other used ("Ripples knew that her Aqua Jet should have done more");
+- her sight swimming when nothing struck her this beat and she isn't dazed.
+
+This beat's attack called by another move's name ("she threw an Aqua Jet" for a Water Gun) is sent back to be
+rewritten.
+
+### Smaller
+
+- **The tap:** it lands on the holder's arm only when she grips with it. Jaws or tails on the knee: her shoulder.
+- **Standing fighters:** a fighter on her feet all beat lifts no head "off the ground", doesn't "lie there", and
+  doesn't think of getting back on her feet.
+- **Hold names:** a hold whose move names one limb and whose grip is another is shown by what holds her ("A GRIP
+  WITH HER JAWS", not "TAIL BIND").
+- **Where a stream comes from:** what the director said ("from her mouth"), else the move's new `from` in
+  moves.json (Water Gun, Hydro Pump: her mouth).
+
 ## Build 250
 
 From your submission match (Ripples vs Nerine, the lakeside clearing). Nerine's jaws stayed on Ripples' right knee

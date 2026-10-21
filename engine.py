@@ -8255,10 +8255,13 @@ class Engine:
         self.positions = text
         for f in self.active():
             m = re.search(re.escape(f.name) + r"\s*:\s*([^;]*)", text, re.I)
-            if m and self.IN_WATER.search(m.group(1)):
+            where = self._place_checked(f.name, m.group(1)) if m else ""
+            if m and self.IN_WATER.search(where):
                 if not self.has(f, "soaked"):
-                    # (said, so a soaked fighter's electric hit later has a cause anyone can see)
-                    print(f"💧 {f.name} is soaked: she is standing in the water ({m.group(1).strip()[:60]})")
+                    # (said, so a soaked fighter's electric hit later has a cause anyone can see; the place only,
+                    # not a pin or a hold the director added that the engine may not have: "pinned face-down by )")
+                    said = (self.POS_PLACE.search(where) or self.IN_WATER.search(where)).group(0)
+                    print(f"💧 {f.name} is soaked: she is standing in the water ({said.strip()[:60]})")
                 if f.status.get("soaked", 0) < 2:   # (topped up, never held: out of the water it still counts down)
                     self.set_status(f, "soaked", 2)
                 self._knock_on = []
@@ -8369,6 +8372,7 @@ class Engine:
             if wrong:
                 place = self.POS_PLACE.search(clause)
                 clause = place.group(1) if place else ""
+            clause = self._place_checked(f.name, clause)
             if clause:
                 # a grip the director named that has ended since (a tap-out, an escape, a release): its piece goes
                 held = {n for h in self.holds.values() for n in (h.attacker, h.defender) if f.name in (h.attacker, h.defender)}
@@ -8383,6 +8387,45 @@ class Engine:
                 clause = ", ".join(keep)
             out.append(f"{f.name}: {sure}" + (f", {clause}" if clause else ""))
         return "; ".join(out)
+
+    def _broken_heads(self):
+        """The last word of each thing that has broken in this fight ("boulder", "pine"): what a position can no
+        longer be on, against or beside."""
+        gone = list(getattr(self, "broken_props", []) or []) + [m.split(" lies broken")[0] for m in
+                                                                   getattr(self, "arena_marks", []) or [] if " lies broken" in m]
+        heads = set()
+        for g in gone:
+            words = re.findall(r"[a-z]{3,}", self._TRAIL.sub("", str(g).lower()))
+            if words:
+                heads.add(words[-1])
+        return heads
+
+    def _place_checked(self, name, clause):
+        """The director's words for where she is, put right against what the engine knows (narration.positions_check,
+        since build 251): a piece that has her on, against or by something that has broken in this fight goes (Nerine
+        stood "on the boulder" every beat after it broke); and while she is down, held or holding at the foot of what
+        a charge drove her into, a piece putting her somewhere else (Ripples "in the shallows" while held against the
+        oak) becomes "by" that thing."""
+        cfg = (self.rules.get("narration") or {}).get("positions_check") or {}
+        if not clause or not cfg.get("enabled", True):
+            return clause
+        heads = self._broken_heads()
+        spot = (getattr(self, "lying_at", None) or {}).get(name)
+        stuck = spot and (name in self.downed or any(name in (h.attacker, h.defender) for h in self.holds.values()))
+        spot_head = (re.findall(r"[a-z]{3,}", self._TRAIL.sub("", str(spot or "").lower())) or [""])[-1]
+        keep, moved = [], False
+        for piece in re.split(r",\s*", clause):
+            low = piece.lower()
+            if heads and any(re.search(r"\b(?:on|atop|against|beside|by|near|at|behind|onto|from|top of)\s+(?:the |a |an )?"
+                                       r"(?:[a-z'-]+ ){0,2}" + re.escape(h) + r"s?\b", low) for h in heads):
+                continue
+            if stuck and spot_head and spot_head not in low and (self.IN_WATER.search(piece) or self.POS_PLACE.search(piece)):
+                if not moved:
+                    keep.append(f"by {spot}")
+                    moved = True
+                continue
+            keep.append(piece)
+        return ", ".join(k for k in keep if k.strip())
 
     GRIP_WORDS = re.compile(r"(?i)\b(jaws?|teeth|bit(e|ing)|grip\w*|grasp\w*|clamp\w*|coil\w*|wrapp?\w*|bound|binding|"
                             r"pinch\w*|squeez\w*|hold\w*|held|lock\w*|choke\w*|crank\w*|twist\w*)\b")

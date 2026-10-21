@@ -789,6 +789,78 @@ def held_reach_check():
     return problems
 
 
+def narration_mends_check():
+    """Build 251: the fixes from the build-249 Ripples vs Nerine log. A noun after "the" stays a noun in the past-tense
+    pass; a sentence with a verb isn't given "came up"; orphan thought marks are paired; a sound left with a participle,
+    an echoed clause and a "The thought" with no thought are mended; the director's places are put right (a broken
+    boulder, the shallows while she is held by the oak); a tap lands on the shoulder of one gripping with her jaws;
+    frost on the one Ice Fang never touched and her 'own' move that was the other's are caught; a standing fighter
+    lifts no head off the ground; and padding is capped (narration.stock_limit)."""
+    import re
+    import blocks
+    import narrator as N
+    problems = []
+    s = H.session(5, fighters="Ripples,Nerine")
+    e, n = s.eng, s.narrator
+    one = "She saw the frantic heaves of her body as her chest heaves."
+    if n._past_words(one, [one]) != "She saw the frantic heaves of her body as her chest heaved.":
+        problems.append(f"past tense: {n._past_words(one, [one])}")
+    s.sync_narrator()
+    fr = n._mend_fragments("Nerine's ears flicked back, her body tensing as she spun away.")
+    if "came up" in fr:
+        problems.append(f"a sentence with a verb got 'came up': {fr}")
+    bm = N._balance_marks("She was lost. I can't hold on much longer.* The pain grew.")
+    if "*I can't hold on much longer.*" not in bm:
+        problems.append(f"an orphan closing mark wasn't paired: {bm}")
+    ml = n._mend_leftovers("Her step was uneven, her weight off the hurt leg, and her step was uneven. Hnk, escaping "
+                           "her lips.\nThe thought was a frantic plea. She bucked.")
+    if ml != "Her step was uneven, her weight off the hurt leg. Hnk escaped her lips.\nShe bucked.":
+        problems.append(f"leftovers not mended: {ml!r}")
+    # places: a broken boulder, and the shallows while she is held at the foot of the oak
+    e.mark_arena("a boulder at the edge lies broken where Ripples was driven through it")
+    if "boulder" in e._place_checked("Nerine", "standing tall on the boulder at the edge, watching"):
+        problems.append("a position on a broken boulder was kept")
+    e.lying_at = {"Ripples": "an old oak"}
+    e.downed["Ripples"] = 0
+    pc = e._place_checked("Ripples", "in the shallows, favoring her left leg")
+    if pc != "by an old oak, favoring her left leg":
+        problems.append(f"the shallows while down by the oak: {pc!r}")
+    e.downed.pop("Ripples", None)
+    e.lying_at = {}
+    # the tap: on the shoulder of one biting her knee, on the arm of one holding her with it
+    n.posture_start = {"Ripples": "ON HER FEET"}
+    n.grips = [("Nerine", "Ripples", "Right Knee", "her jaws")]
+    if n._tap_spot("Ripples", "Nerine") != "Nerine's shoulder":
+        problems.append(f"a jaw grip gave the tap to: {n._tap_spot('Ripples', 'Nerine')}")
+    n.grips = [("Nerine", "Ripples", "Right Arm", "both arms")]
+    if n._tap_spot("Ripples", "Nerine") != "Nerine's arm":
+        problems.append("an arm grip should take the tap on her arm")
+    # what belongs to one given to the other
+    n.elem_on = {"Ripples": {"cold"}}
+    n.used_by = {"Nerine": {"Aqua Jet", "Ice Fang"}, "Ripples": {"Water Gun"}}
+    n._acts_now = [{"attacker": "Ripples", "defender": "Nerine", "move": {"name": "Water Gun"}}]
+    bad = n._bad_sentences("Nerine flexed her paw, feeling the sting of the icy wound. Ripples knew that her Aqua Jet "
+                           "should have done more. With a hiss of water, she threw an Aqua Jet straight at Nerine.")
+    for want in ("icy wound", "her Aqua Jet", "threw an Aqua Jet"):
+        if not any(want in k for k in bad):
+            problems.append(f"not caught: {want} ({list(bad)[:4]})")
+    ban = blocks.body_bans({"arms", "tails", "standing"})
+    if not ban or not ban.search("Ripples' head snapped up off the ground"):
+        problems.append("a standing fighter lifted her head off the ground")
+    # padding: one 'mind raced' a beat, 'could feel' becomes 'felt' past the first
+    n.beat_now = 40
+    n._stock_hist = []
+    out = n._stock_limit("Her mind raced. She could feel the grass.\nShe watched. Her mind raced as she thought. "
+                         "She could feel the wind. Her mind was racing again.")
+    if len(re.findall(r"mind (?:raced|was racing)", out)) > 1 or "She felt the wind" not in out:
+        problems.append(f"stock phrases not capped: {out!r}")
+    e.rules["narration"]["stock_limit"]["enabled"] = False
+    if n._stock_limit("Her mind raced. Her mind raced.") != "Her mind raced. Her mind raced.":
+        problems.append("stock_limit off should leave the text as it is")
+    e.rules["narration"]["stock_limit"]["enabled"] = True
+    return problems
+
+
 def low_health_check():
     """Build 246: at the very end of her strength she shows it alone, squirms when down, her body gives her away (a
     limb that doesn't answer blocks its moves a beat), makes one last stand (then wide open), and the other reads her."""
@@ -985,6 +1057,13 @@ def main(argv):
         probs = held_reach_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  held on the ground: reach, the down count, the pain gauge, taps told, body words  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "narration mends padding" for w in want):
+        t = time.time()
+        probs = narration_mends_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  narration mends: tense, fragments, marks, places, the tap, whose it is, padding  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "low health last stand" for w in want):

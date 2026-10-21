@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 250-guided (any grip on a standing fighter can bear her down, a held leg most of all, and she rarely taps still on her feet unless the hold carries her weight; more holds start on a fighter already down; two pain gauges, overall pain that fades and the held or struck part)"
+VERSION = "2026-10-21 build 251-guided (padding capped per beat and swapped for the fight's own detail; narration mends: past tense, fragments, thought marks, places that broke or moved, the tap, whose wound or move it is)"
 
 HELP = """
 =============================================================================================
@@ -1230,6 +1230,7 @@ class Session:
             for w in (f.name, self.eng.species(f)) if w]
         self.narrator.posture_end = {f.name: self.eng.posture_text(f.name, short=True) for f in self.eng.active()}
         self.narrator.scene_cfg = self.eng.scene_cfg   # the arena's own words (ground, place, ambience)
+        self.narrator.broken_heads = self.eng._broken_heads()   # what has broken: nobody stands on it any more
         # who is in the water (None / "shallow" / "deep", from where the director placed her): nobody swims on land
         self.narrator.in_water = {f.name: self.eng.in_water(f.name) for f in self.eng.active()}
         self.narrator.pinned_now = {pin["defender"] for pin in self.eng.pins.values()} | {h.defender for h in self.eng.holds.values()}
@@ -1246,6 +1247,27 @@ class Session:
                         hit.setdefault(mv, set()).add(who)
                         where.setdefault((mv, who), []).append(part.lower())
         self.narrator.move_victims, self.narrator.move_parts = hit, where
+        # whose wounds are cold, fire or electricity (a hit of that type, or the status on her now), and which moves
+        # each fighter has used: for narration.wrong_owner
+        elem, kinds = {}, {"Ice": "cold", "Fire": "fire", "Electric": "electricity"}
+        for key, causes in self.eng.injury_log.items():
+            who = key.partition("|")[0]
+            for c in causes:
+                m = re.match(r"^.+?'s? (.+?)(?: \(.*\))?$", str(c or ""))
+                t = ((self.eng.dex_move(m.group(1)) if m else None) or {}).get("type")
+                if t in kinds:
+                    elem.setdefault(who, set()).add(kinds[t])
+        for f in self.eng.fighters.values():
+            for st, kind in (("chilled", "cold"), ("frozen", "cold"), ("burned", "fire"), ("paralyzed", "electricity")):
+                if self.eng.has(f, st):
+                    elem.setdefault(f.name, set()).add(kind)
+        self.narrator.elem_on = elem
+        used = {}
+        for x in self.recent_attacks:
+            m = re.match(r"([^:→]+): (.+?)(?: \((?:improvised|a charge[^)]*)\))* → ", x)
+            if m and m.group(2).strip() in names:
+                used.setdefault(m.group(1).strip(), set()).add(m.group(2).strip())
+        self.narrator.used_by = used
         self.narrator.injury_log = {k: list(v) for k, v in self.eng.injury_log.items()}   # for one memory a beat
         # (the few causes the notes name for each part, the same as CURRENT CONDITION's: the hardest and the latest)
         self.narrator.injury_main = {k: self.eng.injury_causes(k) for k in self.eng.injury_log}

@@ -166,7 +166,11 @@ def body_bans(has):
         bans += [r"\bher (?:\w+ )?(?:hands?|fists?)\b", r"\bhand or paw\b", r"\bpaws? (?:pressed|clamped|held) to\b"]
     if "standing" in has:
         # on her feet all beat: nobody tells her to get up or stay down
-        bans += [r"\bget(?:s|ting)? up\b", r"\bstay(?:s|ing)? down\b"]
+        bans += [r"\bget(?:s|ting)? up\b", r"\bstay(?:s|ing)? down\b", r"\bget back (?:on|to) (?:my|her) feet\b",
+                 # (nor lifts her head off a ground she isn't lying on: "Ripples' head snapped up off the ground" in a
+                 # standing hold)
+                 r"\b(?:head|body|face|chest|shoulders?) (?:\w+ )?(?:up )?(?:off|from) the (?:ground|grass|sand|floor)\b",
+                 r"\blay (?:there|still|sprawled|limp|on the (?:ground|grass|sand|floor))\b"]
     if "faceup" in has:
         # flat on her back: not propped up, curled up, on her side, or with her front against the ground
         bans += [r"\bpropped\b", r"\bcurl(?:s|ed|ing)? (?:up |tight )?(?:round|around)\b", r"\bside up\b",

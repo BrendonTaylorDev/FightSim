@@ -943,6 +943,13 @@ class Display:
         elif t in ("hold_start", "pin_start"):
             icon, word = ("📌", "PIN") if t == "pin_start" else ("🔒", "Hold")
             mv = f" ({a['move']['name'].upper()})" if a.get("move") else ""
+            withs = " ".join(str(p.get("with") or "") for p in a.get("parts") or [])
+            name_ = str((a.get("move") or {}).get("name") or "")
+            for limb, said in ((r"\btail", r"\btails?\b"), (r"\bbite|\bfang|\bcrunch", r"\bjaws?\b|\bteeth\b|\bmouth\b")):
+                if withs.strip() and re.search(limb, name_, re.I) and not re.search(said, withs, re.I):
+                    # the move named for one limb, the grip made with another (a "Tail Bind" that was her jaws on
+                    # the knee): named by what holds her
+                    mv = f" (A GRIP WITH {withs.split(',')[0].strip().upper()})"
             if a.get("submission"):
                 icon, word = "🔐", "SUBMISSION HOLD"
                 mv = f" ({a['submission']['name'].upper()})"

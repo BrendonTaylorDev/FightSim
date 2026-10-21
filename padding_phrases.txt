@@ -1,0 +1,24 @@
+# Padding the story leans on (narration.stock_limit). One per line: its kind, a colon, the phrase as it is shown,
+# then optionally " | " and a regular expression that catches all its forms. Each phrase is allowed per_beat times a
+# beat (fewer when the last few beats already leaned on it); past that, a sentence holding it loses the clause it
+# sits in, or is swapped for a line the program builds from the fight (her real wounds, her breath, what she has
+# learned), or goes. The kind says which: thought (her mind), feel (what she feels or sees), breath, body.
+# Lines starting with # are notes. Add your own.
+thought: her mind raced | \b(?:her |[A-Z][a-z]+(?:'s|’s|') )?mind (?:raced|was racing|racing|whirled|whirling|reeled|reeling|churned|churning)\b
+thought: she knew she had to | \bshe knew (?:that )?she (?:had|needed|would have) to\b
+thought: she wouldn't give up | \b(?:she|I) (?:wouldn't|couldn't|won't|can't|would not|could not|refused to|will not) (?:give up|give in|let (?:this|it|her) (?:end|stop|win|be the end))\b
+thought: steeling herself | \bstee(?:led|ling|ls) herself\b
+thought: determination burning | \b(?:the |a |her )?(?:fierce |grim |steely |new |renewed )?(?:determination|resolve) (?:in her eyes|burned|burning|building|surged|surging|hardened|settled)\b
+thought: the fight was far from over | \b(?:the fight|this|it|the match) (?:was|is) (?:far from|not) over\b
+thought: the world seemed to fade | \bthe world (?:around her )?(?:seemed to )?(?:slow|fade|blur|narrow|tilt)\w*\b
+feel: she could feel | \bcould feel\b
+feel: she could see the | \bcould see the (?:tension|determination|fear|desperation|pain|strain|weariness|exhaustion|satisfaction|triumph)\b
+feel: she could taste | \bcould (?:taste|smell) the\b
+breath: her breath came in ragged gasps | \bbreath(?:s)? (?:came|coming) (?:out )?(?:in )?(?:short|ragged|sharp|shallow|quick|harsh|desperate|sobbing|heaving|painful)\b
+breath: her chest heaving | \b(?:chest|ribs|sides) (?:heav(?:ed|ing)|rising and falling)\b
+body: every muscle screaming | \bevery (?:muscle|nerve|fib(?:er|re)|inch)(?: (?:in|of) her body)? (?:screaming|screamed|tensed|tense|coiled|straining|strained|on fire)\b
+body: trembling with the effort | \b(?:trembl\w*|shak\w*|shook|quiver\w*) with (?:the )?effort\b
+body: a white-hot agony | \bwhite-hot (?:agony|pain|fire)\b
+body: the pain was excruciating | \bthe pain was (?:excruciating|overwhelming|unbearable|intense|immense|blinding)\b
+body: a futile attempt | \ba (?:futile|desperate|vain) (?:attempt|effort)\b
+body: the relentless pressure | \b(?:relentless|unyielding) (?:pressure|grip|force|agony|pain)\b

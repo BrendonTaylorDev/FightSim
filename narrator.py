@@ -2061,12 +2061,40 @@ def _unitalic_narration(text, names):
     return rx.sub(fix, text)
 
 
+def _orphan_closers(line):
+    """Closing * marks with no opening one, even when there are two of them in the line ("...as she tried to think.
+    I can't hold on much longer.* The pain... I won't let her win like this.* The thought..."): each thought gets its
+    opening mark at the start of its own sentence."""
+    if "*" not in line:
+        return line
+    out, start, opened = [], 0, False
+    for i, ch in enumerate(line):
+        if ch != "*":
+            continue
+        prev = line[i - 1] if i else " "
+        nxt = line[i + 1] if i + 1 < len(line) else " "
+        if opened:
+            opened = False
+        elif not nxt.isspace() and nxt not in ".,;:!?…":
+            opened = True
+        elif not prev.isspace() and prev in ".!?…":
+            # a closer with nothing open: the thought is the sentence it ends
+            seg = line[start:i]
+            m = list(re.finditer(r"[.!?…][\"”’']?\s+", seg[:-1]))
+            at = start + (m[-1].end() if m else len(seg) - len(seg.lstrip()))
+            out.append(line[start:at] + "*")
+            start = at
+    out.append(line[start:])
+    return "".join(out)
+
+
 def _balance_marks(text):
     """Keep the * marks around thoughts in pairs. A thought can lose one end when a sentence inside it is cut
     (a repeated line, a stray curse) or when the model forgets to close it:
     '*Slow.' -> '*Slow.*'      'Of course. She got me good.*' -> '*Of course. She got me good.*'"""
     fixed = []
     for line in text.split("\n"):
+        line = _orphan_closers(line)
         # a spoken line that lost its closing mark when what followed it was cut: "AAAHHH!  ->  "AAAHHH!"
         bare = line.strip()
         if bare.count('"') == 1 and "“" not in bare and "”" not in bare:
@@ -5108,6 +5136,18 @@ class Narrator:
                  + ((a.get("ground_back") or {}).get("hits") or [])}
         return [h for h in a.get("hits") or [] if key(h) not in grind] if grind else list(a.get("hits") or [])
 
+    def _move_source(self, a, m):
+        """Where a stream, a jet or a breath comes out of her: what the director said ("a blast of water from her
+        mouth"), else the move's own "from" (moves.json), else nothing. The chained Water Gun the director had from
+        her mouth was told from a flick of her paw."""
+        if not m or m.get("contact") or m.get("charge"):
+            return ""
+        said = re.search(r"\b(?:from|out of|through) (?:her|its) (?:own )?(?:open |gaping )?(mouth|jaws|throat|tails?|"
+                         r"paws?|fins?|horn|wings?|beak)\b", str(a.get("flavor") or ""), re.I)
+        if said:
+            return said.group(1).lower()
+        return str(m.get("from") or "")
+
     def _describe_action_core(self, a):
         lines = []
         t = a["type"]
@@ -5419,6 +5459,9 @@ class Narrator:
                 kind = "an improvised move" if m.get("improvised") else f"{m['type']}-type move"
                 on = ("" if m.get("target") == "self" else f" on {a['defender']}") + (f", {aim}" if aim else "")
                 lines.append(f"{a['attacker']} uses {m['name'].upper()} ({kind}: {m['about']}){on}.{eff}{intent}")
+                src = self._move_source(a, m)
+                if src:
+                    lines.append(f"  It comes from her {src}, nowhere else (not from a paw or a tail she isn't using).")
                 if a.get("through_confusion"):
                     lines.append(f"  (She is still CONFUSED as she throws it: dizzy, the world not quite where it "
                                  f"should be, but this time she gets the move off as meant. Show the dizziness she "
@@ -7206,8 +7249,13 @@ class Narrator:
             return "the ground"
         ps = str((getattr(self, "posture_start", None) or {}).get(who) or "").upper()
         down = ps.startswith(("ON THE GROUND", "OUT OF")) if ps else who in (getattr(self, "on_ground", None) or set())
-        # (one place, not "arm or shoulder": the model copied the choice into the story word for word)
-        return "the ground" if down else f"{poss(holder)} arm"
+        # (one place, not "arm or shoulder": the model copied the choice into the story word for word). Her arm only
+        # when the holder grips with it: jaws or tails on the knee leave no arm near, so it is her shoulder
+        if down:
+            return "the ground"
+        withs = " ".join(str(g[3] or "") for g in (getattr(self, "grips", None) or []) if g[0] == holder and g[1] == who)
+        return (f"{poss(holder)} arm" if not withs or re.search(r"\b(?:arm|paw|hand|foreleg|claw|wing)s?\b", withs, re.I)
+                else f"{poss(holder)} shoulder")
 
     def _posture_lines(self):
         """Who is up and who is down this beat, straight from the engine, as the first thing the narrator reads."""
@@ -12561,6 +12609,72 @@ class Narrator:
         for sent in self._arena_leaks(text):
             m = ARENA_LEAK.search(sent)
             add(sent, f"\"{m.group(0)}\" isn't in this arena (the fight is in {self._arena_name()}): use what is here")
+        # someone standing on, leaning against or perched on a thing that broke earlier in the fight ("Nerine stood
+        # poised on the boulder" three beats after she was driven through it)
+        gone = sorted(getattr(self, "broken_heads", None) or ())
+        if gone:
+            rx_gone = re.compile(r"\b(?:stood|stand\w*|poised|perched|sat|sitting|leaned|leaning|lean\w*|crouched|"
+                                 r"balanced|braced|propped|rested|resting)\b[^.!?…]{0,40}?\b(?:on|atop|against|on top of|"
+                                 r"beside|by)\s+(?:the|a|an)\s+(?:[a-z'-]+ ){0,2}(" + "|".join(map(re.escape, gone))
+                                 + r")s?\b", re.I)
+            for x in sents:
+                m = rx_gone.search(x)
+                if m and not re.search(r"\b(?:broken|shattered|split|splintered|wreck\w*|remains|stump|pieces|"
+                                       r"rubble|what was left|where the)\b", x, re.I):
+                    add(x, f"the {m.group(1).lower()} has broken and isn't standing any more: nobody stands on, leans on "
+                           f"or sits against it; put her where she really is, or leave the place out")
+        # narration.wrong_owner (since build 251): what belongs to one fighter given to the other
+        if ((self.rules.get("narration") or {}).get("wrong_owner") or {}).get("enabled", True):
+            elem = getattr(self, "elem_on", None) or {}
+            used = getattr(self, "used_by", None) or {}
+            now_moves = {(a.get("attacker"), (a.get("move") or {}).get("name"))
+                         for a in (getattr(self, "_acts_now", None) or []) if a.get("move")}
+            for sent, whos, named in self._said(text):
+                if len(whos) != 1:
+                    continue
+                w = whos[0]
+                # a frost wound on the one the Ice Fang never touched ("she flexed her paw, feeling the sting of the
+                # icy wound": Nerine, when Ripples took it)
+                for kind, rx in self.ELEM_WOUND:
+                    others = [o for o, ks in elem.items() if o != w and kind in ks]
+                    if rx.search(sent) and kind not in elem.get(w, ()) and others:
+                        add(sent, f"{w} was never hit by {kind}, so that wound isn't hers (it is {poss(others[0])}): "
+                                  f"give {w} only her own wounds")
+                        break
+                # her sight swimming when nothing touched her this beat and she is far from spent (Ripples, attacking,
+                # "her sight swam slightly"): the other's daze given to her
+                hurt_w = getattr(self, "_hurt_now", None)
+                if hurt_w is not None and w not in hurt_w and w not in (getattr(self, "dizzy", None) or ()) \
+                        and float((self.strengths or {}).get(w, 100)) >= 50 and re.search(
+                            r"\b(?:sight|vision|eyesight) (?:swam|blurred|doubled|greyed|grayed|darkened)|\bthe world "
+                            r"(?:tilted|spun|swam|lurched)|\bsaw stars\b|\bstars (?:burst|exploded|danced)\b", sent, re.I):
+                    add(sent, f"nothing struck {w} this beat and she isn't dazed: her sight is clear, so that isn't hers")
+                # her own move that was the other's ("Ripples knew that her Aqua Jet should have done more": the Aqua
+                # Jet was Nerine's)
+                for mv in sorted({m for ms in used.values() for m in ms}, key=len, reverse=True):
+                    if mv in used.get(w, ()) or (w, mv) in now_moves:
+                        continue
+                    if re.search(r"\b(?:her own|my|" + re.escape(w) + r"(?:'s|’s|')|" + re.escape(w)
+                                 + r" (?:knew|thought|felt|hoped|wished|wondered|realized|realised|saw)\b[^.!?…]{0,25}"
+                                   r"\bher)\s+" + re.escape(mv) + r"\b", sent):
+                        owner = next((o for o, ms in used.items() if mv in ms and o != w), None)
+                        if owner:
+                            add(sent, f"{mv} was {poss(owner)} move, so it isn't hers: {w} hasn't used it in this "
+                                      f"fight")
+                        break
+            # this beat's attack called by another move's name ("she threw an Aqua Jet straight at Nerine" for
+            # Ripples' Water Gun)
+            this = {n for _a, n in now_moves if n}
+            if this:
+                for x in sents:
+                    for mv in sorted({m for ms in used.values() for m in ms} - this, key=len, reverse=True):
+                        m = re.search(r"\b(?:threw|fired|launched|unleashed|loosed|used|shot|sent|hurled|aimed|let fly|"
+                                      r"let loose|drove|struck with|hit (?:her )?with)\b[^.!?…]{0,20}?\b(?:an?|her|the)\s+"
+                                      + re.escape(mv) + r"\b", x)
+                        if m:
+                            add(x, f"this beat's attack was {' and '.join(sorted(this))}, not {mv}: call it by what it "
+                                   f"is, or by what it does")
+                            break
         for x in sents:
             m = INVENTED_PAST.search(x)
             if m:
@@ -13418,6 +13532,7 @@ class Narrator:
         text = self._drop_said_repeats(text)
         text = self._cut_retold(self._drop_self_repeats(text))
         text = self._trim_filler(text)
+        text = self._stock_limit(text)
         text = self._keep_subjects(raw, text)   # a cut can take the sentence that said who "she" is
         text = self._ensure_faint(self._ensure_getup(self._top_up(text, story_so_far)))
         text = self._ensure_takedown(text)
@@ -13469,7 +13584,10 @@ class Narrator:
             sents = []
             for x in _SENT.split(para.strip()) if para.strip() else []:
                 m = self.FRAGMENT.match(x)
-                if m and m.group(2).lower() in parts:
+                # (a verb before the comma means it isn't a fragment: "Nerine's ears flicked back, her body tensing"
+                # read "back" as the part and came back "flicked back came up")
+                if m and m.group(2).lower() in parts and not self.FINITE.search(
+                        re.sub(r"\b(?:left|right|set|cut|hit|split|bent|wound|lit)\b", "", m.group(1))):
                     main = re.split(r"\b(?:as|while|when|because|until|before|after|that|which|who|and)\b",
                                     m.group(3), 1)[0]
                     if not self.FINITE.search(main):
@@ -13478,6 +13596,238 @@ class Narrator:
                 sents.append(x)
             out.append(" ".join(sents) if para.strip() else para)
         return "\n".join(out)
+
+    # narration.stock_limit: lines the program builds from the fight, swapped in for a padding sentence. {S} is who
+    # the sentence was about ("She" or her name), {Her} and {her} her possessive, {part} her worst wound.
+    SWAP_BODY = [(r"knee|thigh|hip|hock|foot|leg|hind|ankle",
+                  ["{S} kept the weight off {her} {part}, and shifted it again when it complained.",
+                   "{Her} {part} would not take {her} full weight any more, and {s} stopped asking it to."]),
+                 (r"shoulder|upper arm|forearm|arm|paw|hand|fin|foreleg|wing",
+                  ["{S} held {her} {part} in close, out of the way of everything.",
+                   "{Her} {part} came up a beat late, and {s} let it hang after."]),
+                 (r"head|ear|eye|jaw|muzzle|nose|cheek|horn|antenna|beak",
+                  ["{S} blinked hard against the ache in {her} {part}."]),
+                 (r"throat|neck", ["{S} swallowed carefully; {her} {part} answered every swallow."]),
+                 (r"chest|rib|ruff", ["{S} breathed shallow, keeping the air off {her} {part}."]),
+                 (r"stomach|belly|midsection|flank", ["{S} hunched a little round {her} {part}."]),
+                 (r"back", ["{S} held {her} {part} stiff and careful, and turned from the waist no more than she had to."]),
+                 (r"tail", ["{Her} {part} hung heavier than before, the rhythm gone out of it."])]
+    SWAP_BREATH = {"fresh": ["{Her} breathing was still even, deep and unhurried."],
+                   "hurting": ["{Her} breathing had gone short and quick, the ribs working under the fur.",
+                               "There was a hitch at the top of each of {her} breaths now, quickly hidden."],
+                   "badly": ["{Her} mouth hung a little open; {s} was breathing through it now.",
+                             "{Her} breath caught on the way in, as if it hit something."],
+                   "spent": ["Every breath shook the whole of {her}.",
+                             "{Her} head hung between breaths and came up late."]}
+    SWAP_THOUGHT = [(r"^her (.+?) has found \w+ \d+ times", "*The {m} works. Again.*"),
+                    (r"^her (.+?) has missed \d+ times", "*She's reading the {m}. Something else.*"),
+                    (r"^\S+ (.+?) has hit her \d+ times", "*Not the {m} again.*"),
+                    (r"^she has slipped \d+ of", "*She's slow. I can see her coming.*"),
+                    (r"^she can see \S+ favouring her (.+?):", "*That {m}. Go for the {m}.*"),
+                    (r"^she is running low on energy", "*Nothing big. There isn't enough left for big.*"),
+                    (r"^she is tiring", "*Pace it. Don't waste anything.*"),
+                    (r"^her (.+?) badly hurt", "*Keep the {m} out of it.*"),
+                    (r"^that beat took a real piece", "*That one cost me.*"),
+                    (r"^nothing of .+ has touched her", "*She hasn't touched me. Keep it that way.*")]
+
+    def _padding_families(self):
+        if "_pad_fams" not in self.__dict__:
+            cfg = (self.rules.get("narration") or {}).get("stock_limit") or {}
+            fams = []
+            try:
+                with open(os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                       cfg.get("list_file", "padding_phrases.txt")), encoding="utf-8") as fh:
+                    lines = fh.read().splitlines()
+            except OSError as e:
+                note_failure("reading the padding phrase list", e)
+                lines = []
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith("#") or ":" not in line:
+                    continue
+                kind, _, rest = line.partition(":")
+                label, _, rx = rest.partition("|")
+                label, rx = label.strip(), rx.strip() or r"\b" + r"\s+".join(map(re.escape, label.split())) + r"\b"
+                try:
+                    fams.append((kind.strip().lower(), label, re.compile(rx, re.I)))
+                except re.error as e:
+                    note_failure(f"the padding phrase '{label}'", e)
+            self._pad_fams = fams
+        return self._pad_fams
+
+    def _move_word(self, mv):
+        kinds = story_blocks.kind_of(mv)
+        return next((w for k, w in (("bite", "bite"), ("claw", "claws"), ("charge", "charge"), ("tail", "tail"),
+                                    ("horn", "horn"), ("wing", "wing"), ("punch", "blow"), ("beam", "blast"),
+                                    ("fire", "fire"), ("ice", "cold"), ("wind", "gust"), ("rock", "stones"))
+                     if k in kinds), "move")
+
+    def _swap_line(self, who, kind, rnd, named):
+        """A line built from the fight for `who` in place of a padding sentence of this kind, or None: her own worst
+        wound and what it stops her doing (body, feel), her breath by how far gone she is (breath), a short thought
+        from what she has really learned this fight (thought). None that was swapped in during the last 3 beats."""
+        now = int(getattr(self, "beat_now", 0) or 0)
+        used = self.__dict__.setdefault("_swap_used", {})
+        st = float((self.strengths or {}).get(who, 100))
+        dmg = (getattr(self, "damage_by", None) or {}).get(who) or {}
+        cands = []
+        if kind == "thought":
+            for fact in (getattr(self, "inner", None) or {}).get(who) or []:
+                for rx, line in self.SWAP_THOUGHT:
+                    m = re.match(rx, str(fact), re.I)
+                    if m:
+                        thing = m.group(1).lower() if m.groups() else ""
+                        if thing and thing.title() in (getattr(self, "_move_names", None) or set()) | \
+                                {n.title() for n in (getattr(self, "_move_names", None) or set())}:
+                            thing = self._move_word(thing)
+                        cands.append(line.format(m=thing))
+                        break
+        else:
+            worst = sorted(((p, d) for p, d in dmg.items() if d >= 40), key=lambda x: -x[1])[:2]
+            if kind in ("body", "feel") and worst:
+                for p, _d in worst:
+                    pool = next((ls for rx, ls in self.SWAP_BODY if re.search(rx, p)), None)
+                    cands += [ln.replace("{part}", p.lower()) for ln in pool or []]
+            if not cands or kind == "breath":
+                tier = "spent" if st < 25 else "badly" if st < 50 else "hurting" if st < 80 else "fresh"
+                cands += self.SWAP_BREATH[tier]
+        s_ = who if named else "She"
+        her = poss(who) if named else "Her"
+        fills = [c.replace("{S}", s_).replace("{Her}", her).replace("{her}", "her").replace("{s}", "she")
+                 for c in cands]
+        fills = [c[0].upper() + c[1:] for c in fills if now - used.get(c, -99) > 3]
+        if not fills:
+            return None
+        pick = rnd.choice(fills)
+        used[pick] = now
+        return pick
+
+    def _stock_limit(self, text):
+        """narration.stock_limit: each padding phrase (padding_phrases.txt) at most per_beat times a beat, none at
+        all once the last window_beats beats used it per_window times. Past that, mended with no call: "could feel
+        the X" becomes "felt the X"; a phrase in a side clause loses the clause; a sentence that is nothing but the
+        padding is swapped (swap_chance) for a line built from the fight (_swap_line), or goes. A sentence that also
+        tells something that happened (a part, a sound, a move) only ever loses the clause, never itself."""
+        cfg = (self.rules.get("narration") or {}).get("stock_limit") or {}
+        if not cfg.get("enabled", True) or not text:
+            return text
+        import zlib
+        fams = self._padding_families()
+        if not fams:
+            return text
+        per_beat, per_win = int(cfg.get("per_beat", 1)), int(cfg.get("per_window", 2))
+        hist = self.__dict__.setdefault("_stock_hist", [])
+        win = hist[-int(cfg.get("window_beats", 3)):] if int(cfg.get("window_beats", 3)) > 0 else []
+        allow = {lab: (0 if sum(h.get(lab, 0) for h in win) >= per_win else per_beat) for _k, lab, _r in fams}
+        seen = {}
+        whos = {}
+        try:
+            for sent, ws, named in self._said(text):
+                whos[sent.strip()] = (ws, named)
+        except Exception as e:
+            note_failure("who each padding sentence is about", e)
+        parts = {p for d in (getattr(self, "damage_by", None) or {}).values() for p in d}
+        moves = {m.lower() for m in (getattr(self, "_move_names", None) or set())}
+        swap = float(cfg.get("swap_chance", 0.5))
+        out, swapped, cut = [], 0, 0
+        for para in text.split("\n"):
+            if not para.strip() or para.strip().startswith("—"):
+                out.append(para)
+                continue
+            sents = [x for x in _SENT.split(para.strip()) if x]
+            new = []
+            for x in sents:
+                y = x
+                for kind, lab, rx in fams:
+                    if not rx.search(y):
+                        continue
+                    seen[lab] = seen.get(lab, 0) + 1
+                    if seen[lab] <= allow[lab]:
+                        continue
+                    if kind == "feel":
+                        y = re.sub(r"\bcould (feel|see|taste|smell)\b", lambda m: {"feel": "felt", "see": "saw",
+                                   "taste": "tasted", "smell": "smelled"}[m.group(1).lower()], y, flags=re.I)
+                        continue
+                    m = rx.search(y)
+                    seps = [s_.span() for s_ in re.finditer(r",\s+", y)]
+                    k = sum(1 for a_, _b in seps if a_ <= m.start())       # the clause it sits in (0 = the main one)
+                    if k > 0:
+                        # a side clause: it goes, the sentence stays
+                        end = re.search(r"[.!?…]+[\"”’'*]*$", y.rstrip())
+                        # (to the next comma that starts a clause of its own: "her breath coming in short, sharp
+                        # bursts, her chest..." goes whole, not leaving "sharp bursts" behind)
+                        nxt = next((j for j in range(k, len(seps)) if re.match(
+                            r"(?:her|his|its|the|a|an|and|but|as|while|then|she|until|before|after|which|when)\b",
+                            y[seps[j][1]:], re.I)), None)
+                        stop = seps[nxt][0] if nxt is not None else (end.start() if end else len(y.rstrip()))
+                        rest = (y[:seps[k - 1][0]] + y[stop:]).rstrip()
+                        if not re.search(r"[.!?…][\"”’'*]*$", rest):
+                            rest += end.group(0) if end else "."
+                        if len(rest.split()) >= 4:
+                            y = rest
+                            continue
+                    low = y.lower()
+                    tells = (any(p in low for p in parts) or "*" in y and kind != "thought"
+                             or any(mv in low for mv in moves))
+                    if tells:
+                        continue
+                    ws, named = whos.get(x.strip(), ([], []))
+                    rnd = random.Random(zlib.crc32(f"pad|{getattr(self, 'beat_now', 0)}|{x}".encode()))
+                    line = None
+                    if len(ws) == 1 and rnd.random() < swap:
+                        line = self._swap_line(ws[0], kind, rnd, bool(re.match(re.escape(ws[0]) + r"\b", x.strip())))
+                    if line:
+                        y, swapped = line, swapped + 1
+                    elif len(sents) > 1:
+                        y, cut = "", cut + 1
+                    break
+                if y:
+                    new.append(y)
+            out.append(" ".join(new) if new else para)
+        hist.append(seen)
+        del hist[:-10]
+        if (swapped or cut) and self.progress:
+            self.progress(f"stock phrases: {swapped} swapped for the fight's own detail, {cut} cut")
+        return "\n".join(out)
+
+    def _mend_leftovers(self, text):
+        """What cuts and rewrites leave behind, mended with no call (narration.mend_fragments): a sound left with
+        a participle and no verb ("Hnk, escaping her lips." -> "Hnk escaped her lips."); a closing clause that says
+        again what the sentence said ("her step was uneven, her weight off the leg, and her step was uneven"); and
+        "The thought..." or "The words..." with no thought before it in the paragraph (it was cut)."""
+        past = {"escaping": "escaped", "slipping": "slipped", "bursting": "burst", "breaking": "broke",
+                "tearing": "tore", "spilling": "spilled", "leaking": "leaked"}
+        out = []
+        for para in text.split("\n"):
+            sents, had_thought = [], False
+            for x in _SENT.split(para.strip()) if para.strip() else []:
+                m = re.match(r"^(\*?[A-Z][a-z]{0,7}[-—]?\*?), (escaping|slipping|bursting|breaking|tearing|spilling|"
+                             r"leaking) ((?:from|out of|through|past|between) )?((?:her|his|its) \w+)([.!…])$", x)
+                if m:
+                    x = f"{m.group(1)} {past[m.group(2)]} {m.group(3) or ''}{m.group(4)}{m.group(5)}".replace("  ", " ")
+                if re.match(r"^(?:The|That|This) (?:thought|words?|mantra)\b", x) and not had_thought:
+                    continue
+                x = self._drop_echo_clause(x)
+                if "*" in x or re.search(r"\b(?:thought|she told herself|in her head|in her mind)\b", x):
+                    had_thought = True
+                sents.append(x)
+            out.append(" ".join(sents) if para.strip() else para)
+        return "\n".join(out)
+
+    @staticmethod
+    def _drop_echo_clause(sent):
+        """The last clause of a sentence, when it only says again what came before it in the same sentence."""
+        parts = re.split(r",\s+", sent.rstrip())
+        if len(parts) < 3:
+            return sent
+        last = re.sub(r"^(?:and|but|then)\s+", "", parts[-1], flags=re.I)
+        lw = re.findall(r"[a-z']+", last.lower())
+        head = " ".join(re.findall(r"[a-z']+", ", ".join(parts[:-1]).lower()))
+        runs = [" ".join(lw[i:i + 3]) for i in range(len(lw) - 2)]
+        if 3 <= len(lw) <= 8 and runs and sum(1 for r in runs if r in head) >= max(1, len(runs) - 1):
+            end = re.search(r"[.!?…]+[\"”’']?$", sent.rstrip())
+            return ", ".join(parts[:-1]).rstrip(" ,") + (end.group(0) if end else ".")
+        return sent
 
     _COUNT_WORDS = {"one": 1, "a single": 1, "only one": 1, "just one": 1, "two": 2, "three": 3, "four": 4,
                     "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
@@ -13518,6 +13868,7 @@ class Narrator:
             text = self._hit_counts(text)
         if n.get("mend_fragments", True):
             text = self._mend_fragments(text)
+            text = self._mend_leftovers(text)
         # a move's NAME used as a label ("a pulsing blast of water, Water Pulse." / "Ripples' Aqua Jet missed its mark"
         # / "with her own Thunderbolt"): the label goes, or the move becomes plain "attack"
         names_ = sorted((x for x in (getattr(self, "_move_names", None) or set()) if x and x[0].isupper()), key=len,
@@ -14164,7 +14515,10 @@ class Narrator:
         if not cfg:
             return ""
         paras = max(2, int(seg_words // max(60, int(cfg.get("words_per_paragraph", 110)))))
-        out = (f"\nDEPTH for this part: write it as at least {paras} paragraphs. Slow down: give each moment its "
+        cap = (self.rules.get("narration") or {}).get("paragraph_cap") or {}
+        most = (f" and at most {paras + int(cap.get('extra', 2))} (no padding: when the part has nothing more to tell, it "
+                f"ends)") if cap.get("enabled", True) else ""
+        out = (f"\nDEPTH for this part: write it as at least {paras} paragraphs{most}. Slow down: give each moment its "
                f"physical detail (weight, footing, breath, the exact feel of fur, muscle and ground) and the fighter's "
                f"mind as it happens (what she notices, what she makes of it, what she fears or wants, what she "
                f"decides). Let her thoughts reason from INNER LIFE where it fits: what has worked, what keeps hurting "
@@ -14205,6 +14559,14 @@ class Narrator:
                 "she flies lopsided, favouring one side",
                 "she has to beat harder just to stay where she is",
                 "her turns have gone wide and slow"]
+    # a wound of an element, for narration.wrong_owner: the words that make it one fighter's
+    ELEM_WOUND = [("cold", re.compile(r"\b(?:icy|frost(?:ed|y|bitten)?|frozen|freezing|ice-cold)\s+(?:wound|bite|sting|"
+                                      r"patch|fur|spot|mark|burn|bruise|knee|leg|hip|paw|skin)\b|\bsting of the (?:icy|frost|"
+                                      r"cold) |\bfrost (?:bit|clung|crusted|still)\b", re.I)),
+                  ("fire", re.compile(r"\b(?:scorched|singed|seared|charred)\s+(?:fur|skin|patch|spot|wound|mark)\b|"
+                                      r"\bburn(?:ed|t)? (?:fur|patch|mark|wound)\b", re.I)),
+                  ("electricity", re.compile(r"\b(?:static|electric|the shock) still (?:crawl|prickl|tingl|buzz)\w*",
+                                             re.I))]
     SEEN_PART = [(r"head|ear|eye|jaw|muzzle|nose|cheek|horn|antenna|beak",
                   "she shakes her head as if to clear it, and squints past the hurt"),
                  (r"throat|neck", "she swallows carefully, and her breath rasps"),
@@ -15235,11 +15597,20 @@ class Narrator:
     def _past_words(self, text, sents):
         """The flagged present-tense sentences, their common verbs put into the past one word at a time (no call)."""
         rx = re.compile(r"\b(" + "|".join(self.PAST_OF) + r")\b")
+
+        def verb(m):
+            # the word used as a noun stays ("the frantic heaves of her body" came back "the frantic heaved of"):
+            # straight after a/the/her or before "of"
+            before, after = m.string[:m.start()], m.string[m.end():]
+            if re.search(r"\b(?:a|an|the|her|his|its|their|my|your|our|these|those|every|each)\s+$", before, re.I) \
+                    or re.match(r"\s+of\b", after):
+                return m.group(0)
+            return self.PAST_OF[m.group(1)]
         for sent in sents or []:
             if sent in text and not sent.lstrip().startswith(("*", "\"", "“")):
                 # (a thought or a line of speech inside the sentence keeps its own tense)
                 bits = re.split(r"(\*[^*\n]+\*|\"[^\"\n]+\"|“[^”\n]+”)", sent)
-                new = "".join(b if k % 2 else rx.sub(lambda m: self.PAST_OF[m.group(1)], b) for k, b in enumerate(bits))
+                new = "".join(b if k % 2 else rx.sub(verb, b) for k, b in enumerate(bits))
                 text = text.replace(sent, new, 1)
         return text
 
