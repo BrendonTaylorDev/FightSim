@@ -3664,7 +3664,8 @@ def submission_urge(engine):
         if (getattr(engine, "sub_window", None) or {}).get(target.name) is not True:
             continue
         holders = [f for f in engine.active() if f.team != target.team
-                   and (f.name not in engine.downed or engine.ground_lock_ok(f.name))
+                   and (f.name not in engine.downed or engine.ground_lock_ok(f.name, target.name))
+                   and not engine.regrab_wait(f, target)
                    and not engine.pinned_by(f.name) and not engine.pinning(f.name)
                    and not any(engine.has(f, st) for st in ("flinched", "asleep", "frozen", "reeling"))
                    and engine.submission_shapes(f.name, target.name)]
@@ -3675,7 +3676,10 @@ def submission_urge(engine):
         name = engine.pick_submission(shapes, defender=target.name)
         s = shapes[name]
         choke_ = engine.sub_is_choke(s)
-        return (f"SUBMISSION OPENING (very rare): {target.name} is down and {h.name} can lock her in a {name.upper()} "
+        where = (f"is down and {h.name} can lock her in a {name.upper()}" if target.name in engine.downed else
+                 f"is on her feet but open (a worn part, a stumble, a moment's opening), and {h.name} can TAKE HER DOWN "
+                 f"into a {name.upper()} (the engine puts her on the ground for it)")
+        return (f"SUBMISSION OPENING{' (very rare)' if not engine.submission_match() else ''}: {target.name} {where} "
                 f"({s['look']}). Unless the story clearly calls for something else, {h.name} does it this beat: action "
                 f"'submission' with \"improvised_name\": \"{name}\". It wrenches her ({s['strain']}) every beat, "
                 f"harder each beat, for a few beats; it is not a pin. {h.name} still has {s['free']} free: she can use "

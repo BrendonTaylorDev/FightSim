@@ -5825,7 +5825,7 @@ class Narrator:
                        else "as the line above already says" if td.get("told")
                        else "a tackle, a leg hooked out from under her, a drag to the ground: whatever fits their bodies")
                 lines.append(f"  - {a['defender']} was ON HER FEET: {a['attacker']} first TAKES HER DOWN ({how}), "
-                             f"then pins her where she lands. Show the takedown"
+                             f"then {'locks the hold on her' if a.get('submission') else 'pins her'} where she lands. Show the takedown"
                              + ("; it does no damage of its own." if not td.get("hits") else
                                 f": she is put down HARD, and the ground itself hurts her as she lands (before the pin "
                                 f"closes):"))

@@ -196,8 +196,11 @@ class Display:
                 rtxt = "" if rl == 1.0 else f" (rolled ×{rl:.2f})"     # damage.roll: this one landed harder or softer
                 out.append(f"        damage      {pad(dmg)}   +{num(h['damage_taken'])} = power {num(h['power'])}{rtxt} × "
                            f"{h['mult']:.2f}{' (pin cap)' if h.get('capped') else ''}{sc}"
-                           + (f" (the part counts +{num(added)}: past 300% its number climbs slowly)"
-                              if added < h["damage_taken"] - 0.05 else "")
+                           + (f" (the part counts +{num(added)}: past 300% its number climbs slowly"
+                              + (f", ×{h['zero_ramp']:.2f} below zero" if h.get("zero_ramp", 1) > 1 else "") + ")"
+                              if added < h["damage_taken"] - 0.05 else
+                              f" (the part counts +{num(added)}: ×{h['zero_ramp']:.2f} below zero)"
+                              if h.get("zero_ramp", 1) > 1 and added > h["damage_taken"] + 0.05 else "")
                            + (" · NUMB: it lands dull" if h.get("numb") else "")
                            + (f" · 🫥 it goes NUMB for {h['goes_numb']} beat{'s' if h['goes_numb'] != 1 else ''}"
                               if h.get("goes_numb") else ""))
@@ -1000,7 +1003,8 @@ class Display:
                                        for x in a["absorbed"]))
             if a.get("taken_down"):
                 td = a.get("takedown") or {}
-                out.append(f"- {a['defender']} was on her feet: taken down into the pin"
+                out.append(f"- {a['defender']} was on her feet: taken down into the "
+                           f"{'hold' if a.get('submission') else 'pin'}"
                            + (f" ({str(td.get('how')).replace('_', ' ')})" if td.get("how") else "")
                            + (" — a HARD landing:" if td.get("hits") else ""))
                 if td.get("hits"):

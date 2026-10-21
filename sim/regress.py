@@ -622,6 +622,40 @@ def downtime_check():
     return problems
 
 
+def sub_match_check():
+    """Build 244: in a submission match, openings on her feet too (more once a part is worn) with the holder taking
+    her down into it, and, in a several-tap match, her parts giving way faster the deeper below zero she is."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    a, d = e.get("Nerine"), e.get("Ripples")
+    if e.sub_chance(d) != 0:
+        problems.append("outside a submission match there should be no opening on her feet")
+    e.rules["finish"]["submission"]["enabled"] = True
+    fresh = e.sub_chance(d)
+    d.parts["Left Thigh"].damage = 200.0
+    worn = e.sub_chance(d)
+    if not (0 < fresh < worn <= 0.2):
+        problems.append(f"an opening on her feet should come now and then, more once a part is worn: {fresh} then {worn}")
+    e.rules["submissions"]["small_joints"]["enabled"] = False
+    shapes = e.submission_shapes(a.name, d.name)
+    if not shapes or not all(x.get("lands") for x in shapes.values()):
+        problems.append(f"on her feet the holds should say how she lands when taken down into them: {shapes}")
+    else:
+        e.sub_window = {d.name: True}
+        name = next(iter(shapes))
+        res = e.start_submission(a.name, d.name, name, enforce=True)
+        if d.name not in e.downed or not res.get("taken_down") or not any(h.sub for h in e.holds.values()):
+            problems.append(f"the takedown into the {name} didn't put her down and lock it: {res.get('type')}")
+    e.rules["finish"]["submission"]["taps"].update(enabled=True, needed=3)
+    d.health = -1.0 * d.max_health
+    if abs(e.zero_part_ramp(d) - 1.8) > 0.01:
+        problems.append(f"at -100% her parts should take x1.8 in a three-tap match: {e.zero_part_ramp(d)}")
+    e.rules["finish"]["submission"]["taps"]["enabled"] = False
+    if e.zero_part_ramp(d) != 1.0:
+        problems.append("with one tap needed, part_ramp (only: taps) should be off")
+    return problems
+
+
 def textpane_check():
     """The window's story pane (textpane.py): story and numbers told apart, the rows' changes and the rolls'
     outcomes coloured, the pointers' numbers taken from the lines they explain, and shown only now and then."""
@@ -709,6 +743,13 @@ def main(argv):
         probs = ruined_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  ruined parts past devastated, and the stages below zero health  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "sub match standing ramp" for w in want):
+        t = time.time()
+        probs = sub_match_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  submission matches: openings on her feet, takedown into the hold, part ramp below zero  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "downtime collapse" for w in want):

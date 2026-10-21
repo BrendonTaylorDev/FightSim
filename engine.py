@@ -584,7 +584,8 @@ class Engine:
                 hmult = float(cap["health_mult"])
                 capped = capped or not cap.get("health_only")
         taken = power * bmult * scale
-        p.damage = dmg_b + self._part_added(dmg_b, taken)
+        zramp = self.zero_part_ramp(defender)    # below_zero.part_ramp: deep below zero, her parts give way faster
+        p.damage = dmg_b + self._part_added(dmg_b, taken * zramp)
         was_numb = int(getattr(p, "numb", 0) or 0) > 0
         rscale = float(r.get("damage", {}).get("resistance_scale", 1.0))
         # resistance lost: by the blow's power, and (resistance.loss_per_damage, 0 = off) by the damage it really did,
@@ -673,7 +674,7 @@ class Engine:
             "res_before": round(res_b, 2), "res_after": round(p.resistance, 2),
             "res_start": round(float(getattr(p, "start_resistance", res_b) or res_b), 2),
             "cond_before": round(cond_b, 2), "cond_after": round(self.condition(p), 2),
-            "health_mult": hmult, "vital": vital, "health_loss": round(health_loss, 2),
+            "health_mult": hmult, "vital": vital, "health_loss": round(health_loss, 2), "zero_ramp": round(zramp, 2),
             "health_raw": round(raw_loss, 2), "softened": round(raw_loss - health_loss, 2) > 0.01,
             "res_overflow": round(res_over, 2),
             "wear_math": wear_math, "wear_cap": round(wear_cap, 2) if wear_cap is not None else None,
@@ -4893,13 +4894,17 @@ class Engine:
         a, d = self.get(attacker), self.get(defender)
         plan = self.body_plan(a)
         lie = self.facing_of(d.name) if d.name in self.downed else None
+        # submissions.match.standing: on her feet, a hold she can be taken down into, landing as it needs her
+        stand = lie is None and self.standing_sub_on() and not self.has(d, "airborne")
         out = {}
         prop_near = (getattr(self, "lying_at", None) or {}).get(d.name)
         rough = str((self.scene_cfg or {}).get("rough") or "")
         prop_ground = (prop_near or ("a root humped out of the ground" if "root" in rough else
                                       f"a ridge of {rough}" if rough else ""))
         for name, s in self.SUBMISSIONS.items():
-            if plan not in s["by"] or lie not in s["facing"]:
+            lands = next((x for x in ("face-down", "face-up", "on her side") if x in s["facing"]), None) \
+                if stand else None
+            if plan not in s["by"] or (lie not in s["facing"] and not lands):
                 continue
             if s.get("has") == "tails" and not any(re.search(r"\btails?\b", n.lower()) for n in a.parts):
                 continue
@@ -4919,6 +4924,8 @@ class Engine:
                 out[name] = {"look": s["look"][plan].replace("{prop}", prop), "contacts": contacts,
                              "free": s["free"][plan], "strain": s["strain"].replace("{prop}", prop),
                              "used": self.sub_uses(name)}
+                if lands:
+                    out[name]["lands"] = lands    # (she is on her feet: taken down into it, landing so)
         return out
 
     # what a grip's words need her body to have ("her twin tails" needs tails): (words, part names that show she has it)
@@ -4961,10 +4968,10 @@ class Engine:
         if enforce:
             if not cfg.get("enabled", True):
                 raise ValueError("submission holds are off (rules.json submissions.enabled)")
-            if d.name not in self.downed:
+            if d.name not in self.downed and not (self.standing_sub_on() and not self.has(d, "airborne")):
                 raise ValueError(f"{d.name} is on her feet: a submission hold needs her on the ground first (on her "
                                  f"feet, a hold_start is the way to grab and wrench)")
-            if self.pinned_by(d.name) or (a.name in self.downed and not self.ground_lock_ok(a.name)) \
+            if self.pinned_by(d.name) or (a.name in self.downed and not self.ground_lock_ok(a.name, d.name)) \
                     or self.pinned_by(a.name) or self.pinning(a.name):
                 raise ValueError(f"{a.name} isn't free to lock a hold on {d.name} right now")
             if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
@@ -4972,6 +4979,10 @@ class Engine:
             slip = self._small_joint_slip(a, d, key, [grips[0][0]], flavor or key)
             if slip:
                 return slip
+        takedown = None
+        if d.name not in self.downed and enforce:
+            takedown = self._sub_takedown(a, d, "face-down" if re.search(r"\bfrom behind\b|\bback\b", str(flavor or ""),
+                                                                         re.I) else "face-up")
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
         contacts = [(p, main if i == 0 else second, ramp if i == 0 else ramp2, short_phrase(w, 9) if w else "")
@@ -4983,8 +4994,10 @@ class Engine:
         self.__dict__.setdefault("sub_window", {})[d.name] = False
         self._count("submission", d.name)
         self._count(f"subname:{key}", a.name)
+        if takedown:
+            res["takedown"], res["taken_down"] = takedown, True
         res["submission"] = {"name": key, "look": flavor or key, "free": "", "invented": True,
-                             "from_ground": a.name in self.downed,
+                             "from_ground": a.name in self.downed, "takedown": (takedown or {}).get("how"),
                              "strain": f"the {', '.join(p.lower() for p, _ in grips)} wrenched where it is held",
                              "max_beats": int(cfg.get("max_beats", 3))}
         return res
@@ -5006,9 +5019,13 @@ class Engine:
         """The chance of an opening to lock a submission on her this beat: only while she is down and not pinned or
         held, and very rare (submissions.chance; x weak_mult once she is under half strength)."""
         cfg = self.rules.get("submissions") or {}
-        if not cfg.get("enabled", True) or f.name not in self.downed or self.pinned_by(f.name) \
+        if not cfg.get("enabled", True) or self.pinned_by(f.name) \
                 or any(h.defender == f.name for h in self.holds.values()):
             return 0.0
+        if f.name not in self.downed:
+            if not self.standing_sub_on() or self.has(f, "airborne"):
+                return 0.0
+            return self.standing_sub_chance(f)
         cap = int(cfg.get("max_per_fight", 0) or 0)      # 0 = no cap: how often is the chance's job
         if cap and sum(self.times("submission", x.name) for x in self.fighters.values()) >= cap:
             return 0.0
@@ -5016,6 +5033,28 @@ class Engine:
         if self.strength(f) < 50:
             ch *= float(cfg.get("weak_mult", 1.5))
         return ch
+
+    def standing_sub_on(self):
+        """submissions.match.standing (since build 244): in a submission match an opening for a submission can come
+        while she is on her feet too; the holder takes her down into it."""
+        m = (self.rules.get("submissions") or {}).get("match") or {}
+        return self.submission_match() and bool(m.get("enabled", True)) and bool(m.get("standing", True))
+
+    def standing_sub_chance(self, f):
+        """The chance of an opening on her feet (submissions.match): standing_base, + per_100_worn for every 100%
+        damage on her worst-hurt part that can still make her tap (up to 3 of those), never above standing_max."""
+        m = (self.rules.get("submissions") or {}).get("match") or {}
+        spent = set(self.spent_tap_parts(f)) if self._taps_rule() else set()
+        worn = max((p.damage for p in f.parts.values() if p.name not in spent), default=0.0)
+        ch = float(m.get("standing_base", 0.04)) + float(m.get("per_100_worn", 0.04)) * min(3.0, worn / 100.0)
+        return max(0.0, min(float(m.get("standing_max", 0.2)), ch))
+
+    def _sub_takedown(self, a, d, lands):
+        """A submission locked on a fighter on her feet: she is taken down into it first, landing `lands`."""
+        how = self.vary("takedown")
+        self.knock_down(d.name, facing=lands, why=f"{a.name} took {d.name} down into a hold")
+        self._fresh_down.add(d.name)
+        return {"how": how, "told": False, "hard": False, "hits": [], "into_sub": True}
 
     def roll_sub_windows(self, open_all=False):
         self.sub_window = {}
@@ -5027,13 +5066,15 @@ class Engine:
                                                                          "OPEN", "none")
         return self.sub_window
 
-    def ground_lock_ok(self, name):
+    def ground_lock_ok(self, name, on=None):
         """submissions.from_ground: True when fighter `name` is down herself and may still lock a submission on
         someone who is down too (she rolls into it, crawls onto her, hooks her from where she lies). Off, or outside
         a submission match while match_only is on, a fighter on the ground has to get up first."""
         fg = (self.rules.get("submissions") or {}).get("from_ground") or {}
         if not fg.get("enabled", True) or (fg.get("match_only", True) and not self.submission_match()):
             return False
+        if on is not None and self.get(on).name not in self.downed:
+            return False     # (from the ground she can't take down someone still on her feet)
         return name in self.downed
 
     def sub_stuck(self, d, hs):
@@ -5139,11 +5180,11 @@ class Engine:
         if enforce:
             if not cfg.get("enabled", True):
                 raise ValueError("submission holds are off (rules.json submissions.enabled)")
-            if d.name not in self.downed:
+            if d.name not in self.downed and not (self.standing_sub_on() and not self.has(d, "airborne")):
                 raise ValueError(f"{d.name} is on her feet: a submission hold needs her on the ground first")
             if self.pinned_by(d.name):
                 raise ValueError(f"{d.name} is pinned: finish the pin or release it before a submission hold")
-            if (a.name in self.downed and not self.ground_lock_ok(a.name)) or self.pinned_by(a.name) \
+            if (a.name in self.downed and not self.ground_lock_ok(a.name, d.name)) or self.pinned_by(a.name) \
                     or self.pinning(a.name):
                 raise ValueError(f"{a.name} isn't free to lock a hold on anyone right now")
             if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
@@ -5158,6 +5199,9 @@ class Engine:
             slip = self._small_joint_slip(a, d, key, [p for p, role, _w in s["contacts"] if role == "main"], s["look"])
             if slip:
                 return slip
+        takedown = None
+        if d.name not in self.downed and s.get("lands"):
+            takedown = self._sub_takedown(a, d, s["lands"])
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
         contacts = [(p, main if role == "main" else second, ramp if role == "main" else ramp2, w)
@@ -5171,6 +5215,9 @@ class Engine:
         self._count(f"subname:{key}", a.name)
         res["submission"] = {"name": key, "look": s["look"], "free": s["free"], "strain": s["strain"],
                              "max_beats": int(cfg.get("max_beats", 3)), "from_ground": a.name in self.downed}
+        if takedown:
+            res["takedown"], res["taken_down"] = takedown, True
+            res["submission"]["takedown"] = takedown["how"]
         return res
 
     def _submission_tick(self):
@@ -9253,6 +9300,23 @@ class Engine:
                                "how": self.rng.choice(("a breath too deep", "turning to keep her eyes on the other",
                                                        "shifting her weight", "her own heartbeat", "a flinch at nothing"))})
         return events
+
+    def zero_part_ramp(self, f):
+        """below_zero.part_ramp (since build 244): with her health below zero, the damage her PARTS take from each
+        blow or grip is multiplied, more the deeper she goes: 1 + per_10 for every 10% of her full health below zero,
+        never above max. Her health loss is untouched. `only` says where: "taps" (a submission match needing more
+        than one tap: worn-down parts give way faster, so the next tap comes sooner), "submission" (any submission
+        match), "all" (every fight)."""
+        pr = (self.rules.get("below_zero") or {}).get("part_ramp") or {}
+        if not pr.get("enabled", True) or f is None or f.health >= 0:
+            return 1.0
+        only = str(pr.get("only", "taps")).lower()
+        if only == "taps" and not (self.submission_match() and self.taps_needed() > 1):
+            return 1.0
+        if only == "submission" and not self.submission_match():
+            return 1.0
+        below = -f.health / max(1.0, f.max_health) * 100
+        return min(float(pr.get("max", 3.0)), 1.0 + float(pr.get("per_10", 0.08)) * below / 10.0)
 
     def zero_stage(self, f):
         """below_zero (since build 242): the stage her health has fallen to below zero (health as a share of her

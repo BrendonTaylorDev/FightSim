@@ -654,6 +654,48 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 244
+
+Submission matches move faster. Each change is switchable.
+
+### More submission starts (`submissions.match`, only in submission matches)
+
+Before, an opening for a submission came only while she was down. Now one can come while she is **on her feet**: the
+holder takes her down into it (a tackle, a sweep, a drag to the ground), and the hold locks where she lands.
+
+- **The chance each beat:** `standing_base` (4%), plus `per_100_worn` (4%) for every 100% damage on her worst-hurt part.
+  Only parts that can still make her tap count, and at most 300% of it. Never above `standing_max` (20%). That is
+  about 4% fresh, 8% with a part at 100%, and 16% with one at 300%.
+- **Openings while she is down** are unchanged.
+- **Who can take one:** a fighter who is down herself can't take down someone still on her feet.
+- **How it's told:** the narrator is told she was on her feet and is taken down into the hold. The screen says "taken
+  down into the hold". The director is told she is open and can be taken down into it, and in a submission match the
+  opening is no longer called "very rare".
+
+### Her parts give way faster deep below zero (`below_zero.part_ramp`)
+
+Below zero health, the damage each blow or grip does to her body parts is multiplied. It is ×1 + `per_10` (0.08) for
+every 10% below zero: ×1.4 at -50%, ×1.8 at -100%, ×2.6 at -200%, never above `max` (×3).
+
+- **Health is untouched.** Her parts just wear out sooner, so the pain builds and the next tap comes sooner.
+- **`only`:** `taps` (the default) applies it only in a submission match needing more than one tap. `submission`
+  applies it in every submission match, and `all` in every fight.
+- **On screen,** the damage row says "the part counts +N: ×1.80 below zero".
+
+### Smaller fixes
+
+- The director is no longer offered a submission by a fighter who must still wait before grabbing her again (she has
+  just torn free).
+- `/simulate` now has the one who can take a submission opening act on it most of the time, as the director is told
+  to. Before, its no-model fights ran slower than real ones would.
+
+### Effect (30 no-model fights, Nocturne vs Ripples)
+
+| | Before build 243 | Build 243 | Build 244 |
+|---|---|---|---|
+| Single-tap match, average beats | 70 | 65 | 42 (longest 72) |
+| Three-tap match, average beats | 164 (one never ended) | 112 | 76 (longest 134) |
+
 ## Build 243
 
 Fighters no longer spend much of a fight on the ground, and several-tap submission matches finish. All of it is

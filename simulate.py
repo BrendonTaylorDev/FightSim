@@ -43,7 +43,8 @@ def _pick_action(eng, rng, f, d):
     flying = eng.has(f, "airborne")
     # a submission opening (rarer than a pin, so offered first): usually taken, and now and then something free is used on her as well
     if (getattr(eng, "sub_window", None) or {}).get(d.name) and not flying \
-            and (f.name not in eng.downed or eng.ground_lock_ok(f.name)) \
+            and (f.name not in eng.downed or eng.ground_lock_ok(f.name, d.name)) \
+            and not eng.regrab_wait(f, d) \
             and rng.random() < 0.7:
         shapes = eng.submission_shapes(f.name, d.name)
         if shapes:
@@ -119,7 +120,8 @@ def _pick_action(eng, rng, f, d):
 
 
 CHAIN_CHANCE = 0.12      # a strike now and then strings one or two more links on (director chains)
-GRAPPLE_CHANCE = 0.04    # now and then a grab first, and the strike becomes a pummel at point-blank
+GRAPPLE_CHANCE = 0.04
+SUB_TAKE = 0.7           # a submission opening: how often the one who can take it is the one who acts    # now and then a grab first, and the strike becomes a pummel at point-blank
 
 
 def _chain_links(eng, rng, f, d, first):
@@ -160,6 +162,12 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         movers = [f for f in active if not any(eng.has(f, st) for st in ("asleep", "frozen", "flinched"))] or active
         pool = [f for f in movers if f.name != last] if last and rng.random() < 0.65 else movers
         f = rng.choice(pool or movers)
+        # as the director is told to: an opening for a submission is usually taken by the one free to take it
+        takers = [x for x in movers if not eng.has(x, "airborne") and any(
+            (getattr(eng, "sub_window", None) or {}).get(o.name) and (x.name not in eng.downed or eng.ground_lock_ok(x.name, o.name))
+            for o in active if o is not x and (not o.team or o.team != x.team))]
+        if takers and f not in takers and rng.random() < SUB_TAKE:
+            f = rng.choice(takers)
         foes = [x for x in active if x is not f and (not x.team or x.team != f.team)]
         if not foes:
             break

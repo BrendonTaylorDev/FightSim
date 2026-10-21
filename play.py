@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 243-guided (fighters not down most of the fight: a collapse on her own can't come for 5 beats after she rises and each is rarer, and a director's knockdown may leave her staggering but standing: health.collapse, down.keep_feet; in a submission match a fighter on the ground can lock a hold on one who is down too: submissions.from_ground; the ruined jar and greying out told at most every 3 beats)"
+VERSION = "2026-10-21 build 244-guided (submission matches: openings while she is on her feet too, more once a part is worn, the holder taking her down into the hold: submissions.match; in a several-tap match her parts give way faster the deeper below zero she is: below_zero.part_ramp; the director is no longer offered a hold she can't take yet; /simulate takes openings as the director does)"
 
 HELP = """
 =============================================================================================
