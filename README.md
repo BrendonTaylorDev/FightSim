@@ -654,6 +654,20 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 241
+
+Two rules for matches that need several tap-outs.
+
+- **Let go, and a beat to get up** (`finish.submission.taps.respite`). A tap that isn't the last already ended every
+  grip the holder had on her. Now the holder also steps back: for `respite.beats` (1) nobody strikes or grips the one
+  who tapped (whatever the director had them do to her becomes a step back), so she gets at least one clear try at
+  getting up before the next hold. She also rolls to rise the beat she taps, once the grip is off. Your own commands
+  still go through. `respite.enabled false` = the fight goes straight on.
+- **Different parts, enforced to the end.** A grip on a used-up part already couldn't make her tap. But a hold on a
+  used-up part AND a fresh one still counted the used-up part's pain, and the tap was then credited to the fresh
+  part. Now a used-up part adds nothing (no pain, no pressure, no choke) toward the next tap: only the parts that
+  still count can carry it.
+
 ## Build 240
 
 The two changes picked after the build-238 three-tap match.

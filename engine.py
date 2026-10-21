@@ -8565,6 +8565,11 @@ class Engine:
             if not d or d.eliminated or self.pinned_by(dn) or max(h.turns_active for h in hs) < 2:
                 continue
             beats = max(h.turns_active for h in hs)
+            # finish.submission.taps: a gripped part her taps have used up adds nothing toward the next tap: the
+            # pain, the pressure and the choke all come from the parts that still count (a ruined thigh already
+            # spent can't carry a tap that is then credited to a fresh grip beside it)
+            spent_now = set(self.spent_tap_parts(d)) if self._taps_rule() else set()
+            hs = [h for h in hs if h.part not in spent_now] or hs
             # THE PAIN SHE MUST RESIST: how hurt the gripped part is (the worst one, and a share of the others), and
             # worse every beat the hold stays on and cranks. HER RESISTANCE: her will, which her overall strength
             # carries: fresh, she can bear a great deal; worn down, much less. She holds on while she can.
@@ -8654,6 +8659,11 @@ class Engine:
                     d.learned.pop("tap_target", None)
                     if d.learned.get("tap_next"):
                         d.learned["tap_target"] = d.learned.pop("tap_next")   # (the part already softened)
+                    rsp = taps_.get("respite") or {}
+                    if rsp.get("enabled", True) and int(rsp.get("beats", 1)) > 0:
+                        # taps.respite: the holder lets go and steps back; next beat nobody strikes or grips her, so
+                        # she gets a clear try at getting up before the next hold
+                        d.learned["tap_respite"] = [a, self.turn + int(rsp.get("beats", 1))]
                     ev = {"type": "tap_count", "how": how, "attacker": a, "defender": dn, "submission": name,
                           "parts": parts, "with": with_, "part": tap_part, "tap_no": len(given), "needed": need,
                           "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
@@ -8702,6 +8712,18 @@ class Engine:
             return 1
         pct = max(0.0, min(100.0, float(t.get("different_parts", 0))))
         return max(1, min(self.taps_needed(), math.ceil(pct / 100.0 * self.taps_needed() - 1e-9)))
+
+    def tap_respite(self, who):
+        """finish.submission.taps.respite: the fighter who just gave a tap that wasn't the last is left alone this
+        beat (no blow, no grip on her) so she can get up: the name of the one who let her go, or None."""
+        f = self.get(who) if isinstance(who, str) else who
+        r = (f.learned.get("tap_respite") if f else None) or None
+        if not r or self.winner():
+            return None
+        if self.turn >= int(r[1]):
+            f.learned.pop("tap_respite", None)
+            return None
+        return r[0]
 
     def taps_given(self, who):
         f = self.get(who) if isinstance(who, str) else who

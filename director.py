@@ -1774,6 +1774,23 @@ def resolve_many(engine, actions):
             continue
         merged.append(b)
     actions = merged
+    # finish.submission.taps.respite: after a tap that wasn't the last, nobody strikes or grips her this beat:
+    # whatever the director had the others do to her becomes a step back while she gets up
+    resp = []
+    for b in actions:
+        dn = str(b.get("defender") or "").split(",")[0].strip()
+        try:
+            held_off = (not b.get("_manual") and dn and b.get("action") in
+                        ("strike", "combo", "hold_start", "submission", "grapple", "pin", "quickpin", "throw", "slam",
+                         "drag") and engine.get(dn).name != engine.get(b.get("attacker")).name
+                        and engine.tap_respite(dn))
+        except ValueError:
+            held_off = False
+        if held_off:
+            b = {"action": "breather", "attacker": b.get("attacker"),
+                 "flavor": f"steps back and lets {engine.get(dn).name} get up after the tap", "_respite": True}
+        resp.append(b)
+    actions = resp
     # someone's landing written as an attack ("hard landing"): it comes from the throw, not from a blow
     landings = [b for b in actions if not b.get("_manual") and b.get("action") in ("strike", "combo")
                 and (LANDING_NAME.match(str(b.get("move") or "")) or (str(b.get("move") or "").lower() == "improvised"

@@ -508,6 +508,35 @@ def _taps_check(director, P):
     h = e.holds[st["hold_id"]]
     if h.power > 6 + 0.5 * 6 + 1e-6 or "twin tails" not in h.with_part:
         problems.append(f"a kept grip with a second limb should press 6 + half of 6 once: {h.power} ({h.with_part})")
+    # build 240: a used-up part in the grip adds no pain toward the next tap; after a tap that isn't the last she
+    # is let go and left alone a beat (taps.respite)
+    e.holds.clear()
+    d.health = d.max_health * 0.3
+    d.learned.update(taps_given=["Left Thigh"], tap_limit="x")
+    e.rules["finish"]["submission"]["taps"].update(needed=3, different_parts=100)
+    for p_ in d.parts.values():
+        p_.damage = 0.0
+    d.parts["Left Thigh"].damage = 600.0
+    for part_, w_ in (("Left Thigh", "her jaws"), ("Left Knee", "her twin tails")):
+        st = e.start_hold("Nerine", "Ripples", part_, 8, with_part=w_)
+        e.holds[st["hold_id"]].turns_active = 5
+    evs = e._tap_out_tick()
+    if any(ev["type"] in ("tap_count", "tap_out") for ev in evs) or any(
+            ev["type"] == "tap_resist" and ev["pain"] > 300 for ev in evs):
+        problems.append(f"the used-up left thigh still carried the pain toward a tap: {[ev for ev in evs if 'pain' in ev]}")
+    e.holds.clear()
+    d.learned.update(taps_given=[], tap_respite=["Nerine", e.turn + 1])
+    try:
+        res, _ = director.resolve_many(e, [{"action": "hold_start", "attacker": "Nerine", "defender": "Ripples",
+                                            "hits": [{"part": "Left Knee", "severity": "firm"}], "flavor": "grabs her knee"}])
+        if any(r.get("type") == "hold_start" for r in (res if isinstance(res, list) else [res])) or e.holds:
+            problems.append("during the respite after a tap the holder put a new grip on her")
+    except ValueError as x:
+        problems.append(f"the respite step back was refused: {x}")
+    e.holds.clear()
+    d.learned.pop("tap_respite", None)
+    d.parts["Left Thigh"].damage = 0.0
+    d.health = d.max_health
     n.scene_cfg = {"kind": "lakeside forest", "name": "The lakeside clearing"}
     out = n._program_cuts(["*I can't give up now* She steeled herself. Her left thigh was RUINED and raw. "
                            "The saltwater stung her nose. *Let her feel it*"])[0]
