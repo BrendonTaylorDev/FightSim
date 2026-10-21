@@ -922,6 +922,72 @@ def log_fixes_252_check():
     return problems
 
 
+def log_fixes_253_check():
+    """Build 253: the rest of the build-251 Ripples vs Nerine log. No 'shoves her back' break with either one lying
+    down; a head snaps back only from a blow or grip on her head (else it jerks); one rise told once; nobody favours a
+    part nothing has hurt; whose water she is wet with; 'she thinks to herself' marked as a thought; no stepping tells
+    for one holding a fighter on the ground."""
+    import copy
+    problems = []
+    s = H.session(5, fighters="Ripples,Nerine")
+    e, n = s.eng, s.narrator
+    e.rules = copy.deepcopy(e.rules)
+    ways = set()
+    for k in range(40):
+        e.holds.clear()
+        e.start_hold("Nerine", "Ripples", "Left Foot", 10)
+        for h in e.holds.values():
+            h.turns_active = 3
+        e.downed = {"Nerine": 2}
+        e.lucky = {"Ripples"}
+        for ev in e._hold_break_tick():
+            if ev.get("broke_free"):
+                ways.add(ev.get("manner"))
+    e.lucky = set()
+    e.downed = {}
+    if not ways or "shove" in ways:
+        problems.append(f"break ways with the holder down: {ways}")
+    n.rules = copy.deepcopy(n.rules)
+    n.strengths = {"Ripples": 60, "Nerine": 40}
+    n.damage_by = {"Ripples": {"left knee": 30}, "Nerine": {"right thigh": 130, "right hip": 60}}
+    n._parts_now = {"Nerine": {"right thigh"}}
+    n.grips = []
+    n._rose_now = {"Nerine"}
+    n._wet_from = {"Ripples": "Water Gun"}
+    n._move_names = set(getattr(n, "_move_names", None) or ()) | {"Aqua Jet", "Water Gun"}
+    t = ("Nerine's body bucked once. Her head snapped back, the force of it jolting through her skull.\n"
+         "Nerine pushed herself up onto her feet, unsteady. She favored her right thigh.\n"
+         "She pushed herself up, her thigh screaming. With a final heave, she lurched upright.\n"
+         "Ripples favored her right thigh as she circled. The water from the aqua jet still dripped from Ripples' fur.")
+    got = n._mend_body_slips(t)
+    want = ("Nerine's body bucked once. Her head jerked back.\nNerine pushed herself up onto her feet, unsteady. She "
+            "favored her right thigh.\nThe water from the water gun still dripped from Ripples' fur.")
+    if got != want:
+        problems.append(f"body slips: {got!r}")
+    n._parts_now = {"Nerine": {"neck"}}
+    if "snapped back" not in n._mend_body_slips("Nerine's head snapped back with the twist."):
+        problems.append("a head twisted by the neck should still snap back")
+    n.damage_by = {"Ripples": {}, "Nerine": {}}
+    if "favoring" in n._mend_body_slips("She watched. She's favoring something, maybe her leg. Then she moved."):
+        problems.append("favouring before anyone is hurt")
+    th = n._mend_copied("Nerine, she thinks to herself, You can't give up now. Ripples' headlock is tight. She gritted "
+                        "her teeth.")
+    if th != "*You can't give up now. Ripples' headlock is tight.* She gritted her teeth.":
+        problems.append(f"thinks to herself: {th!r}")
+    # no stepping tells for Nerine, holding Ripples on the ground
+    s.sync_narrator()
+    n.strengths = {"Ripples": 40, "Nerine": 60}
+    n.facing = {"Ripples": "face-down"}
+    n.grips = [("Nerine", "Ripples", "Left Knee", "her jaws")]
+    n.damage_by = {"Ripples": {"left knee": 80}, "Nerine": {"right thigh": 140}}
+    if not n._not_stepping("Nerine") or not n._not_stepping("Ripples"):
+        problems.append("stepping tells allowed for one holding a fighter down")
+    n.grips = []
+    if n._not_stepping("Nerine"):
+        problems.append("stepping tells taken from one on her feet and holding nobody")
+    return problems
+
+
 def low_health_check():
     """Build 246: at the very end of her strength she shows it alone, squirms when down, her body gives her away (a
     limb that doesn't answer blocks its moves a beat), makes one last stand (then wide open), and the other reads her."""
@@ -1125,6 +1191,13 @@ def main(argv):
         probs = log_fixes_252_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 252 log fixes: steered blows, plain-body type, mends, whose grip, export gauges  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "log fixes 253 body slips" for w in want):
+        t = time.time()
+        probs = log_fixes_253_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 253 log fixes: break ways, head snaps, one rise, favouring, wet with, thoughts  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "narration mends padding" for w in want):

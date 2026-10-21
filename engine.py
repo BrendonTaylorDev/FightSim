@@ -7956,7 +7956,10 @@ class Engine:
                                "hold_ids": [h.id for h in hs], "parts": [h.part for h in hs],
                                "with": [h.with_part for h in hs if h.with_part],
                                "beats_held": max(h.turns_active for h in hs), "chance": ch,
-                               "manner": self.vary("hold_break"), "reason": f"{d} wrenched free"})
+                               "manner": self.vary("hold_break", skip=(
+                                   ("shove",) if cfg.get("shove_needs_standing", True)
+                                   and (a in self.downed or d in self.downed) else ())),
+                               "reason": f"{d} wrenched free"})
             elif r < ch * (1.0 + float(cfg.get("loosen_band", 0.6))):
                 # a near miss: she doesn't get out, but she works it looser. It presses less from the next beat on.
                 mult = float(cfg.get("loosen_mult", 0.75))

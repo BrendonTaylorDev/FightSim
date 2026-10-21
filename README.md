@@ -654,6 +654,33 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 253
+
+The rest of the build-251 Ripples vs Nerine log.
+
+### The engine
+
+- **No "shoves her back" break with someone lying down** (`holds.break.shove_needs_standing`). Ripples broke Nerine's
+  tail bind by "shoving her back half a step" while Nerine lay face-down. That way of breaking free is now picked only
+  when both of them are on their feet.
+
+### The narration
+
+- **A head snaps back only from a blow or grip on the head** (`narration.body_slips.head_snap`). When nothing reached
+  her head, face or neck this beat, "her head snapped back" becomes "her head jerked back" (pain can toss a head; only
+  an impact snaps it), and a "the force of it jolting through her skull" clause after it goes.
+- **One rise, told once** (`narration.body_slips.one_rise`). Nerine got up once in beat 8, and the story told it twice
+  in the same part ("pushed herself up onto her feet", then "with a final heave, she lurched upright"). The second
+  telling goes.
+- **Nobody favours a part nothing has hurt** (`narration.body_slips.favor`). "She's favoring something, maybe her leg"
+  in beat 1, before any blow, and a fighter favouring the other's wounded thigh, are cut.
+- **Whose water she is wet with** (`narration.body_slips.wet_source`). "The water from the aqua jet still dripped
+  from Ripples' fur" after Nerine's Water Gun soaked her: the move named is now the one that really soaked her last.
+- **"Nerine, she thinks to herself, You can't give up now."** becomes the marked thought it is, with the present-tense
+  lines that carry it on. "she thinks" after a thought becomes "she thought".
+- **No stepping tells for a fighter crouched over another on the ground** (`narration.stand_signs.holder_down`).
+  Nerine, holding Ripples' knee in her jaws, was seen with "an uneven step" and "her weight off the hurt leg".
+
 ## Build 252
 
 From your build-251 submission match (Ripples vs Nerine, the lakeside clearing, 10 beats).

@@ -4247,6 +4247,17 @@ class Narrator:
             for x in self._all_dicts(bundle))
         self._getup_failed = {e["fighter"] for e in bundle.get("also_this_beat", []) or []
                               if e.get("type") == "get_up" and not e.get("stands")}
+        self._rose_now = {e["fighter"] for e in bundle.get("also_this_beat", []) or []
+                          if e.get("type") == "get_up" and e.get("stands") and e.get("fighter")}
+        # whose water each fighter is wet with: the last Water move that hit her (or that she charged inside)
+        wet = self.__dict__.setdefault("_wet_from", {})
+        for a in bundle.get("actions") or [bundle.get("action")]:
+            m_ = (a or {}).get("move") or {} if isinstance(a, dict) else {}
+            if m_.get("type") == "Water" and m_.get("name") and not m_.get("improvised"):
+                if a.get("hits") and a.get("defender"):
+                    wet[a["defender"]] = m_["name"]
+                if a.get("charge") and a.get("attacker"):
+                    wet[a["attacker"]] = m_["name"]
         # a plain grip that comes off this beat (knocked loose by a fall, torn free, let go): the story has to show it
         self._must_release = list(dict.fromkeys(
             (x["attacker"], x["defender"], (x.get("parts") or [x.get("part") or ""])[0])
@@ -6831,6 +6842,7 @@ class Narrator:
         self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
         self._getup_who = self._getup_event = None
         self._getup_failed = set()
+        self._rose_now = set()
         self._must_manhandle = None
         self._must_rise, self._rolled_up, self._loosened, self._must_event = None, set(), set(), None
         self._tapped = set()
@@ -6887,6 +6899,7 @@ class Narrator:
         self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
         self._getup_who = self._getup_event = None
         self._getup_failed = set()
+        self._rose_now = set()
         self._must_manhandle = None
         self._must_rise, self._rolled_up, self._loosened, self._must_event = None, set(), set(), None
         self._tapped = set()
@@ -13867,6 +13880,97 @@ class Narrator:
             out.append(" ".join(sents) if para.strip() else para)
         return "\n".join(out)
 
+    HEAD_PARTS = re.compile(r"head|face|jaw|cheek|ear|eye|muzzle|nose|neck|throat|chin|mouth|snout|forehead|skull|"
+                            r"crest|horn|beak", re.I)
+    HEAD_SNAP = re.compile(r"\b(head|chin|muzzle)( (?:had )?)(snapped|snaps|snapping|whipped|whips|whipping|rocked)"
+                           r"(?= (?:back|sideways|round|around|to the side|up)\b)", re.I)
+    SNAP_FORCE = re.compile(r",?\s*(?:with )?the (?:force|impact|weight) of (?:it|the blow|the hit|the strike)[^.!?…]*|"
+                            r",?\s*(?:jolting|ringing) through her (?:skull|jaw)[^.!?…]*", re.I)
+    RISE_DONE = re.compile(r"\b(?:to|onto|on) (?:her|all four) feet\b|\blurched upright\b|\b(?:stood|was|got) "
+                           r"upright\b|\bon her feet at last\b|\b(?:found|regained) her feet\b|\bstood up\b", re.I)
+    RISE_TRY = re.compile(r"\b(?:pushed|hauled|heaved|dragged|forced|levered|struggled|scrambled|fought|staggered|"
+                          r"lurched)\b[^.!?…]{0,30}?\b(?:herself )?(?:up|upright|to stand|to rise|to her feet)\b", re.I)
+    FAVOR = re.compile(r"\bfavou?r(?:ed|ing|s)?\b(?:\s+(?:her|the|its|that|one)\s+((?:left |right )?[a-z]+))?", re.I)
+    LEG_WORDS = {"leg": "thigh|knee|hip|foot|leg|hock|shin|ankle|calf", "side": ".", "arm":
+                 "shoulder|arm|forearm|paw|elbow|wrist|fin|hand", "paw": "paw|foot|hand", "limb": "."}
+
+    def _mend_body_slips(self, text):
+        """Body slips mended with no call (narration.body_slips): a head SNAPPING back from a blow that reached no
+        part of her head or neck becomes a jerk (pain can toss a head; only an impact snaps it), and its "force of it"
+        clause goes; a fighter getting up told a second time in the same part, when she rose once; a fighter
+        "favouring" a part nothing has hurt, or anything at all before she has been hurt anywhere."""
+        cfg = (self.rules.get("narration") or {}).get("body_slips") or {}
+        if not cfg.get("enabled", True) or not self.strengths:
+            return text
+        hit = getattr(self, "_parts_now", None) or {}
+        heads = {w for w, ps in hit.items() if any(self.HEAD_PARTS.search(p) for p in ps)}
+        # (a grip on her head or neck moves it too)
+        heads |= {g[1] for g in (getattr(self, "grips", None) or []) if len(g) > 2 and self.HEAD_PARTS.search(str(g[2]))}
+        rose = set(getattr(self, "_rose_now", None) or ())
+        dmg = self.damage_by or {}
+        fix, risen = {}, {}
+        for sent, whos, named in self._said(text):
+            if cfg.get("head_snap", True) and hit and self.HEAD_SNAP.search(sent):
+                owners = set(whos or ())
+                if (owners and not owners & heads) or (not owners and not heads):
+                    def jerk(m):
+                        v = m.group(3).lower()
+                        w = ("jerked" if v.endswith("ed") else "jerking" if v.endswith("ing") else "jerks")
+                        return m.group(1) + m.group(2) + (w.capitalize() if m.group(3)[0].isupper() else w)
+                    new = self.SNAP_FORCE.sub("", self.HEAD_SNAP.sub(jerk, sent))
+                    if not re.search(r"[.!?…][\"”’']?$", new.rstrip()):
+                        new = new.rstrip(" ,") + "."
+                    fix[sent] = new
+            if cfg.get("one_rise", True) and rose and (self.RISE_DONE.search(sent) or self.RISE_TRY.search(sent)):
+                who = (whos or [None])[0]
+                if who in rose:
+                    if risen.get(who):
+                        fix[sent] = ""          # (she is already up: this is the same rise told again)
+                    elif self.RISE_DONE.search(sent):
+                        risen[who] = True
+            if cfg.get("wet_source", True) and len(whos or ()) == 1 and (self.__dict__.get("_wet_from") or {}).get(whos[0]):
+                real = self._wet_from[whos[0]]
+                for m in re.finditer(r"\b(?:water|wet|spray|droplets?|damp\w*|soak\w*)\b[^.!?…]{0,25}?\bfrom (?:the|her|"
+                                     r"that|[A-Z][a-z]+(?:'s|’s|'|’)) ([A-Za-z]+(?: [A-Za-z]+)?)", sent):
+                    known = {x.lower() for x in (getattr(self, "_move_names", None) or ())}
+                    said = next((w for w in (m.group(1), m.group(1).split()[0]) if w.lower() in known), "")
+                    if said and said.lower() != real.lower():
+                        say = real if said[0].isupper() else real.lower()
+                        fix[sent] = fix.get(sent, sent).replace(said, say, 1)
+                        break
+            if cfg.get("favor", True):
+                for m in self.FAVOR.finditer(sent):
+                    if re.search(r"\bfavou?r(?:ed|ing|s)?\s+(?:with|over|of|to|her opponent|the odds)\b", sent[m.start():],
+                                 re.I) or re.search(r"\b(?:luck|fortune|odds|fate|wind|ground|terrain|crowd|chance)\b",
+                                                     sent[max(0, m.start() - 25):m.start()], re.I):
+                        continue
+                    who = next((w for w in reversed(re.findall(r"\b([A-Z][a-z]+)\b", sent[:m.start()]))
+                                if w in self.strengths), None) or (whos[0] if len(whos or ()) == 1 else None)
+                    part = (m.group(1) or "").lower()
+                    word = re.sub(r"^(?:left|right) ", "", part)
+                    rx = self.LEG_WORDS.get(word) or (re.escape(word) if word and word not in ("something", "it", "one", "side")
+                                                     and any(word in q for ps in dmg.values() for q in ps) else ".")
+                    side = re.match(r"(left|right) ", part)
+
+                    def hurt(f):
+                        return any(float(v or 0) >= 5 and re.search(rx, q) and (not side or q.startswith(side.group(1)))
+                                   for q, v in (dmg.get(f) or {}).items())
+                    if not any(hurt(f) for f in self.strengths) or (who and not hurt(who)):
+                        fix[sent] = ""          # (nothing of hers there is hurt: she has nothing to favour)
+                        break
+        if not fix:
+            return text
+        out = []
+        for para in text.split("\n"):
+            if not para.strip():
+                out.append(para)
+                continue
+            kept = [fix.get(x, x) for x in _SENT.split(para.strip())]
+            kept = [x for x in kept if x.strip()]
+            if kept:
+                out.append(" ".join(kept))
+        return "\n".join(out)
+
     # a sentence of the notes' wording copied as prose, or the model saying what it just did
     COPIED_NOTE = re.compile(r"\bthe one (?:gripping, pressing|held, hurting in it)\b|^(?:That|This|Here) (?:is|was) the "
                              r"(?:paragraph|passage|part|scene|text|rewrite)\b|\b(?:paragraph|passage) (?:rewritten|"
@@ -13889,7 +13993,24 @@ class Narrator:
                       text)
         text = re.sub(r"\bgrinded\b", "ground", text)
         text = re.sub(r"\bfelt the ((?:\w+ ){0,2})(smell|scent) of\b", r"caught the \1\2 of", text)
-        return text
+        # a thought led in as present-tense narration ("Nerine, she thinks to herself, You can't give up now.
+        # Ripples' headlock is tight..."): marked as the thought it is, with the present-tense lines that carry it on
+        paras = []
+        for para in text.split("\n"):
+            m = re.search(r"(?:\b[A-Z][a-z]+, )?\b(?:[Ss]he|[A-Z][a-z]+) (?:thinks|thought) to herself,?\s+\*?"
+                          r"([A-Z][^.!?…*]*[.!?…])\*?", para)
+            if m:
+                rest = _SENT.split(para[m.end():].strip()) if para[m.end():].strip() else []
+                more = []
+                while rest and re.search(r"\b(?:is|are|isn't|aren't|has|have|can|can't|won't|will|I|I'm|me|my)\b|"
+                                         r"\w(?:'s|’s) (?!\w+ed\b)", rest[0]) \
+                        and not re.search(r"\b(?:was|were|had|did|felt|saw)\b|\*", rest[0]):
+                    more.append(rest.pop(0))
+                para = (para[:m.start()] + "*" + " ".join([m.group(1)] + more) + "*"
+                        + (" " + " ".join(rest) if rest else ""))
+            para = re.sub(r"(,\s*)she thinks\b", r"\1she thought", para)
+            paras.append(para)
+        return "\n".join(paras)
 
     @staticmethod
     def _drop_echo_clause(sent):
@@ -13946,6 +14067,7 @@ class Narrator:
         if n.get("mend_fragments", True):
             text = self._mend_fragments(text)
             text = self._mend_leftovers(text)
+        text = self._mend_body_slips(text)
         # a move's NAME used as a label ("a pulsing blast of water, Water Pulse." / "Ripples' Aqua Jet missed its mark"
         # / "with her own Thunderbolt"): the label goes, or the move becomes plain "attack"
         names_ = sorted((x for x in (getattr(self, "_move_names", None) or set()) if x and x[0].isupper()), key=len,
@@ -14739,7 +14861,7 @@ class Narrator:
             pool = [self._limb_fit(x, o) for x in self._fit_body(self.SEEN_HURT[t], o)]
             if self._in_air(o):
                 pool = self.SEEN_AIR + [x for x in pool if not self.AIR_NOT.search(x)]
-            lying = o in (getattr(self, "facing", None) or {})
+            lying = self._not_stepping(o)
             if lying:
                 # (she is down after this beat: no step, no weight shifted from leg to leg, no swaying where she stands)
                 pool = [x for x in pool if not self.STAND_SIGN.search(x)] or pool
@@ -14749,12 +14871,23 @@ class Narrator:
                 # the worst wound's own sign, but not every beat: when it was offered last beat, only the general ones
                 part_sign = next((self._limb_fit(sg, o) for rx, sg in self.SEEN_PART if re.search(rx, wp[0][0])), None)
                 if part_sign and lying and self.STAND_SIGN.search(part_sign):
-                    part_sign = "the hurt leg lies still, and she won't put any weight through it to rise"
+                    part_sign = ("the hurt leg lies still, and she won't put any weight through it to rise"
+                                 if o in (getattr(self, "facing", None) or {}) else
+                                 "she keeps the hurt leg folded out of the way, and won't lean on it")
                 if part_sign and self._fresh_signs(o, [part_sign + f" (her {wp[0][0]})", ""], 1, rnd)[0]:
                     signs.append(part_sign + f" (her {wp[0][0]})")
             out += (f" WHAT {lead.upper()} SEES OF {poss_word(o).upper()} HURT (pick one or two, in your own words, as {lead} "
                     f"watches her; then what {lead} makes of it, coldly or not): " + "; ".join(signs) + ".")
         return ("\n" + out.strip()) if out else ""
+
+    def _not_stepping(self, who):
+        """She is down, or crouched over a fighter on the ground holding her there (narration.stand_signs): no step,
+        no weight shifted from leg to leg, no swaying where she stands."""
+        down = getattr(self, "facing", None) or {}
+        if who in down:
+            return True
+        return bool(((self.rules.get("narration") or {}).get("stand_signs") or {}).get("holder_down", True)
+                    and any(g[0] == who and g[1] in down for g in (getattr(self, "grips", None) or [])))
 
     def _camera_note(self, key):
         """How close this part is told (narration.camera): close in on one body, or wide on both and the place."""
