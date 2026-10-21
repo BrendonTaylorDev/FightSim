@@ -4992,7 +4992,12 @@ class Narrator:
         if self._chain_beat:
             self._one_strike = None
         events = list(a.get("knock_on") or []) + [k for s in a.get("status_applied") or [] for k in s.get("knock_on") or []]
-        if a.get("launch_blocked"):
+        if a.get("stayed_up"):
+            from display import WAYS as ways_
+            how_ = ways_["keeps_feet"].get(a["stayed_up"].get("manner"), "staggers and stays up")
+            lines.append(f"  - The blow nearly takes {a['defender']} off her feet, but it DOESN'T: she {how_}. She is "
+                         f"still standing after it: don't put her on the ground.")
+        elif a.get("launch_blocked"):
             lines.append(f"  - Nobody is knocked down, thrown, or lifted by this: {a['launch_blocked']}. Bodies stay "
                          f"where they are.")
         return lines + self._knock_on_lines(events)

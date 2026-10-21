@@ -654,6 +654,59 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 243
+
+Fighters no longer spend much of a fight on the ground, and several-tap submission matches finish. All of it is
+switchable.
+
+### Why
+
+In 30 no-model three-tap matches (Nocturne vs Ripples), one ran 300 beats without an end, with both fighters near
+-2000%. They averaged 164 beats, and both fighters were down at once a quarter of the time. Two things caused it:
+
+- Below zero, her body gave out on its own up to 40% a beat. It came again five beats after the last collapse, often
+  the beat she got back up.
+- Nobody on the ground could lock a submission, so while both were down no tap could happen.
+
+The stand-in fights now average 112 beats, the longest is 235, and every one finishes. Single-tap matches and
+knockout fights were already fine. Nocturne vs Ripples knockout balance: 62% (it was 67%).
+
+### Collapses are rarer (`health.collapse`)
+
+- **`stand_grace` (5):** once she is back on her feet after a collapse, her body can't give out on its own for 5
+  beats. Blows can still knock her down at any time.
+- **`repeat_mult` (0.6):** each collapse this fight makes the next less likely. The second is 60% as likely, the
+  third 36%.
+- **Lower chances:** `base` 0.08 → 0.05, `per_10_below` 0.03 → 0.02, `max` 0.4 → 0.25.
+
+### A knockdown isn't certain (`down.keep_feet`)
+
+When the director says a blow knocks her down, she may stagger and stay up instead. This covers only a plain
+"knocked down": throws, launches, crashes into the scenery and moves that knock down by themselves are unchanged.
+
+- **The chance comes from her strength:** 50% at full health, 35% at half, 25% at 0% and below.
+- **The blow's size changes it:** up to ×1.4 for a feather of a blow, down to ×0.5 for one that takes 10% or more of
+  her full health.
+- **Never above 75%.** Badly hurt, she goes down to a solid blow about three times in four, and to a huge one nearly
+  nine in ten.
+- **How she keeps her feet** is one of four ways (staggers back, a knee nearly touches down, sways, locks her legs).
+  The screen shows it with 🦵, and the narrator is told not to put her on the ground.
+- **The director is told** a knockdown is rolled, not certain.
+- **Your own commands** always knock her down.
+
+### Holds from the ground (`submissions.from_ground`)
+
+In a submission match, a fighter who is down can lock a submission on someone who is down too. She rolls into it or
+crawls onto her. While she works it, she stays down instead of rolling to get up. `match_only` (on) keeps this to
+submission matches.
+
+### Fewer repeated notes
+
+- **`ruined.jar_cooldown` (3):** after a ruined part is jarred, no other jar for 3 beats.
+- **`below_zero.grey_cooldown` (3):** after her sight greys, it can't again for 3 beats.
+
+Before, deep in a fight these came almost every beat for both fighters.
+
 ## Build 242
 
 Selling damage past devastated, and what happens once her health is gone. Both are switchable.

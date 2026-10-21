@@ -937,6 +937,7 @@ class Engine:
     VARIETY = {
         # how an outcome plays out when the result itself is already decided. Weights; rules.json "variety" overrides.
         "charge_stands": {"staggers": 4, "leans": 3, "knee": 2, "rebounds": 2},
+        "keeps_feet": {"staggers": 4, "knee": 3, "sways": 3, "braces": 2},
         "charge_falls": {"on her side": 30, "face-down": 25, "face-up": 15, "sitting up": 30},
         "dodge": {"sidestep": 4, "duck": 3, "spring_back": 3, "turn_aside": 2, "twist": 2},
         "hold_break": {"wrench": 3, "pry": 2, "slip": 2, "shove": 2},
@@ -2295,13 +2296,22 @@ class Engine:
             last = f.learned.get("collapse_turn")
             if last is not None and self.turn - int(last) < int(cfg.get("cooldown", 5)):
                 continue
+            # stand_grace: once she is back on her feet she gets that many beats before her body can give out on its
+            # own again (blows can still put her down at any time)
+            rose = f.learned.get("rose_turn")
+            if last is not None and rose is not None and int(rose) >= int(last) \
+                    and self.turn - int(rose) < int(cfg.get("stand_grace", 5)):
+                continue
             chance = min(float(cfg.get("max", 0.4)),
                          float(cfg.get("base", 0.08)) + float(cfg.get("per_10_below", 0.03)) * (-pct) / 10.0)
+            # repeat_mult: each earlier collapse this fight makes the next one less likely (she has found her floor)
+            chance *= float(cfg.get("repeat_mult", 1.0)) ** int(self.times("collapse", f.name))
             if self.has(f, "adrenaline"):
                 chance *= float(cfg.get("adrenaline_mult", 0.3))
             if not self._chance(chance, f"{f.name} collapsing on her own (below zero)", "she COLLAPSES", "she stays up"):
                 continue
             f.learned["collapse_turn"] = self.turn
+            self._count("collapse", f.name)
             facing = self.knock_down(f.name, why=f"{f.name} collapsed on her own, her body giving out")
             ev = {"type": "collapse", "fighter": f.name, "facing": facing, "chance": round(chance, 2),
                   "health": round(pct, 1), "knock_on": self._knock_on}
@@ -3602,6 +3612,8 @@ class Engine:
                 continue  # still pinned
             if any(h.defender == name and h.sub for h in self.holds.values()):
                 continue  # locked in a submission hold: she can't rise until it's off
+            if any(h.attacker == name and h.sub for h in self.holds.values()) and self.ground_lock_ok(name):
+                continue  # working a submission from the ground (submissions.from_ground): she stays down with it
             if name in self._fresh_down:
                 # just went down this beat: no get-up roll yet (said out loud, so nobody has to guess)
                 events.append({"type": "stays_down", "fighter": name, "why": "fresh", "facing": self.facing.get(name)})
@@ -3653,6 +3665,7 @@ class Engine:
                               for h in self.holds.values() if h.attacker == name]}
             if tries is not None:
                 del self.downed[name]
+                f.learned["rose_turn"] = self.turn      # (health.collapse.stand_grace counts from here)
                 lay = self.facing.pop(name, None)
                 ev["rise"] = self.vary("getup_rise", ("roll",) if lay == "face-down" else ())  # (already on her front)
                 ev["fails"] = [self.vary("getup_fail") for _ in range(max(0, tries - 1))]
@@ -4951,7 +4964,8 @@ class Engine:
             if d.name not in self.downed:
                 raise ValueError(f"{d.name} is on her feet: a submission hold needs her on the ground first (on her "
                                  f"feet, a hold_start is the way to grab and wrench)")
-            if self.pinned_by(d.name) or a.name in self.downed or self.pinned_by(a.name) or self.pinning(a.name):
+            if self.pinned_by(d.name) or (a.name in self.downed and not self.ground_lock_ok(a.name)) \
+                    or self.pinned_by(a.name) or self.pinning(a.name):
                 raise ValueError(f"{a.name} isn't free to lock a hold on {d.name} right now")
             if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
                 raise ValueError(f"no submission opening on {d.name} this beat. Choose another action")
@@ -4970,6 +4984,7 @@ class Engine:
         self._count("submission", d.name)
         self._count(f"subname:{key}", a.name)
         res["submission"] = {"name": key, "look": flavor or key, "free": "", "invented": True,
+                             "from_ground": a.name in self.downed,
                              "strain": f"the {', '.join(p.lower() for p, _ in grips)} wrenched where it is held",
                              "max_beats": int(cfg.get("max_beats", 3))}
         return res
@@ -5011,6 +5026,15 @@ class Engine:
                 self.sub_window[f.name] = bool(open_all) or self._chance(ch, f"submission opening on {f.name}",
                                                                          "OPEN", "none")
         return self.sub_window
+
+    def ground_lock_ok(self, name):
+        """submissions.from_ground: True when fighter `name` is down herself and may still lock a submission on
+        someone who is down too (she rolls into it, crawls onto her, hooks her from where she lies). Off, or outside
+        a submission match while match_only is on, a fighter on the ground has to get up first."""
+        fg = (self.rules.get("submissions") or {}).get("from_ground") or {}
+        if not fg.get("enabled", True) or (fg.get("match_only", True) and not self.submission_match()):
+            return False
+        return name in self.downed
 
     def sub_stuck(self, d, hs):
         """True when the one in a submission can't hope to break it: she is very weak (submissions.stuck_below % of
@@ -5119,7 +5143,8 @@ class Engine:
                 raise ValueError(f"{d.name} is on her feet: a submission hold needs her on the ground first")
             if self.pinned_by(d.name):
                 raise ValueError(f"{d.name} is pinned: finish the pin or release it before a submission hold")
-            if a.name in self.downed or self.pinned_by(a.name) or self.pinning(a.name):
+            if (a.name in self.downed and not self.ground_lock_ok(a.name)) or self.pinned_by(a.name) \
+                    or self.pinning(a.name):
                 raise ValueError(f"{a.name} isn't free to lock a hold on anyone right now")
             if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
                 raise ValueError(f"no submission opening on {d.name} this beat (they are very rare). Choose another "
@@ -5145,7 +5170,7 @@ class Engine:
         self._count("submission", d.name)
         self._count(f"subname:{key}", a.name)
         res["submission"] = {"name": key, "look": s["look"], "free": s["free"], "strain": s["strain"],
-                             "max_beats": int(cfg.get("max_beats", 3))}
+                             "max_beats": int(cfg.get("max_beats", 3)), "from_ground": a.name in self.downed}
         return res
 
     def _submission_tick(self):
@@ -6639,6 +6664,26 @@ class Engine:
         mine, self._source = self._source, f"the drop from {spot}"
         res["leap"]["landing_hits"] = [self._apply_damage(a, p, power) for p in self.rng.sample(legs, min(2, len(legs)))]
         self._source = mine
+
+    def keeps_feet(self, d, hits):
+        """down.keep_feet: a blow the director has knock her down ("knocked down") may not take her off her feet:
+        she staggers and stays up. The chance comes from her strength left (full, half, empty, in between), x a
+        light blow's more (a blow taking under big_blow_pct of her full health is light: up to x light_mult) or a
+        big one's less (down to x big_mult), never above max. A throw, a launch and a crash into the scenery are
+        not rolled. Returns (kept her feet, chance)."""
+        cfg = (self.rules.get("down") or {}).get("keep_feet") or {}
+        if not cfg.get("enabled", True):
+            return False, 0.0
+        pct = max(0.0, min(100.0, self._health_pct(d)))
+        full, half, empty = (float(cfg.get(k, v)) for k, v in (("full", 0.5), ("half", 0.35), ("empty", 0.25)))
+        ch = half + (full - half) * (pct - 50) / 50 if pct >= 50 else empty + (half - empty) * pct / 50
+        lost = sum(float(h.get("health_loss") or 0) for h in hits or () if h.get("defender", d.name) == d.name)
+        share = lost / max(1.0, d.max_health) * 100 / max(0.1, float(cfg.get("big_blow_pct", 10)))
+        lm, bm = float(cfg.get("light_mult", 1.4)), float(cfg.get("big_mult", 0.5))
+        ch *= max(bm, lm - (lm - bm) * min(1.0, share))
+        ch = max(0.0, min(float(cfg.get("max", 0.75)), ch))
+        return (ch > 0 and self._chance(ch, f"{d.name} keeping her feet under the blow", "she stays up",
+                                        "she goes down")), round(ch, 2)
 
     def _rights_herself(self, d, move, launch, fcfg):
         """A flyer the blow would hurl (a launch effect) may catch herself on her wings before she hits the ground
@@ -9198,8 +9243,12 @@ class Engine:
                 events.append({"type": "ruined_buckle", "fighter": f.name, "part": legs[0].name})
                 continue
             p = max(ruined, key=lambda x: x.damage)
+            last = f.learned.get("jar_turn")
+            if last is not None and self.turn - int(last) < int(rc.get("jar_cooldown", 3)):
+                continue    # (jar_cooldown: told at most once every few beats, so it doesn't fill every passage)
             if self._chance(float(rc.get("jar_chance", 0.3)), f"{poss_word(f.name)} own movement jarring her ruined "
                             f"{p.name.lower()}", "it jars it", "no"):
+                f.learned["jar_turn"] = self.turn
                 events.append({"type": "ruined_jar", "fighter": f.name, "part": p.name,
                                "how": self.rng.choice(("a breath too deep", "turning to keep her eyes on the other",
                                                        "shifting her weight", "her own heartbeat", "a flinch at nothing"))})
@@ -9252,9 +9301,13 @@ class Engine:
                 self.set_status(f, "adrenaline", beats)
                 events.append({"type": "adrenaline", "fighter": f.name, "beats": beats, "second": True})
                 continue
+            last = f.learned.get("grey_turn")
+            if last is not None and self.turn - int(last) < int(bz.get("grey_cooldown", 3)):
+                continue    # (grey_cooldown: her sight greys at most once every few beats)
             if float(st.get("grey_chance", 0)) > 0 and not self.has(f, "adrenaline") and self._chance(
                     float(st["grey_chance"]), f"{poss_word(f.name)} sight greying out", "it GREYS", "she stays clear"):
                 self.set_status(f, "greyed", 1)
+                f.learned["grey_turn"] = self.turn
                 events.append({"type": "grey_out", "fighter": f.name})
         return events
 

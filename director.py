@@ -51,7 +51,8 @@ BIG HITS MOVE BODIES. Pokemon moves are powerful: a solid hit rarely touches jus
   single named target.)
 - "launch" says what a strike does to the defender's body: "none", "staggered" (rocked but on their feet),
   "knocked down", "thrown", or "launched" (sent flying). Use knockdowns, throws and launches OFTEN for heavy
-  hits, slams, charges, tail sweeps and water blasts.
+  hits, slams, charges, tail sweeps and water blasts. A "knocked down" is not certain: the engine rolls whether
+  she keeps her feet (likelier while she is strong or the blow is light), and the story follows the roll.
 - "reposition" (usually "none"): before the action, the attacker moves an opponent who is ON THE GROUND:
   "roll over" (flip her), "onto her back", "onto her front", "onto her side"; "sit her up" (haul her up to
   sitting: she is still on the ground, but her chest, belly and throat in front and her back and neck behind are
@@ -1574,6 +1575,14 @@ def _landing(engine, b, res):
                 ps += [p for p in under if p not in ps][:len(x["parts"]) - len(ps)]
             fixed.append(dict(x, parts=ps))
         impacts = fixed
+    if not in_place and not manual and launch == "knocked down" and not explicit and not res.get("auto_launch") \
+            and not res.get("spiked_by") and not res.get("drop_severity") and not engine.has(engine.get(who), "airborne"):
+        # down.keep_feet: the director wanted her down, but she may stagger and stay up (likelier strong, or a light blow)
+        kept, ch = engine.keeps_feet(engine.get(who), res.get("hits"))
+        if kept:
+            res["stayed_up"] = {"chance": ch, "manner": engine.vary("keeps_feet")}
+            res["launch_blocked"] = f"{who} staggers under it but stays on her feet"
+            return None
     if not in_place:
         # knocked off her feet: that is how the blow moved her, so no rock or stagger on top of it (moves.stumble)
         res.pop("rocked", None)
@@ -3654,7 +3663,8 @@ def submission_urge(engine):
     for target in engine.active():
         if (getattr(engine, "sub_window", None) or {}).get(target.name) is not True:
             continue
-        holders = [f for f in engine.active() if f.team != target.team and f.name not in engine.downed
+        holders = [f for f in engine.active() if f.team != target.team
+                   and (f.name not in engine.downed or engine.ground_lock_ok(f.name))
                    and not engine.pinned_by(f.name) and not engine.pinning(f.name)
                    and not any(engine.has(f, st) for st in ("flinched", "asleep", "frozen", "reeling"))
                    and engine.submission_shapes(f.name, target.name)]

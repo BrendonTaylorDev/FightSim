@@ -23,6 +23,9 @@ def pct(health, max_health=None):
 
 # short words for HOW an outcome played out (the engine's pick; see rules.json "variety"), by kind of outcome
 WAYS = {
+    "keeps_feet": {"staggers": "staggers back, legs nearly going, and stays up",
+                   "knee": "buckles at the knee, nearly touches down, and forces herself straight",
+                   "sways": "sways hard and somehow stays standing", "braces": "locks her legs and takes it standing"},
     "charge_stands": {"staggers": "staggers clear", "leans": "sags upright against it, then pushes off",
                       "knee": "a knee touches down; she shoves back up", "rebounds": "rebounds off it and stumbles forward"},
     "dodge": {"sidestep": "slips aside", "duck": "ducks under it", "spring_back": "springs back",
@@ -1133,7 +1136,10 @@ class Display:
         if a.get("rocked"):
             rk = a["rocked"]
             out.append(f"↪️ {rk['fighter']} rocked by the {rk['part'].lower()} hit: {rk['how']}")
-        if a.get("launch_blocked"):
+        if a.get("stayed_up"):
+            out.append(f"🦵 {a.get('defender')} {WAYS['keeps_feet'].get(a['stayed_up'].get('manner'), 'stays up')} "
+                       f"({a['stayed_up'].get('chance', 0) * 100:.0f}% to keep her feet)")
+        elif a.get("launch_blocked"):
             out.append(f"- (no knockdown or throw: {a['launch_blocked']})")
         out += self.knock_on_lines(list(a.get("knock_on") or [])
                                    + [k for s in a.get("status_applied", []) or [] for k in s.get("knock_on") or []])

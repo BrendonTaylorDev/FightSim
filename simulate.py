@@ -42,7 +42,8 @@ def _pick_action(eng, rng, f, d):
         return dict(a, action="breather")
     flying = eng.has(f, "airborne")
     # a submission opening (rarer than a pin, so offered first): usually taken, and now and then something free is used on her as well
-    if (getattr(eng, "sub_window", None) or {}).get(d.name) and not flying and f.name not in eng.downed \
+    if (getattr(eng, "sub_window", None) or {}).get(d.name) and not flying \
+            and (f.name not in eng.downed or eng.ground_lock_ok(f.name)) \
             and rng.random() < 0.7:
         shapes = eng.submission_shapes(f.name, d.name)
         if shapes:

@@ -578,6 +578,50 @@ def ruined_check():
     return problems
 
 
+def downtime_check():
+    """Build 243: fighters aren't left down most of the fight (a collapse can't come again right after she rises, and
+    each is rarer; a director's knockdown may leave her standing), a fighter on the ground can lock a submission on
+    one who is down too in a submission match, and the ruined jar is told at most every few beats."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    d = e.get("Ripples")
+    d.health = -0.6 * d.max_health
+    e.rules["health"]["collapse"].update(base=1.0, max=1.0, repeat_mult=1.0)
+    e.downed.pop(d.name, None)
+    d.learned.update(collapse_turn=e.turn - 10, rose_turn=e.turn - 1)
+    if any(ev["type"] == "collapse" for ev in e._collapse_tick()):
+        problems.append("she collapsed again one beat after getting up (health.collapse.stand_grace)")
+    d.learned["rose_turn"] = e.turn - 6
+    if not any(ev["type"] == "collapse" for ev in e._collapse_tick()):
+        problems.append("past stand_grace, a sure collapse didn't come")
+    e.rules["health"]["collapse"]["repeat_mult"] = 0.5
+    if e.times("collapse", d.name) != 1:
+        problems.append(f"collapses aren't counted: {e.times('collapse', d.name)}")
+    e.downed.pop(d.name, None)
+    d.health = d.max_health
+    _, ch = e.keeps_feet(d, [])
+    if abs(ch - 0.7) > 0.01:
+        problems.append(f"at full health a feather of a blow should keep her up 70% of the time: {ch}")
+    d.health = -0.5 * d.max_health
+    _, ch = e.keeps_feet(d, [{"defender": d.name, "health_loss": 0.2 * d.max_health}])
+    if not 0 < ch < 0.2:
+        problems.append(f"badly hurt, a huge blow should still leave a small chance she stays up: {ch}")
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.downed.update({"Nerine": 0, "Ripples": 0})
+    if not e.ground_lock_ok("Nerine"):
+        problems.append("in a submission match a fighter on the ground should be able to lock one on (from_ground)")
+    e.rules["finish"]["submission"]["enabled"] = False
+    if e.ground_lock_ok("Nerine"):
+        problems.append("outside a submission match from_ground (match_only) should be off")
+    d.parts["Left Thigh"].damage = 600.0
+    e.rules["ruined"].update(buckle_chance=0.0, jar_chance=1.0)
+    first = [ev for ev in e._ruined_tick() if ev["type"] == "ruined_jar" and ev["fighter"] == d.name]
+    again = [ev for ev in e._ruined_tick() if ev["type"] == "ruined_jar" and ev["fighter"] == d.name]
+    if not first or again:
+        problems.append(f"the ruined jar should come once, then wait (jar_cooldown): {first} then {again}")
+    return problems
+
+
 def textpane_check():
     """The window's story pane (textpane.py): story and numbers told apart, the rows' changes and the rolls'
     outcomes coloured, the pointers' numbers taken from the lines they explain, and shown only now and then."""
@@ -665,6 +709,13 @@ def main(argv):
         probs = ruined_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  ruined parts past devastated, and the stages below zero health  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "downtime collapse" for w in want):
+        t = time.time()
+        probs = downtime_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  not down most of the fight: collapse grace, keeping her feet, holds from the ground  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "tap count" for w in want):
