@@ -591,6 +591,10 @@ class Engine:
         now_ = self.turn + (0 if getattr(self, "_ticking", False) else 1)
         st_ = defender.learned.get("sting") or [now_, 0.0]
         defender.learned["sting"] = [now_, round((st_[1] if st_[0] == now_ else 0.0) + taken, 2)]
+        sp_ = defender.learned.get("sting_parts") or [now_, {}]
+        sp_ = sp_ if sp_[0] == now_ else [now_, {}]
+        sp_[1][p.name] = round(float(sp_[1].get(p.name, 0.0)) + taken, 2)
+        defender.learned["sting_parts"] = sp_
         was_numb = int(getattr(p, "numb", 0) or 0) > 0
         rscale = float(r.get("damage", {}).get("resistance_scale", 1.0))
         # resistance lost: by the blow's power, and (resistance.loss_per_damage, 0 = off) by the damage it really did,
@@ -3748,6 +3752,10 @@ class Engine:
                 score -= 0.3
             # ruined: a leg past ruined.min folds under her as she pushes up on it; below zero she has less to rise with
             score -= self._ruined_getup(f, regions)
+            ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
+            if any(h.defender == name and body_region(h.part) in ("hind_up", "hind_low") for h in self.holds.values()):
+                # (since build 249) a grip on her leg holds that leg down: rising on it is much harder
+                score -= float(ucfg.get("held_getup", 0.3))
             st0 = self.zero_stage(f)
             if st0:
                 score += float(st0.get("getup", 0.0))
@@ -5155,6 +5163,12 @@ class Engine:
                 on_aim = {n: v for n, v in shapes.items() if any(c[0] == aim for c in v["contacts"])}
                 if on_aim and rng.random() < self.tap_steer("holds"):
                     shapes = on_aim
+        ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
+        ground = {n: v for n, v in shapes.items() if v.get("lands")}
+        if ground and len(ground) < len(shapes) and rng.random() >= float(ucfg.get("pick_share", 0.4)):
+            # (since build 249) on her feet, most openings take her down into a hold on the ground; one that keeps her
+            # standing only upright.pick_share of the time
+            shapes = ground
         chokes = sorted(n for n, v in shapes.items() if self.sub_is_choke(v))
         others = sorted(n for n in shapes if n not in chokes)
         share = float(((self.rules.get("finish") or {}).get("submission") or {}).get("choke_share", 0.1))
@@ -5320,6 +5334,10 @@ class Engine:
         ch = float(cfg.get("chance", 0.03))
         if self.strength(f) < 50:
             ch *= float(cfg.get("weak_mult", 1.5))
+        m = cfg.get("match") or {}
+        if self.submission_match() and m.get("enabled", True):
+            # (since build 249) a submission match: down on the ground is where a hold most often starts
+            ch = min(float(m.get("down_max", 0.9)), ch * float(m.get("down_mult", 1.3)))
         return ch
 
     def _upright_on(self):
@@ -5359,7 +5377,9 @@ class Engine:
         stages = self.upright_stages()
         groups = {}
         for h in self.holds.values():
-            if h.sub:
+            # (since build 249, plain_holds: any grip that isn't a grab chest to chest, jaws on her knee or tails
+            # round her hip as much as a submission; a pin's own grips never)
+            if h.sub or (cfg.get("plain_holds", True) and not h.grab and not h.locked):
                 groups.setdefault((h.attacker, h.defender), []).append(h)
         events = []
         for (an, dn), hs in groups.items():
@@ -5382,9 +5402,22 @@ class Engine:
             if beats < 2:
                 continue     # (locked this beat: she is held up in it a beat before it can bear her down)
             lost = 1.0 - max(0.0, min(1.0, self._health_pct(d) / 100.0))
-            ch = min(float(cfg.get("max", 0.6)), float(cfg.get("base", 0.15)) + float(cfg.get("per_beat", 0.08))
-                     * (beats - 2) + float(cfg.get("weak", 0.25)) * lost)
-            if not self._chance(ch, f"{poss_word(an)} {hs[0].sub} bearing {dn} down", "she goes DOWN a stage",
+            ch = float(cfg.get("base", 0.15)) + float(cfg.get("per_beat", 0.08)) * (beats - 2) \
+                + float(cfg.get("weak", 0.25)) * lost
+            # (since build 249) a grip on a leg she stands on takes it out from under her (leg), the more so the more
+            # that part is hurt (per_100_worn for every 100% on the worst gripped part, up to 3)
+            legs = ("hind_up", "hind_low") + (("fore_up", "fore_low") if self.body_plan(d) == "quadruped" else ())
+            if self.body_plan(d) != "serpent" and any(body_region(h.part) in legs for h in hs):
+                ch += float(cfg.get("leg", 0.15))
+            worst = max((d.parts[h.part].damage for h in hs if h.part in d.parts), default=0.0)
+            ch += float(cfg.get("per_100_worn", 0.1)) * min(3.0, worst / 100.0)
+            # a hold that carries her weight (a bear hug lifting her, a shoulder ride) holds her up rather than
+            # bearing her down (supporting: those holds' names; support_mult)
+            what = hs[0].sub or f"grip on her {hs[0].part.lower()}"
+            if hs[0].sub and hs[0].sub in (cfg.get("supporting") or ()):
+                ch *= float(cfg.get("support_mult", 0.3))
+            ch = min(float(cfg.get("max", 0.6)), ch)
+            if not self._chance(ch, f"{poss_word(an)} {what} bearing {dn} down", "she goes DOWN a stage",
                                 "she holds where she is"):
                 continue
             step = 2 if at + 2 < len(stages) and self._chance(float(cfg.get("skip", 0.2)), f"{dn} dropping two "
@@ -5400,7 +5433,7 @@ class Engine:
             else:
                 facing = "face-down" if self.rng.random() < 0.6 else "face-up"
             if facing and dn not in self.downed:
-                self.knock_down(dn, facing=facing, why=f"{dn} was borne down in {poss_word(an)} {hs[0].sub}")
+                self.knock_down(dn, facing=facing, why=f"{dn} was borne down in {poss_word(an)} {what}")
                 self._fresh_down.add(dn)
                 self._knock_on = []
             elif facing:
@@ -5411,7 +5444,8 @@ class Engine:
                 for h in hs:
                     h.power *= float(cfg.get("readjust_mult", 0.7))
                     h.turns_active = max(1, h.turns_active - 1)
-            events.append({"type": "sub_collapse", "attacker": an, "defender": dn, "submission": hs[0].sub,
+            events.append({"type": "sub_collapse", "attacker": an, "defender": dn, "submission": what,
+                           "plain": not hs[0].sub,
                            "from": "sitting" if sitting else "standing", "facing": facing, "readjust": readjust,
                            "stage": stage.get("name", ""), "says": stage.get("says", ""), "stage_no": to + 1,
                            "stages": len(stages), "posture": stage["posture"], "skipped": step > 1,
@@ -8089,7 +8123,24 @@ class Engine:
         events.append({"type": "time_passes", "beat": self.turn, "fighters": fighters})
         self.involved = set()
         self.beat_loss = {}   # health.soft_cap counts each beat on its own
+        self._pain_tick()
         return events
+
+    def _pain_tick(self):
+        """window.pain_gauge: the pain she FEELS overall, carried from beat to beat: each beat what she felt fades
+        (decay of it is left), and this beat's blows and grips add their sting. Shown, never used to decide."""
+        cfg = ((self.rules.get("window") or {}).get("pain_gauge") or {})
+        if not cfg.get("enabled", True):
+            return
+        for f in self.fighters.values():
+            st = f.learned.get("sting") or [None, 0.0]
+            now = float(st[1]) if st[0] == self.turn else 0.0
+            felt = float(f.learned.get("pain_felt", 0.0)) * float(cfg.get("decay", 0.5)) \
+                + float(cfg.get("sting", 1.0)) * now
+            if felt < 0.5:
+                f.learned.pop("pain_felt", None)
+            else:
+                f.learned["pain_felt"] = round(felt, 2)
 
     advance_turn = beat
 
@@ -9188,6 +9239,14 @@ class Engine:
             # (for the window's pain gauge: the very numbers this check weighed, this beat)
             d.learned["sub_gauge"] = {"turn": self.turn, "pain": round(pain), "resist": round(resist),
                                       "air": round(air), "endure": round(endure), "sub": name, "by": a}
+            ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
+            sub_ = next((h.sub for h in hs if h.sub), "")
+            if tap > 0 and dn not in self.downed and not self.has(d, "airborne") \
+                    and sub_ not in (ucfg.get("supporting") or ()):
+                # (since build 249) still on her own feet, she has her legs to fight it with, and the hold is more
+                # likely to bear her down first than to make her give in standing (upright.standing_tap_mult; a hold
+                # that carries her weight, upright.supporting, isn't damped)
+                tap *= float(ucfg.get("standing_tap_mult", 0.35))
             tap_part = self._tap_part(d, sorted(hs, key=lambda h: -(d.parts[h.part].damage if h.part in d.parts
                                                                    else 0.0)))
             spent = tap_part is None
@@ -9305,47 +9364,59 @@ class Engine:
         return r[0]
 
     def pain_gauge(self, f):
-        """window.pain_gauge (since build 249): how much pain she is in right now, against how much she can bear, for
-        the window. Nothing reads it to decide anything: it shows numbers the engine already has. In a submission
-        (a submission match's tap check has weighed it this beat) it is that check's own pain against her
-        resistance, and a choke's air hunger against her endurance; otherwise her worst parts (the worst one, and
-        second_part of the next two) and any grip pressing on her, against the same resistance (finish.submission.
-        tap.resist, scaled by her strength; an adrenaline surge raises it). Returns a dict, or None when it is off."""
+        """window.pain_gauge (since build 249): two gauges for the window, each a share of how much she can bear (her
+        resistance: finish.submission.tap.resist, scaled by her strength; an adrenaline surge raises it). Nothing
+        reads them to decide anything.
+        - overall: the pain she feels right now: the sting of each blow, fading every beat (_pain_tick: decay), over
+          a low floor her injuries keep up (chronic x her worst part and second_part of the next two).
+        - part: the part being held, pinned or struck this beat. Held in a submission (the tap check weighed it this
+          beat) it is that check's own pain, from the gripped parts only, and a choke's air hunger beside it; held
+          otherwise, the gripped part's damage and the grip pressing on it; struck, the struck part's damage and the
+          sting of the blow. None when nothing is on or at any part of her this beat.
+        Returns {"overall": {...}, "part": {...} or None}, or None when it is off."""
         cfg = ((self.rules.get("window") or {}).get("pain_gauge") or {})
         if not cfg.get("enabled", True) or f.eliminated:
             return None
         tcfg = (((self.rules.get("finish") or {}).get("submission") or {}).get("tap") or {})
-        held = [h for h in self.holds.values() if h.defender == f.name]
-        sg = f.learned.get("sub_gauge") or {}
-        if sg and int(sg.get("turn", -9)) == self.turn and any(h.sub for h in held):
-            pain, bear = float(sg["pain"]), max(1.0, float(sg["resist"]))
-            air = (float(sg["air"]), max(1.0, float(sg["endure"]))) if sg.get("air") else None
-            where = f"in {poss_word(sg.get('by', ''))} {sg.get('sub') or 'hold'}"
-        else:
-            sec = float(cfg.get("second_part", 0.4))
-            dmg = sorted((p.damage for p in f.parts.values()), reverse=True) + [0.0, 0.0, 0.0]
-            pain = dmg[0] + sec * (dmg[1] + dmg[2])
-            pain += float(tcfg.get("press", 1.5)) * sum(h.power for h in held)    # a grip on her presses now
-            sting = f.learned.get("sting") or [None, 0.0]
-            if sting[0] == self.turn:
-                # what this beat's blows (and grips, and landings) just did to her parts: the fresh shock of them
-                pain += float(cfg.get("sting", 1.0)) * float(sting[1])
-            s_ = max(0.0, min(100.0, self._health_pct(f)))
-            surge = float(tcfg.get("surge_resist", 1.5)) if self.has(f, "adrenaline") else 1.0
-            bear = max(10.0, float(tcfg.get("resist", 130)) * (s_ / 100.0) ** float(tcfg.get("resist_power", 0.8))
-                       * surge)
-            air = None
-            pin_ = self.pinned_by(f.name)
-            where = (f"pinned under {' and '.join(pin_)}" if pin_ else
-                     f"in {poss_word(held[0].attacker)} {held[0].sub or 'grip'}" if held else "")
-            if sting[0] == self.turn and float(sting[1]) >= 1:
-                where = (where + "; " if where else "") + f"+{float(sting[1]):.0f} from this beat"
-        share = pain / bear * 100.0
         cuts = cfg.get("labels") or [[40, "bearable"], [70, "hurting badly"], [100, "near her limit"],
                                      [9e9, "past what she can bear"]]
-        label = next((str(w) for c, w in cuts if share < float(c)), str(cuts[-1][1]))
-        return {"pct": round(share), "pain": round(pain), "bear": round(bear), "label": label, "where": where,
-                "air": round(air[0] / air[1] * 100.0) if air else None}
+        s_ = max(0.0, min(100.0, self._health_pct(f)))
+        surge = float(tcfg.get("surge_resist", 1.5)) if self.has(f, "adrenaline") else 1.0
+        bear = max(10.0, float(tcfg.get("resist", 130)) * (s_ / 100.0) ** float(tcfg.get("resist_power", 0.8)) * surge)
+
+        def gauge(pain, bear_, **more):
+            share = pain / max(1.0, bear_) * 100.0
+            label = next((str(w) for c, w in cuts if share < float(c)), str(cuts[-1][1]))
+            return dict({"pct": round(share), "pain": round(pain), "bear": round(bear_), "label": label}, **more)
+
+        held = [h for h in self.holds.values() if h.defender == f.name]
+        pin_ = self.pinned_by(f.name)
+        sec = float(cfg.get("second_part", 0.4))
+        dmg = sorted((p.damage for p in f.parts.values()), reverse=True) + [0.0, 0.0, 0.0]
+        chronic = float(cfg.get("chronic", 0.15)) * (dmg[0] + sec * (dmg[1] + dmg[2]))
+        felt = float(f.learned.get("pain_felt", 0.0))
+        where = (f"pinned under {' and '.join(pin_)}" if pin_ else
+                 f"in {poss_word(held[0].attacker)} {held[0].sub or 'grip'}" if held else "")
+        overall = gauge(chronic + felt, bear, where=where, fresh=round(felt))
+        part = None
+        sg = f.learned.get("sub_gauge") or {}
+        sp = f.learned.get("sting_parts") or [None, {}]
+        if sg and int(sg.get("turn", -9)) == self.turn and held:
+            names = list(dict.fromkeys(h.part for h in held))
+            part = gauge(float(sg["pain"]), float(sg["resist"]), parts=names[:3],
+                         why=f"{poss_word(sg.get('by', ''))} {sg.get('sub') or 'hold'}",
+                         air=round(float(sg["air"]) / max(1.0, float(sg["endure"])) * 100.0) if sg.get("air") else None)
+        elif held:
+            worst = max(held, key=lambda h: f.parts[h.part].damage if h.part in f.parts else 0.0)
+            pain = (f.parts[worst.part].damage if worst.part in f.parts else 0.0) \
+                + float(tcfg.get("press", 1.5)) * max(h.power for h in held)
+            part = gauge(pain, bear, parts=list(dict.fromkeys(h.part for h in held))[:3],
+                         why=("pinned" if pin_ else f"{poss_word(worst.attacker)} {worst.sub or 'grip'}"), air=None)
+        elif sp[0] == self.turn and sp[1]:
+            name = max(sp[1], key=lambda n: (f.parts[n].damage if n in f.parts else 0.0) + sp[1][n])
+            pain = (f.parts[name].damage if name in f.parts else 0.0) + float(sp[1][name])
+            part = gauge(pain, bear, parts=[name], why=f"struck (+{float(sp[1][name]):.0f})", air=None)
+        return {"overall": overall, "part": part}
 
     def taps_given(self, who):
         f = self.get(who) if isinstance(who, str) else who

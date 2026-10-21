@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 249-guided (a fighter held on the ground reaches her holder only with what the hold leaves near her; the down count keeps counting while she is held; no footwork for one held or down; a pain gauge in the window for every fighter, holds, pins and blows alike; taps in the fight summary; the rest of the review findings)"
+VERSION = "2026-10-21 build 250-guided (any grip on a standing fighter can bear her down, a held leg most of all, and she rarely taps still on her feet unless the hold carries her weight; more holds start on a fighter already down; two pain gauges, overall pain that fades and the held or struck part)"
 
 HELP = """
 =============================================================================================

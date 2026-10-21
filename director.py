@@ -3717,7 +3717,8 @@ def submission_urge(engine):
         name = engine.pick_submission(shapes, defender=target.name)
         s = shapes[name]
         choke_ = engine.sub_is_choke(s)
-        where = (f"is down and {h.name} can lock her in a {name.upper()}" if target.name in engine.downed else
+        where = (f"is DOWN on the ground, the best moment there is for a hold, before she can get up: {h.name} "
+                 f"can lock her in a {name.upper()}" if target.name in engine.downed else
                  f"is on her feet but open (a worn part, a stumble, a moment's opening), and {h.name} can TAKE HER DOWN "
                  f"into a {name.upper()} (the engine puts her on the ground for it)")
         return (f"SUBMISSION OPENING{' (very rare)' if not engine.submission_match() else ''}: {target.name} {where} "

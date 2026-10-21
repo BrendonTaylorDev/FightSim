@@ -654,6 +654,50 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 250
+
+From your submission match (Ripples vs Nerine, the lakeside clearing). Nerine's jaws stayed on Ripples' right knee
+for five beats while the knee went from 150% to 280%. Ripples stayed on her feet the whole time, even got up while
+held, and tapped standing.
+
+### Borne down in the hold (`submissions.upright`)
+
+- **Any grip can bear her down now** (`plain_holds`), not only a named submission: jaws on her knee, tails round
+  her hip. It goes stage by stage as before (sagging, on her knees, flat), with the grip kept on. A grab chest to
+  chest and a pin's grips don't count.
+- **A grip on a leg she stands on takes it out from under her** (`leg`: +15%). The more that part is hurt, the
+  likelier it is (`per_100_worn`: +10% for every 100% on the worst gripped part, up to 3). Jaws on a knee at 150%
+  for four beats bring her down most of the time (the new test: at least 12 of 20).
+- **A hold that carries her weight holds her up instead** (`supporting`: the bear hug and the shoulder ride, ×
+  `support_mult` 0.3). You can add others to the list.
+- **Rising with a grip on her leg is much harder** (`held_getup`: −0.3 on the get-up roll).
+- **She rarely taps still on her own feet** (`standing_tap_mult` 0.35): she has her legs to fight it with, so most
+  holds bear her down before she gives in. A supporting hold isn't damped.
+- **More holds start while she is down:**
+  - On her feet, most openings take her down into a hold on the ground. Only `pick_share` (40%) offer one that keeps
+    her standing.
+  - In a submission match an opening on a fighter already down is likelier (`submissions.match.down_mult` 1.3, up to
+    `down_max` 0.9).
+  - The director is told this is the best moment for a hold, before she can get up.
+  - With the stand-in driver over 30 three-tap matches: 74% of taps on the ground (71% before); holds started on a
+    fighter already down 46% (34%). It mostly takes its holds on fighters already down, so the change is bigger
+    with the director, which puts holds on standing fighters as in your log.
+
+### Two pain gauges (`window.pain_gauge`)
+
+The single gauge added up her worst parts, so a ruined knee kept it over 300% for the rest of the fight. It is now
+two gauges:
+- **Overall pain:** what she feels now. Each blow and grip adds its sting, and it fades every beat (`decay`: half is
+  left each beat). It sits over a low floor her injuries keep up (`chronic` 0.15 × her worst parts). Ripples as in
+  your log (knee 310%, hip 130%, half health) rests at 63% (hurting badly). A blow on the hip spikes it to 77%,
+  then it settles back over the next beats.
+- **Part pain:** the part being held, pinned or struck this beat.
+  - In a submission it is the tap check's own number, which comes only from the gripped parts (with a choke's air
+    beside it). A tap is decided by the held part's pain against her resistance; her other injuries only weaken
+    that resistance, through her health.
+  - Struck, it is that part's damage plus the blow's sting.
+  - When nothing is on her or at her, it says so.
+
 ## Build 249
 
 The three things left over from Build 248, a pain gauge in the window, and most of the smaller findings from the

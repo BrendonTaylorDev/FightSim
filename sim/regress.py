@@ -739,20 +739,48 @@ def held_reach_check():
     if d.learned.get("down_for") != 2:
         problems.append(f"the time down should count while she is held: {d.learned.get('down_for')}")
     g = e.pain_gauge(d)
-    if not g or "heel hook" not in g.get("where", "") or g.get("pct") is None:
-        problems.append(f"the pain gauge should say she is in the heel hook: {g}")
+    if not g or "heel hook" not in g["overall"].get("where", "") or not g.get("part") \
+            or not set(g["part"]["parts"]) & {"Left Foot", "Left Knee", "Left Hip"}:
+        problems.append(f"the pain gauges should say she is in the heel hook, and name the held parts: {g}")
     s2 = H.session(6, fighters="Ripples,Nerine")
     e2 = s2.eng
-    calm = e2.pain_gauge(e2.get("Nerine"))["pct"]
-    e2._apply_damage(e2.get("Nerine"), "Head", 60)
+    ne = e2.get("Nerine")
+    calm = e2.pain_gauge(ne)["overall"]["pct"]
+    e2._apply_damage(ne, "Head", 60)
     e2.beat()
-    hit = e2.pain_gauge(e2.get("Nerine"))
-    if hit["pct"] <= calm or "from this beat" not in hit["where"]:
-        problems.append(f"a blow should spike the pain gauge for its beat: {calm} -> {hit}")
+    hit = e2.pain_gauge(ne)
+    e2.beat()
+    e2.beat()
+    later = e2.pain_gauge(ne)
+    if hit["overall"]["pct"] <= calm or not hit["part"] or hit["part"]["parts"] != ["Head"]:
+        problems.append(f"a blow should spike the overall pain and show the struck part: {calm} -> {hit}")
+    if later["overall"]["pct"] >= hit["overall"]["pct"] or later["part"]:
+        problems.append(f"the pain should fade over the beats after it: {hit} -> {later}")
     e.record_beat([], [{"type": "tap_count", "how": "tap", "attacker": a.name, "defender": d.name,
                         "submission": "heel hook", "part": "Left Foot", "tap_no": 1, "needed": 3}])
     if not any(m["kind"] == "tap" for m in e.chronicle["moments"]):
         problems.append("a tap should be one of the fight's key moments")
+    # a plain grip on a standing fighter's worn leg bears her down (submissions.upright.plain_holds); a bear hug,
+    # which holds her weight, much less often; a held leg makes rising harder
+    downs, hugs = 0, 0
+    for seed in range(20):
+        s3 = H.session(100 + seed, fighters="Nerine,Ripples")
+        e3 = s3.eng
+        r3 = e3.get("Ripples")
+        r3.parts["Right Knee"].damage = 150
+        e3.start_hold("Nerine", "Ripples", "Right Knee", 20, with_part="her jaws")
+        for h in e3.holds.values():
+            h.turns_active = 2
+        for _ in range(4):
+            e3._upright_sub_tick()
+            for h in e3.holds.values():
+                h.turns_active += 1
+        downs += r3.name in e3.downed
+    if downs < 12:
+        problems.append(f"jaws on a worn knee for four beats should mostly bring her down: {downs} of 20")
+    uc = e.rules["submissions"]["upright"]
+    if "bear hug" not in (uc.get("supporting") or ()):
+        problems.append("a bear hug should count as holding her weight")
     ban = blocks.body_bans({"arms", "ears", "tails", "fins"})
     if not ban or not ban.search("a wing flung out against the ground to stop herself"):
         problems.append("a Buizel was offered a wing flung out")

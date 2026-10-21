@@ -264,7 +264,7 @@ class FighterCard(ttk.Frame):
         # a submission match: one pip per tap-out the match needs, filled for each she has given (with the part)
         self.tp = tk.Canvas(self, width=PIC + 2 * COL, height=20, highlightthickness=0, bg="#f3f4f6")
         # her pain against what she can bear (window.pain_gauge): a bar with a mark at 100%, more in a submission
-        self.pg = tk.Canvas(self, width=PIC + 2 * COL, height=16, highlightthickness=0, bg="#f3f4f6")
+        self.pg = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg="#f3f4f6")
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
         self.state.pack(anchor="w", pady=(4, 0))
 
@@ -380,8 +380,9 @@ class FighterCard(ttk.Frame):
                       fill="#991b1b" if len(given) >= need else "#111827")
 
     def _pain(self, f):
-        """The pain gauge under her energy bar: how much pain she is in against how much she can bear (the full
-        width is 150%, with a mark at 100%), and the word for it; in a choke, her air too."""
+        """The two pain gauges under her energy bar (window.pain_gauge): overall (what she feels now: blows sting and
+        fade) and the part being held, pinned or struck this beat. Each a share of what she can bear: the full width
+        is 150%, with a dashed mark at 100%."""
         g = f.get("pain")
         if not g:
             if self.pg.winfo_ismapped():
@@ -391,15 +392,25 @@ class FighterCard(ttk.Frame):
             self.pg.pack(fill="x", pady=(2, 0), before=self.state)
         c, w = self.pg, PIC + 2 * COL
         c.delete("all")
-        share = max(0.0, float(g.get("pct") or 0))
-        col = "#a3a3a3" if share < 40 else "#f59e0b" if share < 70 else "#ea580c" if share < 100 else "#b91c1c"
-        c.create_rectangle(0, 0, w * min(1.0, share / 150.0), 16, fill=col, outline="")
-        c.create_line(w * 100 / 150.0, 0, w * 100 / 150.0, 16, fill="#111827", dash=(2, 2))
-        air = g.get("air")
-        c.create_text(6, 8, anchor="w", font=("Segoe UI", 8, "bold"),
-                      text=f"Pain {share:.0f}% of what she can bear: {g.get('label', '')}"
-                           + (f"  ({g['where']})" if g.get("where") else "")
-                           + (f"  · air {air}% gone" if air is not None else ""))
+
+        def bar(y, x, text):
+            share = max(0.0, float(x.get("pct") or 0))
+            col = "#a3a3a3" if share < 40 else "#f59e0b" if share < 70 else "#ea580c" if share < 100 else "#b91c1c"
+            c.create_rectangle(0, y, w * min(1.0, share / 150.0), y + 16, fill=col, outline="")
+            c.create_line(w * 100 / 150.0, y, w * 100 / 150.0, y + 16, fill="#111827", dash=(2, 2))
+            c.create_text(6, y + 8, anchor="w", font=("Segoe UI", 8, "bold"), text=text)
+
+        o, pt = g.get("overall") or {}, g.get("part")
+        bar(0, o, f"Pain {o.get('pct', 0):.0f}%: {o.get('label', '')}"
+                  + (f"  ({o['where']})" if o.get("where") else ""))
+        if pt:
+            parts = ", ".join(str(p).lower() for p in pt.get("parts") or [])
+            bar(18, pt, f"{parts.capitalize() or 'Part'} {pt.get('pct', 0):.0f}%: {pt.get('label', '')}"
+                        + (f"  ({pt['why']})" if pt.get("why") else "")
+                        + (f"  · air {pt['air']}% gone" if pt.get("air") is not None else ""))
+        else:
+            c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill="#6b7280",
+                          text="nothing held or struck this beat")
 
     def _bars(self, f, pct):
         w = PIC + 2 * COL
