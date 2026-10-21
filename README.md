@@ -654,6 +654,26 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 240
+
+The two changes picked after the build-238 three-tap match.
+
+- **Faster beats: cut, don't rewrite** (`narration.cut_first`). Nearly every beat said "N of them still came back
+  wrong: only the wrong sentences get cut": the paragraph rewrites cost a minute or two and mostly failed. Now a
+  paragraph whose every slip is one a rewrite rarely mends loses just those sentences, with no model call, and is
+  written again only if that would leave it empty. The slips: an invented wound, a game term or number, copied
+  lines, a body part nobody in the fight has, blood with no wound, a thing not in this arena, a stock phrase
+  (`cut_first.marks`; remove one to have it rewritten again). Mistakes about what happened (a missing hit, an
+  invented fall) are still rewritten. `cut_first.enabled false` goes back.
+- **No more blows wasted on a ruined part** (`finish.submission.taps.steer.ready`, 150%). In the build-238 match the
+  steer kept every blow on the left thigh until it passed 700%, far more than a tap needs. Now, once the target part
+  is past `ready` and more than one tap is still needed, it is READY:
+  - blows move off it onto the NEXT part, the one the tap after this one will come from (it sticks from beat to beat
+    too, and becomes the target after the tap);
+  - holds still go onto the target;
+  - the director is told to put a hold on it now and soften the next part with blows.
+  `ready 0` keeps the blows on the target to the end.
+
 ## Build 239
 
 Fixes from a build-238 Nerine vs Ripples match set to three tap-outs from three different parts. The match never

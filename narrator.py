@@ -12541,6 +12541,7 @@ class Narrator:
             # past the beat's time budget: one try each, and wording-only slips are left to the cleanup
             tries, cap = min(tries, 1), min(cap, 4)
         paras = text.split("\n")
+        bad = None
         if found is None:
             bad = self._bad_sentences(text, prior)
             found = {}
@@ -12563,6 +12564,26 @@ class Narrator:
             found = {i: w for i, w in found.items() if not all(any(m in x for m in free) for x in w)}
             if not found:
                 return text
+        cf = n.get("cut_first") or {}
+        marks = tuple(cf.get("marks") or ()) if cf.get("enabled", True) else ()
+        if marks and bad is not None:
+            # narration.cut_first: a paragraph whose every slip is one a rewrite rarely mends (an invented wound,
+            # a game term, copied lines, a body part nobody here has) loses just those sentences, with no model
+            # call; only when that would leave the paragraph empty is it written again
+            cut_n = 0
+            for i in sorted(found):
+                if not all(any(m in w for m in marks) for w in found[i]):
+                    continue
+                sents_ = [x for x in _SENT.split(paras[i].strip()) if x]
+                keep_ = [x for x in sents_ if not (x.strip() in bad and any(m in bad[x.strip()] for m in marks))]
+                if keep_ and len(keep_) < len(sents_):
+                    paras[i] = " ".join(keep_)
+                    cut_n += len(sents_) - len(keep_)
+                    self._tally_checks(list(dict.fromkeys(_issue_label(r) for r in found.pop(i))), "cut", 0)
+            if cut_n and self.progress:
+                self.progress(f"cut {cut_n} wrong sentence{'s' if cut_n != 1 else ''} without writing it again")
+            if not found:
+                return re.sub(r"\n{3,}", "\n\n", "\n".join(paras)).strip()
         only_style = [i for i in sorted(found) if all(any(m in w for m in style) for w in found[i])]
         keep_style = set(only_style[:0 if self._late() else int(n.get("style_repairs_max", 2))])
         found = {i: w for i, w in found.items() if i not in only_style or i in keep_style}

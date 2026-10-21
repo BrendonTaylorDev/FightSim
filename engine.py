@@ -8652,6 +8652,8 @@ class Engine:
                     d.learned.pop("tap_refused", None)
                     d.learned.pop("tap_ways", None)
                     d.learned.pop("tap_target", None)
+                    if d.learned.get("tap_next"):
+                        d.learned["tap_target"] = d.learned.pop("tap_next")   # (the part already softened)
                     ev = {"type": "tap_count", "how": how, "attacker": a, "defender": dn, "submission": name,
                           "parts": parts, "with": with_, "part": tap_part, "tap_no": len(given), "needed": need,
                           "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
@@ -8739,14 +8741,46 @@ class Engine:
         cur = d.learned.get("tap_target")
         if cur in d.parts and cur not in spent:
             return cur
-        cands = [p for p in d.parts.values() if p.name not in spent and "base" not in p.name.lower()
+        pick = self._tap_candidate(d, spent)
+        if pick:
+            d.learned["tap_target"] = pick
+        return pick
+
+    def _tap_candidate(self, d, skip):
+        """The worst-hurt part (a limb first) not in skip that a hold could make her tap on, or None."""
+        cands = [p for p in d.parts.values() if p.name not in skip and "base" not in p.name.lower()
                  and body_region(p.name) in self.TAP_TARGET_REGIONS]
         if not cands:
             return None
         limb = ("fore_up", "fore_low", "hind_up", "hind_low", "tail")
-        pick = max(cands, key=lambda p: (p.damage + (25 if body_region(p.name) in limb else 0), self.rng.random()))
-        d.learned["tap_target"] = pick.name
-        return pick.name
+        return max(cands, key=lambda p: (p.damage + (25 if body_region(p.name) in limb else 0), self.rng.random())).name
+
+    def tap_ready(self, who):
+        """finish.submission.taps.steer.ready: True once her target part is hurt past ready (%): more blows there
+        are wasted on it, so they go to the next part (tap_next) while the holds still go to the target."""
+        d = self.get(who) if isinstance(who, str) else who
+        aim = self.tap_target(d) if d else None
+        st = (self._taps_rule() or {}).get("steer") or {}
+        ready = float(st.get("ready", 150) or 0)
+        return bool(aim) and ready > 0 and d.parts[aim].damage >= ready and self.taps_needed() > len(self.taps_given(d)) + 1
+
+    def tap_next(self, who):
+        """The part to soften with blows after the target (the next tap's), chosen afresh and not kept: None when
+        there is no other part that still counts."""
+        d = self.get(who) if isinstance(who, str) else who
+        aim = self.tap_target(d) if d else None
+        if not aim:
+            return None
+        skip = set(self.spent_tap_parts(d)) | {aim}
+        if self.taps_distinct_needed() > 1:
+            skip |= set(self.taps_given(d))      # (the next tap should be somewhere new where it can be)
+        cur = d.learned.get("tap_next")
+        if cur in d.parts and cur not in skip:
+            return cur                           # (it sticks too, so the softening builds on one part)
+        pick = self._tap_candidate(d, skip) or self._tap_candidate(d, set(self.spent_tap_parts(d)) | {aim})
+        if pick:
+            d.learned["tap_next"] = pick
+        return pick
 
     def _tap_part(self, d, hs):
         """The body part a tap in these holds (worst-hurt first) would count for: the first one that still counts,

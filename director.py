@@ -583,7 +583,21 @@ def _apply_tap_steer(engine, att, dfn, b, kind):
             return b      # (she is lying on it: not where a blow or a grip can get at it this beat)
     if kind == "strikes":
         name = fit(b.get("part")) if b.get("part") else None
-        if name == aim or (name not in spent and engine.rng.random() >= chance):
+        if engine.tap_ready(dfn):
+            # steer.ready: the target is ruined already, and more blows there are wasted: they soften the next
+            # part instead (the one the tap after this one will come from)
+            nxt = engine.tap_next(dfn)
+            if nxt and (name in spent or (name == aim and engine.rng.random() < chance)):
+                aim = nxt
+            elif name != nxt and name not in spent and nxt and engine.rng.random() < chance * 0.5:
+                aim = nxt
+            else:
+                return b
+            if dfn in engine.downed:
+                fitted, _ = engine.fit_to_facing(dfn, [aim])
+                if fitted and fitted[0] != aim:
+                    return b
+        elif name == aim or (name not in spent and engine.rng.random() >= chance):
             return b
         b = dict(b, part=aim, _aimed=True)
         if b.get("hits"):
@@ -629,7 +643,13 @@ def taps_hint(engine):
         if spent:
             line += (f"; a hold on her {', '.join(p.lower() for p in spent)} can NO LONGER make her tap (those "
                      f"parts are used up)")
-        if aim and foe:
+        if aim and foe and engine.tap_ready(f):
+            nxt = engine.tap_next(f)
+            line += (f". Her {aim.lower()} is READY: it is hurt enough, and more blows on it are wasted. {foe.name} "
+                     f"PUTS A HOLD ON HER {aim.upper()} now (a lock, a submission, an improvised grip with that part "
+                     f"first in \"hits\") and keeps it on until she taps"
+                     + (f"; her blows go to her {nxt.lower()}, softening it for the tap after" if nxt else ""))
+        elif aim and foe:
             line += (f". {foe.name} WORKS HER {aim.upper()} next: strikes aimed at it to wear it down, then a hold "
                      f"on it (a lock, a submission, an improvised grip with that part first in \"hits\"), kept on and "
                      f"tightened until she taps")

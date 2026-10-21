@@ -458,6 +458,33 @@ def _taps_check(director, P):
     except ValueError as x:
         if "finish.submission.enabled" not in str(x):
             problems.append(f"no guess for the mistyped path: {x}")
+    # build 240: a target hurt past steer.ready sends the blows to the next part; the holds stay on it
+    d.learned["taps_given"] = ["Right Thigh", "Right Thigh"]
+    e.rules["finish"]["submission"]["taps"].update(needed=4, different_parts=100)   # (two still to go)
+    aim = e.tap_target(d)
+    d.parts[aim].damage = 400.0
+    nxt = e.tap_next(d)
+    if not e.tap_ready(d) or not nxt or nxt == aim:
+        problems.append(f"a target at 400% should be ready, with a next part: {aim} -> {nxt}")
+    b = director._apply_tap_steer(e, "Nerine", "Ripples", {"part": "Right Thigh"}, "strikes")
+    if b.get("part") != nxt:
+        problems.append(f"with the target ready, a blow on a used-up part should go to the next part {nxt}: {b}")
+    b = director._apply_tap_steer(e, "Nerine", "Ripples", {"hits": [{"part": "Right Thigh"}]}, "holds")
+    if b["hits"][0]["part"] != aim:
+        problems.append(f"with the target ready, a grip should still go onto it ({aim}): {b['hits']}")
+    if "READY" not in director.taps_hint(e):
+        problems.append("the director is not told the target is ready for a hold")
+    n.progress = None
+    # build 240: narration.cut_first: a slip a rewrite rarely mends is cut with no model call
+    calls = []
+    n._rewrite_paragraph = lambda *a, **k: calls.append(1) or ""
+    n._bad_sentences = lambda text, prior="": {"Her wing ached.": "Ripples: nobody in this fight has that"}
+    out = n._repair_paragraphs("", "Ripples gasped. Her wing ached. She stood.", "")
+    del n._rewrite_paragraph, n._bad_sentences
+    if calls or "wing" in out or "She stood." not in out:
+        problems.append(f"cut_first should cut the sentence with no rewrite: {out!r} ({len(calls)} calls)")
+    d.parts[aim].damage = 0.0
+    e.rules["finish"]["submission"]["taps"].update(needed=3, different_parts=50)
     # build 239: a grab on a ruined part (or once her health is gone) can make her tap; a kept grip with a second
     # limb adds that limb once, and stays as loose as she worked it
     d.learned.pop("taps_given", None)
