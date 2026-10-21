@@ -895,7 +895,7 @@ class Engine:
                     "_fresh_down", "_fresh_status", "pressed", "alliances", "_pending_events", "rolls", "tally",
                     "weather", "arena_marks", "chronicle", "setups")
     # engine state that lives outside the main snapshot tuple but must be undone (and saved) with it
-    _SNAP_EXTRA = ("encouraged", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
+    _SNAP_EXTRA = ("encouraged", "ever_down", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
                    "injury_amt", "lying_at", "lying_on", "burn_spot", "_story_prev", "_story_now", "_story_pinned", "_story_turned",
                    "_tac_status", "_last_event", "_forced_event", "_overbalanced", "_rock_open", "_slow_not_cold",
                    "_last_manhandle", "last_pin_shape", "fight_record", "game_plans")
@@ -1206,6 +1206,15 @@ class Engine:
         self.set_status(f, "armed", int(cfg.get("beats", 3)))
         return f.learned["weapon"]
 
+    ELEMENT_WORDS = re.compile(
+        r"\b(?:water\w*|aqua|hydro|jet|splash\w*|spray\w*|stream\w*|wave|bubbl\w*|soak\w*|drench\w*|spout\w*|"
+        r"fire|flam\w*|blaz\w*|burn\w*|ember\w*|heat\w*|scorch\w*|smoke|ice|icy|frost\w*|freez\w*|froz\w*|"
+        r"chill\w*|cold|snow|hail|spark\w*|electr\w*|thunder\w*|shock\w*|static|lightning|volt\w*|"
+        r"leaf|leaves|vine\w*|seed\w*|petal\w*|pollen|spore\w*|poison\w*|venom\w*|toxic|acid\w*|sludge|"
+        r"rock\w*|stone\w*|mud\w*|sand\w*|earth\w*|psychic|psi|mind|telekine\w*|shadow\w*|dark\w*|ghost\w*|"
+        r"dragon\w*|draconic|steel|metal\w*|iron|fairy|moon\w*|wind|gust\w*|air|bug|silk|web|"
+        r"beam|blast|pulse|bolt|ray|breath|glow\w*|energy|aura)\b", re.I)
+
     def improvised_move(self, name, mtype, severity, target="targeted", about="", who=None):
         """A move the director invents on the spot. Power comes from how hard it lands. A fighter who is ARMED with a
         conjured weapon hits with it: its type, and moves.conjure.power_mult harder."""
@@ -1218,6 +1227,11 @@ class Engine:
         chart = self.rules.get("moves", {}).get("type_chart", {})
         mtype = next((t for t in chart if t.lower() == str(mtype or "Normal").lower()), "Normal")
         name = " ".join(str(name or "improvised strike").split()[:5]).title()
+        if (not wpn and mtype not in ("Normal", "Fighting") and self.rules.get("moves", {}).get("plain_body", True)
+                and not self.ELEMENT_WORDS.search(f"{name} {about or ''}")):
+            # moves.plain_body: a head twist or a knee strike with nothing of her element in it is a plain blow,
+            # whatever type the director gave it (it must not soak her or fill her mouth with water)
+            mtype = "Normal"
         # close unless it plainly crosses the distance: two quick jabs on two parts are not a beam (a spread move is
         # otherwise taken for one, and a ranged move reaches a fighter in the air)
         words = f"{name} {about or ''}".lower()
@@ -3295,6 +3309,9 @@ class Engine:
         applies); one who is pinned can't fall any further. What ended is left in _knock_on."""
         n = self.get(name).name
         self._knock_on = []
+        down_ = self.__dict__.setdefault("ever_down", [])
+        if n not in down_:
+            down_.append(n)        # (who has been down at all this fight: the story can't have her "get back up" before)
         self.pressed.pop(n, None)  # she's off whatever a charge left her against
         self.get(n).status.pop("airborne", None)  # knocked out of the air: she's down, not flying
         if n not in self.downed:

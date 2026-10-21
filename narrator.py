@@ -4082,7 +4082,10 @@ class Narrator:
         (r"hip|thigh|knee|hock|foot|hind",
          ["the leg's strength flickers out for an instant and comes back shaking", "the joint is jolted sideways, a hot "
           "twist that she feels with her next step", "the shock runs down into the foot and the ground feels strange "
-          "under it", "the muscle of the leg knots up hard round the place it hit"]),
+          "under it", "the muscle of the leg knots up hard round the place it hit",
+          "the knee locks on its own and won't unlock for a breath", "a cramp grabs the back of the leg and lets go "
+          "slowly", "her toes curl hard into the ground and stay curled", "the leg trembles from hip to heel, out of "
+          "her control", "heat floods the muscle and it goes heavy, slow to answer"]),
         (r"back|spine",
          ["the shock runs down her spine to the root of her tail", "her breath hitches as it jars her whole frame",
           "the muscles along her back seize round it"]),
@@ -4139,7 +4142,15 @@ class Narrator:
         deep = next((ideas for rx, ideas in self.BODY_DEEP if re.search(rx, part)), [])
         n_deep = 0 if not deep else 1 if size == "glancing" or kind not in ("blunt", "blast") else 2
         deep = [d for d in deep if d in self._fit_body(deep, dfn)] if deep else deep
+        # (not the ones offered in the last three beats while there are others: one leg pool, hit every beat, gave
+        # "the shock ran down into the foot and the ground felt strange under it" five times in ten beats)
+        now_ = int(getattr(self, "beat_now", 0) or 0)
+        dused = self.__dict__.setdefault("_deep_used", {})
+        fresh_ = [d for d in deep if now_ - dused.get(d, -99) > 3] if deep else deep
+        deep = fresh_ if fresh_ and len(fresh_) >= n_deep else deep
         inside = rnd.sample(deep, min(n_deep, len(deep)))
+        for d in inside:
+            dused[d] = now_
         if kind in self.BODY_AFTER:
             inside.append(rnd.choice(self.BODY_AFTER[kind]))
         out = (f"  - THE BODY UNDER IT (ideas for the ONE telling of this blow, in slow physical detail and your own "
@@ -4148,7 +4159,7 @@ class Narrator:
                f"doesn't say, and no wound is added): {gives}"
                + (f"; {moves}" if moves else "") + "."
                + (" Inside it and past it: " + "; ".join(inside) + "." if inside else "")
-               + f" Then what it leaves on the {part}, in a few words of your own.")
+               + f" Close on the mark it leaves on her {part.lower()} (told as the story, not as an answer).")
         return self._in_coat(out, dfn)
 
     def _press_look(self, h):
@@ -12662,6 +12673,23 @@ class Narrator:
                             add(sent, f"{mv} was {poss(owner)} move, so it isn't hers: {w} hasn't used it in this "
                                       f"fight")
                         break
+            # a grip told the wrong way round: "Nerine's left foot spasmed as Ripples' twin tails tightened around it",
+            # when the tails were Nerine's, wrapped round Ripples' foot. Only a limb of the one named that grips nothing
+            limb_rx = r"(twin tails|tails?|jaws|teeth|fangs|coils|claws|paws|forepaws|arms?|legs?)"
+            gr = getattr(self, "grips", None) or []
+            for x in sents:
+                for m in re.finditer(r"\b([A-Z][a-z]+)(?:'s|’s|'|’) (?:own )?" + limb_rx + r"\b[^.!?…]{0,30}?\b(?:tightened|"
+                                     r"wrapped|coiled|squeezed|clamped|locked|cinched|constricted|bit down|held)\b", x):
+                    who, limb = m.group(1), m.group(2).lower()
+                    mine = [g for g in gr if g[0] == who]
+                    theirs = [g for g in gr if g[1] == who and re.search(r"\b" + re.escape(limb.split()[-1].rstrip("s")),
+                                                                        str(g[3] or "").lower())]
+                    if theirs and not any(re.search(r"\b" + re.escape(limb.split()[-1].rstrip("s")),
+                                                    str(g[3] or "").lower()) for g in mine):
+                        g = theirs[0]
+                        add(x, f"the grip with {g[3] or 'that'} is {poss(g[0])}, on {poss(who)} {str(g[2]).lower()}: "
+                               f"those {limb} aren't {poss(who)}, so it isn't hers; tell who grips whom the right way round")
+                        break
             # this beat's attack called by another move's name ("she threw an Aqua Jet straight at Nerine" for
             # Ripples' Water Gun)
             this = {n for _a, n in now_moves if n}
@@ -12676,6 +12704,20 @@ class Narrator:
                                    f"is, or by what it does")
                             break
         for x in sents:
+            ed = getattr(self, "ever_down", None)
+            if ed is not None and ((self.rules.get("narration") or {}).get("never_down") or {}).get("enabled", True):
+                for m in re.finditer(r"\b(?:get(?:ting)?|got|gets|climb(?:ed|ing)?|scrambl(?:ed|ing))\s+back\s+up\b"
+                                     r"|\bback (?:up )?on (?:her|my) feet\b", x):
+                    near = re.findall(r"\b([A-Z][a-z]+)\b", x[max(0, m.start() - 40):m.start()])
+                    near = [w for w in near if w in (self.strengths or {})]
+                    if not near:
+                        continue
+                    who = near[-1]      # (the fighter named closest before it: "Ripples watched Nerine get back up")
+                    if who in (self.strengths or {}) and who not in ed and who not in (getattr(self, "on_ground", None)
+                                                                                    or ()):
+                        add(x, f"{who} has never been down in this fight, so she never got back up: leave the "
+                               f"getting up out")
+                        break
             m = INVENTED_PAST.search(x)
             if m:
                 add(x, f"\"{m.group(0)}\" is a past that isn't in this story: this fight is all they have, so no earlier "
@@ -13730,8 +13772,12 @@ class Narrator:
         moves = {m.lower() for m in (getattr(self, "_move_names", None) or set())}
         swap = float(cfg.get("swap_chance", 0.5))
         out, swapped, cut = [], 0, 0
+        pov = None
         for para in text.split("\n"):
             if not para.strip() or para.strip().startswith("—"):
+                hm = re.match(r"^—\s*(.+?)\s*—", para.strip())
+                if hm:
+                    pov = hm.group(1)       # (whose part this is: a thought can only be hers)
                 out.append(para)
                 continue
             sents = [x for x in _SENT.split(para.strip()) if x]
@@ -13774,6 +13820,10 @@ class Narrator:
                     ws, named = whos.get(x.strip(), ([], []))
                     rnd = random.Random(zlib.crc32(f"pad|{getattr(self, 'beat_now', 0)}|{x}".encode()))
                     line = None
+                    if kind == "thought":
+                        # a thought is the part's own fighter's: built from what SHE has learned, never from the
+                        # other one ("Not the Aqua Jet again" in the head of the one who threw it)
+                        ws = [pov] if pov and (not ws or ws == [pov]) else []
                     if len(ws) == 1 and rnd.random() < swap:
                         line = self._swap_line(ws[0], kind, rnd, bool(re.match(re.escape(ws[0]) + r"\b", x.strip())))
                     if line:
@@ -13798,9 +13848,12 @@ class Narrator:
         past = {"escaping": "escaped", "slipping": "slipped", "bursting": "burst", "breaking": "broke",
                 "tearing": "tore", "spilling": "spilled", "leaking": "leaked"}
         out = []
+        text = self._mend_copied(text)
         for para in text.split("\n"):
             sents, had_thought = [], False
             for x in _SENT.split(para.strip()) if para.strip() else []:
+                if self.COPIED_NOTE.search(x):
+                    continue     # (the notes' own words about who holds whom, or the model talking about its rewrite)
                 m = re.match(r"^(\*?[A-Z][a-z]{0,7}[-—]?\*?), (escaping|slipping|bursting|breaking|tearing|spilling|"
                              r"leaking) ((?:from|out of|through|past|between) )?((?:her|his|its) \w+)([.!…])$", x)
                 if m:
@@ -13813,6 +13866,30 @@ class Narrator:
                 sents.append(x)
             out.append(" ".join(sents) if para.strip() else para)
         return "\n".join(out)
+
+    # a sentence of the notes' wording copied as prose, or the model saying what it just did
+    COPIED_NOTE = re.compile(r"\bthe one (?:gripping, pressing|held, hurting in it)\b|^(?:That|This|Here) (?:is|was) the "
+                             r"(?:paragraph|passage|part|scene|text|rewrite)\b|\b(?:paragraph|passage) (?:rewritten|"
+                             r"revised)\b", re.I)
+
+    @staticmethod
+    def _mend_copied(text):
+        """Small slips mended with no call: a note's own words left in the prose ("Then what it left on the right hip,
+        in a few words of her own, was a dull ache"), a word doubled by a cut ("the faint the taste of"), "came up"
+        after a verb that already moved it ("snapped back came up"), "forearms fin", and a side with no "her"
+        ("the fur over right thigh")."""
+        text = re.sub(r",? in (?:a )?few words of (?:her|your|their|its) own,?", "", text)
+        text = re.sub(r"\bThen what it (?:left|leaves) on (?:the|her) ([\w' -]+?)(?:,? (?:was|were)|:)\s+",
+                      lambda m: f"On her {m.group(1).strip()} it left ", text)
+        text = re.sub(r"\b(the|a|an) (\w+) the (taste|smell|sound|feel|sight|scent) of\b", r"\1 \2 \3 of", text)
+        text = re.sub(r"\b(the|a|an|her) \1\b", r"\1", text)
+        text = re.sub(r"\b(\w+ed) (back|up|forward|sideways|round|around) came up\b", r"\1 \2 and came up", text)
+        text = re.sub(r"\b(forearm|tail|head)s (fin)\b", r"\1 \2s", text)
+        text = re.sub(r"\b(over|on|in|into|across|against|along|under|down) (left|right) (?=[a-z]+\b)", r"\1 her \2 ",
+                      text)
+        text = re.sub(r"\bgrinded\b", "ground", text)
+        text = re.sub(r"\bfelt the ((?:\w+ ){0,2})(smell|scent) of\b", r"caught the \1\2 of", text)
+        return text
 
     @staticmethod
     def _drop_echo_clause(sent):
@@ -14560,13 +14637,16 @@ class Narrator:
                 "she has to beat harder just to stay where she is",
                 "her turns have gone wide and slow"]
     # a wound of an element, for narration.wrong_owner: the words that make it one fighter's
-    ELEM_WOUND = [("cold", re.compile(r"\b(?:icy|frost(?:ed|y|bitten)?|frozen|freezing|ice-cold)\s+(?:wound|bite|sting|"
+    ELEM_WOUND = [("cold", re.compile(r"\b(?:icy|frost(?:ed|y|bitten)?|frozen|freezing|ice-cold|chilled|numb(?:ed)?, (?:cold|chilled))\s+(?:wound|bite|sting|"
                                       r"patch|fur|spot|mark|burn|bruise|knee|leg|hip|paw|skin)\b|\bsting of the (?:icy|frost|"
                                       r"cold) |\bfrost (?:bit|clung|crusted|still)\b", re.I)),
                   ("fire", re.compile(r"\b(?:scorched|singed|seared|charred)\s+(?:fur|skin|patch|spot|wound|mark)\b|"
                                       r"\bburn(?:ed|t)? (?:fur|patch|mark|wound)\b", re.I)),
                   ("electricity", re.compile(r"\b(?:static|electric|the shock) still (?:crawl|prickl|tingl|buzz)\w*",
                                              re.I))]
+    # a sign only a fighter on her feet can show (left out for one who is down)
+    STAND_SIGN = re.compile(r"\b(?:step|steps|stands?|sways?|swaying|weight|limp\w*|under her when she holds still|"
+                            r"her stride|footing)\b", re.I)
     SEEN_PART = [(r"head|ear|eye|jaw|muzzle|nose|cheek|horn|antenna|beak",
                   "she shakes her head as if to clear it, and squints past the hurt"),
                  (r"throat|neck", "she swallows carefully, and her breath rasps"),
@@ -14659,11 +14739,17 @@ class Narrator:
             pool = [self._limb_fit(x, o) for x in self._fit_body(self.SEEN_HURT[t], o)]
             if self._in_air(o):
                 pool = self.SEEN_AIR + [x for x in pool if not self.AIR_NOT.search(x)]
+            lying = o in (getattr(self, "facing", None) or {})
+            if lying:
+                # (she is down after this beat: no step, no weight shifted from leg to leg, no swaying where she stands)
+                pool = [x for x in pool if not self.STAND_SIGN.search(x)] or pool
             signs = self._fresh_signs(o, pool, 2, rnd) if len(pool) >= 2 else pool
             wp = worst(o, 1)
             if wp:
                 # the worst wound's own sign, but not every beat: when it was offered last beat, only the general ones
                 part_sign = next((self._limb_fit(sg, o) for rx, sg in self.SEEN_PART if re.search(rx, wp[0][0])), None)
+                if part_sign and lying and self.STAND_SIGN.search(part_sign):
+                    part_sign = "the hurt leg lies still, and she won't put any weight through it to rise"
                 if part_sign and self._fresh_signs(o, [part_sign + f" (her {wp[0][0]})", ""], 1, rnd)[0]:
                     signs.append(part_sign + f" (her {wp[0][0]})")
             out += (f" WHAT {lead.upper()} SEES OF {poss_word(o).upper()} HURT (pick one or two, in your own words, as {lead} "
@@ -15578,6 +15664,11 @@ class Narrator:
 
     # the present-tense verbs that slip through most, and their past: for the odd sentence the copy editor isn't
     # called for (one alone) or left as it was
+    # describing words that, before one of PAST_OF's words, make it a noun ("short, sharp gasps", "frantic heaves")
+    NOUN_ADJ = (r"short|sharp|quick|shallow|ragged|frantic|desperate|deep|subtle|small|little|slight|faint|soft|hard|"
+                r"heavy|harsh|wet|sudden|slow|low|long|labou?red|jagged|choked|strangled|muffled|stifled|panicked|"
+                r"tiny|sharp|fresh|strong|weak|wild|frenzied|fierce|violent|gentle|steady|uneven|broken|hot|cold|"
+                r"rapid|shuddering|halting|stuttering|great|big|huge|final|last|first|next|few|many|several|two|three")
     PAST_OF = {"thuds": "thudded", "pulses": "pulsed", "favors": "favored", "favours": "favoured", "breathes": "breathed",
                "stops": "stopped", "throbs": "throbbed", "aches": "ached", "tightens": "tightened", "presses": "pressed",
                "grips": "gripped", "holds": "held", "feels": "felt", "knows": "knew", "sees": "saw", "takes": "took",
@@ -15604,6 +15695,12 @@ class Narrator:
             before, after = m.string[:m.start()], m.string[m.end():]
             if re.search(r"\b(?:a|an|the|her|his|its|their|my|your|our|these|those|every|each)\s+$", before, re.I) \
                     or re.match(r"\s+of\b", after):
+                return m.group(0)
+            # after a describing word or two ("in short, sharp gasps", "the frantic heaves and kicks"): a noun too
+            if re.search(r"\b(?:a|an|the|her|his|its|their|in|with|into|of|and)\s+(?:(?:%s|\w+(?:ous|ful|less|ive|ic|ish)"
+                         r"|\w+ly),?\s+){1,3}$" % self.NOUN_ADJ, before, re.I) \
+                    or (re.match(r"\s+and\s+(\w+s)\b(?!\s+(?:her|his|the|it|its|them|at|on|into|back|up|down)\b)", after)
+                        and re.match(r"\s+and\s+(\w+s)\b", after).group(1) not in self.PAST_OF):
                 return m.group(0)
             return self.PAST_OF[m.group(1)]
         for sent in sents or []:

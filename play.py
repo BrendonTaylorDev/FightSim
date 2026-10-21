@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 251-guided (padding capped per beat and swapped for the fight's own detail; narration mends: past tense, fragments, thought marks, places that broke or moved, the tap, whose wound or move it is)"
+VERSION = "2026-10-21 build 252-guided (a steered blow keeps no words of where it was aimed; plain-body moves land Normal; the export shows taps and pain; mends from the build-251 log)"
 
 HELP = """
 =============================================================================================
@@ -615,7 +615,11 @@ class Session:
         try:
             return self._play_beat(direction, manual, orders)
         finally:
+            last = self.beat_records[-1] if self.beat_records else None
             self._record_beat(tlen)
+            if self.beat_records and self.beat_records[-1] is not last:
+                # the beat's own autosave ran before its record was kept: save again, or loading that save loses it
+                self.autosave()
             d = {k: llm.stats[k] - before.get(k, 0) for k in llm.stats}
             if d["calls"] > 0:
                 row = {"seconds": time.time() - t0, "narrator": self.narrator.model, "director": self.director.model,
@@ -1279,6 +1283,9 @@ class Session:
         self.narrator.tally = dict(getattr(self.eng, "tally", {}) or {})   # for counts in the story ("thrown twice")
         # every grip that is still on now: the story may not let one go on its own
         self.narrator.grips = [(h.attacker, h.defender, h.part, h.with_part) for h in self.eng.holds.values()]
+        # who has been down at all this fight (None: a save from before build 252, which didn't keep it)
+        ed = self.eng.__dict__.get("ever_down")
+        self.narrator.ever_down = (set(ed or ()) | set(self.eng.downed) if ed is not None or self.eng.turn <= 1 else None)
         # moves that have only ever been dodged in this fight: the story may not remember them as blows that landed
         dodged = {m.group(1).strip() for x in self.recent_attacks
                   for m in [re.match(r"[^:]+: (.+?)(?: \(improvised\))? → .* DODGED it", x)] if m}

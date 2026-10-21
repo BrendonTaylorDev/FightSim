@@ -109,6 +109,38 @@ def _bars(f):
             f'<div class="dim">{html.escape(f.get("posture", ""))} · {html.escape(sts)}</div>')
 
 
+def _gauges(f):
+    """The window's tap tally and two pain gauges, as on screen (export.gauges): taps given against those needed,
+    then overall pain and the part held or struck, each a share of what she can bear (full width 150%, a mark at
+    100%). Beats saved before build 249 have no pain gauge, and a fight that isn't a submission match no tally."""
+    out = ""
+    t = f.get("taps")
+    if t:
+        given, need = list(t.get("given") or []), max(1, int(t.get("needed") or 1))
+        pips = "".join(f'<span class="pip{" on" if i < len(given) else ""}"></span>'
+                       for i in range(max(need, len(given))))
+        parts = ", ".join(str(p).lower() for p in given)
+        out += (f'<div class="taps"><b>Taps</b> {pips} {len(given)} of {need}'
+                f'{html.escape(f"  ({parts})") if parts else ""}</div>')
+    g = f.get("pain")
+    if g:
+        def bar(x, text):
+            share = max(0.0, float(x.get("pct") or 0))
+            col = "#a3a3a3" if share < 40 else "#f59e0b" if share < 70 else "#ea580c" if share < 100 else "#b91c1c"
+            return (f'<div class="bar pain"><span style="width:{min(100.0, share / 1.5):.0f}%;background:{col}"></span>'
+                    f'<i class="limit"></i><em>{html.escape(text)}</em></div>')
+        o, pt = g.get("overall") or {}, g.get("part")
+        out += bar(o, f"Pain {o.get('pct', 0):.0f}%: {o.get('label', '')}" + (f"  ({o['where']})" if o.get("where") else ""))
+        if pt:
+            parts = ", ".join(str(p).lower() for p in pt.get("parts") or [])
+            out += bar(pt, f"{parts.capitalize() or 'Part'} {pt.get('pct', 0):.0f}%: {pt.get('label', '')}"
+                           + (f"  ({pt['why']})" if pt.get("why") else "")
+                           + (f"  · air {pt['air']}% gone" if pt.get("air") is not None else ""))
+        else:
+            out += '<div class="dim">nothing held or struck this beat</div>'
+    return out
+
+
 def _table(f):
     rows = "".join(
         f'<tr><td>{html.escape(p)}</td><td class="n"><span class="chip" style="background:{cards.dmg_color(d)};'
@@ -141,6 +173,9 @@ pre{white-space:pre-wrap;font:12px/1.45 Consolas,monospace;color:var(--dim);marg
 table{border-collapse:collapse;width:100%;margin-top:6px}td,th{padding:2px 6px;border-bottom:1px solid var(--line);text-align:left}
 td.n{text-align:right}.chip{display:inline-block;min-width:58px;padding:0 4px;border-radius:3px;text-align:center;font-weight:600}
 .chip.res{border:2px solid;background:transparent;font-weight:400}
+.taps{font:13px system-ui,sans-serif;margin:6px 0 2px}.pip{display:inline-block;width:12px;height:12px;
+border-radius:50%;border:1.5px solid #7f1d1d;background:#fff;margin-right:3px;vertical-align:-2px}.pip.on{background:#dc2626}
+.bar.pain i.limit{position:absolute;left:66.7%;top:0;bottom:0;border-left:1px dashed #111827}
 .result{margin:14px 0 4px;padding:8px 12px;border-left:4px solid #b45309;background:var(--card);
 font:600 15px system-ui,sans-serif}
 """
@@ -158,7 +193,9 @@ def write(s, path=None, fights=None):
         tag = f"fight{recs[0].get('fight')}" if fights and len(fights) == 1 else "fights"
         path = os.path.join(OUT_DIR, f"{tag}_{names}_{stamp}.html")
     base = os.path.splitext(path)[0]
-    opts = cards.opts_of(getattr(getattr(s, "eng", None), "rules", None))
+    rules = getattr(getattr(s, "eng", None), "rules", None) or {}
+    opts = cards.opts_of(rules)
+    gauges = (rules.get("export") or {}).get("gauges", True)
     pics = {}
     for r in recs:
         for f in r["snapshot"]["fighters"]:
@@ -183,9 +220,10 @@ def write(s, path=None, fights=None):
             img = _card_img(f, pics, opts)
             sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool)
                             else k.replace("_", " ") for k, v in (f.get("status") or {}).items()) or "no statuses"
+            gz = _gauges(f) if gauges else ""
             side += (f'<div class="fighter">{img}<div class="dim">{html.escape(f.get("posture", ""))} · '
-                     f'{html.escape(sts)}</div>{_table(f)}</div>' if img else
-                     f'<div class="fighter">{_bars(f)}{_table(f)}</div>')
+                     f'{html.escape(sts)}</div>{gz}{_table(f)}</div>' if img else
+                     f'<div class="fighter">{_bars(f)}{gz}{_table(f)}</div>')
         body.append(f'<section id="b{k}"><h2>{html.escape(head)}</h2><div class="story">{st or "<p class=dim>(no story text for this beat)</p>"}'
                     f'{mech_html}</div><div class="side">{side}</div></section>')
     page = (f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,'

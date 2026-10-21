@@ -861,6 +861,67 @@ def narration_mends_check():
     return problems
 
 
+def log_fixes_252_check():
+    """Build 252: the fixes from the build-251 Ripples vs Nerine log. A blow the tap steer moves keeps no words or path
+    parts of where it was aimed; a head twist typed Water lands as Normal; no stepping tells for one lying down; the
+    notes' wording and the model's own remarks are taken out, and nouns stay nouns in the past-tense pass; a thought
+    swapped in is the part's own fighter's; a grip told the wrong way round and 'getting back up' for one never down
+    are caught; the export carries the tap tally and pain gauges."""
+    import re, director, fightexport
+    problems = []
+    s = H.session(5, fighters="Ripples,Nerine")
+    e, n = s.eng, s.narrator
+    e.rules = __import__("copy").deepcopy(e.rules)       # (this check's own settings, never saved for the others)
+    sub = e.rules["finish"]["submission"]
+    sub["enabled"] = True
+    sub["taps"].update(enabled=True)
+    sub["taps"]["steer"].update(strikes=1)
+    e.get("Nerine").parts["Right Thigh"].damage = 70
+    b = director._apply_tap_steer(e, "Ripples", "Nerine", {"action": "strike", "part": "Left Ear", "hits": [
+        {"part": "Left Ear"}, {"part": "Right Ear"}], "flavor": "drives her knee into the side of Nerine's head"},
+                                  "strikes")
+    aim = e.tap_target("Nerine")
+    if b.get("part") != aim or len(b.get("hits") or []) != 1 or "head" in b.get("flavor", "") \
+            or aim.lower() not in b.get("flavor", ""):
+        problems.append(f"a steered blow kept where it was aimed: {b}")
+    if e.improvised_move("Head Twist", "Water", "solid", about="twists her head hard")["type"] != "Normal":
+        problems.append("a head twist typed Water should land as Normal")
+    if e.improvised_move("Water Whip", "Water", "solid", about="a lash of water")["type"] != "Water":
+        problems.append("a water whip should stay Water")
+    one = "Her breath came in short, sharp gasps, and the frantic heaves and kicks did nothing. Her chest heaves and shakes."
+    got = n._past_words(one, [one])
+    if "sharp gasps" not in got or "frantic heaves and kicks" not in got or "chest heaved and shook" not in got:
+        problems.append(f"past tense: {got}")
+    ml = n._mend_leftovers("Then what it left on the right hip, in a few words of her own, was a dull ache. That is the "
+                           "paragraph rewritten. She was the one gripping, pressing and keeping it on; Ripples was the one "
+                           "held, hurting in it and fighting it. She could taste the faint the taste of water. Her head "
+                           "snapped back came up. The fur over right thigh dented.")
+    if ml != ("On her right hip it left a dull ache. She could taste the faint taste of water. Her head snapped back "
+              "and came up. The fur over her right thigh dented."):
+        problems.append(f"copied notes not mended: {ml!r}")
+    s.sync_narrator()
+    n.grips = [("Ripples", "Nerine", "Head", "her arm"), ("Nerine", "Ripples", "Left Foot", "her twin tails")]
+    n.ever_down = set()
+    n.on_ground = set()
+    bad = n._bad_sentences("Nerine's left foot curled as Ripples' twin tails tightened around it. Ripples knew she had "
+                           "let Nerine get back up too quickly. Nerine's tails wrapped tighter.")
+    if len(bad) != 2 or any("Nerine's tails" in x for x in bad):
+        problems.append(f"reversed grip / never down: {bad}")
+    n.facing = {"Ripples": "face-down"}
+    n.strengths = {"Ripples": 40, "Nerine": 60}
+    if any(n.STAND_SIGN.search(x) for x in [n._limb_fit(x, "Ripples") for x in n.SEEN_HURT["badly"]
+                                            if not n.STAND_SIGN.search(x)]):
+        problems.append("stand signs not recognised")
+    # the export: the tally and the gauges
+    f = {"name": "Ripples", "taps": {"given": ["Head"], "needed": 3},
+         "pain": {"overall": {"pct": 80, "label": "near her limit"}, "part": {"pct": 120, "parts": ["Left Knee"],
+                                                                              "label": "past what she can bear"}}}
+    g = fightexport._gauges(f)
+    if g.count('class="pip') != 3 or "Pain 80%" not in g or "Left knee 120%" not in g:
+        problems.append(f"export gauges: {g[:200]}")
+    return problems
+
+
 def low_health_check():
     """Build 246: at the very end of her strength she shows it alone, squirms when down, her body gives her away (a
     limb that doesn't answer blocks its moves a beat), makes one last stand (then wide open), and the other reads her."""
@@ -1057,6 +1118,13 @@ def main(argv):
         probs = held_reach_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  held on the ground: reach, the down count, the pain gauge, taps told, body words  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "log fixes 252 steer export" for w in want):
+        t = time.time()
+        probs = log_fixes_252_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 252 log fixes: steered blows, plain-body type, mends, whose grip, export gauges  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "narration mends padding" for w in want):

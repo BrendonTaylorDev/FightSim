@@ -654,6 +654,48 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 252
+
+From your build-251 submission match (Ripples vs Nerine, the lakeside clearing, 10 beats).
+
+### The engine
+
+- **A blow moved by the tap steer no longer keeps where it was aimed.** With `finish.submission.taps` on, the steer
+  moves a blow onto the part being worked (Nerine's right thigh). It moved only the first part: the rest (both ears,
+  the left foot) were rolled for and dropped, and the director's words ("drives her knee into her head", "rakes her
+  cheek") stayed, so the story told the head and the cheek. Now the blow keeps only the new part, and its words name it.
+- **Plain body moves land as Normal** (`moves.plain_body`). The director typed a Head Twist as Water: it hit as
+  Water, soaked Nerine and went into her mouth. An improvised move with no word of her element in it is Normal now. A
+  conjured weapon still sets the type.
+- **A lost beat in the export.** Each beat's autosave ran before that beat was recorded for `/exportfight`, so a fight
+  loaded from that save was missing its last beat (your beat 4). The beat is saved again once it is recorded.
+
+### The export (`export.gauges`)
+
+- Beside each fighter, the window's **tap pips** and its **two pain gauges** (overall, and the part held or struck),
+  as they were after that beat. Beats saved before build 249 have no gauge.
+
+### Narration
+
+- **Thoughts built by the engine are the part's own fighter's.** "*Go for the right thigh*" in Nerine's head about her
+  own thigh, and "*Not the aqua jet again*" in Ripples' head about her own move, came from the other fighter's notes.
+- **No stepping tells for one lying down** ("the uneven step, her weight off the hurt leg" for Ripples, face-down).
+- **The notes' wording taken out of the prose:** "in a few words of her own", "Then what it left on the right hip:",
+  "She was the one gripping, pressing and keeping it on...", and the model's "That is the paragraph rewritten."
+- **Nouns stay nouns** in the past-tense pass: "short, sharp gasps", "the frantic heaves and kicks". "Her chest heaves
+  and shakes" still becomes "heaved and shook".
+- **Small mends:** "the faint the taste of" becomes "the faint taste of"; "snapped back came up" becomes "snapped back
+  and came up"; "forearms fin" becomes "forearm fins"; "over right thigh" becomes "over her right thigh"; "grinded"
+  becomes "ground"; "felt the smell of" becomes "caught the smell of".
+- **New checks (sentence cut):**
+  - A grip told the wrong way round: "Nerine's foot curled as Ripples' twin tails tightened round it", when the tails
+    were Nerine's. Part of `narration.wrong_owner`, which also catches "a chilled patch" on one no cold touched.
+  - A fighter who "got back up" when she has never been down this fight (`narration.never_down`). Saves from before
+    this build aren't checked, since they didn't record it.
+- **Fewer repeated body lines:** the leg's "the shock ran down into the foot and the ground felt strange under it"
+  came five times in ten beats. The leg list has more lines, and one offered in the last three beats waits while
+  others are left.
+
 ## Build 251
 
 From the narration in your build-249 submission match (Ripples vs Nerine, the lakeside clearing).

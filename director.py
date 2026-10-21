@@ -600,13 +600,16 @@ def _apply_tap_steer(engine, att, dfn, b, kind):
                     return b
         elif name == aim or (name not in spent and engine.rng.random() >= chance):
             return b
-        b = dict(b, part=aim, _aimed=True)
+        old = [x for x in [b.get("part")] + [h.get("part") for h in (b.get("hits") or []) if isinstance(h, dict)] if x]
+        b = dict(b, part=aim, _aimed=True, _steered_from=old[0] if old else None)
         if b.get("hits"):
-            hs = [dict(h) for h in b["hits"]]
+            hs = [dict(h) for h in b["hits"] if isinstance(h, dict)]
             if hs:
                 hs[0]["part"] = aim
-            b["hits"] = hs
-        return b
+            # a strike's other parts were the path of the blow the director aimed (an ear, then the other ear): moved
+            # onto the target, they no longer touch it and were only rolled for and dropped. A combo's are blows
+            b["hits"] = hs[:1] if b.get("action") == "strike" else hs
+        return _steered_words(engine, dfn, b, old, aim)
     hs = [dict(h) for h in (b.get("hits") or []) if isinstance(h, dict) and h.get("part")]
     if not hs and b.get("part"):
         hs = [{"part": b["part"], "severity": b.get("severity")}]
@@ -617,8 +620,39 @@ def _apply_tap_steer(engine, att, dfn, b, kind):
         i = 0
     if i is None:
         return b
+    was = hs[i]["part"]
     hs[i]["part"] = aim
-    return dict(b, hits=hs, part=hs[0]["part"])
+    return _steered_words(engine, dfn, dict(b, hits=hs, part=hs[0]["part"]), [was], aim) if i == 0 else \
+        dict(b, hits=hs, part=hs[0]["part"])
+
+
+_REGION_WORDS = {"head": r"head|skull|face|cheek|jaw|muzzle|snout|temple|ears?|eyes?|nose|brow",
+                 "neck": r"neck|throat", "chest": r"chest|ribs?", "belly": r"belly|stomach|gut|midsection",
+                 "back_up": r"back|spine", "back_low": r"lower back", "tail": r"tails?",
+                 "hind_low": r"knee|foot|feet|ankle|shin", "hind_up": r"thigh|hip",
+                 "fore_low": r"forearm|paw|wrist|arm", "fore_up": r"upper arm|arm", "shoulder": r"shoulder"}
+
+
+def _steered_words(engine, dfn, b, old, aim):
+    """finish.submission.taps.steer moved a blow onto the part being worked: the director's words for it ("drives her
+    knee into the side of her head", why: "rake her cheek") still named where it was aimed, and the story followed
+    them instead of where it landed. The old part, and the words for its region, become the part it lands on."""
+    from engine import body_region
+    if not old or not aim:
+        return b
+    alts = sorted({str(p).lower() for p in old if p}, key=len, reverse=True)
+    regs = {body_region(str(p)) for p in old if p} - {body_region(aim), "other"}
+    pats = [re.escape(p) for p in alts] + [_REGION_WORDS[r] for r in regs if r in _REGION_WORDS]
+    if not pats:
+        return b
+    rx = re.compile(r"\b(?:(?:left|right|other|both)\s+)?(?:%s)\b" % "|".join(pats), re.I)
+    for key in ("flavor", "intent", "improvised_about"):
+        v = b.get(key)
+        if isinstance(v, str) and rx.search(v):
+            b = dict(b, **{key: rx.sub(aim.lower(), v, count=1)})
+            b[key] = rx.sub("", b[key]).replace(" and ,", ",")
+            b[key] = re.sub(r"\s+([,.;])", r"\1", re.sub(r"\b(?:and|her|the)\s+(?=[,.;]|$)", "", b[key])).strip(" ,")
+    return b
 
 
 def _same_part(engine, who, asked, name):
@@ -1019,6 +1053,10 @@ def resolve(engine, b):
     if (not manual and dfn and engine._taps_rule() and act in ("strike", "combo", "hold_start", "submission")
             and engine.get(att).name not in (getattr(engine, "ordered", None) or ())):
         b = _apply_tap_steer(engine, att, dfn, b, "strikes" if act in ("strike", "combo") else "holds")
+        if b.get("_steered_from"):
+            # (moved onto the part being worked: its words were put right with it)
+            flavor = short_phrase(b.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
+            intent = b.get("intent", intent)
     started = ()
     if not manual and act in ("grapple", "hold_start", "pin", "submission", "throw", "slam", "drag"):
         # confusion spoils a grab, a pin or a throw as surely as a blow: she may hurt herself instead
