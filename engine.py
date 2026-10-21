@@ -939,6 +939,12 @@ class Engine:
         # how an outcome plays out when the result itself is already decided. Weights; rules.json "variety" overrides.
         "charge_stands": {"staggers": 4, "leans": 3, "knee": 2, "rebounds": 2},
         "keeps_feet": {"staggers": 4, "knee": 3, "sways": 3, "braces": 2},
+        # low_health: what she does at the very end of her strength, by itself
+        "low_idle": {"sway": 3, "lean": 3, "blink": 3, "spit": 2, "test_leg": 2, "breath": 3},
+        "low_watch": {"closes_in": 3, "waits": 3, "circles": 3},
+        "low_squirm": {"crawl_at": 3, "crawl_away": 2, "claw": 3, "curl": 3},
+        "low_tell": {"shaking": 3, "breath": 3, "dead_limb": 2},
+        "foe_read": {"finish": 3, "wary": 2, "still_standing": 3},
         "charge_falls": {"on her side": 30, "face-down": 25, "face-up": 15, "sitting up": 30},
         "dodge": {"sidestep": 4, "duck": 3, "spring_back": 3, "turn_aside": 2, "twist": 2},
         "hold_break": {"wrench": 3, "pry": 2, "slip": 2, "shove": 2},
@@ -1246,6 +1252,10 @@ class Engine:
             raise ValueError(f"{poss_word(a.name)} {busy[0]} are clamped on {poss_word(busy[1])} {busy[2].lower()}: she "
                              f"can't {move['name']} with them while they hold. Strike with something free, or let go "
                              f"first (hold_release)")
+        dead = self.dead_limb(a, move)
+        if enforce and dead:
+            raise ValueError(f"{poss_word(a.name)} {dead.lower()} isn't answering her this beat (low_health.tells): "
+                             f"she can't {move['name']} with it. Use something else")
         if enforce and move.get("charge") and (a.name in self.downed or self.pinned_by(a.name)):
             where = "PINNED" if self.pinned_by(a.name) else "ON THE GROUND"
             raise ValueError(f"{a.name} is {where}: {move['name']} is a running, full-body charge, and she can't launch one "
@@ -2719,6 +2729,8 @@ class Engine:
             out.append((st0.get("label", "running on nothing"), float(st0.get("power", 1.0))))
         if self.has(a, "greyed"):
             out.append(("her sight greying out", float(cfg.get("greyed_power_mult", 0.85))))
+        if self.has(a, "last_stand"):
+            out.append(("her last stand: everything she has left", float(self._low_cfg("last_stand").get("power_mult", 1.5))))
         if self.has(a, "dazed"):
             out.append(("dazed", float(cfg.get("dazed_power_mult", 0.9))))
         if self._pin_mult(a, d) != 1.0:
@@ -3021,7 +3033,8 @@ class Engine:
                (float(sc.get("staggered_dodge_mult", 0.6)) if self.has(d, "staggered") else 1.0) * \
                (float(sc.get("dazed_dodge_mult", 0.4)) if self.has(d, "dazed") else 1.0) * \
                (float(sc.get("doubled_over_dodge_mult", 0.5)) if self.has(d, "doubled_over") else 1.0) * \
-               (float(sc.get("greyed_dodge_mult", 0.3)) if self.has(d, "greyed") else 1.0)
+               (float(sc.get("greyed_dodge_mult", 0.3)) if self.has(d, "greyed") else 1.0) * \
+               (self._low_cfg("last_stand").get("open_dodge_mult", 0.2) if self.has(d, "overextended") else 1.0)
         s = max(0.0, min(1.0, self.strength(d) / 100))
         # what she runs on: a biped's or a bird's fore_low is arms or wingtips, not legs
         feet = ("hind_up", "hind_low", "tail") + (("fore_low",) if self.body_plan(d) == "quadruped" else ())
@@ -7878,6 +7891,8 @@ class Engine:
         else:
             self.pressed.clear()
         events += self.get_up_tick()
+        if not self.winner():
+            events += self._low_health_tick(events)
         events += self._scene_event_tick(busy=had_grip)
 
         fighters = {}
@@ -9577,6 +9592,130 @@ class Engine:
                                                        "shifting her weight", "her own heartbeat", "a flinch at nothing"))})
         return events
 
+    def _low_cfg(self, key=None):
+        """low_health (since build 246), or one of its parts (idle, squirm, tells, last_stand, foe_read); {} when it
+        is off."""
+        lc = self.rules.get("low_health") or {}
+        if not lc.get("enabled", True):
+            return {}
+        if key is None:
+            return lc
+        sub = lc.get(key) or {}
+        return sub if sub.get("enabled", True) else {}
+
+    def low_now(self, f, at=None):
+        """Is she at the very end of her strength (low_health.at_pct % of full health or less)?"""
+        lc = self._low_cfg()
+        return bool(lc) and self._health_pct(f) <= float(at if at is not None else lc.get("at_pct", 10))
+
+    _LIMB_OF = {"fore_up": "arm", "fore_low": "arm", "hind_up": "leg", "hind_low": "leg", "tail": "tail"}
+
+    def dead_limb(self, a, move):
+        """low_health.tells: the part of hers that isn't answering this beat, if this move is thrown with it."""
+        dl = a.learned.get("dead_limb") or {}
+        if not dl or int(dl.get("turn", -1)) != self.turn or not move:
+            return None
+        text = f"{move.get('name', '')} {move.get('about', '')}".lower()
+        kind = "charge" if move.get("charge") else next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, text)),
+                                                        None)
+        want = dl.get("kind")
+        if kind == want or (kind == "charge" and want == "leg") or (kind == "wing" and want == "wing"):
+            return dl.get("part")
+        return None
+
+    def _low_health_tick(self, events_so_far=()):
+        """low_health: what a fighter at the very end of her strength (at_pct % of full health or less) does by
+        herself, a told event each, never more than one of each kind a beat:
+        - idle: on her feet and left alone this beat, she sways, leans on something, blinks blood away, spits, tests
+          a bad leg, fights for breath; the other one sees it (closes in, waits, circles);
+        - squirm: down and free, she drags herself toward the other or away, claws at the ground, curls round her
+          worst part;
+        - tells: her body gives her away (shaking, ragged breath) and now and then a hurt limb doesn't answer: moves
+          thrown with it can't be used next beat;
+        - last_stand: once a fight, below last_stand.at_pct, she gathers everything for one all-in attack (her next
+          beat x power_mult), and is wide open the beat after (dodge x open_dodge_mult);
+        - foe_read: the other one reads her state (she's done, finish it; careful, she has one more in her; why is
+          she still standing), and the director is told."""
+        lc = self._low_cfg()
+        if not lc:
+            return []
+        events, rose = [], {e.get("fighter") for e in events_so_far if e.get("type") == "get_up"}
+        for f in self.active():
+            free = not self.pinned_by(f.name) and not any(f.name in (h.attacker, h.defender) for h in self.holds.values())
+            out = self.has(f, "asleep") or self.has(f, "frozen")
+            foe = next((x for x in self.active() if x is not f and (not x.team or x.team != f.team)), None)
+            # last stand: the beat after it, she is wide open
+            if f.learned.get("last_stand") == self.turn - 1 and not self.has(f, "overextended"):
+                self.set_status(f, "overextended", 1)
+                events.append({"type": "overextended", "fighter": f.name})
+            if out or not self.low_now(f):
+                continue
+            ls = self._low_cfg("last_stand")
+            if ls and "last_stand" not in f.learned and free and f.name not in self.downed and foe \
+                    and self.low_now(f, ls.get("at_pct", -50)) and self._chance(
+                        float(ls.get("chance", 0.15)), f"{f.name} gathering herself for a last stand", "LAST STAND", "no"):
+                f.learned["last_stand"] = self.turn
+                self.set_status(f, "last_stand", 1)
+                events.append({"type": "last_stand", "fighter": f.name, "at": foe.name})
+                continue
+            cfg = self._low_cfg("idle")
+            if cfg and f.name not in self.downed and free and f.name not in self.involved and not self.has(f, "airborne") \
+                    and self._cool(f, "low_idle", cfg) and self._chance(float(cfg.get("chance", 0.35)),
+                                                                     f"{f.name} showing it, left alone", "yes", "no"):
+                skip = set()
+                if not self.scene_props():
+                    skip.add("lean")
+                legs = [p for p in f.parts.values() if self._LIMB_OF.get(body_region(p.name)) == "leg"]
+                bad = max(legs, key=lambda p: p.damage, default=None)
+                if not bad or bad.damage < 150:
+                    skip.add("test_leg")
+                ev = {"type": "low_idle", "fighter": f.name, "way": self.vary("low_idle", skip),
+                      "prop": self.rng.choice(self.scene_props()) if self.scene_props() else "",
+                      "leg": bad.name if bad else "", "watcher": foe.name if foe else "",
+                      "watch": self.vary("low_watch") if foe else ""}
+                f.learned["low_idle"] = self.turn
+                events.append(ev)
+            cfg = self._low_cfg("squirm")
+            if cfg and f.name in self.downed and f.name not in rose and free and f.name not in self._fresh_down \
+                    and self._cool(f, "low_squirm", cfg) and self._chance(float(cfg.get("chance", 0.4)),
+                                                                       f"{f.name} squirming where she lies", "yes", "no"):
+                worst = max(f.parts.values(), key=lambda p: p.damage)
+                f.learned["low_squirm"] = self.turn
+                events.append({"type": "low_squirm", "fighter": f.name, "way": self.vary("low_squirm"),
+                               "part": worst.name, "toward": foe.name if foe else "",
+                               "prop": self.rng.choice(self.scene_props()) if self.scene_props() else ""})
+            cfg = self._low_cfg("tells")
+            if cfg and self._cool(f, "low_tell", cfg) and self._chance(float(cfg.get("chance", 0.25)),
+                                                                     f"{poss_word(f.name)} body giving her away", "yes", "no"):
+                limbs = [p for p in f.parts.values() if (self._LIMB_OF.get(body_region(p.name))
+                                                         or ("wing" if "wing" in p.name.lower() else None))
+                         and p.damage >= float(cfg.get("dead_limb_damage", 100))]
+                way = self.vary("low_tell", () if limbs else ("dead_limb",))
+                ev = {"type": "low_tell", "fighter": f.name, "way": way}
+                if way == "dead_limb":
+                    p = max(limbs, key=lambda x: x.damage)
+                    kind = "wing" if "wing" in p.name.lower() else self._LIMB_OF.get(body_region(p.name))
+                    f.learned["dead_limb"] = {"part": p.name, "kind": kind, "turn": self.turn}
+                    ev.update(part=p.name, kind=kind)
+                f.learned["low_tell"] = self.turn
+                events.append(ev)
+            cfg = self._low_cfg("foe_read")
+            if cfg and foe and not (self.has(foe, "asleep") or self.has(foe, "frozen")) \
+                    and self._cool(foe, "read_turn", cfg) and self._chance(float(cfg.get("chance", 0.3)),
+                                                                        f"{foe.name} reading {poss_word(f.name)} state",
+                                                                        "yes", "no"):
+                skip = () if f.health <= 0 and f.name not in self.downed else ("still_standing",)
+                kind = self.vary("foe_read", skip)
+                foe.learned["read_turn"] = self.turn
+                foe.learned["foe_read"] = {"of": f.name, "kind": kind, "turn": self.turn}
+                events.append({"type": "foe_read", "fighter": foe.name, "of": f.name, "kind": kind})
+        return events
+
+    def _cool(self, f, key, cfg):
+        """A low_health event of this kind is told at most once every cooldown beats."""
+        last = f.learned.get(key)
+        return last is None or self.turn - int(last) >= int(cfg.get("cooldown", 3))
+
     def zero_part_ramp(self, f):
         """below_zero.part_ramp (since build 244): with her health below zero, the damage her PARTS take from each
         blow or grip is multiplied, more the deeper she goes: 1 + per_10 for every 10% of her full health below zero,
@@ -9859,6 +9998,10 @@ class Engine:
                       "than she should be able to",
         "greyed": "GREYING OUT: for a moment the edges of her sight go grey and the sound goes far away; she sways, "
                   "a beat behind everything, and drags herself back",
+        "last_stand": "HER LAST STAND: far past anything she should be able to do, she gathers every scrap she has "
+                      "left for one wild, all-in attack, holding nothing back for after",
+        "overextended": "WIDE OPEN after her last stand: she threw everything and has nothing left to cover with, "
+                        "off balance, slow, gasping",
     }
 
     # the same status from a move that is not cold: CHILLED is the engine's word for any slowing

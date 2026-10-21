@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 245-guided (upright holds: 20 submissions put on a fighter still on her feet or sitting up, a full nelson, a bear hug, a guillotine, a hammerlock and more, and the director's own marked upright; held on, each beat may bear her down a stage (sagging, on her knees, flat; the stages are in rules.json) with the grip kept on, now and then two at once, and now and then the holder has to readjust: submissions.upright)"
+VERSION = "2026-10-21 build 246-guided (the very end of her strength: left alone she shows it, down she squirms, her body gives her away and a limb may not answer, one last stand a fight then wide open, and the other reads her: low_health; the window shows each fighter's tap-outs in a submission match)"
 
 HELP = """
 =============================================================================================
@@ -540,6 +540,9 @@ def fight_snapshot(s, label=None):
             "parts": [(p.name, round(float(p.damage), 2), round(float(p.resistance), 2)) for p in f.parts.values()],
             # for the pictures: which way she lies, and the marks on each hurt part (window.poses, window.damage_marks)
             "facing": facing, "marks": _marks_of(eng, f),
+            # a submission match: her tap-outs so far and how many end it (the window's tap tally)
+            "taps": ({"given": list(eng.taps_given(f)), "needed": int(eng.taps_needed())}
+                     if eng.submission_match() else None),
         })
     return {"turn": int(getattr(eng, "turn", 0) or 0), "fighters": out,
             "label": label or f"after beat {getattr(eng, 'turn', 0)}"}

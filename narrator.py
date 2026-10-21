@@ -4645,6 +4645,60 @@ class Narrator:
                 lines.append(f"ADRENALINE SURGE: {e['fighter']} has been pushed past her limit and something kicks in: "
                              f"for the next {e['beats']} beats she moves faster, hits harder, and the pain falls away "
                              f"behind sheer will. Make this a turning point: show it rising in her body.")
+            elif e["type"] == "low_idle":
+                f_, w_ = e["fighter"], e.get("way")
+                what_ = {"sway": "she sways where she stands, the ground tilting under her, and has to put a foot out to "
+                                 "stay up",
+                         "lean": f"she leans on {e.get('prop') or 'the nearest thing'} for a moment, just to stay up",
+                         "blink": "she blinks blood and sweat out of her eyes, hard, trying to make the other one come "
+                                  "clear",
+                         "spit": "she spits, blood in it, and drags the back of a paw across her mouth",
+                         "test_leg": f"she puts weight on her {str(e.get('leg') or 'hurt leg').lower()}, and it nearly "
+                                     f"goes; she takes it back off",
+                         "breath": "she fights for breath, every one of them shallow and catching on the pain"}.get(
+                    w_, "she sways, barely holding herself together")
+                see_ = {"closes_in": "sees it and closes in, sensing the end", "waits": "sees it and waits, letting "
+                        "her wear herself out", "circles": "sees it and circles, looking for the way in"}.get(
+                    e.get("watch"), "")
+                lines.append(f"{f_.upper()}, LEFT ALONE A MOMENT, SHOWS HOW LITTLE SHE HAS LEFT: {what_}."
+                             + (f" {e['watcher']} {see_}." if e.get("watcher") and see_ else "")
+                             + " Nobody hits her in this.")
+            elif e["type"] == "low_squirm":
+                what_ = {"crawl_at": f"drags herself toward {e.get('toward') or 'the other'} on the ground, not "
+                                     f"finished, whatever her body says",
+                         "crawl_away": f"drags herself away across the ground, toward "
+                                       f"{e.get('prop') or 'anywhere that is not here'}, to buy a moment",
+                         "claw": "claws at the ground under her, trying to find purchase to rise and not finding it",
+                         "curl": f"curls around her {str(e.get('part') or '').lower()}, shaking, before she makes "
+                                 f"herself uncurl"}.get(e.get("way"), "squirms where she lies")
+                lines.append(f"{e['fighter'].upper()}, DOWN AND SPENT, {what_.upper()[:1]}{what_[1:]}. She is still "
+                             f"down after it.")
+            elif e["type"] == "low_tell":
+                f_ = e["fighter"]
+                lines.append({"shaking": f"{poss(f_)} body gives her away: she can't stop shaking, her paws trembling "
+                                         f"even when still.",
+                              "breath": f"{poss(f_)} breathing gives her away: ragged and wet, too fast, every breath "
+                                        f"a fight.",
+                              "dead_limb": f"{poss(f_)} {str(e.get('part') or '').lower()} DOESN'T ANSWER her: she "
+                                           f"tells it to move and nothing comes, for a moment it simply isn't hers. She "
+                                           f"can't use it next beat."}.get(e.get("way"), ""))
+            elif e["type"] == "last_stand":
+                lines.append(f"{e['fighter'].upper()} MAKES HER LAST STAND: far past anything she should be able to "
+                             f"do, she gathers every scrap she has left. Show it in her body (the change in her eyes, "
+                             f"the breath she drags in): her next move at {e.get('at')} will be everything, wild and "
+                             f"all-in, with nothing held back for after.")
+            elif e["type"] == "overextended":
+                lines.append(f"{e['fighter'].upper()} IS WIDE OPEN: her last stand took everything, and there is nothing "
+                             f"left to cover with. Off balance, gasping, slow.")
+            elif e["type"] == "foe_read":
+                r_, o_ = e["fighter"], e["of"]
+                lines.append({"finish": f"{r_} READS {o_.upper()} AS DONE: she's finished, it's time to end it. Show it "
+                                        f"in {poss(r_)} face and stance, a thought in her head.",
+                              "wary": f"{r_} READS {o_.upper()} CAREFULLY: hurt this badly, she has one desperate thing "
+                                      f"left in her, and {r_} keeps her guard up for it. Show it as a thought.",
+                              "still_standing": f"{r_} CAN'T BELIEVE {o_.upper()} IS STILL STANDING: by everything she "
+                                                f"knows, she should be down. Show the flicker of it in {poss(r_)} "
+                                                f"face, a thought."}.get(e.get("kind"), ""))
             elif e["type"] == "sub_collapse":
                 up_ = e.get("posture") == "standing"
                 lines.append(f"{e['defender'].upper()} IS BORNE DOWN IN THE HOLD"
@@ -6114,6 +6168,8 @@ class Narrator:
         "fury": "the cold anger drains out of her and leaves her just tired",
         "adrenaline": "the surge drains out of her and every hurt comes back at full size",
         "greyed": "the grey clears from the edges of her sight and the sounds come back close",
+        "last_stand": "whatever carried her through that last push drains out of her",
+        "overextended": "she gets something like her guard back, barely",
         "protecting": "the barrier thins and is gone",
         "countering": "she lets the set go; nothing came to send back",
         "mirroring": "the sheen fades off her fur",

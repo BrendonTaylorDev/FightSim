@@ -702,6 +702,57 @@ def upright_check():
     return problems
 
 
+def low_health_check():
+    """Build 246: at the very end of her strength she shows it alone, squirms when down, her body gives her away (a
+    limb that doesn't answer blocks its moves a beat), makes one last stand (then wide open), and the other reads her."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    a, d = e.get("Nerine"), e.get("Ripples")
+    lc = e.rules["low_health"]
+    for k in ("idle", "squirm", "tells", "foe_read"):
+        lc[k].update(chance=1.0, cooldown=0)
+    lc["last_stand"]["chance"] = 0.0
+    d.health = 0.05 * d.max_health
+    e.involved = set()
+    kinds = {ev["type"] for ev in e._low_health_tick()}
+    if not {"low_idle", "low_tell", "foe_read"} <= kinds:
+        problems.append(f"left alone at 5%, she should show it, her body give her away, and the other read her: {kinds}")
+    if not (a.learned.get("foe_read") or {}).get("kind") or "reads" not in __import__("director").low_health_hint(e):
+        problems.append("the director isn't told how the other one reads her")
+    e.downed[d.name] = 1
+    e._fresh_down.discard(d.name)
+    if "low_squirm" not in {ev["type"] for ev in e._low_health_tick()}:
+        problems.append("down at 5% and free, she should squirm")
+    e.downed.pop(d.name, None)
+    arm = next(p for p in d.parts if e._LIMB_OF.get(__import__("engine").body_region(p)) == "arm")
+    d.learned["dead_limb"] = {"part": arm, "kind": "arm", "turn": e.turn}
+    mv = next((m for m in d.moves if e.dead_limb(d, m)), None)
+    if mv is None:
+        problems.append(f"no move of hers is thrown with her {arm}: can't test the dead limb")
+    else:
+        try:
+            e._move_attack(d.name, a.name, mv["name"], ["Chest"], enforce=True)
+            problems.append(f"{mv['name']} went through with her {arm} not answering")
+        except ValueError as exc:
+            if "answering" not in str(exc):
+                problems.append(f"refused for the wrong reason: {exc}")
+    d.learned.pop("dead_limb", None)
+    lc["last_stand"]["chance"] = 1.0
+    d.health = -0.6 * d.max_health
+    for k in ("idle", "squirm", "tells", "foe_read"):
+        lc[k]["chance"] = 0.0
+    evs = e._low_health_tick()
+    if not any(ev["type"] == "last_stand" for ev in evs) or not e.has(d, "last_stand"):
+        problems.append(f"at -60% a sure last stand didn't come: {evs}")
+    if not any(lab.startswith("her last stand") for lab, _ in e.power_extras(d, a, "Water")):
+        problems.append("the last stand doesn't add power")
+    e.turn += 1
+    evs = e._low_health_tick()
+    if not any(ev["type"] == "overextended" for ev in evs) or any(ev["type"] == "last_stand" for ev in evs):
+        problems.append(f"the beat after, she should be wide open and the stand not come again: {evs}")
+    return problems
+
+
 def textpane_check():
     """The window's story pane (textpane.py): story and numbers told apart, the rows' changes and the rolls'
     outcomes coloured, the pointers' numbers taken from the lines they explain, and shown only now and then."""
@@ -789,6 +840,13 @@ def main(argv):
         probs = ruined_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  ruined parts past devastated, and the stages below zero health  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "low health last stand" for w in want):
+        t = time.time()
+        probs = low_health_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  low health: alone, squirming, tells and a dead limb, last stand, the other's read  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "upright nelson" for w in want):

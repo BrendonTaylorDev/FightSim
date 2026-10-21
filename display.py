@@ -76,7 +76,7 @@ class Display:
         return self.STATUS_WORD.get(status, str(status).replace("_", " "))
 
     STATUS_ICON = {"bound": "🪢", "fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "staggered": "🥴", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
-                   "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥", "greyed": "🌫️",
+                   "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥", "greyed": "🌫️", "last_stand": "🩸", "overextended": "🫥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
 
     def _status_tag(self, f):
@@ -1313,6 +1313,23 @@ class Display:
         for e in bundle["also_this_beat"]:
             if e["type"] == "adrenaline" and e.get("second"):
                 out.append(f"🔥 **{e['fighter']}: A SECOND WIND** below zero ({e['beats']} beats; once a fight)")
+            elif e["type"] == "low_idle":
+                out.append(f"🥀 {e['fighter']}, left alone, shows it ({e.get('way', '').replace('_', ' ')})"
+                           + (f"; {e['watcher']} {e.get('watch', '').replace('_', ' ')}" if e.get("watcher") else ""))
+            elif e["type"] == "low_squirm":
+                out.append(f"🥀 {e['fighter']} squirms where she lies ({e.get('way', '').replace('_', ' ')})")
+            elif e["type"] == "low_tell":
+                out.append(f"🥀 {poss_word(e['fighter'])} body gives her away: " + (
+                    f"her {str(e.get('part', '')).lower()} doesn't answer (no moves with it next beat)"
+                    if e.get("way") == "dead_limb" else e.get("way", "")))
+            elif e["type"] == "last_stand":
+                out.append(f"🩸 **{e['fighter']}: LAST STAND** (next beat ×power; once a fight)")
+            elif e["type"] == "overextended":
+                out.append(f"🫥 {e['fighter']} is wide open after her last stand (1 beat: dodges far worse)")
+            elif e["type"] == "foe_read":
+                out.append(f"👁️ {poss_word(e['fighter'])} read of {e['of']}: "
+                           + {"finish": "she's done, finish it", "wary": "careful, one more in her",
+                              "still_standing": "why is she still standing?"}.get(e.get("kind"), ""))
             elif e["type"] == "sub_collapse":
                 out.append(f"⬇️ {e['defender']} borne down in {poss_word(e['attacker'])} {e['submission']}: "
                            f"{e.get('stage') or e.get('facing')}"

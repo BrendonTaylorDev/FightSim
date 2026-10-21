@@ -654,6 +654,40 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 246
+
+What a fighter does at the very end of her strength, and a tap tally in the window. Each of the five is on by default
+and has its own switch under `low_health` (`low_health.enabled` false turns them all off).
+
+### The very end of her strength (`low_health`)
+
+They apply once she is at `at_pct` (10%) of her full health or less. Each is a told event, at most once every few beats
+(`cooldown`).
+
+1. **Left alone, she shows it** (`idle`: 35%, every 3 beats). On her feet, on a beat when she neither acts nor is
+   acted on, she sways, leans on something nearby, blinks blood away, spits, tests a badly hurt leg, or fights for
+   breath. The other fighter sees it and closes in, waits, or circles.
+2. **Down, she squirms** (`squirm`: 40%, every 2 beats). Down and free, but not the beat she went down or got up, she
+   drags herself toward the other fighter or away, claws at the ground, or curls around her worst part.
+3. **Her body gives her away** (`tells`: 20%, every 4 beats). Shaking, ragged breath, or a limb that doesn't answer.
+   That needs a limb at 100% damage or more (`dead_limb_damage`), and moves thrown with it can't be used the next
+   beat. The engine refuses them, and the director is told.
+4. **A last stand, once a fight** (`last_stand`). Below -50% (`at_pct`), on her feet and free, 15% a beat. Her next
+   beat's moves get ×1.5 power (`power_mult`). The beat after, she is wide open: dodge ×0.2 (`open_dodge_mult`). The
+   director is told both, and the stat blocks show 🩸 and then 🫥.
+5. **The other fighter reads her** (`foe_read`: 30%, every 6 beats). One of three thoughts: "she's done, finish it";
+   "careful, she has one more in her"; or "why is she still standing?" (only while she stands below zero). The read
+   is shown in the story and passed to the director, which then goes for the finish, stays wary, or hesitates.
+
+Each comes with a note for the narrator and a 🥀/👁️ line on screen. In 20 no-model knockout fights they came a
+handful of times each. In three-tap matches, where fighters spend long stretches near the end, they come more.
+
+### Tap tally in the window
+
+In a submission match, each fighter's panel shows a row of pips under her energy bar. There is one pip per tap-out
+the match needs, filled red for each she has given, with the count ("1 of 3") and the parts the taps came from. It
+isn't shown in other fights.
+
 ## Build 245
 
 Submissions can be put on a fighter who is still upright, and may bear her down while the grip stays on. Switchable

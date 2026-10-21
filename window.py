@@ -261,6 +261,8 @@ class FighterCard(ttk.Frame):
         self.hp.pack(fill="x")
         self.en = tk.Canvas(self, width=PIC + 2 * COL, height=10, highlightthickness=0, bg="#e5e7eb")
         self.en.pack(fill="x", pady=(2, 0))
+        # a submission match: one pip per tap-out the match needs, filled for each she has given (with the part)
+        self.tp = tk.Canvas(self, width=PIC + 2 * COL, height=20, highlightthickness=0, bg="#f3f4f6")
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
         self.state.pack(anchor="w", pady=(4, 0))
 
@@ -351,6 +353,30 @@ class FighterCard(ttk.Frame):
                                + (" (the back picture moves it there)" if len(panels) > 1 else ""))
         self._bars(f, pct)
 
+    def _taps(self, f):
+        """The tap tally under her energy bar (submission matches only): a pip per tap-out the match needs, red and
+        filled for each she has given, with the parts they came from."""
+        t = f.get("taps")
+        if not t:
+            if self.tp.winfo_ismapped():
+                self.tp.pack_forget()
+            return
+        if not self.tp.winfo_ismapped():
+            self.tp.pack(fill="x", pady=(2, 0), before=self.state)
+        c = self.tp
+        c.delete("all")
+        given, need = list(t.get("given") or []), max(1, int(t.get("needed") or 1))
+        c.create_text(6, 10, anchor="w", text="Taps", font=("Segoe UI", 8, "bold"))
+        x = 40
+        for i in range(max(need, len(given))):
+            done = i < len(given)
+            c.create_oval(x, 4, x + 12, 16, fill="#dc2626" if done else "#ffffff", outline="#7f1d1d", width=1.5)
+            x += 16
+        parts = ", ".join(str(p).lower() for p in given)
+        c.create_text(x + 6, 10, anchor="w", font=("Segoe UI", 8),
+                      text=f"{len(given)} of {need}" + (f"  ({parts})" if parts else ""),
+                      fill="#991b1b" if len(given) >= need else "#111827")
+
     def _bars(self, f, pct):
         w = PIC + 2 * COL
         self.hp.delete("all")
@@ -365,6 +391,7 @@ class FighterCard(ttk.Frame):
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
+        self._taps(f)
 
     def draw_one(self, f):
         """Without Pillow (or before her pictures are in): one picture, every part on it."""
@@ -428,6 +455,7 @@ class FighterCard(ttk.Frame):
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
+        self._taps(f)
 
     def _label(self, c, side, lx, ly, part, dmg, res, calib):
         name = short(part)

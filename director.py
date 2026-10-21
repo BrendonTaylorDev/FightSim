@@ -628,6 +628,30 @@ def _same_part(engine, who, asked, name):
         return False
 
 
+def low_health_hint(engine):
+    """low_health (since build 246): what the director must know this beat about a fighter at the end of her strength:
+    a limb that isn't answering, a last stand, the one left wide open after it, and how the other one reads her."""
+    out = []
+    for f in engine.active():
+        dl = f.learned.get("dead_limb") or {}
+        if dl and int(dl.get("turn", -1)) == engine.turn:
+            out.append(f"{poss_name(f.name)} {str(dl.get('part', '')).lower()} isn't answering her this beat: no move "
+                       f"thrown with it.")
+        if engine.has(f, "last_stand"):
+            out.append(f"{f.name} IS MAKING HER LAST STAND: this beat she throws everything she has left into one "
+                       f"wild, all-in attack (it hits harder), and she'll be wide open after.")
+        if engine.has(f, "overextended"):
+            out.append(f"{f.name} is WIDE OPEN after her last stand: anything aimed at her now lands.")
+        rd = f.learned.get("foe_read") or {}
+        if rd and int(rd.get("turn", -1)) == engine.turn:
+            out.append({"finish": f"{f.name} reads {rd['of']} as done: she goes for the finish now.",
+                        "wary": f"{f.name} reads {rd['of']} as dangerous still: she stays careful, expecting one "
+                                f"desperate attack.",
+                        "still_standing": f"{f.name} is shaken that {rd['of']} is still standing: she hesitates, or "
+                                          f"presses harder to put her down."}.get(rd.get("kind"), ""))
+    return "\n".join(x for x in out if x)
+
+
 def taps_hint(engine):
     """finish.submission.taps: the tap tally for the director (how many each fighter has given, how many end it),
     which parts no longer count, and the part to work toward the next one: soften it with blows, then hold it."""
@@ -2196,6 +2220,9 @@ class Director:
         move_her = reposition_hint(engine) if not direction else ""
         if move_her:
             rng_hint = (rng_hint + "\n" + move_her).strip()
+        low = low_health_hint(engine)
+        if low:
+            rng_hint = (rng_hint + "\n" + low).strip()
         for extra in ((grudge_hint(engine), drag_to_pin_hint(engine), flight_hint(engine)) if not direction else ()):
             if extra:
                 rng_hint = (rng_hint + "\n" + extra).strip()
