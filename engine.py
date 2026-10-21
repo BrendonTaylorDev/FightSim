@@ -585,7 +585,8 @@ class Engine:
                 capped = capped or not cap.get("health_only")
         taken = power * bmult * scale
         zramp = self.zero_part_ramp(defender)    # below_zero.part_ramp: deep below zero, her parts give way faster
-        p.damage = dmg_b + self._part_added(dmg_b, taken * zramp)
+        lramp = self.long_match_ramp()           # finish.submission.long_ramp: a match that runs long wears faster
+        p.damage = dmg_b + self._part_added(dmg_b, taken * zramp * lramp)
         was_numb = int(getattr(p, "numb", 0) or 0) > 0
         rscale = float(r.get("damage", {}).get("resistance_scale", 1.0))
         # resistance lost: by the blow's power, and (resistance.loss_per_damage, 0 = off) by the damage it really did,
@@ -674,7 +675,7 @@ class Engine:
             "res_before": round(res_b, 2), "res_after": round(p.resistance, 2),
             "res_start": round(float(getattr(p, "start_resistance", res_b) or res_b), 2),
             "cond_before": round(cond_b, 2), "cond_after": round(self.condition(p), 2),
-            "health_mult": hmult, "vital": vital, "health_loss": round(health_loss, 2), "zero_ramp": round(zramp, 2),
+            "health_mult": hmult, "vital": vital, "health_loss": round(health_loss, 2), "zero_ramp": round(zramp, 2), "long_ramp": round(lramp, 2),
             "health_raw": round(raw_loss, 2), "softened": round(raw_loss - health_loss, 2) > 0.01,
             "res_overflow": round(res_over, 2),
             "wear_math": wear_math, "wear_cap": round(wear_cap, 2) if wear_cap is not None else None,
@@ -2729,8 +2730,6 @@ class Engine:
             out.append((st0.get("label", "running on nothing"), float(st0.get("power", 1.0))))
         if self.has(a, "greyed"):
             out.append(("her sight greying out", float(cfg.get("greyed_power_mult", 0.85))))
-        if self.has(a, "last_stand"):
-            out.append(("her last stand: everything she has left", float(self._low_cfg("last_stand").get("power_mult", 1.5))))
         if self.has(a, "dazed"):
             out.append(("dazed", float(cfg.get("dazed_power_mult", 0.9))))
         if self._pin_mult(a, d) != 1.0:
@@ -5160,6 +5159,7 @@ class Engine:
             if self.pinned_by(d.name) or (a.name in self.downed and not self.ground_lock_ok(a.name, d.name)) \
                     or self.pinned_by(a.name) or self.pinning(a.name):
                 raise ValueError(f"{a.name} isn't free to lock a hold on {d.name} right now")
+            self._sub_caught(a)
             if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
                 raise ValueError(f"no submission opening on {d.name} this beat. Choose another action")
             slip = self._small_joint_slip(a, d, key, [grips[0][0]], flavor or key)
@@ -5334,7 +5334,14 @@ class Engine:
         spent = set(self.spent_tap_parts(f)) if self._taps_rule() else set()
         worn = max((p.damage for p in f.parts.values() if p.name not in spent), default=0.0)
         ch = float(m.get("standing_base", 0.04)) + float(m.get("per_100_worn", 0.04)) * min(3.0, worn / 100.0)
-        return max(0.0, min(float(m.get("standing_max", 0.2)), ch))
+        # match.late (since build 247): the longer the match has run, the more they go for the hold
+        late = m.get("late") or {}
+        past = self.turn - int(late.get("after", 30)) if late.get("enabled", True) else 0
+        cap = float(m.get("standing_max", 0.2))
+        if past > 0:
+            ch += float(late.get("per_10", 0.03)) * past / 10.0
+            cap = max(cap, float(late.get("max", 0.35)))
+        return max(0.0, min(cap, ch))
 
     def _sub_takedown(self, a, d, lands):
         """A submission locked on a fighter on her feet: she is taken down into it first, landing `lands`."""
@@ -5352,6 +5359,17 @@ class Engine:
                 self.sub_window[f.name] = bool(open_all) or self._chance(ch, f"submission opening on {f.name}",
                                                                          "OPEN", "none")
         return self.sub_window
+
+    def sub_caught(self, a):
+        """Is she locked in someone's submission herself? Then she can't lock one of her own on anyone: she has to
+        get out of it first (or hurt the holder with what she has free)."""
+        a = self.get(a) if isinstance(a, str) else a
+        return any(h.defender == a.name and h.sub for h in self.holds.values())
+
+    def _sub_caught(self, a):
+        if self.sub_caught(a):
+            raise ValueError(f"{a.name} is locked in a submission herself: she can't put one on anyone until she is out "
+                             f"of it. Break free, or hurt the one holding her with what she has free")
 
     def ground_lock_ok(self, name, on=None):
         """submissions.from_ground: True when fighter `name` is down herself and may still lock a submission on
@@ -5474,6 +5492,7 @@ class Engine:
             if (a.name in self.downed and not self.ground_lock_ok(a.name, d.name)) or self.pinned_by(a.name) \
                     or self.pinning(a.name):
                 raise ValueError(f"{a.name} isn't free to lock a hold on anyone right now")
+            self._sub_caught(a)
             if self.__dict__.get("sub_window", {}).get(d.name) is not True and not self.__dict__.get("_sub_open_all"):
                 raise ValueError(f"no submission opening on {d.name} this beat (they are very rare). Choose another "
                                  f"action")
@@ -5838,6 +5857,7 @@ class Engine:
                             "LAST STAND", "no"):
             return None
         a.learned["last_stand_used"] = True
+        a.learned["last_stand_turn"] = self.turn    # (low_health.last_stand: she is wide open the beat after it)
         return a.name
 
     def guarded_wound(self, d):
@@ -6426,6 +6446,9 @@ class Engine:
                  "is out cold; waking up will be the hard part",
                  "lost, and her body will remember every part of it"],
         "standing": ["is still on her feet, and feeling it", "made it through"],
+        # she won, but is lying on the ground herself and can't get up yet
+        "won_down": ["won, from flat on the ground, and can't get up yet", "won, though she is in no state to stand",
+                     "won lying down, and her body has no more to give for now"],
         # she gave up awake (finish.submission.tap_awake): beaten, not knocked out
         "tapped": ["tapped out, awake for every second of it, and it will all be waiting for her",
                    "gave up in the end, awake and hurting", "lost by tapping out; she felt all of it"],
@@ -6458,6 +6481,8 @@ class Engine:
             s = self.strength(f)
             lead_key = ("lost" if f.eliminated or (win and f.name != win and self.get(win).team != f.team) else
                         ("won_fresh" if s >= 70 else "won_hurt" if s >= 35 else "won_wrecked") if win else "standing")
+            if lead_key.startswith("won") and f.name in self.downed:
+                lead_key = "won_down"     # (not "the one still standing" while she lies there)
             if lead_key == "lost" and str((self.__dict__.get("out_reason") or {}).get(f.name, "")).startswith(
                     "taps out") and (self.rules.get("finish", {}).get("submission") or {}).get("tap_awake", True):
                 lead_key = "tapped"
@@ -9632,31 +9657,26 @@ class Engine:
           worst part;
         - tells: her body gives her away (shaking, ragged breath) and now and then a hurt limb doesn't answer: moves
           thrown with it can't be used next beat;
-        - last_stand: once a fight, below last_stand.at_pct, she gathers everything for one all-in attack (her next
-          beat x power_mult), and is wide open the beat after (dodge x open_dodge_mult);
+        - last_stand: after her once-a-fight last-stand blow (moves.last_stand), she is wide open the beat after
+          (dodge x open_dodge_mult);
         - foe_read: the other one reads her state (she's done, finish it; careful, she has one more in her; why is
           she still standing), and the director is told."""
         lc = self._low_cfg()
         if not lc:
             return []
         events, rose = [], {e.get("fighter") for e in events_so_far if e.get("type") == "get_up"}
+        # (get_up_tick has already emptied _fresh_down: who only just went down is in its "stays down" events)
+        fresh = {e.get("fighter") for e in events_so_far if e.get("type") == "stays_down" and e.get("why") == "fresh"}
         for f in self.active():
             free = not self.pinned_by(f.name) and not any(f.name in (h.attacker, h.defender) for h in self.holds.values())
             out = self.has(f, "asleep") or self.has(f, "frozen")
             foe = next((x for x in self.active() if x is not f and (not x.team or x.team != f.team)), None)
-            # last stand: the beat after it, she is wide open
-            if f.learned.get("last_stand") == self.turn - 1 and not self.has(f, "overextended"):
+            # last stand (moves.last_stand, her one all-in blow): the beat after it, she is wide open
+            if self._low_cfg("last_stand") and f.learned.get("last_stand_turn") == self.turn - 1 \
+                    and not self.has(f, "overextended"):
                 self.set_status(f, "overextended", 1)
                 events.append({"type": "overextended", "fighter": f.name})
             if out or not self.low_now(f):
-                continue
-            ls = self._low_cfg("last_stand")
-            if ls and "last_stand" not in f.learned and free and f.name not in self.downed and foe \
-                    and self.low_now(f, ls.get("at_pct", -50)) and self._chance(
-                        float(ls.get("chance", 0.15)), f"{f.name} gathering herself for a last stand", "LAST STAND", "no"):
-                f.learned["last_stand"] = self.turn
-                self.set_status(f, "last_stand", 1)
-                events.append({"type": "last_stand", "fighter": f.name, "at": foe.name})
                 continue
             cfg = self._low_cfg("idle")
             if cfg and f.name not in self.downed and free and f.name not in self.involved and not self.has(f, "airborne") \
@@ -9676,7 +9696,7 @@ class Engine:
                 f.learned["low_idle"] = self.turn
                 events.append(ev)
             cfg = self._low_cfg("squirm")
-            if cfg and f.name in self.downed and f.name not in rose and free and f.name not in self._fresh_down \
+            if cfg and f.name in self.downed and f.name not in rose and free and f.name not in fresh \
                     and self._cool(f, "low_squirm", cfg) and self._chance(float(cfg.get("chance", 0.4)),
                                                                        f"{f.name} squirming where she lies", "yes", "no"):
                 worst = max(f.parts.values(), key=lambda p: p.damage)
@@ -9715,6 +9735,22 @@ class Engine:
         """A low_health event of this kind is told at most once every cooldown beats."""
         last = f.learned.get(key)
         return last is None or self.turn - int(last) >= int(cfg.get("cooldown", 3))
+
+    def long_match_ramp(self):
+        """finish.submission.long_ramp (since build 247): in a submission match that has run past `after` beats, the
+        damage blows and grips do to body PARTS is multiplied by 1 + per_10 for every 10 beats past it, never above
+        max (health loss unchanged), so a long match wears its fighters down faster and comes to an end. `only`:
+        "taps" (a match needing more than one tap, the default) or "submission" (every submission match)."""
+        sub = ((self.rules.get("finish") or {}).get("submission") or {})
+        lr = sub.get("long_ramp") or {}
+        if not lr.get("enabled", True) or not self.submission_match():
+            return 1.0
+        if str(lr.get("only", "taps")).lower() == "taps" and self.taps_needed() <= 1:
+            return 1.0
+        past = self.turn - int(lr.get("after", 40))
+        if past <= 0:
+            return 1.0
+        return min(float(lr.get("max", 2.5)), 1.0 + float(lr.get("per_10", 0.15)) * past / 10.0)
 
     def zero_part_ramp(self, f):
         """below_zero.part_ramp (since build 244): with her health below zero, the damage her PARTS take from each
@@ -9998,8 +10034,6 @@ class Engine:
                       "than she should be able to",
         "greyed": "GREYING OUT: for a moment the edges of her sight go grey and the sound goes far away; she sways, "
                   "a beat behind everything, and drags herself back",
-        "last_stand": "HER LAST STAND: far past anything she should be able to do, she gathers every scrap she has "
-                      "left for one wild, all-in attack, holding nothing back for after",
         "overextended": "WIDE OPEN after her last stand: she threw everything and has nothing left to cover with, "
                         "off balance, slow, gasping",
     }

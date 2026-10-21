@@ -45,6 +45,7 @@ def _pick_action(eng, rng, f, d):
     if (getattr(eng, "sub_window", None) or {}).get(d.name) and not flying \
             and (f.name not in eng.downed or eng.ground_lock_ok(f.name, d.name)) \
             and not eng.regrab_wait(f, d) \
+            and not eng.sub_caught(f) \
             and rng.random() < 0.7:
         shapes = eng.submission_shapes(f.name, d.name)
         if shapes:
@@ -163,7 +164,7 @@ def one_fight(names, rules, scene, seed, max_beats=150):
         pool = [f for f in movers if f.name != last] if last and rng.random() < 0.65 else movers
         f = rng.choice(pool or movers)
         # as the director is told to: an opening for a submission is usually taken by the one free to take it
-        takers = [x for x in movers if not eng.has(x, "airborne") and any(
+        takers = [x for x in movers if not eng.has(x, "airborne") and not eng.sub_caught(x) and any(
             (getattr(eng, "sub_window", None) or {}).get(o.name) and (x.name not in eng.downed or eng.ground_lock_ok(x.name, o.name))
             for o in active if o is not x and (not o.team or o.team != x.team))]
         if takers and f not in takers and rng.random() < SUB_TAKE:

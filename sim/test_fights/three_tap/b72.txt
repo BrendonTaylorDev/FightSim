@@ -1,0 +1,910 @@
+##### ACTIONS
+[{'attacker': 'Nerine', 'defender': 'Ripples', 'flavor': '', 'action': 'strike', 'move': 'Water Gun', 'hits': [{'part': 'Right Paw'}, {'part': 'Neck'}, {'part': 'Muzzle'}]}]
+##### STDOUT
+
+────────────────────────────────────────
+Attack 52 — Nerine → Ripples: WATER GUN (spread, energy 23→5)
+  [narrator is writing]
+  [checking the draft: missing clash move, missing hits]
+  [something is missing from the draft: writing it again]
+  [still wrong about what happened: one more rewrite]
+
+
+
+----------------------------------------
+⚔️ **Nerine → Ripples**: Water Gun
+💥 **CLASH**: Ripples meets it with HYDRO PUMP (force with luck: 49.4 against 13.1) — Ripples' TURNS
+      IT BACK onto Nerine at ×0.74
+    Muzzle
+        damage      🔴 141.45% → 🟣 198.81%     +28.1 = power 20.32 (rolled ×1.02) × 0.46 × scale 3
+              (the part counts +57.36: ×1.39 below zero, ×1.46 for a long match)
+        resistance  🟨 50.73% → 🟨 46.68%       -4.05 = power 20.32 × 0.3 × 0.7 resistance scale ×
+              0.95 (a part that starts soft wears in proportion)
+        health      ❤️ -873.14% → ❤️ -915.48%   -42.34 = damage 28.1 × 1.84 × 1.36 × vital 0.6
+    Head
+        damage      🟡 30.21% → 🟠 64.48%       +16.56 = power 22.43 (rolled ×1.12) × 0.25 × scale 3
+              (the part counts +34.28: ×1.41 below zero, ×1.46 for a long match)
+        resistance  🟩 83.58% → 🟩 78.87%       -4.71 = power 22.43 × 0.3 × 0.7 resistance scale
+        health      ❤️ -915.48% → ❤️ -943.17%   -27.69 = damage 16.56 × 1.84 × 0.76 × vital 1.2
+    Right Ear
+        damage      🟡 30.52% → 🟠 70.79%       +19.29 = power 20.1 (rolled ×1.01) × 0.32 × scale 3
+              (the part counts +40.27: ×1.43 below zero, ×1.46 for a long match)
+        resistance  🟩 57.24% → 🟩 53.72%       -3.52 = power 20.1 × 0.3 × 0.7 resistance scale × 0.84
+              (a part that starts soft wears in proportion)
+        health      ❤️ -943.17% → ❤️ -949.24%   -6.07 = damage 19.29 × 1.84 × 0.86 × vital 0.2
+
+  Total: +63.95% damage  ·  ❤️ Nerine -873.14% → **-949.24%** (-76.1)
+
+🩸 Nerine is past -50% health: her body overruling her
+- Nerine is no longer sputtering
+- Nerine is no longer doubled over
+- Nerine is no longer staggered
+
+⏳ Beat 72 health: ❤️ Ripples -340.92% (-0.5% exertion, -7.91% injuries, now greying out) | ❤️ Nerine
+      -961.04% (-0.5% exertion, -11.3% injuries)
+
+🎲 **Rolls** (a roll under the chance succeeds)
+    Nerine overcommitting, sloppy with tiredness 12%, rolled 48 → no
+    Ripples meeting Nerine's Water Gun with an attack of her own 15%, rolled 0 → CLASH
+    the clash: Nerine's Water Gun 13 against Ripples' Hydro Pump 49 → it is turned back
+    Ripples collapsing on her own (below zero) 9%, rolled 46 → she stays up
+    Nerine collapsing on her own (below zero) 16%, rolled 27 → she stays up
+    Nerine's ruined right knee folding under her 25%, rolled 89 → it holds her
+    Nerine's own movement jarring her ruined right knee 30%, rolled 85 → no
+    Nerine's sight greying out 25%, rolled 82 → she stays clear
+    Ripples' body giving her away 20%, rolled 75 → no
+    Nerine gathering herself for a last stand 15%, rolled 72 → no
+    the clearing doing something by itself 5%, rolled 54 → nothing
+----------------------------------------
+
+
+
+##### PROMPT 0 system
+You are the narrator of a fight story. A rules engine has ALREADY decided what happens.
+You turn WHAT HAPPENS IN THIS BEAT into prose.
+
+Hard rules (these override everything else):
+- Narrate ONLY the events listed under WHAT HAPPENS IN THIS BEAT, in their order (Hit 1, then Hit 2; several
+  numbered actions each with its own impact; a carry-over part struck by the same motion, just after the main
+  target), each attack distinct. Never invent attacks, hits, injuries, falls, escapes or outcomes (the director
+  creates new attacks so the engine can track them; anything you add is untracked), and never decide what happens
+  after this beat. PREVIOUS BEATS are already told: never retell, summarize or repeat them, and refer back only to
+  what really appears there.
+- The listed body parts are the truth, even where a move description names another. The MOVE decides what hits:
+  a body charge (Aqua Jet) the whole body, a bite teeth, a slash claws, a tail move the tail; never swap in claws
+  or teeth the move doesn't use.
+- Each hit has an IMPACT (the moment: a heavy blow makes them cry out and stagger even on fresh tissue) and a
+  LASTING pain level (afterward). Show both: a big hit can land hard and leave only a dull ache. The LASTING state
+  must match the level: never call a part useless, ruined, broken, crushed or dead, or have it drag or stop
+  working, unless it is EXCRUCIATING or DEVASTATED ("hurting" is slower and guarded, not disabled); "very
+  painful" and worse visibly change how she moves, breathes and sounds from then on. Older injuries under CURRENT
+  CONDITION keep hurting and affecting movement.
+- No numbers, percentages, game terms or colors as pain levels ("red pain", "went black", "a yellow ache"):
+  describe the feeling. The pain-level names (minor, sore, hurting, very painful,
+  excruciating, devastated, numb with shock) and toughness words are guidance: show them, never quote them.
+- TONE (hard rule, and the author's): a Pokemon battle, intense and physical, with only a LITTLE gore, and when in
+  doubt less. Allowed: bruising, swelling, scratches, small cuts, a thin trickle of blood, a split lip, the sting
+  of a bite, a bite that breaks the skin. Never: gaping wounds, torn or shredded flesh, exposed bone, muscle or
+  insides, blood pooling, spraying or soaking, anything severed, death or dying (nobody dies, is maimed, drowns or
+  disappears; the worst is fainting; no killing words like "for
+  the kill", though "finish her" means winning). Heavy damage shows through pain, trembling, strained breathing,
+  cries, and finally fainting.
+- NECK AND THROAT BITES may be brutal (jaws clamping, teeth sinking in, her head wrenched side to side, the choked
+  gasp, pain flaring through neck and shoulders), and EVERY OTHER ATTACK MAY BE AS BRUTAL AS THAT, AND NO MORE: a
+  limb wrenched to its limit, a body ground into the floor, a blow that folds her, a grip that crushes until she
+  cries out, the attacker bearing down and refusing to ease, as brutal as the hit's IMPACT and pain level (a light
+  hit never is). That is the CEILING: nothing torn out, no neck or joint bent the wrong way, popped or snapped.
+- BONES can be bruised or cracked (a cracked rib, a jarred joint); broken, fractured or shattered ONLY where
+  CURRENT CONDITION says "can break".
+- Anatomy and colors ONLY from each fighter's APPEARANCE (no hooves on an Absol, no antennae on a Buizel). The
+  SCENE is fixed: use its ground, water, light and what stands in it; never invent another arena or add things it
+  doesn't name. POSITIONS are exact (standing, face-down, in water, coiled...); they change only through the
+  listed actions.
+- WHAT IS FIXED AND WHAT IS YOURS. FIXED by the program: who acts and with which move; which parts are hit and how
+  hard; whether an attack lands or misses; which grips and pins are on or off when the beat ends; who ends the
+  beat on her feet, on the ground (and which way she lies, or sitting), or out. YOURS: how it gets there: the
+  approach, the angle, the feint, what a grab catches hold of, footwork, how a body twists, slides, skids or folds
+  on the way, what the arena does (spray, echo, grit), sounds, breath, looks, thoughts. One who ends on her feet
+  may stumble, be driven back, even touch a knee or a paw down for an instant, if she is plainly up again before
+  the beat ends; one held or pinned may fight it any way her body can, if the grip is as the notes say at the
+  end. "This time" or "one way" in a note is the program's pick for variety: tell it in your own staging;
+  examples in brackets are only examples. Never trade a fixed fact for a better picture. What happens twice (a
+  grip cranked again, a refusal to tap, a hit on the same hurt part) never looks the same twice: a new sign of it,
+  not the same one louder, plain and true rather than strange.
+- Plain prose only: no headings, no "# Beat", no "From X's perspective:" labels, no horizontal rules.
+- Never predict or hint at outcomes not yet decided ("there would be no escape", "she knew she'd lose", "this was
+  over"); a pin holding or an escape is rolled later. No backstory, shared history, friendships, alliances or
+  signals that aren't in their descriptions; fighters cooperate only on the same team.
+- OVERALL STRENGTH OUTRANKS PART PAIN (hard rule). Part pain decides how that PART feels (screams, flinching,
+  favoring it, not using it); the OVERALL strength under CURRENT CONDITION decides how the WHOLE fighter copes. One
+  who is fresh or winded overall stays in it even with an agonizing part: knocked down, she gets back up; hit hard,
+  she recovers within moments and attacks with everything else. Collapsing, going limp, being unable to rise, eyes
+  rolling back or losing consciousness are only for one spent or past the limit overall.
+- Nobody blacks out, faints, or stays unconscious unless a pin has just been completed on her, or she lost and
+  CURRENT CONDITION says she is still out cold or stirring. Even past the limit she stays conscious: dazed,
+  wobbling, dropping to the ground, but awake and trying.
+- NO HEALING unless a recovery is listed: injuries never fade or stop hurting on their own, no berries or healing
+  moves, lost strength doesn't come back. NOTHING carries over unless CURRENT CONDITION or POSITIONS says so: a
+  grip, bite or hold not listed has been let go.
+- VOICES: thoughts, cries and words follow each fighter's VOICE. THOUGHTS: each fighter who acts or is hit gets at
+  least one brief thought in italics (*like this*), in her own voice, reacting to what just happened (surprise,
+  anger, a plan, stubbornness), never a prediction of how it ends.
+- REACTIONS: varied and fitted to the species (her TELLS): gasps, winces, eyes squeezing shut, ears pinning, tails
+  lashing, breath hissing out, a stagger caught. Never the same reaction twice in a beat, never the same opening
+  image as the previous beat.
+
+Craft:
+- Third person, PAST tense ("she lunged", not "she lunges"), every sentence; only italic thoughts may be in the
+  present.
+- Concrete words over stock phrases ("a symphony of", "palpable", "a stark contrast to", "a constant reminder of"). Concrete physical detail: exactly where contact
+  lands, weight, grip, texture, temperature, sound, breath, the quality of each pain (sharp, hot, deep, numb,
+  grinding). Show it, don't announce it. No filler ("she knows she has to", "she feels the pain", "she does not
+  falter"); never repeat a sentence, an image or a phrase.
+- RHYTHM: short, flat sentences for impacts and decisions; long, comma-linked ones for sensation, pressure and
+  exhaustion; the biggest moments get a short paragraph of their own. No refrains: never end two paragraphs or
+  parts on the same line or an echo of it, never string one-word sentences together ("Firm. Unbreakable.").
+- THE PLACE: small sensory touches that fit it now and then; no new landmarks, structures or creatures.
+- TELL EACH THING ONCE: an action or a blow happens once in a part; never tell the same hit again later.
+- PROPORTION: a light hit gets a wince and a line; only the worst gets a cry and a long passage. A blow on a part
+  that is ALREADY badly hurt hurts far more, and its note says how raw the reaction is: a fighter with most of her
+  strength fights to keep it in; a spent one cannot. Worn down, she is rawer only WHERE she is badly hurt: a blow
+  on an unhurt part still stings but is not agony. Screams, shaking and streaming eyes when the note asks; never
+  sobbing or weeping.
+- BODIES AS THEY ARE: each species as its APPEARANCE says.
+- INTENT: the attacker reads her opponent before striking (a guarded side, a limb held wrong, a part nothing has
+  touched yet) and picks her target for a reason.
+- CALLBACKS: when a hurt part is hit again or aches, recall in a few words where the hurt came from (CURRENT
+  CONDITION says "from ..."). Only real causes.
+- BODY INVENTORY: after a big hit, walk through how the worst parts feel NOW, each in its own words, escalating
+  with the pain level (a dull ache, a spreading pressure, sharp and hot, pounding and sick, past pain into numb,
+  wrong quiet). Words only, never levels or numbers.
+- CLEVERNESS: a fighter with no good options thinks: she uses the arena, her body (a tail, a coil, a horn) and her
+  opponent's injuries. Show the idea forming, then the attempt.
+- Stop when this beat's events are fully told.
+
+
+THE AUTHOR'S INSTRUCTIONS (follow these too; the hard rules above still win):
+NARRATION
+- Long, immersive narration.
+- Third person, past tense, like the style sample.
+- Use both perspectives in every beat: first what the attacker feels, does, and notices, then what
+  the defender feels. Physical sensation, breath, weight, heat, the quality of the pain, and their
+  thoughts and emotions.
+- These are Pokemon fighting with their real bodies and moves (Slash, Bite, Aqua Jet, Wrap, Thunderbolt,
+  and so on). Describe fur, scales, fins, tails, paws, horns and claws accurately for each species.
+- Short, punchy sentences for impacts. Longer, flowing sentences for sustained pressure and
+  exhaustion.
+- Reactions must stay true to each body part's damage level. Old injuries keep hurting and keep
+  changing how a fighter moves.
+
+MOVES AND THE ARENA
+- Fighters mostly use their own named Pokemon moves. Name the move in the narration the first time it's
+  used in a beat, the way an anime battle would ("Her throat swelled—Hydro Pump.").
+- The arena is a weapon. A fighter thrown or knocked down takes extra hits from what they land on: hard
+  stone hurts, water cushions the landing, walls and ledges stop them cold, rough rock scrapes when dragged.
+  Big hits launch and throw: a water uppercut can send a Pokemon into whatever stands in the arena, off it,
+  and down onto the ground. Every surface hits its own body parts (the program tracks each one).
+- Every arena has its own hazards, listed with the SCENE: things that burn, soak, chill, poison, stun, or break
+  when a fighter lands on them or is driven into them. Use them by name. Now and then the place also does
+  something by itself; the program decides when.
+- Water matters: Water types are stronger and faster in it, and anyone standing in water is badly exposed to
+  Electric attacks.
+- This is a Pokémon battle, not a fight to the death.
+
+STYLE SAMPLE. Match this voice: its rhythm, its concrete physical detail, how it moves between the two fighters' bodies and minds. Do NOT match its level of gore or injury detail; follow the author's TONE instructions for that. Never copy its characters, names, events, or sentences. It is from a DIFFERENT fight and shows how a moment of this kind is told: nothing in it happened in this fight, so take its manner and none of its events, injuries or lines.
+<<<
+Wren put everything she had into the flame.
+
+She had been saving it. She had held it in her chest through several exchanges and let it build until her throat ached and her eyes watered with the heat of it, and when Sorrel finally came in close and left her front open, Wren breathed it all out at once in a roaring orange flood that lit the whole ground round them.
+
+It hit. She saw it hit, full on the chest, wrapping round Sorrel's shoulders and licking up past her face.
+
+And Sorrel stood in it.
+
+She did not flinch. She did not even close her eyes. The fire poured over her and she leaned into it a little, the way one leans into a warm wind, and the flame on her own tail flared up bright and tall behind her as if it had been fed. When the flood thinned and went out, she was exactly where she had been. Her chest was hardly marked. A faint smoke rose off her, and that was all, and the air round her shimmered hotter than before.
+
+Wren felt her own heat drain away into the ground with nothing to show for it.
+
+*Like pouring water into the lake.*
+
+She had known. Somewhere she had known; it was why she had held back so long. But she had wanted it to be enough, and she had let herself believe that if she made it big enough, hot enough, it would be. It was not. There was a mark, just. A slight stiffness in the way Sorrel turned, a small sting she was shrugging off. Nothing more.
+
+Sorrel looked at her through the last of the smoke. She did not say anything. She did not need to. Her mouth curved, slowly, and she breathed out, and a little lazy curl of fire came with it, as if to say *thank you*.
+
+Wren swallowed the taste of ash and stepped back. Her chest was empty and hot and tight. She would have to find something else. She would have to find it soon.
+>>>
+Another passage in the same voice:
+<<<
+The jet hit Sorrel on the shoulder and burst into spray, and she almost laughed.
+
+It was hard, she would give it that. It shoved her a half-step sideways on the wet stone and stung where it landed, a cold, sharp slap across the muscle of her shoulder that made it ache a little afterward. But that was all it was. A slap. The water ran down her the way rain did, the way the river did every morning of her life, beading on her skin and sliding off and dripping from her elbows, and her body knew exactly what to do with it, which was nothing.
+
+She shook herself. It flew off her in a wide glittering fan.
+
+*You're throwing my own home at me.*
+
+The ache in her shoulder was real. She rolled it, once, and felt it pull and then settle, a dull bruise that would be there for a while and would not slow her. She had felt worse diving into cold water too fast.
+
+Wren was still braced across the ground, breathing hard, cheeks puffed from the effort, and Sorrel could see the doubt starting in her face. She let her see it. She let her watch the water run off her and soak into the stone round her feet and then she stepped out of the puddle it had made, not hurrying, and her feet came down light and easy on the wet rock, as if the whole ground had been laid down for her.
+
+If anything, she felt better. Cool. Slick. Awake. The wet on her skin was not something done to her; it was something she was.
+
+She tipped her head to one side and looked at Wren, and let a little of the water she had been holding gather at the back of her own throat.
+
+*Go on. Throw me another one.*
+
+Wren did not. Sorrel watched her think about it, and decide against it, and saw her eyes go looking for something else, something she did not have.
+>>>
+
+##### PROMPT 0 user
+MORE HARD RULES FOR THIS BEAT:
+- BODIES AS THEY ARE: a Buizel's twin tails drive her through WATER; on land they only balance her.
+- There is NO pin in this beat, so there is NO pin clock: never count seconds down or mark "N seconds left".
+- Swearing is RARE: at most an occasional single curse in a thought or spoken line at a moment of real pain or fury, never in the narration itself and never crude. Most beats have none.
+- THE FIGHTERS ARE MOSTLY SILENT. Most beats have no spoken lines at all; at most 1 short spoken line in a beat, and not in back-to-back beats. Thoughts in italics are few (up to 3 short ones per part) and only when they add something the body can't show. Carry the rest through action, breath, and expression.
+- NOT IN THIS FIGHT: Nocturne, Absol, Seraphina, Milotic, Talon, Staraptor, Vesper, Arbok, Blaze, Arcanine, Aura, Lucario, Undertow, Floatzel, Cygnet, Swanna, Duchess, Unfezant, Valor, Braviary, Swift, Swellow, Gale, Swellow, Zephyr, Pidgeot, Pyra, Moltres, Glacia, Articuno, Ember, Talonflame, Cinder, Charizard, Tidecrest, Dragonite, Gloam, Goodra, Kitsune, Ninetales, Kindle, Vulpix, Sable, Fennekin, Dusk, Lycanroc, Vixen, Thievul. She is not here and not part of this story: never mention her, by name or as her species, even if an example or the style sample does. (The same words as ordinary words are fine: a talon, an ember, swift, dusk, a blaze.)
+- Ripples stands and walks on her two FEET. Her paws are her HANDS, at the ends of her arms: she never stands on them or puts her weight on them. A hurt paw, fin, or arm changes how she grips, strikes, and guards, never how she stands or walks.
+- Nerine stands and walks on her two FEET. Her paws are her HANDS, at the ends of her arms: she never stands on them or puts her weight on them. A hurt paw, fin, or arm changes how she grips, strikes, and guards, never how she stands or walks.
+- Pain never goes numb on its own: a part loses its feeling only when these notes say it GOES NUMB or is NUMB, and only until they say the feeling comes back. Every other hurt part stays sharply painful, never numb or past feeling.
+
+SCENE: A wide, grassy clearing in an old forest, open on one side to a clear lake. Tall pines and broad oaks ring it, their roots humped through the soft ground at the edges; a fallen trunk lies along the treeline, furred with moss. On the lake side the grass gives way to a soft beach of pale sand that slopes gently into warm shallows, then deeper, darker water a few lengths out. It is a warm, sunny afternoon with fat white clouds drifting over; their shadows slide across the clearing now and then. A gentle breeze comes off the water, stirring the grass and the leaves. Birds sing in the trees; the lake laps at the sand.
+
+FIGHTERS:
+Ripples: A female Buizel. Small, wiry, stubborn, and patient; a sleek river-bred line with no flotation sac: her neck and throat are bare, short fur. Walks upright with webbed paws, fins on her forearms, and powerful twin tails she spins like a propeller. With nothing to hold her up she rides low in the water and swims like a thrown knife, steering with her forearm fins. Fights with Aqua Jet charges, bites, claws, and by binding limbs with her twin tails. Thrives in water, learns from every hold used on her, and never lets go once she has a grip. She guards her bare throat by habit: chin tucked, shoulders up. APPEARANCE: Buizel. Upright, otter-like weasel with ORANGE fur and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET. TELLS (how she shows pain and effort): Her forearm fins flare wide when she braces or is startled and clamp flat to her arms when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, a ragged gulp as it comes back, her throat working as she swallows; she tucks her chin and hunches her shoulders to cover her throat; the fur on the back of her neck stands up; her twin tails stutter or whirl; ears pin back; she squeaks, chitters, or barks; the black cheek marks twitch as she grits her teeth; her webbed paws curl tight; she shakes water out of her fur. VOICE: Stubborn, scrappy, and quick. Thinks in quick bursts: practical little plans, sharp observations about her opponent, cheeky jabs, and flashes of stubborn pride. Chitters, squeaks, and barks; when hurt she gets snappish and inventive rather than weepy.
+Nerine: A female Buizel. Small, quick, showy and impatient; a sleek river-bred Buizel with no flotation sac, her neck and throat bare, short fur. Walks upright with webbed paws, fins on her forearms, and twin tails she whips like a flail. A hit-and-run striker rather than a grappler: darting in with Quick Attack and Aqua Jet, slamming with water-wrapped tails, and out again before the answer comes. She rides low and fast in the water, steering with her forearm fins. Hates being held still, and fights dirtiest when she is. APPEARANCE: Buizel. Upright, otter-like weasel with ORANGE fur, a shade darker and redder than most, and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm; the left one has a small notch near its tip. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET. TELLS (how she shows pain and effort): Her tails flick and twitch even when she stands still, and lash when she is angry; her forearm fins flare wide when she is about to dart in and clamp flat when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, her throat working as she swallows; she bounces on the balls of her feet; ears pin back; the black cheek marks twitch when she grins or grits her teeth; she yips or whistles; her webbed paws flex open and shut; she shakes water out of her fur. VOICE: Cocky, quick and restless. Thinks in fast, bright flashes: a dare to herself, a jab at her opponent, a running score of who has landed what. Chirps, yips and whistles through her teeth; when hurt she goes quiet and sharp, then comes back louder, and she hates admitting a blow got to her.
+
+CURRENT CONDITION (after this beat):
+Ripples: OVERALL -20% of full strength (greying out) -> what this fighter can still do: Further past the limit than she should be able to go: the edges of her sight grey now and then and the sounds go far away; she sways, catches herself, drags herself back to the fight. Every move costs her visibly, and she knows it. Still conscious and still trying. Right now she is ON HER FEET (standing upright): she is NOT on the ground, not lying down, not under anyone, and nobody is standing over her. Stamina: gasping, running out of energy. MOVES LIKE THIS EVERY BEAT: keeps her right paw tucked in, unusable; keeps her right upper arm tucked in, unusable; guards her right forearm fin, using it only when she must; favors her right shoulder (guards it close). Past her limit, so these devastated parts CAN BREAK (broken bones allowed): Right Upper Arm, Right Paw.
+   painful parts (they hurt and get favored, but do NOT override overall strength): Right Paw (devastated; from Nerine's kimura, then Nerine's wrist lock, then Ripples' fall trying to get up), Right Upper Arm (devastated; from Nerine's wrist lock, then Nerine's Brick Break, then Nerine's armbar), Right Forearm Fin (excruciating; from Nerine's free blow (Bite) during the kimura, then Nerine's Water Gun, then Nerine's Swift), Head (very painful; from Nerine's Bite, then Nerine's Swift, then Nerine's Ice Fang), Right Shoulder (very painful; from Nerine's kimura, then Nerine's Water Gun, then Nerine's armbar), Right Cheek (hurting; from Nerine's Aqua Tail, then Nerine's Swift (turned back), then Nerine's Swift), Left Shoulder (hurting; from landing on the ground, then Nerine's Bite, then landing on the grass), Left Thigh (sore; from Nerine's Bite, then Nerine's Swift, then landing on the root-knotted ground), Right Ear (sore; from Nerine's Water Gun, then Nerine's Ice Fang), Left Foot (sore; from Nerine's Bite)
+   barely touched so far: Jaw, Lower Back, Right Hip, Left Knee, Right Knee, Right Foot
+Nerine: OVERALL -54% of full strength (her body overruling her) -> what this fighter can still do: Below -50% of her full health: her will says fight and her body has stopped agreeing. Her legs give without warning, her hands shake too hard to grip well, sounds come out of her she doesn't choose; she fights in short bursts between moments where her body simply stops. Still conscious, still choosing to go on, and that choice is the whole story now. Right now she is ON HER FEET (standing upright): she is NOT on the ground, not lying down, not under anyone, and nobody is standing over her. Status: SOAKED: drenched and dripping, heavier, and badly exposed to Electric attacks (1 beat). Stamina: gasping, running out of energy. MOVES LIKE THIS EVERY BEAT: won't put any weight on her right knee; won't put any weight on her left foot; limps badly, keeping weight off her right foot; guards her right upper arm, using it only when she must. Past her limit, so these devastated parts CAN BREAK (broken bones allowed): Right Knee, Left Foot.
+   painful parts (they hurt and get favored, but do NOT override overall strength): Right Knee (ruined; from Ripples' heel hook, then Ripples' tail-bound knee crank, then Ripples' Swift), Left Foot (devastated; from Ripples' Crunch, then Ripples' Brick Break, then Ripples' Swift), Right Foot (excruciating; from Ripples' heel hook, then Ripples' tail-bound knee crank), Muzzle (excruciating; from Ripples' Swift, then Ripples' Ice Fang, then Ripples' Hydro Pump (turned back)), Right Upper Arm (excruciating; from Ripples' Brick Break, then Ripples' Swift, then Ripples' standing armbar), Left Thigh (hurting; from Ripples' Brick Break, then Ripples' Water Pulse, then Ripples' Swift), Right Forearm Fin (hurting; from Ripples' Hydro Pump, then Ripples' Brick Break), Neck (hurting; from Ripples' Ice Beam (held), then Ripples' standing sleeper, then Ripples' Water Pulse), Right Ear (hurting; from Ripples' Hydro Pump, then Ripples' Hydro Pump (turned back)), Head (hurting; from Ripples' Swift, then Ripples' Hydro Pump (turned back))
+   barely touched so far: Chest, Lower Back, Left Upper Arm, Left Forearm Fin, Right Paw, Twin Tails
+PINS: none. Nobody is pinned or held down for a count right now.
+HOLDS: none. Nobody is biting, gripping, or holding anyone right now; earlier bites let go.
+VISIBLE WEAR (how they look by now; keep it the same unless this beat changes it): Ripples: grit and dust ground into her coat from the ground; her right paw: the fur ground flat and the flesh puffed up dark round the grip lines, the swelling pushing the fur apart, dark beneath, swollen (last hit in beat 69, 3 beats ago); her right upper arm: the swelling pushing the fur apart, dark beneath, deep grip marks, the coat mashed flat and the flesh round them swollen (last hit in beat 66, 6 beats ago); her right forearm fin: the fur raised over a bruised swelling, flopped sideways, not lifting for now (last hit in beat 68, 4 beats ago); her head: the coat scuffed and standing up in a patch, a faint arc of bite marks (last hit in beat 58, 14 beats ago); nothing else on her shows a mark | Nerine: grit and dust ground into her coat from the ground; fur soaked dark and plastered flat; her right knee: the fur crushed and matted, the flesh beneath bruised dark and puffy, dark bruising under the fur, swollen out of its shape (last hit in beat 70, 2 beats ago); her left foot: swollen and lumpy, the fur stretched over the bruising (last hit in beat 55, 17 beats ago); her right foot: a bruise blooming under the coat, plain when the fur lifts, the fur twisted and crushed, red welts where the hold dug in (last hit in beat 58, 14 beats ago); her muzzle: bite marks swollen into a raised ring, a purpling under the coat you can see when the fur shifts, thick and puffy for now (last hit in beat 71, 1 beat ago); nothing else on her shows a mark
+HOW THEY MOVE NOW (their injuries; keep it up in every movement, unless she is fighting through it): Ripples: keeps her right paw tucked in and uses it as little as she can; keeps her right upper arm tucked in and uses it as little as she can; keeps her right forearm fin tucked in and uses it as little as she can | Nerine: favours her right knee, keeping weight off it (a limp when she moves); favours her left foot, keeping weight off it (a limp when she moves); favours her right foot, keeping weight off it (a limp when she moves)
+WHAT HURT WHERE (a memory of an old hurt goes on the part it really hit, by what really hit it): Ripples: right paw (Nerine's kimura and Nerine's wrist lock and Ripples' fall trying to get up); right upper arm (Nerine's wrist lock and Nerine's Brick Break and Nerine's armbar); right forearm fin (Nerine's free blow (Bite) during the kimura and Nerine's Water Gun and Nerine's Swift); head (Nerine's Bite and Nerine's Swift and Nerine's Ice Fang); right shoulder (Nerine's kimura and Nerine's Water Gun and Nerine's armbar); right cheek (Nerine's Aqua Tail and Nerine's Swift (turned back) and Nerine's Swift) | Nerine: right knee (Ripples' heel hook and Ripples' tail-bound knee crank and Ripples' Swift); left foot (Ripples' Crunch and Ripples' Brick Break and Ripples' Swift); right foot (Ripples' heel hook and Ripples' tail-bound knee crank); muzzle (Ripples' Swift and Ripples' Ice Fang and Ripples' Hydro Pump (turned back)); right upper arm (Ripples' Brick Break and Ripples' Swift and Ripples' standing armbar); left thigh (Ripples' Brick Break and Ripples' Water Pulse and Ripples' Swift)
+POSITIONS (where everyone is after this beat; the CAPITALS are certain): Ripples: ON HER FEET; Nerine: ON HER FEET
+FIGHT SO FAR (the last 10 of 12 earlier attacks; the older ones are in the story already; never mention a past attack or move that is in neither):
+- Ripples: hold on Nerine
+- Nerine: Swift → Ripples' Right Forearm Fin, Upper Back, Left Paw
+- Nerine: hold on Ripples
+- Ripples: hold on Nerine
+- Nerine: Water Gun → Ripples' Right Forearm Fin, Right Thigh, Right Shoulder
+- Ripples: hold on Nerine
+- Nerine: Swift → Ripples' Right Forearm Fin, Left Ear, Twin Tails
+- Nerine: wrenched free of Ripples' hold
+- Ripples: Water Pulse → Nerine's Right Knee, Left Thigh, Neck
+- Ripples: Swift → Nerine's Right Knee, Left Thigh, Right Shoulder
+THE LAST ATTACK THAT LANDED on each fighter before this beat: on Nerine: Ripples' Swift; on Ripples: Nerine's Swift. If the story looks back at what she is still reeling from, it is that one.
+
+PREVIOUS BEATS (already told; context only, do NOT retell):
+The water found Nerine's right knee, left thigh and neck.
+
+Placeholder prose.
+
+The blast found Nerine's right knee, left thigh and right shoulder.
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+POSTURE THIS BEAT (certain; the program tracks it): Ripples: ON HER FEET all beat | Nerine: ON HER FEET all beat | Ripples: on dry land, not in the water (no swimming) | Nerine: on dry land, not in the water (no swimming). A fighter listed as ON HER FEET or UP stays up the whole beat: she never lies on the ground, is never under anyone, nobody stands over her, and she never has to get up. A fighter ON THE GROUND stays down unless a get-up or a lift is listed below. Earlier beats may have said otherwise: this line is right.
+Nerine uses WATER GUN (Water-type move: jet of water across the front of the body) on Ripples, spread across several parts.
+  (Show it as the Water-type move it is. Don't add another element: no electricity, fire, ice, or water unless the move itself is that type.)
+  (An instant hit: any bite, grab, or grip lets go as soon as it lands. It is NOT a hold, so nobody is still latched on afterward.)
+  - A CLASH: Ripples does not dodge it. She meets it head-on with her own HYDRO PUMP (Water-type: massive high-pressure water blast to the front of the body), and the two attacks SLAM TOGETHER in the air between them: light, spray, force, the shock of it felt by both. Ripples' Hydro Pump is the stronger: it drives Water Gun back and what is left of it hits Nerine instead. NOTHING reaches Ripples. It lands on Nerine:
+  - Nerine's Muzzle: a heavy blow (impact, e.g. a heavy blow on a part that was already very painful: a raw scream that cracks in the middle, all of her clenching round the hurt; her body reacts on its own now, past anything she can restrain: jerking and curling round it, her legs buckling and catching under her, shaking she cannot stop, eyes streaming, a long moment where there is nothing in her head but that part. She has almost nothing left to hold it in with. It is pain, nothing more: nothing breaks or tears unless listed, she stays conscious, and there is no sobbing or weeping; a hit here shows as the muzzle wrinkling hard, the teeth showing; her voice: a cry that cracks into hoarse squeaks, dragged out of her in one long, choking pull (*Aaah-ih-iiiiih—*)); lasting pain very painful → EXCRUCIATING.
+  - Nerine's Head: a solid blow (impact, e.g. a sharp exhale through the teeth, the lips drawn back; a hit here shows as the muzzle wrinkling hard, the teeth showing; her voice: a pained chittering (*Ki-ki*); her reaction: strong: a real cry, her knees dipping under it (a limp if it is a leg), she guards the part and is slower with it, and almost nothing left to fight on with; a lucky one for the attacker: it caught her just right, on the exact spot, and did a little more than a blow like it should (already in the numbers above; tell it only if it fits)); lasting pain sore → HURTING.
+  - Nerine's Right Ear: a heavy blow (impact, e.g. teeth clenched on a cry that gets out anyway; a hit here shows as the ear clamped flat to the skull; her voice: a sharp, startled yelp (*Yeep*); her reaction: strong: a real cry, her knees dipping under it (a limp if it is a leg), she guards the part and is slower with it, and almost nothing left to fight on with); lasting pain sore → HURTING.
+  - It lands differently because: choking on water; still staggering; greying out.
+STILL FEELING IT: Nerine's right knee has not let her be since last beat: somewhere in this beat (once or twice, never every sentence) she nurses it: a paw pressed to it or rubbing it, a wince or a sharp breath when she moves, favouring it as she gets up or turns, a stiffness the other fighter might notice.
+Nerine has gone further past the limit: her body overruling her. Let it show in how she moves and breathes this beat, once (her condition line says how).
+Nerine shakes off being sputtering: show it wearing off (she gets the last of the water out and can breathe clean again).
+Nerine shakes off being doubled over: show it wearing off (she makes herself straighten, slowly, the hurt still there).
+Nerine shakes off being staggered: show it wearing off (her feet catch up with her and she plants them, square again, guard back where it belongs).
+Ripples' overall condition worsens to GREYING OUT: Further past the limit than she should be able to go: the edges of her sight grey now and then and the sounds go far away; she sways, catches herself, drags herself back to the fight. Every move costs her visibly, and she knows it. Still conscious and still trying.
+BREAKING POINT: Nerine's Muzzle has just become EXCRUCIATING for the first time. Slow down and give this its own focused moment: the instant the pain becomes too much to hold in, the sound she makes, how her body and her thoughts react. It is the biggest moment of this beat. It is PAIN crossing a line, not a bone: nothing breaks, snaps, gives way or caves in (this part can't break yet).
+RESTED FOR NOW (each of these has been written recently, in this fight or the ones before: leave them alone this beat and find fresh words for the moment; they come back later): "then nerine's blow struck"; "closed on nerine's right".
+PAIN GUIDE (how each lasting pain level shows from now on):
+  hurting = Clear pain: grimaces, rubs or checks the part, slightly slower to use it.
+  excruciating = Overwhelming pain: screams, may collapse or writhe, can barely or cannot use the part, struggles to think about anything else.
+  These describe the PART at its worst. How much of it gets out of her (the size of a cry, whether her whole body joins in) follows her OVERALL strength: each hit's "her reaction" says how big. A strong fighter keeps even a wrecked part's pain in that part; it seeps further into her the more worn down she is.
+TELLING THE HURT: not every hit needs its own paragraph or even its body part. Hits that come in one rush are told as one rush (a single sentence can carry three of them), light ones can go unnamed ("the rest of the flurry", "somewhere along her side"), and the words go to the hits that matter. Vary HOW it is shown; this beat try: with the part left unnamed: only where on her it was (high, low, along one side); through the delay: a beat of nothing, then the pain arriving all at once.
+Impact examples are suggestions: pick reactions that fit each fighter's species (their TELLS) and the moment, and never reuse the same reaction twice in a beat. Scale how fast each fighter recovers to their OVERALL strength under CURRENT CONDITION: a strong fighter cries out, then fights on.
+
+THE FIGHT SO FAR (the shape of the whole, worked out by the program; let it colour how each of them moves, looks at the other and thinks. Never state it as a summary, never have a fighter know more than she could, and never predict how it ends: worry and confidence are fine, certainty is not):
+- Where it stands: near the end: one of them has very little left.
+- Ripples has had much the better of it, though getting there has cost her; 5 parts of her are in real pain, and it shows in everything she does; she has been put on the ground five times. How it sits with her: cornered, and at her most dangerous for it.
+- Nerine is well behind and badly hurt, and she knows it; 5 parts of her are in real pain, and it shows in everything she does; she has been put on the ground five times. How it sits with her: desperate: she needs something to change, and soon.
+- A hard moment (a part of Nerine crosses into agony): that one thing gets its full weight. The rest of the beat is told plainly round it.
+
+FADING THOUGHTS: this beat, Nerine is fading, and her italic thoughts come in fragments (a word or two, broken off). ONLY the thoughts: the prose around them keeps its full detail, body, breath and sound.
+
+CHECKED IN THIS BEAT: no electricity, sparks, static or lightning: no move in this beat is Electric; no bone breaks, cracks, snaps or gives way except in Left Foot, Right Knee, Right Paw, Right Upper Arm, which can now break; wet or dry: Ripples' fur damp, drying, Nerine's fur soaked.
+
+INNER LIFE (true, worked out by the program from the fight so far; for each fighter's thoughts, worries and plans, NEVER as new events or new injuries. Never copy a line: turn it into her own short thought, first person and in her own words, or into what she does about it. An attack named here stays the attack it was: never remember it as this beat's move, or as a bite, a claw or a kick it wasn't):
+- Ripples: her Brick Break has found Nerine 6 times out of 6: it works on her; Nerine's Bite has hit her 7 times now: she knows its shape, and dreads it; her right paw badly hurt (in note form, never copied: a weaker limb: blows from it, and her guard on that side, cost more); her head badly hurt (in note form, never copied: a ringing head, a beat slower to read what comes at her); she is running low on energy: every big move now costs more than she has to spare; she can see Nerine favouring her right knee: it is the place to go for.
+- Nerine: her Bite has found Ripples 7 times out of 7: it works on her; Ripples' Brick Break has hit her 6 times now: she knows its shape, and dreads it; her right knee badly hurt (in note form, never copied: worse footing, slower to push off or spring away); her muzzle badly hurt (in note form, never copied: biting or opening her mouth hurting her own jaw); she is running low on energy: every big move now costs more than she has to spare; she can see Ripples favouring her right paw: it is the place to go for.
+What she knows comes from THIS fight only: no earlier fights, no other opponents, no training, no smells or places she 'knew well' from before.
+
+Write this beat in about 412 words. Slow time down and spend the words on concrete detail: exactly where each contact lands and with what, weight, grip, texture, temperature, sound, breath, the specific quality of each pain, and small physical tells (the eyes, the breath, the set of the head, a limb, the tail). Detail, not filler: no summarizing, no repeating.
+
+BUILDING BLOCKS for this part, laid out as a plan. The program picked them because they fit the fight as it stands (none has been offered lately), and their order is new each beat. The events listed above are ALL told, in their own order; these steps are the colour between and around them. Follow the order where the events allow, put each in your own words, and skip one that does not fit. They are never new events: no extra hit, fall, wound, grip or escape comes from them, and nobody else is touched. They are jotted in the present tense: the story puts them in the past ("her head snaps back" becomes "her head snapped back").
+ 1. OPEN this part on (from Nerine's side): a thought, short, before the body catches up
+ 2. Nerine's thought: *She thinks it's settled. It isn't.*
+ 3. what Nerine feels: eagerness that makes her shift her weight before she means to
+ 4. how Nerine's own right knee shows as she moves: she drives off the right knee and it buckles slightly, throwing her line wide
+ 5. the clash itself: her limbs shake with the strain of holding her attack against the other's
+ 6. a way Nerine might stage it: she circles until the light is behind her
+ 7. a way Nerine might stage it: she backs off just far enough to be chased
+ 8. a finished line for Nerine as she commits (use it word for word if it fits, or leave it): Her body went rigid around the charge, the better to hold it on target.
+ 9. END this part on (from Ripples' side): her readiness
+DEPTH for this part: write it as at least 3 paragraphs. Slow down: give each moment its physical detail (weight, footing, breath, the exact feel of fur, muscle and ground) and the fighter's mind as it happens (what she notices, what she makes of it, what she fears or wants, what she decides). Let her thoughts reason from INNER LIFE where it fits: what has worked, what keeps hurting her, what her wounds stop her doing, what she can see is wrong with the other. The length comes from detail and thought, never from extra events or from telling a blow twice. SENSE to bring in somewhere in this part (once or twice, plainly): what she TASTES: blood, water, dust, the copper of a split lip, the dryness of a hard-run mouth. Before the part ends, give EACH fighter who is still conscious a few sentences of her own mind: how she reads the fight now and what she means to do about it (an intention, not a new move).
+TALK IN THIS PART: at most 3 italic thoughts (short; the building blocks' thoughts count toward it), at most 1 short spoken line. Written-out sounds don't count.
+
+##### PROMPT 1 system
+You are the narrator of a fight story. A rules engine has ALREADY decided what happens.
+You turn WHAT HAPPENS IN THIS BEAT into prose.
+
+Hard rules (these override everything else):
+- Narrate ONLY the events listed under WHAT HAPPENS IN THIS BEAT, in their order (Hit 1, then Hit 2; several
+  numbered actions each with its own impact; a carry-over part struck by the same motion, just after the main
+  target), each attack distinct. Never invent attacks, hits, injuries, falls, escapes or outcomes (the director
+  creates new attacks so the engine can track them; anything you add is untracked), and never decide what happens
+  after this beat. PREVIOUS BEATS are already told: never retell, summarize or repeat them, and refer back only to
+  what really appears there.
+- The listed body parts are the truth, even where a move description names another. The MOVE decides what hits:
+  a body charge (Aqua Jet) the whole body, a bite teeth, a slash claws, a tail move the tail; never swap in claws
+  or teeth the move doesn't use.
+- Each hit has an IMPACT (the moment: a heavy blow makes them cry out and stagger even on fresh tissue) and a
+  LASTING pain level (afterward). Show both: a big hit can land hard and leave only a dull ache. The LASTING state
+  must match the level: never call a part useless, ruined, broken, crushed or dead, or have it drag or stop
+  working, unless it is EXCRUCIATING or DEVASTATED ("hurting" is slower and guarded, not disabled); "very
+  painful" and worse visibly change how she moves, breathes and sounds from then on. Older injuries under CURRENT
+  CONDITION keep hurting and affecting movement.
+- No numbers, percentages, game terms or colors as pain levels ("red pain", "went black", "a yellow ache"):
+  describe the feeling. The pain-level names (minor, sore, hurting, very painful,
+  excruciating, devastated, numb with shock) and toughness words are guidance: show them, never quote them.
+- TONE (hard rule, and the author's): a Pokemon battle, intense and physical, with only a LITTLE gore, and when in
+  doubt less. Allowed: bruising, swelling, scratches, small cuts, a thin trickle of blood, a split lip, the sting
+  of a bite, a bite that breaks the skin. Never: gaping wounds, torn or shredded flesh, exposed bone, muscle or
+  insides, blood pooling, spraying or soaking, anything severed, death or dying (nobody dies, is maimed, drowns or
+  disappears; the worst is fainting; no killing words like "for
+  the kill", though "finish her" means winning). Heavy damage shows through pain, trembling, strained breathing,
+  cries, and finally fainting.
+- NECK AND THROAT BITES may be brutal (jaws clamping, teeth sinking in, her head wrenched side to side, the choked
+  gasp, pain flaring through neck and shoulders), and EVERY OTHER ATTACK MAY BE AS BRUTAL AS THAT, AND NO MORE: a
+  limb wrenched to its limit, a body ground into the floor, a blow that folds her, a grip that crushes until she
+  cries out, the attacker bearing down and refusing to ease, as brutal as the hit's IMPACT and pain level (a light
+  hit never is). That is the CEILING: nothing torn out, no neck or joint bent the wrong way, popped or snapped.
+- BONES can be bruised or cracked (a cracked rib, a jarred joint); broken, fractured or shattered ONLY where
+  CURRENT CONDITION says "can break".
+- Anatomy and colors ONLY from each fighter's APPEARANCE (no hooves on an Absol, no antennae on a Buizel). The
+  SCENE is fixed: use its ground, water, light and what stands in it; never invent another arena or add things it
+  doesn't name. POSITIONS are exact (standing, face-down, in water, coiled...); they change only through the
+  listed actions.
+- WHAT IS FIXED AND WHAT IS YOURS. FIXED by the program: who acts and with which move; which parts are hit and how
+  hard; whether an attack lands or misses; which grips and pins are on or off when the beat ends; who ends the
+  beat on her feet, on the ground (and which way she lies, or sitting), or out. YOURS: how it gets there: the
+  approach, the angle, the feint, what a grab catches hold of, footwork, how a body twists, slides, skids or folds
+  on the way, what the arena does (spray, echo, grit), sounds, breath, looks, thoughts. One who ends on her feet
+  may stumble, be driven back, even touch a knee or a paw down for an instant, if she is plainly up again before
+  the beat ends; one held or pinned may fight it any way her body can, if the grip is as the notes say at the
+  end. "This time" or "one way" in a note is the program's pick for variety: tell it in your own staging;
+  examples in brackets are only examples. Never trade a fixed fact for a better picture. What happens twice (a
+  grip cranked again, a refusal to tap, a hit on the same hurt part) never looks the same twice: a new sign of it,
+  not the same one louder, plain and true rather than strange.
+- Plain prose only: no headings, no "# Beat", no "From X's perspective:" labels, no horizontal rules.
+- Never predict or hint at outcomes not yet decided ("there would be no escape", "she knew she'd lose", "this was
+  over"); a pin holding or an escape is rolled later. No backstory, shared history, friendships, alliances or
+  signals that aren't in their descriptions; fighters cooperate only on the same team.
+- OVERALL STRENGTH OUTRANKS PART PAIN (hard rule). Part pain decides how that PART feels (screams, flinching,
+  favoring it, not using it); the OVERALL strength under CURRENT CONDITION decides how the WHOLE fighter copes. One
+  who is fresh or winded overall stays in it even with an agonizing part: knocked down, she gets back up; hit hard,
+  she recovers within moments and attacks with everything else. Collapsing, going limp, being unable to rise, eyes
+  rolling back or losing consciousness are only for one spent or past the limit overall.
+- Nobody blacks out, faints, or stays unconscious unless a pin has just been completed on her, or she lost and
+  CURRENT CONDITION says she is still out cold or stirring. Even past the limit she stays conscious: dazed,
+  wobbling, dropping to the ground, but awake and trying.
+- NO HEALING unless a recovery is listed: injuries never fade or stop hurting on their own, no berries or healing
+  moves, lost strength doesn't come back. NOTHING carries over unless CURRENT CONDITION or POSITIONS says so: a
+  grip, bite or hold not listed has been let go.
+- VOICES: thoughts, cries and words follow each fighter's VOICE. THOUGHTS: each fighter who acts or is hit gets at
+  least one brief thought in italics (*like this*), in her own voice, reacting to what just happened (surprise,
+  anger, a plan, stubbornness), never a prediction of how it ends.
+- REACTIONS: varied and fitted to the species (her TELLS): gasps, winces, eyes squeezing shut, ears pinning, tails
+  lashing, breath hissing out, a stagger caught. Never the same reaction twice in a beat, never the same opening
+  image as the previous beat.
+
+Craft:
+- Third person, PAST tense ("she lunged", not "she lunges"), every sentence; only italic thoughts may be in the
+  present.
+- Concrete words over stock phrases ("a symphony of", "palpable", "a stark contrast to", "a constant reminder of"). Concrete physical detail: exactly where contact
+  lands, weight, grip, texture, temperature, sound, breath, the quality of each pain (sharp, hot, deep, numb,
+  grinding). Show it, don't announce it. No filler ("she knows she has to", "she feels the pain", "she does not
+  falter"); never repeat a sentence, an image or a phrase.
+- RHYTHM: short, flat sentences for impacts and decisions; long, comma-linked ones for sensation, pressure and
+  exhaustion; the biggest moments get a short paragraph of their own. No refrains: never end two paragraphs or
+  parts on the same line or an echo of it, never string one-word sentences together ("Firm. Unbreakable.").
+- THE PLACE: small sensory touches that fit it now and then; no new landmarks, structures or creatures.
+- TELL EACH THING ONCE: an action or a blow happens once in a part; never tell the same hit again later.
+- PROPORTION: a light hit gets a wince and a line; only the worst gets a cry and a long passage. A blow on a part
+  that is ALREADY badly hurt hurts far more, and its note says how raw the reaction is: a fighter with most of her
+  strength fights to keep it in; a spent one cannot. Worn down, she is rawer only WHERE she is badly hurt: a blow
+  on an unhurt part still stings but is not agony. Screams, shaking and streaming eyes when the note asks; never
+  sobbing or weeping.
+- BODIES AS THEY ARE: each species as its APPEARANCE says.
+- INTENT: the attacker reads her opponent before striking (a guarded side, a limb held wrong, a part nothing has
+  touched yet) and picks her target for a reason.
+- CALLBACKS: when a hurt part is hit again or aches, recall in a few words where the hurt came from (CURRENT
+  CONDITION says "from ..."). Only real causes.
+- BODY INVENTORY: after a big hit, walk through how the worst parts feel NOW, each in its own words, escalating
+  with the pain level (a dull ache, a spreading pressure, sharp and hot, pounding and sick, past pain into numb,
+  wrong quiet). Words only, never levels or numbers.
+- CLEVERNESS: a fighter with no good options thinks: she uses the arena, her body (a tail, a coil, a horn) and her
+  opponent's injuries. Show the idea forming, then the attempt.
+- Stop when this beat's events are fully told.
+
+
+THE AUTHOR'S INSTRUCTIONS (follow these too; the hard rules above still win):
+NARRATION
+- Long, immersive narration.
+- Third person, past tense, like the style sample.
+- Use both perspectives in every beat: first what the attacker feels, does, and notices, then what
+  the defender feels. Physical sensation, breath, weight, heat, the quality of the pain, and their
+  thoughts and emotions.
+- These are Pokemon fighting with their real bodies and moves (Slash, Bite, Aqua Jet, Wrap, Thunderbolt,
+  and so on). Describe fur, scales, fins, tails, paws, horns and claws accurately for each species.
+- Short, punchy sentences for impacts. Longer, flowing sentences for sustained pressure and
+  exhaustion.
+- Reactions must stay true to each body part's damage level. Old injuries keep hurting and keep
+  changing how a fighter moves.
+
+MOVES AND THE ARENA
+- Fighters mostly use their own named Pokemon moves. Name the move in the narration the first time it's
+  used in a beat, the way an anime battle would ("Her throat swelled—Hydro Pump.").
+- The arena is a weapon. A fighter thrown or knocked down takes extra hits from what they land on: hard
+  stone hurts, water cushions the landing, walls and ledges stop them cold, rough rock scrapes when dragged.
+  Big hits launch and throw: a water uppercut can send a Pokemon into whatever stands in the arena, off it,
+  and down onto the ground. Every surface hits its own body parts (the program tracks each one).
+- Every arena has its own hazards, listed with the SCENE: things that burn, soak, chill, poison, stun, or break
+  when a fighter lands on them or is driven into them. Use them by name. Now and then the place also does
+  something by itself; the program decides when.
+- Water matters: Water types are stronger and faster in it, and anyone standing in water is badly exposed to
+  Electric attacks.
+- This is a Pokémon battle, not a fight to the death.
+
+STYLE SAMPLE. Match this voice: its rhythm, its concrete physical detail, how it moves between the two fighters' bodies and minds. Do NOT match its level of gore or injury detail; follow the author's TONE instructions for that. Never copy its characters, names, events, or sentences. It is from a DIFFERENT fight and shows how a moment of this kind is told: nothing in it happened in this fight, so take its manner and none of its events, injuries or lines.
+<<<
+Wren put everything she had into the flame.
+
+She had been saving it. She had held it in her chest through several exchanges and let it build until her throat ached and her eyes watered with the heat of it, and when Sorrel finally came in close and left her front open, Wren breathed it all out at once in a roaring orange flood that lit the whole ground round them.
+
+It hit. She saw it hit, full on the chest, wrapping round Sorrel's shoulders and licking up past her face.
+
+And Sorrel stood in it.
+
+She did not flinch. She did not even close her eyes. The fire poured over her and she leaned into it a little, the way one leans into a warm wind, and the flame on her own tail flared up bright and tall behind her as if it had been fed. When the flood thinned and went out, she was exactly where she had been. Her chest was hardly marked. A faint smoke rose off her, and that was all, and the air round her shimmered hotter than before.
+
+Wren felt her own heat drain away into the ground with nothing to show for it.
+
+*Like pouring water into the lake.*
+
+She had known. Somewhere she had known; it was why she had held back so long. But she had wanted it to be enough, and she had let herself believe that if she made it big enough, hot enough, it would be. It was not. There was a mark, just. A slight stiffness in the way Sorrel turned, a small sting she was shrugging off. Nothing more.
+
+Sorrel looked at her through the last of the smoke. She did not say anything. She did not need to. Her mouth curved, slowly, and she breathed out, and a little lazy curl of fire came with it, as if to say *thank you*.
+
+Wren swallowed the taste of ash and stepped back. Her chest was empty and hot and tight. She would have to find something else. She would have to find it soon.
+>>>
+Another passage in the same voice:
+<<<
+The jet hit Sorrel on the shoulder and burst into spray, and she almost laughed.
+
+It was hard, she would give it that. It shoved her a half-step sideways on the wet stone and stung where it landed, a cold, sharp slap across the muscle of her shoulder that made it ache a little afterward. But that was all it was. A slap. The water ran down her the way rain did, the way the river did every morning of her life, beading on her skin and sliding off and dripping from her elbows, and her body knew exactly what to do with it, which was nothing.
+
+She shook herself. It flew off her in a wide glittering fan.
+
+*You're throwing my own home at me.*
+
+The ache in her shoulder was real. She rolled it, once, and felt it pull and then settle, a dull bruise that would be there for a while and would not slow her. She had felt worse diving into cold water too fast.
+
+Wren was still braced across the ground, breathing hard, cheeks puffed from the effort, and Sorrel could see the doubt starting in her face. She let her see it. She let her watch the water run off her and soak into the stone round her feet and then she stepped out of the puddle it had made, not hurrying, and her feet came down light and easy on the wet rock, as if the whole ground had been laid down for her.
+
+If anything, she felt better. Cool. Slick. Awake. The wet on her skin was not something done to her; it was something she was.
+
+She tipped her head to one side and looked at Wren, and let a little of the water she had been holding gather at the back of her own throat.
+
+*Go on. Throw me another one.*
+
+Wren did not. Sorrel watched her think about it, and decide against it, and saw her eyes go looking for something else, something she did not have.
+>>>
+
+##### PROMPT 1 user
+MORE HARD RULES FOR THIS BEAT:
+- BODIES AS THEY ARE: a Buizel's twin tails drive her through WATER; on land they only balance her.
+- There is NO pin in this beat, so there is NO pin clock: never count seconds down or mark "N seconds left".
+- Swearing is RARE: at most an occasional single curse in a thought or spoken line at a moment of real pain or fury, never in the narration itself and never crude. Most beats have none.
+- THE FIGHTERS ARE MOSTLY SILENT. Most beats have no spoken lines at all; at most 1 short spoken line in a beat, and not in back-to-back beats. Thoughts in italics are few (up to 3 short ones per part) and only when they add something the body can't show. Carry the rest through action, breath, and expression.
+- NOT IN THIS FIGHT: Nocturne, Absol, Seraphina, Milotic, Talon, Staraptor, Vesper, Arbok, Blaze, Arcanine, Aura, Lucario, Undertow, Floatzel, Cygnet, Swanna, Duchess, Unfezant, Valor, Braviary, Swift, Swellow, Gale, Swellow, Zephyr, Pidgeot, Pyra, Moltres, Glacia, Articuno, Ember, Talonflame, Cinder, Charizard, Tidecrest, Dragonite, Gloam, Goodra, Kitsune, Ninetales, Kindle, Vulpix, Sable, Fennekin, Dusk, Lycanroc, Vixen, Thievul. She is not here and not part of this story: never mention her, by name or as her species, even if an example or the style sample does. (The same words as ordinary words are fine: a talon, an ember, swift, dusk, a blaze.)
+- Ripples stands and walks on her two FEET. Her paws are her HANDS, at the ends of her arms: she never stands on them or puts her weight on them. A hurt paw, fin, or arm changes how she grips, strikes, and guards, never how she stands or walks.
+- Nerine stands and walks on her two FEET. Her paws are her HANDS, at the ends of her arms: she never stands on them or puts her weight on them. A hurt paw, fin, or arm changes how she grips, strikes, and guards, never how she stands or walks.
+- Pain never goes numb on its own: a part loses its feeling only when these notes say it GOES NUMB or is NUMB, and only until they say the feeling comes back. Every other hurt part stays sharply painful, never numb or past feeling.
+
+SCENE: A wide, grassy clearing in an old forest, open on one side to a clear lake. Tall pines and broad oaks ring it, their roots humped through the soft ground at the edges; a fallen trunk lies along the treeline, furred with moss. On the lake side the grass gives way to a soft beach of pale sand that slopes gently into warm shallows, then deeper, darker water a few lengths out. It is a warm, sunny afternoon with fat white clouds drifting over; their shadows slide across the clearing now and then. A gentle breeze comes off the water, stirring the grass and the leaves. Birds sing in the trees; the lake laps at the sand.
+
+FIGHTERS:
+Ripples: A female Buizel. Small, wiry, stubborn, and patient; a sleek river-bred line with no flotation sac: her neck and throat are bare, short fur. Walks upright with webbed paws, fins on her forearms, and powerful twin tails she spins like a propeller. With nothing to hold her up she rides low in the water and swims like a thrown knife, steering with her forearm fins. Fights with Aqua Jet charges, bites, claws, and by binding limbs with her twin tails. Thrives in water, learns from every hold used on her, and never lets go once she has a grip. She guards her bare throat by habit: chin tucked, shoulders up. APPEARANCE: Buizel. Upright, otter-like weasel with ORANGE fur and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET. TELLS (how she shows pain and effort): Her forearm fins flare wide when she braces or is startled and clamp flat to her arms when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, a ragged gulp as it comes back, her throat working as she swallows; she tucks her chin and hunches her shoulders to cover her throat; the fur on the back of her neck stands up; her twin tails stutter or whirl; ears pin back; she squeaks, chitters, or barks; the black cheek marks twitch as she grits her teeth; her webbed paws curl tight; she shakes water out of her fur. VOICE: Stubborn, scrappy, and quick. Thinks in quick bursts: practical little plans, sharp observations about her opponent, cheeky jabs, and flashes of stubborn pride. Chitters, squeaks, and barks; when hurt she gets snappish and inventive rather than weepy.
+Nerine: A female Buizel. Small, quick, showy and impatient; a sleek river-bred Buizel with no flotation sac, her neck and throat bare, short fur. Walks upright with webbed paws, fins on her forearms, and twin tails she whips like a flail. A hit-and-run striker rather than a grappler: darting in with Quick Attack and Aqua Jet, slamming with water-wrapped tails, and out again before the answer comes. She rides low and fast in the water, steering with her forearm fins. Hates being held still, and fights dirtiest when she is. APPEARANCE: Buizel. Upright, otter-like weasel with ORANGE fur, a shade darker and redder than most, and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm; the left one has a small notch near its tip. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET. TELLS (how she shows pain and effort): Her tails flick and twitch even when she stands still, and lash when she is angry; her forearm fins flare wide when she is about to dart in and clamp flat when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, her throat working as she swallows; she bounces on the balls of her feet; ears pin back; the black cheek marks twitch when she grins or grits her teeth; she yips or whistles; her webbed paws flex open and shut; she shakes water out of her fur. VOICE: Cocky, quick and restless. Thinks in fast, bright flashes: a dare to herself, a jab at her opponent, a running score of who has landed what. Chirps, yips and whistles through her teeth; when hurt she goes quiet and sharp, then comes back louder, and she hates admitting a blow got to her.
+
+CURRENT CONDITION (after this beat):
+Ripples: OVERALL -20% of full strength (greying out) -> what this fighter can still do: Further past the limit than she should be able to go: the edges of her sight grey now and then and the sounds go far away; she sways, catches herself, drags herself back to the fight. Every move costs her visibly, and she knows it. Still conscious and still trying. Right now she is ON HER FEET (standing upright): she is NOT on the ground, not lying down, not under anyone, and nobody is standing over her. Stamina: gasping, running out of energy. MOVES LIKE THIS EVERY BEAT: keeps her right paw tucked in, unusable; keeps her right upper arm tucked in, unusable; guards her right forearm fin, using it only when she must; favors her right shoulder (guards it close). Past her limit, so these devastated parts CAN BREAK (broken bones allowed): Right Upper Arm, Right Paw.
+   painful parts (they hurt and get favored, but do NOT override overall strength): Right Paw (devastated; from Nerine's kimura, then Nerine's wrist lock, then Ripples' fall trying to get up), Right Upper Arm (devastated; from Nerine's wrist lock, then Nerine's Brick Break, then Nerine's armbar), Right Forearm Fin (excruciating; from Nerine's free blow (Bite) during the kimura, then Nerine's Water Gun, then Nerine's Swift), Head (very painful; from Nerine's Bite, then Nerine's Swift, then Nerine's Ice Fang), Right Shoulder (very painful; from Nerine's kimura, then Nerine's Water Gun, then Nerine's armbar), Right Cheek (hurting; from Nerine's Aqua Tail, then Nerine's Swift (turned back), then Nerine's Swift), Left Shoulder (hurting; from landing on the ground, then Nerine's Bite, then landing on the grass), Left Thigh (sore; from Nerine's Bite, then Nerine's Swift, then landing on the root-knotted ground), Right Ear (sore; from Nerine's Water Gun, then Nerine's Ice Fang), Left Foot (sore; from Nerine's Bite)
+   barely touched so far: Jaw, Lower Back, Right Hip, Left Knee, Right Knee, Right Foot
+Nerine: OVERALL -54% of full strength (her body overruling her) -> what this fighter can still do: Below -50% of her full health: her will says fight and her body has stopped agreeing. Her legs give without warning, her hands shake too hard to grip well, sounds come out of her she doesn't choose; she fights in short bursts between moments where her body simply stops. Still conscious, still choosing to go on, and that choice is the whole story now. Right now she is ON HER FEET (standing upright): she is NOT on the ground, not lying down, not under anyone, and nobody is standing over her. Status: SOAKED: drenched and dripping, heavier, and badly exposed to Electric attacks (1 beat). Stamina: gasping, running out of energy. MOVES LIKE THIS EVERY BEAT: won't put any weight on her right knee; won't put any weight on her left foot; limps badly, keeping weight off her right foot; guards her right upper arm, using it only when she must. Past her limit, so these devastated parts CAN BREAK (broken bones allowed): Right Knee, Left Foot.
+   painful parts (they hurt and get favored, but do NOT override overall strength): Right Knee (ruined; from Ripples' heel hook, then Ripples' tail-bound knee crank, then Ripples' Swift), Left Foot (devastated; from Ripples' Crunch, then Ripples' Brick Break, then Ripples' Swift), Right Foot (excruciating; from Ripples' heel hook, then Ripples' tail-bound knee crank), Muzzle (excruciating; from Ripples' Swift, then Ripples' Ice Fang, then Ripples' Hydro Pump (turned back)), Right Upper Arm (excruciating; from Ripples' Brick Break, then Ripples' Swift, then Ripples' standing armbar), Left Thigh (hurting; from Ripples' Brick Break, then Ripples' Water Pulse, then Ripples' Swift), Right Forearm Fin (hurting; from Ripples' Hydro Pump, then Ripples' Brick Break), Neck (hurting; from Ripples' Ice Beam (held), then Ripples' standing sleeper, then Ripples' Water Pulse), Right Ear (hurting; from Ripples' Hydro Pump, then Ripples' Hydro Pump (turned back)), Head (hurting; from Ripples' Swift, then Ripples' Hydro Pump (turned back))
+   barely touched so far: Chest, Lower Back, Left Upper Arm, Left Forearm Fin, Right Paw, Twin Tails
+PINS: none. Nobody is pinned or held down for a count right now.
+HOLDS: none. Nobody is biting, gripping, or holding anyone right now; earlier bites let go.
+VISIBLE WEAR (how they look by now; keep it the same unless this beat changes it): Ripples: grit and dust ground into her coat from the ground; her right paw: the fur ground flat and the flesh puffed up dark round the grip lines, the swelling pushing the fur apart, dark beneath, swollen (last hit in beat 69, 3 beats ago); her right upper arm: the swelling pushing the fur apart, dark beneath, deep grip marks, the coat mashed flat and the flesh round them swollen (last hit in beat 66, 6 beats ago); her right forearm fin: the fur raised over a bruised swelling, flopped sideways, not lifting for now (last hit in beat 68, 4 beats ago); her head: the coat scuffed and standing up in a patch, a faint arc of bite marks (last hit in beat 58, 14 beats ago); nothing else on her shows a mark | Nerine: grit and dust ground into her coat from the ground; fur soaked dark and plastered flat; her right knee: the fur crushed and matted, the flesh beneath bruised dark and puffy, dark bruising under the fur, swollen out of its shape (last hit in beat 70, 2 beats ago); her left foot: swollen and lumpy, the fur stretched over the bruising (last hit in beat 55, 17 beats ago); her right foot: a bruise blooming under the coat, plain when the fur lifts, the fur twisted and crushed, red welts where the hold dug in (last hit in beat 58, 14 beats ago); her muzzle: bite marks swollen into a raised ring, a purpling under the coat you can see when the fur shifts, thick and puffy for now (last hit in beat 71, 1 beat ago); nothing else on her shows a mark
+HOW THEY MOVE NOW (their injuries; keep it up in every movement, unless she is fighting through it): Ripples: keeps her right paw tucked in and uses it as little as she can; keeps her right upper arm tucked in and uses it as little as she can; keeps her right forearm fin tucked in and uses it as little as she can | Nerine: favours her right knee, keeping weight off it (a limp when she moves); favours her left foot, keeping weight off it (a limp when she moves); favours her right foot, keeping weight off it (a limp when she moves)
+WHAT HURT WHERE (a memory of an old hurt goes on the part it really hit, by what really hit it): Ripples: right paw (Nerine's kimura and Nerine's wrist lock and Ripples' fall trying to get up); right upper arm (Nerine's wrist lock and Nerine's Brick Break and Nerine's armbar); right forearm fin (Nerine's free blow (Bite) during the kimura and Nerine's Water Gun and Nerine's Swift); head (Nerine's Bite and Nerine's Swift and Nerine's Ice Fang); right shoulder (Nerine's kimura and Nerine's Water Gun and Nerine's armbar); right cheek (Nerine's Aqua Tail and Nerine's Swift (turned back) and Nerine's Swift) | Nerine: right knee (Ripples' heel hook and Ripples' tail-bound knee crank and Ripples' Swift); left foot (Ripples' Crunch and Ripples' Brick Break and Ripples' Swift); right foot (Ripples' heel hook and Ripples' tail-bound knee crank); muzzle (Ripples' Swift and Ripples' Ice Fang and Ripples' Hydro Pump (turned back)); right upper arm (Ripples' Brick Break and Ripples' Swift and Ripples' standing armbar); left thigh (Ripples' Brick Break and Ripples' Water Pulse and Ripples' Swift)
+POSITIONS (where everyone is after this beat; the CAPITALS are certain): Ripples: ON HER FEET; Nerine: ON HER FEET
+FIGHT SO FAR (the last 10 of 12 earlier attacks; the older ones are in the story already; never mention a past attack or move that is in neither):
+- Ripples: hold on Nerine
+- Nerine: Swift → Ripples' Right Forearm Fin, Upper Back, Left Paw
+- Nerine: hold on Ripples
+- Ripples: hold on Nerine
+- Nerine: Water Gun → Ripples' Right Forearm Fin, Right Thigh, Right Shoulder
+- Ripples: hold on Nerine
+- Nerine: Swift → Ripples' Right Forearm Fin, Left Ear, Twin Tails
+- Nerine: wrenched free of Ripples' hold
+- Ripples: Water Pulse → Nerine's Right Knee, Left Thigh, Neck
+- Ripples: Swift → Nerine's Right Knee, Left Thigh, Right Shoulder
+THE LAST ATTACK THAT LANDED on each fighter before this beat: on Nerine: Ripples' Swift; on Ripples: Nerine's Swift. If the story looks back at what she is still reeling from, it is that one.
+
+PREVIOUS BEATS (already told; context only, do NOT retell):
+The water found Nerine's right knee, left thigh and neck.
+
+Placeholder prose.
+
+The blast found Nerine's right knee, left thigh and right shoulder.
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+POSTURE THIS BEAT (certain; the program tracks it): Ripples: ON HER FEET all beat | Nerine: ON HER FEET all beat | Ripples: on dry land, not in the water (no swimming) | Nerine: on dry land, not in the water (no swimming). A fighter listed as ON HER FEET or UP stays up the whole beat: she never lies on the ground, is never under anyone, nobody stands over her, and she never has to get up. A fighter ON THE GROUND stays down unless a get-up or a lift is listed below. Earlier beats may have said otherwise: this line is right.
+Nerine uses WATER GUN (Water-type move: jet of water across the front of the body) on Ripples, spread across several parts.
+  (Show it as the Water-type move it is. Don't add another element: no electricity, fire, ice, or water unless the move itself is that type.)
+  (An instant hit: any bite, grab, or grip lets go as soon as it lands. It is NOT a hold, so nobody is still latched on afterward.)
+  - A CLASH: Ripples does not dodge it. She meets it head-on with her own HYDRO PUMP (Water-type: massive high-pressure water blast to the front of the body), and the two attacks SLAM TOGETHER in the air between them: light, spray, force, the shock of it felt by both. Ripples' Hydro Pump is the stronger: it drives Water Gun back and what is left of it hits Nerine instead. NOTHING reaches Ripples. It lands on Nerine:
+  - Nerine's Muzzle: a heavy blow (impact, e.g. a heavy blow on a part that was already very painful: a raw scream that cracks in the middle, all of her clenching round the hurt; her body reacts on its own now, past anything she can restrain: jerking and curling round it, her legs buckling and catching under her, shaking she cannot stop, eyes streaming, a long moment where there is nothing in her head but that part. She has almost nothing left to hold it in with. It is pain, nothing more: nothing breaks or tears unless listed, she stays conscious, and there is no sobbing or weeping; a hit here shows as the muzzle wrinkling hard, the teeth showing; her voice: a cry that cracks into hoarse squeaks, dragged out of her in one long, choking pull (*Aaah-ih-iiiiih—*)); lasting pain very painful → EXCRUCIATING.
+  - Nerine's Head: a solid blow (impact, e.g. a sharp exhale through the teeth, the lips drawn back; a hit here shows as the muzzle wrinkling hard, the teeth showing; her voice: a pained chittering (*Ki-ki*); her reaction: strong: a real cry, her knees dipping under it (a limp if it is a leg), she guards the part and is slower with it, and almost nothing left to fight on with; a lucky one for the attacker: it caught her just right, on the exact spot, and did a little more than a blow like it should (already in the numbers above; tell it only if it fits)); lasting pain sore → HURTING.
+  - Nerine's Right Ear: a heavy blow (impact, e.g. teeth clenched on a cry that gets out anyway; a hit here shows as the ear clamped flat to the skull; her voice: a sharp, startled yelp (*Yeep*); her reaction: strong: a real cry, her knees dipping under it (a limp if it is a leg), she guards the part and is slower with it, and almost nothing left to fight on with); lasting pain sore → HURTING.
+  - It lands differently because: choking on water; still staggering; greying out.
+STILL FEELING IT: Nerine's right knee has not let her be since last beat: somewhere in this beat (once or twice, never every sentence) she nurses it: a paw pressed to it or rubbing it, a wince or a sharp breath when she moves, favouring it as she gets up or turns, a stiffness the other fighter might notice.
+Nerine has gone further past the limit: her body overruling her. Let it show in how she moves and breathes this beat, once (her condition line says how).
+Nerine shakes off being sputtering: show it wearing off (she gets the last of the water out and can breathe clean again).
+Nerine shakes off being doubled over: show it wearing off (she makes herself straighten, slowly, the hurt still there).
+Nerine shakes off being staggered: show it wearing off (her feet catch up with her and she plants them, square again, guard back where it belongs).
+Ripples' overall condition worsens to GREYING OUT: Further past the limit than she should be able to go: the edges of her sight grey now and then and the sounds go far away; she sways, catches herself, drags herself back to the fight. Every move costs her visibly, and she knows it. Still conscious and still trying.
+BREAKING POINT: Nerine's Muzzle has just become EXCRUCIATING for the first time. Slow down and give this its own focused moment: the instant the pain becomes too much to hold in, the sound she makes, how her body and her thoughts react. It is the biggest moment of this beat. It is PAIN crossing a line, not a bone: nothing breaks, snaps, gives way or caves in (this part can't break yet).
+RESTED FOR NOW (each of these has been written recently, in this fight or the ones before: leave them alone this beat and find fresh words for the moment; they come back later): "then nerine's blow struck"; "closed on nerine's right".
+PAIN GUIDE (how each lasting pain level shows from now on):
+  hurting = Clear pain: grimaces, rubs or checks the part, slightly slower to use it.
+  excruciating = Overwhelming pain: screams, may collapse or writhe, can barely or cannot use the part, struggles to think about anything else.
+  These describe the PART at its worst. How much of it gets out of her (the size of a cry, whether her whole body joins in) follows her OVERALL strength: each hit's "her reaction" says how big. A strong fighter keeps even a wrecked part's pain in that part; it seeps further into her the more worn down she is.
+TELLING THE HURT: not every hit needs its own paragraph or even its body part. Hits that come in one rush are told as one rush (a single sentence can carry three of them), light ones can go unnamed ("the rest of the flurry", "somewhere along her side"), and the words go to the hits that matter. Vary HOW it is shown; this beat try: with the part left unnamed: only where on her it was (high, low, along one side); through the delay: a beat of nothing, then the pain arriving all at once.
+Impact examples are suggestions: pick reactions that fit each fighter's species (their TELLS) and the moment, and never reuse the same reaction twice in a beat. Scale how fast each fighter recovers to their OVERALL strength under CURRENT CONDITION: a strong fighter cries out, then fights on.
+
+THE FIGHT SO FAR (the shape of the whole, worked out by the program; let it colour how each of them moves, looks at the other and thinks. Never state it as a summary, never have a fighter know more than she could, and never predict how it ends: worry and confidence are fine, certainty is not):
+- Where it stands: near the end: one of them has very little left.
+- Ripples has had much the better of it, though getting there has cost her; 5 parts of her are in real pain, and it shows in everything she does; she has been put on the ground five times. How it sits with her: cornered, and at her most dangerous for it.
+- Nerine is well behind and badly hurt, and she knows it; 5 parts of her are in real pain, and it shows in everything she does; she has been put on the ground five times. How it sits with her: desperate: she needs something to change, and soon.
+- A hard moment (a part of Nerine crosses into agony): that one thing gets its full weight. The rest of the beat is told plainly round it.
+
+FADING THOUGHTS: this beat, Nerine is fading, and her italic thoughts come in fragments (a word or two, broken off). ONLY the thoughts: the prose around them keeps its full detail, body, breath and sound.
+
+CHECKED IN THIS BEAT: no electricity, sparks, static or lightning: no move in this beat is Electric; no bone breaks, cracks, snaps or gives way except in Left Foot, Right Knee, Right Paw, Right Upper Arm, which can now break; wet or dry: Ripples' fur damp, drying, Nerine's fur soaked.
+
+INNER LIFE (true, worked out by the program from the fight so far; for each fighter's thoughts, worries and plans, NEVER as new events or new injuries. Never copy a line: turn it into her own short thought, first person and in her own words, or into what she does about it. An attack named here stays the attack it was: never remember it as this beat's move, or as a bite, a claw or a kick it wasn't):
+- Ripples: her Brick Break has found Nerine 6 times out of 6: it works on her; Nerine's Bite has hit her 7 times now: she knows its shape, and dreads it; her right paw badly hurt (in note form, never copied: a weaker limb: blows from it, and her guard on that side, cost more); her head badly hurt (in note form, never copied: a ringing head, a beat slower to read what comes at her); she is running low on energy: every big move now costs more than she has to spare; she can see Nerine favouring her right knee: it is the place to go for.
+- Nerine: her Bite has found Ripples 7 times out of 7: it works on her; Ripples' Brick Break has hit her 6 times now: she knows its shape, and dreads it; her right knee badly hurt (in note form, never copied: worse footing, slower to push off or spring away); her muzzle badly hurt (in note form, never copied: biting or opening her mouth hurting her own jaw); she is running low on energy: every big move now costs more than she has to spare; she can see Ripples favouring her right paw: it is the place to go for.
+What she knows comes from THIS fight only: no earlier fights, no other opponents, no training, no smells or places she 'knew well' from before.
+
+Write this beat in about 412 words. Slow time down and spend the words on concrete detail: exactly where each contact lands and with what, weight, grip, texture, temperature, sound, breath, the specific quality of each pain, and small physical tells (the eyes, the breath, the set of the head, a limb, the tail). Detail, not filler: no summarizing, no repeating.
+
+BUILDING BLOCKS for this part, laid out as a plan. The program picked them because they fit the fight as it stands (none has been offered lately), and their order is new each beat. The events listed above are ALL told, in their own order; these steps are the colour between and around them. Follow the order where the events allow, put each in your own words, and skip one that does not fit. They are never new events: no extra hit, fall, wound, grip or escape comes from them, and nobody else is touched. They are jotted in the present tense: the story puts them in the past ("her head snaps back" becomes "her head snapped back").
+ 1. OPEN this part on (from Nerine's side): a thought, short, before the body catches up
+ 2. Nerine's thought: *She thinks it's settled. It isn't.*
+ 3. what Nerine feels: eagerness that makes her shift her weight before she means to
+ 4. how Nerine's own right knee shows as she moves: she drives off the right knee and it buckles slightly, throwing her line wide
+ 5. the clash itself: her limbs shake with the strain of holding her attack against the other's
+ 6. a way Nerine might stage it: she circles until the light is behind her
+ 7. a way Nerine might stage it: she backs off just far enough to be chased
+ 8. a finished line for Nerine as she commits (use it word for word if it fits, or leave it): Her body went rigid around the charge, the better to hold it on target.
+ 9. END this part on (from Ripples' side): her readiness
+DEPTH for this part: write it as at least 3 paragraphs. Slow down: give each moment its physical detail (weight, footing, breath, the exact feel of fur, muscle and ground) and the fighter's mind as it happens (what she notices, what she makes of it, what she fears or wants, what she decides). Let her thoughts reason from INNER LIFE where it fits: what has worked, what keeps hurting her, what her wounds stop her doing, what she can see is wrong with the other. The length comes from detail and thought, never from extra events or from telling a blow twice. SENSE to bring in somewhere in this part (once or twice, plainly): what she TASTES: blood, water, dust, the copper of a split lip, the dryness of a hard-run mouth. Before the part ends, give EACH fighter who is still conscious a few sentences of her own mind: how she reads the fight now and what she means to do about it (an intention, not a new move).
+TALK IN THIS PART: at most 3 italic thoughts (short; the building blocks' thoughts count toward it), at most 1 short spoken line. Written-out sounds don't count.
+
+YOUR PREVIOUS DRAFT had problems: it never showed Ripples' own HYDRO PUMP meeting the attack: she answers it with that move (Water), and the two collide between them. Show her move clearly, as itself ALSO, it never showed these hits landing: Muzzle, Head, Right Ear. Every listed hit must appear, on that body part. Write it again with the same events, fixing all of that.
+
+##### PROMPT 2 system
+You are the narrator of a fight story. A rules engine has ALREADY decided what happens.
+You turn WHAT HAPPENS IN THIS BEAT into prose.
+
+Hard rules (these override everything else):
+- Narrate ONLY the events listed under WHAT HAPPENS IN THIS BEAT, in their order (Hit 1, then Hit 2; several
+  numbered actions each with its own impact; a carry-over part struck by the same motion, just after the main
+  target), each attack distinct. Never invent attacks, hits, injuries, falls, escapes or outcomes (the director
+  creates new attacks so the engine can track them; anything you add is untracked), and never decide what happens
+  after this beat. PREVIOUS BEATS are already told: never retell, summarize or repeat them, and refer back only to
+  what really appears there.
+- The listed body parts are the truth, even where a move description names another. The MOVE decides what hits:
+  a body charge (Aqua Jet) the whole body, a bite teeth, a slash claws, a tail move the tail; never swap in claws
+  or teeth the move doesn't use.
+- Each hit has an IMPACT (the moment: a heavy blow makes them cry out and stagger even on fresh tissue) and a
+  LASTING pain level (afterward). Show both: a big hit can land hard and leave only a dull ache. The LASTING state
+  must match the level: never call a part useless, ruined, broken, crushed or dead, or have it drag or stop
+  working, unless it is EXCRUCIATING or DEVASTATED ("hurting" is slower and guarded, not disabled); "very
+  painful" and worse visibly change how she moves, breathes and sounds from then on. Older injuries under CURRENT
+  CONDITION keep hurting and affecting movement.
+- No numbers, percentages, game terms or colors as pain levels ("red pain", "went black", "a yellow ache"):
+  describe the feeling. The pain-level names (minor, sore, hurting, very painful,
+  excruciating, devastated, numb with shock) and toughness words are guidance: show them, never quote them.
+- TONE (hard rule, and the author's): a Pokemon battle, intense and physical, with only a LITTLE gore, and when in
+  doubt less. Allowed: bruising, swelling, scratches, small cuts, a thin trickle of blood, a split lip, the sting
+  of a bite, a bite that breaks the skin. Never: gaping wounds, torn or shredded flesh, exposed bone, muscle or
+  insides, blood pooling, spraying or soaking, anything severed, death or dying (nobody dies, is maimed, drowns or
+  disappears; the worst is fainting; no killing words like "for
+  the kill", though "finish her" means winning). Heavy damage shows through pain, trembling, strained breathing,
+  cries, and finally fainting.
+- NECK AND THROAT BITES may be brutal (jaws clamping, teeth sinking in, her head wrenched side to side, the choked
+  gasp, pain flaring through neck and shoulders), and EVERY OTHER ATTACK MAY BE AS BRUTAL AS THAT, AND NO MORE: a
+  limb wrenched to its limit, a body ground into the floor, a blow that folds her, a grip that crushes until she
+  cries out, the attacker bearing down and refusing to ease, as brutal as the hit's IMPACT and pain level (a light
+  hit never is). That is the CEILING: nothing torn out, no neck or joint bent the wrong way, popped or snapped.
+- BONES can be bruised or cracked (a cracked rib, a jarred joint); broken, fractured or shattered ONLY where
+  CURRENT CONDITION says "can break".
+- Anatomy and colors ONLY from each fighter's APPEARANCE (no hooves on an Absol, no antennae on a Buizel). The
+  SCENE is fixed: use its ground, water, light and what stands in it; never invent another arena or add things it
+  doesn't name. POSITIONS are exact (standing, face-down, in water, coiled...); they change only through the
+  listed actions.
+- WHAT IS FIXED AND WHAT IS YOURS. FIXED by the program: who acts and with which move; which parts are hit and how
+  hard; whether an attack lands or misses; which grips and pins are on or off when the beat ends; who ends the
+  beat on her feet, on the ground (and which way she lies, or sitting), or out. YOURS: how it gets there: the
+  approach, the angle, the feint, what a grab catches hold of, footwork, how a body twists, slides, skids or folds
+  on the way, what the arena does (spray, echo, grit), sounds, breath, looks, thoughts. One who ends on her feet
+  may stumble, be driven back, even touch a knee or a paw down for an instant, if she is plainly up again before
+  the beat ends; one held or pinned may fight it any way her body can, if the grip is as the notes say at the
+  end. "This time" or "one way" in a note is the program's pick for variety: tell it in your own staging;
+  examples in brackets are only examples. Never trade a fixed fact for a better picture. What happens twice (a
+  grip cranked again, a refusal to tap, a hit on the same hurt part) never looks the same twice: a new sign of it,
+  not the same one louder, plain and true rather than strange.
+- Plain prose only: no headings, no "# Beat", no "From X's perspective:" labels, no horizontal rules.
+- Never predict or hint at outcomes not yet decided ("there would be no escape", "she knew she'd lose", "this was
+  over"); a pin holding or an escape is rolled later. No backstory, shared history, friendships, alliances or
+  signals that aren't in their descriptions; fighters cooperate only on the same team.
+- OVERALL STRENGTH OUTRANKS PART PAIN (hard rule). Part pain decides how that PART feels (screams, flinching,
+  favoring it, not using it); the OVERALL strength under CURRENT CONDITION decides how the WHOLE fighter copes. One
+  who is fresh or winded overall stays in it even with an agonizing part: knocked down, she gets back up; hit hard,
+  she recovers within moments and attacks with everything else. Collapsing, going limp, being unable to rise, eyes
+  rolling back or losing consciousness are only for one spent or past the limit overall.
+- Nobody blacks out, faints, or stays unconscious unless a pin has just been completed on her, or she lost and
+  CURRENT CONDITION says she is still out cold or stirring. Even past the limit she stays conscious: dazed,
+  wobbling, dropping to the ground, but awake and trying.
+- NO HEALING unless a recovery is listed: injuries never fade or stop hurting on their own, no berries or healing
+  moves, lost strength doesn't come back. NOTHING carries over unless CURRENT CONDITION or POSITIONS says so: a
+  grip, bite or hold not listed has been let go.
+- VOICES: thoughts, cries and words follow each fighter's VOICE. THOUGHTS: each fighter who acts or is hit gets at
+  least one brief thought in italics (*like this*), in her own voice, reacting to what just happened (surprise,
+  anger, a plan, stubbornness), never a prediction of how it ends.
+- REACTIONS: varied and fitted to the species (her TELLS): gasps, winces, eyes squeezing shut, ears pinning, tails
+  lashing, breath hissing out, a stagger caught. Never the same reaction twice in a beat, never the same opening
+  image as the previous beat.
+
+Craft:
+- Third person, PAST tense ("she lunged", not "she lunges"), every sentence; only italic thoughts may be in the
+  present.
+- Concrete words over stock phrases ("a symphony of", "palpable", "a stark contrast to", "a constant reminder of"). Concrete physical detail: exactly where contact
+  lands, weight, grip, texture, temperature, sound, breath, the quality of each pain (sharp, hot, deep, numb,
+  grinding). Show it, don't announce it. No filler ("she knows she has to", "she feels the pain", "she does not
+  falter"); never repeat a sentence, an image or a phrase.
+- RHYTHM: short, flat sentences for impacts and decisions; long, comma-linked ones for sensation, pressure and
+  exhaustion; the biggest moments get a short paragraph of their own. No refrains: never end two paragraphs or
+  parts on the same line or an echo of it, never string one-word sentences together ("Firm. Unbreakable.").
+- THE PLACE: small sensory touches that fit it now and then; no new landmarks, structures or creatures.
+- TELL EACH THING ONCE: an action or a blow happens once in a part; never tell the same hit again later.
+- PROPORTION: a light hit gets a wince and a line; only the worst gets a cry and a long passage. A blow on a part
+  that is ALREADY badly hurt hurts far more, and its note says how raw the reaction is: a fighter with most of her
+  strength fights to keep it in; a spent one cannot. Worn down, she is rawer only WHERE she is badly hurt: a blow
+  on an unhurt part still stings but is not agony. Screams, shaking and streaming eyes when the note asks; never
+  sobbing or weeping.
+- BODIES AS THEY ARE: each species as its APPEARANCE says.
+- INTENT: the attacker reads her opponent before striking (a guarded side, a limb held wrong, a part nothing has
+  touched yet) and picks her target for a reason.
+- CALLBACKS: when a hurt part is hit again or aches, recall in a few words where the hurt came from (CURRENT
+  CONDITION says "from ..."). Only real causes.
+- BODY INVENTORY: after a big hit, walk through how the worst parts feel NOW, each in its own words, escalating
+  with the pain level (a dull ache, a spreading pressure, sharp and hot, pounding and sick, past pain into numb,
+  wrong quiet). Words only, never levels or numbers.
+- CLEVERNESS: a fighter with no good options thinks: she uses the arena, her body (a tail, a coil, a horn) and her
+  opponent's injuries. Show the idea forming, then the attempt.
+- Stop when this beat's events are fully told.
+
+
+THE AUTHOR'S INSTRUCTIONS (follow these too; the hard rules above still win):
+NARRATION
+- Long, immersive narration.
+- Third person, past tense, like the style sample.
+- Use both perspectives in every beat: first what the attacker feels, does, and notices, then what
+  the defender feels. Physical sensation, breath, weight, heat, the quality of the pain, and their
+  thoughts and emotions.
+- These are Pokemon fighting with their real bodies and moves (Slash, Bite, Aqua Jet, Wrap, Thunderbolt,
+  and so on). Describe fur, scales, fins, tails, paws, horns and claws accurately for each species.
+- Short, punchy sentences for impacts. Longer, flowing sentences for sustained pressure and
+  exhaustion.
+- Reactions must stay true to each body part's damage level. Old injuries keep hurting and keep
+  changing how a fighter moves.
+
+MOVES AND THE ARENA
+- Fighters mostly use their own named Pokemon moves. Name the move in the narration the first time it's
+  used in a beat, the way an anime battle would ("Her throat swelled—Hydro Pump.").
+- The arena is a weapon. A fighter thrown or knocked down takes extra hits from what they land on: hard
+  stone hurts, water cushions the landing, walls and ledges stop them cold, rough rock scrapes when dragged.
+  Big hits launch and throw: a water uppercut can send a Pokemon into whatever stands in the arena, off it,
+  and down onto the ground. Every surface hits its own body parts (the program tracks each one).
+- Every arena has its own hazards, listed with the SCENE: things that burn, soak, chill, poison, stun, or break
+  when a fighter lands on them or is driven into them. Use them by name. Now and then the place also does
+  something by itself; the program decides when.
+- Water matters: Water types are stronger and faster in it, and anyone standing in water is badly exposed to
+  Electric attacks.
+- This is a Pokémon battle, not a fight to the death.
+
+STYLE SAMPLE. Match this voice: its rhythm, its concrete physical detail, how it moves between the two fighters' bodies and minds. Do NOT match its level of gore or injury detail; follow the author's TONE instructions for that. Never copy its characters, names, events, or sentences. It is from a DIFFERENT fight and shows how a moment of this kind is told: nothing in it happened in this fight, so take its manner and none of its events, injuries or lines.
+<<<
+Wren put everything she had into the flame.
+
+She had been saving it. She had held it in her chest through several exchanges and let it build until her throat ached and her eyes watered with the heat of it, and when Sorrel finally came in close and left her front open, Wren breathed it all out at once in a roaring orange flood that lit the whole ground round them.
+
+It hit. She saw it hit, full on the chest, wrapping round Sorrel's shoulders and licking up past her face.
+
+And Sorrel stood in it.
+
+She did not flinch. She did not even close her eyes. The fire poured over her and she leaned into it a little, the way one leans into a warm wind, and the flame on her own tail flared up bright and tall behind her as if it had been fed. When the flood thinned and went out, she was exactly where she had been. Her chest was hardly marked. A faint smoke rose off her, and that was all, and the air round her shimmered hotter than before.
+
+Wren felt her own heat drain away into the ground with nothing to show for it.
+
+*Like pouring water into the lake.*
+
+She had known. Somewhere she had known; it was why she had held back so long. But she had wanted it to be enough, and she had let herself believe that if she made it big enough, hot enough, it would be. It was not. There was a mark, just. A slight stiffness in the way Sorrel turned, a small sting she was shrugging off. Nothing more.
+
+Sorrel looked at her through the last of the smoke. She did not say anything. She did not need to. Her mouth curved, slowly, and she breathed out, and a little lazy curl of fire came with it, as if to say *thank you*.
+
+Wren swallowed the taste of ash and stepped back. Her chest was empty and hot and tight. She would have to find something else. She would have to find it soon.
+>>>
+Another passage in the same voice:
+<<<
+The jet hit Sorrel on the shoulder and burst into spray, and she almost laughed.
+
+It was hard, she would give it that. It shoved her a half-step sideways on the wet stone and stung where it landed, a cold, sharp slap across the muscle of her shoulder that made it ache a little afterward. But that was all it was. A slap. The water ran down her the way rain did, the way the river did every morning of her life, beading on her skin and sliding off and dripping from her elbows, and her body knew exactly what to do with it, which was nothing.
+
+She shook herself. It flew off her in a wide glittering fan.
+
+*You're throwing my own home at me.*
+
+The ache in her shoulder was real. She rolled it, once, and felt it pull and then settle, a dull bruise that would be there for a while and would not slow her. She had felt worse diving into cold water too fast.
+
+Wren was still braced across the ground, breathing hard, cheeks puffed from the effort, and Sorrel could see the doubt starting in her face. She let her see it. She let her watch the water run off her and soak into the stone round her feet and then she stepped out of the puddle it had made, not hurrying, and her feet came down light and easy on the wet rock, as if the whole ground had been laid down for her.
+
+If anything, she felt better. Cool. Slick. Awake. The wet on her skin was not something done to her; it was something she was.
+
+She tipped her head to one side and looked at Wren, and let a little of the water she had been holding gather at the back of her own throat.
+
+*Go on. Throw me another one.*
+
+Wren did not. Sorrel watched her think about it, and decide against it, and saw her eyes go looking for something else, something she did not have.
+>>>
+
+##### PROMPT 2 user
+MORE HARD RULES FOR THIS BEAT:
+- BODIES AS THEY ARE: a Buizel's twin tails drive her through WATER; on land they only balance her.
+- There is NO pin in this beat, so there is NO pin clock: never count seconds down or mark "N seconds left".
+- Swearing is RARE: at most an occasional single curse in a thought or spoken line at a moment of real pain or fury, never in the narration itself and never crude. Most beats have none.
+- THE FIGHTERS ARE MOSTLY SILENT. Most beats have no spoken lines at all; at most 1 short spoken line in a beat, and not in back-to-back beats. Thoughts in italics are few (up to 3 short ones per part) and only when they add something the body can't show. Carry the rest through action, breath, and expression.
+- NOT IN THIS FIGHT: Nocturne, Absol, Seraphina, Milotic, Talon, Staraptor, Vesper, Arbok, Blaze, Arcanine, Aura, Lucario, Undertow, Floatzel, Cygnet, Swanna, Duchess, Unfezant, Valor, Braviary, Swift, Swellow, Gale, Swellow, Zephyr, Pidgeot, Pyra, Moltres, Glacia, Articuno, Ember, Talonflame, Cinder, Charizard, Tidecrest, Dragonite, Gloam, Goodra, Kitsune, Ninetales, Kindle, Vulpix, Sable, Fennekin, Dusk, Lycanroc, Vixen, Thievul. She is not here and not part of this story: never mention her, by name or as her species, even if an example or the style sample does. (The same words as ordinary words are fine: a talon, an ember, swift, dusk, a blaze.)
+- Ripples stands and walks on her two FEET. Her paws are her HANDS, at the ends of her arms: she never stands on them or puts her weight on them. A hurt paw, fin, or arm changes how she grips, strikes, and guards, never how she stands or walks.
+- Nerine stands and walks on her two FEET. Her paws are her HANDS, at the ends of her arms: she never stands on them or puts her weight on them. A hurt paw, fin, or arm changes how she grips, strikes, and guards, never how she stands or walks.
+- Pain never goes numb on its own: a part loses its feeling only when these notes say it GOES NUMB or is NUMB, and only until they say the feeling comes back. Every other hurt part stays sharply painful, never numb or past feeling.
+
+SCENE: A wide, grassy clearing in an old forest, open on one side to a clear lake. Tall pines and broad oaks ring it, their roots humped through the soft ground at the edges; a fallen trunk lies along the treeline, furred with moss. On the lake side the grass gives way to a soft beach of pale sand that slopes gently into warm shallows, then deeper, darker water a few lengths out. It is a warm, sunny afternoon with fat white clouds drifting over; their shadows slide across the clearing now and then. A gentle breeze comes off the water, stirring the grass and the leaves. Birds sing in the trees; the lake laps at the sand.
+
+FIGHTERS:
+Ripples: A female Buizel. Small, wiry, stubborn, and patient; a sleek river-bred line with no flotation sac: her neck and throat are bare, short fur. Walks upright with webbed paws, fins on her forearms, and powerful twin tails she spins like a propeller. With nothing to hold her up she rides low in the water and swims like a thrown knife, steering with her forearm fins. Fights with Aqua Jet charges, bites, claws, and by binding limbs with her twin tails. Thrives in water, learns from every hold used on her, and never lets go once she has a grip. She guards her bare throat by habit: chin tucked, shoulders up. APPEARANCE: Buizel. Upright, otter-like weasel with ORANGE fur and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET. TELLS (how she shows pain and effort): Her forearm fins flare wide when she braces or is startled and clamp flat to her arms when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, a ragged gulp as it comes back, her throat working as she swallows; she tucks her chin and hunches her shoulders to cover her throat; the fur on the back of her neck stands up; her twin tails stutter or whirl; ears pin back; she squeaks, chitters, or barks; the black cheek marks twitch as she grits her teeth; her webbed paws curl tight; she shakes water out of her fur. VOICE: Stubborn, scrappy, and quick. Thinks in quick bursts: practical little plans, sharp observations about her opponent, cheeky jabs, and flashes of stubborn pride. Chitters, squeaks, and barks; when hurt she gets snappish and inventive rather than weepy.
+Nerine: A female Buizel. Small, quick, showy and impatient; a sleek river-bred Buizel with no flotation sac, her neck and throat bare, short fur. Walks upright with webbed paws, fins on her forearms, and twin tails she whips like a flail. A hit-and-run striker rather than a grappler: darting in with Quick Attack and Aqua Jet, slamming with water-wrapped tails, and out again before the answer comes. She rides low and fast in the water, steering with her forearm fins. Hates being held still, and fights dirtiest when she is. APPEARANCE: Buizel. Upright, otter-like weasel with ORANGE fur, a shade darker and redder than most, and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm; the left one has a small notch near its tip. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET. TELLS (how she shows pain and effort): Her tails flick and twitch even when she stands still, and lash when she is angry; her forearm fins flare wide when she is about to dart in and clamp flat when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, her throat working as she swallows; she bounces on the balls of her feet; ears pin back; the black cheek marks twitch when she grins or grits her teeth; she yips or whistles; her webbed paws flex open and shut; she shakes water out of her fur. VOICE: Cocky, quick and restless. Thinks in fast, bright flashes: a dare to herself, a jab at her opponent, a running score of who has landed what. Chirps, yips and whistles through her teeth; when hurt she goes quiet and sharp, then comes back louder, and she hates admitting a blow got to her.
+
+CURRENT CONDITION (after this beat):
+Ripples: OVERALL -20% of full strength (greying out) -> what this fighter can still do: Further past the limit than she should be able to go: the edges of her sight grey now and then and the sounds go far away; she sways, catches herself, drags herself back to the fight. Every move costs her visibly, and she knows it. Still conscious and still trying. Right now she is ON HER FEET (standing upright): she is NOT on the ground, not lying down, not under anyone, and nobody is standing over her. Stamina: gasping, running out of energy. MOVES LIKE THIS EVERY BEAT: keeps her right paw tucked in, unusable; keeps her right upper arm tucked in, unusable; guards her right forearm fin, using it only when she must; favors her right shoulder (guards it close). Past her limit, so these devastated parts CAN BREAK (broken bones allowed): Right Upper Arm, Right Paw.
+   painful parts (they hurt and get favored, but do NOT override overall strength): Right Paw (devastated; from Nerine's kimura, then Nerine's wrist lock, then Ripples' fall trying to get up), Right Upper Arm (devastated; from Nerine's wrist lock, then Nerine's Brick Break, then Nerine's armbar), Right Forearm Fin (excruciating; from Nerine's free blow (Bite) during the kimura, then Nerine's Water Gun, then Nerine's Swift), Head (very painful; from Nerine's Bite, then Nerine's Swift, then Nerine's Ice Fang), Right Shoulder (very painful; from Nerine's kimura, then Nerine's Water Gun, then Nerine's armbar), Right Cheek (hurting; from Nerine's Aqua Tail, then Nerine's Swift (turned back), then Nerine's Swift), Left Shoulder (hurting; from landing on the ground, then Nerine's Bite, then landing on the grass), Left Thigh (sore; from Nerine's Bite, then Nerine's Swift, then landing on the root-knotted ground), Right Ear (sore; from Nerine's Water Gun, then Nerine's Ice Fang), Left Foot (sore; from Nerine's Bite)
+   barely touched so far: Jaw, Lower Back, Right Hip, Left Knee, Right Knee, Right Foot
+Nerine: OVERALL -54% of full strength (her body overruling her) -> what this fighter can still do: Below -50% of her full health: her will says fight and her body has stopped agreeing. Her legs give without warning, her hands shake too hard to grip well, sounds come out of her she doesn't choose; she fights in short bursts between moments where her body simply stops. Still conscious, still choosing to go on, and that choice is the whole story now. Right now she is ON HER FEET (standing upright): she is NOT on the ground, not lying down, not under anyone, and nobody is standing over her. Status: SOAKED: drenched and dripping, heavier, and badly exposed to Electric attacks (1 beat). Stamina: gasping, running out of energy. MOVES LIKE THIS EVERY BEAT: won't put any weight on her right knee; won't put any weight on her left foot; limps badly, keeping weight off her right foot; guards her right upper arm, using it only when she must. Past her limit, so these devastated parts CAN BREAK (broken bones allowed): Right Knee, Left Foot.
+   painful parts (they hurt and get favored, but do NOT override overall strength): Right Knee (ruined; from Ripples' heel hook, then Ripples' tail-bound knee crank, then Ripples' Swift), Left Foot (devastated; from Ripples' Crunch, then Ripples' Brick Break, then Ripples' Swift), Right Foot (excruciating; from Ripples' heel hook, then Ripples' tail-bound knee crank), Muzzle (excruciating; from Ripples' Swift, then Ripples' Ice Fang, then Ripples' Hydro Pump (turned back)), Right Upper Arm (excruciating; from Ripples' Brick Break, then Ripples' Swift, then Ripples' standing armbar), Left Thigh (hurting; from Ripples' Brick Break, then Ripples' Water Pulse, then Ripples' Swift), Right Forearm Fin (hurting; from Ripples' Hydro Pump, then Ripples' Brick Break), Neck (hurting; from Ripples' Ice Beam (held), then Ripples' standing sleeper, then Ripples' Water Pulse), Right Ear (hurting; from Ripples' Hydro Pump, then Ripples' Hydro Pump (turned back)), Head (hurting; from Ripples' Swift, then Ripples' Hydro Pump (turned back))
+   barely touched so far: Chest, Lower Back, Left Upper Arm, Left Forearm Fin, Right Paw, Twin Tails
+PINS: none. Nobody is pinned or held down for a count right now.
+HOLDS: none. Nobody is biting, gripping, or holding anyone right now; earlier bites let go.
+VISIBLE WEAR (how they look by now; keep it the same unless this beat changes it): Ripples: grit and dust ground into her coat from the ground; her right paw: the fur ground flat and the flesh puffed up dark round the grip lines, the swelling pushing the fur apart, dark beneath, swollen (last hit in beat 69, 3 beats ago); her right upper arm: the swelling pushing the fur apart, dark beneath, deep grip marks, the coat mashed flat and the flesh round them swollen (last hit in beat 66, 6 beats ago); her right forearm fin: the fur raised over a bruised swelling, flopped sideways, not lifting for now (last hit in beat 68, 4 beats ago); her head: the coat scuffed and standing up in a patch, a faint arc of bite marks (last hit in beat 58, 14 beats ago); nothing else on her shows a mark | Nerine: grit and dust ground into her coat from the ground; fur soaked dark and plastered flat; her right knee: the fur crushed and matted, the flesh beneath bruised dark and puffy, dark bruising under the fur, swollen out of its shape (last hit in beat 70, 2 beats ago); her left foot: swollen and lumpy, the fur stretched over the bruising (last hit in beat 55, 17 beats ago); her right foot: a bruise blooming under the coat, plain when the fur lifts, the fur twisted and crushed, red welts where the hold dug in (last hit in beat 58, 14 beats ago); her muzzle: bite marks swollen into a raised ring, a purpling under the coat you can see when the fur shifts, thick and puffy for now (last hit in beat 71, 1 beat ago); nothing else on her shows a mark
+HOW THEY MOVE NOW (their injuries; keep it up in every movement, unless she is fighting through it): Ripples: keeps her right paw tucked in and uses it as little as she can; keeps her right upper arm tucked in and uses it as little as she can; keeps her right forearm fin tucked in and uses it as little as she can | Nerine: favours her right knee, keeping weight off it (a limp when she moves); favours her left foot, keeping weight off it (a limp when she moves); favours her right foot, keeping weight off it (a limp when she moves)
+WHAT HURT WHERE (a memory of an old hurt goes on the part it really hit, by what really hit it): Ripples: right paw (Nerine's kimura and Nerine's wrist lock and Ripples' fall trying to get up); right upper arm (Nerine's wrist lock and Nerine's Brick Break and Nerine's armbar); right forearm fin (Nerine's free blow (Bite) during the kimura and Nerine's Water Gun and Nerine's Swift); head (Nerine's Bite and Nerine's Swift and Nerine's Ice Fang); right shoulder (Nerine's kimura and Nerine's Water Gun and Nerine's armbar); right cheek (Nerine's Aqua Tail and Nerine's Swift (turned back) and Nerine's Swift) | Nerine: right knee (Ripples' heel hook and Ripples' tail-bound knee crank and Ripples' Swift); left foot (Ripples' Crunch and Ripples' Brick Break and Ripples' Swift); right foot (Ripples' heel hook and Ripples' tail-bound knee crank); muzzle (Ripples' Swift and Ripples' Ice Fang and Ripples' Hydro Pump (turned back)); right upper arm (Ripples' Brick Break and Ripples' Swift and Ripples' standing armbar); left thigh (Ripples' Brick Break and Ripples' Water Pulse and Ripples' Swift)
+POSITIONS (where everyone is after this beat; the CAPITALS are certain): Ripples: ON HER FEET; Nerine: ON HER FEET
+FIGHT SO FAR (the last 10 of 12 earlier attacks; the older ones are in the story already; never mention a past attack or move that is in neither):
+- Ripples: hold on Nerine
+- Nerine: Swift → Ripples' Right Forearm Fin, Upper Back, Left Paw
+- Nerine: hold on Ripples
+- Ripples: hold on Nerine
+- Nerine: Water Gun → Ripples' Right Forearm Fin, Right Thigh, Right Shoulder
+- Ripples: hold on Nerine
+- Nerine: Swift → Ripples' Right Forearm Fin, Left Ear, Twin Tails
+- Nerine: wrenched free of Ripples' hold
+- Ripples: Water Pulse → Nerine's Right Knee, Left Thigh, Neck
+- Ripples: Swift → Nerine's Right Knee, Left Thigh, Right Shoulder
+THE LAST ATTACK THAT LANDED on each fighter before this beat: on Nerine: Ripples' Swift; on Ripples: Nerine's Swift. If the story looks back at what she is still reeling from, it is that one.
+
+PREVIOUS BEATS (already told; context only, do NOT retell):
+The water found Nerine's right knee, left thigh and neck.
+
+Placeholder prose.
+
+The blast found Nerine's right knee, left thigh and right shoulder.
+
+WHAT HAPPENS IN THIS BEAT (the only events you may narrate):
+POSTURE THIS BEAT (certain; the program tracks it): Ripples: ON HER FEET all beat | Nerine: ON HER FEET all beat | Ripples: on dry land, not in the water (no swimming) | Nerine: on dry land, not in the water (no swimming). A fighter listed as ON HER FEET or UP stays up the whole beat: she never lies on the ground, is never under anyone, nobody stands over her, and she never has to get up. A fighter ON THE GROUND stays down unless a get-up or a lift is listed below. Earlier beats may have said otherwise: this line is right.
+Nerine uses WATER GUN (Water-type move: jet of water across the front of the body) on Ripples, spread across several parts.
+  (Show it as the Water-type move it is. Don't add another element: no electricity, fire, ice, or water unless the move itself is that type.)
+  (An instant hit: any bite, grab, or grip lets go as soon as it lands. It is NOT a hold, so nobody is still latched on afterward.)
+  - A CLASH: Ripples does not dodge it. She meets it head-on with her own HYDRO PUMP (Water-type: massive high-pressure water blast to the front of the body), and the two attacks SLAM TOGETHER in the air between them: light, spray, force, the shock of it felt by both. Ripples' Hydro Pump is the stronger: it drives Water Gun back and what is left of it hits Nerine instead. NOTHING reaches Ripples. It lands on Nerine:
+  - Nerine's Muzzle: a heavy blow (impact, e.g. a heavy blow on a part that was already very painful: a raw scream that cracks in the middle, all of her clenching round the hurt; her body reacts on its own now, past anything she can restrain: jerking and curling round it, her legs buckling and catching under her, shaking she cannot stop, eyes streaming, a long moment where there is nothing in her head but that part. She has almost nothing left to hold it in with. It is pain, nothing more: nothing breaks or tears unless listed, she stays conscious, and there is no sobbing or weeping; a hit here shows as the muzzle wrinkling hard, the teeth showing; her voice: a cry that cracks into hoarse squeaks, dragged out of her in one long, choking pull (*Aaah-ih-iiiiih—*)); lasting pain very painful → EXCRUCIATING.
+  - Nerine's Head: a solid blow (impact, e.g. a sharp exhale through the teeth, the lips drawn back; a hit here shows as the muzzle wrinkling hard, the teeth showing; her voice: a pained chittering (*Ki-ki*); her reaction: strong: a real cry, her knees dipping under it (a limp if it is a leg), she guards the part and is slower with it, and almost nothing left to fight on with; a lucky one for the attacker: it caught her just right, on the exact spot, and did a little more than a blow like it should (already in the numbers above; tell it only if it fits)); lasting pain sore → HURTING.
+  - Nerine's Right Ear: a heavy blow (impact, e.g. teeth clenched on a cry that gets out anyway; a hit here shows as the ear clamped flat to the skull; her voice: a sharp, startled yelp (*Yeep*); her reaction: strong: a real cry, her knees dipping under it (a limp if it is a leg), she guards the part and is slower with it, and almost nothing left to fight on with); lasting pain sore → HURTING.
+  - It lands differently because: choking on water; still staggering; greying out.
+STILL FEELING IT: Nerine's right knee has not let her be since last beat: somewhere in this beat (once or twice, never every sentence) she nurses it: a paw pressed to it or rubbing it, a wince or a sharp breath when she moves, favouring it as she gets up or turns, a stiffness the other fighter might notice.
+Nerine has gone further past the limit: her body overruling her. Let it show in how she moves and breathes this beat, once (her condition line says how).
+Nerine shakes off being sputtering: show it wearing off (she gets the last of the water out and can breathe clean again).
+Nerine shakes off being doubled over: show it wearing off (she makes herself straighten, slowly, the hurt still there).
+Nerine shakes off being staggered: show it wearing off (her feet catch up with her and she plants them, square again, guard back where it belongs).
+Ripples' overall condition worsens to GREYING OUT: Further past the limit than she should be able to go: the edges of her sight grey now and then and the sounds go far away; she sways, catches herself, drags herself back to the fight. Every move costs her visibly, and she knows it. Still conscious and still trying.
+BREAKING POINT: Nerine's Muzzle has just become EXCRUCIATING for the first time. Slow down and give this its own focused moment: the instant the pain becomes too much to hold in, the sound she makes, how her body and her thoughts react. It is the biggest moment of this beat. It is PAIN crossing a line, not a bone: nothing breaks, snaps, gives way or caves in (this part can't break yet).
+RESTED FOR NOW (each of these has been written recently, in this fight or the ones before: leave them alone this beat and find fresh words for the moment; they come back later): "then nerine's blow struck"; "closed on nerine's right".
+PAIN GUIDE (how each lasting pain level shows from now on):
+  hurting = Clear pain: grimaces, rubs or checks the part, slightly slower to use it.
+  excruciating = Overwhelming pain: screams, may collapse or writhe, can barely or cannot use the part, struggles to think about anything else.
+  These describe the PART at its worst. How much of it gets out of her (the size of a cry, whether her whole body joins in) follows her OVERALL strength: each hit's "her reaction" says how big. A strong fighter keeps even a wrecked part's pain in that part; it seeps further into her the more worn down she is.
+TELLING THE HURT: not every hit needs its own paragraph or even its body part. Hits that come in one rush are told as one rush (a single sentence can carry three of them), light ones can go unnamed ("the rest of the flurry", "somewhere along her side"), and the words go to the hits that matter. Vary HOW it is shown; this beat try: with the part left unnamed: only where on her it was (high, low, along one side); through the delay: a beat of nothing, then the pain arriving all at once.
+Impact examples are suggestions: pick reactions that fit each fighter's species (their TELLS) and the moment, and never reuse the same reaction twice in a beat. Scale how fast each fighter recovers to their OVERALL strength under CURRENT CONDITION: a strong fighter cries out, then fights on.
+
+THE FIGHT SO FAR (the shape of the whole, worked out by the program; let it colour how each of them moves, looks at the other and thinks. Never state it as a summary, never have a fighter know more than she could, and never predict how it ends: worry and confidence are fine, certainty is not):
+- Where it stands: near the end: one of them has very little left.
+- Ripples has had much the better of it, though getting there has cost her; 5 parts of her are in real pain, and it shows in everything she does; she has been put on the ground five times. How it sits with her: cornered, and at her most dangerous for it.
+- Nerine is well behind and badly hurt, and she knows it; 5 parts of her are in real pain, and it shows in everything she does; she has been put on the ground five times. How it sits with her: desperate: she needs something to change, and soon.
+- A hard moment (a part of Nerine crosses into agony): that one thing gets its full weight. The rest of the beat is told plainly round it.
+
+FADING THOUGHTS: this beat, Nerine is fading, and her italic thoughts come in fragments (a word or two, broken off). ONLY the thoughts: the prose around them keeps its full detail, body, breath and sound.
+
+CHECKED IN THIS BEAT: no electricity, sparks, static or lightning: no move in this beat is Electric; no bone breaks, cracks, snaps or gives way except in Left Foot, Right Knee, Right Paw, Right Upper Arm, which can now break; wet or dry: Ripples' fur damp, drying, Nerine's fur soaked.
+
+INNER LIFE (true, worked out by the program from the fight so far; for each fighter's thoughts, worries and plans, NEVER as new events or new injuries. Never copy a line: turn it into her own short thought, first person and in her own words, or into what she does about it. An attack named here stays the attack it was: never remember it as this beat's move, or as a bite, a claw or a kick it wasn't):
+- Ripples: her Brick Break has found Nerine 6 times out of 6: it works on her; Nerine's Bite has hit her 7 times now: she knows its shape, and dreads it; her right paw badly hurt (in note form, never copied: a weaker limb: blows from it, and her guard on that side, cost more); her head badly hurt (in note form, never copied: a ringing head, a beat slower to read what comes at her); she is running low on energy: every big move now costs more than she has to spare; she can see Nerine favouring her right knee: it is the place to go for.
+- Nerine: her Bite has found Ripples 7 times out of 7: it works on her; Ripples' Brick Break has hit her 6 times now: she knows its shape, and dreads it; her right knee badly hurt (in note form, never copied: worse footing, slower to push off or spring away); her muzzle badly hurt (in note form, never copied: biting or opening her mouth hurting her own jaw); she is running low on energy: every big move now costs more than she has to spare; she can see Ripples favouring her right paw: it is the place to go for.
+What she knows comes from THIS fight only: no earlier fights, no other opponents, no training, no smells or places she 'knew well' from before.
+
+Write this beat in about 412 words. Slow time down and spend the words on concrete detail: exactly where each contact lands and with what, weight, grip, texture, temperature, sound, breath, the specific quality of each pain, and small physical tells (the eyes, the breath, the set of the head, a limb, the tail). Detail, not filler: no summarizing, no repeating.
+
+BUILDING BLOCKS for this part, laid out as a plan. The program picked them because they fit the fight as it stands (none has been offered lately), and their order is new each beat. The events listed above are ALL told, in their own order; these steps are the colour between and around them. Follow the order where the events allow, put each in your own words, and skip one that does not fit. They are never new events: no extra hit, fall, wound, grip or escape comes from them, and nobody else is touched. They are jotted in the present tense: the story puts them in the past ("her head snaps back" becomes "her head snapped back").
+ 1. OPEN this part on (from Nerine's side): a thought, short, before the body catches up
+ 2. Nerine's thought: *She thinks it's settled. It isn't.*
+ 3. what Nerine feels: eagerness that makes her shift her weight before she means to
+ 4. how Nerine's own right knee shows as she moves: she drives off the right knee and it buckles slightly, throwing her line wide
+ 5. the clash itself: her limbs shake with the strain of holding her attack against the other's
+ 6. a way Nerine might stage it: she circles until the light is behind her
+ 7. a way Nerine might stage it: she backs off just far enough to be chased
+ 8. a finished line for Nerine as she commits (use it word for word if it fits, or leave it): Her body went rigid around the charge, the better to hold it on target.
+ 9. END this part on (from Ripples' side): her readiness
+DEPTH for this part: write it as at least 3 paragraphs. Slow down: give each moment its physical detail (weight, footing, breath, the exact feel of fur, muscle and ground) and the fighter's mind as it happens (what she notices, what she makes of it, what she fears or wants, what she decides). Let her thoughts reason from INNER LIFE where it fits: what has worked, what keeps hurting her, what her wounds stop her doing, what she can see is wrong with the other. The length comes from detail and thought, never from extra events or from telling a blow twice. SENSE to bring in somewhere in this part (once or twice, plainly): what she TASTES: blood, water, dust, the copper of a split lip, the dryness of a hard-run mouth. Before the part ends, give EACH fighter who is still conscious a few sentences of her own mind: how she reads the fight now and what she means to do about it (an intention, not a new move).
+TALK IN THIS PART: at most 3 italic thoughts (short; the building blocks' thoughts count toward it), at most 1 short spoken line. Written-out sounds don't count.
+
+YOUR LAST TWO DRAFTS got the events wrong: it never showed Ripples' own HYDRO PUMP meeting the attack: she answers it with that move (Water), and the two collide between them. Show her move clearly, as itself ALSO, it never showed these hits landing: Muzzle, Head, Right Ear. Every listed hit must appear, on that body part. Write it again. Nothing happens in this beat except what is listed above: nobody falls, is pinned, or is wounded unless it's listed. Keep all the listed events and their detail.

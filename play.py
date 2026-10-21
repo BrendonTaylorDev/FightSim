@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 246-guided (the very end of her strength: left alone she shows it, down she squirms, her body gives her away and a limb may not answer, one last stand a fight then wide open, and the other reads her: low_health; the window shows each fighter's tap-outs in a submission match)"
+VERSION = "2026-10-21 build 247-guided (from a narrated three-tap match: nobody caught in a submission can lock one on the holder; the two last stands are one (moves.last_stand, then wide open: low_health.last_stand); no squirm the beat she goes down; a winner lying down isn't called the one still standing; a long submission match wears parts faster (finish.submission.long_ramp) and brings more openings for a hold (submissions.match.late))"
 
 HELP = """
 =============================================================================================

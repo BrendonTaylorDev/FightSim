@@ -637,9 +637,6 @@ def low_health_hint(engine):
         if dl and int(dl.get("turn", -1)) == engine.turn:
             out.append(f"{poss_name(f.name)} {str(dl.get('part', '')).lower()} isn't answering her this beat: no move "
                        f"thrown with it.")
-        if engine.has(f, "last_stand"):
-            out.append(f"{f.name} IS MAKING HER LAST STAND: this beat she throws everything she has left into one "
-                       f"wild, all-in attack (it hits harder), and she'll be wide open after.")
         if engine.has(f, "overextended"):
             out.append(f"{f.name} is WIDE OPEN after her last stand: anything aimed at her now lands.")
         rd = f.learned.get("foe_read") or {}
@@ -3694,6 +3691,7 @@ def submission_urge(engine):
         holders = [f for f in engine.active() if f.team != target.team
                    and (f.name not in engine.downed or engine.ground_lock_ok(f.name, target.name))
                    and not engine.regrab_wait(f, target)
+                   and not engine.sub_caught(f)
                    and not engine.pinned_by(f.name) and not engine.pinning(f.name)
                    and not any(engine.has(f, st) for st in ("flinched", "asleep", "frozen", "reeling"))
                    and engine.submission_shapes(f.name, target.name)]

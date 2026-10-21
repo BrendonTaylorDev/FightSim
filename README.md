@@ -654,6 +654,37 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 247
+
+Fixes and two changes from a fully narrated three-tap submission match: Ripples vs Nerine, the lakeside clearing,
+seed 8, each tap from a new part. The engine's own stand-in chose every beat, and Ripples won 3–2 in 78 beats. The
+fight, its driver and the narration are in `sim/test_fights/three_tap/`.
+
+### Fixes
+
+- **No submission from inside a submission.** A fighter locked in someone's submission could lock one of her own on
+  the holder: at beat 63 Nerine, in a standing armbar, armbarred Ripples back, and at beat 65 Ripples, in that
+  armbar, put a rear chinlock on Nerine. At beat 66 both tapped in the same beat. Now it is refused ("break free, or
+  hurt the one holding her with what she has free"). The director is no longer offered such an opening, and
+  `/simulate` doesn't take one.
+- **One last stand, not two.** The engine already had `moves.last_stand`: once a fight, below 15% strength, one blow
+  with everything she has left. It fired for both fighters in this match. Build 246's `low_health.last_stand` was a
+  second, separate one. It now only adds what was new: the beat after her last-stand blow, she is wide open
+  (`open_dodge_mult`).
+- **No squirming the beat she goes down.** `low_health.squirm` was told the same beat she was thrown down. It checked
+  a list that is emptied before it runs.
+- **The aftermath report:** a winner lying on the ground is no longer "the one still standing, if only just". She
+  "won, from flat on the ground, and can't get up yet".
+
+### A long submission match comes to an end
+
+- **`finish.submission.long_ramp`:** past beat 40, the damage blows and grips do to body parts (not health) grows
+  ×0.15 every 10 beats, up to ×2.5. The stat lines show "×1.60 for a long match". By default this applies only in
+  several-tap matches. Measured alone it changes little, because a hold has to start first, so the next change
+  matters more.
+- **`submissions.match.late`:** past beat 30 of a submission match, the chance of an opening on a standing fighter
+  rises by 3% every 10 beats, and its ceiling goes up from 20% to 35%.
+
 ## Build 246
 
 What a fighter does at the very end of her strength, and a tap tally in the window. Each of the five is on by default

@@ -711,7 +711,6 @@ def low_health_check():
     lc = e.rules["low_health"]
     for k in ("idle", "squirm", "tells", "foe_read"):
         lc[k].update(chance=1.0, cooldown=0)
-    lc["last_stand"]["chance"] = 0.0
     d.health = 0.05 * d.max_health
     e.involved = set()
     kinds = {ev["type"] for ev in e._low_health_tick()}
@@ -737,19 +736,18 @@ def low_health_check():
             if "answering" not in str(exc):
                 problems.append(f"refused for the wrong reason: {exc}")
     d.learned.pop("dead_limb", None)
-    lc["last_stand"]["chance"] = 1.0
-    d.health = -0.6 * d.max_health
     for k in ("idle", "squirm", "tells", "foe_read"):
         lc[k]["chance"] = 0.0
-    evs = e._low_health_tick()
-    if not any(ev["type"] == "last_stand" for ev in evs) or not e.has(d, "last_stand"):
-        problems.append(f"at -60% a sure last stand didn't come: {evs}")
-    if not any(lab.startswith("her last stand") for lab, _ in e.power_extras(d, a, "Water")):
-        problems.append("the last stand doesn't add power")
+    e.rules["moves"]["last_stand"].update(chance=1.0, below_strength=200)
+    d.health = 0.05 * d.max_health
+    if e._last_stand(d, {"name": "Brick Break", "target": "targeted"}) != d.name:
+        problems.append("a sure last stand didn't come")
     e.turn += 1
     evs = e._low_health_tick()
-    if not any(ev["type"] == "overextended" for ev in evs) or any(ev["type"] == "last_stand" for ev in evs):
-        problems.append(f"the beat after, she should be wide open and the stand not come again: {evs}")
+    if not any(ev["type"] == "overextended" for ev in evs) or not e.has(d, "overextended"):
+        problems.append(f"the beat after her last stand she should be wide open: {evs}")
+    if e._last_stand(d, {"name": "Brick Break", "target": "targeted"}):
+        problems.append("the last stand came twice")
     return problems
 
 
@@ -846,7 +844,7 @@ def main(argv):
         t = time.time()
         probs = low_health_check()
         failed += bool(probs)
-        print(f"{'FAIL' if probs else 'ok  '}  low health: alone, squirming, tells and a dead limb, last stand, the other's read  ({time.time() - t:.1f}s)")
+        print(f"{'FAIL' if probs else 'ok  '}  low health: alone, squirming, tells and a dead limb, wide open after a last stand, the other's read  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "upright nelson" for w in want):

@@ -194,13 +194,14 @@ class Display:
                 added = h.get("damage_added", h["damage_taken"])
                 rl = h.get("roll", 1.0)
                 rtxt = "" if rl == 1.0 else f" (rolled ×{rl:.2f})"     # damage.roll: this one landed harder or softer
+                ramps = ((f", ×{h['zero_ramp']:.2f} below zero" if h.get("zero_ramp", 1) > 1 else "")
+                         + (f", ×{h['long_ramp']:.2f} for a long match" if h.get("long_ramp", 1) > 1 else ""))
                 out.append(f"        damage      {pad(dmg)}   +{num(h['damage_taken'])} = power {num(h['power'])}{rtxt} × "
                            f"{h['mult']:.2f}{' (pin cap)' if h.get('capped') else ''}{sc}"
-                           + (f" (the part counts +{num(added)}: past 300% its number climbs slowly"
-                              + (f", ×{h['zero_ramp']:.2f} below zero" if h.get("zero_ramp", 1) > 1 else "") + ")"
+                           + (f" (the part counts +{num(added)}: past 300% its number climbs slowly{ramps})"
                               if added < h["damage_taken"] - 0.05 else
-                              f" (the part counts +{num(added)}: ×{h['zero_ramp']:.2f} below zero)"
-                              if h.get("zero_ramp", 1) > 1 and added > h["damage_taken"] + 0.05 else "")
+                              f" (the part counts +{num(added)}:{ramps[1:]})"
+                              if ramps and added > h["damage_taken"] + 0.05 else "")
                            + (" · NUMB: it lands dull" if h.get("numb") else "")
                            + (f" · 🫥 it goes NUMB for {h['goes_numb']} beat{'s' if h['goes_numb'] != 1 else ''}"
                               if h.get("goes_numb") else ""))
