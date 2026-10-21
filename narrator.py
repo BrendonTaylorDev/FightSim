@@ -1908,6 +1908,14 @@ ON_FEET_WORDS = re.compile(r"\b(?:footing|on her (?:feet|legs)|bounces? on her (
                            r"(?:keeps?|kept) her feet|her feet (?:stay|shift|slide|plant)|nothing in her movement changes|"
                            r"steps? (?:back|in|aside|away)|stride|rocks? (?:once )?on her feet|darts? in)\b", re.I)
 
+# footwork and a free body: staging for a blow thrown by a fighter standing free (strides, circling, sidesteps,
+# planting her feet, a lunge, a full turn of the body). One held in a grip, or down on the ground, can't have it
+FOOTWORK = re.compile(r"\b(?:strides?|circles?|circling|sidesteps?|side-?step|lunges?|lunging|steps? (?:in|aside|back|"
+                      r"away|out)|backs? off|plants? (?:herself|her (?:feet|forefeet|hind ?feet))|sets? her feet|"
+                      r"feet (?:slide|tear|dig)|digs? in|(?:back|front) foot|on the run|on the turn|full turn|"
+                      r"comes? in (?:at|low|on)|came in|runs? (?:straight|at|in)|(?:three|two|four) strides|rush|"
+                      r"crowds?|onto her toes|haunches|kicks? off)\b", re.I)
+
 # the names a style sample written for any pair ({A}, {B}) is shown with: nobody in the roster
 SAMPLE_NAMES = ("Wren", "Sorrel")
 SAMPLE_NAME_RX = re.compile(r"\b(?:" + "|".join(SAMPLE_NAMES) + r")\b")    # (one copied into the story is cut)
@@ -3611,10 +3619,12 @@ class Narrator:
                 pt = str(a["hits"][0].get("part") or "").lower()
                 if pt:
                     aim_[pt] = aim_.get(pt, 0) + 1
-            if not who or (not a.get("hits") and a.get("type") not in ("grapple_start", "hold_start")):
-                continue
+            if not who or a.get("environment") or (not a.get("hits") and a.get("type") not in ("grapple_start", "hold_start")):
+                continue      # (a landing, or the scenery's own doing, is no attack of hers)
             charged = a.get("charge") and not a["charge"].get("skipped")
-            kind = ("manhandle" if a.get("manhandle") or charged or a.get("type") == "grapple_start" else
+            # (a hold or a submission locked on is a grab: hands on her, not a blow)
+            kind = ("manhandle" if a.get("manhandle") or charged or a.get("type") in ("grapple_start", "hold_start")
+                    or a.get("submission") else
                     "ranged" if m and Engine.is_ranged(m) else "close")
             log.setdefault(who, []).append(kind)
             into = [str(l.get("surface") or "") for l in a.get("landings") or []] + ([a["charge"].get("into") or ""]
@@ -3670,8 +3680,9 @@ class Narrator:
                     reads.append(f"{who} has mostly fought from range ({rg} of her {n} attacks): she keeps her "
                                  f"distance and makes the other come through her attacks to reach her")
                 elif mh == 0 and rg <= 1:
-                    reads.append(f"{who} has traded blow for blow up close ({n} attacks, none from range), but hasn't "
-                                 f"tried to grab or throw anyone")
+                    reads.append(f"{who} has traded blow for blow up close ({n} attacks, "
+                                 f"{'none' if not rg else 'only one'} from range), but hasn't tried to grab or throw "
+                                 f"anyone")
             if reads:
                 out.append("HOW EACH HAS FOUGHT SO FAR (what really happened in this fight: let it shape how she moves, "
                            "what she reaches for and what she thinks, even where her description says she usually "
@@ -5842,7 +5853,9 @@ class Narrator:
                      "adrenaline": f"{a['attacker']} is riding an adrenaline surge, so it hits harder",
                      "soaked": f"{a['defender']} is soaked, so the electricity tears through her far worse",
                      "pin damage": f"it is delivered from on top of the pin, short and cramped"
-                     }.get(label, label) for label, _ in m["extras"]) + ".")
+                     }.get(label, (f"{who_}: {label}" if who_ else label))
+                    for (label, _), who_ in zip(m["extras"], list(m.get("extras_of") or []) + [""] * len(m["extras"])))
+                    + ".")
             if a.get("hits") and not a.get("environment") and m:
                 lines.append(f"  - THE SOUND OF THE BLOW: {self._blow_sound(m, a)}.")
             mv_line = self._impact_motion(a)
@@ -8882,6 +8895,8 @@ class Narrator:
                              f"{own_flavor(a.get('flavor'))}" for a in acts if a.get("attacker") == who)
             not_move = ([NOT_CHOP] if CHOP.search(said_) else []) + (
                 [BEAM_WORD] if "beam" in kinds and not re.search(r"\b(?:beam|ray|laser|light)", said_, re.I) else [])
+            if self._held_now(who) or (posture(who) | posture(who, end=True)) & {"down", "pinned"}:
+                not_move.append(FOOTWORK)       # held in a grip or down: no strides, circling or planted feet
             if close and re.search(r"\b(?:kick\w*|knee\w*|stomp\w*|heel|head-?butt\w*|bit(?:e|es|ing)|fangs?|jaws?)\b",
                                    said_, re.I):
                 not_move.append(HAND_STROKE)    # blows at no distance with a foot, a knee, a head or teeth: no wrist
@@ -8912,7 +8927,8 @@ class Narrator:
                                                           exclude=(([] if pum_ else [SEVERAL_BLOWS, CLOSE_RUN])
                                                                    + not_move) or None))
             elif {"grab", "close"} <= kinds:      # a grab and then blows inside it: an idea for each
-                add(f"a way {who} might stage it", B.pick("movement", 1, kind={"grab"}, need=("kind",), has=feats(who))
+                add(f"a way {who} might stage it", B.pick("movement", 1, kind={"grab"}, need=("kind",), has=feats(who),
+                                                          exclude=not_move or None)
                     + B.pick("movement", 1, kind={"close"}, need=("kind",), has=feats(who),
                              exclude=not_move or None))
             else:
@@ -13639,7 +13655,7 @@ class Narrator:
                           r"[^.!?…\n]{0,80}[.!?…]+[ \t]*", r"\1", text)
         # INNER LIFE's own wording copied ("Ripples is favoring her left upper arm; it's the place to go for"): the
         # tail that only explains goes, the fact stays
-        text = re.sub(r"(?i)\s*[:;,—]\s*(?:it works on her|it(?:'s| is) the place to go for|she knows its shape,? and "
+        text = re.sub(r"(?i)\s*[:;,—]\s*(?:it works on her|it keeps getting through|it(?:'s| is) the place to go for|she knows its shape,? and "
                       r"dreads it|[A-Z]\w+ has its measure|she trusts her eyes)(?=[.!?…*])", "", text)
         # the type matchup named in the story ("but she knew it was not very effective on her"): the game's words
         text = re.sub(r"(?i)[,;]?\s*(?:but |and )?(?:she knew |she could tell )?(?:that )?(?:it was |it's |it is |that was )?"

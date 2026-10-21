@@ -263,6 +263,8 @@ class FighterCard(ttk.Frame):
         self.en.pack(fill="x", pady=(2, 0))
         # a submission match: one pip per tap-out the match needs, filled for each she has given (with the part)
         self.tp = tk.Canvas(self, width=PIC + 2 * COL, height=20, highlightthickness=0, bg="#f3f4f6")
+        # her pain against what she can bear (window.pain_gauge): a bar with a mark at 100%, more in a submission
+        self.pg = tk.Canvas(self, width=PIC + 2 * COL, height=16, highlightthickness=0, bg="#f3f4f6")
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
         self.state.pack(anchor="w", pady=(4, 0))
 
@@ -377,6 +379,28 @@ class FighterCard(ttk.Frame):
                       text=f"{len(given)} of {need}" + (f"  ({parts})" if parts else ""),
                       fill="#991b1b" if len(given) >= need else "#111827")
 
+    def _pain(self, f):
+        """The pain gauge under her energy bar: how much pain she is in against how much she can bear (the full
+        width is 150%, with a mark at 100%), and the word for it; in a choke, her air too."""
+        g = f.get("pain")
+        if not g:
+            if self.pg.winfo_ismapped():
+                self.pg.pack_forget()
+            return
+        if not self.pg.winfo_ismapped():
+            self.pg.pack(fill="x", pady=(2, 0), before=self.state)
+        c, w = self.pg, PIC + 2 * COL
+        c.delete("all")
+        share = max(0.0, float(g.get("pct") or 0))
+        col = "#a3a3a3" if share < 40 else "#f59e0b" if share < 70 else "#ea580c" if share < 100 else "#b91c1c"
+        c.create_rectangle(0, 0, w * min(1.0, share / 150.0), 16, fill=col, outline="")
+        c.create_line(w * 100 / 150.0, 0, w * 100 / 150.0, 16, fill="#111827", dash=(2, 2))
+        air = g.get("air")
+        c.create_text(6, 8, anchor="w", font=("Segoe UI", 8, "bold"),
+                      text=f"Pain {share:.0f}% of what she can bear: {g.get('label', '')}"
+                           + (f"  ({g['where']})" if g.get("where") else "")
+                           + (f"  · air {air}% gone" if air is not None else ""))
+
     def _bars(self, f, pct):
         w = PIC + 2 * COL
         self.hp.delete("all")
@@ -392,6 +416,7 @@ class FighterCard(ttk.Frame):
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
         self._taps(f)
+        self._pain(f)
 
     def draw_one(self, f):
         """Without Pillow (or before her pictures are in): one picture, every part on it."""
@@ -456,6 +481,7 @@ class FighterCard(ttk.Frame):
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
         self._taps(f)
+        self._pain(f)
 
     def _label(self, c, side, lx, ly, part, dmg, res, calib):
         name = short(part)

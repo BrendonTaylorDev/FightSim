@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 248-guided (the reviewers' findings from the narrated three-tap match: upright holds need the holder up; takedowns into a hold fit how she lands; a coil is only the grip that wraps; a tap that doesn't end the match is checked for; the ending, the holder's posture, ruined vs devastated, and a dozen garbled notes put right)"
+VERSION = "2026-10-21 build 249-guided (a fighter held on the ground reaches her holder only with what the hold leaves near her; the down count keeps counting while she is held; no footwork for one held or down; a pain gauge in the window for every fighter, holds, pins and blows alike; taps in the fight summary; the rest of the review findings)"
 
 HELP = """
 =============================================================================================
@@ -543,6 +543,8 @@ def fight_snapshot(s, label=None):
             # a submission match: her tap-outs so far and how many end it (the window's tap tally)
             "taps": ({"given": list(eng.taps_given(f)), "needed": int(eng.taps_needed())}
                      if eng.submission_match() else None),
+            # how much pain she is in against what she can bear (window.pain_gauge): the window's pain gauge
+            "pain": eng.pain_gauge(f) if hasattr(eng, "pain_gauge") else None,
         })
     return {"turn": int(getattr(eng, "turn", 0) or 0), "fighters": out,
             "label": label or f"after beat {getattr(eng, 'turn', 0)}"}
@@ -826,6 +828,8 @@ class Session:
             return True
         if not cfg.get("enabled", True):
             return False
+        if cfg.get("not_in_holds", True) and (self.eng.pins or any(not h.grab for h in self.eng.holds.values())):
+            return False     # a hold or a pin is grinding on: the fight isn't drawing breath
         turn, last = self.eng.turn, getattr(self, "_last_interlude", -999)
         if turn < int(cfg.get("from_beat", 3)) or turn - last < int(cfg.get("min_gap", 4)):
             return False

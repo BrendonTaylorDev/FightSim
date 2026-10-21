@@ -587,6 +587,10 @@ class Engine:
         zramp = self.zero_part_ramp(defender)    # below_zero.part_ramp: deep below zero, her parts give way faster
         lramp = self.long_match_ramp()           # finish.submission.long_ramp: a match that runs long wears faster
         p.damage = dmg_b + self._part_added(dmg_b, taken * zramp * lramp)
+        # (the sting of this beat's blows and grips, for the window's pain gauge: which beat, and how much)
+        now_ = self.turn + (0 if getattr(self, "_ticking", False) else 1)
+        st_ = defender.learned.get("sting") or [now_, 0.0]
+        defender.learned["sting"] = [now_, round((st_[1] if st_[0] == now_ else 0.0) + taken, 2)]
         was_numb = int(getattr(p, "numb", 0) or 0) > 0
         rscale = float(r.get("damage", {}).get("resistance_scale", 1.0))
         # resistance lost: by the blow's power, and (resistance.loss_per_damage, 0 = off) by the damage it really did,
@@ -666,7 +670,7 @@ class Engine:
             "roll": round(rolled, 2),
             "bracket": bracket["label"],
             "mult": bmult,
-            "capped": capped,
+            "capped": capped, "cap_kind": str((cap or {}).get("kind") or "pin") if capped else "",
             "scale": scale,
             "res_scale": rscale,
             "damage_taken": round(taken, 2),
@@ -898,7 +902,7 @@ class Engine:
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
                     "_sustain_now", "_source", "_knock_on", "_tac_before", "beat_loss", "sub_window", "pin_window",
                     "nudges", "_windows_ready", "_pre_rolls", "directed", "ordered", "dice_mode", "lucky",
-                    "_sub_open_all", "_force_dev", "_force_dev_used",
+                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking",
                     "rules", "roster", "roster_species", "scenes", "scene_cfg", "scene_name", "scene", "movedex",
                     "variants", "variant_of", "settings_applied", "_seed0", "rng", "event_rng")
 
@@ -1123,6 +1127,9 @@ class Engine:
                 "target": target, "target_mult": aim, "stab": stab, "effective": effective,
                 "effectiveness": word, "about": move.get("about", ""), "improvised": bool(move.get("improvised")),
                 "extras": extras, "extra_mult": xm,
+                # (whose it is: her opponent's state for a blow on her while she's open, nobody's for the weather,
+                # the attacker's for the rest)
+                "extras_of": [d.name if x is vu else "" if x is wx else a.name for x in extras],
                 # (what is_ranged reads, so the record of a blow says ranged or close the way the move does: Close
                 # Combat is a spread delivered close, Flame Wheel a charge)
                 **({"ranged": move["ranged"]} if "ranged" in move else {}),
@@ -1264,6 +1271,11 @@ class Engine:
                              f"blast), or let her get up first")
         self._no_friendly_fire(a, [d], enforce)
         self._pinned_reach(a, [d.name], enforce)
+        if enforce:
+            far = self.held_reach_block(a, d, move, [d.part(p).name for p in (parts or []) if isinstance(p, str)
+                                                     and match_part(list(d.parts), p)])
+            if far:
+                raise ValueError(far)
         leap = None
         if move.get("leap_from") and self.has(d, "airborne") and not self.has(a, "airborne") \
                 and not self.is_ranged(move) and not move.get("carry") and move.get("target") not in ("status", "self", "hold"):
@@ -2660,6 +2672,85 @@ class Engine:
                 return ("jaws", h.defender, h.part)
         return None
 
+    _REACH_KIND = {"bite": "bite", "horn": "bite", "beak": "bite", "arm": "arm", "wing": "arm", "leg": "leg",
+                   "talon": "leg", "tail": "tail"}
+
+    def _held_reach_cfg(self):
+        cfg = (self.rules.get("holds") or {}).get("held_reach") or {}
+        return cfg if cfg.get("enabled", True) else None
+
+    def _held_on_ground(self, a, d):
+        """The grips `d` has on `a` while `a` lies or sits on the ground (an upright hold or a grab on her feet
+        doesn't count: the holder is right against her there)."""
+        if a.name not in self.downed or self.pinned_by(a.name):
+            return []
+        return [h for h in self.holds.values() if h.attacker == d.name and h.defender == a.name and not h.grab]
+
+    def reach_kind(self, move):
+        """bite / arm / leg / tail: what a move is thrown with, for held_reach; None for one fired across the gap."""
+        if not move or self.is_ranged(move) or move.get("target") in ("whole_body", "status", "hold", "self"):
+            return None
+        text = f"{move.get('name', '')} {move.get('about', '')}".lower()
+        kind = next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, text)), None)
+        return self._REACH_KIND.get(kind)
+
+    def held_reach_kinds(self, a, d):
+        """What a fighter held on the ground can still hurt her holder with (holds.held_reach): a list of bite / arm
+        / leg / tail, or None when nothing limits her."""
+        cfg = self._held_reach_cfg()
+        hs = self._held_on_ground(a, d) if cfg else []
+        if not hs:
+            return None
+        sit = self.facing.get(a.name) == "sitting up"
+        at = {body_region(h.part) for h in hs}
+        out = []
+        for kind in ("bite", "arm", "leg", "tail"):
+            reach = set(cfg.get(kind) or []) | (set((cfg.get("sitting_adds") or {}).get(kind) or []) if sit else set())
+            if at & reach:
+                out.append(kind)
+        return out
+
+    def held_reach_block(self, a, d, move, names=()):
+        """Why a fighter held on the ground can't throw `move` at her holder, or None (holds.held_reach)."""
+        kinds = self.held_reach_kinds(a, d)
+        kind = self.reach_kind(move) if kinds is not None else None
+        if not kind:
+            return None
+        hs = self._held_on_ground(a, d)
+        h0 = hs[0]
+        what = f"{poss_word(d.name)} {h0.sub}" if h0.sub else f"{poss_word(d.name)} grip"
+        spots = list(dict.fromkeys(h.part.lower() for h in hs))
+        where = ", ".join(spots[:-1]) + " and " + spots[-1] if len(spots) > 1 else spots[0]
+        area = {"hind_low": "legs", "hind_up": "legs", "tail": "tail", "head": "head", "neck": "head",
+                "shoulder": "shoulders", "fore_up": "arms", "fore_low": "arms", "chest": "middle", "belly": "middle",
+                "back_up": "back", "back_low": "back"}.get(body_region(hs[0].part), "side")
+        lie = "sitting" if self.facing.get(a.name) == "sitting up" else "lying"
+        words = {"bite": "jaws", "arm": "paws", "leg": "legs", "tail": "tail"}
+        other = [words[k] for k in kinds if k != kind]
+        tail_ = (f"She can reach her with her {' or '.join(other)}, or 'struggle'" if other
+                 else "Nothing of hers reaches her from there: 'struggle', or sit up first")
+        if kind not in kinds:
+            return (f"{a.name} is {lie} on the ground in {what} (on her {where}): {d.name} is at her {area}, out "
+                    f"of reach of her {words[kind]}, so she can't {move['name']} her. {tail_}")
+        near = int((self._held_reach_cfg() or {}).get("bite_near", 1))
+        if kind != "bite" or near < 0 or not names:
+            return None
+        # a bite lands on the holder near the limbs she grips with: not on her throat while her paws turn a foot
+        grip = {("hind_up" if re.search(r"\blegs?\b", h.with_part.lower()) and body_region(h.with_part) == "other"
+                 else body_region(h.with_part)) for h in hs if h.with_part} - {"other"}
+        if not grip:
+            return None
+        ok = set(grip)
+        for _ in range(near):
+            ok |= {r for g in list(ok) for r in _BODY_REGION_NEAR.get(g, [])}
+        far = [n for n in names if body_region(n) not in ok]
+        if not far:
+            return None
+        close = [p for p in d.parts if body_region(p) in grip]
+        return (f"{a.name} is {lie} on the ground in {what}: her jaws reach only what {d.name} holds her with "
+                f"({', '.join(close[:3]).lower() or h0.with_part}), not {poss_word(d.name)} {far[0].lower()}. Bite "
+                f"that, or use something else")
+
     def limb_mult(self, a, move):
         """A move thrown with a badly hurt limb lands weaker (moves.limb_limits): a chop with a ruined paw, a charge
         on a ruined leg, a bite with a ruined jaw. Streams, beams and whole-body moves aren't thrown with a limb.
@@ -3616,11 +3707,17 @@ class Engine:
         their overall strength and how hurt the limbs they push up with are; each beat down makes it easier."""
         cfg = self.rules.get("getting_up", {})
         events = []
+        for f in self.fighters.values():
+            if f.name not in self.downed:
+                f.learned.pop("down_for", None)
         for name in list(self.downed):
             f = self.fighters.get(name.lower())
             if f is None or f.eliminated:
                 self.downed.pop(name, None)
                 continue
+            # how long she has really been on the ground, pinned and held beats too (the get-up roll's own count,
+            # self.downed, only runs while she is free to try)
+            f.learned["down_for"] = int(f.learned["down_for"]) + 1 if "down_for" in f.learned else 0
             if any(p["defender"] == name for p in self.pins.values()):
                 continue  # still pinned
             if any(h.defender == name and h.sub for h in self.holds.values()):
@@ -3667,7 +3764,7 @@ class Engine:
             grab = (getattr(self, "lying_at", None) or {}).get(name) or None
             natural = next((i + 1 for i, c in enumerate(cuts) if score >= c), None)
             ev = {"type": "get_up", "fighter": name, "plan": plan, "grab": grab, "ground": self.ground_under(name),
-                  "beats_down": beats,
+                  "beats_down": max(beats, int(f.learned.get("down_for", beats))),
                   "score": round(score, 2), "cuts": list(cuts), "forced": natural is None and tries is not None,
                   "tries": tries or len(cuts), "stands": tries is not None,
                   "hurting": [p.name for p in worst if p.damage >= 30][:2],
@@ -6641,6 +6738,19 @@ class Engine:
                     how = {"choking": {"blood": "the blood choke", "air": "the choke on her windpipe", "both": "the choke"}.get(
                                oc.get("kind"), "the choke"), "constriction": "the constriction"}.get(oc.get("cause"), "the pain")
                     self._moment("finish", f"{att} holds {dfn} down until {how} puts her out", att, dfn, weight=3)
+            elif t in ("tap_count", "tap_out"):
+                # a tap (or a black-out) in a submission: one of the match's biggest moments
+                did = "taps out" if e.get("how") == "tap" else "passes out"
+                part_ = str(e.get("part") or "").lower()
+                tally = (f" (tap {e.get('tap_no')} of {e.get('needed')})" if t == "tap_count" and e.get("needed")
+                         else "")
+                self._moment("tap", f"{e.get('defender')} {did} to {poss_word(e.get('attacker', ''))} "
+                             f"{e.get('submission') or 'hold'}" + (f" on her {part_}" if part_ else "") + tally,
+                             e.get("attacker", ""), e.get("defender", ""), weight=3 if t == "tap_out" else 2.5)
+            elif t == "sub_collapse":
+                self._moment("sub_collapse", f"{poss_word(e.get('attacker', ''))} {e.get('submission') or 'hold'} "
+                             f"bears {e.get('defender')} down ({e.get('stage')})", e.get("attacker", ""),
+                             e.get("defender", ""), weight=1)
             elif t == "adrenaline":
                 self._moment("adrenaline", f"{e.get('fighter')} gets a surge of adrenaline", e.get("fighter"),
                              weight=1)
@@ -6682,7 +6792,8 @@ class Engine:
         keep, kinds = [], {}
         for m in sorted(moments, key=lambda m: -(m["weight"] + m["loss"] / 10.0)):
             k = "pin" if m["kind"] in ("pin", "escape") else m["kind"]
-            if kinds.get(k, 0) < (per_kind + 1 if k == "pin" else per_kind) and len(keep) < cap:
+            if kinds.get(k, 0) < (per_kind + 1 if k == "pin" else per_kind + 3 if k == "tap" else per_kind) \
+                    and len(keep) < cap:     # (every tap of a several-tap match is told)
                 kinds[k] = kinds.get(k, 0) + 1
                 keep.append(m)
         keep.sort(key=lambda m: (m["beat"], m["kind"] == "knockout"))     # (the knockout ends its beat)
@@ -7817,6 +7928,13 @@ class Engine:
         return self.holds[hold_id]
 
     def beat(self, skip_hold_ids=()):
+        self._ticking = True       # (the clock has moved on to this beat: long_match_ramp counts it as now)
+        try:
+            return self._beat(skip_hold_ids)
+        finally:
+            self._ticking = False
+
+    def _beat(self, skip_hold_ids=()):
         """One story beat passes: active holds deal damage, then time effects
         (resistance wear, exhaustion, pain drain). Holds started this beat don't tick yet."""
         r = self.rules
@@ -7863,6 +7981,8 @@ class Engine:
             coil_word = "tails" if re.search(r"\btails?\b", str(h.with_part or ""), re.I) else "coils"
             self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or (coil_word if h.coil else 'hold'))}")
             cap = self.pin_cap() if in_pin else self.sub_cap() if h.sub else None
+            if cap:
+                cap = dict(cap, kind="pin" if in_pin else "submission")    # (what the stat line calls the cap)
             hc = self.rules.get("holds", {}).get("health_cap") or {}
             if not in_pin and hc.get("enabled", True):
                 # a hold kept on a worn part wrecks the part, but costs her overall health only so much more for the
@@ -9065,6 +9185,9 @@ class Engine:
             # give in (d.learned keeps which grip she has already fought through once)
             # finish.submission.taps: a body part her taps have already used may no longer count toward the tally;
             # a grip on such a part (and nothing new besides) can't make her give in, so it doesn't roll
+            # (for the window's pain gauge: the very numbers this check weighed, this beat)
+            d.learned["sub_gauge"] = {"turn": self.turn, "pain": round(pain), "resist": round(resist),
+                                      "air": round(air), "endure": round(endure), "sub": name, "by": a}
             tap_part = self._tap_part(d, sorted(hs, key=lambda h: -(d.parts[h.part].damage if h.part in d.parts
                                                                    else 0.0)))
             spent = tap_part is None
@@ -9111,8 +9234,7 @@ class Engine:
                     # her limit and her refusals start again for the next hold
                     d.learned.pop("tap_limit", None)
                     d.learned.pop("tap_refused", None)
-                    d.learned.pop("tap_ways", None)
-                    d.learned.pop("tap_target", None)
+                    d.learned.pop("tap_target", None)       # (the signs she showed are kept: none again so soon)
                     if d.learned.get("tap_next"):
                         d.learned["tap_target"] = d.learned.pop("tap_next")   # (the part already softened)
                     rsp = taps_.get("respite") or {}
@@ -9181,6 +9303,49 @@ class Engine:
             f.learned.pop("tap_respite", None)
             return None
         return r[0]
+
+    def pain_gauge(self, f):
+        """window.pain_gauge (since build 249): how much pain she is in right now, against how much she can bear, for
+        the window. Nothing reads it to decide anything: it shows numbers the engine already has. In a submission
+        (a submission match's tap check has weighed it this beat) it is that check's own pain against her
+        resistance, and a choke's air hunger against her endurance; otherwise her worst parts (the worst one, and
+        second_part of the next two) and any grip pressing on her, against the same resistance (finish.submission.
+        tap.resist, scaled by her strength; an adrenaline surge raises it). Returns a dict, or None when it is off."""
+        cfg = ((self.rules.get("window") or {}).get("pain_gauge") or {})
+        if not cfg.get("enabled", True) or f.eliminated:
+            return None
+        tcfg = (((self.rules.get("finish") or {}).get("submission") or {}).get("tap") or {})
+        held = [h for h in self.holds.values() if h.defender == f.name]
+        sg = f.learned.get("sub_gauge") or {}
+        if sg and int(sg.get("turn", -9)) == self.turn and any(h.sub for h in held):
+            pain, bear = float(sg["pain"]), max(1.0, float(sg["resist"]))
+            air = (float(sg["air"]), max(1.0, float(sg["endure"]))) if sg.get("air") else None
+            where = f"in {poss_word(sg.get('by', ''))} {sg.get('sub') or 'hold'}"
+        else:
+            sec = float(cfg.get("second_part", 0.4))
+            dmg = sorted((p.damage for p in f.parts.values()), reverse=True) + [0.0, 0.0, 0.0]
+            pain = dmg[0] + sec * (dmg[1] + dmg[2])
+            pain += float(tcfg.get("press", 1.5)) * sum(h.power for h in held)    # a grip on her presses now
+            sting = f.learned.get("sting") or [None, 0.0]
+            if sting[0] == self.turn:
+                # what this beat's blows (and grips, and landings) just did to her parts: the fresh shock of them
+                pain += float(cfg.get("sting", 1.0)) * float(sting[1])
+            s_ = max(0.0, min(100.0, self._health_pct(f)))
+            surge = float(tcfg.get("surge_resist", 1.5)) if self.has(f, "adrenaline") else 1.0
+            bear = max(10.0, float(tcfg.get("resist", 130)) * (s_ / 100.0) ** float(tcfg.get("resist_power", 0.8))
+                       * surge)
+            air = None
+            pin_ = self.pinned_by(f.name)
+            where = (f"pinned under {' and '.join(pin_)}" if pin_ else
+                     f"in {poss_word(held[0].attacker)} {held[0].sub or 'grip'}" if held else "")
+            if sting[0] == self.turn and float(sting[1]) >= 1:
+                where = (where + "; " if where else "") + f"+{float(sting[1]):.0f} from this beat"
+        share = pain / bear * 100.0
+        cuts = cfg.get("labels") or [[40, "bearable"], [70, "hurting badly"], [100, "near her limit"],
+                                     [9e9, "past what she can bear"]]
+        label = next((str(w) for c, w in cuts if share < float(c)), str(cuts[-1][1]))
+        return {"pct": round(share), "pain": round(pain), "bear": round(bear), "label": label, "where": where,
+                "air": round(air[0] / air[1] * 100.0) if air else None}
 
     def taps_given(self, who):
         f = self.get(who) if isinstance(who, str) else who
@@ -9298,7 +9463,7 @@ class Engine:
                 out["reason"] = self.vary("tap_reason", skip=list(used) + list(early), scale=late)
                 out["holder"] = self.vary("tap_holder", skip=used)
                 pick += [out["reason"], out["holder"]]
-        d.learned["tap_ways"] = (used + pick)[-6:]
+        d.learned["tap_ways"] = (used + pick)[-15:]     # (most of each set: no sign shown again for a while)
         return out
 
     def ko_only(self):
@@ -9542,7 +9707,7 @@ class Engine:
         best = max(landed, key=lambda m: (landed[m], -missed.get(m, 0)), default=None)
         if best and landed[best] >= 2:
             tries = landed[best] + missed.get(best, 0)
-            out.append(f"her {best} has found {rv} {landed[best]} times out of {tries}: it works on her")
+            out.append(f"her {best} has found {rv} {landed[best]} times out of {tries}: it keeps getting through")
         worst = max(missed, key=lambda m: (missed[m] - landed.get(m, 0), missed[m]), default=None)
         if worst and missed[worst] >= 2 and missed[worst] > landed.get(worst, 0):
             out.append(f"her {worst} has missed {missed[worst]} times" + (
@@ -9769,7 +9934,9 @@ class Engine:
             return 1.0
         if str(lr.get("only", "taps")).lower() == "taps" and self.taps_needed() <= 1:
             return 1.0
-        past = self.turn - int(lr.get("after", 40))
+        # (the beat being played: during its actions the clock still shows the last one; the end-of-beat tick has
+        # already moved it on)
+        past = self.turn + (0 if getattr(self, "_ticking", False) else 1) - int(lr.get("after", 40))
         if past <= 0:
             return 1.0
         return min(float(lr.get("max", 2.5)), 1.0 + float(lr.get("per_10", 0.15)) * past / 10.0)

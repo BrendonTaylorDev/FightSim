@@ -132,7 +132,11 @@ class Display:
         per_part = {p: sum(1 for h in hits if h["part"] == p) for p in order}
         total = sum(h["damage_taken"] for h in hits)
         lost = hits[0]["health_before"] - hits[-1]["health_after"]
-        foot = (f"  Total: +{num(total)}% damage  ·  {self.heart} {defender} {pct(hits[0]['health_before'])} → "
+        rampd = sum(h.get("damage_added", h["damage_taken"]) for h in hits
+                    if h.get("zero_ramp", 1) > 1 or h.get("long_ramp", 1) > 1)
+        rampt = sum(h["damage_taken"] for h in hits if h.get("zero_ramp", 1) > 1 or h.get("long_ramp", 1) > 1)
+        rtot = f" (the parts count +{num(total - rampt + rampd)} with the ramp)" if rampd > rampt + 0.05 else ""
+        foot = (f"  Total: +{num(total)}% damage{rtot}  ·  {self.heart} {defender} {pct(hits[0]['health_before'])} → "
                 f"**{pct(hits[-1]['health_after'])}** (-{num(lost)})")
         if len(order) > 8 and all(v == 1 for v in per_part.values()) and not tags:
             return (out + ["", f"  {len(order)} parts of {defender} hit:"]
@@ -197,7 +201,7 @@ class Display:
                 ramps = ((f", ×{h['zero_ramp']:.2f} below zero" if h.get("zero_ramp", 1) > 1 else "")
                          + (f", ×{h['long_ramp']:.2f} for a long match" if h.get("long_ramp", 1) > 1 else ""))
                 out.append(f"        damage      {pad(dmg)}   +{num(h['damage_taken'])} = power {num(h['power'])}{rtxt} × "
-                           f"{h['mult']:.2f}{' (pin cap)' if h.get('capped') else ''}{sc}"
+                           f"{h['mult']:.2f}{' (' + (h.get('cap_kind') or 'pin') + ' cap)' if h.get('capped') else ''}{sc}"
                            + (f" (the part counts +{num(added)}: past 300% its number climbs slowly{ramps})"
                               if added < h["damage_taken"] - 0.05 else
                               f" (the part counts +{num(added)}:{ramps[1:]})"
@@ -313,8 +317,8 @@ class Display:
                 for d_ in (0, 1, 2, 3):
                     a_, b_ = f"{c * 100:.{d_}f}", f"{r_ * 100:.{d_}f}"
                     if a_ != b_:
-                        break
-                return a_, b_
+                        return a_, b_
+                return f"{c * 100:.0f}", f"{r_ * 100:.0f}"     # (the same to three places: whole numbers)
             items = [f"{r['what']} → {r['result']}" if r.get("plain") else
                      "{0} {1}%, rolled {2} → {3}".format(r['what'], *pair(r['chance'], r['roll']), r['result'])
                      for r in rolls]
@@ -409,7 +413,11 @@ class Display:
         per_part = {p: sum(1 for h in hits if h["part"] == p) for p in order}
         total = sum(h["damage_taken"] for h in hits)
         mx = hits[0]["max_health"]
-        health_line = (f"- Total inflicted: {num(total)}% → Health loss {num(hits[0]['health_before'] - hits[-1]['health_after'])}%"
+        rampd = sum(h.get("damage_added", h["damage_taken"]) for h in hits
+                    if h.get("zero_ramp", 1) > 1 or h.get("long_ramp", 1) > 1)
+        rampt = sum(h["damage_taken"] for h in hits if h.get("zero_ramp", 1) > 1 or h.get("long_ramp", 1) > 1)
+        rtot = f" (the parts count +{num(total - rampt + rampd)}% with the ramp)" if rampd > rampt + 0.05 else ""
+        health_line = (f"- Total inflicted: {num(total)}%{rtot} → Health loss {num(hits[0]['health_before'] - hits[-1]['health_after'])}%"
                        f"\n- {self.heart} {defender} Health: {pct(hits[0]['health_before'], mx)} → "
                        f"**{pct(hits[-1]['health_after'], mx)}**")
         if len(order) > 8 and all(v == 1 for v in per_part.values()):

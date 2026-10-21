@@ -1572,6 +1572,13 @@ def _landing(engine, b, res):
     if not manual and att and engine.pinned_by(engine.get(att).name):
         res["launch_blocked"] = "the attacker is pinned: only a struggle gets her out"
         return None  # a pinned fighter can't throw her pinner off with a strike; escapes are rolled
+    if not manual and att and not res.get("auto_launch") and not impacts \
+            and engine._held_on_ground(engine.get(att), engine.get(who)) \
+            and ((engine.rules.get("holds") or {}).get("held_reach") or {}).get("enabled", True):
+        # held on the ground in her grip: a blow from down there hurts her, it doesn't send her flying (breaking
+        # out is the struggle's roll)
+        res["launch_blocked"] = "the attacker is held down in her grip: a blow from there can't throw her off"
+        return None
     if engine.pinned_by(who) and not (manual and thrown):
         # held down: she can't be knocked down, thrown, or launched. At most she's driven into the ground under her
         ground = engine.scene_word("ground").split()[-1].lower()
@@ -3678,14 +3685,21 @@ def submission_urge(engine):
         held = engine.get(h0.defender)
         beats = max(h.turns_active for h in hs)
         free = (engine.SUBMISSIONS.get(h0.sub) or {}).get("free", {}).get(engine.body_plan(engine.get(h0.attacker)), "")
+        kinds = engine.held_reach_kinds(held, engine.get(h0.attacker))
+        words = {"bite": "her jaws", "arm": "her paws", "leg": "a kick", "tail": "her tail"}
+        reach = ("" if kinds is None else
+                 f" Held down there, {held.name} can only reach {h0.attacker} with "
+                 f"{' or '.join(words[k] for k in kinds)} (moves fired across the gap aside)." if kinds else
+                 f" Held down there, nothing of {poss_name(held.name)} reaches {h0.attacker} but a move fired across "
+                 f"the gap: she struggles.")
         if engine.sub_stuck(held, hs):
             return (f"SUBMISSION, AND SHE CAN'T GET OUT: {held.name} has been in {poss_name(h0.attacker)} {h0.sub} for "
                     f"{beats} beat(s) and has nothing left to break it with. Don't just keep cranking it: {h0.attacker} "
                     f"lets it go and PINS her (action 'pin': the hold comes off for it; there is an opening), or hurts "
-                    f"her another way while she's locked in it (a strike with what she has free: {free}).")
+                    f"her another way while she's locked in it (a strike with what she has free: {free}).") + reach
         return (f"SUBMISSION ON: {poss_name(h0.attacker)} {h0.sub} on {held.name} has been on {beats} beat(s); the "
                 f"longer it stays on, the likelier she wrenches out of it. {h0.attacker} keeps cranking it ('breather' "
-                f"keeps every grip on), or uses what she has free on her ({free}) as a strike.")
+                f"keeps every grip on), or uses what she has free on her ({free}) as a strike.") + reach
     for target in engine.active():
         if (getattr(engine, "sub_window", None) or {}).get(target.name) is not True:
             continue

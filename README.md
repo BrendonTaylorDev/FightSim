@@ -654,6 +654,65 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 249
+
+The three things left over from Build 248, a pain gauge in the window, and most of the smaller findings from the
+reviews of the narrated three-tap match.
+
+### How far a held fighter can reach (`holds.held_reach`)
+
+- **The holder is where her grips are.** Face-down in a heel hook, Nerine bit Ripples' shoulder and throat, though
+  Ripples was tangled round her leg. Now a fighter held on the ground can hurt her holder only with what reaches the
+  part being held. Each weapon has its own list of her body regions it reaches from the ground (jaws, paws, legs,
+  tail). In a heel hook that leaves kicks and her tail, and her jaws and paws are refused ("Ripples is at her legs,
+  out of reach of her jaws"). Sitting up she reaches further (`sitting_adds`). A bite also has to land near the limbs
+  holding her (`bite_near`): her paw, not her throat.
+- **What isn't limited.** Moves fired across the gap aren't limited, and neither is a hold on a standing fighter,
+  since the holder is right against her.
+- **The director is told** what she can still reach. `/simulate` only picks what reaches.
+- **A blow from down there throws no one off.** A fighter held down in someone's grip can't send her holder flying
+  with a bite.
+
+### Held, down and still counting
+
+- **"Down N beats" counts every beat on the ground**, pinned and held ones too. It used to freeze while she was in a
+  submission. The get-up roll's own easing still counts only the beats she was free to try.
+- **No footwork for a fighter held or down.** The building blocks for her blow drop strides, circling, sidesteps,
+  planted feet and lunges when she is held in a grip or on the ground.
+
+### A pain gauge (`window.pain_gauge`)
+
+A bar under each fighter's energy bar shows how much pain she is in against how much she can bear, as a share. The
+dashed mark is 100%, all she can bear. It has a word too: bearable, hurting badly, near her limit, past what she can
+bear. It decides nothing: it shows numbers the engine already uses.
+- **In a submission** (in a submission match), it shows the tap check's own pain against her resistance. In a choke
+  it also shows how much of her air is gone.
+- **Everywhere else** it uses her worst part plus a share of the next two, and any grip or pin pressing on her. It
+  also adds the fresh sting of this beat's blows (`sting`), so a big hit spikes it and it settles the next beat.
+  ("+31 from this beat" says how much came from the blows.)
+- **What it is measured against:** the same resistance as the tap check (`finish.submission.tap`: her will, which
+  her strength carries).
+
+### Smaller fixes
+
+- **Taps in the fight summary:** each tap and each bear-down in an upright hold is a key moment, and a several-tap
+  match tells every tap.
+- **Tap signs:** the signs she shows while refusing to tap aren't reused for a while, and no longer start over after
+  each tap.
+- **No interlude while a hold or pin is on** (`narration.interlude.not_in_holds`).
+- **The long-match ramp no longer lags a beat** behind the blows.
+- **The Total line counts the ramps:** "(the parts count +N with the ramp)".
+- **Labels:**
+  - A submission's cap is labelled "submission cap", not "pin cap".
+  - A roll that equals its chance shows "30%", not "30.000%".
+  - "It lands differently because" now says whose state it is ("Ripples: choking on water").
+- **Wording:**
+  - "Her Bite has found her 2 times out of 2: it keeps getting through" (it said "it works on her", which read like
+    type effectiveness).
+  - HOW EACH HAS FOUGHT counts a hold as a grab, and no longer counts the scenery's doing as her attack. "None from
+    range" is "only one from range" when there was one.
+  - No "wing flung out" for a fighter without wings.
+
 ## Build 248
 
 The rest of the fixes from the narrated three-tap match (`sim/test_fights/three_tap/`). Three review agents read

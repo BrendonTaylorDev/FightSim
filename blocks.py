@@ -143,6 +143,9 @@ def body_bans(has):
             bans += [r"\bgrowl\w*", r"\bsnarl\w*", r"(?<!the )\bbark(?:s|ed|ing)?\b", r"\bwhine[sd]?\b"]
     if "ears" not in has:
         bans += [r"\bears?\b"]
+    if "wings" not in has and "feathers" not in has:
+        # (her own: "a wing flung out" on a Buizel; the other's wings, seen or struck, are another matter)
+        bans += [r"\b(?:her|a|one|both)(?: \w+)? wings?\b", r"\bher (?:\w+ )?(?:wingtips?|feathers)\b"]
     if "arms" not in has and "forelegs" not in has:
         bans += [r"\bpaws?\b", r"\bhands?\b", r"\bfists?\b", r"\bfingers?\b", r"\bforelegs?\b", r"\bknuckles?\b"]
         if "wings" in has:

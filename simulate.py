@@ -24,6 +24,8 @@ def _usable(eng, f, d, budget=None):
             continue
         if eng.energy_cost(m) > budget or eng.busy_with(f, m):     # (her jaws can't bite while they hold)
             continue
+        if eng.held_reach_block(f, d, m):     # held on the ground: only what reaches the holder (holds.held_reach)
+            continue
         if m.get("carry") and not eng.has(f, "airborne"):
             continue
         if eng.has(d, "airborne") and not eng.has(f, "airborne") and not eng.is_ranged(m) \
@@ -98,7 +100,9 @@ def _pick_action(eng, rng, f, d):
     if m.get("target") in ("spread",):
         a["hits"] = [{"part": p} for p in rng.sample(parts, min(3, len(parts)))]
     else:
-        a["part"] = rng.choice(parts)
+        # (held on the ground, a bite lands only near what holds her: holds.held_reach)
+        near = [p for p in parts if not eng.held_reach_block(f, d, m, [p])]
+        a["part"] = rng.choice(near or parts)
     if m.get("target") in ("targeted",) and not m.get("charge") and rng.random() < 0.1:
         a["feint"] = True
     # as the director does now and then: a held stream or beam, or a pummel on a fighter with nowhere to go
@@ -142,6 +146,9 @@ def _chain_links(eng, rng, f, d, first):
         last = (out or [first])[-1].get("part") or rng.choice(list(d.parts))
         out.append({"attacker": f.name, "defender": d.name, "flavor": "", "_sim": True, "action": "strike",
                     "move": m["name"], "part": last if rng.random() < 0.4 else rng.choice(list(d.parts))})
+        if eng.held_reach_block(f, d, m, [out[-1]["part"]]):     # (a bite held on the ground: what she can reach)
+            out[-1]["part"] = rng.choice([p for p in d.parts if not eng.held_reach_block(f, d, m, [p])]
+                                         or list(d.parts))
     return out
 
 

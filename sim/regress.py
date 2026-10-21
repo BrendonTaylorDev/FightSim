@@ -702,6 +702,65 @@ def upright_check():
     return problems
 
 
+def held_reach_check():
+    """Build 249: a fighter held on the ground reaches her holder only with what the hold leaves near her (a heel
+    hook: kicks and her tail, not her jaws); the down counter keeps counting while she is held; the pain gauge; taps
+    in the chronicle; no wings on a Buizel; no footwork for a fighter held or down."""
+    import blocks
+    import narrator
+    s = H.session(5, fighters="Ripples,Nerine")
+    e, problems = s.eng, []
+    a, d = e.get("Ripples"), e.get("Nerine")
+    e.downed[d.name] = 0
+    e.facing[d.name] = "face-down"
+    e.start_submission(a.name, d.name, "heel hook")
+    bite = e.find_move(d.name, "Bite")
+    tail = e.find_move(d.name, "Aqua Tail")
+    try:
+        e.move_attack(d.name, a.name, "Bite", ["Throat"], enforce=True)
+        problems.append("face-down in a heel hook, her bite still reached the holder's throat")
+    except ValueError as exc:
+        if "out of reach" not in str(exc):
+            problems.append(f"the bite was refused for another reason: {exc}")
+    if tail and e.held_reach_block(d, a, tail, ["Head"]):
+        problems.append("her tail should reach the one tangled round her leg")
+    e.facing[d.name] = "sitting up"
+    if bite and not e.held_reach_block(d, a, bite, ["Throat"]):
+        problems.append("sitting up, her bite should reach only the limbs holding her, not the throat")
+    if bite and e.held_reach_block(d, a, bite, ["Left Paw"]):
+        problems.append("sitting up, she should be able to bite the paw turning her foot")
+    e.rules["holds"]["held_reach"]["enabled"] = False
+    if bite and e.held_reach_block(d, a, bite, ["Throat"]):
+        problems.append("held_reach off should limit nothing")
+    e.rules["holds"]["held_reach"]["enabled"] = True
+    d.learned.pop("down_for", None)
+    for _ in range(3):
+        e.get_up_tick()
+    if d.learned.get("down_for") != 2:
+        problems.append(f"the time down should count while she is held: {d.learned.get('down_for')}")
+    g = e.pain_gauge(d)
+    if not g or "heel hook" not in g.get("where", "") or g.get("pct") is None:
+        problems.append(f"the pain gauge should say she is in the heel hook: {g}")
+    s2 = H.session(6, fighters="Ripples,Nerine")
+    e2 = s2.eng
+    calm = e2.pain_gauge(e2.get("Nerine"))["pct"]
+    e2._apply_damage(e2.get("Nerine"), "Head", 60)
+    e2.beat()
+    hit = e2.pain_gauge(e2.get("Nerine"))
+    if hit["pct"] <= calm or "from this beat" not in hit["where"]:
+        problems.append(f"a blow should spike the pain gauge for its beat: {calm} -> {hit}")
+    e.record_beat([], [{"type": "tap_count", "how": "tap", "attacker": a.name, "defender": d.name,
+                        "submission": "heel hook", "part": "Left Foot", "tap_no": 1, "needed": 3}])
+    if not any(m["kind"] == "tap" for m in e.chronicle["moments"]):
+        problems.append("a tap should be one of the fight's key moments")
+    ban = blocks.body_bans({"arms", "ears", "tails", "fins"})
+    if not ban or not ban.search("a wing flung out against the ground to stop herself"):
+        problems.append("a Buizel was offered a wing flung out")
+    if not narrator.FOOTWORK.search("three strides to build it, and the fourth is all thrust"):
+        problems.append("strides aren't counted as footwork")
+    return problems
+
+
 def low_health_check():
     """Build 246: at the very end of her strength she shows it alone, squirms when down, her body gives her away (a
     limb that doesn't answer blocks its moves a beat), makes one last stand (then wide open), and the other reads her."""
@@ -891,6 +950,13 @@ def main(argv):
         probs = three_tap_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  three-tap fight fixes: no hold from inside one, upright holds need the holder up, takedowns fit, coils  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "held reach gauge" for w in want):
+        t = time.time()
+        probs = held_reach_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  held on the ground: reach, the down count, the pain gauge, taps told, body words  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "low health last stand" for w in want):
