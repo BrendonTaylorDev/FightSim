@@ -638,11 +638,13 @@ def sub_match_check():
         problems.append(f"an opening on her feet should come now and then, more once a part is worn: {fresh} then {worn}")
     e.rules["submissions"]["small_joints"]["enabled"] = False
     shapes = e.submission_shapes(a.name, d.name)
-    if not shapes or not all(x.get("lands") for x in shapes.values()):
-        problems.append(f"on her feet the holds should say how she lands when taken down into them: {shapes}")
+    ground = {n: x for n, x in shapes.items() if "standing" not in e.SUBMISSIONS[n]["facing"]}
+    if not ground or not all(x.get("lands") for x in ground.values()):
+        problems.append(f"on her feet the ground holds should say how she lands when taken down into them: "
+                        f"{sorted(ground)[:6]}")
     else:
         e.sub_window = {d.name: True}
-        name = next(iter(shapes))
+        name = next(iter(ground))
         res = e.start_submission(a.name, d.name, name, enforce=True)
         if d.name not in e.downed or not res.get("taken_down") or not any(h.sub for h in e.holds.values()):
             problems.append(f"the takedown into the {name} didn't put her down and lock it: {res.get('type')}")
@@ -653,6 +655,50 @@ def sub_match_check():
     e.rules["finish"]["submission"]["taps"]["enabled"] = False
     if e.zero_part_ramp(d) != 1.0:
         problems.append("with one tap needed, part_ramp (only: taps) should be off")
+    return problems
+
+
+def upright_check():
+    """Build 245: holds put on a fighter still on her feet (or sitting up) keep her upright, and may bear her down
+    each beat with the grip kept on (now and then the holder has to readjust); invented ones can be upright too."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    a, d = e.get("Nerine"), e.get("Ripples")
+    e.rules["submissions"]["small_joints"]["enabled"] = False
+    shapes = e.submission_shapes(a.name, d.name)
+    up = [n for n in shapes if "standing" in e.SUBMISSIONS[n]["facing"]]
+    if len(up) < 3:
+        problems.append(f"too few holds to put on her standing: {up}")
+        return problems
+    res = e.start_submission(a.name, d.name, up[0])
+    if d.name in e.downed or res.get("taken_down") or res["submission"].get("upright") != "on her feet":
+        problems.append(f"the {up[0]} should keep her on her feet: {res.get('taken_down')}, {res['submission']}")
+    hs = [h for h in e.holds.values() if h.sub]
+    for h in hs:
+        h.turns_active = 2
+    before = [h.power for h in hs]
+    e.rules["submissions"]["upright"].update(base=1.0, max=1.0, readjust=1.0, skip=0.0)
+    seen = []
+    for _ in range(4):
+        for h in e.holds.values():
+            h.turns_active = max(h.turns_active, 2)
+        seen += [(ev["stage"], d.name in e.downed, e.facing.get(d.name)) for ev in e._upright_sub_tick()
+                 if ev["type"] == "sub_collapse"]
+    if [x[0] for x in seen] != ["sagging", "on her knees", "flat"] or seen[0][1] or seen[1][2] != "sitting up" \
+            or seen[2][2] not in ("face-down", "face-up"):
+        problems.append(f"a hold should bear her down stage by stage (sagging on her feet, knees, flat): {seen}")
+    if len([h for h in e.holds.values() if h.sub]) != len(hs):
+        problems.append("the hold came off when she went down in it")
+    if not all(h.power < p for h, p in zip(hs, before)):
+        problems.append("a readjust should loosen the grips for a moment")
+    for hid in [h.id for h in e.holds.values()]:
+        e.holds.pop(hid)
+    e.downed.pop(d.name, None)
+    e.facing.pop(d.name, None)
+    res = e.start_custom_submission(a.name, d.name, "spine crank", [("Chest", "both arms")], "", enforce=False,
+                                    upright=True)
+    if d.name in e.downed:
+        problems.append("an invented hold marked upright should keep her on her feet")
     return problems
 
 
@@ -743,6 +789,13 @@ def main(argv):
         probs = ruined_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  ruined parts past devastated, and the stages below zero health  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "upright nelson" for w in want):
+        t = time.time()
+        probs = upright_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  upright holds: kept on her feet, borne down in the hold, readjust, invented ones  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "sub match standing ramp" for w in want):

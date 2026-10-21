@@ -4414,6 +4414,172 @@ class Engine:
     # each: which way she must lie, who can do it, the contacts (target part picker, role, what it is done with, by
     # the attacker's body plan), what the attacker still has free to use on her, and what it does to the body
     SUBMISSIONS = {
+        # upright holds (since build 245): put on a fighter still on her feet or sitting up; each beat they may bear
+        # her down to the ground while the grip stays on (submissions.upright)
+        "full nelson": {
+            "facing": ("standing", "sitting up"), "by": ("biped",),
+            "look": {"biped": "behind her, both arms hooked up under hers and both paws locked behind her neck, "
+                              "forcing her head down"},
+            "contacts": [("neck", "main", {"biped": "both paws, locked behind her neck, forcing it down"}),
+                         ("shoulder", "second", {"biped": "her arms, hooked up under them, levering them up"})],
+            "free": {"biped": "her legs (a knee into the back of hers) and her tails"},
+            "strain": "her neck forced down toward her chest and both shoulders levered up and back"},
+        "standing sleeper": {
+            "facing": ("standing", "sitting up"), "by": ("biped",),
+            "look": {"biped": "behind her, one forearm across her throat and the other paw pressing her head forward "
+                              "into it, chest to her back"},
+            "contacts": [("neck", "main", {"biped": "her forearm across the throat, the other paw pressing the head"}),
+                         ("back_up", "second", {"biped": "her chest, pressed hard into her back"})],
+            "free": {"biped": "her legs and her tails"},
+            "strain": "her throat squeezed shut against the forearm, her back arched against the holder"},
+        "bear hug": {
+            "facing": ("standing", "sitting up"), "by": ("biped",),
+            "look": {"biped": "chest to chest, both arms locked round her middle and squeezing, lifting her onto her "
+                              "toes"},
+            "contacts": [("chest|belly", "main", {"biped": "both arms, locked round her ribs, crushing in"}),
+                         ("back_low|back_up", "second", {"biped": "her locked paws, digging into her spine"})],
+            "free": {"biped": "her head (it is right there) and her tails"},
+            "strain": "her ribs crushed in, her breath squeezed out of her, her spine bent back"},
+        "hammerlock": {
+            "facing": ("standing", "sitting up"), "by": ("biped",), "needs": "arm",
+            "look": {"biped": "behind her, one of her arms wrenched up between her shoulder blades, the other paw on "
+                              "her shoulder"},
+            "contacts": [("arm", "main", {"biped": "one paw, wrenching it up behind her back"}),
+                         ("shoulder", "second", {"biped": "her other paw, bearing down on the shoulder"})],
+            "free": {"biped": "her legs and her tails"},
+            "strain": "her arm twisted up her back and the shoulder close to giving"},
+        "side headlock": {
+            "facing": ("standing", "sitting up"), "by": ("biped",),
+            "look": {"biped": "at her side, an arm wrapped round her head and clamped tight, bending her over at the "
+                              "waist"},
+            "contacts": [("head:head|jaw|muzzle", "main", {"biped": "her arm, wrapped round the head, wrenching"}),
+                         ("neck", "second", {"biped": "the crook of her elbow, squeezing"})],
+            "free": {"biped": "her other paw (a punch to the face from point-blank) and her tails"},
+            "strain": "her head crushed in the crook of the arm and her neck twisted down and sideways"},
+        "guillotine": {
+            "facing": ("standing", "sitting up"), "by": ("biped",),
+            "look": {"biped": "in front of her, her head pulled down under one arm, the forearm under her throat and "
+                              "both paws locked, hauling up"},
+            "contacts": [("neck", "main", {"biped": "her forearm, up under the throat, both paws locked, hauling up"}),
+                         ("back_up", "second", {"biped": "her chest, bearing down on the bent back"})],
+            "free": {"biped": "her knees (into her chest, her head is right there) and her tails"},
+            "strain": "her throat crushed up against the forearm, her back bent double"},
+        "cobra clutch": {
+            "facing": ("standing", "sitting up"), "by": ("biped",), "needs": "arm",
+            "look": {"biped": "behind her, one of her arms dragged across her own throat and held there, the other paw "
+                              "forcing her head forward over it"},
+            "contacts": [("neck", "main", {"biped": "her own arm, dragged across the throat and held there"}),
+                         ("arm", "second", {"biped": "one paw, holding the arm across her throat"})],
+            "free": {"biped": "her legs and her tails"},
+            "strain": "her own arm choking her and the shoulder wrenched across her body"},
+        "abdominal stretch": {
+            "facing": ("standing",), "by": ("biped",),
+            "look": {"biped": "at her side, a leg hooked round hers and one of her arms hauled back over her head, "
+                              "stretching her side open"},
+            "contacts": [("belly|chest", "main", {"biped": "her weight, leaning into the stretched side"}),
+                         ("arm", "second", {"biped": "one paw, hauling the arm up and back over her head"}),
+                         ("hind_up", "second", {"biped": "her leg, hooked round the thigh"})],
+            "free": {"biped": "her free paw (it can claw at the stretched ribs) and her tails"},
+            "strain": "her whole side stretched open, the ribs and belly pulled taut"},
+        "standing armbar": {
+            "facing": ("standing", "sitting up"), "by": ("biped",), "needs": "arm",
+            "look": {"biped": "at her side, her arm trapped straight under one armpit and wrenched up against the "
+                              "elbow, bending her forward"},
+            "contacts": [("arm", "main", {"biped": "her armpit and both paws, wrenching the arm straight"}),
+                         ("shoulder", "second", {"biped": "her weight, bearing down on it"})],
+            "free": {"biped": "her legs and her tails"},
+            "strain": "the elbow forced past straight and the shoulder bent down with it"},
+        "standing wrist lock": {
+            "facing": ("standing", "sitting up"), "by": ("biped",),
+            "look": {"biped": "in front of her, her paw bent back on itself at the wrist and twisted, the elbow held "
+                              "so it can't turn"},
+            "contacts": [("wrist", "main", {"biped": "both paws, bending it back and twisting"}),
+                         ("arm", "second", {"biped": "her forearm, braced against the elbow"})],
+            "free": {"biped": "her legs, her tails and her mouth"},
+            "strain": "the wrist bent and twisted past where it turns, the elbow locked with it"},
+        "octopus hold": {
+            "facing": ("standing",), "by": ("biped",),
+            "look": {"biped": "climbed onto her side, a leg wrapped over her neck, one arm trapped back, her weight "
+                              "hanging from her"},
+            "contacts": [("neck", "main", {"biped": "her leg, wrapped over it and bearing down"}),
+                         ("arm", "second", {"biped": "her arms, trapping it back"}),
+                         ("back_low|back_up", "second", {"biped": "her whole weight, hanging from her side"})],
+            "free": {"biped": "her tails"},
+            "strain": "her neck bent down sideways under the leg, her arm wrenched back, her spine twisted"},
+        "rear chinlock": {
+            "facing": ("sitting up",), "by": ("biped",),
+            "look": {"biped": "kneeling behind her where she sits, both paws locked under her chin, a knee in her back, "
+                              "hauling her head back"},
+            "contacts": [("head:jaw|muzzle", "main", {"biped": "both paws, locked under the chin, hauling back"}),
+                         ("back_up", "second", {"biped": "her knee, driven into it"})],
+            "free": {"biped": "her tails"},
+            "strain": "her head hauled back and her upper back bent over the knee"},
+        "foreleg bite": {
+            "facing": ("standing", "sitting up"), "by": ("quadruped",),
+            "look": {"quadruped": "in front of her, jaws clamped round one foreleg and wrenching it out from under her"},
+            "contacts": [("fore_low|fore_up", "main", {"quadruped": "her jaws, clamped round it, wrenching"}),
+                         ("shoulder", "second", {"quadruped": "a forepaw, bearing down on it"})],
+            "free": {"quadruped": "her hind legs and her tail"},
+            "strain": "the foreleg wrenched and twisted in the jaws, the shoulder borne down with it"},
+        "shoulder ride": {
+            "facing": ("standing",), "by": ("quadruped",),
+            "look": {"quadruped": "reared up onto her back, forepaws locked over her shoulders and jaws at the back of "
+                                  "her neck, all her weight bearing down"},
+            "contacts": [("shoulder", "main", {"quadruped": "her forepaws, locked over them, bearing down"}),
+                         ("neck", "second", {"quadruped": "her jaws, at the back of it"}),
+                         ("back_up|back_low", "second", {"quadruped": "her whole weight, riding it"})],
+            "free": {"quadruped": "her tail"},
+            "strain": "her shoulders and spine crushed down under the weight, her neck held in the jaws"},
+        "hind leg hook": {
+            "facing": ("standing",), "by": ("quadruped",),
+            "look": {"quadruped": "pressed against her side, a hind leg hooked round hers from behind and jaws in her "
+                                  "flank, twisting her off her line"},
+            "contacts": [("hind_up|hind_low", "main", {"quadruped": "her hind leg, hooked round it, wrenching"}),
+                         ("belly|chest", "second", {"quadruped": "her jaws, in the flank"})],
+            "free": {"quadruped": "her forepaws and her tail"},
+            "strain": "the leg twisted out from under her and her flank torn at"},
+        "upright coil": {
+            "facing": ("standing", "sitting up"), "by": ("serpent",),
+            "look": {"serpent": "coiled up round her where she stands, loop over loop from her legs to her chest, "
+                                "squeezing"},
+            "contacts": [("chest|belly", "main", {"serpent": "her coils, wrapped round it, squeezing"}),
+                         ("hind_up|hind_low", "second", {"serpent": "her lower coils, binding them together"})],
+            "free": {"serpent": "her head and her jaws"},
+            "strain": "her ribs squeezed in and her legs bound together under her"},
+        "talon shoulder clamp": {
+            "facing": ("standing", "sitting up"), "by": ("avian",),
+            "look": {"avian": "above and behind her, talons clamped into both shoulders, beating her wings to drive "
+                              "her down"},
+            "contacts": [("shoulder", "main", {"avian": "her talons, clamped in, driving down"}),
+                         ("back_up", "second", {"avian": "her weight and the downbeat of her wings"})],
+            "free": {"avian": "her beak"},
+            "strain": "talons sunk into her shoulders and her back driven down"},
+        "flank crush": {
+            "facing": ("standing", "sitting up"), "by": ("quadruped",),
+            "look": {"quadruped": "against her side, forepaws hooked over her back and all her weight bearing down, "
+                                  "jaws clamped on her shoulder"},
+            "contacts": [("back_low|back_up", "main", {"quadruped": "her forepaws and her weight, bearing it down"}),
+                         ("shoulder", "second", {"quadruped": "her jaws, clamped on it"})],
+            "free": {"quadruped": "her hind legs and her tail"},
+            "strain": "her back bowed under the weight and her shoulder held in the jaws"},
+        "tail haul": {
+            "facing": ("standing", "sitting up"), "by": ("quadruped", "biped"),
+            "look": {"quadruped": "behind her, jaws clamped on her tail and hauling back, a forepaw braced on her hip",
+                     "biped": "behind her, both paws locked round her tail and hauling back, a foot braced on her hip"},
+            "contacts": [("tail_part", "main", {"quadruped": "her jaws, hauling it back",
+                                                "biped": "both paws, hauling it back"}),
+                         ("back_low", "second", {"quadruped": "a forepaw, braced against it",
+                                                 "biped": "her foot, braced against it"})],
+            "free": {"quadruped": "her forepaws", "biped": "her tails and her mouth"},
+            "strain": "her tail wrenched back at the root and her lower back bent with it"},
+        "scruff hold": {
+            "facing": ("standing", "sitting up"), "by": ("quadruped",),
+            "look": {"quadruped": "at her side, jaws clamped in her scruff and her forepaws bearing down on her "
+                                  "shoulders, wrenching her head round"},
+            "contacts": [("neck", "main", {"quadruped": "her jaws, clamped in the scruff, wrenching it round"}),
+                         ("shoulder", "second", {"quadruped": "her forepaws, bearing her shoulders down"})],
+            "free": {"quadruped": "her hind legs and her tail"},
+            "strain": "her neck wrenched round and her shoulders borne down under the weight"},
         "camel clutch": {
             "facing": ("face-down",), "by": ("biped", "quadruped"),
             "look": {"biped": "sitting astride her back, both paws locked under her chin, hauling her head and chest up "
@@ -4893,17 +5059,21 @@ class Engine:
         taken over the hurt one."""
         a, d = self.get(attacker), self.get(defender)
         plan = self.body_plan(a)
-        lie = self.facing_of(d.name) if d.name in self.downed else None
+        lie = self.facing_of(d.name) if d.name in self.downed else None if self.has(d, "airborne") else "standing"
+        if lie in ("standing", "sitting up") and not self._upright_on():
+            lie = None if lie == "standing" else lie     # (upright holds off: no hold on a fighter on her feet)
         # submissions.match.standing: on her feet, a hold she can be taken down into, landing as it needs her
-        stand = lie is None and self.standing_sub_on() and not self.has(d, "airborne")
+        stand = d.name not in self.downed and self.standing_sub_on() and not self.has(d, "airborne")
         out = {}
         prop_near = (getattr(self, "lying_at", None) or {}).get(d.name)
         rough = str((self.scene_cfg or {}).get("rough") or "")
         prop_ground = (prop_near or ("a root humped out of the ground" if "root" in rough else
                                       f"a ridge of {rough}" if rough else ""))
         for name, s in self.SUBMISSIONS.items():
+            if "standing" in s["facing"] and not self._upright_on():
+                continue
             lands = next((x for x in ("face-down", "face-up", "on her side") if x in s["facing"]), None) \
-                if stand else None
+                if stand and lie not in s["facing"] else None
             if plan not in s["by"] or (lie not in s["facing"] and not lands):
                 continue
             if s.get("has") == "tails" and not any(re.search(r"\btails?\b", n.lower()) for n in a.parts):
@@ -4947,7 +5117,10 @@ class Engine:
                 return f"{f.name} has no {m.group(0)} to grip with"
         return ""
 
-    def start_custom_submission(self, attacker, defender, name, grips, flavor="", enforce=False):
+    UPRIGHT_WORDS = re.compile(r"(?i)\b(?:standing|upright|on (?:her|their) feet|nelson|headlock|bear ?hug|"
+                               r"guillotine|from behind her as she stands|stood|lifts? her|sitting|seated)\b")
+
+    def start_custom_submission(self, attacker, defender, name, grips, flavor="", enforce=False, upright=None):
         """A submission hold of the director's own invention (not in SUBMISSIONS): "grips" = [(her part, what grips
         it)], 1 to 3 of them; the first wrenches hardest. It is checked against both bodies, so nothing impossible goes
         on: every part must be hers, and every grip must use a part the holder really has (no paws on a bird, no
@@ -4980,7 +5153,11 @@ class Engine:
             if slip:
                 return slip
         takedown = None
-        if d.name not in self.downed and enforce:
+        # an invented hold the director says is put on her upright ("upright": true, or its own words) keeps her up
+        # (submissions.upright: it may bear her down later); any other is a takedown into it
+        up = self._upright_on() and (bool(upright) if upright is not None
+                                     else bool(self.UPRIGHT_WORDS.search(f"{name} {flavor or ''}")))
+        if d.name not in self.downed and enforce and not up:
             takedown = self._sub_takedown(a, d, "face-down" if re.search(r"\bfrom behind\b|\bback\b", str(flavor or ""),
                                                                          re.I) else "face-up")
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
@@ -4998,6 +5175,7 @@ class Engine:
             res["takedown"], res["taken_down"] = takedown, True
         res["submission"] = {"name": key, "look": flavor or key, "free": "", "invented": True,
                              "from_ground": a.name in self.downed, "takedown": (takedown or {}).get("how"),
+                             "upright": self._upright_word(d),
                              "strain": f"the {', '.join(p.lower() for p, _ in grips)} wrenched where it is held",
                              "max_beats": int(cfg.get("max_beats", 3))}
         return res
@@ -5033,6 +5211,102 @@ class Engine:
         if self.strength(f) < 50:
             ch *= float(cfg.get("weak_mult", 1.5))
         return ch
+
+    def _upright_on(self):
+        return bool(((self.rules.get("submissions") or {}).get("upright") or {}).get("enabled", True))
+
+    def _upright_word(self, d):
+        """'on her feet' or 'sitting up' while she is upright, else '' (a submission's narration note)."""
+        if d.name not in self.downed:
+            return "" if self.has(d, "airborne") else "on her feet"
+        return "sitting up" if self.facing.get(d.name) == "sitting up" else ""
+
+    UPRIGHT_STAGES = [
+        {"name": "sagging", "posture": "standing",
+         "says": "her legs start to go under it: she sags, knees bending, still on her feet and fighting to stay there"},
+        {"name": "on her knees", "posture": "knees",
+         "says": "her legs give and she sinks to her knees, sitting back on her heels, still locked in it"},
+        {"name": "flat", "posture": "flat",
+         "says": "she is forced all the way down, flat on the ground, the hold riding her down"}]
+
+    def upright_stages(self):
+        """submissions.upright.stages: the steps a hold bears her down through, in order (rules.json; each a name, a
+        posture: standing (still on her feet, off balance a beat), knees (down, sitting up) or flat (lying), and what
+        the story is told). Falls back to UPRIGHT_STAGES."""
+        st = ((self.rules.get("submissions") or {}).get("upright") or {}).get("stages")
+        ok = [x for x in st or () if isinstance(x, dict) and x.get("posture") in ("standing", "knees", "flat")]
+        return ok or self.UPRIGHT_STAGES
+
+    def _upright_sub_tick(self):
+        """submissions.upright: a submission on a fighter still upright (on her feet, or sitting up) may bear her
+        down, a STAGE at a time (upright.stages: sagging, on her knees, flat), the grip kept on: each beat from its
+        second, chance base, + per_beat for every beat after that, + weak x her lost strength (0 to 1), never above
+        max. skip of the time she drops two stages at once. readjust of the time a drop makes the holder shift her
+        grip: the grips lose readjust_mult of their pressure and a beat of their build, but stay on."""
+        cfg = (self.rules.get("submissions") or {}).get("upright") or {}
+        if not cfg.get("enabled", True):
+            return []
+        stages = self.upright_stages()
+        groups = {}
+        for h in self.holds.values():
+            if h.sub:
+                groups.setdefault((h.attacker, h.defender), []).append(h)
+        events = []
+        for (an, dn), hs in groups.items():
+            d = self.get(dn)
+            if d.eliminated or self.has(d, "airborne") or self.pinned_by(dn):
+                continue
+            key = min(h.id for h in hs)
+            sitting = dn in self.downed and self.facing.get(dn) == "sitting up"
+            if dn in self.downed and not sitting:
+                continue
+            # where she is in the stages: kept for this hold; else from how she is now
+            mem = d.learned.get("sub_stage") or {}
+            if mem.get("hold") == key:
+                at = int(mem.get("at", -1))
+            else:
+                at = next((i for i, x in enumerate(stages) if x["posture"] == "knees"), -1) if sitting else -1
+            if at >= len(stages) - 1:
+                continue
+            beats = max(h.turns_active for h in hs)
+            if beats < 2:
+                continue     # (locked this beat: she is held up in it a beat before it can bear her down)
+            lost = 1.0 - max(0.0, min(1.0, self._health_pct(d) / 100.0))
+            ch = min(float(cfg.get("max", 0.6)), float(cfg.get("base", 0.15)) + float(cfg.get("per_beat", 0.08))
+                     * (beats - 2) + float(cfg.get("weak", 0.25)) * lost)
+            if not self._chance(ch, f"{poss_word(an)} {hs[0].sub} bearing {dn} down", "she goes DOWN a stage",
+                                "she holds where she is"):
+                continue
+            step = 2 if at + 2 < len(stages) and self._chance(float(cfg.get("skip", 0.2)), f"{dn} dropping two "
+                                                              f"stages at once", "she drops FAST", "one stage") else 1
+            to = min(len(stages) - 1, at + step)
+            stage = stages[to]
+            d.learned["sub_stage"] = {"hold": key, "at": to}
+            if stage["posture"] == "standing":
+                facing = None
+                self.set_status(d, "off_balance", 1)
+            elif stage["posture"] == "knees":
+                facing = "sitting up"
+            else:
+                facing = "face-down" if self.rng.random() < 0.6 else "face-up"
+            if facing and dn not in self.downed:
+                self.knock_down(dn, facing=facing, why=f"{dn} was borne down in {poss_word(an)} {hs[0].sub}")
+                self._fresh_down.add(dn)
+                self._knock_on = []
+            elif facing:
+                self.facing[dn] = facing
+            readjust = self._chance(float(cfg.get("readjust", 0.25)), f"{an} having to shift her grip as {dn} goes "
+                                    f"down", "she has to READJUST", "she rides it down")
+            if readjust:
+                for h in hs:
+                    h.power *= float(cfg.get("readjust_mult", 0.7))
+                    h.turns_active = max(1, h.turns_active - 1)
+            events.append({"type": "sub_collapse", "attacker": an, "defender": dn, "submission": hs[0].sub,
+                           "from": "sitting" if sitting else "standing", "facing": facing, "readjust": readjust,
+                           "stage": stage.get("name", ""), "says": stage.get("says", ""), "stage_no": to + 1,
+                           "stages": len(stages), "posture": stage["posture"], "skipped": step > 1,
+                           "last": to >= len(stages) - 1, "chance": round(ch, 2), "parts": [h.part for h in hs]})
+        return events
 
     def standing_sub_on(self):
         """submissions.match.standing (since build 244): in a submission match an opening for a submission can come
@@ -5200,7 +5474,7 @@ class Engine:
             if slip:
                 return slip
         takedown = None
-        if d.name not in self.downed and s.get("lands"):
+        if d.name not in self.downed and s.get("lands") and "standing" not in self.SUBMISSIONS[key]["facing"]:
             takedown = self._sub_takedown(a, d, s["lands"])
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
@@ -5214,7 +5488,8 @@ class Engine:
         self._count("submission", d.name)
         self._count(f"subname:{key}", a.name)
         res["submission"] = {"name": key, "look": s["look"], "free": s["free"], "strain": s["strain"],
-                             "max_beats": int(cfg.get("max_beats", 3)), "from_ground": a.name in self.downed}
+                             "max_beats": int(cfg.get("max_beats", 3)), "from_ground": a.name in self.downed,
+                             "upright": self._upright_word(d)}
         if takedown:
             res["takedown"], res["taken_down"] = takedown, True
             res["submission"]["takedown"] = takedown["how"]
@@ -7589,6 +7864,7 @@ class Engine:
         events += self._advance_pins(skip_hold_ids)
         events += self._hold_break_tick(skip_hold_ids)
         events += self._tap_out_tick()
+        events += self._upright_sub_tick()
         events += self._submission_tick()
         events += self._free_blow_tick(skip_hold_ids)
         events += self._wing_strain_tick()

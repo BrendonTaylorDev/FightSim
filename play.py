@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 244-guided (submission matches: openings while she is on her feet too, more once a part is worn, the holder taking her down into the hold: submissions.match; in a several-tap match her parts give way faster the deeper below zero she is: below_zero.part_ramp; the director is no longer offered a hold she can't take yet; /simulate takes openings as the director does)"
+VERSION = "2026-10-21 build 245-guided (upright holds: 20 submissions put on a fighter still on her feet or sitting up, a full nelson, a bear hug, a guillotine, a hammerlock and more, and the director's own marked upright; held on, each beat may bear her down a stage (sagging, on her knees, flat; the stages are in rules.json) with the grip kept on, now and then two at once, and now and then the holder has to readjust: submissions.upright)"
 
 HELP = """
 =============================================================================================

@@ -654,6 +654,64 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 245
+
+Submissions can be put on a fighter who is still upright, and may bear her down while the grip stays on. Switchable
+with `submissions.upright.enabled`.
+
+### Upright holds (20 new)
+
+These are put on a fighter **on her feet or sitting up**. Before, every submission needed her lying down.
+
+| Holder's body | Holds |
+|---|---|
+| Two legs | full nelson, standing sleeper, bear hug, hammerlock, side headlock, guillotine, cobra clutch, abdominal stretch*, standing armbar, standing wrist lock, octopus hold*, rear chinlock (sitting only) |
+| Four legs | scruff hold, foreleg bite, flank crush, shoulder ride*, hind leg hook* |
+| Two or four legs | tail haul |
+| Serpent | upright coil |
+| Bird | talon shoulder clamp |
+
+\* on a standing fighter only.
+
+- **The director can invent upright holds.** It can mark one with `"upright": true`, or describe it as standing (a
+  nelson, a headlock, a bear hug, "on her feet"). The engine still checks every grip against both bodies.
+- **What the narrator is told:** she is still upright in the hold, and she isn't to be put on the ground unless the
+  events say so.
+- **In a submission match,** an opening on her feet (Build 244) offers these holds as they are. Any other hold still
+  takes her down first.
+- **A sitting fighter** could take no submission before. Now upright holds fit her, in any fight.
+
+### Going down in the hold, in stages
+
+From the beat after it locks, each beat an upright hold may **bear her down one stage, with the grip kept on**. The
+stages are a list in rules.json (`submissions.upright.stages`), not hard-coded. Each has a name, a posture and a line
+for the narrator, and you can add, remove or reorder them. The engine only knows three postures:
+
+- **standing:** still on her feet, off balance for a beat;
+- **knees:** down, sitting up;
+- **flat:** lying on the ground.
+
+The defaults:
+
+1. **Sagging** (standing): her legs start to go; she bends, still fighting to stay up.
+2. **On her knees** (knees): she sinks to her knees, still locked in it.
+3. **Flat** (flat): forced all the way down, the hold riding her down.
+
+How it rolls:
+
+- **Where she starts:** a fighter already sitting starts from the knees stage.
+- **Each drop is its own roll:** `base` (15%), plus `per_beat` (8%) for each later beat, plus `weak` (25%) × how much of
+  her strength is gone. Never above `max` (60%). So a hold usually takes her down over a few beats.
+- **`skip` (20%):** a drop takes two stages at once.
+- **`readjust` (25%):** at a drop, the holder has to shift her grip. The grips lose 30% of their pressure
+  (`readjust_mult` 0.7) and a beat of their build, but stay on.
+- **How it's told:** the narrator gets the stage ("stage 2 of 3: on her knees"), its line, whether she dropped fast,
+  the readjust, and where she is now (still on her feet, on her knees, flat). The screen shows ⬇️ with the stage.
+
+In 20 no-model three-tap matches (Nocturne vs Ripples), 25 of 79 taps came in upright holds. Three-tap matches
+averaged 69 beats (longest 140), single-tap ones 41. No stand-in action was refused, and the knockout balance is
+unchanged (Nocturne 62%).
+
 ## Build 244
 
 Submission matches move faster. Each change is switchable.

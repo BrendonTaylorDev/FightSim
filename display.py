@@ -1313,6 +1313,14 @@ class Display:
         for e in bundle["also_this_beat"]:
             if e["type"] == "adrenaline" and e.get("second"):
                 out.append(f"🔥 **{e['fighter']}: A SECOND WIND** below zero ({e['beats']} beats; once a fight)")
+            elif e["type"] == "sub_collapse":
+                out.append(f"⬇️ {e['defender']} borne down in {poss_word(e['attacker'])} {e['submission']}: "
+                           f"{e.get('stage') or e.get('facing')}"
+                           + (f" (stage {e['stage_no']}/{e['stages']}" + (", two at once" if e.get("skipped") else "")
+                              + ")" if e.get("stages") else "")
+                           + "; the hold stays on"
+                           + ("; she has to READJUST her grip" if e.get("readjust") else "")
+                           + f"; {e.get('chance', 0) * 100:.0f}%")
             elif e["type"] == "ruined_buckle":
                 out.append(f"🟤 {poss_word(e['fighter'])} ruined {e['part']} folds under her: she catches herself "
                            f"(off balance 1 beat)")

@@ -4645,6 +4645,19 @@ class Narrator:
                 lines.append(f"ADRENALINE SURGE: {e['fighter']} has been pushed past her limit and something kicks in: "
                              f"for the next {e['beats']} beats she moves faster, hits harder, and the pain falls away "
                              f"behind sheer will. Make this a turning point: show it rising in her body.")
+            elif e["type"] == "sub_collapse":
+                up_ = e.get("posture") == "standing"
+                lines.append(f"{e['defender'].upper()} IS BORNE DOWN IN THE HOLD"
+                             + (f" (stage {e['stage_no']} of {e['stages']}: {e.get('stage', '')})" if e.get("stages") else "")
+                             + f": {poss(e['attacker'])} {e['submission']} "
+                             + ("drops her two stages at once, fast: " if e.get("skipped") else "")
+                             + f"{e.get('says') or 'she goes down in it'}. The hold does NOT come off: {e['attacker']} "
+                             + ("has to shift her grip as she goes, loosening it for a moment before it bites again "
+                                "(show the readjustment)." if e.get("readjust") else
+                                "rides her down with it, the grip as tight as ever.")
+                             + (" She is still ON HER FEET, only just." if up_ else
+                                " She is on her knees now, not lying." if e.get("posture") == "knees" else
+                                " She is flat on the ground now."))
             elif e["type"] == "ruined_buckle":
                 lines.append(f"{poss(e['fighter'])} RUINED {e['part'].upper()} folds under her as her weight comes onto "
                              f"it, on its own, with nobody touching it: the leg simply stops holding her. She catches "
@@ -5802,7 +5815,9 @@ class Narrator:
                              f"no clock, nobody is counting, and {out_}. It is about the STRAIN: "
                              f"{sub['strain']}, more every beat it stays on. Show exactly how their bodies lock together, "
                              f"and the first wrench of it. {a['defender']} can't get up while it's on. {a['attacker']} "
-                             f"still has {sub['free']} free.")
+                             f"still has {sub['free']} free."
+                             + (f" {a['defender']} is still UPRIGHT in it ({sub['upright']}): don't put her on the "
+                                f"ground unless the events say she goes down in it." if sub.get("upright") else ""))
             if t == "hold_start" and not kept and not a.get("continuing") and self._hold_position_on():
                 down = getattr(self, "on_ground", None) or set()
                 up = lambda w: "down on the ground" if w in down else "on her feet"

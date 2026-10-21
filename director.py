@@ -1016,7 +1016,8 @@ def resolve(engine, b):
                  for h in (b.get("hits") or []) if isinstance(h, dict) and h.get("part")]
         if name and name not in engine.SUBMISSIONS and grips and not any(n in name for n in engine.SUBMISSIONS):
             # a hold of the director's own invention: the engine checks it against both bodies
-            res = engine.start_custom_submission(att, dfn, name, grips, flavor, enforce=not manual)
+            res = engine.start_custom_submission(att, dfn, name, grips, flavor, enforce=not manual,
+                                                 upright=b.get("upright") if isinstance(b.get("upright"), bool) else None)
             res["intent"] = intent
             return res, tuple(res.get("hold_ids") or ())
         if name not in engine.SUBMISSIONS:
@@ -3690,7 +3691,10 @@ def submission_urge(engine):
                 + f". Or INVENT one of her own that her body and "
                 f"the place allow: give it a short name in \"improvised_name\" and put the parts of {target.name} it "
                 f"grips in \"hits\", the worst first, each with \"with\" = what of {h.name} grips it (her paws, "
-                f"her twin tails, her jaws, her weight). The engine checks it against both bodies.")
+                f"her twin tails, her jaws, her weight). The engine checks it against both bodies."
+                + (f" {target.name} is on her feet: a hold put on her standing (a full nelson, a headlock, a bear "
+                   f"hug, one of your own) keeps her up, with \"upright\": true, and may bear her down as it goes on; "
+                   f"any other takes her down into it." if target.name not in engine.downed else ""))
     return ""
 
 
