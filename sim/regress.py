@@ -751,6 +751,52 @@ def low_health_check():
     return problems
 
 
+def three_tap_check():
+    """Builds 247-248, from the narrated three-tap match (sim/test_fights/three_tap): no submission from inside one,
+    no upright hold by a holder lying down, takedowns into a hold fit the way she lands, a coil is only the grip that
+    wraps, and the holder's posture is told right."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    a, d = e.get("Nerine"), e.get("Ripples")
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.rules["submissions"]["small_joints"]["enabled"] = False
+    e.downed.update({"Nerine": 0, "Ripples": 0})
+    e.facing.update({"Nerine": "face-up", "Ripples": "sitting up"})
+    up = [n for n in e.submission_shapes(a.name, d.name) if set(e.SUBMISSIONS[n]["facing"]) <= {"standing", "sitting up"}]
+    if up:
+        problems.append(f"a holder lying down was offered upright holds: {up}")
+    e.downed.pop("Nerine")
+    e.facing.pop("Nerine")
+    res = e.start_submission(a.name, d.name, "standing armbar")
+    if "holding her on her feet" in e.posture_text(a.name):
+        problems.append("the holder of a hold on a sitting fighter is told as holding her on her feet")
+    e.sub_window = {a.name: True}
+    e.downed[a.name] = 0
+    e.facing[a.name] = "face-up"
+    try:
+        e.start_submission(d.name, a.name, next(iter(e.submission_shapes(d.name, a.name))), enforce=True)
+        problems.append("a fighter in a submission locked one of her own on the holder")
+    except (ValueError, StopIteration):
+        pass
+    for _ in range(30):
+        tk = e._sub_takedown(a, d, "face-down")
+        if tk["how"] == "leg_hook":
+            problems.append("a leg hook (a fall backward) was picked for a face-down landing")
+            break
+        e.downed.pop(d.name, None)
+    for hid in list(e.holds):
+        e.holds.pop(hid)
+    e.downed.update({"Ripples": 0})
+    e.facing["Ripples"] = "face-down"
+    e.start_submission(a.name, d.name, "tail-bound knee crank") if "tail-bound knee crank" in e.submission_shapes(a.name, d.name) else None
+    coils = {h.part: h.coil for h in e.holds.values()}
+    if coils and any(v for k, v in coils.items() if "foot" in k.lower()):
+        problems.append(f"the paws turning the foot were marked a coil too: {coils}")
+    if e.a_an("ARMBAR") != "an ARMBAR":
+        problems.append("a/an: " + e.a_an("ARMBAR"))
+    return problems
+
+
 def textpane_check():
     """The window's story pane (textpane.py): story and numbers told apart, the rows' changes and the rolls'
     outcomes coloured, the pointers' numbers taken from the lines they explain, and shown only now and then."""
@@ -838,6 +884,13 @@ def main(argv):
         probs = ruined_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  ruined parts past devastated, and the stages below zero health  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "three tap fight" for w in want):
+        t = time.time()
+        probs = three_tap_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  three-tap fight fixes: no hold from inside one, upright holds need the holder up, takedowns fit, coils  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "low health last stand" for w in want):

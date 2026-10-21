@@ -654,6 +654,59 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 248
+
+The rest of the fixes from the narrated three-tap match (`sim/test_fights/three_tap/`). Three review agents read
+every beat's screen output and narrator notes; their findings are in `findings_A.md`, `findings_B.md` and
+`findings_C.md` there.
+
+### Engine
+
+- **Upright holds need the holder up.** A fighter lying on the ground was given a standing armbar, a standing
+  sleeper and a rear chinlock "kneeling behind her". A holder who is down now gets only ground holds, and an upright
+  hold can't bear anyone down while its holder lies there herself.
+- **Takedowns into a hold fit the way she lands.** A leg hook (she goes over backward) was picked for a face-down
+  landing. The takedown is now one that fits.
+- **A coil is only the grip that wraps.** In a tail-bound knee crank, the paws turning the foot were marked as coils
+  too, because the hold's overall description mentions the tails. So "her right foot bound" showed up while the
+  tails bound the knee. A grip with its own words is now judged by them alone.
+- **The holder's posture is told right.** "LOCKED ONTO … (down on her, wrapped round her)" is now "holding her on her
+  feet" for an upright hold, and "down with her on the ground" when the holder is down too.
+- **The ending.** "Nerine was taps out; Ripples was left standing over her" is now "Nerine taps out …; Ripples was
+  down on the ground herself, too spent to rise" when that is so.
+- **Notes put right:**
+  - "Only a completed pin puts her out" in a match with no pins is now "Only a tap-out or a pass-out ends it".
+  - "Refuses to go down" for a fighter already down is now "refuses to give in".
+
+### Narrator
+
+- **A tap that doesn't end the match is checked for**, so a draft that leaves it out is sent back, as the final tap
+  already was.
+- **Garbled lines fixed:**
+  - The inserted hold sentence ("Then Ripples' the same twist, carried up into it closed on…") is now "Then Ripples
+    closed both paws on…", or "her grip".
+  - "Then and she goes down again" is fixed.
+  - "Nerine's TURNS IT BACK", "a ARMBAR", "SPENT, Curls" and "shakes off being on an adrenaline surge" are fixed.
+  - "Ripples still has Ripples' twin tails" is now "her own".
+- **Every grip of a hold gets a step in the plan**, up to three; before, the third grip was dropped.
+- **No lines that put her on her feet** (footing, stepping back, bouncing on her legs) when she is down or held.
+- **Whole-body "in the coils" lines** are used only for coils round her body or neck, not tails round a knee.
+- **The water and the cold are told on parts the move hit**, never on a part only the landing hurt.
+- **Right words for her position and her injuries:**
+  - The get-up note no longer says the other fighter "is on her feet" when she was thrown down that same beat.
+  - A part at 300–499% is DEVASTATED, not RUINED. Ruined starts at 500%.
+  - "Ear" no longer matches inside "forearm", which had a forearm fin get the head reaction.
+  - A resisted knockdown no longer also says "her feet stay where they are".
+- **Smaller fixes:**
+  - The final tap note names the part the tap counted for.
+  - The takedown retry no longer says "pin" in a no-pins match.
+  - An electric "charge crackled" line was being offered for a Water Gun.
+
+Not done yet:
+- How far a held fighter can reach. Face-down in a heel hook, Nerine bit Ripples' shoulder and throat.
+- Building blocks written for a fighter standing free, used while she is held.
+- "Down N beats" not counting while she is held.
+
 ## Build 247
 
 Fixes and two changes from a fully narrated three-tap submission match: Ripples vs Nerine, the lakeside clearing,

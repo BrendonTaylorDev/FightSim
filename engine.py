@@ -5082,8 +5082,8 @@ class Engine:
         prop_ground = (prop_near or ("a root humped out of the ground" if "root" in rough else
                                       f"a ridge of {rough}" if rough else ""))
         for name, s in self.SUBMISSIONS.items():
-            if "standing" in s["facing"] and not self._upright_on():
-                continue
+            if set(s["facing"]) <= {"standing", "sitting up"} and (not self._upright_on() or a.name in self.downed):
+                continue     # (an upright hold needs the holder up: one lying on the ground can't stand behind her)
             lands = next((x for x in ("face-down", "face-up", "on her side") if x in s["facing"]), None) \
                 if stand and lie not in s["facing"] else None
             if plan not in s["by"] or (lie not in s["facing"] and not lands):
@@ -5267,8 +5267,8 @@ class Engine:
         events = []
         for (an, dn), hs in groups.items():
             d = self.get(dn)
-            if d.eliminated or self.has(d, "airborne") or self.pinned_by(dn):
-                continue
+            if d.eliminated or self.has(d, "airborne") or self.pinned_by(dn) or an in self.downed:
+                continue     # (a holder lying on the ground can't bear anyone down: she is down already)
             key = min(h.id for h in hs)
             sitting = dn in self.downed and self.facing.get(dn) == "sitting up"
             if dn in self.downed and not sitting:
@@ -5343,9 +5343,19 @@ class Engine:
             cap = max(cap, float(late.get("max", 0.35)))
         return max(0.0, min(cap, ch))
 
+    @staticmethod
+    def _takedown_fits(lies):
+        """The takedowns that leave her lying this way (a leg hook puts her down backward, onto her back; a ride
+        from behind puts her on her front). None = any."""
+        return ({"drag_down", "spin_down", "sweep", "pull_forward", "ride_down"} if lies == "face-down" else
+                {"tackle", "shoulder_drive", "trip_back", "sweep", "leg_hook", "hip_throw", "drag_down", "spin_down"}
+                if lies == "face-up" else None)
+
     def _sub_takedown(self, a, d, lands):
-        """A submission locked on a fighter on her feet: she is taken down into it first, landing `lands`."""
-        how = self.vary("takedown")
+        """A submission locked on a fighter on her feet: she is taken down into it first, landing `lands`, by a
+        takedown that fits that landing."""
+        fits = self._takedown_fits(lands)
+        how = self.vary("takedown", tuple(k for k in self.VARIETY["takedown"] if fits and k not in fits))
         self.knock_down(d.name, facing=lands, why=f"{a.name} took {d.name} down into a hold")
         self._fresh_down.add(d.name)
         return {"how": how, "told": False, "hard": False, "hits": [], "into_sub": True}
@@ -6726,7 +6736,9 @@ class Engine:
                 out.append(f"HOW IT ENDED: {win} PINNED {lose}: {win} was ON TOP, holding her down, and {lose} was the "
                            f"one held down underneath until she passed out. Never the other way round.")
             elif ko:
-                out.append(f"HOW IT ENDED: {lose} was {ko}; {win} was left standing over her.")
+                said = f"{lose} {ko}" if re.match(r"(?:taps|passes|gives|went|goes)\b", str(ko)) else f"{lose} was {ko}"
+                out.append(f"HOW IT ENDED: {said}; " + (f"{win} was down on the ground herself, too spent to rise."
+                                                         if win in self.downed else f"{win} was left standing over her."))
             if tp:
                 out.append(f"THE TURNING POINT: {win} was behind or level until beat {tp['beat']}, then never again")
             out.append("WHAT DECIDED IT: " + "; ".join(reasons))
@@ -7513,7 +7525,9 @@ class Engine:
             started.append(self.start_hold(a.name, d.name, pname, c[1], c[2], flavor, c[3] if len(c) > 3 else "",
                                            keep_with=enforce))
             h = self.holds.get(started[-1]["hold_id"])
-            if h is not None and self.is_coil(move, h.with_part, flavor):
+            # (a grip with words of its own is judged by them: "both paws, turning the foot" in a hold whose look
+            # mentions the tails wound round the knee is not a coil)
+            if h is not None and self.is_coil(move, h.with_part, "" if h.with_part else flavor):
                 h.coil = True
                 started[-1]["coil"] = True
         if joining:
@@ -7561,9 +7575,7 @@ class Engine:
             pick = random.Random(zlib.crc32((f"{getattr(self, '_seed0', 0)}|{self.turn}|{a.name}|{d.name}|{self.times('pinned', d.name)}|"
                                                  f"{a.energy:.3f}|{a.health:.3f}|{d.health:.3f}").encode()))
             lies = self.facing_of(d.name)
-            fits = ({"drag_down", "spin_down", "sweep", "leg_hook", "pull_forward", "ride_down"} if lies == "face-down" else
-                    {"tackle", "shoulder_drive", "trip_back", "sweep", "leg_hook", "hip_throw", "drag_down", "spin_down"}
-                    if lies == "face-up" else set(table))
+            fits = self._takedown_fits(lies) or set(table)
             table = {k: v for k, v in table.items() if k in fits} or table
             told = bool(re.search(r"\b(?:drag\w*|haul\w*|pull\w*|sweep\w*|swept|trip\w*|tackl\w*|throw\w*|threw|hook\w*|"
                                   r"bowl\w*|bear\w* (?:her )?down|bore|rid\w+ (?:her )?down|tak\w+ (?:her )?down|"
@@ -8107,6 +8119,11 @@ class Engine:
                             and h.defender not in self.pinning(f.name)],
                 "asleep": self.has(f, "asleep"), "frozen": self.has(f, "frozen")}
 
+    @staticmethod
+    def a_an(noun):
+        """'a camel clutch', 'an armbar'."""
+        return ("an " if re.match(r"(?i)[aeiou]", str(noun)) else "a ") + str(noun)
+
     def posture_text(self, name, short=False):
         """The same, in words: ON HER FEET / ON THE GROUND and how she lies / PINNED under whom / on top of whom."""
         f = self.get(name)
@@ -8122,8 +8139,12 @@ class Engine:
             text = f"ON TOP of {' and '.join(p['pinning'])}, pinning her down"
         elif any(h.sub and h.attacker == f.name for h in self.holds.values()):
             h = next(h for h in self.holds.values() if h.sub and h.attacker == f.name)
-            text = (f"LOCKED ONTO {h.defender} in a {h.sub.replace('_', ' ')} (down on her, wrapped round her; "
-                    f"not standing free)" if not short else f"LOCKED ONTO {h.defender} in a {h.sub.replace('_', ' ')}")
+            held_up = h.defender not in self.downed       # (an upright hold: both still standing)
+            how = ("holding her on her feet, close against her; not standing free" if held_up else
+                   "down with her on the ground, wrapped round her; not standing free" if f.name in self.downed else
+                   "down on her, wrapped round her; not standing free")
+            text = (f"LOCKED ONTO {h.defender} in {self.a_an(h.sub.replace('_', ' '))} ({how})" if not short
+                    else f"LOCKED ONTO {h.defender} in {self.a_an(h.sub.replace('_', ' '))}")
         elif self.has(f, "airborne"):
             text = "IN THE AIR (wings beating, above the ground)" if not short else "IN THE AIR"
         else:
@@ -9115,6 +9136,7 @@ class Engine:
             reason = (f"taps out to {poss_word(a)} {name}" if how == "tap" else
                       f"passes out in {poss_word(a)} {name}")
             ev = {"type": "tap_out", "how": how, "attacker": a, "defender": dn, "submission": name, "parts": parts,
+                  "part": tap_part,
                   "with": with_, "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
                   "tap_no": len(d.learned.get("taps_given") or []) or 1,
                   "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure)}
@@ -9801,6 +9823,7 @@ class Engine:
                 foe = next((o for o in self.active() if o.team != f.team), None)
                 worst = max(f.parts.values(), key=lambda p_: p_.damage)
                 events.append({"type": "refuses_to_fall", "fighter": f.name, "stage": st.get("label"),
+                               "down": f.name in self.downed,
                                "against": foe.name if foe else "", "plan_zone": plan.get("zone", ""),
                                "worst": worst.name})
                 continue
@@ -10197,6 +10220,9 @@ class Engine:
             if self.winner():
                 # the match is over: what could still put her out in the fight no longer applies
                 react = re.sub(r"\s*Only a completed pin puts her out\.", "", react)
+            elif self.submission_match():
+                # (a submission match: no pin ends it, a tap-out or a pass-out does)
+                react = re.sub(r"Only a completed pin puts her out\.", "Only a tap-out or a pass-out ends it.", react)
             lines.append(f"{f.name}: OVERALL {words} -> what this fighter can still do: {react}{ground}\n"
                          f"   painful parts (they hurt and get favored, but do NOT override overall strength): "
                          f"{', '.join(hurt[:10]) or 'nothing serious'}"

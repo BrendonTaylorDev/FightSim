@@ -735,12 +735,11 @@ class Display:
             out.append(f"⚔️ **{a['attacker']} → {a['defender']}**" + (f": {fl}" if fl else ""))
             cl = a.get("clash")
             if cl:
-                ps = lambda n: n + ("'" if n.endswith("s") else "'s")
                 out.append(f"💥 **CLASH**: {a['defender']} meets it with {cl['move'].upper()} (force with luck: "
                            f"{num(cl['rolled'][1])} against {num(cl['rolled'][0])}) — "
-                           + {"through": f"{ps(a['attacker'])} pushes THROUGH, landing at ×{num(cl['share'])}",
+                           + {"through": f"{poss_word(a['attacker'])} {a.get('move', {}).get('name', 'attack') if isinstance(a.get('move'), dict) else 'attack'} pushes THROUGH, landing at ×{num(cl['share'])}",
                               "cancel": "they CANCEL OUT: nothing lands",
-                              "back": f"{ps(a['defender'])} TURNS IT BACK onto {a['attacker']} at ×{num(cl['share'])}"}[cl["outcome"]])
+                              "back": f"{a['defender']} TURNS IT BACK onto {a['attacker']} at ×{num(cl['share'])}"}[cl["outcome"]])
                 if cl.get("hits_on_attacker"):
                     out += self.hits_block(a["attacker"], cl["hits_on_attacker"])
             if a.get("devastating"):

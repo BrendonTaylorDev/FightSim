@@ -2074,7 +2074,7 @@ She drew a breath and held it, and the power came up to meet it.
 Her body hummed, and she pointed the whole of herself at {foe}.
 She lined up the shot with her head low and her gaze level.
 She let the power go in one hard push that rocked her back where she stood.
-A charge crackled faintly along the edges of her, and she aimed it.
+A charge crackled faintly along the edges of her, and she aimed it. | type: electric
 
 == before_strike | kind: punch
 She stepped in, set her feet, and threw from the ground up. | has: arms

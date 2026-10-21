@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 247-guided (from a narrated three-tap match: nobody caught in a submission can lock one on the holder; the two last stands are one (moves.last_stand, then wide open: low_health.last_stand); no squirm the beat she goes down; a winner lying down isn't called the one still standing; a long submission match wears parts faster (finish.submission.long_ramp) and brings more openings for a hold (submissions.match.late))"
+VERSION = "2026-10-21 build 248-guided (the reviewers' findings from the narrated three-tap match: upright holds need the holder up; takedowns into a hold fit how she lands; a coil is only the grip that wraps; a tap that doesn't end the match is checked for; the ending, the holder's posture, ruined vs devastated, and a dozen garbled notes put right)"
 
 HELP = """
 =============================================================================================

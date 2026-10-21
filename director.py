@@ -1604,6 +1604,7 @@ def _landing(engine, b, res):
         if kept:
             res["stayed_up"] = {"chance": ch, "manner": engine.vary("keeps_feet")}
             res["launch_blocked"] = f"{who} staggers under it but stays on her feet"
+            res.pop("rocked", None)     # (the stagger is how the blow moved her: no "feet stay where they are" too)
             return None
     if not in_place:
         # knocked off her feet: that is how the blow moved her, so no rock or stagger on top of it (moves.stumble)
