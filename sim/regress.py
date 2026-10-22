@@ -1086,6 +1086,52 @@ def tap_overwhelm_check():
     return problems
 
 
+def hold_panel_check():
+    """Build 257 (window.hold_panel): each card carries the grips on her and by her (which parts, with what, how
+    long), how near she is to tapping (the narrator's 1-5 ladder and this beat's real tap chance, 0 on her first
+    beat in it), the holder sees it too, her held parts are ringed, the export shows it, and off it is gone."""
+    import cards
+    s = H.session(1, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    e.rules["finish"]["submission"]["enabled"] = True     # (not /set: that would stay on for the checks after this)
+    e.downed["Ripples"] = 0
+    e.facing["Ripples"] = "face-down"
+    e.start_submission("Nerine", "Ripples", "boston crab")
+    levels, chances, log = [], [], []
+    for _ in range(5):
+        H.beat(s, [{"attacker": "Nerine", "defender": "Ripples", "action": "breather", "flavor": "leans in"}], log)
+        if not e.holds:
+            break
+        fs = {f["name"]: f for f in H.play.fight_snapshot(s)["fighters"]}
+        m = cards.tap_meter(fs["Ripples"])
+        if not m:
+            problems.append(f"no tap meter while she is in the submission: {fs['Ripples'].get('grips')}")
+            break
+        levels.append(m["level"])
+        chances.append(m["chance"])
+        held = cards.grip_lines(fs["Ripples"])
+        if not held or not held[0][0].startswith("Held: Nerine's boston crab on her ") or "thigh" not in held[0][0]:
+            problems.append(f"her card doesn't say who holds which part: {held}")
+        if not cards.held_parts(fs["Ripples"]) or cards.held_parts(fs["Nerine"]):
+            problems.append(f"the wrong parts are ringed: {cards.held_parts(fs['Ripples'])}")
+        hl = cards.grip_lines(fs["Nerine"])
+        if not hl or not hl[0][0].startswith("Holding: boston crab on Ripples'") or "% to tap" not in hl[0][0]:
+            problems.append(f"the holder's card doesn't show the hold and how near the tap is: {hl}")
+        if cards.tap_meter(fs["Nerine"]):
+            problems.append("the holder has a tap meter of her own")
+    if len(levels) < 3 or levels != sorted(levels) or levels[0] != 1 or chances[0] != 0:
+        problems.append(f"the tap meter doesn't climb from 1 at 0% on her first beat: levels {levels}, chances {chances}")
+    snap = H.play.fight_snapshot(s)["fighters"]
+    import fightexport
+    body = fightexport._gauges(next(f for f in snap if f["name"] == "Ripples"))
+    if e.holds and ("chance this beat" not in body or 'class="grip"' not in body):
+        problems.append("the export has no tap meter or hold panel")
+    e.rules["window"]["hold_panel"]["enabled"] = False
+    if any(f.get("grips") for f in H.play.fight_snapshot(s)["fighters"]):
+        problems.append("with window.hold_panel off the cards still carry it")
+    return problems
+
+
 def tap_urge_check():
     """Build 256 (tap.urge): a hold that hurts but is nowhere near her limit shows the urge to tap now and then (a
     small sign, easily refused, not counted as a refusal), and the narrator is told it; off, nothing shows there."""
@@ -1330,6 +1376,13 @@ def main(argv):
         probs = match_distance_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 255 match state: how far apart they are, the opening told as the opening  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "hold panel" for w in want):
+        t = time.time()
+        probs = hold_panel_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 257 hold panel: grips, parts and tap meter on the cards and the export  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "tap urge" for w in want):

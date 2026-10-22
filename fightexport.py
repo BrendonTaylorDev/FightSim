@@ -14,6 +14,7 @@ import os
 import re
 
 import cards
+from engine import poss_word
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(HERE, "exports")
@@ -138,6 +139,17 @@ def _gauges(f):
                            + (f"  · air {pt['air']}% gone" if pt.get("air") is not None else ""))
         else:
             out += '<div class="dim">nothing held or struck this beat</div>'
+    m = cards.tap_meter(f)
+    if m:
+        # (window.hold_panel) how near she is to tapping: five steps and this beat's chance, as in the window
+        steps = "".join(f'<span class="step" style="background:{cards.TAP_COLORS[i] if i <= m["level"] else "#fff"}">'
+                        f'</span>' for i in range(1, 6))
+        out += (f'<div class="taps"><b>Tap</b> {steps} {html.escape(m["label"])} · {m["chance"]:.0f}% chance this '
+                f'beat</div><div class="dim">{html.escape(poss_word(str(m["by"])))} {html.escape(str(m["sub"]))}: pain '
+                f'{m["pain"]} against what she can bear {m["resist"]}'
+                + (f' · {html.escape(m["note"])}' if m["note"] else "") + '</div>')
+    for text, col in cards.grip_lines(f):
+        out += f'<div class="grip" style="color:{col}">{html.escape(text)}</div>'
     return out
 
 
@@ -173,7 +185,7 @@ pre{white-space:pre-wrap;font:12px/1.45 Consolas,monospace;color:var(--dim);marg
 table{border-collapse:collapse;width:100%;margin-top:6px}td,th{padding:2px 6px;border-bottom:1px solid var(--line);text-align:left}
 td.n{text-align:right}.chip{display:inline-block;min-width:58px;padding:0 4px;border-radius:3px;text-align:center;font-weight:600}
 .chip.res{border:2px solid;background:transparent;font-weight:400}
-.taps{font:13px system-ui,sans-serif;margin:6px 0 2px}.pip{display:inline-block;width:12px;height:12px;
+.taps{font:13px system-ui,sans-serif;margin:6px 0 2px}.step{display:inline-block;width:22px;height:10px;border:1px solid #9ca3af;margin-right:2px}.grip{font:12px system-ui,sans-serif;margin:1px 0}.pip{display:inline-block;width:12px;height:12px;
 border-radius:50%;border:1.5px solid #7f1d1d;background:#fff;margin-right:3px;vertical-align:-2px}.pip.on{background:#dc2626}
 .bar.pain i.limit{position:absolute;left:66.7%;top:0;bottom:0;border-left:1px dashed #111827}
 .result{margin:14px 0 4px;padding:8px 12px;border-left:4px solid #b45309;background:var(--card);

@@ -12,7 +12,7 @@ import re
 import urllib.request
 import zlib
 
-from engine import body_region
+from engine import body_region, poss_word
 
 try:
     from PIL import Image, ImageDraw, ImageFilter, ImageChops, ImageFont, ImageEnhance
@@ -954,6 +954,8 @@ def draw_panel_pil(d, img, f, pnl, top, big, tiny, tinyb):
             lx = COL - 4 if side == "L" else COL + PIC + 4
             d.line((lx, ly, ax, ay), fill="#9ca3af", width=1)
             d.ellipse((ax - 3, ay - 3, ax + 3, ay + 3), fill=dmg_color(dmg), outline="#111827")
+            if part in held_parts(f):       # (window.hold_panel: a part in someone's grip, ringed)
+                d.ellipse((ax - 9, ay - 9, ax + 9, ay + 9), outline="#7c3aed", width=2)
             widths = (76, 38, 40)
             x0 = lx - sum(widths) if side == "L" else lx
             if side == "L":
@@ -967,3 +969,70 @@ def draw_panel_pil(d, img, f, pnl, top, big, tiny, tinyb):
             rx = bx + widths[1]
             d.rectangle((rx, ly - 7, rx + widths[2] - 2, ly + 7), fill="#ffffff", outline=res_color(res), width=2)
             d.text((rx + (widths[2] - 2) / 2, ly), f"{res:.0f}%", fill="#111827", font=tiny, anchor="mm")
+
+
+# ---- the hold panel and the tap meter (window.hold_panel), shared by the window and the export ----
+TAP_LADDER = ("", "holding easily", "it's getting to her", "close to her limit", "very close to tapping",
+              "at the edge of tapping")
+TAP_COLORS = ("#e5e7eb", "#facc15", "#f59e0b", "#ea580c", "#dc2626", "#7f1d1d")
+
+
+def held_parts(f):
+    """Her parts in someone's grip right now (for the rings on her picture)."""
+    g = f.get("grips") or {}
+    return {p for x in g.get("held") or () for p in x.get("parts") or ()}
+
+
+def tap_meter(f):
+    """How near she is to tapping (from the engine's tap check this beat): {"level" 0-5 (the narrator's ladder),
+    "chance" (this beat's tap chance, %), "label", "note"}, or None when she isn't in a submission's tap check."""
+    t = (f.get("grips") or {}).get("tap")
+    if not t:
+        return None
+    lv = max(0, min(5, int(t.get("level") or 0)))
+    pct = 100.0 * float(t.get("chance") or 0)
+    notes = []
+    if t.get("first"):
+        notes.append("first beat in it: she can't tap yet")
+    elif t.get("spent"):
+        notes.append("this part's taps are used up: it can't make her tap")
+    elif t.get("breaking"):
+        notes.append({"first": "breaking point: holding out", "cracking": "breaking point: cracking",
+                      "last": "breaking point: the last of it"}.get(t["breaking"], "breaking point"))
+    elif t.get("held_on"):
+        notes.append("past her limit for the first time: holding on through it")
+    if t.get("refusals"):
+        notes.append(f"refused {t['refusals']}x")
+    if t.get("air") is not None:
+        notes.append(f"air {t['air']}% gone")
+    label = "fighting the dark" if t.get("choke") and lv >= 3 else TAP_LADDER[lv] or "not fighting it yet"
+    return {"level": lv, "chance": pct, "label": label, "note": " · ".join(notes),
+            "pain": t.get("pain"), "resist": t.get("resist"), "by": t.get("by"), "sub": t.get("sub")}
+
+
+def grip_lines(f):
+    """The hold panel's lines: [(text, colour)]: the grips on her, the grips she has, a pin, and the distance."""
+    g = f.get("grips") or {}
+    out = []
+    for x in g.get("held") or ():
+        parts = ", ".join(str(p).lower() for p in x.get("parts") or ())
+        with_ = " and ".join(x.get("with") or ())
+        out.append((f"Held: {poss_word(x['by'])} {x['what']} on her {parts}" + (f" ({with_})" if with_ else "")
+                    + f", beat {x.get('beats', 0)}" + ("  · on her throat" if x.get("choke") else ""), "#7c3aed"))
+    for x in g.get("holding") or ():
+        parts = ", ".join(str(p).lower() for p in x.get("parts") or ())
+        with_ = " and ".join(x.get("with") or ())
+        t = x.get("tap")
+        out.append((f"Holding: {x['what']} on {poss_word(x['on'])} {parts}" + (f" ({with_})" if with_ else "")
+                    + f", beat {x.get('beats', 0)}"
+                    + (f"  · {x['on']}: {TAP_LADDER[max(0, min(5, t[0]))] or 'not fighting it yet'}, {t[1]}% to tap"
+                       if t else ""), "#1d4ed8"))
+    p = g.get("pin")
+    if p:
+        out.append((f"Pinned by {' and '.join(p['by'])}: {p['seconds']} of {p['of']} seconds", "#b91c1c"))
+    for x in g.get("pinning") or ():
+        out.append((f"Pinning {x['on']}: {x['seconds']} of {x['of']} seconds", "#1d4ed8"))
+    gaps = [f"{n}: {w}" for n, w in g.get("gaps") or () if w]
+    if gaps:
+        out.append(("Distance  " + "  ·  ".join(gaps), "#4b5563"))
+    return out

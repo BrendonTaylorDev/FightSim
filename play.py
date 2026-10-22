@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-22 build 256-guided (fighting the tap all through a submission: every beat from the first she is shown resisting it, more visceral the nearer she is)"
+VERSION = "2026-10-22 build 257-guided (the hold panel: a tap meter showing how near she is to tapping, who holds which of her parts, a pin's count and the distance on every card)"
 
 HELP = """
 =============================================================================================
@@ -545,6 +545,9 @@ def fight_snapshot(s, label=None):
                      if eng.submission_match() else None),
             # how much pain she is in against what she can bear (window.pain_gauge): the window's pain gauge
             "pain": eng.pain_gauge(f) if hasattr(eng, "pain_gauge") else None,
+            # the grips on her and by her, a pin, how near she is to tapping, how far from the others
+            # (window.hold_panel): the window's hold panel and tap meter
+            "grips": eng.card_state(f) if hasattr(eng, "card_state") else None,
         })
     return {"turn": int(getattr(eng, "turn", 0) or 0), "fighters": out,
             "label": label or f"after beat {getattr(eng, 'turn', 0)}"}

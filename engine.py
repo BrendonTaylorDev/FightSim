@@ -9432,6 +9432,7 @@ class Engine:
                                       "air": round(air), "endure": round(endure), "sub": name, "by": a}
             if first:
                 events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
+                self._note_tap_state(d, a, name, events, 0.0, pain, resist, first=True)
                 continue
             ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
             sub_ = next((h.sub for h in hs if h.sub), "")
@@ -9505,6 +9506,8 @@ class Engine:
                     # (tap.urge, since build 256) nowhere near her limit, but it hurts: she is shown fighting the
                     # urge all the same, lighter (it doesn't count as a refusal)
                     events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
+                self._note_tap_state(d, a, name, events, tap, pain, resist, held_on=first_over, spent=spent,
+                                     breaking=stage_ if breaking else None, air=(air, endure) if choke else None)
             if not how:
                 continue
             parts = [h.part for h in hs]
@@ -9731,6 +9734,85 @@ class Engine:
 
     def _tap_vary_on(self):
         return bool(((self.rules.get("narration") or {}).get("tap_build") or {}).get("vary", True))
+
+    def _note_tap_state(self, d, a, name, events, chance, pain, resist, first=False, held_on=False, spent=False,
+                        breaking=None, air=None):
+        """For the window (window.hold_panel): how near she is to tapping, as the tap check left it this beat. level
+        is the narrator's ladder (1-5: tap.urge's lighter signs, then the refusals near and past her limit), chance
+        the tap chance this beat's roll was made at (0 on a beat she can't tap: her first beat in it, the first
+        beat past her limit she holds on through, or holding out at her breaking point)."""
+        ev = next((e for e in reversed(events) if e.get("defender") == d.name and e.get("attacker") == a
+                   and e.get("type") in ("tap_resist", "tap_urge")), None) or {}
+        if ev.get("type") == "tap_urge":
+            level = int(ev.get("level") or 1)
+        elif ev.get("type") == "tap_resist":
+            level = 5 if breaking in ("cracking", "last") else min(5, 2 + int(ev.get("stage")
+                                                                            or min(3, int(ev.get("refusals") or 1))))
+        else:
+            level = 0
+        d.learned["tap_state"] = {"turn": self.turn, "by": a, "sub": name, "chance": round(float(chance), 3),
+                                  "pain": round(pain), "resist": round(resist), "level": level,
+                                  "refusals": int((d.learned.get("tap_refused") or ["", 0])[1])
+                                  if (d.learned.get("tap_refused") or [""])[0] == a else 0,
+                                  "first": first, "held_on": bool(held_on), "spent": bool(spent),
+                                  "breaking": breaking, "choke": bool(ev.get("choke")),
+                                  "air": round(air[0] / max(1.0, air[1]) * 100) if air and air[0] else None}
+
+    def card_state(self, f):
+        """window.hold_panel (since build 257): what is going on around her for the window and exported fights,
+        as plain data: the grips on her (who, what hold, which of her parts, with what, how many beats), the grips
+        she has on others, a pin on her or by her (its count against its length), how near she is to tapping (from
+        the tap check this beat: _note_tap_state) and how far she is from each other fighter. None when it is off."""
+        cfg = ((self.rules.get("window") or {}).get("hold_panel") or {})
+        if not cfg.get("enabled", True) or f.eliminated:
+            return None
+
+        def kind(h):
+            return h.sub or ("coils" if h.coil else "grab" if h.grab else "hold")
+
+        def grips(hs, who_key, who):
+            out = {}
+            for h in sorted(hs, key=lambda h: h.id):
+                g = out.setdefault((getattr(h, who), kind(h)), {
+                    who_key: getattr(h, who), "what": kind(h), "parts": [], "with": [], "beats": 0,
+                    "choke": False, "locked": False})
+                g["parts"].append(h.part)
+                if h.with_part and h.with_part not in g["with"]:
+                    g["with"].append(h.with_part)
+                g["beats"] = max(g["beats"], int(h.turns_active))
+                g["choke"] = g["choke"] or bool(re.search(r"(?i)neck|throat", h.part))
+                g["locked"] = g["locked"] or bool(h.locked)
+            return list(out.values())
+
+        on_her = [h for h in self.holds.values() if h.defender == f.name]
+        held = grips(on_her, "by", "attacker")
+        holding = grips([h for h in self.holds.values() if h.attacker == f.name], "on", "defender")
+        pin = None
+        p_ = self.pinned_by(f.name)
+        if p_:
+            pr = next((p for p in self.pins.values() if p["defender"] == f.name), {})
+            pin = {"by": p_, "seconds": round(float(pr.get("seconds", 0))), "of": round(float(pr.get("duration", 60)))}
+        pinning = []
+        for p in self.pins.values():
+            if f.name in self.pin_members(p):
+                pinning.append({"on": p["defender"], "seconds": round(float(p.get("seconds", 0))),
+                                "of": round(float(p.get("duration", 60)))})
+        ts = f.learned.get("tap_state") or {}
+        tap = dict(ts) if (self.submission_match() and ts and int(ts.get("turn", -9)) == self.turn
+                           and any(h.attacker == ts.get("by") for h in on_her)) else None
+        if self.submission_match():
+            for g in holding:
+                # (on the holder's card too: how near the one she holds is to tapping)
+                o = self.fighters.get(str(g["on"]).lower())
+                ot = (o.learned.get("tap_state") or {}) if o else {}
+                if ot and int(ot.get("turn", -9)) == self.turn and ot.get("by") == f.name:
+                    g["tap"] = [int(ot.get("level") or 0), round(100 * float(ot.get("chance") or 0))]
+        gaps = []
+        if cfg.get("distance", True) and self._gap_on():
+            for o in self.active():
+                if o.name != f.name:
+                    gaps.append([o.name, self.GAP_SHORT.get(self.gap_of(f.name, o.name), "")])
+        return {"held": held, "holding": holding, "pin": pin, "pinning": pinning, "tap": tap, "gaps": gaps}
 
     def _tap_urge(self, d, a, name, hs, pain, resist, beats, tcfg):
         """finish.submission.tap.urge: a hold that hurts but is nowhere near her limit (below tap.near) still shows

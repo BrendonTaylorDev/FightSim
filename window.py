@@ -36,11 +36,12 @@ from tkinter import ttk
 import play
 import display
 import textpane
-from engine import species_of, body_region, note_failure
+from engine import species_of, body_region, note_failure, poss_word
 
 from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_color, text_on, short,
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
-                   columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION)
+                   columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
+                   held_parts, tap_meter, grip_lines, TAP_COLORS)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -265,6 +266,10 @@ class FighterCard(ttk.Frame):
         self.tp = tk.Canvas(self, width=PIC + 2 * COL, height=20, highlightthickness=0, bg="#f3f4f6")
         # her pain against what she can bear (window.pain_gauge): a bar with a mark at 100%, more in a submission
         self.pg = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg="#f3f4f6")
+        # how near she is to tapping (window.hold_panel): five steps (the narrator's ladder) and this beat's chance
+        self.tm = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg="#f3f4f6")
+        # the grips on her and by her, a pin, and how far she is from the others (window.hold_panel)
+        self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg="#ffffff")
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
         self.state.pack(anchor="w", pady=(4, 0))
 
@@ -345,6 +350,7 @@ class FighterCard(ttk.Frame):
                     calib = self.app.calib == (self, part)
                     c.create_line(lx, ly, ax, ay, fill="#2563eb" if calib else "#9ca3af", width=2 if calib else 1)
                     c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline="#111827")
+                    self._ring(c, f, part, ax, ay)
                     self._label(c, side, lx, ly, part, dmg, res, calib)
             top += pn["height"] + gap
         if f["out"]:
@@ -378,6 +384,66 @@ class FighterCard(ttk.Frame):
         c.create_text(x + 6, 10, anchor="w", font=("Segoe UI", 8),
                       text=f"{len(given)} of {need}" + (f"  ({parts})" if parts else ""),
                       fill="#991b1b" if len(given) >= need else "#111827")
+
+    def _ring(self, c, f, part, x, y):
+        """A part in someone's grip gets a violet ring on her picture (window.hold_panel)."""
+        if part in held_parts(f):
+            c.create_oval(x - 9, y - 9, x + 9, y + 9, outline="#7c3aed", width=2)
+            c.create_oval(x - 13, y - 13, x + 13, y + 13, outline="#c4b5fd", width=1, dash=(3, 2))
+
+    def _order(self):
+        """The strips under her bars always in one order: taps, pain, tap meter, hold panel (each packs itself on
+        when it has something, so one that appears later would otherwise land after the rest)."""
+        shown = [x for x in (self.tp, self.pg, self.tm, self.gp) if x.winfo_ismapped()]
+        for x in shown:
+            x.pack_forget()
+        for x in shown:
+            x.pack(fill="x", pady=(2, 0), before=self.state)
+
+    def _show(self, canvas, on):
+        if on and not canvas.winfo_ismapped():
+            canvas.pack(fill="x", pady=(2, 0), before=self.state)
+        elif not on and canvas.winfo_ismapped():
+            canvas.pack_forget()
+
+    def _tap_meter(self, f):
+        """How near she is to tapping, under the pain gauges (window.hold_panel; a submission match, while she is
+        held): five steps, filled to how near the tap check puts her, coloured from easy to the edge, with this
+        beat's tap chance and what is keeping it there."""
+        m = tap_meter(f)
+        self._show(self.tm, bool(m))
+        if not m:
+            return
+        c, w = self.tm, PIC + 2 * COL
+        c.delete("all")
+        c.create_text(6, 9, anchor="w", text="Tap", font=("Segoe UI", 8, "bold"))
+        x0, seg = 34, 30
+        for i in range(1, 6):
+            on = i <= m["level"]
+            c.create_rectangle(x0 + (i - 1) * (seg + 3), 2, x0 + i * seg + (i - 1) * 3, 16,
+                               fill=TAP_COLORS[i] if on else "#ffffff", outline="#9ca3af")
+        c.create_text(x0 + 5 * (seg + 3) + 6, 9, anchor="w", font=("Segoe UI", 8, "bold"),
+                      fill=TAP_COLORS[max(1, m["level"])] if m["level"] >= 3 else "#111827",
+                      text=f"{m['label']}  ·  {m['chance']:.0f}% chance this beat")
+        c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill="#4b5563", width=w - 12,
+                      text=(f"{poss_word(m['by'])} {m['sub']}: pain {m['pain']} against what she can bear {m['resist']}"
+                            + (f"  ·  {m['note']}" if m["note"] else "")))
+
+    def _grips(self, f):
+        """The hold panel: who holds which of her parts and with what, the grips she has, a pin's count, and how
+        far she is from each other fighter (window.hold_panel)."""
+        lines = grip_lines(f)
+        self._show(self.gp, bool(lines))
+        if not lines:
+            return
+        c, w = self.gp, PIC + 2 * COL
+        c.delete("all")
+        y = 2
+        for text, col in lines:
+            t = c.create_text(6, y, anchor="nw", text=text, fill=col, width=w - 12,
+                              font=("Segoe UI", 8, "bold" if text.startswith(("Held", "Pinned by")) else "normal"))
+            y = c.bbox(t)[3] + 2
+        c.configure(height=y + 2)
 
     def _pain(self, f):
         """The two pain gauges under her energy bar (window.pain_gauge): overall (what she feels now: blows sting and
@@ -428,6 +494,9 @@ class FighterCard(ttk.Frame):
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
         self._taps(f)
         self._pain(f)
+        self._tap_meter(f)
+        self._grips(f)
+        self._order()
 
     def draw_one(self, f):
         """Without Pillow (or before her pictures are in): one picture, every part on it."""
@@ -471,6 +540,7 @@ class FighterCard(ttk.Frame):
                 line = "#2563eb" if calib else "#9ca3af"
                 c.create_line(lx, ly, ax, ay, fill=line, width=2 if calib else 1)
                 c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline="#111827")
+                self._ring(c, f, part, ax, ay)
                 self._label(c, side, lx, ly, part, dmg, res, calib)
         if f["out"]:
             c.create_text(COL + PIC / 2, top + 14, text="OUT", font=("Segoe UI", 14, "bold"), fill="#991b1b")
@@ -493,6 +563,9 @@ class FighterCard(ttk.Frame):
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
         self._taps(f)
         self._pain(f)
+        self._tap_meter(f)
+        self._grips(f)
+        self._order()
 
     def _label(self, c, side, lx, ly, part, dmg, res, calib):
         name = short(part)
