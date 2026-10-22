@@ -1395,6 +1395,18 @@ def resolve(engine, b):
             if len(contacts) > 1 and (len(str(flavor or "")) > 90 or len(contacts) > len(merged)):
                 bits = [f"{(c[3] or 'pressure').split(',')[0]} on her {c[0].lower()}" for c in contacts]
                 flavor = ", ".join(bits[:-1]) + " and " + bits[-1]
+        if not manual and act == "hold_start":
+            # (since build 260) the hold as bodies can do it: a push with nothing behind her goes, one limb on
+            # several parts splits its pressure (engine.shape_hold: holds.backstop, holds.grip_share)
+            contacts, gone = engine.shape_hold(att, dfn, contacts, against=b.get("pinned_against") or "")
+            if gone:
+                # (the words rebuilt from the grips that are left: one limb's parts said together)
+                by_limb = {}
+                for c in contacts:
+                    by_limb.setdefault((c[3] if len(c) > 3 and c[3] else "a grip").split(",")[0], []).append(c[0].lower())
+                bits = [f"{w} on her " + (" and ".join(ps) if len(ps) < 3 else ", ".join(ps[:-1]) + " and " + ps[-1])
+                        for w, ps in by_limb.items()]
+                flavor = (", ".join(bits[:-1]) + " and " + bits[-1]) if len(bits) > 1 else bits[0]
         if not manual and act != "pin":
             flavor = _unrolled_words(engine, "hold", att, flavor)
         res = engine.start_holds(att, dfn, contacts, flavor, pin=(act == "pin"), move=move_info, enforce=not manual)

@@ -1132,6 +1132,73 @@ def hold_panel_check():
     return problems
 
 
+def holds_real_check():
+    """Build 260, from the user's build-259 Ripples vs Nerine log: a hold as bodies can do it (holds.backstop: a
+    chest pressing a standing fighter in the open goes; on the ground or in a bear hug it stays; holds.grip_share:
+    one hold, one body's strength), the grip told after the blow that came first, "harmlessly" gone when it hurt,
+    the "familiar" clause and the director's "submission opening" mended, and keeping her feet checked as shown."""
+    import director
+    problems = []
+    hits = [{"part": "Twin Tails", "severity": "crushing", "with": "her chest, pressed on it"},
+            {"part": "Right Shoulder", "severity": "crushing", "with": "her chest"},
+            {"part": "Lower Back", "severity": "crushing", "with": "her forepaws, digging in"},
+            {"part": "Left Forearm Fin", "severity": "crushing", "with": "her twin tails, binding them"},
+            {"part": "Right Forearm Fin", "severity": "firm", "with": "her twin tails, binding them"}]
+
+    def hold(down=False, wrap=False, only_chest=False):
+        s = H.session(1, fighters="Ripples,Nerine")
+        e = s.eng
+        if down:
+            e.downed["Nerine"], e.facing["Nerine"] = 0, "face-down"
+        hs = [dict(h) for h in hits]
+        if wrap:
+            hs[2] = {"part": "Belly", "severity": "crushing", "with": "her arms, wrapped round her middle, hauling her back"}
+        if only_chest:
+            hs = hs[:2]
+        res, ids = director.resolve(e, {"attacker": "Ripples", "defender": "Nerine", "action": "hold_start",
+                                        "flavor": "chest on her back", "hits": hs})
+        return e, res, [e.holds[i] for i in ids]
+    e, res, hs = hold()
+    if any("chest" in h.with_part for h in hs) or len(hs) != 3:
+        problems.append(f"a chest pressing a standing fighter in the open stayed in the hold: {[(h.part, h.with_part) for h in hs]}")
+    if sum(h.power for h in hs) > 60:
+        problems.append(f"the hold's grips aren't shared out: {sum(h.power for h in hs):.0f} pressure in all")
+    if "chest" in str(res.get("flavor")) or "twin tails on her left forearm fin and right forearm fin" not in str(res.get("flavor")):
+        problems.append(f"the hold's words still tell the dropped press, or repeat the limb: {res.get('flavor')!r}")
+    e, res, hs = hold(down=True)
+    if not any("chest" in h.with_part for h in hs) or len(hs) > 4:
+        problems.append(f"on the ground the chest press should stay (and at most 4 grips): {[(h.part, h.with_part) for h in hs]}")
+    e, res, hs = hold(wrap=True)
+    ch = [h for h in hs if "chest" in h.with_part]
+    if not ch or max(h.power for h in ch) > 12:
+        problems.append(f"in a bear hug the chest should stay as the anvil at a share: {[(h.part, h.with_part, round(h.power)) for h in hs]}")
+    try:
+        hold(only_chest=True)
+        problems.append("a hold that is only chest presses on a standing fighter went on")
+    except ValueError as x:
+        if "nothing behind her" not in str(x):
+            problems.append(f"the chest-only hold was refused for something else: {x}")
+    s = H.session(2, fighters="Ripples,Nerine")
+    n = s.narrator
+    n.progress = None
+    n.species_of = {"Ripples": "Buizel", "Nerine": "Buizel"}
+    n._grips_beat, n.grips, n._pov_marks, n._hurt_now, n._strike_parts = {}, [], [], set(), ["Twin Tails"]
+    n._blow_then_grip = ("Ripples", "Nerine", "Aqua Jet", ["twin tails", "lower back"], ["her forepaws, digging in"])
+    text = ("Ripples eyed her.\n\nHer grip on Nerine was tight, her forepaws dug into her lower back.\n\nRipples "
+            "coiled to unleash her Aqua Jet.\n\nAs Ripples charged, the water hit, rippling harmlessly off her.\n\n"
+            "Nerine grunted.")
+    got = n._engine_mends(text).split("\n\n")
+    if got[3:4] != ["Her grip on Nerine was tight, her forepaws dug into her lower back."] or "harmlessly" in got[2]:
+        problems.append(f"the grip wasn't put after the blow, or 'harmlessly' stayed: {got}")
+    out = n._last_scrub("It was a familiar sensation, but today it felt heavier. The charge would secure a submission opening.")
+    if "It was a sensation" in out or not out.startswith("Today it felt heavier") or "submission opening" in out:
+        problems.append(f"the familiar clause or the game words weren't mended: {out!r}")
+    if not n.STAYED_UP_SAID.search("Her knee buckled and she forced herself straight.") or \
+            n.STAYED_UP_SAID.search("She drew herself up to her full height and held there."):
+        problems.append("keeping her feet isn't told apart from standing tall")
+    return problems
+
+
 def engine_mends_check():
     """Build 259 (narration.engine_mends, interlude.retold_cut), from the build-254 Ripples vs Nocturne log: the
     prose put right against the engine: "the Buizel" told of the Absol, a grip told on a part it isn't on, the held
@@ -1489,6 +1556,13 @@ def main(argv):
         probs = match_distance_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 255 match state: how far apart they are, the opening told as the opening  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "holds real" for w in want):
+        t = time.time()
+        probs = holds_real_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 260 holds real: a backstop for every press, grips shared, the grip after the blow, mends  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "engine mends" for w in want):

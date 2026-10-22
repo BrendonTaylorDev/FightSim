@@ -4307,6 +4307,24 @@ class Narrator:
         # pairs whose hold really did end or was shaken loose this beat (so a "let go" between them is right)
         self._grips_ended = {(x.get("attacker"), x.get("defender")) for x in self._all_dicts(bundle)
                              if x.get("type") in ("hold_end", "pin_broken", "pin_left") and x.get("attacker")}
+        # (since build 260) who nearly went down and stayed up this beat (the story must show it: the coverage check),
+        # and a blow followed by a grip from the same fighter on the same one (the grip is told after the blow:
+        # narration.engine_mends.order)
+        self._stayed_up = [(a.get("defender"), (a.get("stayed_up") or {}).get("manner")) for a in actions
+                           if isinstance(a, dict) and a.get("stayed_up") and a.get("defender")]
+        self._blow_then_grip = None
+        for i_, a_ in enumerate(actions):
+            if not isinstance(a_, dict) or a_.get("type") != "instant" or a_.get("dodged") or not a_.get("move"):
+                continue
+            g_ = next((x for x in actions[i_ + 1:] if isinstance(x, dict) and x.get("type") in ("hold_start", "grapple_start")
+                       and x.get("attacker") == a_.get("attacker") and x.get("defender") == a_.get("defender")), None)
+            if g_:
+                self._blow_then_grip = (a_["attacker"], a_["defender"], str((a_.get("move") or {}).get("name") or ""),
+                                        [str(p.get("part") or "").lower() for p in g_.get("parts") or []
+                                         if isinstance(p, dict)],
+                                        [str(p.get("with") or "").lower() for p in g_.get("parts") or []
+                                         if isinstance(p, dict)])
+                break
         # (since build 259) every grip of this beat, held or let go: (holder, held) -> her parts in it (lowercase), for
         # the engine mends (narration.engine_mends: the grip on the right part, the right one holding)
         self._grips_beat = {}
@@ -10839,6 +10857,14 @@ class Narrator:
             elif tm[2] != "tap" and not self._shown_out(full):
                 issues.append(f"it never showed {tm[0]} blacking out in {poss(tm[1])} {tm[3]} (it counts as tap "
                               f"{tm[4]} of {tm[5]}): she goes limp a moment, {tm[1]} lets go, and she comes round")
+        for who_, manner_ in (getattr(self, "_stayed_up", None) or []) if coverage else ():
+            # (since build 260) the blow nearly took her off her feet and she stayed up: the story has to show it
+            full = (prior or "") + "\n" + text
+            if who_ and not self.STAYED_UP_SAID.search(full):
+                from display import WAYS as ways_
+                issues.append(f"it never showed {who_} nearly going down from the blow and staying up: she "
+                              f"{ways_['keeps_feet'].get(manner_, 'staggers and stays up')}. Show the legs nearly "
+                              f"going and her keeping her feet")
         sev = getattr(self, "_must_event", None)
         if sev and coverage:
             full = ((prior or "") + "\n" + text).lower()
@@ -14260,6 +14286,11 @@ class Narrator:
         if horns and max(horns) == 1:   # one horn in the whole fight: "the roots of her horns" is her horn
             text = re.sub(r"\b((?:her|its|the) (?:\w+ )?)horns\b", r"\1horn", text)
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))\*?(?:Continue with the next part|Next part)[.!]?\*?\s*", r"\1", text)
+        # (since build 260) the director's game words in the story ("to knock Nerine off balance and secure a
+        # submission opening"): said as a fighter would think it
+        text = re.sub(r"(?i)\b(a|an|the) (?:submission|sub) (?:opening|window|chance)\b",
+                      lambda m: ("an" if m.group(1).lower() in ("a", "an") else m.group(1)) + " opening for a hold", text)
+        text = re.sub(r"(?i)\b(?:her|the) tap count\b", "the times she had given in", text)
         # (since build 258) the model talking about the text, not telling it ("And now, to continue from where you
         # left off:", the last line of an interlude in the build-254 Ripples vs Nocturne log): the line goes
         text = re.sub(r"(?mi)^[ \t]*[*_]?(?:and )?(?:now,? )?(?:to |let'?s |i'?ll |i will )?(?:continue|continuing|"
@@ -14292,6 +14323,11 @@ class Narrator:
         # a smell or a feeling "familiar" from before the fight (there is no before, narration.old_memories): the word
         # goes ("a familiar and comforting aroma" -> "a comforting aroma"; "a smell she knew well" -> "a smell")
         if not n.get("old_memories"):
+            # (since build 260) a clause that says nothing but "familiar" goes whole, not just the word ("It was a
+            # familiar sensation, but today it felt heavier" left "It was a sensation"): what comes after it stays
+            text = re.sub(r"(?m)(^|(?<=[.!?…]\s))(?:It|This|That) (?:was|is|felt|felt like) (?:a |an |the )?familiar "
+                          r"\w+(?: \w+)?(?:,? (?:but|and|yet|though) (\w)|[.!…][ \t]*)",
+                          lambda m: m.group(1) + (m.group(2).upper() if m.group(2) else ""), text)
             text = re.sub(r"(?i)\b(a|the) familiar and (\w+) (aroma|smell|scent|sensation|feeling)\b", r"\1 \2 \3", text)
             text = re.sub(r"(?i)\b(a) familiar (aroma|smell|scent)\b",
                           lambda m: m.group(1) + ("n " if m.group(2)[0].lower() in "aeiou" else " ") + m.group(2), text)
@@ -14529,6 +14565,14 @@ class Narrator:
                 self.progress(f"cut {cut} sentence{'s' if cut > 1 else ''} that told an event a second time")
         return text
 
+    # her legs nearly going under a blow and her staying up (the keeps_feet ways: stagger, a knee buckling, a sway,
+    # locked legs)
+    STAYED_UP_SAID = re.compile(r"(?i)\b(?:stagger\w*|stumbl\w*|buckl\w*|sway\w*|tottered|teeter\w*|reel\w*|"
+                                r"wobbl\w*|lurch\w*|(?:legs?|knees?) (?:nearly |almost )?(?:went|gave|giving|going|"
+                                r"folded|dipped|bent|sagged)|locked (?:her|both) (?:legs|knees)|kept (?:her|to her) feet|"
+                                r"stay(?:ed|s)? (?:up|on her feet|standing)|nearly (?:went down|fell|touched down)|"
+                                r"forced herself (?:straight|upright|up)|on her feet still|still (?:on her feet|standing))\b")
+
     # a grip told closing on (or bearing on) a part: "whipped around Nocturne's right knee", "the pressure on her knee"
     _GRIP_ON = re.compile(r"(?i)\b(?:wrap\w*|wound|coil\w*|clamp\w*|lock\w*|closed|tighten\w*|squeez\w*|grip\w*|"
                           r"cinch\w*|hook\w*|whipp\w*|lash\w*|twist\w*|crank\w*|pressure|squeeze|hold|vice|vise)"
@@ -14684,9 +14728,37 @@ class Narrator:
                 elif hit:
                     last_named = None
             paras[k] = " ".join(sents)
+        bg = getattr(self, "_blow_then_grip", None)
+        if bg and cfg.get("order", True):
+            # (since build 260) a grip told before the blow that came first ("Her grip on Nerine was tight" two
+            # paragraphs before the Aqua Jet it follows): that paragraph goes after the one where the blow lands
+            a, d, mv, gparts, gwith = bg
+            kinds = story_blocks.kind_of(mv) if mv else set()
+            mw = [w.lower()[:5] for w in re.findall(r"[A-Za-z]+", mv) if len(w) > 3]
+            if "charge" in kinds or re.search(r"(?i)jet|rush|charge|tackle|ram", mv):
+                mw += ["charg", "lung", "rush", "surg", "slamm"]
+            nouns = {p.split()[-1] for p in gparts if p} | {w for w_ in gwith for w in re.findall(r"[a-z]+", w_)
+                                                            if len(w) > 3 and w not in ("with", "into", "round")}
+            blow = re.compile(r"(?i)\b(?:" + "|".join(map(re.escape, mw)) + r")\w*") if mw else None
+            grip = re.compile(r"(?i)\b(?:grip\w*|hold\w*|wrapp\w*|clamp\w*|lock\w*|bound|bind\w*|pinn\w*)\b")
+            land = re.compile(r"(?i)\b(?:hit|hits|struck|slamm\w*|crash\w*|landed|impact|connect\w*|smash\w*|drove|"
+                              r"broke over|caught her)\b")
+            if blow:
+                gi = next((k for k, p in enumerate(paras) if grip.search(p) and not blow.search(p)
+                           and any(re.search(r"\b" + re.escape(x) + r"\b", p.lower()) for x in nouns)), None)
+                bi = next((k for k, p in enumerate(paras) if blow.search(p)), None)
+                if gi is not None and bi is not None and gi < bi:
+                    li = next((k for k in range(bi, len(paras)) if land.search(paras[k])), None)
+                    if li is not None and len({sides[k] for k in range(gi, li + 1)}) == 1:
+                        paras.insert(li, paras.pop(gi))
+                        fixed[0] += 1
+        if cfg.get("harmless", True) and (getattr(self, "_strike_parts", None) or []):
+            # a blow that did damage told as glancing off "harmlessly" (a not-very-effective Aqua Jet that still
+            # hurt her): the word goes
+            paras = [re.sub(r"(?i)[ \t]+harmlessly\b", "", p) for p in paras]
         if fixed[0] and self.progress:
             self.progress(f"{fixed[0]} sentence{'s' if fixed[0] > 1 else ''} put right against the engine (who is who, "
-                          f"which part is held, who holds)")
+                          f"which part is held, who holds, what came first)")
         return "\n\n".join(paras)
 
     def pov_labels(self, text):

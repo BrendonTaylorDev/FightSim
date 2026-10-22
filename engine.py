@@ -5291,6 +5291,11 @@ class Engine:
             if why:
                 raise ValueError(f"the {key} can't go on as described: {why}. Grip with what she has: "
                                  f"{', '.join(a.parts)}")
+        if enforce:
+            # (since build 260) a press with nothing behind her goes (holds.backstop), as in any hold
+            kept_, gone_ = self.shape_hold(a.name, d.name, [(p, 1.0, 0.0, w) for p, w in grips], share=False)
+            if gone_:
+                grips = [(p, w) for p, w in grips if p not in gone_]
         if enforce and cfg.get("invented_fit", True):
             # (since build 258) a hold named for a part grips that part: a "standing knee lock" on her left shoulder
             # (the build-254 Ripples vs Nocturne log) is refused, and the director names it for what it grips
@@ -7713,6 +7718,68 @@ class Engine:
             return text
         bits = [f"{st.get('with') or 'pressure'} on her {str(st['part']).lower()}" for st in started]
         return ", ".join(bits[:-1]) + (" and " if len(bits) > 1 else "") + bits[-1]
+
+    # what pushes rather than grips (a press with it needs something behind her to push against), what can wrap round
+    # her and haul her into it, and the parts of her body a wrap round her takes in
+    # (her weight is not one: bearing down on a fighter, gravity is what pushes back)
+    PUSH_WITH = re.compile(r"(?i)\b(?:chest|belly|stomach|body|torso|hips?|side|flank|shoulders?|back|"
+                           r"knees?|elbows?|head|forehead|brow|horn)\b")
+    GRIP_WITH = re.compile(r"(?i)\b(?:paws?|forepaws?|hands?|claws?|arms?|forearms?|forelegs?|tails?|coils?|jaws?|"
+                           r"teeth|fangs|legs?|hind legs|thighs|wings?|talons?|beak|fingers|crook|weight)\b")
+    WRAP_WORDS = re.compile(r"(?i)\b(?:around|round|wrapp\w*|wound|encircl\w*|hugg\w*|lock\w*|clasp\w*|cinch\w*|"
+                            r"squeez\w*|hauling|pulling|crush\w*)\b")
+    WRAP_REGIONS = ("chest", "belly", "back_up", "back_low", "shoulder", "neck", "head")
+
+    def shape_hold(self, attacker, defender, contacts, against="", share=True):
+        """holds.backstop and holds.grip_share (since build 260): a hold as bodies can really do it. Returns (the
+        contacts to use, [the parts whose press was dropped]).
+        - backstop: a press with something that only pushes (her chest, her weight, a knee, her head) hurts only with
+          something behind the one pressed to push her against: the ground she is down on, scenery she is driven
+          into (or named in pinned_against), or the holder's own arms, tails or legs wrapped round her body hauling
+          her into it (a bear hug: the chest is the anvil, at anvil_share of the pressure). Otherwise the press is
+          dropped: a chest against the back of a standing fighter in the open is contact, not a grip.
+        - grip_share: one limb on several parts splits its pressure (each x 1 / n ** same_limb); every grip after
+          the first is a lesser one (x second); at most max_grips grips."""
+        hcfg = self.rules.get("holds") or {}
+        bcfg, scfg = hcfg.get("backstop") or {}, hcfg.get("grip_share") or {}
+        d = self.get(defender)
+        out, dropped = list(contacts), []
+
+        def with_of(c):
+            return str(c[3] if len(c) > 3 else "")
+        if bcfg.get("enabled", True) and d is not None:
+            push = [c for c in out if self.PUSH_WITH.search(with_of(c)) and not self.GRIP_WITH.search(with_of(c))]
+            backed = d.name in self.downed or bool(str(against or "").strip()) or d.name in self.pressed
+            if push and not backed:
+                wrapped = any(self.GRIP_WITH.search(with_of(c)) and self.WRAP_WORDS.search(with_of(c))
+                              and body_region(d.part(c[0]).name) in self.WRAP_REGIONS for c in out if c not in push)
+                share = float(bcfg.get("anvil_share", 0.5))
+                if wrapped:
+                    out = [(c[0], c[1] * share) + tuple(c[2:]) if c in push else c for c in out]
+                else:
+                    dropped = [c[0] for c in push]
+                    out = [c for c in out if c not in push]
+                    if not out:
+                        raise ValueError(
+                            f"{attacker} can't press {d.name} with {', '.join(with_of(c) or 'her body' for c in push)}: "
+                            f"{d.name} is on her feet with nothing behind her to be pushed against. Wrap her up (arms, "
+                            f"tails or legs round her body), drive her into something first, or take her down")
+        if share and scfg.get("enabled", True) and len(out) > 1:
+            def limb(c):
+                w = with_of(c).lower()
+                m = self.GRIP_WITH.search(w) or self.PUSH_WITH.search(w)
+                return m.group(0).rstrip("s") if m else w
+            counts = {}
+            for c in out:
+                counts[limb(c)] = counts.get(limb(c), 0) + 1
+            exp, second = float(scfg.get("same_limb", 0.5)), float(scfg.get("second", 0.7))
+            out = [(c[0], c[1] * (counts[limb(c)] ** -exp if limb(c) else 1.0) * (1.0 if i == 0 else second))
+                   + tuple(c[2:]) for i, c in enumerate(out)]
+            cap = int(scfg.get("max_grips", 4) or 0)
+            if cap and len(out) > cap:
+                dropped += [c[0] for c in out[cap:]]
+                out = out[:cap]
+        return out, dropped
 
     def start_holds(self, attacker, defender, contacts, flavor="", pin=False, move=None, enforce=False):
         """Several holds at once, e.g. a pin: weight on the chest, teeth in the neck, knees in the sides.
