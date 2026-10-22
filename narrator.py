@@ -2482,6 +2482,7 @@ class Narrator:
         self.absent_words = []      # names and species of fighters who are NOT in this fight at all: never mentioned
         self.posture_start = {}     # fighter -> posture when this beat began (from the engine)
         self.posture_end = {}       # fighter -> posture when it ends
+        self.gap_card = ""          # how far apart they are, start and end of the beat (engine.gap_text, card form)
         self._no_electric = False   # True when this beat's moves have nothing electric in them
         self._getup_tries = None    # how many tries a get-up this beat takes (1 = no failed attempts)
         self._strike_parts = []     # parts hit by strikes this beat (not pin pressure)
@@ -4577,6 +4578,19 @@ class Narrator:
                                     + (" (no longer a reason now, just a stubbornness she can't explain, or a plea "
                                        "for it to stop on its own)" if n_ >= 3 else "")
                                     + ". She does NOT tap this beat."))
+                    if e.get("breaking") is not None:
+                        # tap.overwhelm: the gripped part is wrecked; she is holding out the last beats before it breaks her
+                        stage = {"last": "the LAST of it: almost nothing left to refuse with; every tell says she "
+                                         "is about to give in, and she drags herself back from it one more time",
+                                 "cracking": "CRACKING: the refusals cost more than before, the tells come faster and "
+                                             "bigger, and for a moment she nearly gives in"}.get(
+                            e.get("breaking"), "the FIRST of it: she still fights it hard, but the wrecked part has "
+                                               "started to win")
+                        # tap.overwhelm: the gripped part is wrecked; she is holding out the last beats before it breaks her
+                        lines.append(f"  - AT HER BREAKING POINT: her {parts} is wrecked, and her resistance is breaking "
+                                     f"down. This beat: {stage}. Show it, worse than the beat before and not yet the "
+                                     f"end. She still does NOT tap this beat, and nobody in the story knows how "
+                                     f"long she can last.")
                     if self._hold_exchange():
                         lines.append(f"  - She may answer {e['attacker']} if spoken to, or speak first: one short "
                                      f"line through her teeth (a refusal, a 'no', her name), or nothing.")
@@ -12231,6 +12245,8 @@ class Narrator:
                 pos += "; " + ({"shallow": "in shallow water", "deep": "in deep water"}.get(wet[w]) or "on land")
             where.append(f"{w}: {pos or 'as before'}")
         lines.append("- WHERE: " + " | ".join(where))
+        if getattr(self, "gap_card", ""):
+            lines.append("- DISTANCE: " + self.gap_card)
         if grips:
             lines.append("- CONTACTS (all on at the end of the beat): " + "; ".join(
                 f"{self._own_with(g[0], g[3]) if g[3] else poss(g[0]) + ' grip'} -> {poss(g[1])} {str(g[2]).lower()}"

@@ -898,7 +898,7 @@ class Engine:
     _SNAP_EXTRA = ("encouraged", "ever_down", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
                    "injury_amt", "lying_at", "lying_on", "burn_spot", "_story_prev", "_story_now", "_story_pinned", "_story_turned",
                    "_tac_status", "_last_event", "_forced_event", "_overbalanced", "_rock_open", "_slow_not_cold",
-                   "_last_manhandle", "last_pin_shape", "fight_record", "game_plans")
+                   "_last_manhandle", "last_pin_shape", "fight_record", "game_plans", "gap", "_gap_before")
     # ...those of them that __init__ sets up: put back to this when a snapshot or save doesn't have them (never removed)
     _SNAP_INIT = {"_last_event": None, "_forced_event": None, "fight_record": {}, "game_plans": {}}
     # scratch for one attack or one beat (set fresh before it is read), or the session and its settings: never undone
@@ -6663,6 +6663,126 @@ class Engine:
             rows.append(f"{lead}. " + "; ".join(bits))
         return "INJURY REPORT (what each will feel when it's over): " + " | ".join(rows)
 
+    # ---------- how far apart they are (narration.match_state.distance) ----------
+    GAP_STEPS = ("locked", "close", "near", "far")
+    GAP_LOOK = {"locked": "LOCKED TOGETHER (a grip, a grab or a pin joins them: no space between them at all)",
+                "close": "IN REACH of each other (close enough to strike without taking a step)",
+                "near": "A FEW STRIDES APART (a step or a lunge is needed before anything but a ranged move can land)",
+                "far": "WELL APART (a run across the ground lies between them)"}
+    GAP_SHORT = {"locked": "locked together", "close": "in reach", "near": "a few strides apart", "far": "well apart"}
+
+    def _gap_cfg(self):
+        return ((self.rules.get("narration") or {}).get("match_state") or {})
+
+    def _gap_on(self):
+        cfg = self._gap_cfg()
+        return bool(cfg.get("enabled", True) and cfg.get("distance", True))
+
+    @staticmethod
+    def _gap_key(a, b):
+        return "|".join(sorted((a, b)))
+
+    def _gap_joined(self, a, b):
+        """True when a grip, a grab or a pin joins the two of them."""
+        return (any({h.attacker, h.defender} == {a, b} for h in self.holds.values())
+                or any(p["defender"] in (a, b) and ({a, b} - {p["defender"]}) <= set(self.pin_members(p))
+                       for p in self.pins.values()))
+
+    def gap_of(self, a, b):
+        """How far apart two fighters are now: locked, close, near or far (narration.match_state.distance)."""
+        if self._gap_joined(a, b):
+            return "locked"
+        start = str(self._gap_cfg().get("start", "near"))
+        return (getattr(self, "gap", None) or {}).get(self._gap_key(a, b)) or (start if start in self.GAP_STEPS else "near")
+
+    def note_gap(self, results, events=()):
+        """Work out how far apart each pair of fighters ends this beat from what the beat resolved, so the story
+        never has her 'close the gap' on someone already in reach, or strike from across the ground with a bite. It
+        only reads what happened: a blow that lands or is slipped (not a ranged one) leaves them in reach, a throw or a
+        launch puts a few strides between them, a breather opens a little room, a grip or a pin locks them together,
+        and breaking out of one leaves them in reach. A ranged move changes nothing: it crosses whatever gap there is."""
+        if not self._gap_on():
+            return
+        cfg = self._gap_cfg()
+        names = [f.name for f in self.active()]
+        gap = self.__dict__.setdefault("gap", {})
+        self._gap_before = {self._gap_key(a, b): self.gap_of(a, b) for i, a in enumerate(names) for b in names[i + 1:]}
+        now = dict(self._gap_before)
+
+        def put(a, b, state):
+            if a and b and a != b and a in names and b in names:
+                now[self._gap_key(a, b)] = state
+
+        for r in results or ():
+            t, a, d = r.get("type"), r.get("attacker"), r.get("defender")
+            if t == "breather" and cfg.get("breather_room", True):
+                who = r.get("focus")
+                for o in names:
+                    k = self._gap_key(who, o) if who and o != who else None
+                    # she gets her breath back by giving herself room, unless she is down or pinned where she lies
+                    if k in now and now[k] == "close" and who not in self.downed and not self.pinned_by(who):
+                        now[k] = "near"
+                continue
+            if t in ("grapple_start", "hold_start", "pin_start"):
+                put(a, d, "locked")
+                continue
+            if t == "reposition" and not r.get("resisted"):
+                put(a, d, "close")
+                continue
+            if t != "instant" or not isinstance(d, str) or a == d or r.get("self_move") or r.get("status_move"):
+                continue
+            launch = str(r.get("launch") or "")
+            mv = r.get("move") if isinstance(r.get("move"), dict) else {}
+            full = (self.find_move(a, mv.get("name")) if a in names and mv.get("name") else None) or mv
+            ranged = bool(mv) and self.is_ranged(full)
+            for dn in [x.strip() for x in d.split(",")] if "," in d else [d]:
+                if launch in ("thrown", "launched"):
+                    put(a, dn, "near")
+                elif r.get("environment") or ranged:
+                    continue      # (a fall where she stands, or a move that crosses the gap: the gap stays)
+                else:
+                    put(a, dn, "close")
+        for e in events or ():
+            t = e.get("type")
+            if t == "hold_end" and (e.get("broke_free") or e.get("shaken")) or t == "pin_broken" or (
+                    t == "pin_progress" and e.get("struggle") == "escape"):
+                put(e.get("attacker"), e.get("defender"), "close")
+        for k in list(now):
+            a, b = k.split("|", 1)
+            if self._gap_joined(a, b):
+                now[k] = "locked"
+            elif now[k] == "locked":
+                now[k] = "close"      # a grip that has ended leaves them right there, in reach
+        gap.update(now)
+
+    def gap_text(self, card=False, now_only=False):
+        """DISTANCE: how far apart each pair is now and, when it changed, how far apart they were when the beat began.
+        "" when it is off or there is nobody to be apart from. card: the short form for the beat card."""
+        if not self._gap_on():
+            return ""
+        names = [f.name for f in self.active()]
+        before = {} if now_only else getattr(self, "_gap_before", None) or {}
+        rows = []
+        for i, a in enumerate(names):
+            for b in names[i + 1:]:
+                k, now = self._gap_key(a, b), self.gap_of(a, b)
+                was = before.get(k, now)
+                words = self.GAP_SHORT if card else self.GAP_LOOK
+                rows.append(f"{a} and {b}: " + (f"{'started' if card else 'at the start of this beat they were'} "
+                                                f"{self.GAP_SHORT[was]}; {'now' if card else 'now they are'} {words[now]}"
+                                                if was != now else words[now]))
+        if not rows:
+            return ""
+        if card:
+            return " | ".join(rows)
+        if now_only:
+            # (for the director: a bite or a claw from a few strides off means closing in first; a ranged move doesn't)
+            return "DISTANCE NOW: " + " | ".join(rows) + "."
+        return ("DISTANCE (where they are from each other, tracked by the program from what has happened; certain): "
+                + " | ".join(rows) + ". Nobody already in reach 'closes the gap', 'crosses the distance' or charges in "
+                "from across the ground; nobody a few strides off lands a bite, a claw or a blow without first covering "
+                "that ground.")
+
     # ---------- the fight's story so far: key moments and what decided it (the end-of-fight summary) ----------
     @staticmethod
     def new_chronicle():
@@ -9282,13 +9402,6 @@ class Engine:
                 ceiling = min(ceiling, float(ccl.get("start", 0.2)) + float(ccl.get("per_beat", 0.1)) * max(0, beats - 2))
                 ceiling *= max(0.0, 1.0 - float(ccl.get("health_hold", 0.6)) * s_ / 100.0)
             top = float(tcfg.get("max", 0.85))
-            ocfg = tcfg.get("overwhelm") or {}
-            if ocfg.get("enabled", True) and pain >= float(ocfg.get("ratio", 4.0)) * resist:
-                # OVERWHELMED (since build 254): pain many times past what she can bear is past any stubbornness:
-                # the slow climb of the ceiling no longer holds her up (pain 754 against a resistance of 10 rolled
-                # under a 50% ceiling, beat after beat, and she never tapped)
-                top = max(top, float(ocfg.get("ceiling", 0.85)))
-                ceiling = max(ceiling, top)
             tap = min(ceiling, max(0.0, over / float(tcfg.get("span", 120))))
             st0 = self.zero_stage(d)
             if st0 and tap > 0:
@@ -9318,12 +9431,40 @@ class Engine:
                 # likely to bear her down first than to make her give in standing (upright.standing_tap_mult; a hold
                 # that carries her weight, upright.supporting, isn't damped)
                 tap *= float(ucfg.get("standing_tap_mult", 0.35))
+            key_ = f"{a}|{name}|{min(h.id for h in hs)}"
+            # THE BREAKING POINT (tap.overwhelm, since build 254): a gripped part in horrible condition (devastated or
+            # worse) with the pain past what she can bear is a tap that is coming. She holds out hold_out beats
+            # first, fighting it with everything (no tap at all, so the pain, the struggle and the refusals get told),
+            # and after that it is all but certain (chance). It keeps counting while the same fighter holds her.
+            ocfg = tcfg.get("overwhelm") or {}
+            breaking, stage_ = None, None
+            if ocfg.get("enabled", True) and over > 0 and dmg[0] >= float(ocfg.get("part_damage", 300)):
+                br = d.learned.get("breaking")
+                if not br or br[0] != a or int(br[2]) < self.turn - 1 or len(br) < 4:
+                    # how long she can hold out comes from her: the more of her strength is left (and an adrenaline
+                    # surge), the longer, with a little luck in it (hold_min to hold_max beats)
+                    lo, hi = int(ocfg.get("hold_min", 2)), int(ocfg.get("hold_max", 4))
+                    will = min(1.0, (s_ / 100.0) * surge + (0.25 if s_ > 0 else 0.0))
+                    n_ = lo + (hi - lo) * will + self.rng.uniform(-0.6, 0.6)
+                    br = [a, self.turn, self.turn, max(lo, min(hi, int(round(n_))))]
+                br[2] = self.turn
+                d.learned["breaking"] = br
+                held_ = self.turn - int(br[1])
+                breaking = max(0, int(br[3]) - held_)     # beats she still holds out
+                if breaking > 0:
+                    # how far her resistance has broken down: the first beat of it, the last, or in between
+                    stage_ = "first" if held_ == 0 else "last" if breaking == 1 else "cracking"
+                    tap = 0.0
+                    d.learned["tap_limit"] = key_      # (the beats she holds out are her beat of holding on)
+                else:
+                    tap = max(tap, float(ocfg.get("chance", 0.95)))
+            else:
+                d.learned.pop("breaking", None)
             tap_part = self._tap_part(d, sorted(hs, key=lambda h: -(d.parts[h.part].damage if h.part in d.parts
                                                                    else 0.0)))
             spent = tap_part is None
             if spent:
                 tap = po = 0.0
-            key_ = f"{a}|{name}|{min(h.id for h in hs)}"
             # (tap.spent_no_grace: with no health left there is nothing to hold on through: no grace beat)
             first_over = tap > 0 and d.learned.get("tap_limit") != key_ and not (
                 d.health <= 0 and tcfg.get("spent_no_grace", True))
@@ -9347,7 +9488,7 @@ class Engine:
                     ev_ = {"type": "tap_resist", "attacker": a, "defender": dn, "submission": name,
                            "parts": [h.part for h in hs], "choke": choke and air >= near * endure,
                            "over": over >= 0, "pain": round(pain), "resist": round(resist),
-                           "beats_held": beats, "refusals": refusals, "spent": spent}
+                           "beats_held": beats, "refusals": refusals, "spent": spent, "breaking": stage_ if breaking else None}
                     ev_.update(self._tap_tells(d, refusals, over, resist, ev_["choke"]))
                     events.append(ev_)
             if not how:
@@ -10222,7 +10363,10 @@ class Engine:
             stage = "near the end: one of them has very little left"
         elif low < 50:
             stage = "late: the damage is telling, and every exchange costs something that will not come back"
-        elif high < 92 or self.turn > 4:
+        elif high < 92 or (self.turn > 4 and (high < 97 or self.turn > 8 or not (self._gap_cfg().get("enabled", True)
+                                                                 and self._gap_cfg().get("fresh_is_early", True)))):
+            # (a few beats in with both of them all but untouched is still the opening, not the middle:
+            # narration.match_state.fresh_is_early)
             stage = "the middle: both have been hurt, neither is close to finished"
         else:
             stage = "early: both are close to fresh and still finding each other out"
@@ -10583,7 +10727,7 @@ class Engine:
 
     def narrator_condition(self):
         text = self.condition_summary() + ("\n" + self.weather_text() if getattr(self, "weather", None) else "")
-        for extra in (self.wear_text(), self.movement_text(), self.hurt_where_text()):
+        for extra in (self.wear_text(), self.movement_text(), self.hurt_where_text(), self.gap_text()):
             if extra:
                 text += "\n" + extra
         if getattr(self, "arena_marks", None):
@@ -10738,6 +10882,9 @@ class Engine:
                             f"{poss_word(p['defender'])} ")
                          + f"struggles every beat. Keep it going with 'breather' (or 'hold_adjust' to bear down); "
                          f"the pinner does NOT start another pin. {p['defender']} may also strike {' or '.join(crew)} with a free limb.")
+        gap = self.gap_text(now_only=True)
+        if gap:
+            lines.append(gap)
         return "\n".join(lines)
 
     # ---------- save / load ----------

@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-22 build 254-guided (unbearable pain in a hold is no longer held under the slow tap ceiling)"
+VERSION = "2026-10-22 build 255-guided (the breaking point: a wrecked part in a hold holds out a few beats, as long as her strength lets her, then the tap is near certain; the engine tracks how far apart they are)"
 
 HELP = """
 =============================================================================================
@@ -1233,6 +1233,7 @@ class Session:
             if f.eliminated and f.name not in getattr(self, "_was_in", set()) and not self.eng.has_hurt_anyone(f.name)
             for w in (f.name, self.eng.species(f)) if w]
         self.narrator.posture_end = {f.name: self.eng.posture_text(f.name, short=True) for f in self.eng.active()}
+        self.narrator.gap_card = self.eng.gap_text(card=True)   # how far apart they are, for the beat card
         self.narrator.scene_cfg = self.eng.scene_cfg   # the arena's own words (ground, place, ambience)
         self.narrator.broken_heads = self.eng._broken_heads()   # what has broken: nobody stands on it any more
         # who is in the water (None / "shallow" / "deep", from where the director placed her): nobody swims on land
@@ -1601,6 +1602,10 @@ class Session:
         self.state_check()
         self.eng.record_beat(results, also)   # key moments and the strength track, for the end-of-fight summary
         self.eng.record_inner(results)        # what each fighter has learned this fight (narration.rich.inner)
+        try:
+            self.eng.note_gap(results, also)  # how far apart they end the beat (narration.match_state.distance)
+        except Exception as e:
+            note_failure("working out how far apart the fighters are", e)
         for e in also:  # blows landed inside a pin are real attacks too: the story may refer back to them
             if e.get("type") == "hold_end" and e.get("broke_free"):
                 self.recent_attacks.append(f"{e['defender']}: wrenched free of {poss_name(e['attacker'])} hold")

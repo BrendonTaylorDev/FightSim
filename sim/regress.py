@@ -495,6 +495,7 @@ def _taps_check(director, P):
     e.rules["finish"]["submission"]["tap"]["climb"]["start"] = 1.0
     rolled = []
     for _ in range(12):
+        e.turn += 1           # (beats go by: since build 255 a wrecked part first holds out a few of them)
         evs = e._tap_out_tick()
         rolled += [ev["type"] for ev in evs]
         if any(t in ("tap_count", "tap_out") for t in rolled):
@@ -1038,9 +1039,9 @@ def low_health_check():
 
 
 def tap_overwhelm_check():
-    """Build 254 (tap.overwhelm): pain many times past her resistance is not held under the slow-climbing ceiling (the
-    user's fight: pain 754 against a resistance of 10 rolled at 50%, and she never tapped); a fresh fighter's ceiling
-    still climbs as before."""
+    """Build 254 (tap.overwhelm, the breaking point): a gripped part in horrible condition does not make her tap at
+    once: she holds out a few beats, how many from her strength left (no tap roll at all, and the narrator is told she is at her breaking point),
+    then the tap is near certain. A part not yet that bad keeps the slow climb."""
     s = H.session(5, fighters="Nerine,Ripples")
     e, problems = s.eng, []
     a, d = e.get("Nerine"), e.get("Ripples")
@@ -1048,33 +1049,76 @@ def tap_overwhelm_check():
     e.downed["Ripples"] = 0
     e.facing["Ripples"] = "sitting up"
     e.start_submission(a.name, d.name, "standing armbar")
-    for h in e.holds.values():
-        h.turns_active = 3
-    d.learned["tap_limit"] = None
     seen = []
 
-    def chances(on):
+    def beat(dmg):
         seen.clear()
-        e.rules["finish"]["submission"]["tap"].setdefault("overwhelm", {})["enabled"] = on
+        e.turn += 1
+        for h in e.holds.values():
+            h.turns_active += 1
+            d.parts[h.part].damage = dmg
         real = e._chance
         e._chance = lambda p, what, *a_, **k: (seen.append(p) if "tapping out" in what else None) or False
         try:
-            for h in e.holds.values():
-                d.learned["tap_limit"] = None
-                d.learned.pop("tap_limit", None)
-            e._tap_out_tick()
+            evs = e._tap_out_tick()
         finally:
             e._chance = real
-        return list(seen)
+        return (max(seen) if seen else 0.0), next((x for x in evs if x.get("type") == "tap_resist"), None)
 
-    for h in e.holds.values():
-        d.parts[h.part].damage = 400.0
-    d.health = -d.max_health * 0.5     # (far below zero, as in the log: no grace beat to hold on through)
-    on, off = chances(True), chances(False)
-    if not on or max(on) < 0.8:
-        problems.append(f"overwhelming pain was still held under the climbing ceiling: chances {on} (off: {off})")
-    if off and max(off) > 0.5:      # (0.3 at beat 3, times the below-zero stage)
-        problems.append(f"with tap.overwhelm off the ceiling did not climb as before: {off}")
+    d.health = d.max_health * 0.3
+    beat(120.0)                      # (the hold's first beats: a hurt part, nowhere near wrecked)
+    beat(120.0)
+    got = [beat(400.0) for _ in range(6)]
+    if got[0][0] > 0 or got[1][0] > 0:
+        problems.append(f"she could tap at once on a wrecked part: chances {[g[0] for g in got]}")
+    if not (got[0][1] and got[0][1].get("breaking")):
+        problems.append(f"the beats she holds out are not marked as her breaking point: {got[0][1]}")
+    n = int(d.learned["breaking"][3])
+    stages = [g[1].get("breaking") for g in got[:n] if g[1]]
+    if not 2 <= n <= 4 or stages[0] != "first" or stages[-1] != "last" or any(x != "cracking" for x in stages[1:-1]):
+        problems.append(f"the holding-out beats ({n}) don't go first ... last: {stages}")
+    if any(g[0] > 0 for g in got[:n]) or got[n][0] < 0.9:
+        problems.append(f"after holding out, the tap is not near certain: chances {[g[0] for g in got]}")
+    e.rules["finish"]["submission"]["tap"]["overwhelm"]["enabled"] = False
+    off = beat(400.0)[0]
+    if off >= 0.9:
+        problems.append(f"with tap.overwhelm off the slow climb no longer caps it: {off}")
+    return problems
+
+
+def match_distance_check():
+    """Build 255 (narration.match_state): the engine tracks how far apart the fighters are from what each beat
+    resolved, says it to the narrator and the director, and survives an undo snapshot; a fresh fight a few beats in
+    is still told as its opening."""
+    s = H.session(7)
+    e, problems = s.eng, []
+    N, R = "Nocturne", "Ripples"
+    if e.gap_of(N, R) != "near":
+        problems.append(f"before anything has happened they are {e.gap_of(N, R)}, not a few strides apart")
+    e.note_gap([{"type": "instant", "attacker": N, "defender": R, "move": {"name": "Slash", "target": "targeted"}}])
+    if e.gap_of(N, R) != "close":
+        problems.append(f"a blow that landed left them {e.gap_of(N, R)}, not in reach")
+    if "a few strides apart; now they are IN REACH" not in e.gap_text():
+        problems.append("the narrator's note does not say how far apart they were when the beat began: " + e.gap_text())
+    if "DISTANCE NOW" not in e.director_view():
+        problems.append("the director is not told how far apart they are")
+    e.note_gap([{"type": "breather", "focus": R}])
+    if e.gap_of(N, R) != "near":
+        problems.append(f"a breather taken in reach left them {e.gap_of(N, R)}")
+    e.note_gap([{"type": "instant", "attacker": R, "defender": N, "launch": "thrown", "move": {"name": "x"}}])
+    if e.gap_of(N, R) != "near":
+        problems.append(f"a throw left them {e.gap_of(N, R)}, not a few strides apart")
+    e.note_gap([{"type": "instant", "attacker": R, "defender": N, "move": {"name": "Water Gun", "target": "spread"}}])
+    if e.gap_of(N, R) != "near":
+        problems.append(f"a ranged move changed the gap to {e.gap_of(N, R)}")
+    e.rules["narration"]["match_state"]["enabled"] = False
+    if e.gap_text() or "DISTANCE" in e.director_view():
+        problems.append("match_state off still says the distance")
+    e.rules["narration"]["match_state"]["enabled"] = True
+    e.turn = 6
+    st = e.story_state()
+    if st and not st["stage"].startswith("early"):
+        problems.append(f"two untouched fighters at beat 6 are told as: {st['stage']}")
     return problems
 
 
@@ -1234,11 +1278,18 @@ def main(argv):
         print(f"{'FAIL' if probs else 'ok  '}  build 252 log fixes: steered blows, plain-body type, mends, whose grip, export gauges  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
+    if not want or any(w in "match distance" for w in want):
+        t = time.time()
+        probs = match_distance_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 255 match state: how far apart they are, the opening told as the opening  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
     if not want or any(w in "tap overwhelm" for w in want):
         t = time.time()
         probs = tap_overwhelm_check()
         failed += bool(probs)
-        print(f"{'FAIL' if probs else 'ok  '}  build 254 tap overwhelm: unbearable pain is not capped by the slow climb  ({time.time() - t:.1f}s)")
+        print(f"{'FAIL' if probs else 'ok  '}  build 255 tap breaking point: holds out a few beats on a wrecked part (from her strength), then near-certain  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "log fixes 253 body slips" for w in want):
