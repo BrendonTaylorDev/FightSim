@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-22 build 260-guided (holds as bodies can do them: a backstop for every press, one body's strength; the grip after the blow)"
+VERSION = "2026-10-22 build 261-guided (invented holds checked against what limbs can do; words match the grips; her fight against the tap every beat)"
 
 HELP = """
 =============================================================================================

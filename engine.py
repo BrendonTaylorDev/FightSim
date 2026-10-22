@@ -5292,6 +5292,10 @@ class Engine:
                 raise ValueError(f"the {key} can't go on as described: {why}. Grip with what she has: "
                                  f"{', '.join(a.parts)}")
         if enforce:
+            # (since build 261) what her limbs can really do: trapped, wrecked, already busy, out of reach, and a
+            # main grip that can be wrenched (holds.invented_check)
+            grips, _why = self.check_grips(a.name, d.name, grips, submission=True)
+        if enforce:
             # (since build 260) a press with nothing behind her goes (holds.backstop), as in any hold
             kept_, gone_ = self.shape_hold(a.name, d.name, [(p, 1.0, 0.0, w) for p, w in grips], share=False)
             if gone_:
@@ -5697,6 +5701,18 @@ class Engine:
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
         contacts = [(p, main if role == "main" else second, ramp if role == "main" else ramp2, w)
                     for p, role, w in s["contacts"]]
+        if flavor and ((self.rules.get("holds") or {}).get("invented_check") or {}).get("words", True):
+            # (since build 261) the director's words for it grip with a limb the hold doesn't use ("Nerine's twin
+            # tails wrap round her leg" for a heel hook turned with her arm and her legs): its own look is told
+            said = {lb[0] for m in re.finditer(r"\b(?:" + re.escape(a.name) + r"(?:'s|’s|'|’)|her|its) ((?:(?:twin|both|"
+                                               r"left|right|front|hind)\s+)?[a-z]+)", str(flavor), re.I)
+                    for lb in [self.grip_limb(a, m.group(1))] if lb}
+            real = {lb[0] for _p, w in [(c[0], c[3]) for c in contacts] for lb in [self.grip_limb(a, w)] if lb}
+            free = {lb[0] for lb in [self.grip_limb(a, x) for x in re.split(r",| and ", str(s["free"].get(self.body_plan(a), "")
+                                                                                       if isinstance(s.get("free"), dict) else ""))] if lb}
+            hers = {lb[0] for p, _r, _w in s["contacts"] for lb in [self.grip_limb(a, p)] if lb}
+            if said - real - free - hers:
+                flavor = ""
         res = self.start_holds(a.name, d.name, contacts, flavor or s["look"], pin=False, enforce=enforce)
         for hid in res.get("hold_ids") or []:
             if hid in self.holds:
@@ -7729,6 +7745,105 @@ class Engine:
     WRAP_WORDS = re.compile(r"(?i)\b(?:around|round|wrapp\w*|wound|encircl\w*|hugg\w*|lock\w*|clasp\w*|cinch\w*|"
                             r"squeez\w*|hauling|pulling|crush\w*)\b")
     WRAP_REGIONS = ("chest", "belly", "back_up", "back_low", "shoulder", "neck", "head")
+
+    # what a grip's words grip with: (words, the key it is counted under, how many of it she has, a test for her parts)
+    GRIP_LIMBS = (
+        (r"\b(?:jaws?|teeth|fangs|mouth|bite|bit)\b", "jaws", 1, r"\b(?:jaw|muzzle|beak)\b"),
+        (r"\bhind (?:paws?|legs?|feet|foot)\b|\b(?:feet|foot)\b", "feet", 2, r"\b(?:foot|hind paw)\b"),
+        (r"\b(?:fore ?paws?|paws?|hands?|claws?|fingers)\b", "paws", 2, r"(?:paw|hand|claw)\b"),
+        (r"\b(?:arms?|forearms?|forelegs?|elbows?)\b", "arms", 2, r"\b(?:arm|forearm|foreleg)\b"),
+        (r"\b(?:legs?|thighs?|knees?|hock)\b", "legs", 2, r"\b(?:thigh|knee|hock|leg)\b"),
+        (r"\btails?\b", "tails", 1, r"\btails?\b"),
+        (r"\bcoils?\b", "coils", 3, r"\b(?:coil|tail|body)\b"),
+        (r"\bwings?\b", "wings", 2, r"\bwing\b"),
+        (r"\btalons?\b", "talons", 2, r"\b(?:talon|foot)\b"),
+        (r"\bhorn\b", "horn", 1, r"\bhorn\b"),
+    )
+    # body regions near enough together for one limb (or a pair) to grip both
+    NEAR_REGIONS = (("head", "neck", "shoulder", "chest", "back_up", "fore_up"),
+                    ("chest", "belly", "back_up", "back_low", "fore_up", "fore_low", "hind_up", "shoulder"),
+                    ("back_low", "belly", "hind_up", "hind_low", "tail"),
+                    ("shoulder", "fore_up", "fore_low"))
+    SMALL_MAIN = re.compile(r"(?i)\b(?:ear|nose|cheek|eye|whiskers?|nostril|lip)\b")
+
+    def grip_limb(self, f, with_):
+        """What a grip's words grip with: (key, how many she has of it, her parts it is), or None (a press, or no
+        limb named). 'both paws' or a pair named counts as two; a side named ('her right paw') keeps to that side.
+        Twin tails count as one pair (two)."""
+        w = str(with_ or "").lower()
+        for rx, key, cap, part_rx in self.GRIP_LIMBS:
+            if re.search(rx, w):
+                mine = [n for n in f.parts if re.search(part_rx, n.lower()) and not (key == "paws" and "hind" in n.lower())]
+                side = next((s for s in ("left", "right") if re.search(r"\b" + s + r"\b", w)), None)
+                if side:
+                    mine = [n for n in mine if n.lower().startswith(side)] or mine
+                    cap = 1
+                if key == "tails" and any(re.search(r"\b(?:twin|both|two)\b", x) for x in [w] + [n.lower() for n in mine]):
+                    cap = 2
+                return key, cap, mine
+        return None
+
+    def check_grips(self, attacker, defender, grips, submission=False):
+        """holds.invented_check (since build 261): a hold the director wrote (or a submission it invented) checked
+        against what bodies can do, grip by grip (grips = [(her part, what grips it)]). Returns (the grips kept, why
+        each one dropped was dropped); raises ValueError when none is left or the submission's main grip can't be.
+        - trapped: a limb caught in the other one's grip can't grip back with it.
+        - wrecked: a limb at ruined_at damage or worse (devastated) can't take hold.
+        - busy: one limb grips one part, a pair (both paws, twin tails) two; a limb already gripping someone else in
+          another hold counts.
+        - reach: one limb's (or one pair's) parts must be near each other (not her neck and her foot).
+        - main grip: a submission works a joint, a limb, the back, the tail or the neck; an ear, a nose or a cheek
+          can't be its main grip."""
+        cfg = ((self.rules.get("holds") or {}).get("invented_check") or {})
+        if not cfg.get("enabled", True):
+            return list(grips), []
+        a, d = self.get(attacker), self.get(defender)
+        trapped = {h.part for h in self.holds.values() if h.attacker == d.name and h.defender == a.name}
+        busy = {}
+        for h in self.holds.values():
+            if h.attacker == a.name and h.defender != d.name:
+                lb = self.grip_limb(a, h.with_part)
+                if lb:
+                    busy[lb[0]] = busy.get(lb[0], 0) + 1
+        ruined = float(cfg.get("ruined_at", 300))
+        kept, why, used, where = [], [], dict(busy), {}
+        for i, (p, w) in enumerate(grips):
+            lb = self.grip_limb(a, w)
+            if submission and i == 0 and cfg.get("main_grip", True) and self.SMALL_MAIN.search(str(p)):
+                raise ValueError(f"a submission can't be worked through {poss_word(d.name)} {str(p).lower()}: its main "
+                                 f"grip goes on a joint, a limb, her back, her tail or her neck")
+            if not lb:
+                kept.append((p, w))
+                continue
+            key, cap, mine = lb
+            if cfg.get("trapped", True) and mine and all(m in trapped for m in mine):
+                why.append(f"{poss_word(a.name)} {key} {'is' if key in ('jaws', 'horn') else 'are'} caught in "
+                           f"{poss_word(d.name)} grip: she can't grip her {str(p).lower()} with them")
+                continue
+            if cfg.get("wrecked", True) and mine and all(a.parts[m].damage >= ruined for m in mine):
+                why.append(f"{poss_word(a.name)} {key} {'is' if key in ('jaws', 'horn') else 'are'} too badly hurt to "
+                           f"take hold of anything")
+                continue
+            if cfg.get("busy", True) and used.get(key, 0) >= cap:
+                why.append(f"{poss_word(a.name)} {key} {'is' if cap == 1 else 'are'} already gripping"
+                           + (" someone else" if busy.get(key) else f" {', '.join(where.get(key, []))}")
+                           + f": nothing left to grip her {str(p).lower()} with")
+                continue
+            if cfg.get("reach", True) and key != "coils" and where.get(key):
+                r_new = body_region(d.part(p).name)
+                far = [q for q in where[key] if not any(body_region(d.part(q).name) in g and r_new in g
+                                                        for g in self.NEAR_REGIONS)]
+                if far:
+                    why.append(f"{poss_word(a.name)} {key} can't reach both {poss_word(d.name)} {far[0].lower()} and "
+                               f"her {str(p).lower()} at once")
+                    continue
+            used[key] = used.get(key, 0) + 1
+            where.setdefault(key, []).append(str(p))
+            kept.append((p, w))
+        if not kept:
+            raise ValueError(f"that hold can't go on as described: {'; '.join(why) or 'nothing grips her'}. Grip with "
+                             f"what {a.name} has free")
+        return kept, why
 
     def shape_hold(self, attacker, defender, contacts, against="", share=True):
         """holds.backstop and holds.grip_share (since build 260): a hold as bodies can really do it. Returns (the

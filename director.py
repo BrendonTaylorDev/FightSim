@@ -655,6 +655,82 @@ def _steered_words(engine, dfn, b, old, aim):
     return b
 
 
+HEAD_BLOW = re.compile(r"(?i)\b(?:head ?butt\w*|skull bash|head smash|iron head|head slam|zen headbutt|ram(?:s|med)? "
+                       r"(?:her|its) head)\b")
+# what a head swung by a fighter on her feet reaches on another on her feet: not her legs, feet or tail
+HEAD_REACH = ("head", "neck", "chest", "shoulder", "belly", "back_up", "fore_up", "fore_low")
+
+
+def _head_reach(engine, att, dfn, b):
+    """moves.head_reach (since build 261): a head butt thrown by a fighter on her feet at one on her feet lands where
+    a head can get to (the build-260 log: Nerine head-butted Ripples' left foot and launched her). A part out of
+    reach becomes her chest."""
+    from engine import body_region
+    if not ((engine.rules.get("moves") or {}).get("head_reach") or {}).get("enabled", True):
+        return b
+    said = f"{b.get('move') or ''} {b.get('improvised_name') or ''} {b.get('flavor') or ''}"
+    if not HEAD_BLOW.search(said) or att in engine.downed or dfn in engine.downed:
+        return b
+    try:
+        d = engine.get(dfn)
+        low = [p for p in [b.get("part")] + [h.get("part") for h in b.get("hits") or [] if isinstance(h, dict)]
+               if p and body_region(_fit_part(engine, dfn, p)) not in HEAD_REACH]
+        to = _fit_part(engine, dfn, "chest") if "Chest" in d.parts or any("chest" in n.lower() for n in d.parts) else None
+    except ValueError:
+        return b
+    if not low or not to:
+        return b
+    old = [_fit_part(engine, dfn, p) for p in low]
+    b = dict(b, part=to if b.get("part") in low else b.get("part"))
+    if b.get("hits"):
+        b["hits"] = [dict(h, part=to) if h.get("part") in low else h for h in b["hits"] if isinstance(h, dict)]
+    return _steered_words(engine, dfn, b, old, to)
+
+
+def _words_to_parts(engine, dfn, b):
+    """director.words_to_parts (since build 261): the director's words name one part of hers and the action
+    another (told to work her right hip, it wrote "wrapping tightly around Nerine's left knee"; "Brick Break slams
+    Ripples' head" on her right hip): the engine resolves the action's parts, so the words are put right to them.
+    Only her parts named as hers ("Nerine's left knee") are changed, never what the attacker uses."""
+    from engine import body_region
+    if not ((engine.rules.get("director") or {}).get("words_to_parts") or {}).get("enabled", True):
+        return b
+    try:
+        d = engine.get(dfn)
+        parts = [_fit_part(engine, dfn, p) for p in [b.get("part")] + [h.get("part") for h in b.get("hits") or []
+                                                                     if isinstance(h, dict)] if p]
+    except ValueError:
+        return b
+    parts = list(dict.fromkeys(parts))
+    if not parts:
+        return b
+    words = sorted({w for n in d.parts for w in [n.lower(), n.lower().split()[-1]]}
+                   | {"head", "knee", "foot", "leg", "arm", "hip", "back", "face", "neck", "tail", "tails"},
+                   key=len, reverse=True)
+    rx = re.compile(r"\b" + re.escape(d.name) + r"(?:'s|’s|'|’)\s+((?:(?:left|right)\s+)?(?:"
+                    + "|".join(re.escape(w) for w in words) + r"))\b", re.I)
+    regions = {body_region(p) for p in parts}
+    out = {}
+    for key in ("flavor", "intent"):
+        v = b.get(key)
+        if not isinstance(v, str):
+            continue
+
+        def fix(m):
+            said = m.group(1)
+            try:
+                got = _fit_part(engine, dfn, said)
+            except ValueError:
+                return m.group(0)
+            if got in parts or body_region(got) in regions:
+                return m.group(0)
+            return m.group(0)[:m.start(1) - m.start(0)] + parts[0].lower()
+        new = rx.sub(fix, v)
+        if new != v:
+            out[key] = new
+    return dict(b, **out) if out else b
+
+
 def _same_part(engine, who, asked, name):
     try:
         return _fit_part(engine, who, asked) == name
@@ -1057,6 +1133,13 @@ def resolve(engine, b):
             # (moved onto the part being worked: its words were put right with it)
             flavor = short_phrase(b.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
             intent = b.get("intent", intent)
+    if not manual and dfn and act in ("strike", "combo", "hold_start"):
+        # (since build 261) a head butt reaches what a head can reach, and the words name the parts the engine
+        # resolves (director.words_to_parts)
+        b2 = _words_to_parts(engine, dfn, _head_reach(engine, att, dfn, b))
+        if b2.get("flavor") != b.get("flavor"):
+            flavor = short_phrase(b2.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
+        b = b2
     started = ()
     if not manual and act in ("grapple", "hold_start", "pin", "submission", "throw", "slam", "drag"):
         # confusion spoils a grab, a pin or a throw as surely as a blow: she may hurt herself instead
@@ -1396,10 +1479,17 @@ def resolve(engine, b):
                 bits = [f"{(c[3] or 'pressure').split(',')[0]} on her {c[0].lower()}" for c in contacts]
                 flavor = ", ".join(bits[:-1]) + " and " + bits[-1]
         if not manual and act == "hold_start":
+            # (since build 261) what her limbs can really do (engine.check_grips: holds.invented_check)
+            ok_, why_ = engine.check_grips(att, dfn, [(c[0], c[3] if len(c) > 3 else "") for c in contacts])
+            if why_:
+                keep_ = {p for p, _w in ok_}
+                contacts = [c for c in contacts if c[0] in keep_]
+                b["_grips_dropped"] = why_
+        if not manual and act == "hold_start":
             # (since build 260) the hold as bodies can do it: a push with nothing behind her goes, one limb on
             # several parts splits its pressure (engine.shape_hold: holds.backstop, holds.grip_share)
             contacts, gone = engine.shape_hold(att, dfn, contacts, against=b.get("pinned_against") or "")
-            if gone:
+            if gone or b.get("_grips_dropped"):
                 # (the words rebuilt from the grips that are left: one limb's parts said together)
                 by_limb = {}
                 for c in contacts:
@@ -1556,7 +1646,7 @@ def _juggle_next(engine, b, res, actions, i, limit):
     launch = str(b.get("launch") or "none").lower()
     if launch in ("none", "staggered", ""):
         launch = str(res.get("auto_launch") or "")
-    if launch != "launched" or (b.get("landing") or []):
+    if launch != "launched" or (b.get("landing") or []) or _low_blow(engine, res):
         return False
     who = res.get("defender")
     if not who or engine.get(who).eliminated or engine.pinned_by(engine.get(who).name):
@@ -1584,6 +1674,15 @@ def _next_on(actions, i, who):
             and str(nxt.get("move") or "none").lower() != "none")
 
 
+def _low_blow(engine, res):
+    """moves.low_launch: the blow's main hit is on her lower legs or feet (it can sweep her, not launch her)."""
+    from engine import body_region
+    if not ((engine.rules.get("moves") or {}).get("low_launch") or {}).get("enabled", True):
+        return False
+    hits = [h for h in res.get("hits") or [] if isinstance(h, dict) and h.get("part")]
+    return bool(hits) and body_region(str(hits[0]["part"])) == "hind_low"
+
+
 def _landing(engine, b, res):
     """A strike that knocks down, throws, or launches: the defender crashes into the arena (environmental hits)."""
     if (res.get("type") != "instant" or res.get("environment") or not res.get("hits") or res.get("confused_self_hit")
@@ -1597,6 +1696,10 @@ def _landing(engine, b, res):
         launch = res["auto_launch"]  # the move itself knocks down, throws, or launches (moves.json)
         fell = bool(res.get("fell_from_air"))  # the throw roll failed: she was knocked out of the air, not thrown
     impacts = [x for x in (b.get("landing") or []) if isinstance(x, dict)]
+    if launch in ("thrown", "launched") and not b.get("_manual") and not res.get("auto_launch") and _low_blow(engine, res):
+        # (since build 261) a blow to her feet or lower legs takes her legs out from under her: she goes down where
+        # she stood, not up into the air (moves.low_launch)
+        launch, res["swept"] = "knocked down", True
     if launch in ("none", "staggered", "") and not impacts:
         return None
     if launch in ("none", "staggered", ""):
@@ -1853,6 +1956,16 @@ def resolve_many(engine, actions):
         actions = [actions]
     if not actions:
         raise ValueError("a beat needs at least one action")
+    # (since build 261) the same action sent twice in a row (the build-260 log told "Ripples wrenches at the grip"
+    # twice): it happens once
+    once = []
+    for x in actions:
+        if once and isinstance(x, dict) and isinstance(once[-1], dict) and x.get("action") in ("breather", "struggle") \
+                and all(str(x.get(k) or "").strip().lower() == str(once[-1].get(k) or "").strip().lower()
+                        for k in ("attacker", "defender", "action", "flavor")):
+            continue
+        once.append(x)
+    actions = once
     # a hold followed by a pin on the same fighter in one beat is really one pin: fold the hold's contacts in
     pins = {(str(b.get("attacker")).lower(), str(b.get("defender")).lower()): b for b in actions if b.get("action") == "pin"}
     merged = []

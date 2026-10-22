@@ -4239,6 +4239,7 @@ class Narrator:
         self._ongoing = any(e["type"] in ("pin_progress", "hold_ongoing") for e in bundle.get("also_this_beat", []))
         # (holder, held) -> [(part, what grips it)] for the holds still on this beat: a blow struck from inside one
         self._grips_now = {}
+        self._tap_fights = []       # (since build 261) her fight against the tap this beat, from the notes below
         for e in bundle.get("also_this_beat", []):
             if e.get("type") == "hold_ongoing":
                 self._grips_now.setdefault((e["attacker"], e["defender"]), []).append(
@@ -4314,7 +4315,7 @@ class Narrator:
                            if isinstance(a, dict) and a.get("stayed_up") and a.get("defender")]
         self._blow_then_grip = None
         for i_, a_ in enumerate(actions):
-            if not isinstance(a_, dict) or a_.get("type") != "instant" or a_.get("dodged") or not a_.get("move"):
+            if not isinstance(a_, dict) or a_.get("type") != "instant" or not a_.get("move"):
                 continue
             g_ = next((x for x in actions[i_ + 1:] if isinstance(x, dict) and x.get("type") in ("hold_start", "grapple_start")
                        and x.get("attacker") == a_.get("attacker") and x.get("defender") == a_.get("defender")), None)
@@ -4636,6 +4637,9 @@ class Narrator:
                     lines.append(f"  - HOW HARD TO TELL HER FIGHT AGAINST THE TAP ({lv} of 5; harder than the "
                                  f"lighter signs before it): {self.TAP_INTENSITY[lv]}. Show what she looks like and "
                                  f"what she thinks.")
+                    # (since build 261) the story must give it room in proportion (narration.tap_fight_shown)
+                    self.__dict__.setdefault("_tap_fights", []).append(
+                        {"who": e["defender"], "by": e["attacker"], "level": lv, "sign": reach})
                     if e.get("breaking") is not None:
                         # tap.overwhelm: the gripped part is wrecked; she is holding out the last beats before it breaks her
                         stage = {"last": "the LAST of it: almost nothing left to refuse with; every tell says she "
@@ -4667,6 +4671,8 @@ class Narrator:
                 lv = 2 if int(e.get("level") or 1) >= 2 else 1
                 sign = self.TAP_URGE.get(e.get("tell"),
                                          self.TAP_URGE["fist" if lv == 1 else "reach"]).format(spot=spot)
+                self.__dict__.setdefault("_tap_fights", []).append(
+                    {"who": e["defender"], "by": e["attacker"], "level": lv, "sign": sign})
                 lines.append(f"  - SHE FIGHTS THE URGE TO TAP: the {e['submission']} on {poss(e['defender'])} "
                              f"{parts} hurts, and some part of her already wants it to stop. "
                              + ("She is far from giving in" if lv == 1 else
@@ -10857,6 +10863,20 @@ class Narrator:
             elif tm[2] != "tap" and not self._shown_out(full):
                 issues.append(f"it never showed {tm[0]} blacking out in {poss(tm[1])} {tm[3]} (it counts as tap "
                               f"{tm[4]} of {tm[5]}): she goes limp a moment, {tm[1]} lets go, and she comes round")
+        tcfg_ = (self.rules.get("narration") or {}).get("tap_fight_shown") or {}
+        if coverage and tcfg_.get("enabled", True) and not getattr(self, "_tap_end", None):
+            # (since build 261) every beat of a submission shows her fighting the tap, and the more it hurts the more
+            # of the passage it takes: sentences[level - 1] sentences at least (narration.tap_fight_shown)
+            full = (prior or "") + "\n" + text
+            need_by = list(tcfg_.get("sentences") or [1, 2, 2, 3, 4])
+            for tf in getattr(self, "_tap_fights", None) or []:
+                need = int(need_by[max(0, min(len(need_by) - 1, int(tf["level"]) - 1))])
+                got = self._tap_fight_count(full, tf["who"])
+                if got < need:
+                    issues.append(f"it never showed {tf['who']} fighting the urge to tap enough (level {tf['level']} of 5: "
+                                  f"{self.TAP_INTENSITY[int(tf['level'])]}): {need} sentence"
+                                  f"{'s' if need > 1 else ''} of it at least, with what she looks like and what she "
+                                  f"thinks; this beat's sign: {tf['sign']}. She does NOT tap")
         for who_, manner_ in (getattr(self, "_stayed_up", None) or []) if coverage else ():
             # (since build 260) the blow nearly took her off her feet and she stayed up: the story has to show it
             full = (prior or "") + "\n" + text
@@ -14565,6 +14585,49 @@ class Narrator:
                 self.progress(f"cut {cut} sentence{'s' if cut > 1 else ''} that told an event a second time")
         return text
 
+    # her fight against the tap: the urge itself, refusing it, and the tells of it (a paw rising and pulled back, a
+    # fist clenched against it, a word swallowed)
+    TAP_FIGHT_SAID = re.compile(
+        r"(?i)\b(?:tap\w*|give in|giving in|gave in|give up|giving up|gave up|yield\w*|surrender\w*|submit\w*|"
+        r"refus\w+|won'?t (?:let|give)|not yet|hold(?:ing)? on|enough)\b|"
+        r"\b(?:paw|fist|claws?|fingers|hand|tail)\b[^.!?]{0,60}\b(?:rose|rises|rising|lift\w*|yank\w*|pull\w* back|"
+        r"dragg?\w* back|forced? (?:it )?(?:back|down)|clench\w*|squeez\w*|trembl\w*|shak\w*|hover\w*|flat)\b")
+
+    _SIGN_PAST = {"squeezes": "squeezed", "digs": "dug", "holds": "held", "makes": "made",
+                  "sets": "set", "breathes": "breathed", "gets": "got", "shuts": "shut",
+                  "works": "worked", "starts": "started", "pulls": "pulled", "lifts": "lifted", "yanks": "yanked",
+                  "is": "was", "keeps": "kept", "squeezes her": "squeezed her", "turns": "turned", "counts": "counted",
+                  "loses": "lost", "rises": "rose", "drags": "dragged", "twitches": "twitched", "stops": "stopped",
+                  "goes": "went", "swallows": "swallowed", "lifts as": "lifted as",
+                  "presses": "pressed", "stays": "stayed", "touches": "touched",
+                  "comes": "came", "hangs": "hung", "can't": "couldn't", "can": "could", "traps": "trapped", "bites": "bit", "knots": "knotted",
+                  "hangs on": "hung on", "doesn't": "didn't", "won't": "wouldn't", "falls": "fell", "has": "had", "are": "were", "it works": "it worked", "trembles": "trembled", "lies": "lay"}
+
+    def _sign_said(self, who, sign):
+        """A tap tell from the notes (present tense, about "her") as a sentence of the story about her."""
+        t = re.sub(r"\s*\([^)]*\)", "", str(sign or "")).strip(" .")
+        t = re.sub(r"\b(" + "|".join(sorted(map(re.escape, self._SIGN_PAST), key=len, reverse=True)) + r")\b",
+                   lambda m: self._SIGN_PAST[m.group(1)], t)
+        # (a plural subject's verb, "her claws dig in and hold there": but not after make, could, to or them)
+        base = {"dig": "dug", "hold": "held", "curl": "curled", "go": "went", "stay": "stayed", "dig in": "dug in"}
+        t = re.sub(r"(?<!\bmade )(?<!\bmake )(?<!\bcould )(?<!\bcan )(?<!\bto )(?<!\bthem )(?<!\bit )(?<!n't )(?<!\bthe )"
+                   r"(?<!\ba )\b(dig|hold|curl|go|stay)\b", lambda m: base[m.group(1)], t)
+        t = re.sub(r"^(?:her|she)\b", lambda m: poss(who) if m.group(0) == "her" else who, t, count=1, flags=re.I)
+        return (t[:1].upper() + t[1:] + ".") if t else ""
+
+    def _tap_fight_count(self, text, who):
+        """How many sentences of the text show her fighting the tap (TAP_FIGHT_SAID), about her or with no one else
+        named in them."""
+        names = list(getattr(self, "strengths", None) or {})
+        n = 0
+        for sent in re.split(r"(?<=[.!?…])\s+|\n+", text or ""):
+            if not self.TAP_FIGHT_SAID.search(sent):
+                continue
+            named = [x for x in names if re.search(r"\b" + re.escape(x) + r"\b", sent)]
+            if not named or who in named:
+                n += 1
+        return n
+
     # her legs nearly going under a blow and her staying up (the keeps_feet ways: stagger, a knee buckling, a sway,
     # locked legs)
     STAYED_UP_SAID = re.compile(r"(?i)\b(?:stagger\w*|stumbl\w*|buckl\w*|sway\w*|tottered|teeter\w*|reel\w*|"
@@ -14737,12 +14800,20 @@ class Narrator:
             mw = [w.lower()[:5] for w in re.findall(r"[A-Za-z]+", mv) if len(w) > 3]
             if "charge" in kinds or re.search(r"(?i)jet|rush|charge|tackle|ram", mv):
                 mw += ["charg", "lung", "rush", "surg", "slamm"]
+            # (since build 261) the words a blow of its kind is told in ("a high-pressure water blast" for Hydro Pump)
+            for k_, ws_ in (("water", ["water", "blast", "jet", "torrent", "stream", "spray"]),
+                            ("bite", ["bite", "jaws", "fang", "teeth"]), ("claw", ["claw", "rake", "slash"]),
+                            ("fire", ["flame", "fire", "blaze"]), ("ice", ["frost", "ice", "freez"]),
+                            ("electric", ["spark", "bolt", "electr"]), ("punch", ["punch", "fist", "chop"])):
+                if k_ in kinds or re.search(r"(?i)" + k_, mv):
+                    mw += ws_
             nouns = {p.split()[-1] for p in gparts if p} | {w for w_ in gwith for w in re.findall(r"[a-z]+", w_)
                                                             if len(w) > 3 and w not in ("with", "into", "round")}
             blow = re.compile(r"(?i)\b(?:" + "|".join(map(re.escape, mw)) + r")\w*") if mw else None
             grip = re.compile(r"(?i)\b(?:grip\w*|hold\w*|wrapp\w*|clamp\w*|lock\w*|bound|bind\w*|pinn\w*)\b")
             land = re.compile(r"(?i)\b(?:hit|hits|struck|slamm\w*|crash\w*|landed|impact|connect\w*|smash\w*|drove|"
-                              r"broke over|caught her)\b")
+                              r"broke over|caught her|miss\w*|dodg\w*|duck\w*|roared past|passed over|sidestep\w*|"
+                              r"shot forward|surged|burst|fired)\b")
             if blow:
                 gi = next((k for k, p in enumerate(paras) if grip.search(p) and not blow.search(p)
                            and any(re.search(r"\b" + re.escape(x) + r"\b", p.lower()) for x in nouns)), None)
@@ -16297,6 +16368,12 @@ class Narrator:
                 elif not tap_ask or (tap_really_shown(text or "") if te[2] == "tap" else self._shown_out(text or "")):
                     break
                 text = ""
+            tf_ = next((x for x in getattr(self, "_tap_fights", None) or ()
+                        if f"never showed {x['who']} fighting the urge to tap" in issue), None)
+            if tf_ and not self._tap_fight_count(text or "", tf_["who"]):
+                # (since build 261) the passage asked for still doesn't show her fighting the tap: the program's
+                # own sign of it, said plainly (narration.tap_fight_shown)
+                text = self._sign_said(tf_["who"], tf_["sign"])
             if mid and not text:
                 spot = self._tap_spot(mid[0], mid[1]).split(" or ")[0]
                 text = (f"{poss(mid[0])} paw came up and slapped {spot}, again and again; {mid[1]} felt it and let go. "

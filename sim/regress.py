@@ -1132,6 +1132,78 @@ def hold_panel_check():
     return problems
 
 
+def build_261_check():
+    """Build 261, from the user's build-260 Ripples vs Nerine log: invented holds checked against what limbs can do
+    (holds.invented_check), the director's words put right to the parts it resolves (director.words_to_parts), a
+    head butt reaching only what a head can (moves.head_reach), no launch from a blow to the feet (moves.low_launch),
+    a catalog submission told with the limbs it uses, the fight against the tap given room every beat
+    (narration.tap_fight_shown), and an action sent twice happening once."""
+    import director
+    problems = []
+
+    def fresh():
+        return H.session(1, fighters="Ripples,Nerine").eng
+
+    def hold(e, hits):
+        try:
+            res, ids = director.resolve(e, {"attacker": "Ripples", "defender": "Nerine", "action": "hold_start",
+                                            "flavor": "grabs hold", "hits": hits})
+            return [e.holds[i].part for i in ids]
+        except ValueError as x:
+            return "refused: " + str(x)
+    e = fresh()
+    if hold(e, [{"part": "Neck", "with": "both paws, squeezing"}, {"part": "Left Foot", "with": "both paws"}]) != ["Neck"]:
+        problems.append("one pair of paws gripped her neck and her foot at once")
+    e = fresh()
+    e.start_holds("Nerine", "Ripples", [("Right Paw", 15, 0, "her paws, clamped on it")])
+    if hold(e, [{"part": "Neck", "with": "her right paw"}, {"part": "Chest", "with": "her twin tails, wrapped round"}]) != ["Chest"]:
+        problems.append("a paw caught in her grip still gripped")
+    e = fresh()
+    e.get("Ripples").parts["Left Paw"].damage = e.get("Ripples").parts["Right Paw"].damage = 350
+    if "Neck" in str(hold(e, [{"part": "Neck", "with": "her paws"}, {"part": "Stomach", "with": "her twin tails, wrapped round"}])):
+        problems.append("devastated paws still took hold")
+    e = fresh()
+    e.downed["Nerine"], e.facing["Nerine"] = 0, "face-down"
+    try:
+        e.start_custom_submission("Ripples", "Nerine", "ear wrench", [("Left Ear", "her paws, twisting it")], enforce=True)
+        problems.append("an invented submission worked through her ear")
+    except ValueError as x:
+        if "main grip" not in str(x) and "its main" not in str(x):
+            problems.append(f"the ear submission was refused for something else: {x}")
+    e = fresh()
+    res, ids = director.resolve(e, {"attacker": "Ripples", "defender": "Nerine", "action": "strike", "move": "Tail Bind",
+                                    "part": "Right Hip", "flavor": "Ripples' twin tails wrap tightly around Nerine's "
+                                                                  "left knee"})
+    if "left knee" in str(res.get("flavor")) or "right hip" not in str(res.get("flavor")):
+        problems.append(f"the words still name a part the grip isn't on: {res.get('flavor')!r}")
+    e = fresh()
+    res, _ = director.resolve(e, {"attacker": "Nerine", "defender": "Ripples", "action": "strike", "move": "improvised",
+                                  "improvised_name": "Head Butt", "part": "Left Foot",
+                                  "flavor": "Nerine rams her head into Ripples' left foot"})
+    if [h.get("part") for h in res.get("hits") or []][:1] != ["Chest"]:
+        problems.append(f"a standing head butt landed on her foot: {[h.get('part') for h in res.get('hits') or []]}")
+    if not director._low_blow(e, {"hits": [{"part": "Left Foot"}]}) or director._low_blow(e, {"hits": [{"part": "Chest"}]}):
+        problems.append("a blow to the foot isn't told apart from one to the body for a launch")
+    e = fresh()
+    e.downed["Ripples"], e.facing["Ripples"] = 0, "face-up"
+    r = e.start_submission("Nerine", "Ripples", "heel hook", "Nerine's twin tails wrap tightly round Ripples' left leg")
+    if "tails" in str(r.get("flavor")):
+        problems.append(f"a heel hook turned with her arm and legs was told with her tails: {r.get('flavor')!r}")
+    n = H.session(2, fighters="Ripples,Nerine").narrator
+    if n._tap_fight_count("She fought the urge to tap, her fist clenched. Nerine leaned in. Her paw rose and she "
+                          "pulled it back.", "Ripples") != 2:
+        problems.append("the sentences showing her fighting the tap aren't counted")
+    said = n._sign_said("Ripples", n.TAP_URGE["claws"].format(spot="the ground"))
+    if said != "Ripples' claws dug into the ground and held there, and she made them stay put.":
+        problems.append(f"the program's own tap sign doesn't read right: {said!r}")
+    e = fresh()
+    acts = [{"attacker": "Ripples", "defender": "Nerine", "action": "breather", "flavor": "wrenches at the grip"}] * 2
+    res, _ = director.resolve_many(e, acts)
+    if len([r for r in res if isinstance(r, dict) and r.get("type") == "breather"]) > 1:
+        problems.append("the same breather sent twice happened twice")
+    return problems
+
+
 def holds_real_check():
     """Build 260, from the user's build-259 Ripples vs Nerine log: a hold as bodies can do it (holds.backstop: a
     chest pressing a standing fighter in the open goes; on the ground or in a bear hug it stays; holds.grip_share:
@@ -1557,6 +1629,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 255 match state: how far apart they are, the opening told as the opening  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "build 261" for w in want):
+        t = time.time()
+        probs = build_261_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 261: invented holds checked, words to parts, head reach, low launch, the tap fight shown  ({time.time() - t:.1f}s)")
+        for p in probs[:8]:
             print("      " + p)
     if not want or any(w in "holds real" for w in want):
         t = time.time()
