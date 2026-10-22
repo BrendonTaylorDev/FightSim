@@ -9281,11 +9281,19 @@ class Engine:
                 # per_beat more each beat after the second), and the more strength she has left, the lower it stays
                 ceiling = min(ceiling, float(ccl.get("start", 0.2)) + float(ccl.get("per_beat", 0.1)) * max(0, beats - 2))
                 ceiling *= max(0.0, 1.0 - float(ccl.get("health_hold", 0.6)) * s_ / 100.0)
+            top = float(tcfg.get("max", 0.85))
+            ocfg = tcfg.get("overwhelm") or {}
+            if ocfg.get("enabled", True) and pain >= float(ocfg.get("ratio", 4.0)) * resist:
+                # OVERWHELMED (since build 254): pain many times past what she can bear is past any stubbornness:
+                # the slow climb of the ceiling no longer holds her up (pain 754 against a resistance of 10 rolled
+                # under a 50% ceiling, beat after beat, and she never tapped)
+                top = max(top, float(ocfg.get("ceiling", 0.85)))
+                ceiling = max(ceiling, top)
             tap = min(ceiling, max(0.0, over / float(tcfg.get("span", 120))))
             st0 = self.zero_stage(d)
             if st0 and tap > 0:
                 # below_zero: the further below zero, the less of her is left to refuse with (stage tap_mult)
-                tap = min(float(tcfg.get("max", 0.85)), tap * float(st0.get("tap_mult", 1.0)))
+                tap = min(top, tap * float(st0.get("tap_mult", 1.0)))
             choke = any(re.search(r"(?i)neck|throat", h.part) for h in hs)
             name = next((h.sub for h in hs if h.sub), "") or ("choke" if choke else "hold")
             how, po, air, endure = None, 0.0, 0.0, 0.0

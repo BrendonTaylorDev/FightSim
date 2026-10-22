@@ -1037,6 +1037,47 @@ def low_health_check():
     return problems
 
 
+def tap_overwhelm_check():
+    """Build 254 (tap.overwhelm): pain many times past her resistance is not held under the slow-climbing ceiling (the
+    user's fight: pain 754 against a resistance of 10 rolled at 50%, and she never tapped); a fresh fighter's ceiling
+    still climbs as before."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    a, d = e.get("Nerine"), e.get("Ripples")
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.downed["Ripples"] = 0
+    e.facing["Ripples"] = "sitting up"
+    e.start_submission(a.name, d.name, "standing armbar")
+    for h in e.holds.values():
+        h.turns_active = 3
+    d.learned["tap_limit"] = None
+    seen = []
+
+    def chances(on):
+        seen.clear()
+        e.rules["finish"]["submission"]["tap"].setdefault("overwhelm", {})["enabled"] = on
+        real = e._chance
+        e._chance = lambda p, what, *a_, **k: (seen.append(p) if "tapping out" in what else None) or False
+        try:
+            for h in e.holds.values():
+                d.learned["tap_limit"] = None
+                d.learned.pop("tap_limit", None)
+            e._tap_out_tick()
+        finally:
+            e._chance = real
+        return list(seen)
+
+    for h in e.holds.values():
+        d.parts[h.part].damage = 400.0
+    d.health = -d.max_health * 0.5     # (far below zero, as in the log: no grace beat to hold on through)
+    on, off = chances(True), chances(False)
+    if not on or max(on) < 0.8:
+        problems.append(f"overwhelming pain was still held under the climbing ceiling: chances {on} (off: {off})")
+    if off and max(off) > 0.5:      # (0.3 at beat 3, times the below-zero stage)
+        problems.append(f"with tap.overwhelm off the ceiling did not climb as before: {off}")
+    return problems
+
+
 def three_tap_check():
     """Builds 247-248, from the narrated three-tap match (sim/test_fights/three_tap): no submission from inside one,
     no upright hold by a holder lying down, takedowns into a hold fit the way she lands, a coil is only the grip that
@@ -1191,6 +1232,13 @@ def main(argv):
         probs = log_fixes_252_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 252 log fixes: steered blows, plain-body type, mends, whose grip, export gauges  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "tap overwhelm" for w in want):
+        t = time.time()
+        probs = tap_overwhelm_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 254 tap overwhelm: unbearable pain is not capped by the slow climb  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "log fixes 253 body slips" for w in want):

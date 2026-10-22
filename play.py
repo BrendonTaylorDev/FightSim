@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-21 build 253-guided (no shove-back break with one lying down; heads snap only from a blow there; one rise told once; nothing favoured that isn't hurt; whose water she is wet with; thoughts marked)"
+VERSION = "2026-10-22 build 254-guided (unbearable pain in a hold is no longer held under the slow tap ceiling)"
 
 HELP = """
 =============================================================================================
