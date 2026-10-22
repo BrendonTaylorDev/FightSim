@@ -1086,6 +1086,53 @@ def tap_overwhelm_check():
     return problems
 
 
+def tap_urge_check():
+    """Build 256 (tap.urge): a hold that hurts but is nowhere near her limit shows the urge to tap now and then (a
+    small sign, easily refused, not counted as a refusal), and the narrator is told it; off, nothing shows there."""
+    s = H.session(3, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    a, d = e.get("Nerine"), e.get("Ripples")
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.downed["Ripples"] = 0
+    e.facing["Ripples"] = "sitting up"
+    e.start_submission(a.name, d.name, "standing armbar")
+
+    def beat():
+        e.turn += 1
+        for h in e.holds.values():
+            h.turns_active += 1
+            d.parts[h.part].damage = 0.0
+        return e._tap_out_tick()
+
+    urges = []
+    for h in e.holds.values():
+        h.turns_active = 0                   # (from the hold's very first beat)
+    for _ in range(5):                       # (pain up to about 0.73 of her resistance: far from her limit)
+        evs = beat()
+        if any(x.get("type") == "tap_resist" for x in evs):
+            problems.append(f"she is shown fighting not to tap while far from her limit: {evs}")
+        urges += [x for x in evs if x.get("type") == "tap_urge"]
+    if len(urges) != 5 or urges[0].get("beats_held") != 1 or {u.get("level") for u in urges} != {1, 2}:
+        problems.append(f"a submission does not show her fighting the urge every beat from the first, light then "
+                        f"heavier: {[(u.get('beats_held'), u.get('level')) for u in urges]}")
+    elif any(not u.get("tell") for u in urges) or d.learned.get("tap_refused"):
+        problems.append(f"the urge has no sign picked, or counted as a refusal: {urges}, {d.learned.get('tap_refused')}")
+    else:
+        for u in urges:
+            if u["tell"] not in s.narrator.TAP_URGE:
+                problems.append(f"the narrator has no words for the sign {u['tell']}")
+        for k in ("tap_tell_urge", "tap_tell_urge2", "tap_tell_first", "tap_tell_closer", "tap_tell_edge"):
+            missing = set(e.VARIETY[k]) - set(s.narrator.TAP_URGE) - set(s.narrator.TAP_TELLS)
+            if missing:
+                problems.append(f"signs in {k} with no words in the narrator: {sorted(missing)}")
+    e.rules["finish"]["submission"]["tap"]["urge"]["enabled"] = False
+    for h in e.holds.values():
+        h.turns_active = 1
+    if any(x.get("type") == "tap_urge" for _ in range(4) for x in beat()):
+        problems.append("with tap.urge off the urge still shows")
+    return problems
+
+
 def match_distance_check():
     """Build 255 (narration.match_state): the engine tracks how far apart the fighters are from what each beat
     resolved, says it to the narrator and the director, and survives an undo snapshot; a fresh fight a few beats in
@@ -1283,6 +1330,13 @@ def main(argv):
         probs = match_distance_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 255 match state: how far apart they are, the opening told as the opening  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "tap urge" for w in want):
+        t = time.time()
+        probs = tap_urge_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 256 tap urge: a submission shows her fighting the urge every beat, harder the nearer the tap  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "tap overwhelm" for w in want):

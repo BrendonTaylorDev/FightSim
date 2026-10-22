@@ -967,9 +967,11 @@ class Engine:
         "getup_rise": {"push": 4, "roll": 2, "lean": 3, "lurch": 2},
         "bite_rock": {"drag": 3, "shake": 2, "yank": 2, "wrench_free": 2},
         # fighting the urge to tap out (finish.submission): one sign a beat, from the set for how near she is
+        "tap_tell_urge": {"fist": 3, "claws": 2, "grit": 3, "shake_head": 2, "hiss": 2, "breathe": 2},
+        "tap_tell_urge2": {"reach": 3, "yank": 3, "fist_shake": 3, "squeeze_eyes": 2, "count": 2},
         "tap_tell_first": {"twitch": 3, "curl": 3, "word": 2, "breath": 2, "tail": 2, "eyes": 2},
-        "tap_tell_closer": {"touch": 3, "hover": 3, "pin_paw": 2, "half_word": 2, "bite": 2, "grab_ground": 2},
-        "tap_tell_edge": {"flat": 3, "stops_fighting": 3, "no_aloud": 2, "tears": 2, "hangs": 2, "laugh": 1},
+        "tap_tell_closer": {"yank_back": 3, "touch": 3, "hover": 3, "pin_paw": 2, "half_word": 2, "bite": 2, "grab_ground": 2},
+        "tap_tell_edge": {"shake_hard": 3, "flat": 3, "stops_fighting": 3, "no_aloud": 2, "tears": 2, "hangs": 2, "laugh": 1},
         "tap_reason": {"pride": 3, "anger": 3, "not_her": 3, "slip": 2, "stubborn": 2, "plea": 2},
         "tap_dark": {"grey": 3, "roar": 2, "heavy": 2, "claw": 3, "count": 2},
         "tap_holder": {"cold": 3, "respect": 3, "pity": 2, "impatient": 2, "worry": 2, "tired": 2},
@@ -9363,7 +9365,12 @@ class Engine:
             holder = self.fighters.get(str(a).lower())
             if self.winner() or (holder is not None and holder.eliminated):
                 continue      # (the match ended a moment ago, or the one holding her is out: that grip is gone)
-            if not d or d.eliminated or self.pinned_by(dn) or max(h.turns_active for h in hs) < 2:
+            if not d or d.eliminated or self.pinned_by(dn):
+                continue
+            # (the hold's first beat: nobody taps yet, but in a submission the urge is already there: tap.urge)
+            first = max(h.turns_active for h in hs) < 2
+            if first and not (any(h.sub for h in hs) and ((tcfg.get("urge") or {}).get("enabled", True)
+                                                          and (tcfg.get("urge") or {}).get("submissions", True))):
                 continue
             beats = max(h.turns_active for h in hs)
             # finish.submission.taps: a gripped part her taps have used up adds nothing toward the next tap: the
@@ -9423,6 +9430,9 @@ class Engine:
             # (for the window's pain gauge: the very numbers this check weighed, this beat)
             d.learned["sub_gauge"] = {"turn": self.turn, "pain": round(pain), "resist": round(resist),
                                       "air": round(air), "endure": round(endure), "sub": name, "by": a}
+            if first:
+                events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
+                continue
             ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
             sub_ = next((h.sub for h in hs if h.sub), "")
             if tap > 0 and dn not in self.downed and not self.has(d, "airborne") \
@@ -9491,6 +9501,10 @@ class Engine:
                            "beats_held": beats, "refusals": refusals, "spent": spent, "breaking": stage_ if breaking else None}
                     ev_.update(self._tap_tells(d, refusals, over, resist, ev_["choke"]))
                     events.append(ev_)
+                else:
+                    # (tap.urge, since build 256) nowhere near her limit, but it hurts: she is shown fighting the
+                    # urge all the same, lighter (it doesn't count as a refusal)
+                    events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
             if not how:
                 continue
             parts = [h.part for h in hs]
@@ -9717,6 +9731,29 @@ class Engine:
 
     def _tap_vary_on(self):
         return bool(((self.rules.get("narration") or {}).get("tap_build") or {}).get("vary", True))
+
+    def _tap_urge(self, d, a, name, hs, pain, resist, beats, tcfg):
+        """finish.submission.tap.urge: a hold that hurts but is nowhere near her limit (below tap.near) still shows
+        her fighting the urge to tap: in a SUBMISSION every beat it is on, from the first (urge.submissions); in any
+        other hold that hurts, from urge.from of her resistance, urge.chance of the beats. Level 1 (under half her
+        resistance): felt and held easily; level 2: it is getting to her. A list with the tap_urge event, or empty."""
+        ucfg = tcfg.get("urge") or {}
+        if not ucfg.get("enabled", True):
+            return []
+        sub = any(h.sub for h in hs) and ucfg.get("submissions", True)
+        if not sub and (beats < 2 or pain < float(ucfg.get("from", 0.3)) * resist or not self._chance(
+                float(ucfg.get("chance", 0.5)), f"{d.name} showing the urge to tap (pain {pain:.0f} against her "
+                                                f"resistance {resist:.0f})", "a sign of it", "nothing shows")):
+            return []
+        level = 1 if pain < 0.5 * resist else 2
+        ev = {"type": "tap_urge", "attacker": a, "defender": d.name, "submission": name,
+              "parts": [h.part for h in hs], "pain": round(pain), "resist": round(resist), "beats_held": beats,
+              "level": level}
+        if self._tap_vary_on():
+            used = list(d.learned.get("tap_ways") or [])
+            ev["tell"] = self.vary("tap_tell_urge" if level == 1 else "tap_tell_urge2", skip=used)
+            d.learned["tap_ways"] = (used + [ev["tell"]])[-15:]
+        return [ev]
 
     def _tap_tells(self, d, refusals, over, resist, choke):
         """narration.tap_build.vary: HOW she is shown fighting the urge to tap this beat, picked from the variety

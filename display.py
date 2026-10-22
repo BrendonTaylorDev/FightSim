@@ -1222,6 +1222,9 @@ class Display:
                 out.append(f"😖 {e['defender']} {'fights the dark' if e.get('choke') else 'refuses to tap'} in "
                            f"{poss_word(e['attacker'])} {e['submission']} (pain {e['pain']} against her resistance "
                            f"{e['resist']}, beat {e['beats_held']} of it)")
+            elif e["type"] == "tap_urge":
+                out.append(f"😣 {e['defender']} fights the urge to tap in {poss_word(e['attacker'])} {e['submission']}, "
+                           f"far from her limit (pain {e['pain']} against her resistance {e['resist']})")
             elif e["type"] == "tap_out":
                 if not self.tight():
                     out.append("")

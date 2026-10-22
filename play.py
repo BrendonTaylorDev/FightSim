@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-22 build 255-guided (the breaking point: a wrecked part in a hold holds out a few beats, as long as her strength lets her, then the tap is near certain; the engine tracks how far apart they are)"
+VERSION = "2026-10-22 build 256-guided (fighting the tap all through a submission: every beat from the first she is shown resisting it, more visceral the nearer she is)"
 
 HELP = """
 =============================================================================================

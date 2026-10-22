@@ -4578,6 +4578,12 @@ class Narrator:
                                     + (" (no longer a reason now, just a stubbornness she can't explain, or a plea "
                                        "for it to stop on its own)" if n_ >= 3 else "")
                                     + ". She does NOT tap this beat."))
+                    # how hard to tell it: past the lighter signs of tap.urge (1-2), by how near she is (3-5)
+                    lv = 5 if e.get("breaking") in ("cracking", "last") else min(5, 2 + int(e.get("stage")
+                                                                                           or min(3, n_)))
+                    lines.append(f"  - HOW HARD TO TELL HER FIGHT AGAINST THE TAP ({lv} of 5; harder than the "
+                                 f"lighter signs before it): {self.TAP_INTENSITY[lv]}. Show what she looks like and "
+                                 f"what she thinks.")
                     if e.get("breaking") is not None:
                         # tap.overwhelm: the gripped part is wrecked; she is holding out the last beats before it breaks her
                         stage = {"last": "the LAST of it: almost nothing left to refuse with; every tell says she "
@@ -4603,6 +4609,20 @@ class Narrator:
                                         "coldly, or with something like respect or pity, as fits her")
                                      + f"). She may say one short, low thing to her (to give up, not a taunt), or "
                                      f"nothing.")
+            elif e["type"] == "tap_urge":
+                parts = " and ".join(p.lower() for p in e.get("parts") or [])
+                spot = self._tap_spot(e["defender"], e["attacker"])
+                lv = 2 if int(e.get("level") or 1) >= 2 else 1
+                sign = self.TAP_URGE.get(e.get("tell"),
+                                         self.TAP_URGE["fist" if lv == 1 else "reach"]).format(spot=spot)
+                lines.append(f"  - SHE FIGHTS THE URGE TO TAP: the {e['submission']} on {poss(e['defender'])} "
+                             f"{parts} hurts, and some part of her already wants it to stop. "
+                             + ("She is far from giving in" if lv == 1 else
+                                "It is getting to her, though she is not near her limit yet")
+                             + f". Show her resisting it, with what it looks like and what she thinks. HOW HARD "
+                             f"({lv} of 5): {self.TAP_INTENSITY[lv]}. This beat, the sign of it (the program's pick; "
+                             f"in your own words, or a sign of the same weight that fits her body, never one already "
+                             f"used this fight): {sign}. She does NOT tap.")
             elif e["type"] == "tap_out":
                 parts = " and ".join(p.lower() for p in e.get("parts") or [])
                 with_ = " and ".join(e.get("with") or [])
@@ -7220,6 +7240,10 @@ class Narrator:
 
     # fighting the urge to tap (engine variety tap_tell_*): one sign a beat, nearer the tap as she weakens
     TAP_TELLS = {
+        "yank_back": "her paw rises toward {spot}, shaking, and she yanks it back down to her side, hard, as if telling "
+                     "it no",
+        "shake_hard": "her paw is shaking so hard she can't hold it still; it lifts toward {spot} and she drags it "
+                      "back by force",
         # first signs
         "twitch": "her paw twitches toward {spot} to tap, and she stops it",
         "curl": "her claws curl against {spot}, scraping, and she makes them go still",
@@ -7247,6 +7271,36 @@ class Narrator:
         "hangs": "her paw rises off {spot}, ready to fall, and stays there in the air, shaking, and doesn't fall",
         "laugh": "a broken, breathless sound comes out of her that is almost a laugh, at herself for still refusing "
                  "(only if it fits who she is; otherwise a sob she cuts off)",
+    }
+    # tap.urge: the hold hurts but she is nowhere near her limit; level 1 felt and held easily, level 2 getting to her
+    TAP_URGE = {
+        "fist": "her free paw squeezes into a fist, hard, to keep the urge to tap out of it",
+        "claws": "her claws dig into {spot} and hold there, and she makes them stay put",
+        "grit": "her jaw sets and she breathes hard through her teeth, riding it out",
+        "shake_head": "a small shake of her head, to herself: not this, not yet",
+        "hiss": "a hiss of pain gets out of her before she shuts her mouth on it",
+        "breathe": "she makes herself breathe, slow and deep, against the pain, and it works, for now",
+        "reach": "her free paw starts toward {spot}, shaking a little, and she pulls it back before it gets far",
+        "yank": "her paw lifts an inch off {spot} on its own, and she yanks it back down to her side",
+        "fist_shake": "her fist is clenched so tight it trembles, and she keeps it clenched",
+        "squeeze_eyes": "she squeezes her eyes shut and turns her face away from the pain",
+        "count": "she counts her breaths to get through it, and loses count, and starts again",
+    }
+    # how hard to tell her fight against the tap, from the first sting of a submission (1) to the edge of giving in
+    # (5): the nearer the tap, the more visceral
+    TAP_INTENSITY = {
+        1: "felt but held easily: a tight jaw, a clenched fist, a breath held; a thought of hers, if there is room "
+           "for one, that she can take this",
+        2: "it is getting to her: her paw starts to rise and she pulls it back, her breathing is harder, a sound "
+           "she can't quite keep in; a sharper thought (not yet, not to her)",
+        3: "close to her limit: her paw shakes as it rises and she yanks it back down to her side as if telling it "
+           "no; sweat, ragged breath, eyes squeezed shut, her whole body straining against the urge; her thoughts "
+           "short and fierce",
+        4: "very close: the paw shakes hard and nearly gets there before she forces it back, cries she can't keep "
+           "in, her body jerking in the hold; her thoughts breaking down to single words (no, don't, hold)",
+        5: "at the very edge: tell it viscerally and up close, the paw trembling over the tap, every part of her "
+           "screaming to give in, tears or a broken sound, the refusal costing everything; in her head nothing "
+           "left but a plea",
     }
     TAP_REASONS = {
         "pride": "pride: she will not be the one who gave up",
@@ -9291,7 +9345,7 @@ class Narrator:
                 held_side = lead_ == d_ or (lead_ not in (a_, d_) and take)
                 hold_side = lead_ == a_ or (lead_ not in (a_, d_) and act)
                 # the engine already picked how she shows refusing to tap this beat: no second sign of it here
-                sign_x = SUB_TAP_SIGN if any(x.get("type") == "tap_resist" and x.get("defender") == d_
+                sign_x = SUB_TAP_SIGN if any(x.get("type") in ("tap_resist", "tap_urge") and x.get("defender") == d_
                                              for x in also or ()) else None
                 if held_side and take:
                     side[0] = "take"
@@ -12303,6 +12357,9 @@ class Narrator:
                 elif t == "tap_resist":
                     also_.append(f"{e['defender']} REFUSES TO TAP in {poss(e['attacker'])} hold: show her fighting "
                                  f"the urge and holding on (she does not tap this beat)")
+                elif t == "tap_urge":
+                    also_.append(f"{e['defender']} FIGHTS THE URGE TO TAP in {poss(e['attacker'])} hold: show her "
+                                 f"resisting it (she is not near her limit yet, and does not tap)")
                 elif t == "tap_out" and last:
                     also_.append(f"{e['defender']} " + ("TAPS OUT, the last thing that happens: show the tap itself, "
                                                         f"and {e['attacker']} letting go; she is awake"
