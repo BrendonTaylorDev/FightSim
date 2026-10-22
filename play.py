@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-22 build 258-guided (dark window, taps really shown, holds named for what they grip, 300%+ pain)"
+VERSION = "2026-10-22 build 259-guided (the prose checked against the engine: who is who, the held part, who holds; interludes that do not retell)"
 
 HELP = """
 =============================================================================================

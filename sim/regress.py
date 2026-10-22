@@ -1132,6 +1132,58 @@ def hold_panel_check():
     return problems
 
 
+def engine_mends_check():
+    """Build 259 (narration.engine_mends, interlude.retold_cut), from the build-254 Ripples vs Nocturne log: the
+    prose put right against the engine: "the Buizel" told of the Absol, a grip told on a part it isn't on, the held
+    one given the grip; and an interlude sentence that retells the beat in other words goes."""
+    s = H.session(2, fighters="Ripples,Nocturne")
+    n, problems = s.narrator, []
+    n.progress = None
+    n.damage_by["Nocturne"]["right hip"] = 120
+
+    def run(text, grips, marks=()):
+        n._grips_beat, n.grips, n._pov_marks, n._hurt_now, n._strike_parts = grips, [], list(marks), set(), []
+        return n._engine_mends(text)
+    cases = [
+        ("She could see the wear on Nocturne. The Buizel's fur was matted with sweat and dirt.", {},
+         [("She could see the wear", "Ripples")], "Nocturne's fur was matted"),
+        ("Ripples watched Nocturne closely. The Buizel's own left forearm fin ached dully.", {},
+         [("Ripples watched", "Ripples")], "The Buizel's own left forearm fin"),
+        ("Nocturne glared. The Buizel stood tall in the water.", {}, [("Nocturne glared.", "Nocturne")],
+         "The Buizel stood tall"),
+        ("The Buizel's horn dipped. The Buizel's right hip throbbed.", {}, (), "Nocturne's horn dipped. Nocturne's right hip"),
+        ("The twin tails whipped around Nocturne's right knee, wrapping tight.",
+         {("Ripples", "Nocturne"): {"left forepaw"}}, (), "around Nocturne's left forepaw"),
+        ("Her twin tails tightened around Nocturne's right knee.", {("Ripples", "Nocturne"): {"right hock", "right thigh"}},
+         (), "around Nocturne's right hock"),
+        ("Ripples wriggled her body, trying to ease the pain, but Nocturne's grip was unyielding.",
+         {("Ripples", "Nocturne"): {"right hock"}}, (), "Nocturne wriggled her body, trying to ease the pain, but Ripples' grip"),
+        ("Nocturne's grip on the ground slipped as Ripples' hold tightened.", {("Ripples", "Nocturne"): {"left forepaw"}},
+         (), "Nocturne's grip on the ground slipped"),
+        ("She winced, putting pressure on her right knee.", {("Ripples", "Nocturne"): {"left forepaw"}}, (),
+         "pressure on her right knee"),
+    ]
+    for text, grips, marks, want in cases:
+        got = run(text, grips, marks)
+        if want not in got:
+            problems.append(f"engine mends: {text[:50]!r} became {got!r}, not {want!r}")
+    n.rules["narration"]["engine_mends"]["enabled"] = False
+    if run(cases[0][0], {}, cases[0][2]) != cases[0][0]:
+        problems.append("engine_mends off still changes the prose")
+    n.rules["narration"]["engine_mends"]["enabled"] = True
+    beat = ("The wind had picked up slightly, carrying with it the scent of the pine needles and the lake. Her left "
+            "forearm fin ached dully, but it was a distant pain, overshadowed by the thrill of the fight.")
+    inter = ("The breeze picked up again, carrying with it the scent of the pine needles and the lake. A heron lifted "
+             "off the far shore, slow wingbeats over flat water. Her left forearm fin ached dully, a distant pain, "
+             "overshadowed by the thrill of the fight. But it was nothing.")
+    got = n._drop_retold(inter, beat, 0.55)
+    if "scent of the pine" in got or "forearm fin" in got or "But it was nothing" in got or "heron" not in got:
+        problems.append(f"the retold interlude sentences weren't cut (or the new one was): {got!r}")
+    if n._drop_retold(inter, beat, 0) != inter:
+        problems.append("retold_cut 0 still cuts")
+    return problems
+
+
 def log_fixes_258_check():
     """Build 258, from the user's build-254 Ripples vs Nocturne log: a tap only counts as shown when it happens
     ("I'll make her tap." and "it was not enough" are not taps); the model's "to continue from where you left off"
@@ -1437,6 +1489,13 @@ def main(argv):
         probs = match_distance_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 255 match state: how far apart they are, the opening told as the opening  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "engine mends" for w in want):
+        t = time.time()
+        probs = engine_mends_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 259 engine mends: who is who, the held part, who holds, retold interludes  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "log 258" for w in want):

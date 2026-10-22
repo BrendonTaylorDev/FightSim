@@ -4307,6 +4307,15 @@ class Narrator:
         # pairs whose hold really did end or was shaken loose this beat (so a "let go" between them is right)
         self._grips_ended = {(x.get("attacker"), x.get("defender")) for x in self._all_dicts(bundle)
                              if x.get("type") in ("hold_end", "pin_broken", "pin_left") and x.get("attacker")}
+        # (since build 259) every grip of this beat, held or let go: (holder, held) -> her parts in it (lowercase), for
+        # the engine mends (narration.engine_mends: the grip on the right part, the right one holding)
+        self._grips_beat = {}
+        for x in self._all_dicts(bundle):
+            if x.get("type") in ("hold_start", "grapple_start", "hold_ongoing", "hold_end") and x.get("attacker") \
+                    and x.get("defender"):
+                ps = [p.get("part") for p in (x.get("parts") or x.get("hits") or []) if isinstance(p, dict)]
+                self._grips_beat.setdefault((x["attacker"], x["defender"]), set()).update(
+                    str(p).lower() for p in ps + [x.get("part")] if p)
         # someone goes out this beat (a knockout, or a pin held to the end): only then may the prose black her out
         self._ko_now = any(x.get("type") == "eliminated" or (x.get("complete") and x.get("elimination"))
                            for x in self._all_dicts(bundle))
@@ -7028,10 +7037,54 @@ class Narrator:
         text = _italic_sounds(text)
         # the same last clean-up a beat gets (meta lines, copied labels, "familiar", fragments)
         self._ko_now = False
+        # (since build 259) a sentence that retells the beat before it in other words goes (interlude.retold_cut),
+        # and the slips the engine can see are mended (narration.engine_mends)
+        text = self._drop_retold(text, story_so_far, float(cfg.get("retold_cut", 0.55) or 0))
         text = _mend_orphans(self._fit_limbs(self._last_scrub(_drop_hanging_leadins(text))))
+        text = self._engine_mends(text)
         text = re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", text)
         self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
         return text
+
+    # the words a retelling keeps when it rewords a sentence: the things and the doings, not the glue
+    _RETOLD_SKIP = frozenset("""about above after again against along also always among another around away back
+        been before behind being below beneath beside between both came could down each even ever every from have
+        here into just like little made more most much never only other over same should since some still such than
+        that their them then there these they this those though through under until upon very were what when where
+        which while with without would your her hers herself she its it's the and but for not was had has""".split())
+
+    def _drop_retold(self, text, earlier, cut):
+        """interlude.retold_cut (since build 259): an interlude sentence that says again what the story just said in
+        other words (beat 9 of the build-254 Ripples vs Nocturne log: "The breeze picked up again, carrying with it
+        the scent of the pine needles and the lake" after "The wind had picked up slightly, carrying with it the
+        scent of the pine needles and the lake") goes: cut or more of its content words (6 or more of them) are in one
+        sentence of the last part of the story, or of the interlude before it. 0 = off."""
+        if not cut or not text:
+            return text
+
+        def words(x):
+            return {w[:6] for w in re.findall(r"[a-z]+", x.lower()) if len(w) >= 4 and w not in self._RETOLD_SKIP}
+        before = [words(x) for x in re.split(r"(?<=[.!?…])\s+|\n+", _tail(earlier or "", 3000))]
+        before = [w for w in before if len(w) >= 4]
+        paras, dropped = [], 0
+        for para in text.split("\n\n"):
+            kept, gone = [], False
+            for sent in re.split(r"(?<=[.!?…])\s+", para):
+                w = words(sent)
+                if len(w) >= 6 and any(len(w & e) / len(w) >= cut for e in before):
+                    dropped, gone = dropped + 1, True
+                    continue
+                if gone and re.match(r"(?:But|And|Yet|Still|So) (?:it|that|this|they)\b", sent):
+                    dropped += 1      # ("But it was a distant ache": it leaned on the sentence just cut)
+                    continue
+                gone = False
+                kept.append(sent)
+                if len(w) >= 4:
+                    before.append(w)
+            paras.append(" ".join(kept).strip())
+        if dropped and self.progress:
+            self.progress(f"cut {dropped} interlude sentence{'s' if dropped > 1 else ''} that retold what was just said")
+        return re.sub(r"\n{3,}", "\n\n", "\n\n".join(p for p in paras if p)).strip()
 
     def _ends_line(self, a):
         """Where a fighter who was knocked down, thrown or launched ends up: usually on the ground the way the engine
@@ -13707,7 +13760,7 @@ class Narrator:
         # the last cuts can split a thought again: the marks re-paired, and narration set in italics made plain
         text = _unitalic_narration(_balance_marks(text), list(self.strengths or {}))
         text = re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", text)   # a paragraph emptied by the cuts leaves no gap
-        return re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", self.pov_labels(text))
+        return re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", self.pov_labels(self._engine_mends(text)))
 
     def _phrase_mem(self):
         """The stock-phrase memory kept across fights and runs (narration.phrase_memory), or None when it is off."""
@@ -14475,6 +14528,166 @@ class Narrator:
             if self.progress:
                 self.progress(f"cut {cut} sentence{'s' if cut > 1 else ''} that told an event a second time")
         return text
+
+    # a grip told closing on (or bearing on) a part: "whipped around Nocturne's right knee", "the pressure on her knee"
+    _GRIP_ON = re.compile(r"(?i)\b(?:wrap\w*|wound|coil\w*|clamp\w*|lock\w*|closed|tighten\w*|squeez\w*|grip\w*|"
+                          r"cinch\w*|hook\w*|whipp\w*|lash\w*|twist\w*|crank\w*|pressure|squeeze|hold|vice|vise)"
+                          r"(?:\s+\w+){0,3}?\s+(?:around|round|about|on|onto|into)\s+")
+    _BODY_WORD = re.compile(r"(?i)^(?:(left|right)\s+)?((?:upper |lower |hind |fore)?(?:knee|hock|ankle|heel|foot|"
+                            r"hind paw|paw|forepaw|foreleg|leg|thigh|hip|shoulder|arm|elbow|wrist|forearm|neck|"
+                            r"throat|ruff|chest ruff|tail|tails|chest|belly|ribs|flank|back))\b")
+    # what only the one held does (or has done to her): a sentence that gives it to the holder has the two swapped
+    _HOLD_NOUN = r"(?:grip|hold|coils|clamp|lock|vice|vise|choke ?hold|squeeze)"
+
+    # a part the prose named and the gripped parts that stand for it, nearest first
+    _NEAR_PART = {"knee": ("hock", "knee", "thigh", "lower leg"), "ankle": ("hock", "hind paw", "foot", "ankle"),
+                  "heel": ("hind paw", "foot", "hock"), "foot": ("hind paw", "foot", "hock"),
+                  "leg": ("thigh", "hock", "knee", "lower leg"), "thigh": ("thigh", "hip"), "hip": ("hip", "thigh"),
+                  "arm": ("upper foreleg", "upper arm", "forearm", "lower foreleg"),
+                  "elbow": ("upper foreleg", "lower foreleg", "upper arm", "forearm"),
+                  "wrist": ("forepaw", "paw", "lower foreleg", "forearm"), "paw": ("forepaw", "paw", "hind paw"),
+                  "forepaw": ("forepaw", "paw"), "foreleg": ("lower foreleg", "upper foreleg", "forepaw"),
+                  "shoulder": ("shoulder", "upper foreleg", "upper arm")}
+
+    def _para_sides(self, paras):
+        """Whose side each paragraph is told from (the parts' first sentences, _pov_marks), or None."""
+        marks = getattr(self, "_pov_marks", None) or []
+        sides, start, cur = [None] * len(paras), 0, None
+        starts = {}
+        for sents, who in marks:
+            heads = [x[:60] for x in (sents if isinstance(sents, list) else [sents]) if x]
+            j = next((k for h in heads for k in range(start, len(paras)) if h in paras[k]), None)
+            if j is not None:
+                starts[j], start = who, j + 1
+        for k in range(len(paras)):
+            cur = starts.get(k, cur)
+            sides[k] = cur if cur in (self.species_of or {}) else None
+        return sides
+
+    def _engine_mends(self, text):
+        """narration.engine_mends (since build 259): the finished prose checked against what the engine knows, and
+        the slips mended in place (the build-254 Ripples vs Nocturne log):
+        - species: "the Buizel" told of the Absol. With two fighters of different species, "the <her species>" is
+          given to the other one when the sentence says so: a part only the other has ("the Buizel's horn"), a hurt
+          only the other has ("the Buizel's right hip" when only Nocturne's is wrecked), the other's grip, or, in a
+          part told from her own side, right after a sentence about the other one alone, or in a sentence that names
+          her as someone else.
+        - the grip on a part it isn't on: "the twin tails whipped around Nocturne's right knee" when the grip is on
+          her left forepaw: the part becomes the gripped one (when the beat struck nowhere near it).
+        - the holder and the held swapped: "Ripples wriggled ..., but Nocturne's grip was unyielding" when Ripples
+          holds Nocturne: the two names trade places in that sentence."""
+        cfg = (self.rules.get("narration") or {}).get("engine_mends") or {}
+        if not text or not cfg.get("enabled", True):
+            return text
+        spec = {n: str(s) for n, s in (getattr(self, "species_of", None) or {}).items() if s}
+        names = list(spec)
+        dmg = getattr(self, "damage_by", None) or {}
+        grips = {}
+        for (a, d), ps in (getattr(self, "_grips_beat", None) or {}).items():
+            grips.setdefault((a, d), set()).update(ps)
+        for g in getattr(self, "grips", None) or []:
+            grips.setdefault((g[0], g[1]), set()).add(str(g[2]).lower())
+        holders = {a for a, _ in grips}
+        hurt = {str(p).lower() for p in getattr(self, "_hurt_now", None) or ()} | \
+               {str(p).lower() for p in getattr(self, "_strike_parts", None) or () if isinstance(p, str)}
+
+        def heads(n):
+            return {p.split()[-1] for p in dmg.get(n, {})} | set(dmg.get(n, {}))
+
+        def named(s, n):
+            return bool(re.search(r"\b" + re.escape(n) + r"\b", s))
+        fixed = [0]
+        paras = text.split("\n\n")
+        sides = self._para_sides(paras)
+        pair = len(names) == 2 and spec[names[0]].lower() != spec[names[1]].lower()
+        for k, para in enumerate(paras):
+            if re.fullmatch(r"\s*— .* —\s*", para):
+                continue
+            sents = re.split(r"(?<=[.!?…])\s+", para)
+            last_named = None
+            for i, s in enumerate(sents):
+                orig = s
+                if pair and cfg.get("species", True):
+                    for a in names:
+                        b = names[1] if a == names[0] else names[0]
+                        rx = re.compile(r"\b[Tt]he " + re.escape(spec[a]) + r"(?:(['’]s)|\b)")
+                        for m in list(rx.finditer(s))[::-1]:
+                            after = s[m.end():m.end() + 50].lower()
+                            words = set(re.findall(r"[a-z]+(?: [a-z]+)?", after)) | set(re.findall(r"[a-z]+", after))
+                            only_b, only_a = heads(b) - heads(a), heads(a) - heads(b)
+                            if words & only_a or re.match(r"\s*own\b", after):
+                                continue
+                            why = bool(words & only_b)
+                            pm = re.match(r"\s*((?:left|right) [a-z]+(?: [a-z]+)?)", after) if m.group(1) else None
+                            if not why and pm:
+                                part = next((p for p in dmg.get(b, {}) if pm.group(1).startswith(p)), None)
+                                why = bool(part and dmg[b].get(part, 0) >= 40 and dmg.get(a, {}).get(part, 0) < 10)
+                            if not why and m.group(1) and re.match(r"\s*" + self._HOLD_NOUN + r"\b", after):
+                                why = b in holders and a not in holders
+                            if not why and sides[k] == a and m.start() == 0:
+                                why = (last_named == b and not named(s, a)) or (named(s, a) and not named(s, b))
+                            if why:
+                                s = s[:m.start()] + (poss(b) if m.group(1) else b) + s[m.end():]
+                if cfg.get("grip_part", True):
+                    for (a, d), ps in grips.items():
+                        if not ps or not (named(s, a) or named(s, d)):
+                            continue
+                        for m in list(self._GRIP_ON.finditer(s))[::-1]:
+                            if re.match(r"(?i)pressure", m.group(0)) and re.search(r"(?i)\b(?:put\w*|weight|any)\W*$",
+                                                                                 s[max(0, m.start() - 16):m.start()]):
+                                continue      # ("putting pressure on her right knee": her weight, not the grip)
+                            rest = s[m.end():]
+                            om = re.match(r"(?:" + re.escape(d) + r"(?:['’]s|['’])?|her) ", rest)
+                            if not om:
+                                continue
+                            bm = self._BODY_WORD.match(rest[om.end():])
+                            if not bm:
+                                continue
+                            said = bm.group(0).lower()
+                            if any(said in p or p.endswith(said) for p in ps) or said in hurt \
+                                    or any(said in p for p in hurt):
+                                continue
+                            if any(said.split()[-1] in p for p in ps):
+                                continue      # (the right part, its side left out or named loosely)
+                            to = sorted(ps)[0] if len(ps) == 1 else None
+                            if not to:     # several gripped: the nearest one on that side (a knee is the hock)
+                                side_ = (bm.group(1) or "").lower()
+                                near = self._NEAR_PART.get(said.split()[-1], ())
+                                same = [p for p in sorted(ps) if not side_ or p.startswith(side_)]
+                                to = next((p for w in near for p in same if p.endswith(w)), None)
+                            if to:
+                                at = m.end() + om.end()
+                                s = s[:at] + to + s[at + len(bm.group(0)):]
+                if cfg.get("roles", True):
+                    for (a, d) in grips:
+                        if (d, a) in grips or d in holders:
+                            continue
+                        hm = re.search(r"\b" + re.escape(d) + r"(?:['’]s|['’]) " + self._HOLD_NOUN + r"\b(?! on the "
+                                       r"(?:ground|earth|grass|sand|dirt|floor|rock|stone|bark|tree|branch))", s)
+                        if not hm:
+                            continue
+                        if named(s, a):
+                            def swap(mm, a=a, d=d):
+                                n_ = d if mm.group(1) == a else a
+                                return poss(n_) if mm.group(2) else n_
+                            s = re.sub(r"\b(" + re.escape(a) + "|" + re.escape(d) + r")\b((?:['’]s|['’])(?=\s))?",
+                                       swap, s)
+                        else:      # only the held one named: the grip is given to the one who holds her
+                            pm_ = re.match(re.escape(d) + r"(?:['’]s|['’])", s[hm.start():])
+                            s = s[:hm.start()] + poss(a) + s[hm.start() + pm_.end():]
+                if s != orig:
+                    fixed[0] += 1
+                    sents[i] = s
+                hit = [n for n in names if named(s, n)]
+                if len(hit) == 1:
+                    last_named = hit[0]
+                elif hit:
+                    last_named = None
+            paras[k] = " ".join(sents)
+        if fixed[0] and self.progress:
+            self.progress(f"{fixed[0]} sentence{'s' if fixed[0] > 1 else ''} put right against the engine (who is who, "
+                          f"which part is held, who holds)")
+        return "\n\n".join(paras)
 
     def pov_labels(self, text):
         """Each part of the beat headed with whose side it is told from ("— Nocturne —", "— Both —"), so the reader
