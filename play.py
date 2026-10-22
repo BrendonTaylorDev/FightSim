@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-22 build 257-guided (the hold panel: a tap meter showing how near she is to tapping, who holds which of her parts, a pin's count and the distance on every card)"
+VERSION = "2026-10-22 build 258-guided (dark window, taps really shown, holds named for what they grip, 300%+ pain)"
 
 HELP = """
 =============================================================================================

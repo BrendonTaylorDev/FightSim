@@ -1132,6 +1132,67 @@ def hold_panel_check():
     return problems
 
 
+def log_fixes_258_check():
+    """Build 258, from the user's build-254 Ripples vs Nocturne log: a tap only counts as shown when it happens
+    ("I'll make her tap." and "it was not enough" are not taps); the model's "to continue from where you left off"
+    and a stray ", and" left by a cut go; the holder's own name stays out of the grip line ("closed her Ripples' twin
+    tails"); an invented hold named for a part has to grip it (no "standing knee lock" on her shoulder); a pain share
+    past show_max is shown as 300%+; and the window has its dark colours."""
+    import narrator as N
+    problems = []
+    for text, who, want in (("Ripples set her jaw. I'll make her tap.", "Nocturne", False),
+                            ("Nocturne tried everything she had left, but it was not enough.", "Nocturne", False),
+                            ("She would not be the one to tap out, Nocturne swore.", "Nocturne", False),
+                            ("Nocturne's paw slapped the ground again and again.", "Nocturne", True),
+                            ("Nocturne tapped out.", "Nocturne", True)):
+        if N.tap_really_shown(text, who) != want:
+            problems.append(f"the tap check reads {text!r} as {'no ' if want else ''}tap")
+    s = H.session(2, fighters="Ripples,Nocturne")
+    e, n = s.eng, s.narrator
+    out = n._last_scrub("She waited.\n\nAnd now, to continue from where you left off:\n\nThe pain traced her gaze. "
+                        ", and Ripples felt the tremor.")
+    if "left off" in out or ", and" in out or "Ripples felt the tremor" not in out:
+        problems.append(f"the last clean-up left the meta line or the stray clause: {out!r}")
+    n._paragraph_plan("take", [{"type": "hold_start", "attacker": "Ripples", "defender": "Nocturne",
+                                "parts": [{"part": "Chest Ruff", "with": "Ripples' twin tails"}]}])
+    said = " ".join(x for _, _, x in (getattr(n, "_fact_lines", None) or []))
+    if "her Ripples'" in said or "closed" not in said:
+        problems.append(f"the grip line names the holder in her own grip: {said!r}")
+    e.downed["Nocturne"] = 0
+    e.facing["Nocturne"] = "sitting up"
+    try:
+        e.start_custom_submission("Ripples", "Nocturne", "standing knee lock",
+                                  [("Left Shoulder", "her paws, levering it")], enforce=True)
+        problems.append("a knee lock on her shoulder went on")
+    except ValueError as x:
+        if "named for her leg" not in str(x):
+            problems.append(f"the knee lock on her shoulder was refused for something else: {x}")
+    try:
+        e.start_custom_submission("Ripples", "Nocturne", "standing knee lock",
+                                  [("Right Hock", "her paws, twisting it")], enforce=True)
+    except ValueError as x:
+        if "named for" in str(x):
+            problems.append(f"a knee lock on her knee was refused: {x}")
+    f = e.get("Nocturne")
+    f.learned["pain_felt"] = 5000.0
+    g = e.pain_gauge(f)["overall"]
+    if g.get("shown") != "300%+" or g["pct"] != 300 or not g["label"].startswith("far past"):
+        problems.append(f"a share in the thousands isn't shown as 300%+: {g}")
+    try:
+        import window
+    except ImportError:      # (no tkinter in this Python: the window can't be checked here)
+        return problems
+    window._THEME["dark"] = True
+    if window.C("#ffffff") == "#ffffff" or window.C("#111827") == "#111827" or window.C("#22c55e") != "#22c55e":
+        problems.append("dark mode doesn't swap the backgrounds and text, or swaps the bright marks")
+    window._THEME["dark"] = False
+    if window.C("#ffffff") != "#ffffff":
+        problems.append("the light window's colours change")
+    if not window.dark_on({"window": {"dark": {"enabled": True}}}) is True:
+        problems.append("window.dark.enabled isn't read")
+    return problems
+
+
 def tap_urge_check():
     """Build 256 (tap.urge): a hold that hurts but is nowhere near her limit shows the urge to tap now and then (a
     small sign, easily refused, not counted as a refusal), and the narrator is told it; off, nothing shows there."""
@@ -1376,6 +1437,13 @@ def main(argv):
         probs = match_distance_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 255 match state: how far apart they are, the opening told as the opening  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "log 258" for w in want):
+        t = time.time()
+        probs = log_fixes_258_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 258 log fixes: taps really shown, meta lines, grip names, named holds, 300%+, dark window  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "hold panel" for w in want):

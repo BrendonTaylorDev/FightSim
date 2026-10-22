@@ -1879,6 +1879,31 @@ TAP_SHOWN = re.compile(r"(?i)\btap(s|ped|ping)?\b(?!\s+(on|at)\s+(her|the)\s+(sh
                        r"|\b(gave|gives|giving) (up|in)\b|\b(yield|yielded|yields|submit|submits|submitted|surrender\w*)\b"
                        r"|\bI quit\b|\benough\b")
 
+# (since build 258) what before a tap word means it didn't happen: wanted, made to, refused, not yet ("I'll make her
+# tap.", "she would not be the one to tap out", "it was not enough": the build-254 log counted those as the tap)
+_TAP_NOT = re.compile(r"\b(?:make|made|making|force|forced|get|got|until|till|unless|before|if|when|will|'ll|shall|"
+                      r"going to|has to|had to|have to|must|need\w*|want\w*|wish\w*|urge|refus\w+|won't|will not|"
+                      r"wouldn't|would not|didn't|did not|not|never|no|nothing|almost|nearly|close to|to)\b"
+                      r"[^.!?]{0,40}$", re.I)
+
+
+def tap_really_shown(text, who=None):
+    """A tap (or a giving-up) the text really shows happening: TAP_SHOWN in a sentence where nothing before it makes
+    it wanted, refused or still to come, and (who) with her named in or near it. "Enough" counts only as a cry
+    ("Enough!")."""
+    for m in TAP_SHOWN.finditer(text or ""):
+        start = max(text.rfind(".", 0, m.start()), text.rfind("!", 0, m.start()), text.rfind("?", 0, m.start()),
+                    text.rfind("\n", 0, m.start())) + 1
+        if _TAP_NOT.search(text[start:m.start()]) or _NOT_REALLY.search(text[start:m.start()]):
+            continue
+        if m.group(0).lower() == "enough" and not re.match(r"\s*[!—]|\s*[,.]?[\"”']", text[m.end():m.end() + 3]):
+            continue
+        if who and not re.search(r"\b" + re.escape(str(who)) + r"\b", text[max(0, m.start() - 300):m.end() + 100]):
+            continue
+        return True
+    return False
+
+
 MISSING_MARKS = ("never showed", "ESCAPE", "skipped the struggle", "finally getting up", "THE PIN HOLDS this beat",
                  "left out the tumble")
 # she is back on her feet (a get-up nobody rolled)
@@ -9771,7 +9796,9 @@ class Narrator:
                 dfn_, att_ = str(a.get("defender") or ""), str(a["attacker"])
                 for p_ in a["parts"][:3]:      # (every grip of a hold, up to three: a heel hook's thigh too)
                     part_, with_ = str(p_.get("part") or "").lower(), str(p_.get("with") or "").strip()
-                    with_ = re.sub(r"^her ", "", with_) or "grip"
+                    # (and the holder's own name: "Ripples' twin tails" made "closed her Ripples' twin tails")
+                    with_ = re.sub(r"^(?:her|" + re.escape(poss(att_)) + r"|" + re.escape(att_) + r"(?:'s|’s|'|’)?) ",
+                                   "", with_) or "grip"
                     # (the sentence takes only what grips, "both paws", not the rest of its words, "pinning it down")
                     noun_ = with_.split(",")[0].strip()
                     if not re.search(r"(?i)\b(?:paws?|hands?|arms?|forearms?|tails?|jaws|teeth|fangs|legs?|knees?|"
@@ -10743,7 +10770,7 @@ class Narrator:
         if te and coverage and (self.rules.get("narration") or {}).get("tap_shown", True) \
                 and not getattr(self, "_tap_hold_back", False):
             full = (prior or "") + "\n" + text
-            if te[2] == "tap" and not TAP_SHOWN.search(full):
+            if te[2] == "tap" and not tap_really_shown(full):
                 issues.append(f"it never showed {te[0]} tapping out: this is the beat she gives up in {poss(te[1])} "
                               f"{te[3]}. End with it: her paw slapping the ground (or {te[1]}) again and again, or a "
                               f"cry that says it plainly, and {te[1]} letting go. She is awake, beaten, not out cold")
@@ -10752,9 +10779,7 @@ class Narrator:
                               f"her sight greys, she goes limp, and {te[1]} feels her go slack and lets go")
         for tm in (getattr(self, "_tap_mid", None) or []) if coverage else ():
             full = (prior or "") + "\n" + text
-            near = [m for m in TAP_SHOWN.finditer(full)
-                    if re.search(r"\b" + re.escape(str(tm[0])) + r"\b", full[max(0, m.start() - 300):m.end() + 100])]
-            if tm[2] == "tap" and not near:
+            if tm[2] == "tap" and not tap_really_shown(full, tm[0]):
                 issues.append(f"it never showed {tm[0]} tapping out (tap {tm[4]} of {tm[5]}) in {poss(tm[1])} {tm[3]}: "
                               f"her paw slapping the ground or {tm[1]}, or a cry that says it plainly, and {tm[1]} "
                               f"letting go. The match goes on after it")
@@ -14182,6 +14207,17 @@ class Narrator:
         if horns and max(horns) == 1:   # one horn in the whole fight: "the roots of her horns" is her horn
             text = re.sub(r"\b((?:her|its|the) (?:\w+ )?)horns\b", r"\1horn", text)
         text = re.sub(r"(?m)(^|(?<=[.!?…]\s))\*?(?:Continue with the next part|Next part)[.!]?\*?\s*", r"\1", text)
+        # (since build 258) the model talking about the text, not telling it ("And now, to continue from where you
+        # left off:", the last line of an interlude in the build-254 Ripples vs Nocturne log): the line goes
+        text = re.sub(r"(?mi)^[ \t]*[*_]?(?:and )?(?:now,? )?(?:to |let'?s |i'?ll |i will )?(?:continue|continuing|"
+                      r"pick(?:ing)? up|carry(?:ing)? on|resume|resuming)\b[^\n]{0,60}\b(?:where (?:you|we|i|it) left "
+                      r"off|from (?:here|there|the last line|the text above|where the (?:story|text) (?:stops|ended))"
+                      r"|the story)\b[^\n]{0,30}[:.…]?[*_]?[ \t]*$", "", text)
+        # a clause left behind when the sentence before it was cut (". , and Ripples felt the tremor"): the stray
+        # comma and joining word go, and what is left starts its own sentence
+        text = re.sub(r"([.!?…][*_\"”]?)[ \t]+[,;][ \t]*(?:(?:and|but|then|so)[ \t]+)?(\w)",
+                      lambda m: m.group(1) + " " + m.group(2).upper(), text)
+        text = re.sub(r"(?m)^[ \t]*[,;][ \t]*(?:(?:and|but|then|so)[ \t]+)?(\w)", lambda m: m.group(1).upper(), text)
         # a camera word left as a line of its own ("Wide shot.") and an aside to the reader in brackets ("(This is all
         # that is required for this part. The next part will tell...)"): the plan's wording, not the story
         text = re.sub(r"(?mi)^[ \t]*[*_]?(?:wide|close|medium|long|tight|low|high)(?:[- ]angle)? ?(?:shot|up|view)[.!:]?[*_]?[ \t]*$",
@@ -15957,8 +15993,12 @@ class Narrator:
                    f"no new attacks, falls or pins.")
             te = getattr(self, "_tap_end", None)
             tap_ask = bool(te and "tapping out" in issue or te and "passing out" in issue)
+            # (since build 258) a tap that counts but doesn't end the match, left out (beats 18 and 25 of the
+            # build-254 Ripples vs Nocturne match): asked for again too, then said plainly
+            mid = next((tm for tm in getattr(self, "_tap_mid", None) or ()
+                        if tm[2] == "tap" and f"never showed {tm[0]} tapping out (tap" in issue), None)
             text = ""
-            for _try in range(2 if tap_ask else 1):
+            for _try in range(2 if tap_ask or mid else 1):
                 try:
                     text = self._generate(context + ask, 80 if "; and " not in issue else 150)
                     text = self._drop_repeats(text, seen) if text else ""
@@ -15966,10 +16006,17 @@ class Narrator:
                     text = ""
                 # the passage has to show what it was asked for: a tap-out told as one more blow (beat 6 of the
                 # Nerine vs Ripples match: "Her muzzle took the next blow") is asked for again, then said plainly
-                if not tap_ask or (TAP_SHOWN.search(text or "") if te[2] == "tap" else self._shown_out(text or "")):
+                if mid:
+                    if tap_really_shown(text or "", mid[0]):
+                        break
+                elif not tap_ask or (tap_really_shown(text or "") if te[2] == "tap" else self._shown_out(text or "")):
                     break
                 text = ""
-            if tap_ask and not text:
+            if mid and not text:
+                spot = self._tap_spot(mid[0], mid[1]).split(" or ")[0]
+                text = (f"{poss(mid[0])} paw came up and slapped {spot}, again and again; {mid[1]} felt it and let go. "
+                        f"That was tap {mid[4]} of {mid[5]}, and it wasn't over.")
+            elif tap_ask and not text:
                 spot = self._tap_spot(te[0], te[1]).split(" or ")[0]
                 text = (f"{poss(te[0])} paw came up and slapped {spot}, once, then again and again, harder than it "
                         f"needed to; {te[1]} felt it and let go. It was over, and {te[0]} was awake for all of it."

@@ -5259,6 +5259,17 @@ class Engine:
                 return f"{f.name} has no {m.group(0)} to grip with"
         return ""
 
+    # an invented hold's name and the regions of her body it has to grip (submissions.invented_fit)
+    SUB_NAME_PARTS = (
+        (r"\b(?:knee|kneebar|heel|ankle|hock|toe ?hold|calf|shin|leg ?lock|leglock)\b", ("hind_up", "hind_low"),
+         "leg"),
+        (r"\b(?:arm ?bar|armbar|arm ?lock|armlock|elbow|wrist|kimura|americana|hammerlock)\b",
+         ("fore_up", "fore_low", "shoulder"), "arm"),
+        (r"\b(?:choke|neck|throat|sleeper|guillotine|strangle\w*|headlock|head lock)\b", ("neck", "head"),
+         "neck"),
+        (r"\btail\b", ("tail",), "tail"),
+    )
+
     UPRIGHT_WORDS = re.compile(r"(?i)\b(?:standing|upright|on (?:her|their) feet|nelson|headlock|bear ?hug|"
                                r"guillotine|from behind her as she stands|stood|lifts? her|sitting|seated)\b")
 
@@ -5280,6 +5291,15 @@ class Engine:
             if why:
                 raise ValueError(f"the {key} can't go on as described: {why}. Grip with what she has: "
                                  f"{', '.join(a.parts)}")
+        if enforce and cfg.get("invented_fit", True):
+            # (since build 258) a hold named for a part grips that part: a "standing knee lock" on her left shoulder
+            # (the build-254 Ripples vs Nocturne log) is refused, and the director names it for what it grips
+            for rx, regions, word in self.SUB_NAME_PARTS:
+                hit = re.search(rx, key)
+                if hit and not any(body_region(p) in regions for p, _w in grips):
+                    raise ValueError(f"the {key} is named for her {word} but grips her "
+                                     f"{', '.join(p.lower() for p, _w in grips)}: grip her {word} with it, or name the "
+                                     f"hold for what it grips")
         if enforce:
             if not cfg.get("enabled", True):
                 raise ValueError("submission holds are off (rules.json submissions.enabled)")
@@ -9613,10 +9633,17 @@ class Engine:
         surge = float(tcfg.get("surge_resist", 1.5)) if self.has(f, "adrenaline") else 1.0
         bear = max(10.0, float(tcfg.get("resist", 130)) * (s_ / 100.0) ** float(tcfg.get("resist_power", 0.8)) * surge)
 
+        top = float(cfg.get("show_max", 300) or 0)
+
         def gauge(pain, bear_, **more):
             share = pain / max(1.0, bear_) * 100.0
             label = next((str(w) for c, w in cuts if share < float(c)), str(cuts[-1][1]))
-            return dict({"pct": round(share), "pain": round(pain), "bear": round(bear_), "label": label}, **more)
+            # (show_max: worn to nothing, what she can bear sinks to its floor and the share runs into the thousands;
+            # past show_max it is shown as "300%+", far past what she can bear)
+            over = bool(top) and share > top
+            return dict({"pct": round(min(share, top) if over else share), "pain": round(pain), "bear": round(bear_),
+                         "label": ("far " + label if over and label.startswith("past") else label),
+                         "shown": f"{top:.0f}%+" if over else f"{share:.0f}%"}, **more)
 
         held = [h for h in self.holds.values() if h.defender == f.name]
         pin_ = self.pinned_by(f.name)

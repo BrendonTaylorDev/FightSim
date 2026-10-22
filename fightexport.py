@@ -131,10 +131,10 @@ def _gauges(f):
             return (f'<div class="bar pain"><span style="width:{min(100.0, share / 1.5):.0f}%;background:{col}"></span>'
                     f'<i class="limit"></i><em>{html.escape(text)}</em></div>')
         o, pt = g.get("overall") or {}, g.get("part")
-        out += bar(o, f"Pain {o.get('pct', 0):.0f}%: {o.get('label', '')}" + (f"  ({o['where']})" if o.get("where") else ""))
+        out += bar(o, f"Pain {o.get('shown') or str(o.get('pct', 0)) + '%'}: {o.get('label', '')}" + (f"  ({o['where']})" if o.get("where") else ""))
         if pt:
             parts = ", ".join(str(p).lower() for p in pt.get("parts") or [])
-            out += bar(pt, f"{parts.capitalize() or 'Part'} {pt.get('pct', 0):.0f}%: {pt.get('label', '')}"
+            out += bar(pt, f"{parts.capitalize() or 'Part'} {pt.get('shown') or str(pt.get('pct', 0)) + '%'}: {pt.get('label', '')}"
                            + (f"  ({pt['why']})" if pt.get("why") else "")
                            + (f"  · air {pt['air']}% gone" if pt.get("air") is not None else ""))
         else:

@@ -51,6 +51,44 @@ except Exception:              # pragma: no cover
 snapshot = play.fight_snapshot
 
 
+# window.dark (since build 258): the window in dark colours. Every colour the window draws goes through C(), which
+# gives the light one its dark counterpart while dark mode is on: backgrounds go dark, text goes light, and the
+# blues, reds and violets that mark things go a shade lighter so they still stand out. The bright marks (the
+# damage fill, the bars, the tap steps) keep their colours.
+DARK = {
+    # backgrounds
+    "#ffffff": "#1e2029", "#fffdf8": "#17181e", "#f3f4f6": "#252732", "#e5e7eb": "#3a3d4a", "#f3f5f9": "#21232c",
+    "#e8ecf3": "#2b2e3a", "#ecfdf5": "#12302a", "#f9fafb": "#f9fafb",
+    # text and lines
+    "#111827": "#e5e7eb", "#1f2937": "#e5e7eb", "#4b5563": "#a1a1aa", "#6b7280": "#9ca3af", "#9ca3af": "#6b7280",
+    "#d1d5db": "#4b5563",
+    # the colours that mark things
+    "#2563eb": "#60a5fa", "#1d4ed8": "#93c5fd", "#991b1b": "#f87171", "#b91c1c": "#f87171", "#7f1d1d": "#fca5a5",
+    "#7c3aed": "#c4b5fd", "#c4b5fd": "#8b5cf6", "#b45309": "#fbbf24", "#15803d": "#4ade80", "#047857": "#34d399",
+    "#0f766e": "#5eead4",
+}
+_THEME = {"dark": False}
+
+
+def C(colour):
+    """A colour as the window shows it: its dark-mode counterpart while window.dark is on (DARK), else itself."""
+    return DARK.get(str(colour).lower(), colour) if _THEME["dark"] else colour
+
+
+def dark_on(rules):
+    """window.dark.enabled from these rules, with my_settings.json laid over them (the window may be built before the
+    game has loaded its rules)."""
+    on = ((rules.get("window") or {}).get("dark") or {}).get("enabled", True)
+    try:
+        if os.path.exists(play.MY_SETTINGS):
+            with open(play.MY_SETTINGS, encoding="utf-8") as fh:
+                mine = ((json.load(fh).get("window") or {}).get("dark") or {})
+            on = mine.get("enabled", on)
+    except Exception as e:
+        note_failure("window.dark_on", e)
+    return bool(on)
+
+
 # Tk may only be torn down on the main thread. A closed window (or the one from an earlier run in Spyder) that is
 # still tied up in reference cycles would otherwise be freed by whichever thread happens to trigger garbage
 # collection, often the game thread finishing its last beat, and that kills the Spyder kernel ("Tcl_AsyncDelete:
@@ -253,23 +291,23 @@ class FighterCard(ttk.Frame):
         top.pack(fill="x")
         self.head = ttk.Label(top, font=("Segoe UI", 12, "bold"))
         self.head.pack(side="left")
-        self.sub = ttk.Label(top, foreground="#6b7280")
+        self.sub = ttk.Label(top, foreground=C("#6b7280"))
         self.sub.pack(side="left", padx=8)
-        self.canvas = tk.Canvas(self, width=PIC + 2 * COL, height=PIC, bg="#ffffff", highlightthickness=0)
+        self.canvas = tk.Canvas(self, width=PIC + 2 * COL, height=PIC, bg=C("#ffffff"), highlightthickness=0)
         self.canvas.pack(pady=(4, 4))
         self.canvas.bind("<Button-1>", self.clicked)
-        self.hp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg="#e5e7eb")
+        self.hp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg=C("#e5e7eb"))
         self.hp.pack(fill="x")
-        self.en = tk.Canvas(self, width=PIC + 2 * COL, height=10, highlightthickness=0, bg="#e5e7eb")
+        self.en = tk.Canvas(self, width=PIC + 2 * COL, height=10, highlightthickness=0, bg=C("#e5e7eb"))
         self.en.pack(fill="x", pady=(2, 0))
         # a submission match: one pip per tap-out the match needs, filled for each she has given (with the part)
-        self.tp = tk.Canvas(self, width=PIC + 2 * COL, height=20, highlightthickness=0, bg="#f3f4f6")
+        self.tp = tk.Canvas(self, width=PIC + 2 * COL, height=20, highlightthickness=0, bg=C("#f3f4f6"))
         # her pain against what she can bear (window.pain_gauge): a bar with a mark at 100%, more in a submission
-        self.pg = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg="#f3f4f6")
+        self.pg = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg=C("#f3f4f6"))
         # how near she is to tapping (window.hold_panel): five steps (the narrator's ladder) and this beat's chance
-        self.tm = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg="#f3f4f6")
+        self.tm = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg=C("#f3f4f6"))
         # the grips on her and by her, a pin, and how far she is from the others (window.hold_panel)
-        self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg="#ffffff")
+        self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg=C("#ffffff"))
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
         self.state.pack(anchor="w", pady=(4, 0))
 
@@ -339,7 +377,7 @@ class FighterCard(ttk.Frame):
                 c.create_image(ox, oy, image=ph, anchor="nw")
             cap = VIEW_CAPTION.get(pn["view"], "")
             if cap:
-                c.create_text(COL + PIC / 2, top - 3, text=cap, anchor="s", font=("Segoe UI", 7), fill="#6b7280")
+                c.create_text(COL + PIC / 2, top - 3, text=cap, anchor="s", font=("Segoe UI", 7), fill=C("#6b7280"))
             spots = pn["spots"]
             for side, rows in (("L", pn["left"]), ("R", pn["right"])):
                 ys = spread([oy + spots[q[0]][1] for q in rows], top + pn["height"])
@@ -348,15 +386,15 @@ class FighterCard(ttk.Frame):
                     ax, ay = ox + x, oy + y
                     lx = COL - 4 if side == "L" else COL + PIC + 4
                     calib = self.app.calib == (self, part)
-                    c.create_line(lx, ly, ax, ay, fill="#2563eb" if calib else "#9ca3af", width=2 if calib else 1)
-                    c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline="#111827")
+                    c.create_line(lx, ly, ax, ay, fill=C("#2563eb") if calib else C("#9ca3af"), width=2 if calib else 1)
+                    c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline=C("#111827"))
                     self._ring(c, f, part, ax, ay)
                     self._label(c, side, lx, ly, part, dmg, res, calib)
             top += pn["height"] + gap
         if f["out"]:
-            c.create_text(COL + PIC / 2, 14, text="OUT", font=("Segoe UI", 14, "bold"), fill="#991b1b")
+            c.create_text(COL + PIC / 2, 14, text="OUT", font=("Segoe UI", 14, "bold"), fill=C("#991b1b"))
         if calib_here:
-            c.create_text(COL + PIC / 2, H - 8, font=("Segoe UI", 8, "italic"), fill="#2563eb",
+            c.create_text(COL + PIC / 2, H - 8, font=("Segoe UI", 8, "italic"), fill=C("#2563eb"),
                           text=f"click either picture where her {self.app.calib[1].lower()} is"
                                + (" (the back picture moves it there)" if len(panels) > 1 else ""))
         self._bars(f, pct)
@@ -374,22 +412,22 @@ class FighterCard(ttk.Frame):
         c = self.tp
         c.delete("all")
         given, need = list(t.get("given") or []), max(1, int(t.get("needed") or 1))
-        c.create_text(6, 10, anchor="w", text="Taps", font=("Segoe UI", 8, "bold"))
+        c.create_text(6, 10, anchor="w", text="Taps", font=("Segoe UI", 8, "bold"), fill=C("#111827"))
         x = 40
         for i in range(max(need, len(given))):
             done = i < len(given)
-            c.create_oval(x, 4, x + 12, 16, fill="#dc2626" if done else "#ffffff", outline="#7f1d1d", width=1.5)
+            c.create_oval(x, 4, x + 12, 16, fill=C("#dc2626") if done else C("#ffffff"), outline=C("#7f1d1d"), width=1.5)
             x += 16
         parts = ", ".join(str(p).lower() for p in given)
         c.create_text(x + 6, 10, anchor="w", font=("Segoe UI", 8),
                       text=f"{len(given)} of {need}" + (f"  ({parts})" if parts else ""),
-                      fill="#991b1b" if len(given) >= need else "#111827")
+                      fill=C("#991b1b") if len(given) >= need else C("#111827"))
 
     def _ring(self, c, f, part, x, y):
         """A part in someone's grip gets a violet ring on her picture (window.hold_panel)."""
         if part in held_parts(f):
-            c.create_oval(x - 9, y - 9, x + 9, y + 9, outline="#7c3aed", width=2)
-            c.create_oval(x - 13, y - 13, x + 13, y + 13, outline="#c4b5fd", width=1, dash=(3, 2))
+            c.create_oval(x - 9, y - 9, x + 9, y + 9, outline=C("#7c3aed"), width=2)
+            c.create_oval(x - 13, y - 13, x + 13, y + 13, outline=C("#c4b5fd"), width=1, dash=(3, 2))
 
     def _order(self):
         """The strips under her bars always in one order: taps, pain, tap meter, hold panel (each packs itself on
@@ -416,16 +454,16 @@ class FighterCard(ttk.Frame):
             return
         c, w = self.tm, PIC + 2 * COL
         c.delete("all")
-        c.create_text(6, 9, anchor="w", text="Tap", font=("Segoe UI", 8, "bold"))
+        c.create_text(6, 9, anchor="w", text="Tap", font=("Segoe UI", 8, "bold"), fill=C("#111827"))
         x0, seg = 34, 30
         for i in range(1, 6):
             on = i <= m["level"]
             c.create_rectangle(x0 + (i - 1) * (seg + 3), 2, x0 + i * seg + (i - 1) * 3, 16,
-                               fill=TAP_COLORS[i] if on else "#ffffff", outline="#9ca3af")
+                               fill=TAP_COLORS[i] if on else C("#ffffff"), outline=C("#9ca3af"))
         c.create_text(x0 + 5 * (seg + 3) + 6, 9, anchor="w", font=("Segoe UI", 8, "bold"),
-                      fill=TAP_COLORS[max(1, m["level"])] if m["level"] >= 3 else "#111827",
+                      fill=TAP_COLORS[max(1, m["level"])] if m["level"] >= 3 else C("#111827"),
                       text=f"{m['label']}  ·  {m['chance']:.0f}% chance this beat")
-        c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill="#4b5563", width=w - 12,
+        c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill=C("#4b5563"), width=w - 12,
                       text=(f"{poss_word(m['by'])} {m['sub']}: pain {m['pain']} against what she can bear {m['resist']}"
                             + (f"  ·  {m['note']}" if m["note"] else "")))
 
@@ -440,7 +478,7 @@ class FighterCard(ttk.Frame):
         c.delete("all")
         y = 2
         for text, col in lines:
-            t = c.create_text(6, y, anchor="nw", text=text, fill=col, width=w - 12,
+            t = c.create_text(6, y, anchor="nw", text=text, fill=C(col), width=w - 12,
                               font=("Segoe UI", 8, "bold" if text.startswith(("Held", "Pinned by")) else "normal"))
             y = c.bbox(t)[3] + 2
         c.configure(height=y + 2)
@@ -461,34 +499,34 @@ class FighterCard(ttk.Frame):
 
         def bar(y, x, text):
             share = max(0.0, float(x.get("pct") or 0))
-            col = "#a3a3a3" if share < 40 else "#f59e0b" if share < 70 else "#ea580c" if share < 100 else "#b91c1c"
+            col = C("#a3a3a3") if share < 40 else C("#f59e0b") if share < 70 else C("#ea580c") if share < 100 else C("#b91c1c")
             c.create_rectangle(0, y, w * min(1.0, share / 150.0), y + 16, fill=col, outline="")
-            c.create_line(w * 100 / 150.0, y, w * 100 / 150.0, y + 16, fill="#111827", dash=(2, 2))
-            c.create_text(6, y + 8, anchor="w", font=("Segoe UI", 8, "bold"), text=text)
+            c.create_line(w * 100 / 150.0, y, w * 100 / 150.0, y + 16, fill=C("#111827"), dash=(2, 2))
+            c.create_text(6, y + 8, anchor="w", font=("Segoe UI", 8, "bold"), text=text, fill=C("#111827"))
 
         o, pt = g.get("overall") or {}, g.get("part")
-        bar(0, o, f"Pain {o.get('pct', 0):.0f}%: {o.get('label', '')}"
+        bar(0, o, f"Pain {o.get('shown') or str(o.get('pct', 0)) + '%'}: {o.get('label', '')}"
                   + (f"  ({o['where']})" if o.get("where") else ""))
         if pt:
             parts = ", ".join(str(p).lower() for p in pt.get("parts") or [])
-            bar(18, pt, f"{parts.capitalize() or 'Part'} {pt.get('pct', 0):.0f}%: {pt.get('label', '')}"
+            bar(18, pt, f"{parts.capitalize() or 'Part'} {pt.get('shown') or str(pt.get('pct', 0)) + '%'}: {pt.get('label', '')}"
                         + (f"  ({pt['why']})" if pt.get("why") else "")
                         + (f"  · air {pt['air']}% gone" if pt.get("air") is not None else ""))
         else:
-            c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill="#6b7280",
+            c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill=C("#6b7280"),
                           text="nothing held or struck this beat")
 
     def _bars(self, f, pct):
         w = PIC + 2 * COL
         self.hp.delete("all")
         share = max(0.0, min(1.0, pct / 100.0))
-        col = "#22c55e" if pct >= 60 else "#eab308" if pct >= 35 else "#f97316" if pct >= 15 else "#ef4444"
+        col = C("#22c55e") if pct >= 60 else C("#eab308") if pct >= 35 else C("#f97316") if pct >= 15 else C("#ef4444")
         self.hp.create_rectangle(0, 0, w * share, 18, fill=col, outline="")
         self.hp.create_text(6, 9, anchor="w", text=f"Health {f['health']:.0f}%   ({pct:.0f}% of full)",
-                            font=("Segoe UI", 9, "bold"))
+                            font=("Segoe UI", 9, "bold"), fill=C("#111827"))
         self.en.delete("all")
-        self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill="#60a5fa", outline="")
-        self.en.create_text(6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7))
+        self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill=C("#60a5fa"), outline="")
+        self.en.create_text(6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
@@ -518,9 +556,9 @@ class FighterCard(ttk.Frame):
             self.photo = self.src
             c.create_image(COL + PIC / 2, top + PIC / 2, image=self.photo)
         else:
-            c.create_oval(COL + 50, top + 50, COL + PIC - 50, top + PIC - 50, fill="#e5e7eb", outline="")
+            c.create_oval(COL + 50, top + 50, COL + PIC - 50, top + PIC - 50, fill=C("#e5e7eb"), outline="")
             c.create_text(COL + PIC / 2, top + PIC / 2, text=(f["species"] or f["name"])[:12],
-                          font=("Segoe UI", 16, "bold"), fill="#6b7280")
+                          font=("Segoe UI", 16, "bold"), fill=C("#6b7280"))
         if self.photo is None or self.photo is self.src:
             # no Pillow: the glow is a soft disc on the canvas instead
             for part, dmg, res in f["parts"]:
@@ -537,27 +575,27 @@ class FighterCard(ttk.Frame):
                 ax, ay = COL + x, top + y
                 lx = COL - 4 if side == "L" else COL + PIC + 4
                 calib = self.app.calib == (self, part)
-                line = "#2563eb" if calib else "#9ca3af"
+                line = C("#2563eb") if calib else C("#9ca3af")
                 c.create_line(lx, ly, ax, ay, fill=line, width=2 if calib else 1)
-                c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline="#111827")
+                c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline=C("#111827"))
                 self._ring(c, f, part, ax, ay)
                 self._label(c, side, lx, ly, part, dmg, res, calib)
         if f["out"]:
-            c.create_text(COL + PIC / 2, top + 14, text="OUT", font=("Segoe UI", 14, "bold"), fill="#991b1b")
+            c.create_text(COL + PIC / 2, top + 14, text="OUT", font=("Segoe UI", 14, "bold"), fill=C("#991b1b"))
         if self.app.calib and self.app.calib[0] is self:
             c.create_text(COL + PIC / 2, H - 8, text=f"click the picture where her {self.app.calib[1].lower()} is",
-                          font=("Segoe UI", 8, "italic"), fill="#2563eb")
+                          font=("Segoe UI", 8, "italic"), fill=C("#2563eb"))
         # health and energy
         w = PIC + 2 * COL
         self.hp.delete("all")
         share = max(0.0, min(1.0, pct / 100.0))
-        col = "#22c55e" if pct >= 60 else "#eab308" if pct >= 35 else "#f97316" if pct >= 15 else "#ef4444"
+        col = C("#22c55e") if pct >= 60 else C("#eab308") if pct >= 35 else C("#f97316") if pct >= 15 else C("#ef4444")
         self.hp.create_rectangle(0, 0, w * share, 18, fill=col, outline="")
         self.hp.create_text(6, 9, anchor="w", text=f"Health {f['health']:.0f}%   ({pct:.0f}% of full)",
-                            font=("Segoe UI", 9, "bold"))
+                            font=("Segoe UI", 9, "bold"), fill=C("#111827"))
         self.en.delete("all")
-        self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill="#60a5fa", outline="")
-        self.en.create_text(6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7))
+        self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill=C("#60a5fa"), outline="")
+        self.en.create_text(6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
@@ -579,7 +617,7 @@ class FighterCard(ttk.Frame):
         items = []
         items.append(c.create_text(x + (widths[0] - 2 if side == "L" else 2), ly, text=name,
                                    anchor="e" if side == "L" else "w", font=("Segoe UI", 8, "bold" if calib else "normal"),
-                                   fill="#2563eb" if calib else "#111827"))
+                                   fill=C("#2563eb") if calib else C("#111827")))
         order = (1, 2) if side == "L" else (1, 2)
         bx = x + widths[0] if side == "L" else x + widths[0]
         if side == "R":
@@ -588,9 +626,9 @@ class FighterCard(ttk.Frame):
         items.append(c.create_rectangle(bx, ly - 7, bx + widths[1] - 2, ly + 7, fill=fill, outline=""))
         items.append(c.create_text(bx + (widths[1] - 2) / 2, ly, text=d, fill=text_on(fill), font=("Segoe UI", 7, "bold")))
         rx = bx + widths[1]
-        items.append(c.create_rectangle(rx, ly - 7, rx + widths[2] - 2, ly + 7, fill="#ffffff", outline=res_color(res),
+        items.append(c.create_rectangle(rx, ly - 7, rx + widths[2] - 2, ly + 7, fill=C("#ffffff"), outline=res_color(res),
                                         width=2))
-        items.append(c.create_text(rx + (widths[2] - 2) / 2, ly, text=r, fill="#111827", font=("Segoe UI", 7)))
+        items.append(c.create_text(rx + (widths[2] - 2) / 2, ly, text=r, fill=C("#111827"), font=("Segoe UI", 7)))
         for it in items:
             c.tag_bind(it, "<Enter>", lambda e, t=tip: self.app.tip.show(e.x_root, e.y_root, t))
             c.tag_bind(it, "<Leave>", lambda e: self.app.tip.hide())
@@ -668,6 +706,30 @@ class App:
             "".join(__import__("traceback").format_exception(*exc)))
         self.root.after(50, self.pump)
 
+    def _dark_style(self, style):
+        """window.dark: the ttk widgets (frames, labels, switches, buttons, the entry, the scrollbars) and the plain
+        Tk ones in dark colours."""
+        bg, field, fg, line, hi = "#17181e", "#252732", "#e5e7eb", "#3a3d4a", "#33364a"
+        self.root.configure(bg=bg)
+        style.configure(".", background=bg, foreground=fg, fieldbackground=field, bordercolor=line,
+                        darkcolor=bg, lightcolor=line, troughcolor=field, insertcolor=fg, selectbackground=hi,
+                        selectforeground=fg)
+        for w in ("TFrame", "TLabel", "TCheckbutton", "TPanedwindow"):
+            style.configure(w, background=bg, foreground=fg)
+        style.map("TCheckbutton", background=[("active", hi)], indicatorbackground=[("selected", "#60a5fa"),
+                                                                                   ("!selected", field)])
+        style.configure("TCheckbutton", indicatorbackground=field, indicatorforeground=bg)
+        style.configure("TButton", background=field, foreground=fg)
+        style.map("TButton", background=[("pressed", line), ("active", hi)])
+        style.configure("TEntry", fieldbackground=field, foreground=fg, insertcolor=fg)
+        style.configure("Vertical.TScrollbar", background=field, troughcolor=bg, arrowcolor=fg)
+        style.configure("Horizontal.TScrollbar", background=field, troughcolor=bg, arrowcolor=fg)
+        style.configure("Horizontal.TScale", background=field, troughcolor=bg)
+        style.configure("Sash", background=line)
+        for opt, val in (("*Background", bg), ("*Foreground", fg), ("*Canvas.Background", bg),
+                         ("*selectBackground", hi), ("*insertBackground", fg)):
+            self.root.option_add(opt, val)
+
     # ---- layout ----
     def _build(self):
         style = ttk.Style(self.root)
@@ -675,6 +737,9 @@ class App:
             style.theme_use("clam")
         except tk.TclError:
             pass
+        _THEME["dark"] = dark_on(self._rules())
+        if _THEME["dark"]:
+            self._dark_style(style)
         panes = ttk.Panedwindow(self.root, orient="horizontal")
         panes.pack(fill="both", expand=True)
         left = ttk.Frame(panes, padding=6)
@@ -709,7 +774,7 @@ class App:
             tk.Label(legend, text=" " + n.split(" ")[0] + " ", bg=c, fg=text_on(c), font=("Segoe UI", 7)).pack(side="left", padx=1)
         ttk.Label(legend, text="  border: resistance").pack(side="left")
         for at, c, n in RES_STEPS:
-            tk.Label(legend, text=" " + n.split(" ")[0] + " ", bg="#ffffff", fg="#111827", font=("Segoe UI", 7),
+            tk.Label(legend, text=" " + n.split(" ")[0] + " ", bg=C("#ffffff"), fg=C("#111827"), font=("Segoe UI", 7),
                      highlightbackground=c, highlightthickness=2).pack(side="left", padx=1)
 
         holder = ttk.Frame(left)
@@ -747,7 +812,8 @@ class App:
         ttk.Checkbutton(bar, text="Progress", variable=self.show_progress,
                         command=self.text_switches).pack(side="right", padx=4)
         self.text = tk.Text(right, wrap="word", font=("Georgia", 11), padx=12, pady=8, undo=False,
-                            background="#fffdf8", foreground="#1f2937")
+                            background=C("#fffdf8"), foreground=C("#1f2937"),
+                            insertbackground=C("#1f2937"), highlightthickness=0)
         tsb = ttk.Scrollbar(right, orient="vertical",
                             command=lambda *a: (self.text.yview(*a), self.user_scroll()))
         for ev in ("<MouseWheel>", "<Button-4>", "<Button-5>", "<Prior>", "<Next>", "<Up>", "<Down>"):
@@ -871,28 +937,28 @@ class App:
         t.tag_configure("story", font=("Georgia", fs), spacing1=1, spacing3=3, lmargin1=4, lmargin2=4)
         t.tag_configure("gap", font=("Georgia", max(4, fs // 2)))
         t.tag_configure("bold", font=("Georgia", fs, "bold"))
-        t.tag_configure("italic", font=("Georgia", fs, "italic"), foreground="#7c3aed")
-        t.tag_configure("pov", font=("Georgia", fs + 1, "bold"), foreground="#b45309", spacing1=10, spacing3=4)
-        shade = "#f3f5f9"
-        t.tag_configure("mech", font=("Consolas", mono), foreground="#4b5563", background=shade)
-        t.tag_configure("head", font=("Consolas", mono + 1, "bold"), foreground="#111827", background=shade,
+        t.tag_configure("italic", font=("Georgia", fs, "italic"), foreground=C("#7c3aed"))
+        t.tag_configure("pov", font=("Georgia", fs + 1, "bold"), foreground=C("#b45309"), spacing1=10, spacing3=4)
+        shade = C("#f3f5f9")
+        t.tag_configure("mech", font=("Consolas", mono), foreground=C("#4b5563"), background=shade)
+        t.tag_configure("head", font=("Consolas", mono + 1, "bold"), foreground=C("#111827"), background=shade,
                         spacing1=6)
-        t.tag_configure("part", font=("Consolas", mono, "bold"), foreground="#111827", background=shade, spacing1=3)
-        t.tag_configure("total", font=("Consolas", mono, "bold"), foreground="#111827", background="#e8ecf3",
+        t.tag_configure("part", font=("Consolas", mono, "bold"), foreground=C("#111827"), background=shade, spacing1=3)
+        t.tag_configure("total", font=("Consolas", mono, "bold"), foreground=C("#111827"), background=C("#e8ecf3"),
                         spacing1=2, spacing3=2)
-        t.tag_configure("mechbold", font=("Consolas", mono, "bold"), foreground="#111827", background=shade)
-        for tag, col in (("dmg", "#b91c1c"), ("res", "#1d4ed8"), ("hp", "#047857")):
+        t.tag_configure("mechbold", font=("Consolas", mono, "bold"), foreground=C("#111827"), background=shade)
+        for tag, col in (("dmg", C("#b91c1c")), ("res", C("#1d4ed8")), ("hp", C("#047857"))):
             t.tag_configure(tag, foreground=col)
             t.tag_configure(tag + "bold", foreground=col, font=("Consolas", mono, "bold"))
-        t.tag_configure("hit", foreground="#15803d", font=("Consolas", mono, "bold"))
-        t.tag_configure("miss", foreground="#6b7280")
-        t.tag_configure("pointer", font=("Segoe UI", max(7, fs - 2), "italic"), foreground="#0f766e",
-                        background="#ecfdf5", lmargin1=28, lmargin2=44, rmargin=12, spacing1=1, spacing3=3)
-        t.tag_configure("progress", font=("Segoe UI", max(7, fs - 3), "italic"), foreground="#9ca3af")
-        t.tag_configure("input", font=("Consolas", fs - 1, "bold"), foreground="#2563eb", spacing1=6)
-        t.tag_configure("rule", foreground="#d1d5db")
+        t.tag_configure("hit", foreground=C("#15803d"), font=("Consolas", mono, "bold"))
+        t.tag_configure("miss", foreground=C("#6b7280"))
+        t.tag_configure("pointer", font=("Segoe UI", max(7, fs - 2), "italic"), foreground=C("#0f766e"),
+                        background=C("#ecfdf5"), lmargin1=28, lmargin2=44, rmargin=12, spacing1=1, spacing3=3)
+        t.tag_configure("progress", font=("Segoe UI", max(7, fs - 3), "italic"), foreground=C("#9ca3af"))
+        t.tag_configure("input", font=("Consolas", fs - 1, "bold"), foreground=C("#2563eb"), spacing1=6)
+        t.tag_configure("rule", foreground=C("#d1d5db"))
         try:
-            t.tag_configure("term", underline=True, underlinefg="#9ca3af")
+            t.tag_configure("term", underline=True, underlinefg=C("#9ca3af"))
         except tk.TclError:     # (an older Tk: plain underline)
             t.tag_configure("term", underline=True)
         # a wrapped stat line goes on indented under its own start: one tag for each depth of indent
@@ -1004,7 +1070,7 @@ class App:
             ch, color = GLYPHS[m.group(1)]
             tag = "glyph" + color
             if tag not in self._glyph_tags:
-                self.text.tag_configure(tag, foreground=color, font=("Segoe UI Symbol", 10))
+                self.text.tag_configure(tag, foreground=C(color), font=("Segoe UI Symbol", 10))
                 self._glyph_tags.add(tag)
             self.text.insert("end", ch, tuple(tags) + (tag,))
             pos = m.end()
