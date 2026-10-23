@@ -12271,3 +12271,38 @@ the {part} throbs with every heartbeat, a reminder of exactly where she gave
 there's a hot flush of shame, and right behind it, stubbornly, the thought: again, then
 she has given once now, and she is not going to give the same thing twice
 she gets her breath back before she gets her pride back
+
+# ---------------------------------------------------------------------------------------------------------------
+# HOLDING HERSELF BACK FROM TAPPING (build 263): what her body DOES to keep from tapping, beside the engine's own
+# sign of it each beat. tap: 1-5 as above. posture: down (the ground is under her paw) or standing (it isn't: only
+# her own body, or the one holding her, is in reach). Never a tap.
+# ---------------------------------------------------------------------------------------------------------------
+== tap_hold_back | tap: 1, 2
+she presses her free paw flat against her own side and keeps it there, as if it might wander | has: arms
+she curls her free paw into the fur of her chest and holds on, lightly, for now | has: arms
+she tucks her free paw in against her ribs, out of the way of temptation | has: arms
+she plants her free forepaw and leans her weight on it, so it is too busy to tap | has: forelegs
+her tail curls round tight against her own flank and stays there | has: tail, tails
+she hooks her claws into the grass and lets them rest there, not gripping yet | posture: down | has: arms, forelegs
+she spreads her free paw on the ground and presses it down, as if to remind it where it belongs | posture: down | has: arms, forelegs
+== tap_hold_back | tap: 3
+she grabs a fistful of the fur on her own side and twists it, hard, so the hurt there gives her free paw something to do | has: arms
+she digs her claws into her own flank, deliberately, and holds them there | has: arms
+she clamps her free arm down across her own chest and pins it there with her weight | has: arms
+she wedges her free paw under her own body and lies on it | posture: down | has: arms, forelegs
+she claws up a clump of grass and earth and holds it crushed in her fist, so her paw is full | posture: down | has: arms
+her claws rake furrows in the ground, again and again, anything but lift | posture: down | has: arms, forelegs
+she wraps her tail round her own free arm and pulls it tight against her side | has: arms | has: tails
+she grips the fur of the one holding her instead, hard, the only thing she can reach that isn't a tap | posture: standing | has: arms
+her free foot hooks round her own ankle and locks there, so not even that can kick out a tap | has: legs
+== tap_hold_back | tap: 4, 5
+she grips her own wrist with what little she has free, and holds her own paw down by force | has: arms
+she presses her muzzle into her own shoulder and bites down on her own fur to keep the word in | has: arms
+she sinks her claws into her own side until it hurts, using the new pain to drown out the urge | has: arms
+she rolls her weight onto her free paw and grinds it into the ground under her, trapping it there | posture: down | has: arms, forelegs
+she clutches a root, a stone, anything under her, so tightly her claws ache, and won't let go of it | posture: down | has: arms, forelegs
+her paw tears loose from the ground on its own and she slams it back down flat and holds it, shaking | posture: down | has: arms, forelegs
+she clenches both of her own arms round herself as best she can, holding her whole body still | posture: standing | has: arms
+she clings to the fur of the one holding her with both paws, white-knuckled, because if she lets go she'll tap | posture: standing | has: arms
+her tail lashes up to slap and she clamps it down under her own leg | posture: down | has: tail, tails
+she locks her free foreleg straight and rigid under her, so stiff it trembles, refusing to let it bend | has: forelegs

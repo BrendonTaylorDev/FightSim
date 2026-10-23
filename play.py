@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-23 build 262-guided (submission sells: the lock, the tap fight by level, the tap, after it)"
+VERSION = "2026-10-23 build 263-guided (holding herself back from tapping: physical tells)"
 
 HELP = """
 =============================================================================================

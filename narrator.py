@@ -1883,7 +1883,8 @@ TAP_SHOWN = re.compile(r"(?i)\btap(s|ped|ping)?\b(?!\s+(on|at)\s+(her|the)\s+(sh
 # tap.", "she would not be the one to tap out", "it was not enough": the build-254 log counted those as the tap)
 _TAP_NOT = re.compile(r"\b(?:make|made|making|force|forced|get|got|until|till|unless|before|if|when|will|'ll|shall|"
                       r"going to|has to|had to|have to|must|need\w*|want\w*|wish\w*|urge|refus\w+|won't|will not|"
-                      r"wouldn't|would not|didn't|did not|not|never|no|nothing|almost|nearly|close to|to|"
+                      r"wouldn't|would not|didn't|did not|wasn't|isn't|was not|not|never|no|nothing|almost|nearly|"
+                      r"close to|to|"
                       r"urge|thought|idea)\b"
                       r"[^.!?]{0,40}$", re.I)
 
@@ -9513,6 +9514,13 @@ class Narrator:
                                                                      exclude=SUB_TAP_SIGN))
                     self._offer_line(add, f"a finished line for {d2} fighting the tap", "tap_fight", fmt=f2, tap=lv2,
                                      has=feats(d2))
+                    # (since build 263) what her body does to keep from tapping: one physical way a beat, to go with
+                    # the engine's sign and the thoughts above
+                    pos2 = self._sub_posture(d2)
+                    add(f"{d2}, holding herself back from tapping", B.pick("tap_hold_back", 1, tap=lv2, posture=pos2,
+                                                                          has=feats(d2), fmt=f2))
+                    self._offer_line(add, f"a finished line for {d2} holding herself back", "tap_hold_back", fmt=f2,
+                                     tap=lv2, posture=pos2, has=feats(d2))
                 if (lead_ == h2 or (lead_ not in (h2, d2) and act)) and act and h2:
                     side[0] = "act"
                     add(f"{h2}, feeling her fight it", B.pick("tap_fight_hold", 1, tap=lv2, has=feats(h2),

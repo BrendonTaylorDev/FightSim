@@ -4229,3 +4229,25 @@ The grip came off, and she dragged in a breath that hurt all the way down.
 She was still in it, and she knew it, and she hated that she had had to give that much.
 She had given once now, and she was not going to give the same thing twice.
 She got her breath back before she got her pride back.
+
+# ---------------------------------------------------------------------------------------------------------------
+# HOLDING HERSELF BACK FROM TAPPING (build 263): finished lines for what her body does to keep from tapping.
+# Never a tap.
+# ---------------------------------------------------------------------------------------------------------------
+== tap_hold_back | tap: 1, 2
+She pressed her free paw flat against her own side and kept it there. | has: arms
+She tucked her free paw in against her ribs, out of harm's way. | has: arms
+She planted her free forepaw and leaned on it, so it had something else to do. | has: forelegs
+She spread her free paw on the ground and pressed it down, as if to remind it where it belonged. | posture: down | has: arms, forelegs
+== tap_hold_back | tap: 3
+She grabbed a fistful of the fur on her own side and twisted it, hard, to give her paw something else to hold. | has: arms
+She dug her claws into her own flank and held them there. | has: arms
+She wedged her free paw under her own body and lay on it. | posture: down | has: arms, forelegs
+She clawed up a clump of grass and earth and held it crushed in her fist, so her paw was full. | posture: down | has: arms
+She gripped the fur of the one holding her instead, hard, the only thing in reach that would not give her away. | posture: standing | has: arms
+== tap_hold_back | tap: 4, 5
+She gripped her own wrist and held her own paw down by force. | has: arms
+She sank her claws into her own side until it hurt, and let the new pain drown out the want. | has: arms
+She rolled her weight onto her free paw and ground it into the earth under her, trapping it there. | posture: down | has: arms, forelegs
+Her paw tore loose from the ground on its own, and she slammed it back down flat and held it there, shaking. | posture: down | has: arms, forelegs
+She clung to the fur of the one holding her with both paws, because if she let go, she would give in. | posture: standing | has: arms

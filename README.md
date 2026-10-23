@@ -654,6 +654,10 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 263
+- **Holding herself back from tapping** (`tap_hold_back` in story_blocks.txt and story_lines.txt): what her body DOES to keep from tapping, offered every beat of a submission beside the engine's own sign and the thoughts: pressing her free paw flat against her side, grabbing a fistful of the fur on her own side and twisting it, digging her claws into her own flank, wedging her paw under her body and lying on it, clawing up a clump of grass and holding it crushed, gripping her own wrist and holding her paw down by force, clinging to the fur of the one holding her. By level (1-2, 3, 4-5: harder and more desperate as she nears the tap), by her body (arms, forelegs, a tail) and by whether she is down (the ground in reach) or on her feet (only her own body, or the holder's). None of them is ever a tap.
+- The tap check reads "wasn't" and "isn't" as not a tap too.
+
 ## Build 262
 - **Submission sells in the story libraries**: new material in story_blocks.txt, story_lines.txt and story_passages.txt, offered every beat of a submission beside the engine's own sign of the tap fight (her paw rising and yanked back), so it is the rest of it: her breath, her eyes, her thoughts, the sounds, what she is holding on for, and what the holder feels.
   - **The lock going on** (`sub_lock_held`, `sub_lock_hold`): the instant it locks, from each side ("she feels the angle more than the pressure at first: her left thigh turned one notch past where it goes").

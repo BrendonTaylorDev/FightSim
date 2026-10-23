@@ -1143,8 +1143,9 @@ def sub_sells_check():
     lib = {f: blocks.Blocks({"narration": {"blocks": {"file": f, "memory_file": ""}}})
            for f in ("story_blocks.txt", "story_lines.txt", "story_passages.txt")}
     want = {"story_blocks.txt": ["sub_lock_held", "sub_lock_hold", "tap_fight", "tap_fight_hold", "tap_out_held",
-                                 "tap_out_hold", "tap_after_held"],
-            "story_lines.txt": ["sub_lock_held", "tap_fight", "tap_out_held", "tap_out_hold", "tap_after_held"],
+                                 "tap_out_hold", "tap_after_held", "tap_hold_back"],
+            "story_lines.txt": ["sub_lock_held", "tap_fight", "tap_out_held", "tap_out_hold", "tap_after_held",
+                                "tap_hold_back"],
             "story_passages.txt": ["tap_edge", "tap_out"]}
     for f, cats in want.items():
         have = {c for c, _k, _t in lib[f].entries}
@@ -1155,8 +1156,8 @@ def sub_sells_check():
         if not lib["story_blocks.txt"].pick("tap_fight", 1, tap=lv, fmt={"part": "left thigh", "foe": "Nerine"}):
             problems.append(f"no tap_fight block for level {lv}")
     for f in ("story_lines.txt", "story_passages.txt"):
-        for c, conds, t in lib[f].entries:
-            if c == "tap_fight" and N.tap_really_shown(t):
+        for c, conds, t in lib[f].entries if f != "story_passages.txt" else lib[f].entries:
+            if c in ("tap_fight", "tap_hold_back") and N.tap_really_shown(t):
                 problems.append(f"a tap-fight line reads as a tap: {t[:70]!r}")
             if c in ("tap_out", "tap_out_held") and re_.search(r"(?i)\btap|slap|beat", t) and not N.tap_really_shown(t):
                 problems.append(f"a tap line doesn't read as a tap: {t[:70]!r}")
@@ -1168,7 +1169,7 @@ def sub_sells_check():
     _out, caps = H.beat(s, [{"attacker": "Nerine", "defender": "Ripples", "action": "submission",
                              "submission": "boston crab", "flavor": "locks a boston crab"}], [], roll=False)
     txt = "\n".join(m["content"] for msgs in caps for m in msgs if isinstance(m.get("content"), str))
-    for label in ("as it locks on", "fighting the tap (1 of 5)"):
+    for label in ("as it locks on", "fighting the tap (1 of 5)", "holding herself back from tapping"):
         if label not in txt:
             problems.append(f"the first beat of a submission offers no '{label}' idea")
     return problems
