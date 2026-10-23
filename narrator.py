@@ -1883,7 +1883,8 @@ TAP_SHOWN = re.compile(r"(?i)\btap(s|ped|ping)?\b(?!\s+(on|at)\s+(her|the)\s+(sh
 # tap.", "she would not be the one to tap out", "it was not enough": the build-254 log counted those as the tap)
 _TAP_NOT = re.compile(r"\b(?:make|made|making|force|forced|get|got|until|till|unless|before|if|when|will|'ll|shall|"
                       r"going to|has to|had to|have to|must|need\w*|want\w*|wish\w*|urge|refus\w+|won't|will not|"
-                      r"wouldn't|would not|didn't|did not|not|never|no|nothing|almost|nearly|close to|to)\b"
+                      r"wouldn't|would not|didn't|did not|not|never|no|nothing|almost|nearly|close to|to|"
+                      r"urge|thought|idea)\b"
                       r"[^.!?]{0,40}$", re.I)
 
 
@@ -1894,7 +1895,8 @@ def tap_really_shown(text, who=None):
     for m in TAP_SHOWN.finditer(text or ""):
         start = max(text.rfind(".", 0, m.start()), text.rfind("!", 0, m.start()), text.rfind("?", 0, m.start()),
                     text.rfind("\n", 0, m.start())) + 1
-        if _TAP_NOT.search(text[start:m.start()]) or _NOT_REALLY.search(text[start:m.start()]):
+        if _TAP_NOT.search(text[start:m.start()]) or _NOT_REALLY.search(text[start:m.start()]) \
+                or re.search(r"(?i)\b(?:of|about)\s+$", text[start:m.start()]):    # ("the thought of giving in")
             continue
         if m.group(0).lower() == "enough" and not re.match(r"\s*[!—]|\s*[,.]?[\"”']", text[m.end():m.end() + 3]):
             continue
@@ -8598,6 +8600,21 @@ class Narrator:
                     k.get("tumble") for k in a.get("knock_on") or ()):
                 out.append(("air_tumble", a["defender"], f"{a['defender']} locked with {a.get('attacker')} and tumbling "
                             f"down out of the air", {"foe": a.get("attacker")}, {}))
+        # (since build 262) her fight against the tap at its edge, and the tap itself: the moment, ahead of the hold
+        if take:
+            for tf in getattr(self, "_tap_fights", None) or ():
+                if int(tf.get("level") or 0) >= 4:
+                    hp_ = next((str(h.get("part") or "").lower() for x in list(acts or ()) + list(also or ())
+                                if x.get("attacker") == tf.get("by") and x.get("defender") == tf["who"]
+                                for h in (x.get("hits") or x.get("parts") or ()) if isinstance(h, dict) and h.get("part")), "")
+                    out.append(("tap_edge", tf["who"], f"{tf['who']} at the very edge of tapping", {"foe": tf.get("by"),
+                                                                                                      "part": hp_},
+                                {"tap": str(tf["level"]), "posture": self._sub_posture(tf["who"])}))
+            for e in also or ():
+                if e.get("type") in ("tap_out", "tap_count") and e.get("how") == "tap" and e.get("defender"):
+                    out.append(("tap_out", e["defender"], f"{e['defender']} tapping out", {"foe": e.get("attacker"),
+                                "part": str((e.get("parts") or [""])[0]).lower()},
+                                {"posture": self._sub_posture(e["defender"])}))
         # holds: one that locks on now, or one still on from before (any part: the neck makes it a choke)
         held = []
         for a in acts:
@@ -8664,6 +8681,10 @@ class Narrator:
         # (only the fighters this part is told for: a hold on the one striking is not the moment of her blow)
         return [m for m in out if m[1] and (m[1] in recv if m[0] not in ("pinning", "holding") and recv else
                                             m[1] == actor if m[0] in ("pinning", "holding") and actor else True)]
+
+    def _sub_posture(self, who):
+        """'down' or 'standing' for a story block's posture: whether the ground is within her reach to tap on."""
+        return "down" if who in (getattr(self, "on_ground", None) or ()) else "standing"
 
     def _passage_for(self, key, acts, pin_events, also, actor, receivers):
         """Now and then one showpiece passage for the biggest moment of this part (narration.passages): to set in
@@ -9462,6 +9483,56 @@ class Narrator:
                                                           fmt={"part": part_, "foe": d_}))
                     self._offer_line(add, f"a finished line for {a_} working the hold", "sub_hold",
                                      fmt={"part": part_, "foe": d_}, held=held_w, has=feats(a_))
+            # (since build 262) the submission sells: the lock going on, her fight against the tap by how near she is,
+            # the tap itself and after it, each from the side this part is told from
+            def held_part_(a2, d2):
+                ps = [str(h.get("part") or "").lower() for x in list(acts or ()) + list(also or ())
+                      if x.get("attacker") == a2 and x.get("defender") == d2
+                      for h in (x.get("hits") or x.get("parts") or ()) if isinstance(h, dict)]
+                return next((p for p in ps if p), "")
+            for a2 in acts or ():
+                if a2.get("type") in ("hold_start",) and a2.get("submission") and a2.get("defender"):
+                    d2, h2 = a2["defender"], a2.get("attacker")
+                    f2 = {"part": held_part_(h2, d2), "foe": h2}
+                    if (lead_ == d2 or (lead_ not in (h2, d2) and take)) and take:
+                        side[0] = "take"
+                        add(f"{d2}, as it locks on", B.pick("sub_lock_held", 1, has=feats(d2), fmt=f2))
+                        self._offer_line(add, f"a finished line for {d2} as it locks on", "sub_lock_held", fmt=f2,
+                                         has=feats(d2))
+                    if (lead_ == h2 or (lead_ not in (h2, d2) and act)) and act:
+                        side[0] = "act"
+                        add(f"{h2}, locking it on", B.pick("sub_lock_hold", 1, has=feats(h2), fmt=dict(f2, foe=d2)))
+            for tf in getattr(self, "_tap_fights", None) or ():
+                d2, h2, lv2 = tf["who"], tf.get("by"), str(tf["level"])
+                f2 = {"part": held_part_(h2, d2), "foe": h2}
+                if (lead_ == d2 or (lead_ not in (h2, d2) and take)) and take:
+                    side[0] = "take"
+                    # (the engine's own sign of it is in the notes: these are the rest of it)
+                    add(f"{d2}, fighting the tap ({lv2} of 5)", B.pick("tap_fight", 2 if int(lv2) >= 3 else 1, tap=lv2,
+                                                                     has=feats(d2), state=state(d2), fmt=f2,
+                                                                     exclude=SUB_TAP_SIGN))
+                    self._offer_line(add, f"a finished line for {d2} fighting the tap", "tap_fight", fmt=f2, tap=lv2,
+                                     has=feats(d2))
+                if (lead_ == h2 or (lead_ not in (h2, d2) and act)) and act and h2:
+                    side[0] = "act"
+                    add(f"{h2}, feeling her fight it", B.pick("tap_fight_hold", 1, tap=lv2, has=feats(h2),
+                                                              fmt=dict(f2, foe=d2)))
+            for e2 in also or ():
+                if e2.get("type") not in ("tap_out", "tap_count") or e2.get("how") != "tap" or not e2.get("defender"):
+                    continue
+                d2, h2 = e2["defender"], e2.get("attacker")
+                f2 = {"part": str((e2.get("parts") or [""])[0]).lower(), "foe": h2}
+                pos2 = self._sub_posture(d2)
+                if (lead_ == d2 or (lead_ not in (h2, d2) and take)) and take:
+                    side[0] = "take"
+                    add(f"{d2}, giving in", B.pick("tap_out_held", 2, has=feats(d2), posture=pos2, fmt=f2))
+                    self._offer_line(add, f"a finished line for {d2} tapping out", "tap_out_held", fmt=f2,
+                                     posture=pos2, has=feats(d2))
+                    if e2["type"] == "tap_count":
+                        add(f"{d2}, after the tap (the match goes on)", B.pick("tap_after_held", 1, fmt=f2))
+                if (lead_ == h2 or (lead_ not in (h2, d2) and act)) and act and h2:
+                    side[0] = "act"
+                    add(f"{h2}, feeling the tap", B.pick("tap_out_hold", 1, has=feats(h2), fmt=dict(f2, foe=d2)))
         # --- after the match
         if acts and all(t == "aftermath" for t in types):
             win = next((a.get("winner") for a in acts if a.get("winner")), None)

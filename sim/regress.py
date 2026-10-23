@@ -364,7 +364,7 @@ def passage_check():
     import narrator
     with open(os.path.join(H.ROOT, "story_passages.txt"), encoding="utf-8") as fh:
         entries = blocks.parse(fh.read())
-    known = {"hit", "cut", "bite", "choke", "choke_out", "held", "holding", "pinned_start", "pinned", "pinning", "landing", "air_fall", "air_tumble", "knockout"}
+    known = {"hit", "cut", "bite", "choke", "choke_out", "held", "holding", "pinned_start", "pinned", "pinning", "landing", "air_fall", "air_tumble", "knockout", "tap_edge", "tap_out"}
     bad = re.compile(r"\b(?:gaping|torn|tore|tears? (?:open|into)|shred\w*|snap\w*|broke|broken|break\w*|fractur\w*|"
                      r"shatter\w*|sever\w*|kill\w*|die|dies|dying|dead|death|pool\w*|spray\w*|soak\w*|expos\w*|"
                      r"gush\w*|stream\w*|beat|sob\w*|weep\w*|wept)\b", re.I)
@@ -1132,6 +1132,48 @@ def hold_panel_check():
     return problems
 
 
+def sub_sells_check():
+    """Build 262: the submission sells in story_blocks.txt, story_lines.txt and story_passages.txt (the lock going
+    on, her fight against the tap by level, the holder feeling it, the tap, after a tap) are there, true to what
+    they are for (a tap line shows a tap; a tap-fight line never does), and offered in a submission beat."""
+    import re as re_
+    import narrator as N
+    import blocks
+    problems = []
+    lib = {f: blocks.Blocks({"narration": {"blocks": {"file": f, "memory_file": ""}}})
+           for f in ("story_blocks.txt", "story_lines.txt", "story_passages.txt")}
+    want = {"story_blocks.txt": ["sub_lock_held", "sub_lock_hold", "tap_fight", "tap_fight_hold", "tap_out_held",
+                                 "tap_out_hold", "tap_after_held"],
+            "story_lines.txt": ["sub_lock_held", "tap_fight", "tap_out_held", "tap_out_hold", "tap_after_held"],
+            "story_passages.txt": ["tap_edge", "tap_out"]}
+    for f, cats in want.items():
+        have = {c for c, _k, _t in lib[f].entries}
+        for c in cats:
+            if c not in have:
+                problems.append(f"{f} has no {c} group")
+    for lv in "12345":
+        if not lib["story_blocks.txt"].pick("tap_fight", 1, tap=lv, fmt={"part": "left thigh", "foe": "Nerine"}):
+            problems.append(f"no tap_fight block for level {lv}")
+    for f in ("story_lines.txt", "story_passages.txt"):
+        for c, conds, t in lib[f].entries:
+            if c == "tap_fight" and N.tap_really_shown(t):
+                problems.append(f"a tap-fight line reads as a tap: {t[:70]!r}")
+            if c in ("tap_out", "tap_out_held") and re_.search(r"(?i)\btap|slap|beat", t) and not N.tap_really_shown(t):
+                problems.append(f"a tap line doesn't read as a tap: {t[:70]!r}")
+    s = H.session(1, fighters="Nerine,Ripples")
+    e = s.eng
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.downed["Ripples"], e.facing["Ripples"] = 0, "face-down"
+    e.sub_window = {"Ripples": True}
+    _out, caps = H.beat(s, [{"attacker": "Nerine", "defender": "Ripples", "action": "submission",
+                             "submission": "boston crab", "flavor": "locks a boston crab"}], [], roll=False)
+    txt = "\n".join(m["content"] for msgs in caps for m in msgs if isinstance(m.get("content"), str))
+    for label in ("as it locks on", "fighting the tap (1 of 5)"):
+        if label not in txt:
+            problems.append(f"the first beat of a submission offers no '{label}' idea")
+    return problems
+
+
 def build_261_check():
     """Build 261, from the user's build-260 Ripples vs Nerine log: invented holds checked against what limbs can do
     (holds.invented_check), the director's words put right to the parts it resolves (director.words_to_parts), a
@@ -1629,6 +1671,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 255 match state: how far apart they are, the opening told as the opening  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "sub sells" for w in want):
+        t = time.time()
+        probs = sub_sells_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 262 submission sells: lock, tap fight by level, the tap, after it  ({time.time() - t:.1f}s)")
+        for p in probs[:8]:
             print("      " + p)
     if not want or any(w in "build 261" for w in want):
         t = time.time()

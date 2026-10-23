@@ -4145,3 +4145,87 @@ The leg took her weight and complained about it in a long, deep throb that sprea
 She put her weight back on it, and her {part} told her about it.
 == after_hit | level: sore
 She stood with her teeth clenched and let it ache, and it settled into a heavy, bruised soreness in her {part}.
+
+# ---------------------------------------------------------------------------------------------------------------
+# SUBMISSION SELLS (build 262): finished lines for a submission locking on, her fight against the tap by how near
+# she is (tap: 1-5), the holder feeling it, the tap itself, and after a tap that doesn't end the match. Slots:
+# {part} (the worst held part), {foe}. A tap line says plainly that she taps; a tap_fight line never does.
+# ---------------------------------------------------------------------------------------------------------------
+== sub_lock_held
+The instant it locked, she knew it was not a grab she could shake.
+Her {part} turned one notch past where it went, and stayed there.
+Everything in her went still for a heartbeat while she worked out how bad it was.
+She tried the obvious way out at once, and the grip had been waiting for it.
+The pain in her {part} arrived a breath behind the hold, as if it had needed to find the way.
+== sub_lock_hold
+She felt it lock: the small give at the end of the turn, and then nowhere left for the joint to go.
+She set it and did not crank yet, letting {foe} feel exactly where the edge was.
+She settled her weight into it the way you settle into a long job.
+She did not hurry it; a hurried lock slipped, and this one was not going to slip.
+
+== tap_fight | tap: 1
+She told herself it was only pressure, and for now that was even true.
+She breathed out slowly through her nose, making a point of how slowly.
+She had taken worse than this, and she was going to take this too.
+She kept her face carefully blank, as if her {part} belonged to someone else.
+The urge to give in was there already, faint and far off, and she ignored it.
+== tap_fight | tap: 2
+Her breath caught on the way in, and she had to make it go on.
+The {part} had stopped being pressure and started being pain, and she noticed the moment it changed.
+A small voice in her said just this once, and she told it no, and it did not go away.
+She started bargaining with herself: one more press, and then she would think about it.
+A sound got out of her that she had not given permission for, and she clamped down on the next one.
+She held her breath through each press and gulped air between them.
+== tap_fight | tap: 3
+Her whole body was shaking now, a fine fast tremor she could not stop.
+The thought of giving in had stopped being a thought and become a want, loud and steady.
+Her thoughts came in short hard pieces: not yet, not to her, not like this.
+She knew exactly how easy it would be, and the knowing was its own kind of torture.
+She stared at one fixed thing and made it the only thing in the world.
+Every part of her was straining now, not against the grip, but against herself.
+== tap_fight | tap: 4
+She could not think in sentences any more: no, hold, don't, hold.
+The cries came out of her whether she wanted them or not; she only kept back the word.
+The urge to give in had a voice of its own now, pleading in her head, and it sounded like her.
+She caught herself already halfway to giving in, and dragged herself back from it.
+Each press of the hold lasted far longer than it should have.
+== tap_fight | tap: 5
+There was nothing left of her but the {part} and the refusal, and the refusal was cracking.
+In her head there was only a plea, and she did not know who she was asking.
+Every nerve in her was screaming to give in, and still she would not.
+She held on to the refusal the way she would have held the edge of a cliff.
+A part of her had already given in, and the rest of her would not let it.
+She did not know how she was still refusing; she only knew she had not stopped yet.
+
+== tap_fight_hold | tap: 1, 2
+She could feel {foe} testing the grip, small careful tries that said she was not worried yet.
+She felt the breath catch under her, and knew the hold was doing its work.
+== tap_fight_hold | tap: 3
+She could feel the trembling now, up through her own arms, fast and fine and getting worse. | has: arms
+She heard the breathing go ragged and knew exactly where {foe} was.
+== tap_fight_hold | tap: 4, 5
+The sounds coming from {foe} were hard to listen to, and she listened anyway, waiting.
+She had never felt anyone hold on like this, and it shook her more than she let show.
+
+== tap_out_held | posture: down
+Her paw slapped the ground, once, twice, again, and she could not make it stop. | has: arms, forelegs
+She gave in all at once, her paw slapping the ground in short frantic slaps. | has: arms, forelegs
+At last she tapped, hard and fast against the ground, and the fight went out of her with it. | has: arms, forelegs
+She tapped out, and lay there with her {part} pulled in against her, just breathing.
+== tap_out_held | posture: standing
+Her paw pounded against {foe}, again and again, frantic, and she gave in. | has: arms, forelegs
+She tapped out against {foe}, hard and fast, every slap of it saying enough. | has: arms, forelegs
+== tap_out_held
+What finally broke her was not the pain itself, but knowing it would not stop on its own.
+She gave in with the last of her strength, and there was shame in it, and relief, all tangled together.
+When the grip came off, the pain did not leave; it flooded, with nowhere to go now but out.
+== tap_out_hold
+She felt the tap before she heard it, and let go at once, as if the {part} had burned her.
+She eased off slowly, carefully, the way you put down something that might break.
+She looked at {foe}, and what she felt was not quite triumph.
+
+== tap_after_held
+The grip came off, and she dragged in a breath that hurt all the way down.
+She was still in it, and she knew it, and she hated that she had had to give that much.
+She had given once now, and she was not going to give the same thing twice.
+She got her breath back before she got her pride back.

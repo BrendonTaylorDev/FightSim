@@ -12138,3 +12138,136 @@ she sees the hips turn before anything else does, and that is enough
 == watch_thought
 she has been put down and got back up again, and gets up careful every time: the careful ones are the ones who last
 she wanted that face to change, and it hasn't
+
+# ---------------------------------------------------------------------------------------------------------------
+# SUBMISSION SELLS (build 262, narration.sub_blocks): the moment a submission locks on, her fight against the tap
+# beat by beat, the tap itself, and after it. Offered beside the engine's own sign of the tap fight (her paw
+# rising and yanked back, a fist clenched against it), so these are mostly the rest of it: her breath, her eyes,
+# her thoughts, the sounds, what she is holding on for, and what the holder feels of it.
+#   sub_lock_held / sub_lock_hold: the beat a submission locks on (the one in it / the one putting it on)
+#   tap_fight (tap: 1-5): the one in it fighting the urge to tap, by how near she is (1 felt and held easily,
+#       2 getting to her, 3 close to her limit, 4 very close, 5 at the very edge); the nearer, the rawer
+#   tap_fight_hold (tap: 1-5): the one holding it, feeling her fight it
+#   tap_out_held / tap_out_hold: the tap (the one giving in / the one who feels it and lets go)
+#   tap_after_held: a tap that doesn't end the match (finish.submission.taps): the grip off, and still in it
+# ---------------------------------------------------------------------------------------------------------------
+== sub_lock_held
+the instant it locks, she knows: this isn't a grab she can shake, it's a lock, and it has a direction
+she feels the angle more than the pressure at first: her {part} turned one notch past where it goes
+everything in her goes very still for a heartbeat, the way prey does, while she works out how bad this is
+the grip settles in on the {part} and stays, and the staying is the frightening part
+she tries the obvious way out at once, and the grip was already waiting for it
+a cold clear thought arrives ahead of the pain: if she doesn't get out of this soon, she won't get out at all
+her breath goes in sharp and stops at the top as the {part} takes the full bend of it
+she feels {foe} adjust, small and careful, and the small careful change is worse than the lock going on
+the pain in the {part} arrives a breath behind the hold, as if it had to find its way there
+her ears go flat before she has decided anything at all | has: ears
+== sub_lock_hold
+she feels it lock: the small give at the end of the turn, the joint with nowhere left to go
+she sets it and doesn't crank yet, letting {foe} feel exactly where the edge is
+she settles her weight into it the way you settle into a long job
+she checks her own footing first, then the angle, then {foe}'s face, in that order
+there is a moment of pure focus, the world narrowed to the {part} in her grip and how it answers
+she knows now it's on properly, and something in her shoulders lets go of a tension she hadn't noticed
+she doesn't hurry; a hurried lock slips, and this one is not going to slip
+
+== tap_fight | tap: 1
+she tells herself it's only pressure, and for now that's even true
+she breathes out slowly through her nose, making a point of how slowly, to herself as much as to {foe}
+a small stubborn thought: she has taken worse than this, and she is going to take this too
+she keeps her face carefully blank, as if the {part} belonged to someone else
+she counts the presses on the {part} without meaning to, and doesn't like how easy it is to count them
+she shifts against the grip, testing, more annoyed than hurt
+the urge to give in is there already, faint and far off, like a sound in another room, and she ignores it
+her jaw sets, and she decides, plainly, that she is not giving this away
+she feels the hold, and she feels herself not minding it yet, and holds on to the not minding
+== tap_fight | tap: 2
+her breath catches on the way in and she has to make it go on
+the {part} has stopped being pressure and started being pain, and she notices the moment it changes
+a small voice in her says just this once, and she tells it no, and it doesn't go away
+she squeezes her eyes shut, and the dark behind them is worse, so she opens them again
+a sound gets out of her that she didn't give permission for, and she clamps down on the next one
+she starts bargaining with herself: one more press, and then she'll think about it; one more after that
+sweat breaks out along her back and under her fur, cold against the heat in the {part}
+she finds she's holding her breath through each press and gulping between them
+her whole attention keeps sliding back to the {part}, and she keeps dragging it away
+she reminds herself why she's here, and the reason holds, just
+== tap_fight | tap: 3
+her whole body is shaking now, a fine fast tremor that won't stop no matter what she tells it
+her breathing has gone ragged, each breath shorter than the last, and she can hear it
+the thought of giving in has stopped being a thought and become a want, loud and steady
+her thoughts come in short hard pieces: not yet, not to her, not like this
+her eyes are wet and she doesn't care; she isn't going to let it be the reason
+she stares at a single fixed thing, a stone, a blade of grass, and makes it the only thing in the world
+every part of her is straining, not against the grip any more, but against herself
+she hears her own voice, a cracked sound that is almost a word, and swallows the rest of it
+she knows exactly how easy it would be, and the knowing is its own kind of torture
+the {part} screams at her, and she answers it with her teeth set so hard her jaw aches
+== tap_fight | tap: 4
+she can't think in sentences any more: no, hold, don't, hold
+her body jerks in the grip on its own, short violent spasms that have nothing to do with escaping
+the cries come out of her whether she wants them or not, and she stops trying to keep them in, only the word
+time has gone strange: each press of the hold lasts much longer than it should
+she's not sure any more what she is holding on for, only that she is, and she can't stop now
+she is panting through her open mouth, high and fast, a sound like something running
+the urge to give in has a voice of its own now, pleading in her head, and it sounds like her
+her vision swims at the edges, the world shrinking to the {part} and the effort of not giving it
+the shaking has climbed into her teeth; she can hear them
+she catches herself already halfway to giving in, and drags herself back from it, and it costs her
+== tap_fight | tap: 5
+there is nothing left of her but the {part} and the refusal, and the refusal is cracking
+in her head there's only a plea, please, please, and she doesn't know who she's asking
+her whole body is screaming at her to give in, every nerve, every muscle, and she still won't
+she is crying out with every breath now, raw and ragged, and somewhere inside it she is still saying no
+the refusal is all she has left, and she holds it the way she'd hold the edge of a cliff
+she can feel the moment coming, the one where she won't be able to stop herself, and she fights it anyway
+her eyes are wide and seeing nothing; everything she is has gone inward, into holding on
+she doesn't know how she is still refusing; she only knows she hasn't stopped yet
+a part of her has already given in, and the rest of her won't let it
+every breath is a small war, and she wins it, and has to win the next one
+
+== tap_fight_hold | tap: 1, 2
+she can feel {foe} testing the grip, small careful tries that tell her she isn't worried yet
+she reads it in the shoulders: {foe} is hurting and pretending not to
+she watches for the first crack in that calm face and doesn't see it yet
+she feels the breath catch under her and knows the hold is doing its work
+{foe}'s refusal comes up through the grip as a stiffening, stubborn and steady
+== tap_fight_hold | tap: 3
+she can feel the trembling now, up through her own arms, fast and fine and getting worse | has: arms
+she hears the breathing go ragged under her and knows exactly where {foe} is
+something in her almost wants to ease off, and she doesn't let it
+she feels {foe} fighting herself as much as the hold, and waits for one of them to win
+== tap_fight_hold | tap: 4, 5
+the sounds coming from {foe} are hard to listen to, and she listens anyway, waiting
+she can feel {foe} right at the edge, every refusal costing more than the last
+she has never felt anyone hold on like this, and it shakes her more than she lets show
+she keeps the pressure exactly where it is: one more breath, and {foe} will give, or she won't
+she's not sure any more whether she wants {foe} to tap or to keep refusing
+
+== tap_out_held
+the moment she gives in, the fight goes out of her all at once, like a held breath let go
+what finally breaks her isn't the pain itself, but the knowing it won't stop on its own
+she gives in with the last strength she has, and there is shame in it, and relief, all tangled together
+the decision doesn't feel like one; her body makes it a heartbeat before she does
+she hears herself say it, a cracked word, and can't take it back
+the instant the grip comes off, the pain doesn't leave; it floods, with nowhere to go now but out
+she lies there afterwards with the {part} pulled in against her, breathing, just breathing | posture: down
+there's a strange quiet once it's over, and she can hear her own heart in it
+the relief is so sharp it's almost another hurt
+she can't look at {foe} straight away, and then she does
+== tap_out_hold
+she feels it before she hears it: the frantic rhythm against her, the surrender
+she lets go at once, as if the {part} had suddenly burned her
+for a moment she just stays where she is, breathing hard, letting it be over
+she eases off slowly, carefully, the way you put down something that might break
+the strength goes out of her own arms the second she lets go, as if they'd been waiting for permission | has: arms
+she looks at {foe}, and what she feels isn't quite triumph
+she's surprised how much her own body is shaking now that it's done
+
+== tap_after_held
+the grip comes off and she drags in a breath that hurts all the way down
+she is still in it, and she knows it, and she hates that she had to give that much
+the {part} throbs with every heartbeat, a reminder of exactly where she gave
+there's a hot flush of shame, and right behind it, stubbornly, the thought: again, then
+she has given once now, and she is not going to give the same thing twice
+she gets her breath back before she gets her pride back

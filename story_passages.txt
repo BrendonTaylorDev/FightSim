@@ -265,3 +265,20 @@ The pain did not get worse; it simply got farther away. Sound went first, the wo
 Something in her let go all at once. The fight, the hurt, the will that had kept her going this long, all of it slipped quietly out of her, and her body went slack and still, and her eyes slid closed.
 She tried to hold on, and for a moment she did; then the darkness at the edges of her sight rose up and took her gently, and everything went quiet.
 There was no last effort, no final defiance. The focus simply went out of her eyes, slowly, and her body sagged and settled as though a string that had been holding it up had quietly been cut.
+
+# ---------------------------------------------------------------------------------------------------------------
+# SUBMISSION SHOWPIECES (build 262): her at the very edge of tapping (tap_edge, tap: 4-5: she does NOT tap in it),
+# and the tap itself (tap_out, by whether she is down or on her feet: what her paw can reach to tap on).
+# ---------------------------------------------------------------------------------------------------------------
+== tap_edge | tap: 4, 5
+She could not think in sentences any more. No, her mind said, and hold, and no again, and under the words her whole body was begging her to stop. She did not stop.
+Every press of the hold on her {part} went on far longer than it should have. Her breath came high and fast through her open mouth, and somewhere in the middle of it she heard herself making a sound she did not recognise. She held on.
+The refusal was all she had left, and she held it the way she would have held the edge of a cliff, with everything, knowing exactly how far down it was.
+A part of her had already given in. She could feel it, a loose, quiet place in the middle of the pain, asking. The rest of her would not let it, not yet, not to {foe}.
+She did not know any more what she was holding on for. Only that she was, that she had been for a long time, and that she could not be the one to stop now.
+== tap_out | posture: down
+Her paw lifted and slapped the ground, once, and then again and again, fast and frantic: she was tapping out, and she could not have stopped it if she had tried. {foe} felt it and let go. The pain did not leave with the grip; it flooded, with nowhere to go now but out. | has: arms, forelegs
+In the end it was not a decision. Her body made it a heartbeat before she did: her paw slapping the ground in short desperate taps, and her voice under it, one cracked word. Then the grip was gone, and she lay with her {part} pulled in against her, just breathing. | has: arms, forelegs
+She tapped. She had sworn to herself she would not, and she tapped, hard and fast against the ground, and the shame of it and the relief of it arrived together and could not be told apart. | has: arms, forelegs
+== tap_out | posture: standing
+Her paw found {foe} and pounded against her, again and again, frantic: she was tapping out, every slap saying it plainly. The grip opened at once. She stood there shaking, the {part} hot and loose and hers again, hating how good it felt. | has: arms, forelegs
