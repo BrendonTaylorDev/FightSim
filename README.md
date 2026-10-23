@@ -654,6 +654,18 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 264
+- **The tap chance now comes from both the gripped part and her overall health** (`finish.submission.tap.blend`, on by default):
+  - Fresh, with a ruined part in the grip: about 30% a beat once the hold has built up. She can fight it, but not for ever.
+  - Worn out, with a healthy part: about 8%. That's harder than fresh, but still resistible.
+  - Worn out, with a ruined part: about 85%. Fresh, with a healthy part: next to nothing.
+- **There's a build-up.** She never taps on a hold's first beat. After that the chance is scaled up over 8 beats: 2% of it on the second beat, 6% on the third, 25% on the fifth, and all of it from the ninth.
+  - The dice still decide every beat, so a quick tap is possible, just rare.
+  - In 80 stand-in Ripples vs Nerine submission fights, holds that ended in a tap or pass-out had been on for a median of 6 beats and up to 10. Before, it was 4, with some at 2.
+- **Chokes build up the same way** (`blend.chokes`). Before, a hurt fighter could black out on a choke's second beat.
+- From `blend.near` she is shown refusing it, as near her limit. The meter's chance is now the real, climbing one.
+- With blend on, the breaking point (`tap.overwhelm`, the "0% then 95%" jump), the climbing ceiling and the beat of holding on through it are not used. Set `enabled` to false to bring them back.
+
 ## Build 263
 - **Holding herself back from tapping** (`tap_hold_back` in story_blocks.txt and story_lines.txt): what her body DOES to keep from tapping, offered every beat of a submission beside the engine's own sign and the thoughts: pressing her free paw flat against her side, grabbing a fistful of the fur on her own side and twisting it, digging her claws into her own flank, wedging her paw under her body and lying on it, clawing up a clump of grass and holding it crushed, gripping her own wrist and holding her paw down by force, clinging to the fur of the one holding her. By level (1-2, 3, 4-5: harder and more desperate as she nears the tap), by her body (arms, forelegs, a tail) and by whether she is down (the ground in reach) or on her feet (only her own body, or the holder's). None of them is ever a tap.
 - The tap check reads "wasn't" and "isn't" as not a tap too.

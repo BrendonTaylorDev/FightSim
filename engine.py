@@ -9612,8 +9612,25 @@ class Engine:
                 ceiling *= max(0.0, 1.0 - float(ccl.get("health_hold", 0.6)) * s_ / 100.0)
             top = float(tcfg.get("max", 0.85))
             tap = min(ceiling, max(0.0, over / float(tcfg.get("span", 120))))
+            # (tap.blend, since build 264) THE TAP CHANCE FROM BOTH: how hurt the gripped part is and how hurt she is
+            # overall. Fresh, she can fight even a ruined part off (a fair chance, not a sure one); worn down, she
+            # gives in far more easily, and even a healthy part in the grip is harder to bear than when she was
+            # fresh. Then THE BUILD-UP: the chance starts near nothing and climbs over the hold's first beats, so a
+            # tap within two beats is rare and there is nearly always a visible struggle first
+            bl = tcfg.get("blend") or {}
+            blended, base = bool(bl.get("enabled", True)), 0.0
+            if blended:
+                pd = dmg[0] + float(tcfg.get("second_part", 0.4)) * sum(dmg[1:])
+                P = max(0.0, min(1.0, pd / max(1.0, float(bl.get("part_full", 300))))) ** float(bl.get("part_power", 1.5))
+                Hh = 1.0 - s_ / 100.0
+                base = min(float(bl.get("max", 0.85)), float(bl.get("part", 0.3)) * P + float(bl.get("health", 0.08)) * Hh
+                           + float(bl.get("both", 0.47)) * P * Hh)
+                if surge > 1.0:
+                    base *= float(bl.get("surge", 0.6))
+                ramp = min(1.0, max(0, beats - 1) / max(1.0, float(bl.get("ramp_beats", 8))))
+                tap = base * ramp ** float(bl.get("ramp_power", 2))
             st0 = self.zero_stage(d)
-            if st0 and tap > 0:
+            if st0 and tap > 0 and not blended:
                 # below_zero: the further below zero, the less of her is left to refuse with (stage tap_mult)
                 tap = min(top, tap * float(st0.get("tap_mult", 1.0)))
             choke = any(re.search(r"(?i)neck|throat", h.part) for h in hs)
@@ -9625,6 +9642,10 @@ class Engine:
                 air = float(ccfg.get("air_per_beat", 22)) * beats
                 endure = float(ccfg.get("endurance", 110)) * (s_ / 100.0) ** power * surge
                 po = min(float(ccfg.get("max", 0.85)), max(0.0, (air - endure) / float(ccfg.get("span", 70))))
+                if blended and bl.get("chokes", True):
+                    # (blend.chokes: the dark builds up the same way, so she doesn't black out on its second beat)
+                    po *= min(1.0, max(0, beats - 1) / max(1.0, float(bl.get("ramp_beats", 8)))) ** float(
+                        bl.get("ramp_power", 2))
             # she holds on the first beat it goes past her limit, whatever it costs her: only after that can she
             # give in (d.learned keeps which grip she has already fought through once)
             # finish.submission.taps: a body part her taps have already used may no longer count toward the tally;
@@ -9651,7 +9672,7 @@ class Engine:
             # and after that it is all but certain (chance). It keeps counting while the same fighter holds her.
             ocfg = tcfg.get("overwhelm") or {}
             breaking, stage_ = None, None
-            if ocfg.get("enabled", True) and over > 0 and dmg[0] >= float(ocfg.get("part_damage", 300)):
+            if not blended and ocfg.get("enabled", True) and over > 0 and dmg[0] >= float(ocfg.get("part_damage", 300)):
                 br = d.learned.get("breaking")
                 if not br or br[0] != a or int(br[2]) < self.turn - 1 or len(br) < 4:
                     # how long she can hold out comes from her: the more of her strength is left (and an adrenaline
@@ -9679,7 +9700,7 @@ class Engine:
             if spent:
                 tap = po = 0.0
             # (tap.spent_no_grace: with no health left there is nothing to hold on through: no grace beat)
-            first_over = tap > 0 and d.learned.get("tap_limit") != key_ and not (
+            first_over = tap > 0 and not blended and d.learned.get("tap_limit") != key_ and not (
                 d.health <= 0 and tcfg.get("spent_no_grace", True))
             if first_over:
                 d.learned["tap_limit"] = key_
@@ -9692,7 +9713,8 @@ class Engine:
                 how = "pass_out"
             if not how:
                 near = float(tcfg.get("near", 0.75))
-                if pain >= near * resist or (choke and air >= near * endure):
+                if pain >= near * resist or (choke and air >= near * endure) or (
+                        blended and base >= float(bl.get("near", 0.2)) and beats >= 2):
                     # close to her limit: she is fighting the urge to give in (or the dark), and holding. How many
                     # times she has refused her (in this grip or an earlier one) lets the telling climb toward the tap
                     prev = d.learned.get("tap_refused") or ["", 0]

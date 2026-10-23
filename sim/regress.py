@@ -490,7 +490,7 @@ def _taps_check(director, P):
     d.learned.pop("taps_given", None)
     st = e.start_hold("Nerine", "Ripples", "Left Thigh", 8, with_part="her jaws")
     h = e.holds[st["hold_id"]]
-    h.grab, h.turns_active = True, 4
+    h.grab, h.turns_active = True, 10     # (long on: since build 264 the tap chance builds up over the hold's beats)
     d.parts["Left Thigh"].damage, d.health = 300.0, -50.0
     e.rules["finish"]["submission"]["tap"]["climb"]["start"] = 1.0
     rolled = []
@@ -1046,6 +1046,7 @@ def tap_overwhelm_check():
     e, problems = s.eng, []
     a, d = e.get("Nerine"), e.get("Ripples")
     e.rules["finish"]["submission"]["enabled"] = True
+    e.rules["finish"]["submission"]["tap"]["blend"]["enabled"] = False     # (build 264: the breaking point is the old way)
     e.downed["Ripples"] = 0
     e.facing["Ripples"] = "sitting up"
     e.start_submission(a.name, d.name, "standing armbar")
@@ -1083,6 +1084,58 @@ def tap_overwhelm_check():
     off = beat(400.0)[0]
     if off >= 0.9:
         problems.append(f"with tap.overwhelm off the slow climb no longer caps it: {off}")
+    return problems
+
+
+def tap_blend_check():
+    """Build 264 (tap.blend): the tap chance comes from both the gripped part's damage and her health overall, and
+    builds up over the hold's first beats: never on the first, rare on the second and third, all of it only from the ninth.
+    Fresh with a ruined part: a fair chance she can still fight; worn out with a healthy part: harder than fresh but
+    resistible; worn out with a ruined part: near certain once it has built."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    a, d = e.get("Nerine"), e.get("Ripples")
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.downed["Ripples"] = 0
+    e.facing["Ripples"] = "sitting up"
+
+    def run(health, dmg, n=6):
+        e.holds.clear()
+        d.learned.clear()
+        d.health = d.max_health * health
+        e.start_submission(a.name, d.name, "standing armbar")
+        out = []
+        for _ in range(n):
+            seen = []
+            e.turn += 1
+            for h in e.holds.values():
+                h.turns_active += 1
+                d.parts[h.part].damage = dmg
+            real = e._chance
+            e._chance = lambda p, what, *a_, **k: (seen.append(p) if "tapping out" in what else None) or False
+            try:
+                e._tap_out_tick()
+            finally:
+                e._chance = real
+            out.append(round(max(seen) if seen else 0.0, 3))
+        return out
+
+    worst = run(0.0, 400.0, 10)
+    if worst[0] > 0 or worst[1] > 0.05 or worst != sorted(worst) or worst[-1] < 0.75:
+        problems.append(f"worn out on a ruined part doesn't build from nothing to near certain: {worst}")
+    fresh_ruined = run(1.0, 400.0, 10)[-1]
+    worn_healthy = run(0.05, 10.0, 10)[-1]
+    fresh_healthy = run(1.0, 10.0)[-1]
+    if not 0.2 <= fresh_ruined <= 0.45:
+        problems.append(f"fresh on a ruined part should be a fair chance she can fight: {fresh_ruined}")
+    if not fresh_healthy < worn_healthy <= 0.2:
+        problems.append(f"worn out on a healthy part should be harder than fresh but resistible: {worn_healthy} vs {fresh_healthy}")
+    mid = run(0.5, 200.0, 10)[-1]
+    if not fresh_healthy < mid < worst[-1]:
+        problems.append(f"half hurt on a hurt part isn't between: {mid}")
+    e.rules["finish"]["submission"]["tap"]["blend"]["enabled"] = False
+    if run(0.0, 400.0)[:4] == worst[:4]:
+        problems.append("with tap.blend off the chance is unchanged")
     return problems
 
 
@@ -1721,6 +1774,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 256 tap urge: a submission shows her fighting the urge every beat, harder the nearer the tap  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "tap blend" for w in want):
+        t = time.time()
+        probs = tap_blend_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 264 tap chance from part and health, with a build-up  ({time.time() - t:.1f}s)")
+        for p in probs:
             print("      " + p)
     if not want or any(w in "tap overwhelm" for w in want):
         t = time.time()
