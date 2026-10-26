@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-26 build 265-guided (fewer chokes and jaw holds, choke endurance, busy limbs)"
+VERSION = "2026-10-26 build 266-guided (busy limbs and reach from a hold, Ollama retries)"
 
 HELP = """
 =============================================================================================

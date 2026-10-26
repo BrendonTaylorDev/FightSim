@@ -1224,7 +1224,9 @@ class Display:
                            f"{e['resist']}, beat {e['beats_held']} of it)")
             elif e["type"] == "tap_urge":
                 out.append(f"😣 {e['defender']} fights the urge to tap in {poss_word(e['attacker'])} {e['submission']}, "
-                           f"far from her limit (pain {e['pain']} against her resistance {e['resist']})")
+                           + ("far from her limit" if float(e.get("pain") or 0) < 0.75 * float(e.get("resist") or 1)
+                              else "on the hold's first beat, before she can give in")
+                           + f" (pain {e['pain']} against her resistance {e['resist']})")
             elif e["type"] == "tap_out":
                 if not self.tight():
                     out.append("")

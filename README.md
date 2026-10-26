@@ -654,6 +654,23 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 266
+Fixes from the saved fight (fight2_Ripples_vs_Nerine, 35 beats):
+- **Beat 25 had no story because Ollama wasn't running.** The game couldn't reach it ("actively refused"), most likely because it crashed between the director and the narrator.
+  - When Ollama doesn't answer at all, the game now retries five times over about a minute. Before, it gave up at once.
+  - The exported fight now says why a beat has no story ("the narration failed (Can't reach Ollama...) and was never rerolled").
+- **Limbs locked in her own hold can't strike as well** (`holds.busy_limbs`).
+  - Nerine threw two Knee Strikes with both legs wrapped round Ripples in a triangle choke. Now that's refused, and the director is told to strike with something free.
+  - Both paws in a chicken wing can't punch, and twin tails wound round a knee can't Aqua Tail. A grip with one paw leaves the other free. A Knee Strike now counts as a leg move.
+- **No charge from inside a hold.** Nerine threw an Aqua Jet, a full-body charge, while holding Ripples in a chicken wing.
+- **The holder's blows land near the hold** (`holds.holder_reach`). On Ripples' back in a chicken wing, Nerine bit her foot. A bite now reaches only one step from the parts she grips (`bite_near`), and a paw, knee or tail two steps (`strike_near`). Moves fired from a distance aren't limited.
+- **The arm caught in a wrist lock doesn't throw the blow.** Ripples' Brick Break came from the arm Nerine had locked (×0.6 for that arm). A strike now comes from her free side.
+- **A blow the director didn't name is named from its words.** Ripples' bite came out as "A Plain Blow". Now it's a Bite, and likewise a Kick, Knee Strike, Claw Rake, Tail Strike or Punch. The rules for that limb then apply to it.
+- **Jaws added to a submission already on are rarer too** (`hold_mix.jaws`). The tail-bound knee crank grew "and jaws" partway through the hold.
+- **A choke's pass-out counts for the neck.** The tail strangle's pass-out was credited to her upper back.
+- **The stat line on a hold's first beat** said "far from her limit (pain 378 against her resistance 64)". Now it says "on the hold's first beat, before she can give in" when the pain is already past her limit.
+- **Her own fall isn't a blow.** The injury report said her right upper arm "took Ripples' blow". That was her fall trying to get up, and it now reads "her own fall trying to get up".
+
 ## Build 265
 - **Fewer chokes and jaw holds in a submission match** (`finish.submission.hold_mix`, on by default). They still happen, just less often than the usual locks on a limb, the back or the body.
   - A choke the director puts on (a named one, one of her own, or a hold on the neck) stands 35% of the time (`hold_mix.choke`). Once a choke has been tried in the match, it's half that (`after_first`).

@@ -24,6 +24,8 @@ def _usable(eng, f, d, budget=None):
             continue
         if eng.energy_cost(m) > budget or eng.busy_with(f, m):     # (her jaws can't bite while they hold)
             continue
+        if m.get("charge") and any(h.attacker == f.name and not h.grab for h in eng.holds.values()):
+            continue      # (no charge launched from inside her own hold)
         if eng.held_reach_block(f, d, m):     # held on the ground: only what reaches the holder (holds.held_reach)
             continue
         if m.get("carry") and not eng.has(f, "airborne"):
@@ -101,7 +103,7 @@ def _pick_action(eng, rng, f, d):
         a["hits"] = [{"part": p} for p in rng.sample(parts, min(3, len(parts)))]
     else:
         # (held on the ground, a bite lands only near what holds her: holds.held_reach)
-        near = [p for p in parts if not eng.held_reach_block(f, d, m, [p])]
+        near = [p for p in parts if not eng.held_reach_block(f, d, m, [p]) and not eng.holder_reach_block(f, d, m, [p])]
         a["part"] = rng.choice(near or parts)
     if m.get("target") in ("targeted",) and not m.get("charge") and rng.random() < 0.1:
         a["feint"] = True
@@ -146,9 +148,10 @@ def _chain_links(eng, rng, f, d, first):
         last = (out or [first])[-1].get("part") or rng.choice(list(d.parts))
         out.append({"attacker": f.name, "defender": d.name, "flavor": "", "_sim": True, "action": "strike",
                     "move": m["name"], "part": last if rng.random() < 0.4 else rng.choice(list(d.parts))})
-        if eng.held_reach_block(f, d, m, [out[-1]["part"]]):     # (a bite held on the ground: what she can reach)
-            out[-1]["part"] = rng.choice([p for p in d.parts if not eng.held_reach_block(f, d, m, [p])]
-                                         or list(d.parts))
+        if eng.held_reach_block(f, d, m, [out[-1]["part"]]) or eng.holder_reach_block(f, d, m, [out[-1]["part"]]):
+            # (a bite held on the ground, or blows from where she holds her: what she can reach)
+            out[-1]["part"] = rng.choice([p for p in d.parts if not eng.held_reach_block(f, d, m, [p])
+                                          and not eng.holder_reach_block(f, d, m, [p])] or list(d.parts))
     return out
 
 

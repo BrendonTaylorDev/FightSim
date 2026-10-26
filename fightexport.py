@@ -236,7 +236,12 @@ def write(s, path=None, fights=None):
             side += (f'<div class="fighter">{img}<div class="dim">{html.escape(f.get("posture", ""))} · '
                      f'{html.escape(sts)}</div>{gz}{_table(f)}</div>' if img else
                      f'<div class="fighter">{_bars(f)}{gz}{_table(f)}</div>')
-        body.append(f'<section id="b{k}"><h2>{html.escape(head)}</h2><div class="story">{st or "<p class=dim>(no story text for this beat)</p>"}'
+        if not st:
+            # (since build 266) say why: a narration that failed (Ollama down) and was never rerolled
+            fail = re.search(r"\[narration failed: ([^\]]+)\]", r.get("text", ""))
+            st = (f"<p class=dim>(no story for this beat: the narration failed ({html.escape(fail.group(1))}) and "
+                  f"was never rerolled)</p>" if fail else "<p class=dim>(no story text for this beat)</p>")
+        body.append(f'<section id="b{k}"><h2>{html.escape(head)}</h2><div class="story">{st}'
                     f'{mech_html}</div><div class="side">{side}</div></section>')
     page = (f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,'
             f'initial-scale=1"><title>{html.escape(title or "Fight")}</title><style>{CSS}</style></head><body>'

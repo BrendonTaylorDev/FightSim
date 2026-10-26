@@ -1277,13 +1277,23 @@ class Engine:
         d_up = self.has(d, "airborne")    # (before the blow: knocking her out of the sky must not make it a dive)
         busy = self.busy_with(a, move)
         if enforce and busy:
-            raise ValueError(f"{poss_word(a.name)} {busy[0]} are clamped on {poss_word(busy[1])} {busy[2].lower()}: she "
-                             f"can't {move['name']} with them while they hold. Strike with something free, or let go "
-                             f"first (hold_release)")
+            raise ValueError(f"{poss_word(a.name)} {busy[0]} are {'clamped on' if busy[0] == 'jaws' else 'locked in her hold on'} "
+                             f"{poss_word(busy[1])} {busy[2].lower()}: she can't {move['name']} with them while they "
+                             f"hold. Strike with something free, or let go first (hold_release)")
         dead = self.dead_limb(a, move)
         if enforce and dead:
             raise ValueError(f"{poss_word(a.name)} {dead.lower()} isn't answering her this beat (low_health.tells): "
                              f"she can't {move['name']} with it. Use something else")
+        if enforce and move.get("charge") and ((self.rules.get("holds") or {}).get("busy_limbs") or {}).get(
+                "enabled", True):
+            mine = [h for h in self.holds.values() if h.attacker == a.name and not h.grab]
+            if mine:
+                # (since build 266) a charge is her whole body launched across the gap: locked onto someone in a hold
+                # she has no run-up to make (the build-264 log had an Aqua Jet thrown from inside a chicken wing)
+                raise ValueError(f"{a.name} is locked onto {mine[0].defender} in her "
+                                 f"{mine[0].sub or 'hold'}: {move['name']} is a full-body charge, and she has no "
+                                 f"room to launch one while she holds her. Strike with something free, or let go first "
+                                 f"(hold_release)")
         if enforce and move.get("charge") and (a.name in self.downed or self.pinned_by(a.name)):
             where = "PINNED" if self.pinned_by(a.name) else "ON THE GROUND"
             raise ValueError(f"{a.name} is {where}: {move['name']} is a running, full-body charge, and she can't launch one "
@@ -1294,6 +1304,10 @@ class Engine:
         if enforce:
             far = self.held_reach_block(a, d, move, [d.part(p).name for p in (parts or []) if isinstance(p, str)
                                                      and match_part(list(d.parts), p)])
+            if far:
+                raise ValueError(far)
+            far = self.holder_reach_block(a, d, move, [d.part(p).name for p in (parts or []) if isinstance(p, str)
+                                                       and match_part(list(d.parts), p)])
             if far:
                 raise ValueError(far)
         leap = None
@@ -2676,7 +2690,7 @@ class Engine:
                   ("talon", r"talons?|sky drop"), ("beak", r"beak|peck|drill"), ("bite", r"bite|fang|crunch|jaw"), ("horn", r"horn|scythe|night slash|psycho cut"),
                   ("tail", r"\btails?\b|iron tail|aqua tail|tail slap|dragon tail"),
                   ("arm", r"punch|chop|break|slash|claw|scratch|swipe|cut|paw|jab|fist|thrust|fury"),
-                  ("leg", r"kick|stomp|stamp"))
+                  ("leg", r"kick|stomp|stamp|\bknee"))
 
     def busy_with(self, a, move):
         """Is the one mouth she'd attack with already locked in one of her own grips (a hold, a pin's press, a
@@ -2685,11 +2699,30 @@ class Engine:
             return None
         text = f"{move.get('name', '')} {move.get('about', '')}".lower()
         kind = next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, text)), None)
-        if kind != "bite":
+        if kind == "bite":
+            for h in self.holds.values():
+                if h.attacker == a.name and re.search(r"\b(jaws?|teeth|fangs?|mouth|bite)\b", str(h.with_part or "").lower()):
+                    return ("jaws", h.defender, h.part)
             return None
-        for h in self.holds.values():
-            if h.attacker == a.name and re.search(r"\b(jaws?|teeth|fangs?|mouth|bite)\b", str(h.with_part or "").lower()):
-                return ("jaws", h.defender, h.part)
+        keys = {"leg": ("legs", "feet"), "arm": ("paws", "arms"), "tail": ("tails", "coils"), "wing": ("wings",),
+                "talon": ("talons",)}.get(kind)
+        if not keys or not ((self.rules.get("holds") or {}).get("busy_limbs") or {}).get("enabled", True):
+            return None
+        # (holds.busy_limbs, since build 266) a pair of limbs she has locked in her own hold can't throw a blow too:
+        # both legs in a triangle choke have no knee to strike with, both paws in a chicken wing no punch. One of the
+        # pair still free (a grip with "her right paw") leaves the other for it.
+        for key in keys:
+            used, first = 0, None
+            for h in self.holds.values():
+                lb = self.grip_limb(a, h.with_part) if h.attacker == a.name else None
+                if not lb or lb[0] != key or re.match(r"(?i)the same\b", str(h.with_part or "")):
+                    continue
+                w = str(h.with_part or "").lower().split(",")[0]
+                pair = re.search(r"\b(?:both|twin|two)\b|\b(?:legs|paws|arms|forearms|feet|tails|wings|talons|hands)\b", w)
+                used += lb[1] if pair else 1
+                first = first or h
+                if used >= lb[1]:
+                    return (f"{key}", first.defender, first.part)
         return None
 
     _REACH_KIND = {"bite": "bite", "horn": "bite", "beak": "bite", "arm": "arm", "wing": "arm", "leg": "leg",
@@ -2729,6 +2762,32 @@ class Engine:
             if at & reach:
                 out.append(kind)
         return out
+
+    def holder_reach_block(self, a, d, move, names=()):
+        """holds.holder_reach (since build 266): from where she holds her in a submission, the holder's blows land
+        near the hold: a bite within bite_near steps of the parts she grips, a paw, a knee or a tail within
+        strike_near (on her upper back in a chicken wing, Nerine's jaws can't reach Ripples' foot). None when it
+        fits, or why it doesn't."""
+        cfg = (self.rules.get("holds") or {}).get("holder_reach") or {}
+        kind = self.reach_kind(move)
+        if not cfg.get("enabled", True) or not kind or not names:
+            return None
+        hs = [h for h in self.holds.values() if h.attacker == a.name and h.defender == d.name and h.sub]
+        if not hs:
+            return None
+        near = int(cfg.get("bite_near" if kind == "bite" else "strike_near", 1 if kind == "bite" else 2))
+        ok = {body_region(h.part) for h in hs}
+        held = sorted({h.part.lower() for h in hs})
+        for _ in range(max(0, near)):
+            ok |= {r for g in list(ok) for r in _BODY_REGION_NEAR.get(g, [])}
+        far = [n for n in names if body_region(n) not in ok]
+        if not far:
+            return None
+        close = [p for p in d.parts if body_region(p) in ok and p.lower() not in held] or list(d.parts)
+        return (f"{a.name} is working her {hs[0].sub} on {poss_word(d.name)} {', '.join(held[:2])}: from there her "
+                f"{ {'bite': 'jaws', 'arm': 'paws', 'leg': 'legs', 'tail': 'tail'}.get(kind, 'blows') } can't reach "
+                f"{poss_word(d.name)} {far[0].lower()}. Strike what is near the hold ({', '.join(close[:4]).lower()}), "
+                f"or let go first")
 
     def held_reach_block(self, a, d, move, names=()):
         """Why a fighter held on the ground can't throw `move` at her holder, or None (holds.held_reach)."""
@@ -2805,6 +2864,15 @@ class Engine:
             if not named and side:
                 named = [p for p in parts if p.name.lower().startswith(side.group(1))
                          and re.search(r"\b(?:wing|arm|paw|hand|fist|claw|talon|horn|leg|foot|forearm|tail)\b", said)]
+            # (since build 266) not the side caught in someone's grip: a paw folded back in a wrist lock throws
+            # nothing; she strikes with the other one (the build-264 log's Brick Break came from the locked arm)
+            held_sides = {h.part.split()[0].lower() for h in self.holds.values() if h.defender == a.name
+                          and h.part in a.parts and h.part.split()[0].lower() in ("left", "right")
+                          and any(h.part == p.name for p in parts)}
+            free_ = [p for p in parts if p.name.split()[0].lower() not in held_sides]
+            if free_ and held_sides:
+                named = [p for p in named if p in free_]
+                parts = free_
             parts = named or [min(parts, key=lambda p: p.damage)]
         worst = max(parts, key=lambda p: p.damage)
         steps = sorted(((float(k), float(v)) for k, v in (cfg.get("at") or {"150": 0.8, "300": 0.6}).items()),
@@ -4207,6 +4275,11 @@ class Engine:
                 # into a horn because the new pin was worded that way. Your own commands may change it.
                 h.with_part = (h.with_part or with_part) if keep_with else (with_part or h.with_part)
                 sl = self.rules.get("holds", {}).get("second_limb") or {}
+                if keep_with and asked and self.JAWS_GRIP.search(asked) and h.sub and self.submission_match() \
+                        and self.hold_mix() and self.rng.random() >= float(self.hold_mix().get("jaws", 0.5)):
+                    # (hold_mix.jaws, since build 266) her jaws clamped onto a submission she already has on: that
+                    # much rarer too; the grip goes on as it was (and its words, written for the bite, go)
+                    asked, flavor = "", ""
                 if keep_with and asked and sl.get("enabled", True) and self._limb_kind(asked) and \
                         self._limb_kind(asked) not in self._limb_kinds(h.with_part):
                     # a second limb on the same spot (her tails bound round the knee her jaws already hold): both stay
@@ -6654,6 +6727,9 @@ class Engine:
             return f"the blow {who[:-2] if who.endswith(chr(39) + 's') else who.rstrip(chr(39))} struck breaking free"
         if low == "struggle":
             return f"{who} struggling"
+        if re.match(r"(?:fall|drop)\b", low):
+            # (since build 266) her own fall ("Ripples' fall trying to get up") is no blow of anyone's
+            return f"{'her own' if re.sub(chr(39) + r's?$', '', who) == str(hurt) else who} {what}"
         if low in self.SUBMISSIONS or self.sub_uses(low):
             return f"{who} {low}"
         # her own move first (the fighter's file), then the move list only under that very name: a near miss in the
@@ -9792,6 +9868,12 @@ class Engine:
                                      breaking=stage_ if breaking else None, air=(air, endure) if choke else None)
             if not how:
                 continue
+            if how == "pass_out":
+                # (since build 266) she blacked out from the choke: the pass-out is the neck's, not the worst-hurt
+                # part beside it (the build-264 log credited a tail strangle's pass-out to her upper back)
+                spent_ = set(self.spent_tap_parts(d))
+                tap_part = next((h.part for h in hs if re.search(r"(?i)neck|throat", h.part)
+                                 and h.part not in spent_), tap_part)
             parts = [h.part for h in hs]
             with_ = list(dict.fromkeys(h.with_part for h in hs if h.with_part))
             taps_ = self._taps_rule()

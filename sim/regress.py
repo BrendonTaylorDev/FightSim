@@ -1214,6 +1214,61 @@ def hold_mix_check():
     return problems
 
 
+def busy_limbs_check():
+    """Build 266: a holder's limbs locked in her own submission can't strike too (both legs in a triangle choke: no
+    Knee Strike), her blows land near the hold (on Ripples' back in a chicken wing her jaws can't reach the foot), no
+    charge from inside a hold, a strike from the side whose paw is caught comes from the other side, a nameless bite
+    is named Bite, and a choke's pass-out counts for the neck."""
+    import director
+    s = H.session(3, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.downed["Ripples"] = 0
+    e.facing["Ripples"] = "face-up"
+    e.start_submission("Nerine", "Ripples", "triangle choke")
+    knee = e.improvised_move("Knee Strike", "Normal", "hard", "targeted", "her knee drives in")
+    try:
+        e.move_attack("Nerine", "Ripples", knee["name"], ["Right Knee"], move=knee, enforce=True)
+        problems.append("a Knee Strike went in with both legs locked in a triangle choke")
+    except ValueError as x:
+        if "legs" not in str(x):
+            problems.append(f"the refusal doesn't say her legs are busy: {x}")
+    e.holds.clear()
+    e.facing["Ripples"] = "face-down"
+    e.start_submission("Nerine", "Ripples", "chicken wing")
+    bite = e.improvised_move("Bite", "Normal", "hard", "targeted", "her jaws snap shut")
+    if not e.holder_reach_block(e.get("Nerine"), e.get("Ripples"), bite, ["Left Foot"]):
+        problems.append("from a chicken wing her jaws still reached Ripples' foot")
+    if e.holder_reach_block(e.get("Nerine"), e.get("Ripples"), bite, ["Upper Back"]):
+        problems.append("from a chicken wing her jaws couldn't reach the back she is on")
+    jet = dict(e.find_move("Nerine", "Aqua Jet") or e.dex_move("Aqua Jet"))
+    try:
+        e.move_attack("Nerine", "Ripples", jet["name"], ["Lower Back"], move=jet, enforce=True)
+        problems.append("an Aqua Jet charge went off from inside a chicken wing")
+    except ValueError:
+        pass
+    if director._plain_name("Ripples clamps her jaws down, her teeth sinking in") != "Bite":
+        problems.append("a nameless bite isn't named Bite")
+    # the paw caught in a wrist lock doesn't throw the blow
+    e.holds.clear()
+    r = e.get("Ripples")
+    r.parts["Right Upper Arm"].damage = 320.0
+    e.start_submission("Nerine", "Ripples", "wrist lock")
+    chop = e.improvised_move("Chop", "Fighting", "hard", "targeted", "a chop")
+    lm = e.limb_mult(r, chop)
+    if lm and "right" in lm[0]:
+        problems.append(f"the blow came from the arm caught in the wrist lock: {lm}")
+    with_off = dict(e.rules["holds"]["busy_limbs"])
+    e.rules["holds"]["busy_limbs"]["enabled"] = False
+    e.holds.clear()
+    e.facing["Ripples"] = "face-up"
+    e.start_submission("Nerine", "Ripples", "triangle choke")
+    if e.busy_with(e.get("Nerine"), knee):
+        problems.append("with busy_limbs off the legs are still busy")
+    e.rules["holds"]["busy_limbs"] = with_off
+    return problems
+
+
 def hold_panel_check():
     """Build 257 (window.hold_panel): each card carries the grips on her and by her (which parts, with what, how
     long), how near she is to tapping (the narrator's 1-5 ladder and this beat's real tap chance, 0 on her first
@@ -1862,6 +1917,13 @@ def main(argv):
         probs = hold_mix_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 265 fewer chokes and jaw holds, endurance under a choke, busy limbs  ({time.time() - t:.1f}s)")
+        for p in probs:
+            print("      " + p)
+    if not want or any(w in "busy limbs" for w in want):
+        t = time.time()
+        probs = busy_limbs_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 266 the holder's busy limbs, her reach from the hold, no charge from a hold  ({time.time() - t:.1f}s)")
         for p in probs:
             print("      " + p)
     if not want or any(w in "tap overwhelm" for w in want):

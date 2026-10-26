@@ -34,7 +34,7 @@ def chat(model, messages, host="http://localhost:11434", temperature=0.8,
     if model in no_think:
         body["think"] = False
     data = json.dumps(body).encode()
-    for attempt in range(3):
+    for attempt in range(5):
         try:
             t0 = time.time()
             out = _post(host, data, timeout)
@@ -54,10 +54,15 @@ def chat(model, messages, host="http://localhost:11434", temperature=0.8,
             # wait a moment and try again before giving up.
             transient = any(w in str(e).lower() for w in ("terminated", "cuda", "500", "connection reset",
                                                             "remote end closed", "timed out"))
-            if attempt == 2 or not transient:
+            # (since build 266) Ollama not answering at all ("actively refused": it crashed and is starting up
+            # again, or was closed): wait longer, five tries over about a minute, before the beat goes
+            # unnarrated (the build-264 lakeside fight lost beat 25 this way)
+            down = any(w in str(e).lower() for w in ("refused", "can't reach"))
+            if not (transient or down) or attempt >= (4 if down else 2):
                 raise
-            print(f"  [model hiccup ({str(e)[:80]}...), retrying in {3 * (attempt + 1)}s]", flush=True)
-            time.sleep(3 * (attempt + 1))
+            wait = 6 * (attempt + 1) if down else 3 * (attempt + 1)
+            print(f"  [model hiccup ({str(e)[:80]}...), retrying in {wait}s]", flush=True)
+            time.sleep(wait)
 
 
 def _post(host, data, timeout):
