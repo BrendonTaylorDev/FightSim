@@ -1139,6 +1139,81 @@ def tap_blend_check():
     return problems
 
 
+def hold_mix_check():
+    """Build 265: fewer chokes and jaw holds in a submission match (finish.submission.hold_mix): a choke or a bite hold
+    the director picks stands only some of the time and a lock goes on instead, the openings favour holds without
+    jaws, a choke on a fighter at zero health has endurance left (no "air 2200% gone"), and a limb already gripping
+    her in one hold can't grip her somewhere else too."""
+    import director
+    s = H.session(3, fighters="Nerine,Ripples")
+    e, problems = s.eng, []
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.downed["Ripples"] = 0
+    e.facing["Ripples"] = "face-down"
+    sh = e.submission_shapes("Nerine", "Ripples")
+    jaws = [n for n, v in sh.items() if e.sub_uses_jaws(v) and not e.sub_is_choke(v)]
+    if not jaws or "tail strangle" not in sh:
+        return [f"the test needs a jaw hold and a tail strangle that fit: {sorted(sh)}"]
+    picks = [e.pick_submission(sh) for _ in range(600)]
+    share = sum(n in jaws for n in picks) / len(picks)
+    plain = len(jaws) / max(1, sum(not e.sub_is_choke(v) for v in sh.values()))
+    if not share < 0.8 * plain:
+        problems.append(f"the openings pick a jaw hold as often as another: {share:.2f} (an even share is {plain:.2f})")
+    kept = sum(director._apply_hold_mix(e, "Nerine", "Ripples", {"attacker": "Nerine", "defender": "Ripples",
+                                                              "action": "submission", "improvised_name": "tail strangle"},
+                                        "submission").get("improvised_name") == "tail strangle" for _ in range(300)) / 300
+    if not 0.2 <= kept <= 0.5:
+        problems.append(f"a choke the director picks should stand about hold_mix.choke of the time: {kept:.2f}")
+    b = director._apply_hold_mix(e, "Nerine", "Ripples", {"attacker": "Nerine", "defender": "Ripples",
+                                                          "action": "submission", "improvised_name": "ankle gnaw",
+                                                          "hits": [{"part": "Left Foot", "with": "her jaws"}]}, "submission")
+    for _ in range(40):
+        if b.get("_mixed_from"):
+            break
+        b = director._apply_hold_mix(e, "Nerine", "Ripples", {"attacker": "Nerine", "defender": "Ripples",
+                                                              "action": "submission", "improvised_name": "ankle gnaw",
+                                                              "hits": [{"part": "Left Foot", "with": "her jaws"}]},
+                                     "submission")
+    if not b.get("_mixed_from") or e.sub_uses_jaws(sh[b["improvised_name"]]) or e.sub_is_choke(sh[b["improvised_name"]]):
+        problems.append(f"a bite hold swapped should become a lock with no jaws: {b.get('improvised_name')}")
+    e.rules["finish"]["submission"]["hold_mix"]["enabled"] = False
+    if any(director._apply_hold_mix(e, "Nerine", "Ripples", {"attacker": "Nerine", "defender": "Ripples",
+                                                             "action": "submission", "improvised_name": "tail strangle"},
+                                    "submission").get("_mixed_from") for _ in range(50)):
+        problems.append("with hold_mix off a choke is still swapped")
+    # a choke at zero health: some endurance left, and the meter never past 99% while she is awake
+    d = e.get("Ripples")
+    d.health = 0.0
+    e.start_submission("Nerine", "Ripples", "tail strangle")
+    for _ in range(2):
+        e.turn += 1
+        for h in e.holds.values():
+            h.turns_active += 1
+        e._tap_out_tick()
+    sg = d.learned.get("sub_gauge") or {}
+    if float(sg.get("endure") or 0) < 30:
+        problems.append(f"a choke at zero health left her no endurance: {sg}")
+    g = (e.pain_gauge(d) or {}).get("part")
+    if g and g.get("air") is not None and not 0 < g["air"] <= 99:
+        problems.append(f"the air gone reads {g['air']}%")
+    # a limb busy in one hold on her can't grip her elsewhere too
+    e.holds.clear()
+    e.sub_window = {"Ripples": True}
+    e.rules["finish"]["submission"]["hold_mix"]["enabled"] = True
+    director.resolve_many(e, [{"attacker": "Nerine", "defender": "Ripples", "action": "submission",
+                               "improvised_name": "chicken wing"}])
+    e.turn += 1
+    try:
+        director.resolve_many(e, [{"attacker": "Nerine", "defender": "Ripples", "action": "hold_start",
+                                   "hits": [{"part": "Right Thigh", "with": "her paw", "severity": "firm"},
+                                            {"part": "Lower Back", "with": "her knee", "severity": "firm"}]}])
+    except ValueError:
+        pass
+    if any(h.part == "Right Thigh" for h in e.holds.values()):
+        problems.append("both paws in a chicken wing still gripped her thigh as well")
+    return problems
+
+
 def hold_panel_check():
     """Build 257 (window.hold_panel): each card carries the grips on her and by her (which parts, with what, how
     long), how near she is to tapping (the narrator's 1-5 ladder and this beat's real tap chance, 0 on her first
@@ -1780,6 +1855,13 @@ def main(argv):
         probs = tap_blend_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 264 tap chance from part and health, with a build-up  ({time.time() - t:.1f}s)")
+        for p in probs:
+            print("      " + p)
+    if not want or any(w in "hold mix" for w in want):
+        t = time.time()
+        probs = hold_mix_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 265 fewer chokes and jaw holds, endurance under a choke, busy limbs  ({time.time() - t:.1f}s)")
         for p in probs:
             print("      " + p)
     if not want or any(w in "tap overwhelm" for w in want):

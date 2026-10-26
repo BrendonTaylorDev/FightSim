@@ -559,6 +559,42 @@ def _apply_variety(engine, att, dfn, b):
     return b
 
 
+def _apply_hold_mix(engine, att, dfn, b, act):
+    """finish.submission.hold_mix (since build 265): in a submission match, a CHOKE or a JAW HOLD the director chose
+    (a named one, one of her own, or a hold_start on the neck or with her jaws) stands only hold_mix.choke /
+    hold_mix.jaws of the time; otherwise a lock that fits goes on instead (no choke, and no jaws when one without
+    fits), so the usual finish is a limb, the back or the body cranked with paws, legs, tails or her weight. Returns
+    the beat (changed or not); a choke or bite with nothing else that fits stands."""
+    if not engine.hold_mix() or not engine.submission_match():
+        return b
+    if act == "hold_start" and any(h.attacker == engine.get(att).name and h.defender == engine.get(dfn).name
+                                   for h in engine.holds.values()):
+        return b      # (a grip added to a hold she already has on her: not a new hold to swap)
+    name = str(b.get("improvised_name") or b.get("submission") or "").strip().lower()
+    hits = [h for h in (b.get("hits") or []) if isinstance(h, dict) and h.get("part")]
+    shapes = engine.submission_shapes(att, dfn)
+    if act == "submission" and name in shapes:
+        choke, jaws = engine.sub_is_choke(shapes[name]), engine.sub_uses_jaws(shapes[name])
+    elif hits and (act == "hold_start" or name not in engine.SUBMISSIONS):
+        parts = [_fit_part(engine, dfn, h["part"]) or h["part"] for h in hits]
+        choke = body_region(parts[0]) == "neck" if act == "submission" else any(body_region(p) == "neck" for p in parts)
+        choke = choke or bool(act == "submission" and re.search(
+            r"(?i)\b(?:choke|throat|sleeper|guillotine|strangle\w*)\b", name))
+        jaws = any(engine.JAWS_GRIP.search(str(h.get("with") or "")) for h in hits)
+    else:
+        return b
+    if not (choke or jaws) or engine.rng.random() < engine.mix_keep(choke, jaws):
+        return b
+    alt = {n: v for n, v in shapes.items() if not engine.sub_is_choke(v)}
+    alt = {n: v for n, v in alt.items() if not engine.sub_uses_jaws(v)} or (alt if choke else {})
+    if not alt:
+        return b
+    new = engine.pick_submission(alt, defender=dfn)
+    # (its words were written for the choke or the bite: the engine's own words for the lock tell it instead)
+    return dict(b, action="submission", improvised_name=new, submission=new, hits=[], flavor="",
+                _mixed_from=name or "a hold")
+
+
 def _apply_tap_steer(engine, att, dfn, b, kind):
     """finish.submission.taps.steer: with taps that must come from different body parts, the fight is pushed onto
     the part of hers that still counts (engine.tap_target). A blow aimed at a part her taps have used up always
@@ -1140,6 +1176,11 @@ def resolve(engine, b):
         if b2.get("flavor") != b.get("flavor"):
             flavor = short_phrase(b2.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
         b = b2
+    if not manual and dfn and act in ("submission", "hold_start") \
+            and engine.get(att).name not in (getattr(engine, "ordered", None) or ()):
+        b = _apply_hold_mix(engine, att, dfn, b, act)
+        if b.get("_mixed_from"):
+            act, flavor = "submission", ""
     started = ()
     if not manual and act in ("grapple", "hold_start", "pin", "submission", "throw", "slam", "drag"):
         # confusion spoils a grab, a pin or a throw as surely as a blow: she may hurt herself instead
@@ -2419,13 +2460,13 @@ class Director:
                         "longer one stays on and the more the gripped part hurts, the likelier she is to tap. A CHOKE "
                         "(a grip on the neck or throat) is the RARE finish, now and then, not the usual one: most "
                         "matches are won by an arm, a leg, a tail, the back or the body cranked until she taps. "
+                        + ("A JAW HOLD (a bite clamped on and held) is rare too: most grips are paws, legs, tails, "
+                           "coils and her weight. " if engine.hold_mix() else "") +
                         "Be inventive with them: these are Pokemon, so a hold can use tails, jaws, coils, a held stream "
                         "or the scenery (a knee levered back over a root, an arm wrenched round a trunk, her face ground "
                         "into the dirt, pressed against a tree), and an improvised hold_start with any limb is as good "
                         "as a named one. Never the same hold twice running.").strip()
-            choked = any(any(role == "main" and "neck" in spec for spec, role, _ in
-                             (engine.SUBMISSIONS.get(n) or {}).get("contacts") or ()) for n in engine.subs_used())
-            if choked:
+            if engine.choke_tried():
                 rng_hint += ("\nA CHOKE HAS ALREADY BEEN TRIED in this match: the holds from here on go on a limb, the "
                              "back or the body, not the neck.")
             tally = taps_hint(engine)
@@ -3182,6 +3223,9 @@ def throat_hint(engine, roll=None):
     zs = {z for v in (cfg.get("focus") or {}).values() for z in (v or [])}
     if zs & {"neck", "vulnerable", "head"}:
         roll /= 3.0
+    if engine.submission_match() and engine.hold_mix():
+        # (hold_mix.hints) in a submission match the bite and choke ideas come that much less often
+        roll /= max(0.01, float(engine.hold_mix().get("hints", 0.35)))
     for key, pin in engine.pins.items():
         if roll < float(cfg.get("throat_bite_pin_chance", 0.25)):
             a, d = pin["attacker"], pin["defender"]

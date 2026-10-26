@@ -13885,6 +13885,12 @@ class Narrator:
         # the last cuts can split a thought again: the marks re-paired, and narration set in italics made plain
         text = _unitalic_narration(_balance_marks(text), list(self.strengths or {}))
         text = re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", text)   # a paragraph emptied by the cuts leaves no gap
+        if len(re.sub(r"(?m)^\s*— .+ —\s*$", "", text).strip()) < 40 and len((raw or "").strip()) >= 40:
+            # (since build 265) the cuts above took the whole beat (a beat came out with no story at all): the
+            # model's own telling stands instead, with only the last scrub on it
+            note_failure("the narration cuts (they left nothing of the beat)", ValueError(f"{len(raw)} chars cut to "
+                                                                                          f"{len(text.strip())}"))
+            text = _balance_marks(self._last_scrub(raw))
         return re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", self.pov_labels(self._engine_mends(text)))
 
     def _phrase_mem(self):

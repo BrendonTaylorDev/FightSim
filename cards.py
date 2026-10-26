@@ -1001,6 +1001,9 @@ def tap_meter(f):
                       "last": "breaking point: the last of it"}.get(t["breaking"], "breaking point"))
     elif t.get("held_on"):
         notes.append("past her limit for the first time: holding on through it")
+    if t.get("toward") and not t.get("first") and not t.get("spent") and 100.0 * float(t["toward"]) >= pct + 3:
+        # (since build 265) tap.blend's build-up: early in a hold the chance is far below what it is climbing to
+        notes.append(f"still building: up to {100.0 * float(t['toward']):.0f}% as it stays on")
     if t.get("refusals"):
         notes.append(f"refused {t['refusals']}x")
     if t.get("air") is not None:
@@ -1010,18 +1013,33 @@ def tap_meter(f):
             "pain": t.get("pain"), "resist": t.get("resist"), "by": t.get("by"), "sub": t.get("sub")}
 
 
+def _with_words(ws):
+    """What grips her, in short (since build 265): each grip's limb without how it works ("both paws, bending it up
+    behind her back" -> "both paws"), "the same grip" left out, no limb twice: "both paws, her twin tails and her
+    knee" rather than every grip's whole description strung together with "and"."""
+    out = []
+    for w in ws or ():
+        for bit in re.split(r"\s+and\s+", str(w)):
+            head = bit.split(",")[0].strip()
+            key = re.sub(r"(?i)^(?:her|both|the)\s+", "", head).lower()
+            if head and not re.match(r"(?i)(?:the same\b|\w+ing\b|it\b|then\b)", head) and key not in (
+                    re.sub(r"(?i)^(?:her|both|the)\s+", "", x).lower() for x in out):
+                out.append(head)
+    return ", ".join(out[:-1]) + " and " + out[-1] if len(out) > 1 else "".join(out)
+
+
 def grip_lines(f):
     """The hold panel's lines: [(text, colour)]: the grips on her, the grips she has, a pin, and the distance."""
     g = f.get("grips") or {}
     out = []
     for x in g.get("held") or ():
         parts = ", ".join(str(p).lower() for p in x.get("parts") or ())
-        with_ = " and ".join(x.get("with") or ())
+        with_ = _with_words(x.get("with"))
         out.append((f"Held: {poss_word(x['by'])} {x['what']} on her {parts}" + (f" ({with_})" if with_ else "")
                     + f", beat {x.get('beats', 0)}" + ("  · on her throat" if x.get("choke") else ""), "#7c3aed"))
     for x in g.get("holding") or ():
         parts = ", ".join(str(p).lower() for p in x.get("parts") or ())
-        with_ = " and ".join(x.get("with") or ())
+        with_ = _with_words(x.get("with"))
         t = x.get("tap")
         out.append((f"Holding: {x['what']} on {poss_word(x['on'])} {parts}" + (f" ({with_})" if with_ else "")
                     + f", beat {x.get('beats', 0)}"

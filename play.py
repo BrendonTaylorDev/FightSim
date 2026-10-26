@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-23 build 264-guided (tap chance from part and health, with a build-up)"
+VERSION = "2026-10-26 build 265-guided (fewer chokes and jaw holds, choke endurance, busy limbs)"
 
 HELP = """
 =============================================================================================
@@ -533,6 +533,12 @@ def fight_snapshot(s, label=None):
         posture = ("OUT" if f.eliminated else "in the air" if eng.has(f, "airborne") else
                    f"pinned by {', '.join(pinned_by)}" if pinned_by else f"pinning {', '.join(pinning)}" if pinning else
                    f"down ({facing})" if down else "on her feet")
+        sub_ = next((h for h in eng.holds.values() if h.sub and h.attacker == f.name), None)
+        if posture == "on her feet" and sub_ is not None:
+            # (since build 265) a fighter working a submission isn't standing free: on the ground with her in it,
+            # or holding her up close in an upright one
+            posture = (f"locked onto {sub_.defender} in her {sub_.sub}"
+                       + (", down with her" if sub_.defender in eng.downed else ", holding her up"))
         out.append({
             "name": f.name, "species": species_of(f.description, f.appearance), "types": list(f.types or []),
             "health": round(float(f.health), 2), "max": float(f.max_health or 1), "energy": round(float(f.energy), 1),
@@ -1183,7 +1189,11 @@ class Session:
     def _write_prose(self, args):
         """Run the narrator. On a model failure the beat's stats still stand; /reroll can narrate it later."""
         try:
-            return self.narrator.narrate(*args)
+            text = self.narrator.narrate(*args)
+            if text is not None and not text.strip():
+                # (since build 265) say so, never a silent blank beat; /reroll writes it again
+                self.out("\n[the narration came back empty for this beat. Type /reroll to write it again.]\n")
+            return text
         except llm.LLMError as e:
             self.pending = {"args": args}
             self.out(f"\n[narration failed: {e}]\n[The stats below are already applied. Type /reroll to narrate "

@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 265
+- **Fewer chokes and jaw holds in a submission match** (`finish.submission.hold_mix`, on by default). They still happen, just less often than the usual locks on a limb, the back or the body.
+  - A choke the director puts on (a named one, one of her own, or a hold on the neck) stands 35% of the time (`hold_mix.choke`). Once a choke has been tried in the match, it's half that (`after_first`).
+  - A jaw hold (a bite clamped on and held) stands 50% of the time (`hold_mix.jaws`).
+  - Otherwise the engine puts on a lock that fits instead, without jaws where one fits. The beat is then told with the lock's own words.
+  - The submission openings pick a jaw hold half as often. The bite and choke ideas come 35% as often (`hints`). The director is told jaw holds are rare too.
+  - Your own orders, and a grip added to a hold she already has on, are left alone.
+  - In the log you sent, three of the six submissions were chokes (triangle choke, side headlock, tail strangle), although the director had been told after the first that one had been tried.
+- **A choke on a fighter at zero health** read "air 2200% gone" on its first beat, because she had no endurance at all. She now always keeps some (`choke.endure_min`, 30).
+  - "Air gone" on the meter now measures how close she is to blacking out for sure. It never shows more than 99% while she is awake. Before, it read 119% and 169% with her still conscious.
+- **The tap meter says when the chance is still building**: "still building: up to 34% as it stays on". Before, it showed "very close to tapping · 0% chance" early in a hold.
+- **A limb already gripping her can't grip her somewhere else too** (`holds.invented_check.same_target`). In the log, both of Nerine's paws were in a chicken wing, and "her paw and knee" still went on Ripples' thigh as well.
+- **What grips her, in short**: the hold lines show "both paws, twin tails and her knee" instead of every grip's whole description strung together.
+- **The fighter working a submission** shows "locked onto Ripples in her triangle choke, down with her" instead of "on her feet".
+- **No more blank beats**: beat 25 of your log had no story at all. If the cuts leave nothing of a beat, the model's own telling now stands, and the failure goes in errors.log. If the telling still comes back empty, the game says so and /reroll writes it again.
+
 ## Build 264
 - **The tap chance now comes from both the gripped part and her overall health** (`finish.submission.tap.blend`, on by default):
   - Fresh, with a ruined part in the grip: about 30% a beat once the hold has built up. She can fight it, but not for ever.

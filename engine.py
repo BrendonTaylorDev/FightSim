@@ -5163,6 +5163,41 @@ class Engine:
         """A submission shape whose main grip is on the neck or throat: a choke (a sleeper, a triangle, head scissors)."""
         return any(role == "main" and body_region(part) == "neck" for part, role, _ in shape.get("contacts") or ())
 
+    JAWS_GRIP = re.compile(r"(?i)\b(?:jaws?|teeth|fangs?|bite|bit|biting|mouth)\b")
+
+    @classmethod
+    def sub_uses_jaws(cls, shape):
+        """A submission shape gripped with her jaws (a bite hold: jaws clamped on a limb, the scruff, a tail)."""
+        return any(cls.JAWS_GRIP.search(str(c[2] if len(c) > 2 else "")) for c in shape.get("contacts") or ())
+
+    def hold_mix(self):
+        """finish.submission.hold_mix (since build 265): how often a choke or a jaw hold stands when one is chosen
+        ({} when off)."""
+        m = (((self.rules.get("finish") or {}).get("submission") or {}).get("hold_mix") or {})
+        return m if m.get("enabled", True) else {}
+
+    def choke_tried(self):
+        """Whether a choke has already gone on in this match (a hold on the neck, by its grips or its name)."""
+        for n in self.subs_used():
+            s = self.SUBMISSIONS.get(n)
+            if (s and any(role == "main" and "neck" in spec for spec, role, _ in s.get("contacts") or ())) or (
+                    not s and re.search(r"(?i)\b(?:choke|neck|throat|sleeper|guillotine|strangle\w*|headlock)\b", n)):
+                return True
+        return False
+
+    def mix_keep(self, choke, jaws):
+        """The chance a chosen choke or jaw hold stands (hold_mix.choke, halved by after_first once a choke has been
+        tried; hold_mix.jaws for a bite hold). 1.0 for any other hold, or with hold_mix off."""
+        m = self.hold_mix()
+        if not m:
+            return 1.0
+        keep = 1.0
+        if choke:
+            keep *= float(m.get("choke", 0.35)) * (float(m.get("after_first", 0.5)) if self.choke_tried() else 1.0)
+        if jaws:
+            keep *= float(m.get("jaws", 0.5))
+        return keep
+
     def pick_submission(self, shapes, rng=None, defender=None):
         """One submission to offer from `shapes`: a choke only choke_share of the time when there is anything else to
         offer (finish.submission.choke_share), so a submission match ends in a lock on a limb or the body far more
@@ -5192,8 +5227,15 @@ class Engine:
         others = sorted(n for n in shapes if n not in chokes)
         share = float(((self.rules.get("finish") or {}).get("submission") or {}).get("choke_share", 0.1))
         if chokes and others:
-            return rng.choice(chokes if rng.random() < share else others)
-        return rng.choice(chokes or others)
+            pool = chokes if rng.random() < share else others
+        else:
+            pool = chokes or others
+        jw = float(self.hold_mix().get("jaws", 0.5)) if self.hold_mix() else 1.0
+        if jw < 1.0 and any(not self.sub_uses_jaws(shapes[n]) for n in pool):
+            # (hold_mix.jaws) a hold gripped with her jaws comes up that much less often than one with paws, legs,
+            # tails or her weight
+            return rng.choices(pool, weights=[jw if self.sub_uses_jaws(shapes[n]) else 1.0 for n in pool])[0]
+        return rng.choice(pool)
 
     def submission_shapes(self, attacker, defender, side=None):
         """The submission holds THIS attacker could put on THIS defender as she lies now: {name: {"look",
@@ -7807,6 +7849,18 @@ class Engine:
                     busy[lb[0]] = busy.get(lb[0], 0) + 1
         ruined = float(cfg.get("ruined_at", 300))
         kept, why, used, where = [], [], dict(busy), {}
+        if cfg.get("same_target", True):
+            # (since build 265) a limb already gripping HER in another hold counts too: both paws bending her arm up
+            # in a chicken wing have nothing left for her thigh (the build-264 log added "her paw and knee" to one)
+            asked = {str(p) for p, _w in grips}
+            for h in self.holds.values():
+                if h.attacker == a.name and h.defender == d.name and h.part not in asked:
+                    lb = self.grip_limb(a, h.with_part)
+                    if lb:
+                        # ("both paws" or "twin tails" on one part takes the pair)
+                        n_ = lb[1] if re.search(r"\b(?:both|twin|two)\b", str(h.with_part or "").lower()) else 1
+                        used[lb[0]] = used.get(lb[0], 0) + n_
+                        where.setdefault(lb[0], []).append(h.part)
         for i, (p, w) in enumerate(grips):
             lb = self.grip_limb(a, w)
             if submission and i == 0 and cfg.get("main_grip", True) and self.SMALL_MAIN.search(str(p)):
@@ -9641,6 +9695,9 @@ class Engine:
                 # decides how long she stays conscious under it
                 air = float(ccfg.get("air_per_beat", 22)) * beats
                 endure = float(ccfg.get("endurance", 110)) * (s_ / 100.0) ** power * surge
+                # (choke.endure_min, since build 265) even with nothing left she has some breath in her: without it a
+                # fighter at zero health had no endurance at all, read "air 2200% gone" on the choke's first beat
+                endure = max(endure, float(ccfg.get("endure_min", 30)))
                 po = min(float(ccfg.get("max", 0.85)), max(0.0, (air - endure) / float(ccfg.get("span", 70))))
                 if blended and bl.get("chokes", True):
                     # (blend.chokes: the dark builds up the same way, so she doesn't black out on its second beat)
@@ -9652,7 +9709,8 @@ class Engine:
             # a grip on such a part (and nothing new besides) can't make her give in, so it doesn't roll
             # (for the window's pain gauge: the very numbers this check weighed, this beat)
             d.learned["sub_gauge"] = {"turn": self.turn, "pain": round(pain), "resist": round(resist),
-                                      "air": round(air), "endure": round(endure), "sub": name, "by": a}
+                                      "air": round(air), "endure": round(endure), "sub": name, "by": a,
+                                      "base": round(base, 3) if blended else None}
             if first:
                 events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
                 self._note_tap_state(d, a, name, events, 0.0, pain, resist, first=True)
@@ -9865,7 +9923,9 @@ class Engine:
             names = list(dict.fromkeys(h.part for h in held))
             part = gauge(float(sg["pain"]), float(sg["resist"]), parts=names[:3],
                          why=f"{poss_word(sg.get('by', ''))} {sg.get('sub') or 'hold'}",
-                         air=round(float(sg["air"]) / max(1.0, float(sg["endure"])) * 100.0) if sg.get("air") else None)
+                         air=(min(99, round(float(sg["air"]) / max(1.0, float(sg["endure"]) + float(
+                             (((self.rules.get("finish") or {}).get("submission") or {}).get("choke") or {}).get(
+                                 "span", 70))) * 100.0)) if sg.get("air") else None))
         elif held:
             worst = max(held, key=lambda h: f.parts[h.part].damage if h.part in f.parts else 0.0)
             pain = (f.parts[worst.part].damage if worst.part in f.parts else 0.0) \
@@ -9987,7 +10047,12 @@ class Engine:
                                   if (d.learned.get("tap_refused") or [""])[0] == a else 0,
                                   "first": first, "held_on": bool(held_on), "spent": bool(spent),
                                   "breaking": breaking, "choke": bool(ev.get("choke")),
-                                  "air": round(air[0] / max(1.0, air[1]) * 100) if air and air[0] else None}
+                                  "air": min(99, round(air[0] / max(1.0, air[1] + float(
+                                      (((self.rules.get("finish") or {}).get("submission") or {}).get("choke") or {})
+                                      .get("span", 70))) * 100)) if air and air[0] else None,
+                                  # (since build 265) the chance it is building toward (tap.blend), for the meter
+                                  "toward": (sg_.get("base") if (sg_ := d.learned.get("sub_gauge") or {}).get("turn")
+                                             == self.turn and sg_.get("by") == a else None)}
 
     def card_state(self, f):
         """window.hold_panel (since build 257): what is going on around her for the window and exported fights,
