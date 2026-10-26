@@ -1609,7 +1609,9 @@ def _is_stub(sent):
     return len(words) <= (4 if lead in ("it", "that", "this", "so", "and", "then", "only") else 7)
 
 
-SLIP_LABELS = (("but that landed on her", "wrong part remembered"), ("SECOND time", "same blow told twice"), ("NO pin and no hold", "invented pin"),
+SLIP_LABELS = (("is already UP when this is told", "get-up told out of order"),
+               ("but the tap ends it", "told after the tap"), ("the bite this beat lands on", "bite in the wrong place"),
+               ("but that landed on her", "wrong part remembered"), ("SECOND time", "same blow told twice"), ("NO pin and no hold", "invented pin"),
                ("go limp or unable to move", "limp while still strong"), ("nothing of hers can break", "broken bones"),
                ("cracks or pops", "invented crack"), ("has never been hit", "pain in a part never hit"),
                ("was never landed on her", "wrong move remembered"), ("word from the notes", "game terms"),
@@ -4642,7 +4644,8 @@ class Narrator:
                                  f"what she thinks.")
                     # (since build 261) the story must give it room in proportion (narration.tap_fight_shown)
                     self.__dict__.setdefault("_tap_fights", []).append(
-                        {"who": e["defender"], "by": e["attacker"], "level": lv, "sign": reach})
+                        {"who": e["defender"], "by": e["attacker"], "level": lv, "sign": reach,
+                         "choke": bool(e.get("choke"))})
                     if e.get("breaking") is not None:
                         # tap.overwhelm: the gripped part is wrecked; she is holding out the last beats before it breaks her
                         stage = {"last": "the LAST of it: almost nothing left to refuse with; every tell says she "
@@ -9541,6 +9544,47 @@ class Narrator:
                 if (lead_ == h2 or (lead_ not in (h2, d2) and act)) and act and h2:
                     side[0] = "act"
                     add(f"{h2}, feeling the tap", B.pick("tap_out_hold", 1, has=feats(h2), fmt=dict(f2, foe=d2)))
+            # (since build 267) a choke from the inside: the air going, the edges greying, by how near the dark is
+            for tf in getattr(self, "_tap_fights", None) or ():
+                if not tf.get("choke"):
+                    continue
+                d2, h2 = tf["who"], tf.get("by")
+                if (lead_ == d2 or (lead_ not in (h2, d2) and take)) and take:
+                    side[0] = "take"
+                    add(f"{d2}, the air going", B.pick("choke_fight", 1, tap=str(tf["level"]), has=feats(d2),
+                                                       fmt={"part": "neck", "foe": h2}))
+            # (since build 267) breaking out of a submission, from each side
+            for e2 in also or ():
+                if e2.get("type") != "hold_end" or not e2.get("broke_free") or not e2.get("submission"):
+                    continue
+                d2, h2 = e2.get("defender"), e2.get("attacker")
+                f2 = {"part": str((e2.get("parts") or [""])[0]).lower(), "foe": h2}
+                if (lead_ == d2 or (lead_ not in (h2, d2) and take)) and take:
+                    side[0] = "take"
+                    add(f"{d2}, out of the {e2['submission']}", B.pick("sub_escape_held", 1, has=feats(d2), fmt=f2))
+                    self._offer_line(add, f"a finished line for {d2} getting out of it", "sub_escape_held", fmt=f2,
+                                     has=feats(d2))
+                if (lead_ == h2 or (lead_ not in (h2, d2) and act)) and act and h2:
+                    side[0] = "act"
+                    add(f"{h2}, losing the {e2['submission']}", B.pick("sub_escape_hold", 1, has=feats(h2),
+                                                                       fmt=dict(f2, foe=d2)))
+        # (since build 267) what happens inside her: a surge of adrenaline or a second wind, her sight greying, her
+        # health past zero, a try at getting up that fails; offered from her own side
+        if self.rules.get("narration", {}).get("inner_blocks", True):
+            lead_ = getattr(self, "_lead_now", None)
+            for e2 in also or ():
+                who2 = e2.get("fighter")
+                if not who2 or not (lead_ == who2 or (lead_ is None and take)):
+                    continue
+                if e2.get("type") == "adrenaline":
+                    add(f"{who2}, the surge", B.pick("surge", 1, moment={"second" if e2.get("second") else "first"},
+                                                     has=feats(who2)))
+                elif e2.get("type") == "grey_out":
+                    add(f"{who2}, her sight greying", B.pick("grey_out", 1, has=feats(who2)))
+                elif e2.get("type") == "zero_stage":
+                    add(f"{who2}, running on nothing", B.pick("running_on_empty", 1, has=feats(who2)))
+                elif e2.get("type") == "get_up" and not e2.get("stands"):
+                    add(f"{who2}, failing to rise", B.pick("getup_fail", 1, has=feats(who2), state=state(who2)))
         # --- after the match
         if acts and all(t == "aftermath" for t in types):
             win = next((a.get("winner") for a in acts if a.get("winner")), None)
@@ -13132,6 +13176,8 @@ class Narrator:
                 quads = [w for w in (self.strengths or {}) if "forelegs" in self._feats_of(w)]
                 if quads:
                     add(x, f"{' and '.join(quads)} has forelegs, not arms: call it her foreleg")
+        for sent, why in self._order_slips(sents):
+            add(sent, why)
         for sent, why in self._too_intense(text):
             add(sent, why)
         for sent, phrase in self._repeated_phrases(text, prior):
@@ -13139,6 +13185,133 @@ class Narrator:
             add(sent, f"it repeats \"{phrase}\", already used in this beat: say it a different way"
                       + (f" (for example \"{alt}\")" if alt else "") + ", or leave it out if it adds nothing new")
         return out
+
+    # (narration.story_checks, since build 267) what the build-264 saved fight got wrong although the notes had it right
+    _RISE = re.compile(r"\b(?:was|made it|got|staggered|lurched|wobbled|came|rose|hauled herself|dragged herself|"
+                       r"stood)\b[^.!?…]{0,25}\b(?:to her feet|on her feet|upright)\b|\b(?:stood|got|was|she\'s) "
+                       r"(?:back )?up\b|\bfound her feet\b|\bregained her feet\b|\b(?:finally|at last|then) stood\b",
+                       re.I)
+    _FAIL_RISE = re.compile(r"\b(?:sagged|sank|dropped|folded|slumped|collapsed|fell|went|crumpled)\b(?:\s+\w+){0,2}"
+                            r"\s+(?:back\s+)?down\b|\b(?:gave out|gave way)\b|\bcouldn't (?:rise|stand|get up)\b|"
+                            r"\bfailed to (?:rise|stand|get up)\b|\battempts? to (?:rise|stand)\b|"
+                            r"\b(?:second|third) (?:try|attempt)\b|\bno more successful\b", re.I)
+    _TAP_SENT = re.compile(r"\btap(?:ped|s|ping)?\b(?! ?(?:out )?yet)|\bslap(?:ped|ping|s)? (?:the|at the) (?:ground|grass|"
+                           r"sand|stone|floor|dirt|earth|mud|rock)", re.I)
+    _PRESS_VERB = re.compile(r"\b(?:tighten\w*|squeez\w*|wrench\w*|crank\w*|bore down|drove|drives|dug|digs|"
+                             r"pressed|presses|ground into|twist\w*|clamp\w*|slam\w*|struck|strikes|hammer\w*|"
+                             r"knee (?:drove|slammed)|bit|bites|sank)\b", re.I)
+    _LET_GO = re.compile(r"\b(?:let go|lets go|released?|loosen\w*|eas(?:ed|es) off|stepped back|let her go|"
+                         r"opened|unwound|uncoiled|came off|fell away|slackened)\b", re.I)
+    # a bite LANDING ("her teeth sank into", "jaws clamped on", "bit her"): the part named right after it is where
+    _BITE_SENT = re.compile(r"\b(?:teeth|fangs|jaws)\s+(?:\w+\s+){0,2}?(?:sank|sink|sinks|sinking|closed|close|"
+                            r"closes|clamped|clamp|clamps|tore|tear|tears|dug|dig|digs|met|meet|found|caught|"
+                            r"crunched|punched|snapped|snap|snaps|locked|bit|bite|bites|ground|grinding)\b|"
+                            r"\b(?:bit|bites|biting|chomped)\s+(?:down\s+)?(?:on|into|at|deep)?\b", re.I)
+    _PART_WORDS = {"toe": "hind_low", "toes": "hind_low", "foot": "hind_low", "feet": "hind_low", "ankle": "hind_low",
+                   "heel": "hind_low", "hock": "hind_low", "knee": "hind_low", "shin": "hind_low", "calf": "hind_low",
+                   "thigh": "hind_up", "hip": "hind_up", "haunch": "hind_up", "spine": "back_up",
+                   "scruff": "neck", "nape": "neck", "neck": "neck", "throat": "neck", "shoulder": "shoulder",
+                   "elbow": "fore_up", "forearm": "fore_low", "wrist": "fore_low", "tail": "tail", "tails": "tail",
+                   "belly": "belly", "stomach": "belly", "flank": "belly", "chest": "chest", "ribs": "chest",
+                   "ear": "head", "ears": "head", "face": "head", "cheek": "head", "muzzle": "head", "snout": "head"}
+
+    def _order_slips(self, sents):
+        """[(sentence, what is wrong)] for three mistakes the notes never ask for (narration.story_checks):
+        - a get-up told failing AFTER she is already up (her failed tries come before the one that gets her up);
+        - the holder still pressing or striking her AFTER the tap (the tap ends the grip: what happened in the beat
+          is told before it);
+        - a bite told landing on a part it never touched ("teeth between the toes" for a bite on her back)."""
+        cfg = ((self.rules.get("narration") or {}).get("story_checks") or {})
+        if not cfg.get("enabled", True):
+            return []
+        names = [w for w in (getattr(self, "strengths", None) or {})]
+        if not names:
+            return []
+        out, who, up_at, tap_at = [], None, {}, None
+        rose = set(getattr(self, "_rose_now", None) or ()) - set(getattr(self, "_landed", None) or ())
+        taps = [t for t in ([getattr(self, "_tap_end", None)] + list(getattr(self, "_tap_mid", None) or [])) if t]
+        tapper, holder = (taps[0][0], taps[0][1]) if taps else (None, None)
+        bite_ok = self._bite_regions() if cfg.get("bite_place", True) else None
+        for k, x in enumerate(sents):
+            named = [n for n in names if re.search(r"\b" + re.escape(n) + r"\b", x)]
+            if len(named) == 1:
+                who = named[0]
+            elif len(named) > 1:
+                # (the one named first is the one the sentence is about: "Ripples felt Nerine's grip...")
+                who = min(named, key=lambda n: x.find(n))
+            if cfg.get("getup_order", True) and who in rose:
+                if self._RISE.search(x) and not self._FAIL_RISE.search(x) and not re.search(
+                        r"\b(?:tried|try|trying|attempt\w*|almost|nearly|half|partway|began|started)\b", x, re.I):
+                    up_at.setdefault(who, k)
+                elif who in up_at and self._FAIL_RISE.search(x) and not re.search(r"\b(?:earlier|had)\b", x, re.I):
+                    out.append((x, f"{who} is already UP when this is told: she gets up this beat and ends it on her "
+                                   f"feet. Her failed tries come BEFORE the one that gets her up, never after it"))
+            if cfg.get("after_tap", True) and tapper:
+                if tap_at is None and (tapper in named or who == tapper) and self._TAP_SENT.search(x):
+                    tap_at = k
+                elif tap_at is not None and k > tap_at and holder in named and self._PRESS_VERB.search(x) \
+                        and not self._LET_GO.search(x) and not re.search(r"\b(?:had|earlier|before)\b", x, re.I):
+                    out.append((x, f"this comes AFTER {poss(tapper)} tap, but the tap ends it: {holder} lets go at "
+                                   f"once, and nothing of hers presses or strikes {tapper} after it. Everything else in "
+                                   f"the beat happened before the tap, so tell it before"))
+            bm = self._BITE_SENT.search(x) if bite_ok else None
+            if bm and not re.search(r"\b(?:had|earlier|before|old|last)\b", x, re.I):
+                # (only what follows the bite closely: not where the pain spread to afterwards)
+                near_ = re.split(r"\b(?:ran|spread|radiat\w*|shot|jolt\w*|down to|up to|while|as)\b",
+                                 x[bm.end():bm.end() + 70].lower())[0]
+                for w_ in re.findall(r"\b(" + "|".join(self._PART_WORDS) + r")\b", near_):
+                    reg = self._PART_WORDS[w_]
+                    if reg not in bite_ok:
+                        ok_ = sorted({p.lower() for p in getattr(self, "_bite_parts", ()) or ()})
+                        out.append((x, f"the bite this beat lands on {', '.join(ok_[:3]) or 'other parts'}, not her "
+                                       f"{w_}: tell it where it landed"))
+                        break
+        return out
+
+    def _bite_regions(self):
+        """The body regions a bite this beat may be told landing on (what a bite move hit, and what jaws hold, and
+        the parts next to those), or None when no bite lands this beat (the invented-bite check covers that)."""
+        from engine import body_region, _BODY_REGION_NEAR
+        parts = []
+        for a in getattr(self, "_acts_now", None) or []:
+            m = a.get("move") or {}
+            if re.search(r"bite|fang|crunch|jaw|chomp|gnaw", str(m.get("name", "")), re.I):
+                parts += [str(h.get("part")) for h in a.get("hits") or [] if isinstance(h, dict) and h.get("part")]
+        parts += [g[2] for g in (getattr(self, "grips", None) or []) if len(g) > 3
+                  and re.search(r"\b(?:jaws?|teeth|fangs|bite)\b", str(g[3] or ""), re.I)]
+        self._bite_parts = parts
+        if not parts:
+            return None
+        ok = {body_region(p) for p in parts}
+        ok |= {r for g in list(ok) for r in _BODY_REGION_NEAR.get(g, [])}
+        return ok
+
+    def _mend_move_names(self, text):
+        """(narration.story_checks.move_names) "Nerine's Aqua Jet" when she threw a Water Gun this beat and has never
+        used an Aqua Jet: the move she really used, put in its place. Only a move of her own list she hasn't used in
+        this fight, and only when she used just one move this beat (otherwise it is left to the other checks)."""
+        cfg = ((self.rules.get("narration") or {}).get("story_checks") or {})
+        if not cfg.get("enabled", True) or not cfg.get("move_names", True):
+            return text
+        known = getattr(self, "known_moves", None) or {}
+        used = getattr(self, "used_by", None) or {}
+        now = {}
+        for a in getattr(self, "_acts_now", None) or []:
+            mv = (a.get("move") or {}).get("name")
+            if mv and a.get("attacker"):
+                now.setdefault(a["attacker"], []).append(mv)
+        for w, mvs in known.items():
+            real = list(dict.fromkeys(now.get(w) or []))
+            if len(real) != 1:
+                continue
+            for mv in sorted(mvs, key=len, reverse=True):
+                if mv in real or mv in (used.get(w) or ()) or mv.lower() == real[0].lower():
+                    continue
+                rx = re.compile(r"\b(" + re.escape(w) + r"(?:'s|’s|'|’)\s+)" + re.escape(mv) + r"\b")
+                if rx.search(text):
+                    text = rx.sub(lambda m_: m_.group(1) + real[0], text)
+                    self._tally_checks(["wrong move named"], "fixed", 0)
+        return text
 
     def _rewrite_paragraph(self, user_msg, paras, i, reasons):
         """One paragraph written again with its mistake named, the paragraphs around it shown for the join."""
@@ -13891,7 +14064,7 @@ class Narrator:
             note_failure("the narration cuts (they left nothing of the beat)", ValueError(f"{len(raw)} chars cut to "
                                                                                           f"{len(text.strip())}"))
             text = _balance_marks(self._last_scrub(raw))
-        return re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", self.pov_labels(self._engine_mends(text)))
+        return re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", self.pov_labels(self._mend_move_names(self._engine_mends(text))))
 
     def _phrase_mem(self):
         """The stock-phrase memory kept across fights and runs (narration.phrase_memory), or None when it is off."""

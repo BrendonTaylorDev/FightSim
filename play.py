@@ -29,7 +29,7 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 
-VERSION = "2026-10-26 build 266-guided (busy limbs and reach from a hold, Ollama retries)"
+VERSION = "2026-10-26 build 267-guided (story checks, bigger writing libraries)"
 
 HELP = """
 =============================================================================================
@@ -1286,6 +1286,7 @@ class Session:
             if m and m.group(2).strip() in names:
                 used.setdefault(m.group(1).strip(), set()).add(m.group(2).strip())
         self.narrator.used_by = used
+        self.narrator.known_moves = {f.name: [m["name"] for m in f.moves] for f in self.eng.fighters.values()}
         self.narrator.injury_log = {k: list(v) for k, v in self.eng.injury_log.items()}   # for one memory a beat
         # (the few causes the notes name for each part, the same as CURRENT CONDITION's: the hardest and the latest)
         self.narrator.injury_main = {k: self.eng.injury_causes(k) for k in self.eng.injury_log}

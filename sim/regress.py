@@ -1269,6 +1269,51 @@ def busy_limbs_check():
     return problems
 
 
+def story_checks_check():
+    """Build 267 (narration.story_checks): a failed get-up told after she is already up, the holder still pressing
+    after the tap, a bite told on a part it never touched, and a move she never used named instead of the one she
+    did; and the new story_blocks groups are there to be offered."""
+    import narrator, blocks as blocks_
+    problems = []
+    rules = json.load(open(os.path.join(H.ROOT, "rules.json"), encoding="utf-8"))
+    N = narrator.Narrator("x", rules)
+    N.strengths = {"Ripples": 10, "Nerine": 80}
+    N._landed, N._tap_end, N.grips = set(), None, []
+    N._rose_now, N._tap_mid, N._acts_now = {"Ripples"}, [], []
+    s1 = ["Ripples dragged herself up, and at last she was on her feet.",
+          "Ripples' third attempt to rise was no more successful than the first two."]
+    if not any("already UP" in w for _s, w in N._order_slips(s1)):
+        problems.append("a failed get-up told after she was up wasn't caught")
+    if N._order_slips(list(reversed(s1))):
+        problems.append("the failed try told BEFORE the get-up was flagged")
+    N._rose_now, N._tap_mid = set(), [("Ripples", "Nerine", "tap", "chicken wing", 1, 3)]
+    s2 = ["Ripples tapped, her paw slapping the ground.", "Nerine's knee drove into Ripples' right shoulder."]
+    if not any("tap ends it" in w for _s, w in N._order_slips(s2)):
+        problems.append("the holder pressing after the tap wasn't caught")
+    if N._order_slips(["Nerine's knee drove into Ripples' right shoulder.", "Ripples tapped, her paw slapping the ground.",
+                       "Nerine let go at once."]):
+        problems.append("the pressure told before the tap was flagged")
+    N._tap_mid = []
+    N._acts_now = [{"attacker": "Nerine", "move": {"name": "Bite"}, "hits": [{"part": "Upper Back"}]}]
+    if not N._order_slips(["Nerine's teeth sank between Ripples' toes."]):
+        problems.append("a bite told on the toes when it hit her back wasn't caught")
+    if N._order_slips(["Nerine's teeth sank into Ripples' shoulder.", "Nerine's jaw set hard."]):
+        problems.append("a bite next to where it landed (or a set jaw) was flagged")
+    N.known_moves, N.used_by = {"Nerine": ["Water Gun", "Aqua Jet"]}, {"Nerine": set()}
+    N._acts_now = [{"attacker": "Nerine", "move": {"name": "Water Gun"}}]
+    if "Nerine's Water Gun" not in N._mend_move_names("The force of Nerine's Aqua Jet drove her back."):
+        problems.append("a move she never used wasn't put right")
+    N.used_by = {"Nerine": {"Aqua Jet"}}
+    if "Aqua Jet" not in N._mend_move_names("She still felt Nerine's Aqua Jet from before."):
+        problems.append("a move she really used earlier was changed")
+    B = blocks_.parse(open(os.path.join(H.ROOT, "story_blocks.txt"), encoding="utf-8").read())
+    have = {c for c, _k, _t in B}
+    for c in ("surge", "grey_out", "running_on_empty", "getup_fail", "choke_fight", "sub_escape_held", "sub_escape_hold"):
+        if c not in have:
+            problems.append(f"story_blocks.txt has no {c} group")
+    return problems
+
+
 def hold_panel_check():
     """Build 257 (window.hold_panel): each card carries the grips on her and by her (which parts, with what, how
     long), how near she is to tapping (the narrator's 1-5 ladder and this beat's real tap chance, 0 on her first
@@ -1924,6 +1969,13 @@ def main(argv):
         probs = busy_limbs_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 266 the holder's busy limbs, her reach from the hold, no charge from a hold  ({time.time() - t:.1f}s)")
+        for p in probs:
+            print("      " + p)
+    if not want or any(w in "story checks" for w in want):
+        t = time.time()
+        probs = story_checks_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 267 story checks: get-up order, after the tap, the bite's place, move names  ({time.time() - t:.1f}s)")
         for p in probs:
             print("      " + p)
     if not want or any(w in "tap overwhelm" for w in want):

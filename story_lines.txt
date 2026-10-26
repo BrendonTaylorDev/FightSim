@@ -4251,3 +4251,307 @@ She sank her claws into her own side until it hurt, and let the new pain drown o
 She rolled her weight onto her free paw and ground it into the earth under her, trapping it there. | posture: down | has: arms, forelegs
 Her paw tore loose from the ground on its own, and she slammed it back down flat and held it there, shaking. | posture: down | has: arms, forelegs
 She clung to the fur of the one holding her with both paws, because if she let go, she would give in. | posture: standing | has: arms
+
+# ---------------------------------------------------------------------------------------------------------------
+# BUILD 267: more for the thin groups (submissions and taps above all), and lines for getting out of a submission
+# (sub_escape_held). Past tense, finished sentences; {part} and {foe} as everywhere else.
+# ---------------------------------------------------------------------------------------------------------------
+== sub_lock_held
+She felt the angle before she felt the pressure, and the angle was the frightening part.
+She tried the obvious way out and found it already closed.
+For a moment she went very still, the way an animal does when it understands it is caught.
+Her {part} was not hers to move any more; it belonged to the hold now.
+Her first pull against it was pure reflex, and it taught her exactly what the next one would cost.
+The lock closed the way a door closes in another room, quietly, and for good.
+She looked for slack and there was none, not a claw's width of it.
+It was so neat, so exact, that she almost admired it, and that frightened her more than the pain.
+Every way she could have turned had a wall at the end of it.
+Her body tried to curl round the {part} to protect it, and the hold would not let it curl.
+
+== sub_lock_hold
+She checked the angle once, adjusted it a fraction, and was satisfied.
+She got her weight where it needed to be and let it do the first part of the work.
+She felt {foe} go still under her, and knew that stillness: the moment of understanding.
+She set her own breathing slow, because this was going to take a while.
+She made one small adjustment that cost her nothing and cost {foe} a great deal.
+She braced herself so that whatever {foe} did, it would be against the ground and not against her.
+She did not rush the crank; a hold rushed is a hold that slips.
+She thought, with cold clarity, that now it was only a question of how long.
+She locked her paws together round it, closing the circle, and the hold began to hold itself. | has: arms
+She wound her tails round to close the last gap, and it was done. | has: tails
+
+== sub_hold | held: early, middle
+She kept her face blank; a face could give the other something to fight.
+She let a breath out slowly, and the hold tightened with it.
+She pinned the free limb with her knee, so there was nothing left to push with. | has: legs
+She shifted her weight back onto her heels, and the {part} went with it. | has: legs
+She watched the free paw, the one that would tap, more closely than anything else.
+
+== sub_hold | held: middle, long
+She counted {foe}'s breaths, not her own.
+She felt the {part} quiver in her grip, a small helpless tremor, and held it steady.
+Her own muscles were burning, and she ignored them, because {foe}'s were burning worse. | has: arms
+She leaned close enough to hear every sound {foe} made, and every one told her something.
+She rode out a wild buck from underneath without giving an inch.
+She reset her grip one claw at a time, never letting the pressure drop. | has: arms
+She tilted the angle the smallest bit, and heard the difference at once.
+She breathed through her nose, slow and even, the opposite of the ragged breathing beneath her.
+
+== sub_hold | held: long
+She wondered, with a flicker of respect, how much longer {foe} could possibly do this.
+She was tired of waiting, and she made the hold say so.
+She had stopped thinking about winning; she was only thinking about not letting go.
+
+== sub_held | held: early
+Her free limbs thrashed for something to push against and found only the ground.
+She pushed once, hard, with everything, and the hold did not even notice.
+She could feel the heat of {foe} against her, close and patient and immovable.
+Every time {foe} shifted, the {part} reminded her who was in charge.
+
+== sub_held | held: middle
+She tried the same small twist she had tried before, and it failed the same way.
+She bargained with herself: one more press, and then she would think about it.
+She stopped struggling to save her breath, and the stillness was worse, so she started again.
+She heard a voice making small hurt sounds, and it was a long moment before she knew it was hers.
+Anger gave her one more breath of holding out, and she spent it.
+
+== sub_held | held: long
+The hurt had stopped being something that was happening and become a place she lived.
+She could not remember any more what it had felt like before the hold went on.
+She stared at the ground an inch from her face and learned every grain of it. | posture: down
+She tried to think of the next move, and there wasn't one; there was only the hold.
+The {part} throbbed in long slow pulses, each one a little worse than the last.
+
+== tap_fight | tap: 1
+She decided, quite calmly, that this was going to hurt and that she could stand it.
+She made herself loosen the muscles round the {part}, because fighting it only fed it.
+She told herself she had had worse, and was not entirely sure it was true.
+She kept her eyes on {foe} and let her see nothing at all.
+She breathed into it the way she would have breathed into cold water: in, slow, and in again.
+
+== tap_fight | tap: 2
+The thought of tapping arrived for the first time, small and reasonable, and she shoved it away.
+Her jaw was clenched so hard her teeth ached, and she let that ache distract her.
+She started counting her breaths and lost the count at four.
+The refusal had begun to cost her something, a little more each time.
+She noticed her free paw creeping toward the ground and pulled it back, ashamed of it. | has: arms
+
+== tap_fight | tap: 3
+The want to give in had a voice now, and it kept saying the same reasonable thing.
+She shook her head hard, as if she could shake the thought out of it.
+A whine slipped out through her teeth, and she was furious at it.
+She had to choose not to tap with every breath, and every choosing was heavier than the last.
+Her eyes squeezed shut and would not open for a long moment.
+
+== tap_fight | tap: 4
+She was past caring how she sounded; all she cared about was the paw that wanted to slap the ground.
+Everything in her was shouting the same word, and she would not let it out of her mouth.
+She panted in short high bursts, the sound of something cornered.
+Her body bucked against the hold on its own, a wild and useless fight.
+The world had narrowed to the {part} and the not-giving-in.
+
+== tap_fight | tap: 5
+She felt herself starting to let go and grabbed back at the edge of it with nothing left to grab with.
+The word was in her mouth, and she bit down on it until it hurt.
+Every part of her but one small stubborn thing had already given up.
+She made a sound that was almost the word, and turned it at the last instant into a snarl.
+
+== tap_fight_hold | tap: 1, 2
+She waited, patient, and let the hold do the arguing.
+She was in no hurry; the hold was not going anywhere, and neither was {foe}.
+She read the stillness under her for what it was: someone saving her strength.
+She felt the steady breathing under her and knew it was costing more than it looked.
+
+== tap_fight_hold | tap: 3
+She felt the first real shudder go through {foe}, and tightened a fraction to meet it.
+The struggling under her had changed: less planned now, and more desperate.
+She felt the refusals come up through the grip, one after another, each a little weaker.
+She heard a breath catch under her and turn into something rougher.
+
+== tap_fight_hold | tap: 4, 5
+Something like pity flickered in her, and she did not let it reach her grip.
+She braced for the tap she was sure was coming, and it did not come, and she braced again.
+She wondered, coldly, how anyone could hold out like this.
+She was almost afraid of how much {foe} would let the hold do to her rather than give in.
+
+== tap_hold_back | tap: 1, 2
+She curled her toes into the ground and kept them there, a small private brace. | has: legs
+She let her free paw rest flat and still, on purpose, to prove to herself that she could. | has: arms
+She clenched her tails tight against her own legs, as if holding herself together. | has: tails
+She tucked her free paw under her own body, where it could not do anything foolish. | has: arms | posture: down
+
+== tap_hold_back | tap: 3
+She pressed her free paw flat to the ground and leaned her weight on it, so it could not lift. | has: arms | posture: down
+She wound her own tail round her free paw and pinned it there. | has: tails, arms
+She drove her claws into the dirt beside her and gripped the ground instead. | has: arms | posture: down
+She knotted her free paw into the fur of her chest so tight it hurt. | has: arms
+
+== tap_hold_back | tap: 4, 5
+Her free paw lifted an inch, and she slammed it back down flat: not a tap, never a tap. | has: arms | posture: down
+She pinned her own free paw under her body and lay on it with all her weight. | has: arms | posture: down
+She bit the back of her own wrist to keep the paw from moving. | has: arms
+She grabbed a fistful of grass and roots and held on as if letting go would mean the other thing. | has: arms | posture: down
+
+== tap_out_held
+It came out of her before she could stop it, and once it was out there was no taking it back.
+The relief of giving in was so sudden and so complete that it frightened her.
+She hated the sound of her own tapping, and could not stop.
+Her paw tapped before she had decided anything, and her pride arrived a moment too late.
+There was no grand moment of choosing; there was only the paw moving, and then it was done. | has: arms, forelegs
+The first thing she felt was not shame but air.
+She tapped and kept tapping, as if one might not be enough to make it stop. | has: arms, forelegs
+Something in her that had been clenched for a long time simply let go.
+
+== tap_out_hold
+The tap came so suddenly after so long that she almost did not believe it.
+She let go and sat back, breathing hard, her own arms shaking now that they were allowed to. | has: arms
+The fight went out of the body under her all at once, and she felt it like a dropped weight.
+She released her and did not gloat; she was too tired, and {foe} had held out too long for that.
+She let go and showed her paws, open, so that there could be no doubt. | has: arms
+She unwound her tails from the {part} slowly, one turn at a time. | has: tails
+
+== tap_after_held
+She curled round the {part} the moment it was free and held it like something she had nearly lost.
+The air came back into her in great dragging gulps.
+She lay where she was and let the shaking happen. | posture: down
+The pain did not stop just because the hold had; it only stopped getting worse.
+The shame came slowly, after the relief, and she let it harden into something useful.
+She tested the {part}, gingerly, and found that it still answered, barely.
+She told herself it was one; it was only one; there was still time.
+
+== sub_escape_held
+The {part} came free, and she pulled it in against her body before anything could take it again.
+She was out, and for a moment she did not believe it.
+The relief was so sharp it was almost another kind of pain.
+The blood rushed back into the {part}, and it hurt worse free than it had held.
+She got out the way you get out of cold water: all at once, gasping.
+She did not stop to wonder how she had done it; she only took the air and the space.
+Her whole body shook now that it no longer had to hold together against the grip.
+Something in her chest lifted: she could still get out, she could still do this.
+She did not look at the {part}; she did not want to know yet.
+
+== off_target
+The blow skidded off the curve of her body and landed lower than it was meant to.
+It caught her {part}, which was bad, and not the place it wanted, which would have been worse.
+A shrug of her shoulder took the target away and gave the blow muscle instead.
+It still hurt, and it still landed, but she could feel how much worse it could have been.
+She had tucked the sore place away just in time; her {part} paid for it instead.
+She rolled with it just enough that it found the wrong place.
+
+== ground_back
+With the ground at her back, there was nowhere for the blow to go but into her.
+She could not roll with it; the earth held her still and let it land.
+The ground took her and gave nothing back, and the blow took everything the ground did not.
+*Can't move. Can't get out from under it.*
+She was pressed between the blow and the earth like a leaf in a book.
+There was no give anywhere, and so all of it stayed in her.
+
+== stagger
+She staggered a step and her feet found the ground just in time.
+She lurched sideways and caught herself on nothing but stubbornness.
+Her legs went one way and her weight another, and for a moment she hung between them.
+She swayed, half a breath from going down, and did not.
+*Stay up. Stay up.*
+She reeled back, flung her weight forward to meet it, and was square again, just.
+
+== collapse
+Her knees went first, and the rest of her followed them down. | has: legs
+She tried to take a step and found she had none left to take.
+The strength went out of her all at once, like water out of a cupped hand.
+She folded slowly, as if the ground had been calling her for a long time and she had finally listened.
+She went down in pieces, a knee, a hip, a shoulder, and lay where she landed.
+
+== knockout
+For a moment she looked surprised, and then she looked like nothing at all.
+She went down the way a tree goes down, all at once and without a sound.
+The fight simply left her eyes, and her body went where it was sent.
+She dropped, and lay there, and did not try to rise.
+
+# (build 267) more for the bigger groups
+== breath | state: fresh
+She breathed out once through her nose, steady, unbothered.
+Her ribs rose and fell in a slow, easy rhythm she did not have to think about.
+She had breath to spare, and she knew it, and it showed.
+
+== breath | state: winded
+She caught her breath in two hard pulls and made the third one slower.
+Her breathing had gone loud, and she made herself quiet it.
+She took a breath that did not quite reach the bottom of her chest.
+
+== breath | state: tired
+Each breath came in ragged and went out rough, and there was never quite enough of it.
+She breathed with her whole body now, her shoulders lifting on every pull.
+
+== breath | state: spent
+Her breath came shallow and fast and thin, a sound like a small animal hiding.
+She could not seem to get a whole breath any more, only pieces of one.
+Every breath shook on the way in and broke on the way out.
+
+== resolve | state: fresh
+She rolled her shoulders once and settled, as if the fight had only now properly begun.
+She lifted her chin and let {foe} see that she was nowhere near done.
+
+== resolve | state: winded
+She steadied her breath, set her feet and made herself ready again.
+She shook the sting off and squared up, a little slower than before.
+
+== resolve
+She put the hurt away somewhere she could reach it later, and faced front.
+She narrowed her eyes, and the hurt behind them sharpened into something useful.
+She would not give {foe} the satisfaction of seeing her slow down.
+Her mouth went hard and flat, and she came back to the middle.
+
+== closing | role: attacker
+She stayed close, watching for the next opening and already half sure where it would be.
+She let the moment sit, and kept her weight forward, ready.
+She did not follow it up at once; she wanted to see what it had cost.
+
+== closing | role: receiver
+She drew the hurt part in close and kept her eyes on {foe}.
+She shook it off as well as she could and waited for what came next.
+She swallowed the sound she wanted to make, and set herself again.
+
+== closing | role: winning
+She could feel the fight leaning her way, and she did not let it make her careless.
+She held her ground and let {foe} come to her.
+
+== closing | role: losing
+She knew she was behind, and the knowing made her steadier rather than less.
+She set her teeth and looked for the one thing that might turn it.
+
+== landing
+She hit the ground and lay there a moment while the world settled back into place.
+The landing drove the air out of her, and she lay gasping until it came back.
+She came down hard and every sore place she had answered the ground at once.
+The impact jarred her from end to end, and for a breath she could not move at all.
+She struck the ground with a dull, heavy sound, and the pain arrived a heartbeat later.
+
+== pin_press | held: early
+She found where the other's strength was and laid her weight across it.
+She pressed down and felt the body under her test the pin, carefully, all along its length.
+
+== pin_press | held: middle
+She answered every heave with a little more weight, never more than she needed.
+She breathed slow and kept her weight low, letting the other do all the wasted work.
+
+== pin_press | held: long
+Her arms were trembling now, and she held anyway. | has: arms
+She sank lower over the other, tired, stubborn, and not about to move.
+
+== pin_under | fade: fighting
+She drove her heels into the ground and heaved with everything she had.
+She twisted hard toward the side she thought was weakest, and found it was not.
+She thrashed once, sharp and sudden, hunting for any give.
+
+== pin_under | fade: weakening
+She pushed again and felt it come out of her smaller than she meant it to.
+She rested a moment too long between tries, and knew it.
+Her next effort started strong and gave out halfway.
+
+== pin_under | fade: fading
+She could barely lift against the weight now, and the trying took everything.
+Her struggles had become small, tired things, far apart.
+
+== pin_under | fade: nearly out
+She lay still for so long that it seemed she had stopped, and then moved, just once, weakly.
+There was hardly any fight left in her, only a slow refusal to be still.

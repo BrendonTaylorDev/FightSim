@@ -654,6 +654,26 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 267
+- **New story checks** (`narration.story_checks`, each one switchable). They catch mistakes the model made in the saved fight even though the notes had it right. A paragraph caught by one is written again with the mistake named.
+  - `getup_order`: a failed try at getting up told after she is already up. In beat 10 Ripples stood, then "her third attempt to rise was no more successful than the first two".
+  - `after_tap`: the holder still pressing or striking after the tap. In beat 22, "Nerine's knee drove into Ripples' right shoulder" came after the tap. The tap ends the grip, so the rest of the beat is told before it.
+  - `bite_place`: a bite told landing somewhere it never touched ("her teeth sank between the toes" for a bite on her back). A part next to where it landed is fine.
+  - `move_names`: in beat 4, "Nerine's Aqua Jet" when she threw a Water Gun and had never used Aqua Jet. This one is fixed with no model call, and only when she used just one move that beat.
+  - Tested on the saved fight's own story: they catch those three beats and flag nothing in any other beat.
+- **More in the writing libraries**, mostly where they were thinnest.
+  - story_blocks.txt: 8,951 → 9,343 ideas. The submission and tap groups doubled or tripled; for example, `sub_lock_hold` went 7 → 24, `tap_after_held` 6 → 14 and `sub_hold` 17 → 36. Off-target blows, last stands, frenzies, sputtering, feints, juggles, crashes, collapses and a dozen more groups also grew.
+  - story_lines.txt: 3,220 → 3,425 finished lines, again mostly the submission and tap groups, plus breath, resolve, closing lines, landings, pins, staggers and collapses.
+  - story_passages.txt: 125 → 164 showpieces. Every group that had 3 to 7 now has 5 to 11.
+- **New groups for moments that had no ideas at all.** Each is offered only when the engine says it is happening, and only from that fighter's side:
+  - breaking out of a submission (`sub_escape_held`, `sub_escape_hold`, with finished lines too);
+  - a choke from the inside, by how near the dark is (`choke_fight`);
+  - an adrenaline surge or a second wind (`surge`);
+  - her sight greying (`grey_out`);
+  - running on nothing below zero (`running_on_empty`);
+  - a failed try at getting up (`getup_fail`).
+  - The switch is `narration.inner_blocks`. The choke and escape groups go with `narration.sub_blocks`.
+
 ## Build 266
 Fixes from the saved fight (fight2_Ripples_vs_Nerine, 35 beats):
 - **Beat 25 had no story because Ollama wasn't running.** The game couldn't reach it ("actively refused"), most likely because it crashed between the director and the narrator.

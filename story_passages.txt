@@ -282,3 +282,79 @@ In the end it was not a decision. Her body made it a heartbeat before she did: h
 She tapped. She had sworn to herself she would not, and she tapped, hard and fast against the ground, and the shame of it and the relief of it arrived together and could not be told apart. | has: arms, forelegs
 == tap_out | posture: standing
 Her paw found {foe} and pounded against her, again and again, frantic: she was tapping out, every slap saying it plainly. The grip opened at once. She stood there shaking, the {part} hot and loose and hers again, hating how good it felt. | has: arms, forelegs
+
+# ---------------------------------------------------------------------------------------------------------------
+# BUILD 267: more passages for the groups that had only a few
+# ---------------------------------------------------------------------------------------------------------------
+== bite | kind: bite | level: sore, hurting
+The teeth found her {part} and closed, not deep, but sure. It was the pressure more than the bite that she felt first, the grip of it, and then a hot little line of pain where each tooth pressed in.
+She felt the jaws take her {part}, a hard, fast clamp that pinched and let go. The sting of it stayed behind in the shape of the bite, a ring of small sharp points that throbbed in time with her heart.
+
+== bite | kind: bite | level: very painful, excruciating, devastated
+The jaws closed on her {part} and did not let go. Pain went up from it in long, pounding waves, each one worse than the one before, and she could feel every tooth as a separate point of fire.
+It was the worst thing she had felt all fight: the bite settling into her {part}, deep and heavy and patient, the jaws working once, grinding, so that the hurt had nowhere to go but further in.
+
+== cut | kind: claw, talon, horn | level: sore, hurting
+It went across her {part} in one quick line, so fast that the sting arrived after it was over. She felt the skin there go hot and tight, a thin bright hurt that drew her breath in through her teeth.
+The edge of it caught her {part} and dragged, a sharp scraping sting that ran its whole length. It was not deep; she could tell that much. But it burned, and the burning stayed.
+
+== cut | kind: claw, talon, horn | level: very painful, excruciating, devastated
+It raked her {part} where she was already hurt, and the fresh sting landed on the old ache like salt on a scrape. She went rigid for a moment, every muscle locked against it, and the breath came out of her in a hiss.
+The stroke laid a long line of fire across her {part}. For a heartbeat it was only heat; then the hurt arrived in full, sharp and stinging and far too big for the size of the mark.
+
+== held | held: early
+The grip took her {part} and squeezed until she felt it in her teeth. She pulled against it once, hard, and learned at once that pulling only drove the hold in deeper.
+She felt {foe} close on her {part} and settle there, a hold with a whole body behind it. There was no shaking it loose; she could feel that in the first second, and the knowing was almost worse than the squeeze.
+
+== held | held: middle, long
+The ache under the grip had gone from sharp to deep, a slow heavy throb that she could feel all the way up the limb. Every time she shifted, the hold shifted with her, and found the sore place again.
+She had stopped fighting the grip on her {part} for a moment, only to breathe, and the stillness let the pain come in properly. It sat in the {part} like a stone, heavy and hot and patient.
+
+== holding
+She kept the grip and felt every effort {foe} made run up against it and spend itself there. Her own arms ached; she let them ache. Letting go was the only thing she would not do.
+She settled her weight lower and felt {foe} buck under her, once, twice, and then go still to gather herself. She waited. When the next push came, she was ready for it, and it came to nothing.
+There was a strange intimacy in it: the heat of {foe} against her, the rough breathing, the small changes in the muscles she held. She read every one of them, and answered every one with a little more pressure.
+
+== pinning
+She spread herself over {foe} and stayed there, heavy and patient, feeling each heave come up through her chest and give out against her weight. She did not need to win any single push. She only needed not to lose one.
+She shifted her weight a hand's width toward the side {foe} kept testing, and felt the next effort fade before it had begun. Under her the breathing went harder, faster, and she let it.
+{foe} strained up beneath her, and she let the strain come and rode it, sinking with it and pressing down again when it passed. Her own breath was loud in her ears. She could feel her opponent tiring.
+
+== pinned_start
+There was no warning. The ground was suddenly against her and {foe} was on top of her, the whole weight of her settling in, and every way out closed one after another, like doors.
+The pin came down on her so fast that she was held before she understood what was happening. The weight pressed her into the ground, and the first breath she drew under it was short and shallow.
+
+== choke_out | choke: blood, both
+She did not feel herself go. There was the grip, and the roaring, and the grey closing in, and then there was nothing, and her body went soft in the hold all at once.
+Her paws pulled at the grip, slower and slower, and then they only rested on it, and then they slid away. The grey came in from every side and met in the middle, and she was gone.
+At the end there was no struggle left in her at all. Her eyes stayed open a moment longer than she did, and then they slid half closed, and her body sagged into the hold.
+
+== tap_edge | tap: 4, 5
+She heard herself making a sound she had never made before, high and thin and ragged, and she did not stop it, because stopping it would have cost breath she needed for refusing. Her paw lifted, and she forced it back down.
+There was nothing heroic in it any more. She was simply not doing the one thing, over and over, while every part of her screamed at her to do it. She did not know how many more times she could not do it.
+Her whole body was shaking in the grip, a hard, fast, helpless trembling she could not stop. She squeezed her eyes shut and held on to the refusal the way a drowning thing holds on to a branch.
+
+== tap_out | posture: down
+The tap came out of her in a rush, her paw slapping the ground again and again, and with it came a sound she would rather nobody had heard. The grip opened. She lay there in the sudden absence of it, shaking. | has: arms
+She held on until there was nothing left to hold on with, and then her paw found the ground and slapped it, tapping out, frantic, and it was over. The pain did not stop at once; it only stopped growing, and that was enough. | has: arms
+
+== tap_out | posture: standing
+Her paw pounded against {foe}'s side, once, twice, again, harder each time, saying it in the only way she had left. The grip let go. She swayed where she stood, her breath coming in great ragged pulls. | has: arms
+
+== knockout
+She did not see the end coming. There was the blow, and the heavy, ringing silence after it, and the ground tilting gently up to meet her, and then nothing at all.
+The light went out of her slowly, like a lamp turned down. Her body went loose in pieces, her legs, her shoulders, her head, until she lay still where she had fallen.
+For a heartbeat she was still standing, though nobody was home behind her eyes. Then she simply folded, all at once, and lay where she fell, breathing slow and deep.
+
+== landing
+She hit the ground and bounced, once, and the second landing was worse than the first. The breath went out of her in a single hard grunt, and for a long moment she could not find it again.
+The ground took her flat and hard, and the jolt went through every part of her that was already sore. She lay staring upward, the world ringing, while her body decided how badly it had been hurt.
+She landed and skidded, grit scraping under her, until the ground finally stopped her. Every ache she had woke at once and spoke up together.
+
+== air_fall
+The wing would not answer. She felt the air slide out from under her, and the ground, which had been so far away, began to come up at her very fast.
+She fought the fall all the way down, wings beating hard and wrong, and gained nothing but a few heartbeats. Then the ground came up and struck her, and the sky went on above her, out of reach.
+
+== air_tumble
+They went down together, tangled, each one's wings fouling the other's, the ground turning over and over beneath them. Neither could let go and neither could fly, and the fall went on far longer than it should have.
+{foe} had her, and she had {foe}, and the air had neither of them. They dropped through it in a tight, thrashing knot, wings battering, until the ground came up to end it.

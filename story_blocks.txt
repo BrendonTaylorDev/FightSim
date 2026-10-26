@@ -12306,3 +12306,503 @@ she clenches both of her own arms round herself as best she can, holding her who
 she clings to the fur of the one holding her with both paws, white-knuckled, because if she lets go she'll tap | posture: standing | has: arms
 her tail lashes up to slap and she clamps it down under her own leg | posture: down | has: tail, tails
 she locks her free foreleg straight and rigid under her, so stiff it trembles, refusing to let it bend | has: forelegs
+
+# ---------------------------------------------------------------------------------------------------------------
+# BUILD 267: more for the thin groups (submissions, taps, off-target blows, last stands, frenzies, sputtering,
+# feints, collapses) and new groups for what had nothing: breaking out of a submission (sub_escape_held,
+# sub_escape_hold), a choke from the inside (choke_fight), a surge of adrenaline or a second wind (surge), her sight
+# greying (grey_out), running on nothing below zero (running_on_empty), and a try at getting up that fails
+# (getup_fail). Each is offered only when the engine says it is happening.
+# ---------------------------------------------------------------------------------------------------------------
+== sub_lock_held
+the grip finds the angle before it finds the pressure, and the angle is the frightening part
+she tries the obvious way out and finds it already closed, as if {foe} had thought of it first
+something in the {part} goes tight and bright and stays that way, waiting for the next turn
+she goes very still for a moment, the way an animal does when it understands it is caught
+the {part} is not hers to move any more; it belongs to the hold now
+she feels the lock in her teeth before she feels it in the {part}
+a cold little drop in her stomach: this is the one that ends fights
+her first pull against it is pure reflex, and it teaches her exactly how much it will cost to pull again
+she can feel {foe} settle in behind it, unhurried, the way you settle into a chair
+the pressure doesn't hurt yet, quite, and that is worse: it is only showing her where the hurt will be
+every way she could turn has a wall at the end of it
+the {part} goes from hers to theirs in one small click of a joint
+she hears her own breath go short and shallow and can't make it go long again
+she looks for slack and there is none, not a claw's width of it
+the lock closes the way a door closes in another room: quietly, and for good
+her body tries to curl round the {part} to protect it and the hold won't let it curl
+she feels her weight pinned to the one place the hold wants it
+it is so neat, so exact, that she almost admires it, and the admiration frightens her more than the pain
+
+== sub_lock_hold
+she feels the moment the slack runs out, and smiles a little, privately
+she checks the angle once, adjusts it a fraction, and is satisfied
+she gets her weight where it needs to be and lets gravity do the first part of the work
+she is careful the way a craftsman is careful: no hurry, no waste, every inch of it on purpose
+she feels {foe} go still under her and knows that stillness: the moment of understanding
+she sets her own breathing slow, because this is going to take a while
+she locks her grip on her own wrist, closing the circle, and the hold becomes a thing that holds itself | has: arms
+she leans her shoulder into it and feels the {part} answer at once
+she watches {foe}'s face, not the {part}: the face will tell her more
+she makes a small adjustment that costs her nothing and costs {foe} a great deal
+there is a quiet pleasure in it, the joint turned exactly as far as it goes and no further, yet
+she braces her feet so that whatever {foe} does, it will be against the ground and not against her | has: legs
+she feels the first refusal come up through the grip, and settles in to wait it out
+she gives the hold a slow, testing squeeze, just to show {foe} that it can tighten
+she wraps her tails round to close the last gap, and it is done | has: tails
+she does not rush the crank: a hold rushed is a hold that slips
+she thinks, with cold clarity: now it's only a question of how long
+
+== sub_hold
+she shifts her hips a hand's width and the whole hold sharpens | held: early, middle
+she keeps her face blank, because a face can give the other something to fight | held: early, middle
+she counts {foe}'s breaths, not her own | held: middle, long
+she feels the {part} quiver in her grip, a small helpless tremor, and holds it steady | held: middle, long
+her own muscles are burning now, and she ignores them because {foe}'s are burning worse | held: middle, long | has: arms
+she leans in close enough to hear every sound {foe} makes, and every one tells her something | held: middle, long
+she lets a breath out slowly, and the hold tightens with it | held: early, middle
+she resets her grip one finger at a time, never letting the pressure drop | held: middle, long | has: arms
+she wonders, with a flicker of respect, how much longer {foe} can possibly do this | held: long
+she is tired of waiting, and makes the hold say so | held: long
+she braces against a wild buck from underneath and rides it out without giving an inch | held: middle, long
+she pins the free limb with her knee so there is nothing for {foe} to push with | held: early, middle | has: legs
+she can feel her own pulse in her wrists where they lock, steady and patient | has: arms
+she tilts the angle the smallest bit, and hears the difference at once | held: middle, long
+she has stopped thinking about winning; she is only thinking about not letting go | held: long
+she whispers nothing; whatever she would say, the hold is saying better | held: middle, long
+she shifts her weight back onto her heels, and the {part} goes with it | held: early, middle | has: legs
+she breathes through her nose, slow, controlled, the opposite of the ragged breathing under her | held: middle, long
+she watches the free paw, the one that would tap, more closely than anything else | held: middle, long
+
+== sub_held
+she tries the same small twist she tried before and it fails the same way, which is its own kind of lesson | held: middle, long
+her free limbs thrash for something to push against and find only air and ground | held: early, middle
+she feels the hold through her whole body, not only in the {part}, as if the {part} were the end of a rope tied to everything else
+she counts nothing, because there is nothing to count toward | held: middle, long
+her breathing has narrowed to the space the hold leaves it | held: middle, long
+she shuts her eyes, opens them, shuts them again; neither helps | held: middle, long
+she bargains with herself: one more press, and then she'll think about it; one more after that | held: middle, long
+she pushes once, hard, with everything, and the hold doesn't even notice | held: early, middle
+she can feel the heat of {foe}'s body against hers, close and patient and immovable | held: early, middle
+she presses her cheek to the ground because it is cool and nothing else is | held: long | posture: down
+she hears a voice making small hurt sounds and is a long moment realizing it is her own | held: middle, long
+her free paw opens and closes on nothing, over and over | has: arms | held: middle, long
+she tries to think of the next move and there isn't one; there is only the hold | held: long
+the {part} throbs in long slow pulses, each one a little worse than the one before | level: very painful, excruciating
+she stops struggling to save breath and the stillness is worse, so she starts again | held: middle, long
+every time {foe} shifts, the {part} reminds her who is in charge | held: early, middle
+she is angry, and the anger gives her one more breath of holding out | held: middle, long
+she stares at the ground an inch from her face and memorizes it, a pebble, a blade of grass, anything | held: long | posture: down
+the hurt has stopped being an event and become a place she lives | held: long | level: excruciating, devastated
+she can't remember what it felt like before the hold went on | held: long
+
+== tap_fight | tap: 1
+she decides, quite calmly, that this is going to hurt and that she can stand it
+she makes herself loosen the muscles around the {part}, because fighting it only feeds it
+she tells herself she has had worse, and isn't sure it's true
+she keeps her eyes open and on {foe}, letting her see nothing
+she breathes into the pain the way she would breathe into cold water: in, slow, in again
+
+== tap_fight | tap: 2
+the thought of tapping arrives for the first time, small and reasonable, and she shoves it away
+she notices her paw has crept toward the ground and pulls it back, embarrassed | has: arms
+her jaw is clenched so hard her teeth ache, and she lets that ache distract her
+she starts to count her breaths and loses the count at four
+she can feel the refusal costing something now, a little more each time
+
+== tap_fight | tap: 3
+the want to give in has a voice now, and it keeps saying the same reasonable thing
+she shakes her head, hard, as if she could shake the thought out
+a whine slips through her teeth and she is furious at it
+her eyes squeeze shut and won't open for a moment
+she has to choose not to tap with every breath, and every choosing is heavier
+
+== tap_fight | tap: 4
+she is past caring how she sounds; she cares only about the paw that wants to slap the ground
+everything in her is shouting the same word and she won't let it out of her mouth
+she pants in short high bursts, the sound of something cornered
+her body bucks against the hold on its own, a wild, useless, animal fight
+she cannot see properly any more; the world has narrowed to the {part} and the not-giving-in
+
+== tap_fight | tap: 5
+she feels herself starting to let go and grabs back at the edge of it with nothing to grab with
+the word is in her mouth; she bites down on it so hard it hurts
+she does not know how she is still refusing; she only knows she hasn't stopped yet
+every part of her except one small stubborn thing has already given up
+she makes a sound that is almost the word and turns it, at the last instant, into a snarl
+
+== tap_fight_hold | tap: 1, 2
+she feels the steady breathing under her and knows it is costing more than it looks
+she waits, patient, letting the hold do the arguing
+she is in no hurry; the hold isn't going anywhere, and neither is {foe}
+she notes the stillness under her for what it is: someone saving her strength
+
+== tap_fight_hold | tap: 3
+she feels the first real shudder go through {foe} and tightens a fraction to meet it
+she hears a breath catch and turn into something rougher
+the struggling under her has changed: less planned, more desperate
+she can feel the refusals coming up through the grip, one after another, each a little weaker
+
+== tap_fight_hold | tap: 4, 5
+she wonders, coldly, how much longer anyone could hold out like this
+something like pity flickers in her and she doesn't let it reach her grip
+she braces for the tap she is sure is coming, and it doesn't come, and she braces again
+she leans close and the sounds {foe} is making are right in her ear
+she is almost afraid of what {foe} is letting the hold do to her rather than give in
+
+== tap_hold_back | tap: 1, 2
+she tucks her free paw under her own body, where it can't do anything foolish | has: arms | posture: down
+she curls her toes into the ground and keeps them there, a small private brace | has: legs
+she hooks her free paw into her own ruff and holds on | has: arms, ruff
+she lets her free paw rest flat and still, deliberately, to prove to herself she can | has: arms
+she clenches her tails tight against her own legs, as if holding herself together | has: tails
+
+== tap_hold_back | tap: 3
+she presses her free paw flat on the ground and leans her weight on it so it can't lift | has: arms | posture: down
+she wraps her own tail round her free paw and pins it there | has: tails, arms
+she drives her claws into the dirt beside her and grips the ground instead | has: arms | posture: down
+she shoves her free paw under her own chin and holds it there with her jaw | has: arms
+she knots her free paw into the fur of her chest so tight it hurts | has: arms
+
+== tap_hold_back | tap: 4, 5
+her free paw lifts an inch off the ground and she slams it back down flat, not a tap, never a tap | has: arms | posture: down
+she pins her own free paw under her body and lies on it, the whole of her weight on it | has: arms | posture: down
+she bites the back of her own wrist to keep the paw from moving | has: arms
+she grips a fistful of grass and roots and holds it as if letting go would mean the other thing | has: arms | posture: down
+she locks her free paw round her own ankle and holds herself shut like a closed door | has: arms, legs
+
+== tap_out_held
+it comes out of her before she can stop it, and once it's out there is no taking it back
+the relief of giving in is so sudden and so total that it frightens her
+she hates the sound of her own tapping and can't stop doing it
+she taps because her body has decided, and her pride arrives a moment too late
+there is no grand moment of choosing; there is only the paw moving, and then it is done
+she gives in, and the first thing she feels is not shame but air
+the tap is small and fast and frantic, nothing like she ever imagined giving up would be
+her eyes are wet, and she is not sure whether it is the pain or the giving in
+she taps and keeps tapping, as if one might not be enough to make it stop
+something inside her that has been clenched for a long time simply lets go
+
+== tap_out_hold
+she feels the frantic taps against her and lets go a moment late, the hold still half in her muscles
+the tap comes so suddenly after so long that she almost doesn't believe it
+she lets go and sits back, breathing hard, her own arms shaking now that they can | has: arms
+she eases off carefully, as if the {part} might come apart in her hands | has: arms
+the fight goes out of the body under her all at once, and she feels it like a dropped weight
+she releases and doesn't gloat; she is too tired, and {foe} held out too long for that
+she lets go and holds her paws up, open, so there is no doubt | has: arms
+she unwinds her tails from the {part} slowly, one turn at a time | has: tails
+
+== tap_after_held
+she curls round the {part} the moment it is free and holds it like something she nearly lost
+the air comes back into her in great dragging gulps
+she lies where she is and lets the shaking happen
+she is already looking at {foe}, already thinking about the next one, even with the {part} on fire
+the pain doesn't stop just because the hold did; it simply stops getting worse
+she feels the shame arrive slowly, after the relief, and lets it harden into something useful
+she tests the {part}, gingerly, and finds it still answers, barely
+she tells herself it was one; it was only one; there is still time
+
+== off_target
+a flinch at the last instant moves the target, and she has to take what it leaves her
+her blow arrives where the spot was a heartbeat ago
+the angle is wrong by a hair and the hair is enough
+she aimed for the soft place and got the hard one beside it
+the opening closes as she commits, and she hits the door instead of the room
+she sees it going wrong in mid-swing and can't stop it
+a shrug of the shoulder takes the target away and gives her muscle instead
+she has to settle for close; close still hurts
+the blow skids off the curve of the body and lands lower than she meant
+she is a fraction early, and the fraction moves everything
+
+== off_target_take
+she sees it coming for the sore place and gives it something else
+a turn of the hip, a dip of the shoulder, and the bad spot is out of the way
+she gets an arm in the path of it, not to stop it, only to move it | has: arms
+she takes it on the meat of the muscle, not the joint it wanted
+she flinches the right way for once, and the blow pays for it
+the hit lands, but beside the place it would have done the most harm
+she rolls with it just enough that it finds the wrong target
+she tucks the hurt side away as if she has done it a thousand times
+she offers the tougher part, the way you offer an old coat to the rain
+it is still a hit, and it still hurts, but she can feel how much worse it could have been
+
+== collapse_thought
+*Get up. Get up. Why isn't she getting up?*
+*That's it. That has to be it.*
+*Don't trust it. She's done this before.*
+*Stay down. Please, stay down.*
+*If she gets up from that, I don't know what I've got left.*
+*She's breathing. Good. Now what?*
+*Is that real, or is she waiting for me?*
+*Careful. Careful. Cornered things bite.*
+*I did that. I actually did that.*
+*Too easy. Something's wrong.*
+
+== last_stand
+she lets go of every caution she has been carrying, and it feels like taking off a heavy pack
+she knows how this will look if it fails, and does it anyway
+there is a kind of peace in having only one thing left to do
+she does not save anything for after; there isn't going to be an after
+the hurt parts stop mattering for one long, bright moment
+she feels lighter than she has all fight, which is how she knows it is the end of her
+her whole body becomes one decision
+the pain is still there, but it is behind her now, like a door she has walked through
+she throws it with a sound she has never made before
+everything that has been held back all fight goes into this one thing
+
+== frenzy
+the blows stop being choices and become a rhythm
+she hears herself grunting with each one, a hard steady sound like an axe
+she can't feel her own arms any more, only the impact, the impact, the impact | has: arms
+she doesn't see a face any more, only a place to hit
+somewhere far back in her head a small voice says enough, and she doesn't listen
+she is breathing in time with the blows, and running out of breath
+the world has shrunk to the distance between her and the spot
+she doesn't stop because nothing in her is telling her to
+her rhythm stumbles once and finds itself again, faster
+she isn't angry any more; she is past angry, somewhere flat and fast and empty
+
+== sputter
+the water finds the back of her throat and she gags on it
+she shakes her head hard, flinging water off her face, and coughs again
+every breath she tries comes in wet and goes out as a cough
+her eyes are streaming and she can't tell water from tears
+she spits, and spits again, and still tastes it
+she tries to snort it out and it goes further up instead
+for a moment she can't do anything at all but cough
+she hunches over the coughing, her whole body jerking with each one
+the cough tears at her throat and she gasps for the air between them
+she drags a paw across her muzzle, clearing it, and coughs again | has: arms
+
+== feint | moment: bit
+she knows she was fooled the moment her guard moves, and can't call it back
+the shape of the attack changes halfway through, and her guard is left defending the first half
+she bites on it completely, and feels the real blow coming in from the side
+her whole body commits to a threat that turns out to be only a shrug
+she lifts her guard to the height of the fake and the real one comes in under her elbow
+she sways back from a blow that was never coming and sways straight into the one that is
+the half-step she takes to meet it is the half-step that leaves her open
+
+== feint | moment: read
+she has seen that shoulder drop before and it means nothing
+she keeps her weight where it is and lets the bluff break on her stillness
+she waits for the second motion, because the first one was too loud
+she watches the feet, and the feet tell her the truth
+the fake slides past her guard without her guard moving at all
+she almost bites, and doesn't, and the not-biting is the whole fight in that moment
+she sees the real blow hiding behind the false one like a second shadow
+
+== surge | moment: first
+heat floods her all at once, from her chest outward, and the pain goes thin and far away
+her heart is suddenly very loud and very fast
+the tiredness drops off her like a wet coat
+she feels enormous for a moment, bigger than the fight
+everything goes sharp: every sound, every color, every movement the other makes
+her limbs are humming, full of something that isn't strength but will do
+she hears herself laugh, short and wild, and doesn't know why
+the hurt is still there, she can feel it, but it has stopped mattering
+her breath comes deep and easy for the first time in a long while
+she knows it won't last, and that makes her want to use every second of it
+the world slows down around her, and she does not
+
+== surge | moment: second
+she had nothing left, and now, from somewhere, she has a little more
+it is not strength so much as a refusal that has found a way into her muscles
+it comes up from under the exhaustion like water through cracked ice
+she feels it and doesn't trust it, and uses it anyway
+her body, which had given up on her, changes its mind
+it feels borrowed, and she knows the bill will come
+she is surprised to find herself still moving, and keeps moving before the surprise wears off
+she doesn't know where it comes from; she only knows not to waste it
+for a moment the ground stops tilting and the edges of things come back
+it is the last of her, she can feel that it is the last of her, and she spends it
+
+== grey_out
+the edges of the world go soft and grey, as if someone has breathed on a window
+for a moment she isn't sure which way is up
+sounds come from very far away, through a long tunnel
+she blinks and blinks and the grey stays
+she can see the other one, but as if through deep water
+her own body feels very far away from her
+she locks her eyes on one thing and holds on to it until the grey retreats a little
+the world tilts slowly, like a boat, and she leans the other way
+she can't tell how long she has been standing there
+her thoughts come one at a time, slow and heavy, like stones dropped in a pond
+
+== running_on_empty
+there is nothing left in her, and she keeps going anyway, and doesn't understand how
+every movement has to be asked for twice before her body gives it
+she is running on something that isn't strength and isn't will, only habit
+her limbs feel like someone else's, borrowed and badly fitted
+she is so tired that the pain has gone quiet and far away
+every breath is a separate decision
+her body has stopped asking and started telling, and what it tells her is stop
+she sways where she is, held up by nothing she can name
+her eyes keep wanting to close and she keeps not letting them
+she has gone past the place where she thought the end was, and found more ground beyond it
+
+== getup_fail
+she gets her front half up and the back half refuses to follow
+her arms shake under her and fold, and she goes down on her chest | has: arms
+she gets as far as her knees and stays there, swaying, unable to go further | has: legs
+the ground tilts as she rises and she has to put herself back down before it throws her
+she pushes, and nothing happens, and she pushes again, and less happens
+her legs simply don't answer; she asks them and they lie there | has: legs
+she gets one foot under her and it slides out sideways | has: legs
+she rises an inch and the hurt part takes it away from her
+she is up for one swaying heartbeat and then she isn't
+her breath runs out halfway up, and her body goes down to look for more
+she rests her forehead on the ground and gathers herself for the next try | state: tired, spent
+
+== choke_fight | tap: 1, 2
+she can still breathe, but each breath has to squeeze past the hold, thin and loud
+she keeps her chin tucked, giving the grip as little of her throat as she can
+she feels her face getting hot, a slow heavy flush from the neck up
+her heartbeat has moved up into her ears
+she pulls in a breath through her nose and it whistles
+
+== choke_fight | tap: 3
+the air comes in sips now, never enough, and her chest keeps asking for more
+there is a pressure building behind her eyes, like a held sneeze that won't come
+her paws go to the grip on their own and pull at it, uselessly | has: arms
+sounds are starting to come from far away
+she can feel her strength going, not to pain but to the lack of air
+
+== choke_fight | tap: 4, 5
+the grey is coming in from the edges and she fights it like a tide
+her chest heaves and gets almost nothing for it
+her limbs are going heavy and slow, as if she were sinking
+she can't hear the fight any more, only the roar of her own blood
+a strange quiet is spreading through her, and she knows exactly what it is, and refuses it
+
+== sub_escape_held
+the {part} comes free and she pulls it in against her body before anything can take it again
+she is out, and for a moment she doesn't believe it
+she twists the freed {part} away from {foe} on instinct, out of reach of the next grab
+the relief is so sharp it is almost another kind of pain
+she cradles the {part} and it throbs in long, slow, furious pulses
+she gets out the way you get out of cold water: all at once, gasping
+she doesn't stop to wonder how she did it; she just takes the air and the space
+the blood rushes back into the {part} and it hurts worse free than it did held
+she breaks away and turns at once, guard up, before {foe} can come again
+her whole body is shaking now that it doesn't have to hold together against the grip
+she doesn't look at the {part}; she doesn't want to know yet
+something in her chest lifts: she can still get out, she can still do this
+
+== sub_escape_hold
+she feels it slip and grabs after it and gets only air
+the grip goes from certain to gone in a single wrench
+she rocks back, surprised, her arms still shaped round something that isn't there | has: arms
+for an instant she just stares, angry at the hold, angry at herself
+she should have tightened it a moment sooner, and she knows it
+she lets it go rather than lose her balance chasing it
+she feels the {part} tear out of her grip like a fish out of a hand | has: arms
+she resets at once, already thinking about the next way in
+the anger is quick and hot, and then it is cold, and the cold is more useful
+she shakes out her aching arms and doesn't take her eyes off {foe} | has: arms
+
+# (build 267) more for the middle-sized groups
+== juggle | moment: up
+her stomach drops the way it does at the top of a fall
+there is a long silent moment with the sky where the ground should be
+she flails for something to hold and her paws close on air | has: arms
+her tails stream out under her, useless as rudders in the wind | has: tails
+she sees the ground turning slowly beneath her, and has time to dread it
+she is up and helpless, and everything about the moment says so
+
+== juggle | moment: caught
+she has nothing to brace against, and the blow has everything
+she folds round it in the air like a leaf round a stick
+the hit comes before the ground does, and the ground comes right after
+it catches her at the top of the rise, the worst place, all of her open
+she spins with it, and the world spins the other way
+
+== crash
+she meets the hard thing with her shoulder and the whole of her speed
+the stop is so sudden it seems to happen inside her before it happens outside
+her momentum folds her round it, and for a moment she hangs there, stunned
+she bounces off it and the world rings like a struck bell
+she should have seen it, and knows it, and the knowing arrives with the pain
+her own weight is the thing that hurts her; she brought every ounce of it
+
+== escape_after
+she shakes out the limb that was trapped, and feeling floods back into it, prickling
+she breathes like someone surfacing, great dragging gulps
+she is free and still half expects the weight to land on her again
+she gets her feet under her slowly, testing each one before trusting it | has: legs
+the places where she was held are hot and sore, and the soreness spreads as the blood comes back
+her body keeps flinching from a weight that isn't there any more
+she watches the other more warily than before; she knows now what it is like under her
+
+== takedown
+an arm round the waist, a hip turned in, and the ground comes up | has: arms
+she drops low and drives through the legs, lifting as she goes | has: legs
+she hooks a heel behind the ankle and pushes the chest the other way
+she pulls the shoulders down and forward and the legs go out behind
+she wraps her tails round both knees and simply leans | has: tails
+she turns the other's own push into a trip, and they go down together
+
+== clash
+the shock of the meeting runs back up through both of them
+neither gives, and for a long moment the two forces push at each other like hands
+the light, the water or the force goes everywhere but where either of them meant
+they break apart at the same instant, both thrown back a step by it
+for a heartbeat there is only the noise of it, and both of them blinking
+
+== opening
+neither of them hurries; they have both done this before
+one breathes in deeply, the other breathes out
+they circle once, close enough to read each other and far enough to wait
+something about the stillness says that the first move will matter
+the ground between them seems to get smaller without either of them moving
+
+== knockout_watch
+she breathes again, and only then realizes she had stopped
+the shaking starts in her own legs now that there is nothing left to stand against | has: legs
+she watches the side rise and fall, rise and fall, and lets herself believe it
+she wants to look away and doesn't, in case it isn't over
+something in her that had been coiled all fight slowly lets go
+she waits for the eyes to open, and they don't
+
+== struggle
+she twists onto one shoulder, hunting for a side the weight hasn't covered
+she drives her heels into the ground and heaves
+she goes still to gather herself, and the stillness lasts a heartbeat too long
+she wedges a forearm under the weight and pushes until her arm shakes | has: arms
+she bucks once, twice, short and sharp, testing for give
+she thrashes her tails, trying to lever herself sideways | has: tails
+
+== anticipate
+she curls her shoulders in before it lands, the oldest instinct there is
+her breath stops in her chest, waiting for it
+she rolls the hurt part out of line and gives the blow something else
+the whole of her goes tight round the place she knows is coming
+she half turns away, and the turning tells the other everything
+
+== anticipate_seen
+she marks which way the other turns, and turns her blow to meet it
+the flinch is as good as a map
+she saves her hardest for the place the other most wants to keep
+the guard is all on one side now, and the other side is hers
+she feints at the hurt place and watches the whole body answer
+
+== travel
+the jolt goes into her {part} and keeps going, finding her {next} on the way
+her {next} takes the echo of it, a smaller, meaner hurt
+it lands in her {part} and spreads, slow and hot, into her {next}
+her {part} rings with it, and her {next} rings in sympathy
+
+== aftermath_fallen
+one ear moves a little, catching a sound she cannot answer | has: ears
+her tails lie where they fell, tangled, still | has: tails
+her chest moves, slow and shallow, and that is all
+a long breath goes out of her that sounds like it has been held all fight
+her face has gone slack and young, all the fight gone out of it
+
+== aftermath_winner
+she stands there a long moment, not quite sure what to do with her hands | has: arms
+her breath slowly comes back to her, a little at a time
+the pain she ignored all fight comes in now, one part after another, asking to be noticed
+she looks down at herself as if checking that she is all still there
+she feels very tired, and very far from pleased, and a little proud
