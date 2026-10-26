@@ -36,6 +36,8 @@ There are no turns: one "beat" is one thing happening.
   director's JSON and apply it.
 - **narrator.py (12.5k lines):** search it, never read it whole. `narrate()` is the entry point; `_knock_on_lines`
   and `_describe_action_core` turn events into the narrator's notes.
+- **polish.py:** `narration.polish`, the optional online model (Venice.ai) that improves a finished beat's prose; its
+  version is kept only if the narrator's checks pass it. The key lives in polish_key.txt (gitignored), never in rules.json.
 - **display.py:** the stat blocks. Its `knock_on_lines` mirrors the narrator's for the screen.
 - **window.py, cards.py, fightexport.py:** the window with fighter pictures, the picture logic shared by the window and
   exports (poses, glow, damage marks: `paint`, `card_panels`, `PictureBook`), and `/exportfight`.

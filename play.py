@@ -28,8 +28,9 @@ from engine import Engine, BALANCE, body_region as body_region_of, species_of, p
 from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
+import polish
 
-VERSION = "2026-10-26 build 267-guided (story checks, bigger writing libraries)"
+VERSION = "2026-10-26 build 268-guided (online polish: Venice.ai, or copy and paste by hand)"
 
 HELP = """
 =============================================================================================
@@ -351,6 +352,14 @@ HELP = """
                       comparing two models: play some beats on each, then /timing).
   /checks [clear]     which mistakes the narrator's checks keep finding, and how often the paragraph fixes for
                       each kind work and what they cost (this fight, and all fights so far)
+  /polish ...         a stronger online model (Venice.ai by default) improves each beat's prose without changing
+                      what happens (narration.polish; off until you turn it on). /polish alone: how it is set.
+                      /polish key <key>, /polish models, /polish model <name>, /polish on|off,
+                      /polish when every|big (big: taps, knockouts, the finish and other big moments only),
+                      /polish now (the last beat, now). By hand instead: /polish copy (the request into
+                      polish_request.txt and your clipboard: paste it into Venice's chat), then put its answer
+                      into polish_reply.txt and type /polish paste. Either way the program's checks decide
+  /compare            whether the polished version is kept. /compare: the last beat before and after polishing
   /repair on|off      on (default): a paragraph with a mistake is written again by itself and the rest of the
                       part stays word for word. off: the whole part is rewritten for any problem
   /reader on|off      on (default): after each part, the model reads it back against the beat's facts and
@@ -1200,6 +1209,108 @@ class Session:
                      f"this beat, or /undo to take the whole beat back.]\n")
             return None
 
+    # ---------- narration.polish (since build 268): a stronger online model improves the prose ----------
+    def polish_facts(self, results, also, headers):
+        """What really happened this beat, in short plain lines, for the polishing model: the attacks, the holds,
+        the taps, the get-ups and falls, and where each fighter ends up."""
+        facts = [re.sub(r"\s+", " ", re.sub(r"[*_`]", "", h)).strip() for h in headers or [] if str(h).strip()]
+        for r in results or []:
+            t = r.get("type")
+            if t == "hold_start" and r.get("attacker"):
+                parts = [str(x.get("part")) for x in r.get("parts") or [] if isinstance(x, dict) and x.get("part")]
+                what = r.get("submission") or "a hold"
+                facts.append(f"{r['attacker']} puts {what} on {poss_word(r.get('defender') or '')} "
+                             f"{', '.join(p.lower() for p in parts) or 'body'}")
+            elif t == "breather" and r.get("attacker"):
+                facts.append(f"{r['attacker']} takes a breather")
+        for e in also or []:
+            t, who = e.get("type"), e.get("fighter") or e.get("defender")
+            if t in ("tap_out", "tap_count"):
+                facts.append(f"{e.get('defender')} {'TAPS OUT' if e.get('how') == 'tap' else 'PASSES OUT'} in "
+                             f"{poss_word(e.get('attacker') or '')} {e.get('submission') or 'hold'}"
+                             + (" (the grip comes off; the match goes on)" if t == "tap_count" else ""))
+            elif t == "tap_resist":
+                facts.append(f"{e.get('defender')} refuses to tap in {poss_word(e.get('attacker') or '')} "
+                             f"{e.get('submission') or 'hold'} (she does NOT tap this beat)")
+            elif t == "tap_urge":
+                facts.append(f"{e.get('defender')} fights the urge to tap (she does NOT tap this beat)")
+            elif t == "get_up":
+                facts.append(f"{who} " + (f"gets up (on try {e.get('tries')})" if e.get("stands") else
+                                          "tries to get up and can't: she stays down"))
+            elif t == "hold_end":
+                facts.append(f"{poss_word(e.get('attacker') or '')} hold on {e.get('defender')} ends"
+                             + (": she breaks free" if e.get("broke_free") else ""))
+            elif t in ("collapse", "crumple") and (t == "collapse" or e.get("down")):
+                facts.append(f"{who} goes down")
+            elif t == "adrenaline":
+                facts.append(f"{who} gets a surge of adrenaline" + (" (a second wind)" if e.get("second") else ""))
+        for f in self.eng.fighters.values():
+            if f.eliminated:
+                facts.append(f"{f.name}: out of the fight")
+            else:
+                facts.append(f"{f.name} ends the beat: {self.eng.posture_text(f.name, short=True).lower()}")
+        for h in self.eng.holds.values():
+            facts.append(f"still on at the end: {poss_word(h.attacker)} {h.sub or 'grip'} on {poss_word(h.defender)} "
+                         f"{h.part.lower()}" + (f" ({h.with_part})" if h.with_part else ""))
+        return list(dict.fromkeys(facts))
+
+    def _maybe_polish(self, text, results, also, headers):
+        """Polish this beat's prose if narration.polish is on (and, with when "big", only a big moment). Returns
+        the text to show: the polished one if the checks keep it, else the local one as it was."""
+        cfg = polish.cfg_of(self.eng.rules)
+        facts = self.polish_facts(results, also, headers)
+        self._polish_last = {"local": text, "facts": facts, "prior": self.recent_story(), "polished": None,
+                             "why": "", "turn": int(self.eng.turn or 0)}
+        self._polish_last["shown"] = text
+        if not cfg.get("enabled"):
+            return text
+        if str(cfg.get("when", "every")).lower() == "big" and not getattr(self.narrator, "_important", False) \
+                and not any(e.get("type") in ("tap_out", "tap_count") for e in also or []):
+            return text
+        out = self._polish_now(text) or text
+        self._polish_last["shown"] = out
+        return out
+
+    def _polish_now(self, text, reply=None):
+        """Send this beat to the online model (or take a reply pasted in by hand) and judge it. Returns the
+        polished text when it is kept, else None (and says why)."""
+        last = getattr(self, "_polish_last", None) or {}
+        try:
+            if reply is None:
+                self.progress("polishing the prose with " + (polish.cfg_of(self.eng.rules).get("model") or "?"))
+                reply = polish.call(self.eng.rules, polish.messages(text, last.get("facts") or [], last.get("prior")))
+        except polish.PolishError as e:
+            note_failure("polishing the beat (narration.polish)", e)
+            print(f"[polish not used: {e}]")
+            last["why"] = str(e)
+            return None
+        out = polish.tidy(reply)
+        keep, why = polish.judge(self.narrator, text, out, [f.name for f in self.eng.fighters.values()],
+                                 self.eng.rules)
+        if keep:
+            try:
+                out = self.narrator._mend_move_names(out)
+            except Exception as e:
+                note_failure("the move-name mend on the polished beat", e)
+        last.update(polished=out, why="" if keep else why, rejected=None if keep else out)
+        print("[polished: kept the improved version]" if keep else
+              f"[polish not used: {why}. The beat stays as the local model wrote it; /compare shows both]")
+        return out if keep else None
+
+    def _replace_last_beat(self, new):
+        """Put a polished version in place of the last beat's story everywhere it is kept: the story the models
+        remember, and the beat's record (/exportfight, the saved fight)."""
+        last = getattr(self, "_polish_last", None) or {}
+        old = last.get("shown") or last.get("local") or ""
+        if self.last_narration and self.last_narration.get("index", -1) < len(self.story):
+            self.story[self.last_narration["index"]] = new
+        for r in reversed(self.beat_records[-3:]):
+            if old and old in r.get("text", ""):
+                r["text"] = r["text"].replace(old, new, 1)
+                break
+        last["shown"] = new
+        self.autosave()
+
     def sync_narrator(self):
         """Tell the narrator how hurt every body part is, so it can catch 'useless' on a part that's only sore."""
         dmg = {}
@@ -1691,6 +1802,7 @@ class Session:
             except Exception as e:
                 note_failure("saving the /checks tally", e)
             if text is not None:
+                text = self._maybe_polish(text, results, also, headers)
                 self.out("\n" + text + "\n")
                 self.story.append(text)
                 self.last_narration = {"args": args, "index": len(self.story) - 1}
@@ -2681,6 +2793,104 @@ def _strict_check(s, cmd):
                          f"(/play dice strict). /play dice fair allows it again.")
 
 
+def _to_clipboard(text):
+    """Copy text to the clipboard if the system has a way (Windows clip, macOS pbcopy, xclip): True if it did."""
+    import subprocess
+    for cmd, enc in ((["clip"], "utf-16"), (["pbcopy"], "utf-8"), (["xclip", "-selection", "clipboard"], "utf-8")):
+        try:
+            subprocess.run(cmd, input=text.encode(enc), check=True, timeout=10,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+            return True
+        except (OSError, subprocess.SubprocessError, ValueError):
+            continue
+    return False
+
+
+def _polish_command(s, a):
+    """/polish: narration.polish (a stronger online model improves the prose of each beat)."""
+    cfg = s.eng.rules.setdefault("narration", {}).setdefault("polish", {})
+    c = polish.cfg_of(s.eng.rules)
+    sub = a[0].lower() if a else ""
+    if not sub:
+        key = polish.api_key(s.eng.rules)
+        print(f"Polish: {'ON' if c['enabled'] else 'off'} · when: {c['when']} · service: {c['base_url']} · model: "
+              f"{c['model'] or '(none chosen yet)'} · key: {'set' if key else 'not set'}\n"
+              f"/polish key <key>, /polish models, /polish model <name>, /polish on|off, /polish when every|big, "
+              f"/polish now, /polish copy, /polish paste, /compare"); return
+    if sub == "key":
+        if len(a) < 2:
+            raise ValueError("/polish key <your API key>")
+        path = polish.save_key(a[1])
+        print(f"Key saved to {path} (kept out of rules.json and git). Next: /polish models, then /polish model "
+              f"<name>, then /polish on"); return
+    if sub == "models":
+        names = polish.list_models(s.eng.rules)
+        print("Models the service offers:\n  " + "\n  ".join(names or ["(none listed)"])
+              + "\nPick one with /polish model <name> (a larger model edits better)."); return
+    if sub == "model":
+        if len(a) < 2:
+            raise ValueError("/polish model <name> (/polish models lists them)")
+        cfg["model"] = a[1]
+        saved = _save_rule_path(["narration", "polish", "model"], a[1])
+        print(f"Polishing model: {a[1]} " + ("(saved)" if saved else "(this session)")); return
+    if sub in ("on", "off"):
+        cfg["enabled"] = sub == "on"
+        saved = _save_rule_path(["narration", "polish", "enabled"], cfg["enabled"])
+        print(f"Polish is {'ON' if cfg['enabled'] else 'OFF'} " + ("(saved)" if saved else "(this session)")
+              + ("" if not cfg["enabled"] or (c["model"] and polish.api_key(s.eng.rules)) else
+                 ". It still needs " + " and ".join(x for x, ok in (("a key (/polish key)", polish.api_key(s.eng.rules)),
+                                                                    ("a model (/polish model)", c["model"])) if not ok)))
+        return
+    if sub == "when":
+        if len(a) < 2 or a[1].lower() not in ("every", "big"):
+            raise ValueError("/polish when every|big")
+        cfg["when"] = a[1].lower()
+        saved = _save_rule_path(["narration", "polish", "when"], cfg["when"])
+        print(f"Polishing {'every beat' if cfg['when'] == 'every' else 'only the big moments'} "
+              + ("(saved)" if saved else "(this session)")); return
+    last = getattr(s, "_polish_last", None)
+    if not last:
+        raise ValueError("no beat to polish yet: play a beat first")
+    if sub == "now":
+        new = s._polish_now(last.get("local", ""))
+        if new:
+            s._replace_last_beat(new)
+            print("\n" + new + "\n")
+        return
+    if sub == "copy":
+        req = polish.request_text(last.get("local", ""), last.get("facts") or [], last.get("prior"))
+        with open(polish.REQUEST_FILE, "w", encoding="utf-8") as fh:
+            fh.write(req)
+        try:
+            open(polish.REPLY_FILE, "a", encoding="utf-8").close()
+        except OSError:
+            pass
+        clip = _to_clipboard(req)
+        print(f"The request for beat {last.get('turn')} is in {polish.REQUEST_FILE}"
+              + (" and on your clipboard" if clip else "")
+              + f". Paste it into Venice's chat, copy its whole answer into {polish.REPLY_FILE} (replacing what is "
+                f"there), save it, and type /polish paste. The fight waits here meanwhile."); return
+    if sub == "paste":
+        try:
+            with open(polish.REPLY_FILE, encoding="utf-8") as fh:
+                reply = fh.read()
+        except OSError:
+            raise ValueError(f"no {polish.REPLY_FILE}: put the answer in it first (/polish copy makes it)")
+        if not reply.strip():
+            raise ValueError(f"{polish.REPLY_FILE} is empty: paste the answer into it and save it first")
+        new = s._polish_now(last.get("local", ""), reply=reply)
+        if new:
+            s._replace_last_beat(new)
+            print("\n" + new + "\n")
+            try:
+                with open(polish.REPLY_FILE, "w", encoding="utf-8") as fh:
+                    fh.write("")       # (emptied, so the next /polish paste can't reuse this answer by mistake)
+            except OSError:
+                pass
+        return
+    raise ValueError("/polish [key|models|model|on|off|when|now|copy|paste]")
+
+
 def handle_command(s, line):
     if SAME_BEAT.search(line):
         for piece in SAME_BEAT.split(line)[:3]:
@@ -3272,6 +3482,20 @@ def handle_command(s, line):
               "fixes: paragraphs rewritten for it; worked: how many came back right; calls: model calls spent).\n"
               "This fight:\n" + Narrator.checks_table(getattr(s.narrator, "check_tally", {}) or {})
               + "\nAll fights so far (check_counts.json; /checks clear starts again):\n" + Narrator.checks_table(book))
+        return
+    if cmd == "polish":
+        return _polish_command(s, a)
+    if cmd == "compare":
+        last = getattr(s, "_polish_last", None) or {}
+        if not last:
+            raise ValueError("no beat yet")
+        other = last.get("polished") or last.get("rejected")
+        print(f"=== BEAT {last.get('turn')}: AS THE LOCAL MODEL WROTE IT ===\n{last.get('local', '')}\n")
+        if other:
+            kept = last.get("shown") == other
+            print(f"=== POLISHED ({'kept' if kept else 'not used: ' + (last.get('why') or '')}) ===\n{other}\n")
+        else:
+            print("(no polished version of this beat" + (f": {last['why']}" if last.get("why") else "") + ")")
         return
     if cmd == "timing":
         cfg = s.eng.rules.setdefault("console", {})

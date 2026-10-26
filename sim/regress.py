@@ -1314,6 +1314,59 @@ def story_checks_check():
     return problems
 
 
+def polish_check():
+    """Build 268 (narration.polish): a polished beat is kept when it passes the checks and replaces the local one
+    in the story and the beat's record; a refusal, a dropped part label or a much shorter answer leaves the local
+    one; /polish copy writes the request and /polish paste takes a reply pasted in by hand; off, nothing is sent."""
+    import polish
+    s = H.session(2, fighters="Ripples,Nerine")
+    problems = []
+    _quiet(H.beat, s, [{"attacker": "Ripples", "defender": "Nerine", "action": "breather"}], [])
+    local = ("— Ripples —\nRipples breathed slowly and watched Nerine across the clearing, waiting.\n\n"
+             "— Nerine —\nNerine circled to the left, her eyes never leaving Ripples, and waited too.")
+    better = ("— Ripples —\nRipples let her breath out slow and kept her eyes on Nerine across the clearing.\n\n"
+              "— Nerine —\nNerine drifted to the left, eyes fixed on Ripples, patient as stone.")
+    sent = []
+    real = polish.call
+    polish.call = lambda rules, msgs: (sent.append(msgs), answer[0])[1]
+    answer = [better]
+    try:
+        cfg = s.eng.rules["narration"]["polish"]
+        out = s._maybe_polish(local, [], [], [])
+        if sent or out != local:
+            problems.append("with polish off something was sent or changed")
+        cfg.update(enabled=True, model="test-model")
+        out = s._maybe_polish(local, [], [], [])
+        if out != better:
+            problems.append(f"a good polished beat wasn't kept: {s._polish_last.get('why')}")
+        if not sent or "FACTS" not in sent[-1][1]["content"] or "Ripples" not in sent[-1][1]["content"]:
+            problems.append("the request doesn't carry the facts and the draft")
+        for bad, why in (("I'm sorry, but I can't help with that.", "refusal"),
+                         (better.replace("— Nerine —\n", ""), "a dropped part label"),
+                         ("— Ripples —\nShe breathed.\n\n— Nerine —\nNerine waited.", "a much shorter answer")):
+            answer[0] = bad
+            if s._maybe_polish(local, [], [], []) != local:
+                problems.append(f"{why} was kept instead of the local beat")
+        # by hand: /polish copy, then the answer pasted into polish_reply.txt and /polish paste
+        cfg["enabled"] = False
+        s._maybe_polish(local, [], [], [])
+        s.story.append(local)
+        s.last_narration = {"args": None, "index": len(s.story) - 1}
+        s.beat_records.append({"fight": 1, "lineup": [], "turn": 9, "label": "beat 9", "text": "\n" + local + "\n",
+                               "snapshot": {"fighters": []}})
+        _quiet(H.play.handle_command, s, "/polish copy")
+        if not os.path.exists(polish.REQUEST_FILE) or "DRAFT" not in open(polish.REQUEST_FILE, encoding="utf-8").read():
+            problems.append("/polish copy didn't write the request")
+        with open(polish.REPLY_FILE, "w", encoding="utf-8") as fh:
+            fh.write("Here is the revised beat:\n" + better + "\n")
+        _quiet(H.play.handle_command, s, "/polish paste")
+        if s.story[-1] != better or better not in s.beat_records[-1]["text"]:
+            problems.append("/polish paste didn't put the polished beat in the story and the beat's record")
+    finally:
+        polish.call = real
+    return problems
+
+
 def hold_panel_check():
     """Build 257 (window.hold_panel): each card carries the grips on her and by her (which parts, with what, how
     long), how near she is to tapping (the narrator's 1-5 ladder and this beat's real tap chance, 0 on her first
@@ -1976,6 +2029,13 @@ def main(argv):
         probs = story_checks_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 267 story checks: get-up order, after the tap, the bite's place, move names  ({time.time() - t:.1f}s)")
+        for p in probs:
+            print("      " + p)
+    if not want or any(w in "polish" for w in want):
+        t = time.time()
+        probs = polish_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 268 polish: kept when it passes the checks, else the local beat; copy and paste by hand  ({time.time() - t:.1f}s)")
         for p in probs:
             print("      " + p)
     if not want or any(w in "tap overwhelm" for w in want):

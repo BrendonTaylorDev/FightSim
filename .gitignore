@@ -15,3 +15,6 @@ phrase_memory.json
 bench_cases/
 bench_reports/
 passages_memory.json
+polish_key.txt
+polish_request.txt
+polish_reply.txt

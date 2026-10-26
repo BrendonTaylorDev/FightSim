@@ -654,6 +654,26 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 268
+- **A stronger online model can polish each beat** (`narration.polish`). It's off until you turn it on.
+  - The local model writes the beat as always, with the engine and every check behind it. Then the finished beat and a short fact sheet of what really happened go to an online model to improve the prose without changing events.
+  - Venice.ai is the default service. Any service that uses the OpenAI chat format works (`base_url`).
+- **Only a polish that passes the checks is kept.** It is thrown out, and the local version stands, when it:
+  - is a refusal,
+  - drops or changes a "— Name —" part label, or leaves out a fighter,
+  - is much shorter or longer (`min_ratio`, `max_ratio`),
+  - or gets more wrong by the program's own sentence checks than the local version did (`allow_new_slips`).
+  - The game says which reason it was, and `/compare` shows both versions of the last beat.
+- **Setting it up:**
+  - `/polish key <your key>` saves the key to polish_key.txt. That file is left out of git and never goes in rules.json. You can use the `VENICE_API_KEY` environment variable instead.
+  - `/polish models` lists the service's models, and `/polish model <name>` picks one. A larger model edits better.
+  - `/polish on` turns it on. `/polish when big` polishes only taps, knockouts, the finish and other big moments, which uses fewer requests.
+  - `/polish now` polishes the last beat on demand.
+- **By hand, without an API:**
+  - `/polish copy` puts the whole request for the last beat in polish_request.txt and on your clipboard. Paste it into Venice's chat.
+  - Copy its answer into polish_reply.txt, save the file, and type `/polish paste`.
+  - The same checks decide. The polished beat replaces the old one in the story the models remember and in the saved and exported fight, and the fight carries on in the game and its window.
+
 ## Build 267
 - **New story checks** (`narration.story_checks`, each one switchable). They catch mistakes the model made in the saved fight even though the notes had it right. A paragraph caught by one is written again with the mistake named.
   - `getup_order`: a failed try at getting up told after she is already up. In beat 10 Ripples stood, then "her third attempt to rise was no more successful than the first two".
