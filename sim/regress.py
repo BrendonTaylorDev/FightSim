@@ -1410,6 +1410,18 @@ def polish_check():
             problems.append("/polish paste didn't put each marked beat back on its own beat (and leave the rest)")
         if not any(new_[1] in r["text"] for r in s.beat_records):
             problems.append("a polished earlier beat didn't reach its record (/exportfight)")
+        # (build 272) an earlier beat is checked as the narrator saw it then, and the narrator is put back after
+        e1 = s._polish_hist[0]
+        e1["_nstate"]["strengths"] = {"Ripples": 100.0, "Nerine": 100.0}
+        s.narrator.strengths = {"Ripples": 20.0, "Nerine": 20.0}
+        seen_now = s._judge_as_then(e1, lambda: dict(s.narrator.strengths))
+        if seen_now != {"Ripples": 100.0, "Nerine": 100.0} or s.narrator.strengths != {"Ripples": 20.0, "Nerine": 20.0}:
+            problems.append(f"an earlier beat isn't judged with its own narrator state ({seen_now}, then "
+                            f"{s.narrator.strengths})")
+        worn_ = e1["local"].replace("and waited too", "and wondered how much Ripples had left in her")
+        if s._polish_now(e1["local"], reply=worn_, entry=e1):
+            problems.append("an earlier beat's polish with a slip the full checks catch (a fresh fighter called "
+                            "worn) was kept")
     finally:
         polish.call = real
     return problems

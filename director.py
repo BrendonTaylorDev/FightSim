@@ -673,8 +673,10 @@ def _apply_tap_steer(engine, att, dfn, b, kind):
         return b
     was = hs[i]["part"]
     hs[i]["part"] = aim
-    return _steered_words(engine, dfn, dict(b, hits=hs, part=hs[0]["part"]), [was], aim) if i == 0 else \
-        dict(b, hits=hs, part=hs[0]["part"])
+    # (_steered_from, since build 272: a grip moved too, so resolve takes the words put right with it; the build-271
+    # log had "wraps her twin tails around Ripples' left knee" on a grip moved onto her tails)
+    return _steered_words(engine, dfn, dict(b, hits=hs, part=hs[0]["part"], _steered_from=was), [was], aim) \
+        if i == 0 else dict(b, hits=hs, part=hs[0]["part"], _steered_from=was)
 
 
 _REGION_WORDS = {"head": r"head|skull|face|cheek|jaw|muzzle|snout|temple|ears?|eyes?|nose|brow",

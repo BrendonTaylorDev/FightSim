@@ -654,6 +654,14 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 272
+- **No limit on beats kept for polishing.** Every beat of a fight is kept, however long it runs (`narration.polish.history` 0). A number there keeps only that many of the latest.
+- **Earlier beats get the same full checks as the latest.** With each beat the game keeps a copy of what the narrator knew about it (its facts, grips, hits, who got up, the tap). When a polish of that beat is pasted back later, the checks run as they would have then, then the narrator is put back. That copy stays in memory, not in the save, so beats from before a restart get only the label, fighter, length and hit-part checks. The game says so when that happens.
+- Fixes from your fight so far (Nerine vs Ripples, 22 beats):
+  - **Beat 7:** the tap count's steering moved Nerine's tail grip from Ripples' left knee onto her tails (the part being worked), but the words still said "around Ripples' left knee". A grip moved that way now has its words put right too, as a blow already did.
+  - **Beat 10:** Ripples' free blow during the chicken wing was a Water Gun to Nerine's throat while Nerine lay face-down, with her throat against the ground. Face-down, a free blow no longer finds her throat, stomach or chest; face-up, it no longer finds her back.
+  - **Beat 7 story:** "the space between them, unchanged, a few paces of grass" while Nerine's tails held Ripples'. A new story check (`narration.story_checks.locked_gap`) catches a distance told while a grip joins them.
+
 ## Build 271
 - **Polish several beats at once on Venice's website.**
   - `/polish copy 5-9` copies beats 5 to 9. You can also use `/polish copy 7`, `/polish copy last 4` or `/polish copy all`.

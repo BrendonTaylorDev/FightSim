@@ -5917,8 +5917,13 @@ class Engine:
             same, near = neighbor_parts(list(d.parts), self.rng.choice(gripped)) if gripped else ([], [])
             # never the side she is lying on: a fighter pinned face-up has her back against the ground
             hidden = {"face-up": ("back_up", "back_low"), "face-down": ("chest", "belly")}.get(self.facing_of(dn), ())
-            spots = ([x for x in same + near if x not in gripped and body_region(x) not in hidden]
-                     or [x for x in d.parts if x not in gripped and body_region(x) not in hidden]
+            # (since build 272) and face-down her throat is against the ground too (the build-271 log: a Water Gun
+            # on Nerine's throat while she lay face-down in a chicken wing)
+            under = re.compile(r"(?i)throat|stomach|belly|chest") if self.facing_of(dn) == "face-down" else \
+                re.compile(r"(?i)\bback\b|tail base") if self.facing_of(dn) == "face-up" else None
+            ok_ = lambda x: body_region(x) not in hidden and not (under and under.search(x))
+            spots = ([x for x in same + near if x not in gripped and ok_(x)]
+                     or [x for x in d.parts if x not in gripped and ok_(x)]
                      or [x for x in d.parts if x not in gripped] or list(d.parts))
             part = self.rng.choice(spots)
             if usable:

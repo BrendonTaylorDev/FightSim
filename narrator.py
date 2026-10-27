@@ -1610,7 +1610,8 @@ def _is_stub(sent):
 
 
 SLIP_LABELS = (("is already UP when this is told", "get-up told out of order"),
-               ("but the tap ends it", "told after the tap"), ("is still fresh, nearly untouched", "a fresh fighter called worn"), ("the bite this beat lands on", "bite in the wrong place"),
+               ("but the tap ends it", "told after the tap"), ("is still fresh, nearly untouched", "a fresh fighter called worn"),
+               ("are locked together by the grip this beat", "distance while gripped"), ("the bite this beat lands on", "bite in the wrong place"),
                ("but that landed on her", "wrong part remembered"), ("SECOND time", "same blow told twice"), ("NO pin and no hold", "invented pin"),
                ("go limp or unable to move", "limp while still strong"), ("nothing of hers can break", "broken bones"),
                ("cracks or pops", "invented crack"), ("has never been hit", "pain in a part never hit"),
@@ -13203,6 +13204,9 @@ class Narrator:
     _LET_GO = re.compile(r"\b(?:let go|lets go|released?|loosen\w*|eas(?:ed|es) off|stepped back|let her go|"
                          r"opened|unwound|uncoiled|came off|fell away|slackened)\b", re.I)
     # a bite LANDING ("her teeth sank into", "jaws clamped on", "bit her"): the part named right after it is where
+    _GAP_WORDS = re.compile(r"\b(?:a few|several|two|three) (?:strides|paces|steps|lengths) (?:of [a-z ]+ )?"
+                            r"(?:apart|away|between)|\b(?:strides|paces) apart\b|\bthe (?:space|gap|distance|ground) "
+                            r"between them\b", re.I)
     _BITE_SENT = re.compile(r"\b(?:teeth|fangs|jaws)\s+(?:\w+\s+){0,2}?(?:sank|sink|sinks|sinking|closed|close|"
                             r"closes|clamped|clamp|clamps|tore|tear|tears|dug|dig|digs|met|meet|found|caught|"
                             r"crunched|punched|snapped|snap|snaps|locked|bit|bite|bites|ground|grinding)\b|"
@@ -13232,6 +13236,7 @@ class Narrator:
         taps = [t for t in ([getattr(self, "_tap_end", None)] + list(getattr(self, "_tap_mid", None) or [])) if t]
         tapper, holder = (taps[0][0], taps[0][1]) if taps else (None, None)
         bite_ok = self._bite_regions() if cfg.get("bite_place", True) else None
+        locked = [{g[0], g[1]} for g in (getattr(self, "grips", None) or []) if len(g) > 1]
         for k, x in enumerate(sents):
             named = [n for n in names if re.search(r"\b" + re.escape(n) + r"\b", x)]
             if len(named) == 1:
@@ -13270,6 +13275,12 @@ class Narrator:
                                        f"or sees her tiring yet. Leave it out, or make it a thought about the fight to "
                                        f"come"))
                         break
+            if locked and cfg.get("locked_gap", True) and self._GAP_WORDS.search(x) and not re.search(
+                    r"\b(?:had been|before|earlier|then|at first|once)\b", x, re.I):
+                # (since build 272) "the space between them, unchanged, a few paces of grass" with her tails gripping
+                # the other's: a grip joins them, there is no space
+                out.append((x, f"{' and '.join(sorted(locked[0]))} are locked together by the grip this beat: no "
+                               f"space or strides between them, they are touching"))
             bm = self._BITE_SENT.search(x) if bite_ok else None
             if bm and not re.search(r"\b(?:had|earlier|before|old|last)\b", x, re.I):
                 # (only what follows the bite closely: not where the pain spread to afterwards)

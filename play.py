@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 271-guided (polish several beats at once, by beat number)"
+VERSION = "2026-10-27 build 272-guided (no polish history limit, full checks for earlier beats)"
 
 HELP = """
 =============================================================================================
@@ -898,8 +898,8 @@ class Session:
                 "story_before": self.story_before[-400:], "reason": getattr(self, "reason", None),
                 "reason_pick": getattr(self, "reason_pick", None), "reason_off": getattr(self, "reason_off", False),
                 "beat_records": self.beat_records[-400:],
-                "polish_history": [{k: v for k, v in e.items() if k not in ("rejected",)}
-                                   for e in (getattr(self, "_polish_hist", None) or [])[-40:]]}
+                "polish_history": [{k: v for k, v in e.items() if k not in ("rejected", "_nstate")}
+                                   for e in (getattr(self, "_polish_hist", None) or [])]}
 
     # ---------- more than one fight ----------
     def lineup(self):
@@ -1338,14 +1338,19 @@ class Session:
         the text to show: the polished one if the checks keep it, else the local one as it was."""
         cfg = polish.cfg_of(self.eng.rules)
         facts = self.polish_facts(results, also, headers)
-        self._polish_last = {"local": text, "facts": facts, "prior": self.recent_story(), "polished": None,
+        self._polish_last = {"local": text, "facts": facts, "prior": self.recent_story()[-1500:], "polished": None,
                              "why": "", "turn": int(self.eng.turn or 0), "fight": self.fight_no,
                              "index": len(self.story)}     # (where this beat's story will sit)
         self._polish_last["shown"] = text
         # (since build 271) the beats kept for /polish copy 4 (several at once), saved with the game
+        # (since build 272) what the narrator knew about THIS beat, so a polish of it pasted back later (/polish copy
+        # 5-9) gets the same full sentence checks as the latest beat
+        self._polish_last["_nstate"] = self._narrator_state()
         hist = self.__dict__.setdefault("_polish_hist", [])
         hist.append(self._polish_last)
-        del hist[:-int(cfg.get("history", 40))]
+        keep_ = int(cfg.get("history", 0) or 0)      # (0: every beat, no limit)
+        if keep_ > 0:
+            del hist[:-keep_]
         if not cfg.get("enabled"):
             return text
         if str(cfg.get("when", "every")).lower() == "big" and not getattr(self.narrator, "_important", False) \
@@ -1354,6 +1359,42 @@ class Session:
         out = self._polish_now(text) or text
         self._polish_last["shown"] = out
         return out
+
+    _NSTATE_SKIP = {"_block_store", "_line_store", "_passage_store", "_sample_keys", "rules", "_pm", "_deferred",
+                    "scene_cfg", "progress", "model", "host", "style", "check_tally", "_check_new"}
+
+    def _narrator_state(self):
+        """A copy of what the narrator holds about the beat it just wrote (its facts, grips, hits, who rose, the
+        tap...), without its big shared libraries: enough to run its sentence checks on this beat later. Kept in
+        memory only."""
+        import copy
+        out = {}
+        for k, v in self.narrator.__dict__.items():
+            if k in self._NSTATE_SKIP or callable(v):
+                continue
+            try:
+                out[k] = copy.deepcopy(v)
+            except Exception:
+                continue      # (something that can't be copied: the checks don't read it)
+        return out
+
+    def _judge_as_then(self, entry, fn):
+        """Run fn() with the narrator put back to how it was on that beat (entry["_nstate"]), then as it is now."""
+        snap = entry.get("_nstate") if entry else None
+        if not snap:
+            return fn()
+        N = self.narrator
+        missing = object()
+        before = {k: N.__dict__.get(k, missing) for k in snap}
+        N.__dict__.update(snap)
+        try:
+            return fn()
+        finally:
+            for k, v in before.items():
+                if v is missing:
+                    N.__dict__.pop(k, None)
+                else:
+                    N.__dict__[k] = v
 
     def _polish_now(self, text, reply=None, entry=None):
         """Send this beat to the online model (or take a reply pasted in by hand) and judge it. Returns the
@@ -1372,13 +1413,22 @@ class Session:
             return None
         names = [f.name for f in self.eng.fighters.values()]
         out = polish.tidy(reply, names, text)
-        keep, why = polish.judge(self.narrator if latest else None, text, out, names, self.eng.rules,
-                                 last.get("facts") or ())
-        if keep:
-            try:
-                out = self.narrator._mend_move_names(out)
-            except Exception as e:
-                note_failure("the move-name mend on the polished beat", e)
+        full = latest or bool(last.get("_nstate"))     # (an earlier beat: checked as the narrator saw it then)
+
+        def check():
+            k_, w_ = polish.judge(self.narrator if full else None, text, out, names, self.eng.rules,
+                                  last.get("facts") or ())
+            o_ = out
+            if k_:
+                try:
+                    o_ = self.narrator._mend_move_names(out)
+                except Exception as e:
+                    note_failure("the move-name mend on the polished beat", e)
+            return k_, w_, o_
+        keep, why, out = check() if latest else self._judge_as_then(last, check)
+        if not full:
+            print(f"[beat {last.get('turn')} was played before this session, so only its labels, fighters, length "
+                  f"and hit parts can be checked]")
         last.update(polished=out, why="" if keep else why, rejected=None if keep else out)
         at = "" if latest else f" (beat {last.get('turn')})"
         print(f"[polished{at}: kept the improved version]" if keep else
