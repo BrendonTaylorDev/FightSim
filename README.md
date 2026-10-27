@@ -654,6 +654,10 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 274
+- **The tap meter now shows every hold that counts toward a tap, from its first beat.** In a submission match a squeeze, a crushing headlock, a coil or a held bite counts toward a tap, not only a named submission. Before, the meter only appeared for those holds on their second beat. Now it shows on the first beat too, with "first beat in it: she can't tap yet, but this hold counts toward one". Nothing extra is narrated that beat (`finish.submission.tap.meter_all`; false = as before).
+- **A grab that can't make her tap yet says so on the hold panel.** For example: "a grab: no tap until it is 100% hurt (now 42%)". A grab only counts once the part it holds is hurt that badly (`tap.grabs.min_damage`), or once her health is gone. Until then no meter appears for it.
+
 ## Build 273
 - **The full polish checks now survive closing the game.**
   - What the narrator knew about each beat is saved in the polish_states folder, one small compressed file a beat (about 30-40 KB).

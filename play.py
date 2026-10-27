@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 273-guided (polish checks kept on disk, card size buttons, export gauge text)"
+VERSION = "2026-10-27 build 274-guided (tap meter shows every hold that counts toward a tap)"
 
 HELP = """
 =============================================================================================

@@ -623,6 +623,34 @@ def downtime_check():
     return problems
 
 
+def tap_meter_all_check():
+    """Build 274: in a submission match a plain hold that hurts shows on the tap meter from its first beat (it counts
+    toward a tap), and a grab that can't count yet says on the hold panel how hurt the part must be first."""
+    s = H.session(5, fighters="Nerine,Ripples")
+    import cards
+    e, problems = s.eng, []
+    a, d = e.get("Nerine"), e.get("Ripples")
+    e.rules["finish"]["submission"]["enabled"] = True
+    st = e.start_hold(a.name, d.name, "Left Thigh", 12.0)
+    e.holds[st["hold_id"]].turns_active = 1
+    e._tap_out_tick()
+    m = cards.tap_meter({"grips": e.card_state(d)})
+    if not m or "counts toward one" not in m["note"]:
+        problems.append(f"a plain hold's first beat should show on the tap meter: {m}")
+    e.rules["finish"]["submission"]["tap"]["meter_all"] = False
+    d.learned.pop("tap_state", None)
+    e._tap_out_tick()
+    if e.card_state(d)["tap"]:
+        problems.append("with meter_all off the first beat of a plain hold should stay off the meter")
+    e.release(st["hold_id"], "test")
+    st = e.start_hold(a.name, d.name, "Right Arm" if "Right Arm" in d.parts else next(iter(d.parts)), 8.0)
+    e.holds[st["hold_id"]].grab = True
+    lines = [t for t, _ in cards.grip_lines({"grips": e.card_state(d)})]
+    if not any("no tap until it is 100% hurt" in t for t in lines):
+        problems.append(f"a grab that can't count yet should say so on the hold panel: {lines}")
+    return problems
+
+
 def sub_match_check():
     """Build 244: in a submission match, openings on her feet too (more once a part is worn) with the holder taking
     her down into it, and, in a several-tap match, her parts giving way faster the deeper below zero she is."""
@@ -2162,6 +2190,13 @@ def main(argv):
         probs = sub_match_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  submission matches: openings on her feet, takedown into the hold, part ramp below zero  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "tap meter all" for w in want):
+        t = time.time()
+        probs = tap_meter_all_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  tap meter: plain holds from their first beat, grabs that don't count yet  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "downtime collapse" for w in want):

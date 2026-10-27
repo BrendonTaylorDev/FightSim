@@ -9706,8 +9706,11 @@ class Engine:
                 continue
             # (the hold's first beat: nobody taps yet, but in a submission the urge is already there: tap.urge)
             first = max(h.turns_active for h in hs) < 2
-            if first and not (any(h.sub for h in hs) and ((tcfg.get("urge") or {}).get("enabled", True)
-                                                          and (tcfg.get("urge") or {}).get("submissions", True))):
+            urge_first = any(h.sub for h in hs) and ((tcfg.get("urge") or {}).get("enabled", True)
+                                                     and (tcfg.get("urge") or {}).get("submissions", True))
+            # (tap.meter_all, since build 274) any other hold that hurts counts toward a tap too: on its first beat
+            # the window's tap meter shows it already (she can't tap yet), with no struggle told
+            if first and not urge_first and not tcfg.get("meter_all", True):
                 continue
             beats = max(h.turns_active for h in hs)
             # finish.submission.taps: a gripped part her taps have used up adds nothing toward the next tap: the
@@ -9793,7 +9796,8 @@ class Engine:
                                       "air": round(air), "endure": round(endure), "sub": name, "by": a,
                                       "base": round(base, 3) if blended else None}
             if first:
-                events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
+                if urge_first:
+                    events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
                 self._note_tap_state(d, a, name, events, 0.0, pain, resist, first=True)
                 continue
             ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
@@ -10183,6 +10187,16 @@ class Engine:
         ts = f.learned.get("tap_state") or {}
         tap = dict(ts) if (self.submission_match() and ts and int(ts.get("turn", -9)) == self.turn
                            and any(h.attacker == ts.get("by") for h in on_her)) else None
+        gcfg = ((((self.rules.get("finish") or {}).get("submission") or {}).get("tap") or {}).get("grabs") or {})
+        if self.submission_match() and gcfg.get("enabled", True) and f.health > 0:
+            for g in held:
+                # (since build 274) a grab only counts toward a tap once the part it holds is hurt past
+                # tap.grabs.min_damage: the panel says how far off that is, so a grab with no tap meter isn't a puzzle
+                if g["what"] == "grab":
+                    low = [(p, f.parts[p].damage) for p in g["parts"] if p in f.parts
+                           and f.parts[p].damage < float(gcfg.get("min_damage", 100))]
+                    if low and len(low) == len(g["parts"]):
+                        g["tap_from"] = [round(float(gcfg.get("min_damage", 100))), round(max(x[1] for x in low))]
         if self.submission_match():
             for g in holding:
                 # (on the holder's card too: how near the one she holds is to tapping)

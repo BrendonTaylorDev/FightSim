@@ -993,7 +993,8 @@ def tap_meter(f):
     pct = 100.0 * float(t.get("chance") or 0)
     notes = []
     if t.get("first"):
-        notes.append("first beat in it: she can't tap yet")
+        notes.append("first beat in it: she can't tap yet" + ("" if t.get("sub") not in ("hold", "choke") else
+                                                              ", but this hold counts toward one"))
     elif t.get("spent"):
         notes.append("this part's taps are used up: it can't make her tap")
     elif t.get("breaking"):
@@ -1036,7 +1037,9 @@ def grip_lines(f):
         parts = ", ".join(str(p).lower() for p in x.get("parts") or ())
         with_ = _with_words(x.get("with"))
         out.append((f"Held: {poss_word(x['by'])} {x['what']} on her {parts}" + (f" ({with_})" if with_ else "")
-                    + f", beat {x.get('beats', 0)}" + ("  · on her throat" if x.get("choke") else ""), "#7c3aed"))
+                    + f", beat {x.get('beats', 0)}" + ("  · on her throat" if x.get("choke") else "")
+                    + (f"  · a grab: no tap until it is {x['tap_from'][0]}% hurt (now {x['tap_from'][1]}%)"
+                       if x.get("tap_from") else ""), "#7c3aed"))
     for x in g.get("holding") or ():
         parts = ", ".join(str(p).lower() for p in x.get("parts") or ())
         with_ = _with_words(x.get("with"))
