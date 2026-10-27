@@ -1186,6 +1186,24 @@ def resolve(engine, b):
             raise ValueError(f"'{act}' needs a defender")
         if dfn.lower() == att.lower() and act != "eliminate":
             raise ValueError("attacker and defender must be different fighters")
+    if act == "hold_adjust" and dfn and dfn.lower() != att.lower() and not any(
+            h.attacker == engine.get(att).name for h in engine.holds.values()):
+        # (since build 278) "squeeze harder" with nothing held yet (Seraphina told to coil round Ripples' middle came
+        # back as an adjust of a hold that wasn't there, and the beat was refused): it STARTS the grip instead, on the
+        # parts it names, or for a coil on her middle
+        hits_ = [h for h in (b.get("hits") or []) if isinstance(h, dict) and h.get("part")]
+        if not hits_ and not b.get("part"):
+            words = " ".join(str(b.get(k) or "") for k in ("flavor", "part", "with"))
+            d_ = engine.get(dfn)
+            named = [p for p in d_.parts if re.search(r"\b" + re.escape(p.lower()) + r"\b", words.lower())]
+            if not named and (engine.body_plan(engine.get(att)) == "serpent"
+                              or re.search(r"\b(?:coil|constrict|wrap|squeez|middle|midsection|body|waist)\w*", words, re.I)):
+                named = [p for p in d_.parts if body_region(p) in ("belly", "chest")][:2]
+            hits_ = [{"part": p, "severity": b.get("severity")} for p in named]
+        if hits_:
+            act = "hold_start"
+            b = dict(b, action="hold_start", hits=hits_)
+            b.pop("hold_id", None)
     if act in ("hold_adjust", "hold_release"):
         if not engine.holds:
             raise ValueError(f"'{act}' needs an active hold, and there are none. Choose another action")
@@ -2841,6 +2859,17 @@ def play_block(engine, players):
     return "\n".join(lines)
 
 
+# (since build 278) a played fighter's order that is doing nothing, that is a grip, or that is fighting back
+PASSIVE_ORDER = re.compile(r"(?i)\b(?:(?:does|do|doing|did) nothing|(?:doesn't|does not|don't|do not|won't|will not) "
+                           r"(?:do|fight|struggle|move|resist)\w*|nothing|(?:can't|cannot|can not) (?:do|move|fight)|"
+                           r"(?:gets?|is|am|being) (?:constricted|held|squeezed|crushed|coiled|wrapped|pinned)|"
+                           r"lets? (?:her|it) happen|takes? it|stays? still|holds? still|gives? in)\b")
+ACTIVE_ORDER = re.compile(r"(?i)\b(?:struggl\w*|break\w*|escape\w*|wrench\w*|fights? back|bit(?:e|es)|attack\w*|"
+                          r"strik\w*|hits?|kick\w*|claws?|twist\w* free|pr(?:y|ies) )\b")
+GRIP_ORDER = re.compile(r"(?i)\b(?:coil\w*|constrict\w*|wrap\w*|squeez\w*|crush\w* (?:her|ripples|\w+) in|bind\w*|"
+                        r"grab\w*|grip\w*|holds? (?:her|onto|on to)|wind\w* (?:round|around))\b")
+
+
 def apply_players(engine, actions, players):
     """Keep the director to the players' orders: no actions for a fighter who holds back, at least one for every
     fighter given an order, and the played fighters' actions first, in the order they were asked."""
@@ -2855,6 +2884,38 @@ def apply_players(engine, actions, players):
         if o and o != "WAIT" and not any(who(b).lower() == n.lower() for b in kept):
             raise ValueError(f"{n}'s player ordered \"{o}\", but there is no action for {n} (her action must have "
                              f"\"attacker\": \"{n}\")")
+    # (since build 278) the order's own kind of action wins over the director's: a player who says her fighter does
+    # nothing (or lets herself be held) gets a beat of doing nothing, not a struggle that breaks the grip; one who
+    # orders a coil, a wrap or a squeeze gets a grip, not a tail strike
+    passive = set()
+    engine._passive = (engine.turn, passive)
+    for n, o in players.items():
+        if not o or o == "WAIT":
+            continue
+        mine = [b for b in kept if who(b).lower() == n.lower()]
+        if PASSIVE_ORDER.search(o) and not ACTIVE_ORDER.search(o):
+            passive.add(engine.get(n).name)
+            kept = [b for b in kept if b not in mine] + [{"action": "breather", "attacker": engine.get(n).name,
+                                                          "flavor": "does nothing to fight it", "_passive": True}]
+        elif GRIP_ORDER.search(o) and mine and not any(b.get("action") in ("hold_start", "hold_adjust", "pin",
+                                                                            "submission", "grapple") for b in mine):
+            foe = next((f for f in engine.active() if f.team != engine.get(n).team), None)
+            if foe is None:
+                continue
+            named = [p for p in foe.parts if re.search(r"\b" + re.escape(p.lower()) + r"\b", o.lower())]
+            if not named and re.search(r"\b(?:midsection|middle|body|waist|torso|stomach|belly)\b", o, re.I):
+                named = [p for p in foe.parts if body_region(p) in ("belly", "chest")][:2]
+            if not named:
+                continue
+            b0 = mine[0]
+            grip = {"action": "hold_start", "attacker": engine.get(n).name, "defender": foe.name,
+                    "hits": [{"part": p} for p in named], "flavor": str(b0.get("flavor") or o)}
+            moves_ = [m["name"] for m in engine.get(n).moves]
+            if ACTIVE_ORDER.search(o) or any(re.search(r"\b" + re.escape(m) + r"\b", o, re.I) for m in moves_):
+                grip["flavor"] = o
+                kept = kept + [grip]          # an attack AND a grip ordered: the attack, then the grip
+            else:
+                kept = [grip if b is b0 else b for b in kept]
     order = [n.lower() for n in players]
     kept.sort(key=lambda b: order.index(who(b).lower()) if who(b).lower() in names else len(order))
     if not kept:

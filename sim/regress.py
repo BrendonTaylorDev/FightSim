@@ -713,6 +713,69 @@ def coil_size_check():
     return problems
 
 
+def played276_check():
+    """Build 278: fixes from the build-276 played Ripples vs Seraphina log, Buizel ribs and flanks, and a big blow
+    on the shoulder carrying on into her side. A squeeze ordered with no hold yet starts the coil; an order to do
+    nothing gets nothing (and no break-free, even with the dice free); a coil ordered with a strike gets the grip;
+    a left-out passage in the present tense is put in the past; [brackets] on a command; "Tree" for the arena's
+    oak; a tail fan binding an arm is a coil round the middle; no claws for a serpent."""
+    import director
+    import play
+    import blocks
+    from engine import body_region
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e, n = s.eng, s.narrator
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.handle_command(s, "/scene 15")
+        r, _ = director.resolve_many(e, [{"action": "hold_adjust", "attacker": "Seraphina", "defender": "Ripples",
+                                          "flavor": "coils around Ripples' midsection and constricts"}])
+    if not any(h.attacker == "Seraphina" and h.defender == "Ripples" for h in e.holds.values()):
+        problems.append(f"a squeeze with no hold yet should start the coil: {[x.get('type') for x in r]}")
+    for h in list(e.holds):
+        e.release(h, "test")
+    acts = director.apply_players(e, [{"action": "struggle", "attacker": "Ripples", "defender": "Seraphina"}],
+                                  {"Ripples": "Does nothing"})
+    if acts[0].get("action") != "breather" or "Ripples" not in e._passive[1]:
+        problems.append(f"an order to do nothing should be a beat of doing nothing: {acts}")
+    acts = director.apply_players(e, [{"action": "strike", "attacker": "Seraphina", "defender": "Ripples",
+                                       "move": "Hydro Pump", "part": "Stomach"}],
+                                  {"Seraphina": "Hydro Pump on her stomach and then I coil around her midsection"})
+    if [a.get("action") for a in acts] != ["strike", "hold_start"]:
+        problems.append(f"an attack and a coil ordered should give both: {[a.get('action') for a in acts]}")
+    n.strengths = {"Seraphina": 97, "Ripples": 80}
+    t = n._to_past("Ripples' paws scrabble at the ground as she writhes against the hold. With a sharp twist, she "
+                   "pries the tail fan off her arm. She staggers back, gasping for breath.")
+    if "staggered" not in t:
+        problems.append(f"a left-out passage should be put in the past: {t!r}")
+    if play._unbracket('sustain A B "Hydro Pump" 4 [Tree] [Stomach, chest]') != \
+            'sustain A B "Hydro Pump" 4 "Tree" "Stomach, chest"':
+        problems.append("square brackets on a command should count as quotes")
+    if e.scene_prop_for("Tree") not in (e.scene_cfg.get("props") or []):
+        problems.append(f"'Tree' should be the arena's own tree: {e.scene_prop_for('Tree')}")
+    cs, note = e.coil_body_first("Seraphina", "Ripples", [("Left Upper Arm", 21, 3, "with her broad iridescent tail fan")],
+                                 flavor="Seraphina's tail binds Ripples' left upper arm")
+    if not note or not any(body_region(c[0]) in e.MIDDLE_REGIONS for c in cs):
+        problems.append(f"a big serpent's tail fan on an arm should be a coil round the middle: {cs}")
+    if not blocks.body_bans({"scales", "coils", "tail", "fins"}).search("Her claws slid out and stayed out."):
+        problems.append("a serpent has no claws for a library line")
+    rip = e.get("Ripples")
+    if not {"Left Ribs", "Right Ribs", "Left Flank", "Right Flank"} <= set(rip.parts):
+        problems.append(f"a Buizel should have ribs and flanks: {sorted(rip.parts)[:8]}")
+    s2 = H.session(4, fighters="Nocturne,Ripples")
+    e2 = s2.eng
+    mv = next(m for m in e2.get("Nocturne").moves if m["name"] == "Iron Tail")
+    side = e2._side_spill(e2.get("Ripples"), mv, [{"part": "Left Shoulder", "damage_taken": 50, "power": 40,
+                                                   "defender": "Ripples"}], {"moved": "stagger"})
+    if not side or side[0]["part"] != "Left Ribs":
+        problems.append(f"a big blow that staggers her from the shoulder should carry into her ribs: {side}")
+    bite = next((m for m in e2.get("Nocturne").moves if m["name"] == "Bite"), None)
+    if bite and e2._side_spill(e2.get("Ripples"), bite, [{"part": "Left Shoulder", "damage_taken": 50, "power": 40,
+                                                          "defender": "Ripples"}], {"moved": "stagger"}):
+        problems.append("a bite stops where it lands")
+    return problems
+
+
 def seraphina275_check():
     """Build 277: the leftovers from the build-273 lakeside log and fixes from the build-275 Seraphina vs Ripples log.
     Blood in the mouth of one who only clawed, "for once" on the first beat, landing on her side while face-up, a
@@ -2390,6 +2453,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build-273 lakeside log: wrong limb, posture, paws, fur, memories, retold get-up, kick, &&  ({time.time() - t:.1f}s)")
         for p in probs[:8]:
+            print("      " + p)
+    if not want or any(w in "played276 played ribs side" for w in want):
+        t = time.time()
+        probs = played276_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build-276 played log: coil orders, doing nothing, past tense, brackets, Tree, tail fan, claws, ribs, side spill  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "seraphina275 seraphina dominate" for w in want):
         t = time.time()

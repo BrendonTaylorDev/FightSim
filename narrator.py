@@ -3191,7 +3191,9 @@ class Narrator:
                     + f"; {change}{tough}{self._numb_note(h, bool(raw))}.")
         return (f"  - {label}{poss(h['defender'])} {h['part']}{self._limb_note(h['defender'], h['part'])}: "
                 f"a {size} " + (f"knock against {against} (the landing: no blow, nobody strikes her) " if against else
-                                "knock (jarred by the blow beside it) " if h.get("jarred") else "blow ")
+                                "knock (jarred by the blow beside it) " if h.get("jarred") else
+                                "knock (the same blow carrying on into her side as it moves her) " if h.get("side_spill")
+                                else "blow ")
                 + f"(impact, e.g. {impact}; a hit here shows as "
                 f"{self._region_tell(h['part'], sum(map(ord, seed)), h['defender'])}"
                 + (f"; her voice: {self._voice_cue(h, after['label'], sum(map(ord, seed)) * 7 + 3)}"
@@ -16819,7 +16821,21 @@ class Narrator:
                "steadies": "steadied", "wraps": "wrapped", "squeezes": "squeezed", "turns": "turned", "flares": "flared",
                "radiates": "radiated", "shoots": "shot", "tenses": "tensed", "thinks": "thought", "finds": "found",
                "jolts": "jolted", "glares": "glared", "growls": "growled", "hisses": "hissed", "winces": "winced",
-               "sways": "swayed", "leans": "leaned"}
+               "sways": "swayed", "leans": "leaned",
+               # (since build 278) more verbs a left-out passage came back with
+               "scrabble": "scrabbled", "scrabbles": "scrabbled", "writhes": "writhed", "writhe": "writhed", "snap": "snapped", "snaps": "snapped", "pries": "pried", "forces": "forced", "manages": "managed", "surges": "surged", "blots": "blotted", "fades": "faded", "intensifies": "intensified", "tighten": "tightened", "shudders": "shuddered", "strains": "strained", "constricts": "constricted", "claws": "clawed", "can": "could", "hears": "heard", "struggles": "struggled", "bucks": "bucked", "thrashes": "thrashed", "begins": "began"}
+
+    def _to_past(self, text):
+        """(since build 278) A short passage written on its own (for something the drafts left out) put into the past
+        tense the way the parts are, with the program's own verb swap (no call): "Ripples' paws scrabble at the
+        ground ... she pries the tail fan off" came back in the present."""
+        if self.rules.get("narration", {}).get("tense", "past") != "past" or not text:
+            return text
+        try:
+            return self._past_words(text, self._present_sents(text))
+        except Exception as e:
+            note_failure("putting a left-out passage into the past tense", e)
+            return text
 
     def _past_words(self, text, sents):
         """The flagged present-tense sentences, their common verbs put into the past one word at a time (no call)."""
@@ -16928,6 +16944,8 @@ class Narrator:
                 # (since build 276) a passage for something else (the grip, a press) never tells the get-up again: in
                 # the build-273 lakeside fight one retold Nocturne sinking back and rising, after she already stood
                 text = self._drop_rise_retold(text, self._getup_who, seen)
+            if text:
+                text = self._to_past(text)
             if not text:
                 continue
             if "failed tries at getting up" in issue and getattr(self, "_getup_who", None):
@@ -17123,7 +17141,7 @@ class Narrator:
             text = ""
             try:
                 text = self._generate(context + ask, 110 if big else 60)
-                text = self._drop_repeats(text, seen) if text else ""
+                text = self._to_past(self._drop_repeats(text, seen)) if text else ""
             except llm.LLMError:
                 text = ""
             if not text and not big:

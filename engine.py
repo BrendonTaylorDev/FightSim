@@ -906,7 +906,7 @@ class Engine:
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
                     "_sustain_now", "_source", "_knock_on", "_tac_before", "beat_loss", "sub_window", "pin_window",
                     "nudges", "_windows_ready", "_pre_rolls", "directed", "ordered", "dice_mode", "lucky",
-                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking", "_dominate_turn",
+                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking", "_dominate_turn", "_passive",
                     "rules", "roster", "roster_species", "scenes", "scene_cfg", "scene_name", "scene", "movedex",
                     "variants", "variant_of", "settings_applied", "_seed0", "rng", "event_rng")
 
@@ -1771,6 +1771,12 @@ class Engine:
                 res["status_applied"] = (res.get("status_applied") or []) + [reel]
             elif reel:
                 res["rocked"] = reel
+        if hits and not d.eliminated and not dodge:
+            side = self._side_spill(d, move, hits, res)
+            if side:
+                hits.extend(side)
+                res["side_hits"] = [h["part"] for h in side]
+                res["hit_count"] = len(hits)
         if hits and not move.get("improvised"):
             rc = self._recoil(a, move, math)
             if rc:
@@ -2124,6 +2130,17 @@ class Engine:
             words = re.findall(r"[a-z]{3,}", str(p).lower())
             if words and re.search(rf"\b{re.escape(words[-1])}s?\b", s) and not self.is_broken(p):
                 return p
+        # (since build 278) a plain word for a kind of thing ("Tree" in the lakeside clearing): the arena's own one of
+        # that kind (an old oak), not a new surface called "Tree"
+        last = (re.findall(r"[a-z]{3,}", s) or [""])[-1]
+        kinds = {"tree": r"oak|pine|tree|trunk|birch|willow|elm|ash|palm", "rock": r"boulder|rock|stone",
+                 "stone": r"boulder|rock|stone|pillar", "boulder": r"boulder|rock", "wall": r"wall|cliff|face",
+                 "log": r"log|trunk", "post": r"post|pillar|prop|column", "pillar": r"pillar|column"}
+        for kind, rx in kinds.items():
+            if last in (kind, kind + "s"):
+                for p in self.scene_cfg.get("props") or []:
+                    if re.search(rf"\b(?:{rx})s?\b", str(p).lower()) and not self.is_broken(p):
+                        return p
         return None
 
     def hazard_for(self, surface):
@@ -2531,7 +2548,7 @@ class Engine:
         her to the wall): each one also drives her back into it (moves.grind: power, break_mult). If it breaks, a heavy
         extra hit and she goes down with it."""
         cfg = (self.rules.get("moves") or {}).get("grind") or {}
-        against = short_phrase(against)
+        against = short_phrase(self.scene_prop_for(against) or against)
         table = self.rules["severity"].get("environment") or self.rules["severity"]["instant"]
         back = self.landing_parts(d.name, 2)       # what goes through it if it breaks: her back, whatever was hit
         struck = list(struck or [])
@@ -2566,6 +2583,8 @@ class Engine:
         she's pressed against something (a boulder, a stalagmite, the wall) each pulse also grinds her into it.
         The thing behind her may break: a heavy extra hit, the move ends early, and she goes down."""
         cfg = self.rules.get("moves", {}).get("sustain", {})
+        if against and self.scene_prop_for(against) is not None:
+            against = self.scene_prop_for(against)     # (since build 278) "Tree" -> the arena's own "an old oak"
         pulses = max(1, min(int(cfg.get("max_pulses", 4)), pulses))
         mult = float(cfg.get("pulse_mult", 0.6))
         against = short_phrase(against)
@@ -6047,7 +6066,11 @@ class Engine:
 
         def coil(c):
             w = str(c[3] if len(c) > 3 else "")
-            return self.is_coil(move, w, "" if w else flavor) or bool(re.search(r"(?i)\bcoils?\b|\bbody\b", w))
+            # (since build 278) a serpent this much bigger than her has nothing else to grip with: her tail or her
+            # tail fan "binding" an arm is a coil too (only her jaws, or her weight bearing down, are not)
+            return self.is_coil(move, w, "" if w else flavor) or bool(re.search(r"(?i)\bcoils?\b|\bbody\b", w)) \
+                or bool(w.strip() and re.search(r"(?i)\btail", w)
+                        and not re.search(r"(?i)\bjaws?\b|teeth|fangs?|mouth|\bbit|weight|press|bulk", w))
         coils = [c for c in contacts if coil(c)]
         if not coils:
             return list(contacts), ""
@@ -6403,6 +6426,44 @@ class Engine:
                 "stumble": {"part": big["part"], "way": way, "head": head, "steps": steps,
                             "legs": reg in ("hind_low", "hind_up"), "kind": kind, "strength": round(s),
                             "bad_legs": legw >= float(cfg.get("bad_legs_at", 150))}}
+
+    def _side_spill(self, d, move, hits, res):
+        """moves.side_spill (since build 278): a big blunt blow (or a blast) on her shoulder or upper arm that
+        really moves her (staggers her, launches her, drives her back in a charge, or rocks her hard) carries on
+        into her side: the ribs on that side take part of it (power x power_mult), and the flank under them
+        flank_chance of the time. Only a body with ribs or flanks; bites, claws and blades stop where they land."""
+        cfg = (self.rules.get("moves") or {}).get("side_spill") or {}
+        if not cfg.get("enabled", True) or not move or move.get("target") in ("status", "self", "hold"):
+            return []
+        mine = [h for h in hits if h.get("defender", d.name) == d.name and h.get("part")]
+        if not mine or self._blow_kind(move) not in ("blunt", "blast"):
+            return []
+        big = max(mine, key=lambda h: h.get("damage_taken", 0))
+        dmg = float(big.get("damage_taken", 0))
+        if body_region(big["part"]) not in ("shoulder", "fore_up") or dmg < float(cfg.get("min_damage", 30)):
+            return []
+        rocked_hard = bool(res.get("rocked")) and dmg >= 1.5 * float(cfg.get("min_damage", 30))
+        if not (res.get("moved") == "stagger" or res.get("auto_launch") or res.get("charge") or rocked_hard):
+            return []
+        side = _side(big["part"])
+        hit = {h["part"] for h in mine}
+        ribs = [p for p in d.parts if re.search(r"\bribs?\b", p, re.I) and _side(p) == side and p not in hit]
+        flank = [p for p in d.parts if re.search(r"\bflanks?\b", p, re.I) and _side(p) == side and p not in hit]
+        if not ribs and not flank:
+            return []
+        power = float(big.get("power") or 0) * float(cfg.get("power_mult", 0.35))
+        if power <= 0:
+            return []
+        out = []
+        keep, self._source = self._source, f"{poss_word(d.name)} side, the blow carrying on into it"
+        for p in (ribs or flank)[:1]:
+            out.append(self._apply_damage(d, p, power))
+        if ribs and flank and self.rng.random() < float(cfg.get("flank_chance", 0.5)):
+            out.append(self._apply_damage(d, flank[0], power * 0.7))
+        self._source = keep
+        for h in out:
+            h["side_spill"] = True
+        return out
 
     def _leg_worst(self, d):
         """The worst-hurt part she stands on (her hind legs; a four-legged fighter's forelegs too)."""
@@ -8528,8 +8589,11 @@ class Engine:
                 # (in a submission match any hold that hurts can make her tap: she breaks it the same way)
                 ch, _ = self.sub_break_chance(ch, fd, hs)
             ch *= self.dominated(fd.name)
-            if fd.name in self.lucky:
-                ch = 1.0   # /play dice free: she breaks any hold on her at once
+            pas = getattr(self, "_passive", None)
+            if pas and pas[0] == self.turn and fd.name in pas[1]:
+                continue   # (since build 278) her player has her do nothing: she doesn't try to break it
+            if fd.name in self.lucky and fa.name not in self.lucky:
+                ch = 1.0   # /play dice free: she breaks any hold on her at once (not one a dice-free holder has)
             if ch <= 0:
                 continue
             cfg = self.rules.get("holds", {}).get("break", {})
@@ -9691,12 +9755,16 @@ class Engine:
             if p.get("against"):
                 ev["against"] = p["against"]
             forced_try = p.pop("force_attempt", False)  # the story asked for an escape attempt this beat
+            pas = getattr(self, "_passive", None)
+            if pas and pas[0] == self.turn and dfn.name in pas[1]:
+                attempt_p, forced_try = 0.0, False      # (since build 278) her player has her do nothing
             if forced_try or self._chance(attempt_p, f"{dfn.name} making an escape attempt", "she tries",
                                           "no real attempt"):
                 roll = self.rng.random()
                 ev["roll"] = round(roll, 3)
                 ev["try_how"] = self.vary("struggle")
-                if roll < esc or dfn.name in self.lucky:   # /play dice free: every try of hers gets her out
+                if roll < esc or (dfn.name in self.lucky and not any(m.name in self.lucky for m in crew)):
+                    # (/play dice free: every try of hers gets her out, unless her pinner is dice-free too)
                     ev["struggle"] = "escape"
                     ev["hits_on_pinner"] = self._escape_hit(self.rng.choice(crew), dfn)
                     # now and then the pinner's jaws don't come off with the rest: she is thrown off the pin but

@@ -183,6 +183,9 @@ def body_bans(has):
         bans += [r"(?<!the )(?<!other's )\bgrowl\w*"]       # she chitters, squeaks and barks: the growl is not hers
     if "legs" not in has:
         bans += [r"\blegs?\b", r"\bfeet\b", r"\bfoot\b", r"\bknees?\b", r"\btoes\b", r"\bhind\b"]
+    if not has & {"arms", "forelegs", "legs", "talons", "claws"}:
+        # (since build 278) no limbs at all: no claws of hers either ("Her claws slid out" for a Milotic)
+        bans += [r"\bher (?:\w+ )?claws?\b", r"\bclaws? (?:slid|came|sprang) out\b"]
     if has & {"aloft", "unfooted"}:
         # in the air, or off her feet (lying, pinned, on top of a pin): nothing that needs her standing
         bans += [r"\b(?:hang|hangs|hanging) (?:low |loose |limp )?at her sides\b",

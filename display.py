@@ -1155,6 +1155,9 @@ class Display:
         if a.get("rocked"):
             rk = a["rocked"]
             out.append(f"↪️ {rk['fighter']} rocked by the {rk['part'].lower()} hit: {rk['how']}")
+        if a.get("side_hits"):
+            out.append(f"↘️ The blow carries on into {a.get('defender')}'s side as it moves her: "
+                       f"{', '.join(a['side_hits'])} (moves.side_spill)")
         if a.get("stayed_up"):
             out.append(f"🦵 {a.get('defender')} {WAYS['keeps_feet'].get(a['stayed_up'].get('manner'), 'stays up')} "
                        f"({a['stayed_up'].get('chance', 0) * 100:.0f}% to keep her feet)")

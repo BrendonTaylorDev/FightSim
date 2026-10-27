@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 277-guided (Seraphina log fixes; /plan dominate keeps the opponent from fighting back)"
+VERSION = "2026-10-27 build 278-guided (Buizel ribs and flanks, side spill, played-order fixes)"
 
 HELP = """
 =============================================================================================
@@ -3210,6 +3210,13 @@ def _polish_command(s, a):
     raise ValueError("/polish [key|models|model|on|off|when|now|copy|paste|prompt]")
 
 
+def _unbracket(text):
+    """(since build 278) Square brackets typed round an argument, as the usage lines show the optional ones
+    ("/sustain Seraphina Ripples "Hydro Pump" 4 [Tree] [Stomach, chest]"), count as quotes: [Stomach, chest] is the
+    one argument "Stomach, chest"."""
+    return re.sub(r'\[([^\[\]"]*)\]', lambda m: '"' + m.group(1).strip() + '"', text)
+
+
 def handle_command(s, line):
     if re.search(r"\s&&\s+/", line):
         # (since build 276) "/stop && /plan dominate Ripples": several commands typed on one line run one after another
@@ -3221,14 +3228,14 @@ def handle_command(s, line):
         return
     if SAME_BEAT.search(line):
         for piece in SAME_BEAT.split(line)[:3]:
-            bits = shlex.split(piece.strip()[1:])
+            bits = shlex.split(_unbracket(piece.strip()[1:]))
             if bits:
                 _strict_check(s, bits[0].lower())
         # several attack commands joined with " + " happen in the same beat (up to three), so a follow-up can land
         # before the first one's consequences play out: before a charged fighter crumples, say
         beats = []
         for piece in SAME_BEAT.split(line)[:3]:
-            bits = shlex.split(piece.strip()[1:])
+            bits = shlex.split(_unbracket(piece.strip()[1:]))
             if not bits:
                 continue
             b = manual_beat(bits[0].lower(), bits[1:], s.eng)
@@ -3243,7 +3250,7 @@ def handle_command(s, line):
             s.play_beat(manual=beats)
         return
     # (backslashes kept: a Windows path such as C:\Users\night\out.md must come through whole)
-    parts = shlex.split(line[1:].replace("\\", "\\\\"))
+    parts = shlex.split(_unbracket(line[1:]).replace("\\", "\\\\"))
     if not parts:
         return
     cmd, a = parts[0].lower(), parts[1:]

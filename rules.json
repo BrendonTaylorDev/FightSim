@@ -424,7 +424,7 @@
       "covered_mult": 0.85,
       "open_mult": 1.1
     },
-    "stumble": {
+    "_side_spill_comment": "side_spill (since build 278, on by default): a big blunt blow or a blast on her shoulder or upper arm that really moves her (staggers her, launches her, drives her back in a charge, or rocks her hard with min_damage x 1.5 or more) carries on into her side: the ribs on that side take power x power_mult, and the flank under them too flank_chance of the time (at 0.7 of that). Only blows of min_damage or more, only bodies with ribs or flanks; bites, claws and blades stop where they land. enabled false = off.", "side_spill": {"enabled": true, "power_mult": 0.35, "min_damage": 30, "flank_chance": 0.5}, "stumble": {
       "_comment": "A hard blow (min_damage part damage or more) on a fighter who is standing and free can knock her staggering: her head snaps round with a blow to the head, and she stumbles a step or more the way the blow was going (away from the side it hit; back from a front hit; forward from behind; sideways from a leg sweep). STAGGERED for a beat: dodging x status_effects.staggered_dodge_mult, the next blow lands x the caught-open bonus, her own blows x staggered_power_mult. Chance: base + per_damage per point over min_damage + weak x how worn she is, times kind_mult (blunt blows move her most) and region_mult, again_mult if she is still staggering, up to max.",
       "enabled": true,
       "min_damage": 40,

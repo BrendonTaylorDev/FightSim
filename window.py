@@ -153,7 +153,9 @@ class _Screen:
         return len(t or "")
 
     def flush(self):
-        if getattr(self._real, "pub_thread", None) is not None:
+        if getattr(self._real, "pub_thread", None) is not None or getattr(self._real, "_pub_thread", None) is not None \
+                or type(self._real).__module__.startswith("ipykernel") or type(self._real).__name__ == "OutStream":
+            # (since build 278: newer ipykernels, IPython 9 in Spyder 6, are known by their stream's type too)
             # (since build 269) Spyder's console (an ipykernel stream) flushes itself every fraction of a second;
             # asking it to from the window's threads only made it wait and print "IOStream.flush timed out"
             return
