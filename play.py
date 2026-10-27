@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-26 build 268-guided (online polish: Venice.ai, or copy and paste by hand)"
+VERSION = "2026-10-27 build 269-guided (polish: label repair, filler cuts allowed, kept parts)"
 
 HELP = """
 =============================================================================================
@@ -356,7 +356,9 @@ HELP = """
                       what happens (narration.polish; off until you turn it on). /polish alone: how it is set.
                       /polish key <key>, /polish models, /polish model <name>, /polish on|off,
                       /polish when every|big (big: taps, knockouts, the finish and other big moments only),
-                      /polish now (the last beat, now). By hand instead: /polish copy (the request into
+                      /polish now (the last beat, now). /polish prompt shows the instructions the editor gets;
+                      /polish prompt edit opens them to change (polish_prompt.txt), /polish prompt reset brings
+                      back the built-in ones. By hand instead: /polish copy (the request into
                       polish_request.txt and your clipboard: paste it into Venice's chat), then put its answer
                       into polish_reply.txt and type /polish paste. Either way the program's checks decide
   /compare            whether the polished version is kept. /compare: the last beat before and after polishing
@@ -1213,9 +1215,35 @@ class Session:
     def polish_facts(self, results, also, headers):
         """What really happened this beat, in short plain lines, for the polishing model: the attacks, the holds,
         the taps, the get-ups and falls, and where each fighter ends up."""
-        facts = [re.sub(r"\s+", " ", re.sub(r"[*_`]", "", h)).strip() for h in headers or [] if str(h).strip()]
+        facts = []
+        pc = (self.eng.rules.get("narration") or {}).get("polish") or {}
+        if pc.get("setting", True):
+            # (since build 269) who they are and where: her body as the game knows it (so nothing she lacks turns up
+            # on her), and the arena
+            for f in self.eng.fighters.values():
+                if not f.eliminated:
+                    look = re.sub(r"\s+", " ", str(f.appearance or f.description or "")).strip()
+                    cut = int(pc.get("look_chars", 800))
+                    if len(look) > cut:
+                        look = look[:cut].rsplit(". ", 1)[0] + "."     # (whole sentences only)
+                    facts.append(f"WHO: {f.name}: {look}")
+            sc = getattr(self.eng, "scene_cfg", None) or {}
+            if sc.get("text"):
+                place = re.sub(r"\s+", " ", str(sc["text"])).strip()
+                if len(place) > int(pc.get("place_chars", 400)):
+                    place = place[:int(pc.get("place_chars", 400))].rsplit(". ", 1)[0] + "."
+                facts.append(f"WHERE: {sc.get('title') or 'the arena'}: {place}")
+        facts += [re.sub(r"\s+", " ", re.sub(r"[*_`]", "", h)).strip() for h in headers or [] if str(h).strip()]
         for r in results or []:
             t = r.get("type")
+            mv = r.get("move") if isinstance(r.get("move"), dict) else {}
+            if t == "instant" and mv.get("about") and mv.get("name"):
+                facts.append(f"{mv['name']} is {mv['about']}")
+            aim = r.get("aim") if isinstance(r.get("aim"), dict) else {}
+            if aim.get("aimed") and aim.get("landed") and aim["aimed"] != aim["landed"]:
+                facts.append(f"{r.get('attacker')} aimed at {poss_word(r.get('defender') or '')} "
+                             f"{str(aim['aimed']).lower()}, and it landed off target on her "
+                             f"{str(aim['landed']).lower()}")
             if t == "hold_start" and r.get("attacker"):
                 parts = [str(x.get("part")) for x in r.get("parts") or [] if isinstance(x, dict) and x.get("part")]
                 what = r.get("submission") or "a hold"
@@ -1248,7 +1276,41 @@ class Session:
             if f.eliminated:
                 facts.append(f"{f.name}: out of the fight")
             else:
-                facts.append(f"{f.name} ends the beat: {self.eng.posture_text(f.name, short=True).lower()}")
+                st = float(self.eng.strength(f) or 0)
+                how = ("fresh, barely touched" if st >= 85 else "hurt, but still strong" if st >= 60 else
+                       "worn down" if st >= 30 else "nearly spent")
+                facts.append(f"{f.name} ends the beat: {self.eng.posture_text(f.name, short=True).lower()}; {how}")
+        if (self.eng.rules.get("narration") or {}).get("polish", {}).get("condition", True):
+            # (since build 269) how each one is by the end of the beat: her health, her pain overall, and her worst
+            # parts in the story's own pain words (with the numbers), so the editor can size what she feels
+            from engine import pain_tiers, tier_for
+            tiers = pain_tiers(self.eng.rules)
+            for f in self.eng.fighters.values():
+                if f.eliminated:
+                    continue
+                g = (self.eng.pain_gauge(f) or {}).get("overall") or {}
+                worst = sorted((p for p in f.parts.values() if p.damage >= 10), key=lambda p: -p.damage)[:4]
+                parts = ", ".join(f"{p.name.lower()} {tier_for(p.damage, tiers)['label']} ({p.damage:.0f}%)"
+                                  for p in worst) or "no part hurt yet"
+                facts.append(f"{poss_word(f.name)} condition: health {self.eng._health_pct(f):.0f}% of full"
+                             + (f"; pain overall {g.get('label')} ({g.get('shown') or str(g.get('pct')) + '%'} of what "
+                                f"she can bear)" if g else "")
+                             + f"; worst parts: {parts}")
+        for f in self.eng.fighters.values():
+            sts = [k.replace("_", " ") for k in (f.status or {}) if not f.eliminated]
+            if sts:
+                facts.append(f"{f.name} is {', '.join(sts)} at the end of the beat")
+            if self.eng._taps_rule() and not f.eliminated:
+                given = self.eng.taps_given(f)
+                facts.append(f"{f.name} has tapped {len(given)} of {self.eng.taps_needed()} times"
+                             + (f" (on her {', '.join(p.lower() for p in given)})" if given else ""))
+        try:
+            gap = self.eng.gap_text(card=True)
+        except Exception as e:
+            note_failure("the distance line for the polish facts", e)
+            gap = ""
+        if gap:
+            facts.append(f"distance at the end: {gap}")
         for h in self.eng.holds.values():
             facts.append(f"still on at the end: {poss_word(h.attacker)} {h.sub or 'grip'} on {poss_word(h.defender)} "
                          f"{h.part.lower()}" + (f" ({h.with_part})" if h.with_part else ""))
@@ -1284,9 +1346,9 @@ class Session:
             print(f"[polish not used: {e}]")
             last["why"] = str(e)
             return None
-        out = polish.tidy(reply)
-        keep, why = polish.judge(self.narrator, text, out, [f.name for f in self.eng.fighters.values()],
-                                 self.eng.rules)
+        names = [f.name for f in self.eng.fighters.values()]
+        out = polish.tidy(reply, names, text)
+        keep, why = polish.judge(self.narrator, text, out, names, self.eng.rules, last.get("facts") or ())
         if keep:
             try:
                 out = self.narrator._mend_move_names(out)
@@ -2816,7 +2878,33 @@ def _polish_command(s, a):
         print(f"Polish: {'ON' if c['enabled'] else 'off'} · when: {c['when']} · service: {c['base_url']} · model: "
               f"{c['model'] or '(none chosen yet)'} · key: {'set' if key else 'not set'}\n"
               f"/polish key <key>, /polish models, /polish model <name>, /polish on|off, /polish when every|big, "
-              f"/polish now, /polish copy, /polish paste, /compare"); return
+              f"/polish now, /polish copy, /polish paste, /polish prompt [edit|reset], /compare\n"
+              f"Prompt: {'your own (polish_prompt.txt)' if polish.prompt_is_custom() else 'the built-in one'}"); return
+    if sub == "prompt":
+        # (since build 269) the instructions the editor gets: yours in polish_prompt.txt, or the built-in ones
+        act = a[1].lower() if len(a) > 1 else ""
+        if act == "reset":
+            try:
+                os.remove(polish.PROMPT_FILE)
+            except OSError:
+                pass
+            print("The polish prompt is back to the built-in one (polish_prompt.txt removed)."); return
+        if act == "edit":
+            if not polish.prompt_is_custom():
+                with open(polish.PROMPT_FILE, "w", encoding="utf-8") as fh:
+                    fh.write(polish.SYSTEM + "\n")
+            try:
+                os.startfile(polish.PROMPT_FILE)      # (Windows: opens it in your text editor)
+                opened = True
+            except (AttributeError, OSError):
+                opened = False
+            print(f"The polish prompt is in {polish.PROMPT_FILE}" + (" (opened for you)" if opened else "")
+                  + ". Change it, save it, and the next polish uses it. /polish prompt reset brings back the "
+                    "built-in one. (The facts and the beat are added after it by the game; don't paste them in.)")
+            return
+        print(("Your own polish prompt (polish_prompt.txt):" if polish.prompt_is_custom() else
+               "The built-in polish prompt (yours would go in polish_prompt.txt):") + "\n\n" + polish.system_prompt()
+              + "\n\n/polish prompt edit to change it, /polish prompt reset to go back to the built-in one."); return
     if sub == "key":
         if len(a) < 2:
             raise ValueError("/polish key <your API key>")
@@ -2888,7 +2976,7 @@ def _polish_command(s, a):
             except OSError:
                 pass
         return
-    raise ValueError("/polish [key|models|model|on|off|when|now|copy|paste]")
+    raise ValueError("/polish [key|models|model|on|off|when|now|copy|paste|prompt]")
 
 
 def handle_command(s, line):

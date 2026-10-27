@@ -1294,6 +1294,12 @@ def story_checks_check():
                        "Nerine let go at once."]):
         problems.append("the pressure told before the tap was flagged")
     N._tap_mid = []
+    N.strengths = {"Ripples": 100, "Nerine": 100}
+    if not N._order_slips(["Doubt flickered: how much did Ripples have left in her?"]):
+        problems.append("a fresh fighter wondered about as running out wasn't caught")
+    N.strengths = {"Ripples": 30, "Nerine": 80}
+    if N._order_slips(["Doubt flickered: how much did Ripples have left in her?"]):
+        problems.append("wondering how much a worn fighter has left was flagged")
     N._acts_now = [{"attacker": "Nerine", "move": {"name": "Bite"}, "hits": [{"part": "Upper Back"}]}]
     if not N._order_slips(["Nerine's teeth sank between Ripples' toes."]):
         problems.append("a bite told on the toes when it hit her back wasn't caught")
@@ -1347,6 +1353,25 @@ def polish_check():
             answer[0] = bad
             if s._maybe_polish(local, [], [], []) != local:
                 problems.append(f"{why} was kept instead of the local beat")
+        # (build 269) a label that lost its first dash and the chat page's own text copied along with the answer
+        fixed = polish.tidy("Worked for 22s · 1 step\nRipples —\nRipples breathed.\n— Nerine —\nNerine waited.",
+                            ["Ripples", "Nerine"], local)
+        if not fixed.startswith("— Ripples —\nRipples breathed.") or "Worked for" in fixed:
+            problems.append(f"a half label or the chat page's text wasn't tidied: {fixed[:60]!r}")
+        answer[0] = better.replace("Ripples let her breath out slow", "She let her breath out slow").replace(
+            "eyes fixed on Ripples", "eyes fixed ahead")
+        if s._maybe_polish(local, [], [], []) == answer[0]:
+            problems.append("a polish that left out a fighter was kept")
+        # (build 269) your own prompt, and back to the built-in one
+        with open(polish.PROMPT_FILE, "w", encoding="utf-8") as fh:
+            fh.write("MY OWN EDITOR RULES")
+        if polish.messages("x", [])[0]["content"] != "MY OWN EDITOR RULES":
+            problems.append("a prompt of your own in polish_prompt.txt isn't used")
+        _quiet(H.play.handle_command, s, "/polish prompt reset")
+        if polish.messages("x", [])[0]["content"] != polish.SYSTEM:
+            problems.append("/polish prompt reset didn't bring back the built-in prompt")
+        if not any("condition: health" in f for f in s.polish_facts([], [], [])):
+            problems.append("the fact sheet doesn't give each fighter's condition")
         # by hand: /polish copy, then the answer pasted into polish_reply.txt and /polish paste
         cfg["enabled"] = False
         s._maybe_polish(local, [], [], [])

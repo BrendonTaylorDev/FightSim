@@ -654,6 +654,19 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 269
+Fixes from the first real Venice polish you tried by hand. Its version was better, but `/polish paste` would have thrown it out twice:
+- **A part label that lost a dash** ("Nerine —" instead of "— Nerine —") is put right, and text from the chat page that got copied along with the answer ("Worked for 22s · 1 step") is cut. Before, that counted as "it changed the part labels".
+- **Cutting filler is allowed.** The shortest kept length went from 70% to 55% of the local beat (`min_ratio`). Venice cut 770 words to 485, nearly all of it the repeated sun, breeze and heartbeat lines. The editor is now told it may cut filler freely but must keep every event and concrete detail, and not go below about two thirds.
+- **A body part a blow landed on must still be there.** If the local beat tells it and the polish drops it, the polish is thrown out. This is the guard that goes with letting it be shorter.
+- **The fact sheet now says what each move is and when a blow landed off target** ("Knee Kick is ...", "aimed at her left paw, landed on her left upper arm"), so the editor doesn't keep a fist in a knee kick.
+- **The editor is told to go easy on dashes** and use commas and full stops like the rest of the story.
+- **Your own polish prompt.** `/polish prompt` shows the instructions Venice gets. `/polish prompt edit` puts them in polish_prompt.txt and opens it for you to change; the next polish uses your version. `/polish prompt reset` brings back the built-in one. The game still adds the facts and the beat after your instructions.
+- **Venice now gets each fighter's condition.** The fact sheet gives her health, her pain overall, and her four worst-hurt parts in the story's pain words with their damage ("left upper arm very painful (95%)"), so every hurt is sized right (`narration.polish.condition`). It also says whether each fighter is fresh, hurt, worn down or nearly spent.
+- **Venice now has everything the local narrator knows about the scene.** The fact sheet starts with WHO each fighter is (her appearance from fighters.json, whole sentences, so it gives her only the body she has: no flotation sac on a Buizel, the notch in Nerine's fin) and WHERE they are (the arena). It ends with her statuses (soaked, chilled...), the tap count in a match of several taps, and how far apart they are (`narration.polish.setting`, `look_chars`, `place_chars`). The story just before the beat was already in it.
+- **No more "how much did Ripples have left in her?" on the opening beat.** A new story check (`narration.story_checks.fresh_worn`) catches a fighter still fresh (`fresh_from`: 85% strength) being told as tiring, fading or running out. It works on the local model's own draft, and Venice is told to cut such lines too.
+- **"IOStream.flush timed out" in the Spyder console.** These came from the window asking Spyder's console to flush, which it already does by itself. They were harmless, and the window no longer asks.
+
 ## Build 268
 - **A stronger online model can polish each beat** (`narration.polish`). It's off until you turn it on.
   - The local model writes the beat as always, with the engine and every check behind it. Then the finished beat and a short fact sheet of what really happened go to an online model to improve the prose without changing events.

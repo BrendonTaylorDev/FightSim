@@ -153,6 +153,10 @@ class _Screen:
         return len(t or "")
 
     def flush(self):
+        if getattr(self._real, "pub_thread", None) is not None:
+            # (since build 269) Spyder's console (an ipykernel stream) flushes itself every fraction of a second;
+            # asking it to from the window's threads only made it wait and print "IOStream.flush timed out"
+            return
         if _current_game() is None:
             try:
                 self._real.flush()

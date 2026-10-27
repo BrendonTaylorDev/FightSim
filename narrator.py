@@ -1610,7 +1610,7 @@ def _is_stub(sent):
 
 
 SLIP_LABELS = (("is already UP when this is told", "get-up told out of order"),
-               ("but the tap ends it", "told after the tap"), ("the bite this beat lands on", "bite in the wrong place"),
+               ("but the tap ends it", "told after the tap"), ("is still fresh, nearly untouched", "a fresh fighter called worn"), ("the bite this beat lands on", "bite in the wrong place"),
                ("but that landed on her", "wrong part remembered"), ("SECOND time", "same blow told twice"), ("NO pin and no hold", "invented pin"),
                ("go limp or unable to move", "limp while still strong"), ("nothing of hers can break", "broken bones"),
                ("cracks or pops", "invented crack"), ("has never been hit", "pain in a part never hit"),
@@ -13254,6 +13254,22 @@ class Narrator:
                     out.append((x, f"this comes AFTER {poss(tapper)} tap, but the tap ends it: {holder} lets go at "
                                    f"once, and nothing of hers presses or strikes {tapper} after it. Everything else in "
                                    f"the beat happened before the tap, so tell it before"))
+            if cfg.get("fresh_worn", True):
+                # (since build 269) "how much did Ripples have left in her?" on the opening beat, Ripples untouched:
+                # doubt about running out is for someone who is worn, not someone still fresh
+                for n in named:
+                    if float((self.strengths or {}).get(n, 0) or 0) < float(cfg.get("fresh_from", 85)):
+                        continue
+                    nm = re.escape(n)
+                    if re.search(r"\bhow much (?:\w+\s+){0,2}" + nm + r"(?:'s)?(?:\s+\w+){0,3}\s+left\b|"
+                                 r"\b" + nm + r"(?:'s)?\s+(?:was|is|looked|seemed|had begun|began)\s+(?:to\s+)?"
+                                 r"(?:tir\w+|flagg\w+|fad\w+|spent|worn|exhausted|running out|slow\w*|weaken\w*)\b|"
+                                 r"\b" + nm + r"(?:'s|’s) (?:strength|stamina|energy|will) (?:was |is )?"
+                                 r"(?:fad\w+|going|ebb\w+|running out|giving out|draining)\b", x, re.I):
+                        out.append((x, f"{n} is still fresh, nearly untouched: nobody wonders how much she has left "
+                                       f"or sees her tiring yet. Leave it out, or make it a thought about the fight to "
+                                       f"come"))
+                        break
             bm = self._BITE_SENT.search(x) if bite_ok else None
             if bm and not re.search(r"\b(?:had|earlier|before|old|last)\b", x, re.I):
                 # (only what follows the bite closely: not where the pain spread to afterwards)

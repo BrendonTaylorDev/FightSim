@@ -19,15 +19,19 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 KEY_FILE = os.path.join(HERE, "polish_key.txt")
 REQUEST_FILE = os.path.join(HERE, "polish_request.txt")
 REPLY_FILE = os.path.join(HERE, "polish_reply.txt")
+PROMPT_FILE = os.path.join(HERE, "polish_prompt.txt")   # (your own instructions for the editor: /polish prompt)
 
 DEFAULTS = {"enabled": False, "when": "every", "base_url": "https://api.venice.ai/api/v1", "model": "",
-            "temperature": 0.7, "timeout": 120, "min_ratio": 0.7, "max_ratio": 1.5, "allow_new_slips": 0,
+            "temperature": 0.7, "timeout": 120, "min_ratio": 0.55, "max_ratio": 1.5, "allow_new_slips": 0,
             "extra_body": {"venice_parameters": {"include_venice_system_prompt": False}}}
 
 SYSTEM = (
     "You are an expert fiction editor. You improve the prose of one beat of an ongoing story about a fight between "
-    "two Pokemon. You are given FACTS (what really happened in this beat, worked out by a game engine: these are "
-    "never to be changed) and the DRAFT (the beat as written). Rewrite the draft into better prose.\n"
+    "two Pokemon. You are given FACTS (worked out by a game engine, never to be changed: WHO each fighter is and "
+    "what her body has, WHERE they are, what really happened in this beat, and how each one is at the end of it) "
+    "and the DRAFT (the beat as written). Rewrite the draft into better prose.\n"
+    "BODIES: give each fighter only the body WHO describes (her fur, her tails, her fins, her paws, as they are "
+    "there); nothing she lacks, nothing of the other's. The arena is as WHERE says.\n"
     "MAKE IT BETTER: vary the sentence length and rhythm; cut repetition, filler, stock phrases and anything that "
     "reads like notes or a list; make the senses, the effort and the pain vivid and specific; keep each fighter's "
     "inner voice (her thoughts in *italics*) and the sounds she makes; let the big moments breathe and the small "
@@ -35,11 +39,34 @@ SYSTEM = (
     "NEVER CHANGE WHAT HAPPENS: every action, hit, body part, hold, tap, get-up, fall and outcome stays exactly "
     "as in the FACTS and the draft. Add no new moves, blows, injuries, falls, escapes, words spoken or events; "
     "remove none of those that are there; never move one before or after another. Where the draft contradicts "
-    "the FACTS, follow the FACTS. Left and right stay as they are. No gore beyond what the draft has.\n"
+    "the FACTS, follow the FACTS: the FACTS say how fresh or worn each fighter is, so a thought or a look that "
+    "has a fresh fighter tiring or running out goes. Size every hurt to the condition the FACTS give (a sore part "
+    "is not agony, an excruciating one is not a sting; a part at 100% damage or more is badly hurt). Left and "
+    "right stay as they are. No gore beyond what the "
+    "draft has.\n"
     "KEEP THE FORM: past tense, third person; each fighter is 'she'. Keep every line that looks like "
     "'— Name —' exactly as it is, on its own line, in the same order, with that fighter's part of the story "
-    "under it. Keep roughly the same length (within a fifth). Answer with the revised beat only: no title, no "
-    "notes, no explanation, nothing before or after it.")
+    "under it. Cut filler and repetition freely, but keep every event and every concrete detail of what happened "
+    "(which part was hit, with what, what she did after); don't go under about two thirds of the draft's length. "
+    "Don't lean on dashes: commas and full stops, as the draft has them. Answer with the revised beat only: no "
+    "title, no notes, no explanation, nothing before or after it.")
+
+
+def system_prompt():
+    """The editor's instructions: yours from polish_prompt.txt when it has any (/polish prompt edit), else the
+    built-in ones (/polish prompt reset goes back to them)."""
+    try:
+        with open(PROMPT_FILE, encoding="utf-8") as fh:
+            mine = fh.read().strip()
+        if mine:
+            return mine
+    except OSError:
+        pass
+    return SYSTEM
+
+
+def prompt_is_custom():
+    return system_prompt() is not SYSTEM
 
 
 def cfg_of(rules):
@@ -112,7 +139,7 @@ def messages(draft, facts, prior=""):
             + (f"THE STORY JUST BEFORE THIS BEAT (for continuity only; do not rewrite it or repeat it):\n"
                f"{prior.strip()[-1500:]}\n\n" if prior and prior.strip() else "")
             + "DRAFT (rewrite this):\n" + draft.strip())
-    return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
+    return [{"role": "system", "content": system_prompt()}, {"role": "user", "content": user}]
 
 
 def call(rules, msgs):
@@ -137,16 +164,26 @@ PREFACE = re.compile(r"^\s*(?:here(?:'s| is) (?:the |your |a )?(?:revised|improv
 LABEL = re.compile(r"(?m)^\s*—\s*[^—\n]+?\s*—\s*$")
 
 
-def tidy(text):
-    """The model's answer as a beat: no "Here is the revised beat:" line, no code fences, no closing note."""
+def tidy(text, names=(), draft=""):
+    """The model's answer as a beat: no "Here is the revised beat:" line, no code fences, no closing note. A part
+    label that lost a dash ("Nerine —", "- Nerine -") is put back as "— Nerine —", and when the draft starts with a
+    label, anything before the answer's first label goes (a chat page's own text copied along with it, "Worked for
+    22s · 1 step")."""
     t = str(text or "").strip()
+    for n in names or ():
+        t = re.sub(r"(?m)^[ \t]*(?:[—–-]+[ \t]*)?" + re.escape(n) + r"(?:[ \t]*[—–-]+)?[ \t]*:?[ \t]*$",
+                   f"— {n} —", t)
+    if LABEL.match(str(draft or "").lstrip()):
+        m = LABEL.search(t)
+        if m and m.start() > 0:
+            t = t[m.start():]
     t = re.sub(r"^```\w*\s*\n|\n```\s*$", "", t).strip()
     t = PREFACE.sub("", t, count=1).strip()
     t = re.sub(r"\n+\s*(?:---+\s*\n+)?(?:\*\*)?(?:Notes?|Changes(?: made)?|Edits?)(?:\*\*)?:[\s\S]*$", "", t).strip()
     return t
 
 
-def judge(narrator, draft, polished, names, rules):
+def judge(narrator, draft, polished, names, rules, facts=()):
     """(keep it?, why not). It is kept only when it is not a refusal, keeps every "— Name —" label in order and
     every fighter the draft names, stays within min_ratio..max_ratio of the draft's length, and the program's own
     sentence checks find no more in it than in the draft (allow_new_slips more at most)."""
@@ -159,10 +196,21 @@ def judge(narrator, draft, polished, names, rules):
     got = [re.sub(r"\s+", " ", x).strip() for x in LABEL.findall(polished)]
     if want != got:
         return False, f"it changed the part labels ({' '.join(want) or 'none'} → {' '.join(got) or 'none'})"
-    missing = [n for n in names if re.search(r"\b" + re.escape(n) + r"\b", draft)
-               and not re.search(r"\b" + re.escape(n) + r"\b", polished)]
+    # (her name in a "— Name —" label doesn't count: she must still be in the story itself)
+    bare_d, bare_p = LABEL.sub("", draft), LABEL.sub("", polished)
+    missing = [n for n in names if re.search(r"\b" + re.escape(n) + r"\b", bare_d)
+               and not re.search(r"\b" + re.escape(n) + r"\b", bare_p)]
     if missing:
         return False, f"it left out {', '.join(missing)}"
+    # every body part the beat's blows landed on that the draft tells must still be told ("Left Forearm Fin": its
+    # last word, "fin", is enough)
+    hit = [p.strip() for f in facts or () for m_ in [re.search(r"\((?:targeted|spread|whole_body)\s*[—-]\s*([^)]*)\)",
+                                                               str(f))] if m_ for p in m_.group(1).split(",")
+           if p.strip()[:1].isupper() and "energy" not in p]
+    for part in dict.fromkeys(hit):
+        key = part.lower().split()[-1]
+        if re.search(r"\b" + re.escape(key), draft.lower()) and not re.search(r"\b" + re.escape(key), polished.lower()):
+            return False, f"it left out her {part.lower()}, which the blow landed on"
     wd, wp = len(draft.split()), len(polished.split())
     ratio = wp / max(1, wd)
     if not float(c.get("min_ratio", 0.7)) <= ratio <= float(c.get("max_ratio", 1.5)):
