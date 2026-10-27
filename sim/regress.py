@@ -713,6 +713,54 @@ def coil_size_check():
     return problems
 
 
+def lakeside273_check():
+    """Build 276: fixes from the build-273 lakeside Ripples vs Nocturne log. A grip told with paws that hold nothing,
+    a standing fighter told lying down, a biped given forelegs, a fur colour nobody has, memories
+    from before the fight, a left-out passage that retells a get-up already told, a hold she wrenched out of told as
+    let go, a biped's kick with a paw, and commands joined with &&."""
+    import director
+    import narrator as N
+    problems = []
+    s = H.session(3, fighters="Ripples,Nocturne")
+    n = s.narrator
+    n.grips = [("Ripples", "Nocturne", "Right Hock", "her twin tails")]
+    if not n._grip_limb_wrong("Her webbed paws curled tightly around Nocturne's leg."):
+        problems.append("paws told gripping her leg, when only twin tails hold it, should be caught")
+    if n._grip_limb_wrong("Her webbed paws dug into the grass as her tails held Nocturne's leg."):
+        problems.append("paws in the grass beside a tail grip is not a wrong limb")
+    for t in ("Nocturne's body twisted, her back coming off the ground.", "The grass beneath her back was soft.",
+              "She wouldn't put any weight through it to rise."):
+        if not N.GROUNDED.search(t):
+            problems.append(f"lying down not caught: {t}")
+    if N.GROUNDED.search("The hurt leg lay still."):
+        problems.append("a leg lying still is not her lying down")
+    for t in ("Her instincts took over, honed from countless battles.",
+              "She had been in worse situations before.", "the interest she had when stalking prey in the river"):
+        if not N.PAST_FIGHTS.search(t):
+            problems.append(f"a memory from before the fight not caught: {t}")
+    n.strengths = {"Ripples": 98, "Nocturne": 90}
+    kept = n._drop_rise_retold("Ripples' tails dug deep. Nocturne sank back down. She pushed herself up onto her feet.",
+                               "Nocturne", "Nocturne got to her feet at last, unsteady.")
+    if "feet" in kept or "sank" in kept or "tails dug deep" not in kept:
+        problems.append(f"a left-out passage should not retell a get-up already told: {kept!r}")
+    n.fur_colors = {"Ripples": "orange", "Nocturne": "white"}
+    sl = [str(x) for x in n._bad_sentences("The horn was a stark contrast, a gleaming white against the dark fur.")]
+    if not any("fur" in w for w in sl):
+        problems.append(f"dark fur, which nobody here has, should be caught: {sl}")
+    e = s.eng
+    r, _ = director.resolve_many(e, [{"action": "strike", "attacker": "Ripples", "defender": "Nocturne",
+                                      "improvised_name": "Kick To The Hock", "part": "Right Hock",
+                                      "flavor": "Ripples drives her right paw into the hock"}])
+    if "paw" in str(r[0].get("flavor") or ""):
+        problems.append(f"a Buizel's kick is her foot: {r[0].get('flavor')}")
+    import play
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.handle_command(s, "/set holds.break.base 0.13 && /set holds.break.base 0.14")
+    if s.eng.rules["holds"]["break"].get("base") != 0.14:
+        problems.append(f"commands joined with && should run in turn: {s.eng.rules['holds']['break'].get('base')}")
+    return problems
+
+
 def sub_match_check():
     """Build 244: in a submission match, openings on her feet too (more once a part is worn) with the holder taking
     her down into it, and, in a several-tap match, her parts giving way faster the deeper below zero she is."""
@@ -2253,6 +2301,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  submission matches: openings on her feet, takedown into the hold, part ramp below zero  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "lakeside273 lakeside" for w in want):
+        t = time.time()
+        probs = lakeside273_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build-273 lakeside log: wrong limb, posture, paws, fur, memories, retold get-up, kick, &&  ({time.time() - t:.1f}s)")
+        for p in probs[:8]:
             print("      " + p)
     if not want or any(w in "coil size serpent" for w in want):
         t = time.time()

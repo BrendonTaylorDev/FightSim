@@ -654,6 +654,19 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 276
+Fixes from the build-273 lakeside Ripples vs Nocturne log.
+- **The arena question ends once a fight starts.** Typing /newfight or /auto at the "Scene>" question played the fight inside the question, so "(Now the arena: ...)" and "Scene>" came back after every beat. Now the question closes as soon as a fight starts from it.
+- **Commands joined with `&&` run one after another.** For example, `/stop && /plan dominate Ripples`. Before, only the first one ran.
+- **A left-out passage never retells a get-up that was already told.** In beat 4, a short passage written for something the drafts missed retold Nocturne sinking back and rising again. Another passage, added after she stood, had her on her back. Now such a passage loses its get-up sentences, and it goes in front of the sentence where she rises.
+- **A grip told with a limb that holds nothing is caught.** For example, "her webbed paws curled tightly around Nocturne's leg" when only her twin tails hold the hock. The check now also knows "Nocturne's leg" for a grip on her hock, and "curled around" as a grip.
+- **A standing fighter told lying down is caught**, as in "her back coming off the ground", "the grass beneath her back" and "wouldn't put any weight through it to rise". "The hurt leg lay still" no longer counts as her lying down. That false match had also counted as showing Nocturne crumpling at the oak, so the missing crumple went uncaught. It must now come after the passage reaches the oak.
+- **Forelegs given to a biped holding on are caught** ("her forelegs straining with the effort of maintaining the grip").
+- **A fur colour nobody has is caught.** "The dark fur" in a fight between a white Absol and an orange Buizel is flagged. Each fighter's fur colour comes from her appearance.
+- **Memories from before the fight are caught**: "honed from countless battles", "she had been in worse situations before" and "when stalking prey in the river".
+- **A hold she wrenched out of is not told as the holder letting go.** Before, the story could say "Ripples' twin tails releasing their grip" when Nocturne broke free with one hard wrench.
+- **A biped's kick is her foot.** The director's "Ripples drives her right paw" for a kick now says "her right foot".
+
 ## Build 275
 - **A serpent many times her size coils her middle, not one of her limbs** (`holds.coil.size`, on by default).
   - A Milotic's body is thicker than a Buizel's arm, so it can't wrap that arm alone. A coiler with no limbs (Milotic, Arbok) that is at least `ratio` (3) times her length wraps her belly or chest first, at the full pressure the director asked for.

@@ -1151,6 +1151,11 @@ def resolve(engine, b):
         # "Ripples' Ice Fang lands..." on Nerine's own Ice Fang: the move is the attacker's
         flavor = re.sub(r"\b" + re.escape(dfn_) + r"(?:'s|'|’s|’) (" + re.escape(mv_) + r")\b",
                         lambda m: poss_word(att) + " " + m.group(1), flavor, flags=re.I)
+    if att and re.search(r"\bkick", f"{mv_} {flavor}", re.I) and engine.get(att) is not None \
+            and engine.body_plan(engine.get(att)) == "biped":
+        # (since build 276) on two legs her paws are her hands: a kick is her foot ("Ripples drives her right paw")
+        flavor = re.sub(r"\b(her |its )?((?:left |right )?)(?:hind )?paws?\b",
+                        lambda m: (m.group(1) or "") + m.group(2) + "foot", flavor)
     intent = b.get("intent", "")
     was_involved = engine.get(att).name in engine.involved
     engine.get_active(att)

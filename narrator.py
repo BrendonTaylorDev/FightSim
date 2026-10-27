@@ -590,7 +590,8 @@ def degeneration(text, earlier="", allowed=frozenset()):
 
 # a fighter shown lying on the ground (the state, not the fall): wrong for anyone the program has on her feet
 GROUNDED = re.compile(
-    r"\b((?:lay|lying|lies) (?:curled|sprawled|crumpled|slumped|flat|still|there|motionless|on (?:her|his) "
+    r"\b((?<!leg )(?<!legs )(?<!tail )(?<!tails )(?<!paw )(?<!paws )(?<!arm )(?<!head )(?<!limb )(?<!foot )"
+    r"(?<!hand )(?:lay|lying|lies) (?:curled|sprawled|crumpled|slumped|flat|still|there|motionless|on (?:her|his) "
     r"(?:left |right )?(?:side|back|belly|stomach|front)|(?:half )?in the (?:water|pool|shallows|channel))|"
     r"curled (?:up )?on (?:her|his) (?:left |right )?side|flat on (?:her|his) (?:back|belly|stomach|face)|"
     r"(?:lay|lying) (?:soaked|trembling|gasping|panting|limp|helpless|dazed|stunned|winded|prone|shaking|shivering|"
@@ -600,6 +601,9 @@ GROUNDED = re.compile(
     r"(?:tried|trying|tries|struggl\w+|fought|fighting) to (?:roll|sit up|rise|stand|get (?:back )?up|"
     r"(?:push|lever|drag|haul) (?:herself|himself) (?:back )?(?:up|upright))|"
     r"roll(?:ed|ing|s)? onto (?:her|his) (?:left |right )?(?:side|back|belly|stomach|front)|"
+    r"(?:her|his) back (?:came|coming|comes|lifting|lifted|lifts|arch\w*|buck\w*) (?:up )?off the (?:ground|grass|"
+    r"floor|earth|sand|dirt|turf|stone)|(?:ground|grass|earth|floor|dirt|sand|mud|stone) (?:beneath|under|against) "
+    r"(?:her|his) back\b|weight (?:on|through|into) (?:it|her \w+|his \w+) to (?:rise|stand|get up)|"
     r"from where (?:she|he) lay|(?:still|already|was|is|stayed) on the (?:ground|floor|sand|grass|ice|snow|mud|deck|plating|planks|planking|boards|gravel|dirt|earth|grating|concrete|rubble|flagstones|basalt|shelf|scree|turf|moss)|"
     r"(?:\b[Ss]he|\b[Hh]e|(?-i:[A-Z])\w+) got (?:back )?up\b(?! to| on| close| in)|got (?:back )?to (?:her|his) feet|picked (?:herself|himself) up|"
     r"(?:pushed|levered|dragged|hauled) (?:herself|himself) (?:back )?(?:up|upright|to (?:her|his) feet)|"
@@ -2031,7 +2035,14 @@ PAST_FIGHTS = re.compile(r"\b(?:ha[ds]|have) (?:faced|fought|battled|beaten|surv
                          r"|\b(?:I'?ve|I’ve|I have|she'?d|she’d|she had) been (?:here|hit|hurt|through (?:worse|this)) before\b"
                          r"|\bendured (?:it )?(?:many|countless|a hundred|so many) times(?: before)?\b"
                          r"|\ba sound (?:that )?(?:she|[A-Z][a-z]+) had heard (?:many times )?before\b"
-                         r"|\bfrom (?:the|a) long day'?s\b|\bthe battles (?:she|he) had (?:endured|fought|survived)\b", re.I)
+                         r"|\bfrom (?:the|a) long day'?s\b|\bthe battles (?:she|he) had (?:endured|fought|survived)\b"
+                         # (since build 276, the build-273 lakeside fight) "honed from countless battles", "she had been
+                         # in worse situations before", "the interest she had when stalking prey in the river"
+                         r"|\b(?:honed|learned|forged|hardened|sharpened) (?:from|in|by|over|through) (?:countless|many|"
+                         r"years of|a lifetime of|so many|endless|a hundred) (?:battles|fights|years|hunts|scraps|bouts)\b"
+                         r"|\b(?:she|he)(?:'d|’d| had) been in (?:worse|tougher|harder) (?:situations|spots|fights|places|"
+                         r"scrapes)(?: than this)?(?: before)?\b"
+                         r"|\b(?:when|while) (?:(?:she|he) )?(?:was )?(?:stalk|hunt)(?:ed|ing|s)? (?:prey|fish)\b", re.I)
 
 
 # a comparison with her life before the fight ("unlike anything she had ever felt", "a different kind of hurt from
@@ -4321,6 +4332,13 @@ class Narrator:
             (x["attacker"], x["defender"], (x.get("parts") or [x.get("part") or ""])[0])
             for x in self._all_dicts(bundle) if x.get("type") == "hold_end" and x.get("attacker") and x.get("defender")
             and not x.get("submission") and not x.get("pin_ended")))
+        # (since build 276) a grip she broke out of herself (a wrench, a twist): the story has HER tear free, not the
+        # holder let go ("the sensation of Ripples' twin tails releasing their grip" when Nocturne wrenched loose)
+        self._broke_free = list(dict.fromkeys(
+            (x["attacker"], x["defender"]) for x in self._all_dicts(bundle) if x.get("type") == "hold_end"
+            and x.get("attacker") and x.get("defender") and re.search(r"\b(?:wrench\w*|broke|breaks|tore|twist\w*|"
+                                                                      r"wriggl\w*|free)\b", str(x.get("reason") or ""))
+            and not x.get("released")))
         self._must_surge = [e["fighter"] for e in bundle.get("also_this_beat", []) or [] if e.get("type") == "adrenaline"]
         self._one_strike = None
         self._takedown = None       # (pinner, pinned): she was on her feet and is taken down into the pin this beat
@@ -11023,8 +11041,16 @@ class Narrator:
         for who, how in (getattr(self, "_must_down", None) or []) if coverage else []:
             full = (prior or "") + "\n" + text
             # her going down, said of HER (Ripples falling earlier in the beat doesn't show Nocturne crumpling)
+            said_ = list(self._said(full))
+            m_ = re.search(r"at the foot of (?:the |an? )?(?:\w+ )*?(\w+)$", how)
+            if m_:
+                # (since build 276) she goes down at the foot of the oak only once the passage has her at the oak:
+                # "the hurt leg lay still" before the charge was taken for her crumpling there
+                at_ = next((k for k, (sent, _w, _n) in enumerate(said_) if re.search(r"\b" + re.escape(m_.group(1))
+                                                                                 + r"\b", sent, re.I)), None)
+                said_ = said_[at_:] if at_ is not None else said_
             if not any(who in whos and (SLID_DOWN.search(sent) or FALL.search(sent) or GROUNDED.search(sent))
-                       for sent, whos, named in self._said(full)):
+                       for sent, whos, named in said_):
                 issues.append(f"it never showed {who} {how}: she ends this beat ON THE GROUND. Show her going down "
                               f"(it does no new damage)")
         if getattr(self, "_faint", None) and coverage and not self._shown_out((prior or "") + "\n" + text):
@@ -11102,6 +11128,15 @@ class Narrator:
                               f"{'one attempt has' if tries == 2 else 'two attempts have'} to FAIL first, each in its own "
                               f"short paragraph (she gets partway up and goes back down), and only then does she stand. She "
                               f"must not simply get to her feet in one go")
+        for holder_, held_ in (getattr(self, "_broke_free", None) or []) if coverage else []:
+            full_ = (prior or "") + "\n" + text
+            said_ = list(self._said(full_))
+            freed_ = any(held_ in w_ and (GOT_FREE.search(s_) or self.ESCAPE_TOLD.search(s_)) for s_, w_, n_ in said_)
+            let_ = next((s_ for s_, w_, n_ in said_ if holder_ in s_ and re.search(
+                r"\b(?:releas\w+|let(?:ting)? (?:her |it )?go|loosen\w*|eas\w* (?:off|her grip))\b", s_, re.I)), None)
+            if let_ and not freed_:
+                issues.append(f"in \"{let_[:90]}\": it showed {holder_} letting go, but {held_} BROKE FREE herself "
+                              f"(she wrenched out of the grip; {holder_} didn't release it). Show {held_} tearing loose")
         for holder_, held_, part_ in (getattr(self, "_must_release", None) or []) if coverage else []:
             full_ = (prior or "") + "\n" + text
             if not any(GRIP_OFF.search(s_) and (holder_ in w_ or held_ in w_ or not w_)
@@ -12699,7 +12734,7 @@ class Narrator:
     GRIP_LIMBS = {"tails": r"\btails?\b|\bcoils?\b", "jaws": r"\bjaws?\b|\bteeth\b|\bfangs?\b",
                   "paws": r"\bpaws?\b|\bhands?\b|\bclaws\b", "legs": r"\blegs?\b"}
     GRIP_VERB = re.compile(r"\b(?:grip\w*|held|hold\w*|press\w*|clamp\w*|wrapp\w*|wound|coil\w*|squeez\w*|"
-                           r"pinn\w*|lock\w*|tighten\w*|dug|dig\w*|bit|bite\w*|sank)\b", re.I)
+                           r"pinn\w*|lock\w*|tighten\w*|dug|dig\w*|bit|bite\w*|sank|curl\w* (?:\w+ )?(?:a)?round)\b", re.I)
 
     def _grip_limb_wrong(self, sent):
         """A grip told with the wrong limb on the wrong place ("the twin tails tightening on her left upper arm" when
@@ -12719,13 +12754,32 @@ class Narrator:
             p = part.lower()
             bare = re.sub(r"^(?:left|right) ", "", p)
             # (a bare limb word, "paws", is the holder's limbs as often as hers: only longer names count in the plural)
-            return re.search(r"\b" + re.escape(p) + r"\b", low) or (bare != p and " " in bare and re.search(
-                r"\b" + re.escape(bare) + r"s\b", low))
+            if re.search(r"\b" + re.escape(p) + r"\b", low) or (bare != p and " " in bare and re.search(
+                    r"\b" + re.escape(bare) + r"s\b", low)):
+                return True
+            return False
+
+        def by_limb_word(g):
+            # (since build 276) "Nocturne's leg" for the grip on her right hock: the limb it is on, said as hers
+            word = {"hind_up": "(?:hind )?leg", "hind_low": "(?:hind )?leg", "fore_up": "(?:fore)?(?:leg|arm)",
+                    "fore_low": "(?:fore)?(?:leg|arm)"}.get(body_region(g[2]))
+            return bool(word and re.search(limb_rx(g, word), low))
+
+        def limb_rx(g, word):
+            return (re.escape(g[1].lower()) + r"(?:'s|’s|'|’)\s+(?:(?:left|right|hurt|injured|wounded) )?" + word
+                    + r"\b")
         on = [g for g in grips if named(g[2])]
+        if not on:
+            on = [g for g in grips if by_limb_word(g)]
+            if len({(g[0], g[1]) for g in on}) != 1 or len(on) != 1:
+                on = []
         parts_named = {re.sub(r"^(?:left|right) ", "", g[2].lower()) for g in on}
         if len(parts_named) != 1:
             return ""
         rest = low
+        if on and not named(on[0][2]):
+            # (the limb word that named the gripped part is hers, not a limb gripping with)
+            rest = re.sub(limb_rx(on[0], r"(?:hind |fore)?(?:leg|arm)"), " ", rest)
         for p_ in parts_named:
             rest = re.sub(r"\b(?:left |right )?" + re.escape(p_) + r"s?\b", " ", rest)
         limbs = [k for k, rx in self.GRIP_LIMBS.items() if re.search(rx, rest)]
@@ -12738,6 +12792,16 @@ class Narrator:
             return ""       # "Ripples' paws scrabbled at the grip": her own limbs, not the holder's
         other = [g for g in grips if g[0] == on[0][0] and re.sub(r"^(?:left|right) ", "", g[2].lower()) not in parts_named
                  and re.search(rx, str(g[3]).lower())]
+        if not other and len(on) == 1 and not any(re.search(rx, str(x[3]).lower()) for x in grips
+                                                  if x[0] == on[0][0]):
+            # (since build 276) "her webbed paws curled tightly around Nocturne's leg" when only her twin tails hold
+            # it, and her paws hold nothing at all
+            g = on[0]
+            if re.search(r"\b(?:her|" + re.escape(g[0].lower()) + r"(?:'s|’s|'|’))\s+(?:\w+\s+){0,2}(?:" + rx + ")", low) \
+                    and not re.search(r"\b(?:ground|earth|dirt|grass|sand|mud|rock|stone|floor)\b", low):
+                return (f"the wrong limb: {poss(g[0])} grip on {poss(g[1])} {g[2].lower()} is with "
+                        f"{self._own_with(g[0], g[3])}, and her {limbs[0]} hold nothing")
+            return ""
         if not other and len(on) > 1:
             # "her paws dug into Ripples' upper arms" when knees hold one and jaws the other: none of them is paws
             g = on[0]
@@ -12859,6 +12923,22 @@ class Narrator:
                               + r")\s+eyes\b", x, re.I)
                 if m and m.group(1).lower() != c and not (c == "black" and m.group(1).lower() == "dark"):
                     add(x, f"{poss(w)} eyes are {c.upper()}, not {m.group(1).lower()}")
+            fur_c = getattr(self, "fur_colors", None) or {}
+            if fur_c:
+                # (since build 276) her fur's own colour: "a gleaming white against the dark fur" for a white Absol
+                m = re.search(r"\b(white|black|dark|orange|brown|grey|gray|red|blue|golden|cream|tan|purple|pink|"
+                              r"yellow|green|silver)\s+fur\b", x, re.I)
+                whos_ = [w for w in fur_c if re.search(r"\b" + re.escape(w) + r"\b", x)]
+                clash = {"white": ("dark", "black", "brown", "orange", "grey", "gray"),
+                         "orange": ("black", "dark", "grey", "gray", "blue"),
+                         "black": ("white", "orange"), "dark": ("white", "orange")}
+                if m and len(whos_) == 1 and m.group(1).lower() in clash.get(fur_c[whos_[0]], ()):
+                    add(x, f"{poss(whos_[0])} fur is {fur_c[whos_[0]].upper()}, not {m.group(1).lower()}")
+                elif m and not whos_ and len(fur_c) >= 2 and all(m.group(1).lower() in clash.get(c, ())
+                                                                  for c in fur_c.values()):
+                    # (nobody named, and nobody in the fight has fur that colour)
+                    add(x, f"nobody here has {m.group(1).lower()} fur: " + ", ".join(
+                        f"{poss(w)} is {c}" for w, c in fur_c.items()))
             if self._label_slip(x):
                 add(x, "a move's name dropped into the sentence as a label: describe what the move does instead")
             if BARE_IMPACT.search(x):
@@ -13013,6 +13093,16 @@ class Narrator:
             if len(whos) == 1 and re.search(r"\b(?:three legs|all fours|four legs|hind legs?|forelegs?)\b", sent, re.I) \
                     and "arms" in self._feats_of(whos[0]) and "forelegs" not in self._feats_of(whos[0]):
                 add(sent, f"{whos[0]} stands on two legs and has arms: no forelegs, hind legs or all fours")
+            elif len(whos) > 1 and re.search(r"\bher (?:\w+ )?forelegs?\b", sent, re.I) and re.search(
+                    r"\b(?:maintain\w* (?:the|her) (?:grip|hold)|holding (?:on|the (?:grip|hold))|her (?:grip|hold)\b|"
+                    r"keep(?:ing)? (?:the|her) (?:grip|hold))", sent, re.I):
+                # (since build 276) "the muscles in her forelegs and back straining with the effort of maintaining the
+                # grip": the forelegs of the one holding on, and she stands on two legs
+                hold_by = {g[0] for g in (getattr(self, "grips", None) or [])}
+                for w_ in whos:
+                    if w_ in hold_by and "arms" in self._feats_of(w_) and "forelegs" not in self._feats_of(w_):
+                        add(sent, f"{w_} stands on two legs and has arms: no forelegs (she is the one holding on)")
+                        break
         for sent, w in self._blood_lines(text):
             add(sent, f"blood on {w}, but nothing has cut or hurt her enough to bleed: leave it out")
         for sent in self._arena_leaks(text):
@@ -16734,6 +16824,11 @@ class Narrator:
                         if te[2] == "tap" else
                         f"{poss(te[0])} struggles grew weaker and her sight greyed; she went limp, and {te[1]} felt "
                         f"her go slack and let go.")
+            if text and getattr(self, "_getup_who", None) and not re.search(
+                    r"failed tries at getting up|finally getting up|coming up on her feet", issue):
+                # (since build 276) a passage for something else (the grip, a press) never tells the get-up again: in
+                # the build-273 lakeside fight one retold Nocturne sinking back and rising, after she already stood
+                text = self._drop_rise_retold(text, self._getup_who, seen)
             if not text:
                 continue
             if "failed tries at getting up" in issue and getattr(self, "_getup_who", None):
@@ -16812,6 +16907,25 @@ class Narrator:
                     return written
         return None
 
+    def _drop_rise_retold(self, text, who, seen):
+        """A left-out passage with `who` getting up in it (or trying to, or sinking back down), when the passage so
+        far already has her rising: those sentences go, the rest stays."""
+        if not self._shown_standing(seen, who=who):
+            return text
+        out = []
+        for para in text.split("\n\n"):
+            keep = []
+            for sent, whos, _named in self._said(para):
+                if who in whos and (STANDING.search(sent) or self.GETUP_TRY.search(sent) or TRY_UP.search(sent)
+                                    or self._down_again(sent) or re.search(r"\b(?:tried|tries|trying) to rise\b|"
+                                                                           r"\bpartway up\b|onto (?:her|his) knees\b",
+                                                                           sent, re.I)):
+                    continue
+                keep.append(sent)
+            if keep:
+                out.append(" ".join(keep))
+        return "\n\n".join(out).strip()
+
     def _put_in_order(self, written, at, text):
         """A passage for something the drafts left out, put where it belongs: in front of the first paragraph (from
         part `at` on) where the fighter who gets up this beat starts trying to, since the get-up comes at the end of
@@ -16837,6 +16951,16 @@ class Narrator:
                         paras.insert(j, text.strip())
                         written[k] = "\n\n".join(paras).strip()
                         return written
+            for k in range(at, len(written)):
+                # (since build 276) no try worded the usual way ("pushed herself off the ground"): in front of the
+                # sentence where she rises, never after it
+                spot = self._rise_at(written[k] or "", who)
+                if spot is not None:
+                    w = written[k]
+                    cut = w.rfind("\n\n", 0, spot)
+                    cut = cut + 2 if cut >= 0 else 0
+                    written[k] = (w[:cut].rstrip() + "\n\n" + text.strip() + "\n\n" + w[cut:].lstrip()).strip()
+                    return written
         written[at] = (written[at].rstrip() + "\n\n" + text.strip()).strip()
         return written
 

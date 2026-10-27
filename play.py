@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 275-guided (big serpents coil the middle; serpent hold fixes)"
+VERSION = "2026-10-27 build 276-guided (fixes from the lakeside Ripples vs Nocturne log)"
 
 HELP = """
 =============================================================================================
@@ -1638,6 +1638,14 @@ class Session:
             if m:
                 eyes[f.name] = m.group(1).lower()
         self.narrator.eye_colors = eyes
+        # (since build 276) the colour of her fur, from her appearance ("Mostly WHITE fur"): "the dark fur" on a white
+        # Absol is caught
+        furs = {}
+        for f in self.eng.fighters.values():
+            m = re.search(r"\b(?:mostly |primarily )?([A-Z]{3,})(?:\s+[a-z]+)?\s+fur\b", str(f.appearance or ""))
+            if m:
+                furs[f.name] = m.group(1).lower()
+        self.narrator.fur_colors = furs
         # what each of them is covered in, for the notes that say whether she is wet ("Glacia's feathers DRY")
         self.narrator.coats = {}
         for f in self.eng.fighters.values():
@@ -2256,10 +2264,14 @@ def ask_scene(s, read=None):
             return
         if line.startswith("/") and not re.match(r"/scenes?\b", line, re.I):
             # any other command works here too (/set, /model, /settings...); then the question is asked again
+            turn0 = s.eng.turn
             try:
                 handle_command(s, line)
             except ValueError as e:
                 print(f"Error: {e}")
+            if s.eng.turn != turn0 or re.match(r"/(?:newfight|auto|autofight|load|fight)\b", line, re.I):
+                # (since build 276) a fight has started from here (/newfight, /auto): the arena question is over
+                return
             print("(Now the arena: a number or a name, r for random, or Enter to stay.)")
             continue
         if line.startswith("/"):
@@ -3199,6 +3211,14 @@ def _polish_command(s, a):
 
 
 def handle_command(s, line):
+    if re.search(r"\s&&\s+/", line):
+        # (since build 276) "/stop && /plan dominate Ripples": several commands typed on one line run one after another
+        for piece in re.split(r"\s+&&\s+(?=/)", line.strip()):
+            try:
+                handle_command(s, piece.strip())
+            except ValueError as e:
+                print(f"Error ({piece.strip().split()[0]}): {e}")
+        return
     if SAME_BEAT.search(line):
         for piece in SAME_BEAT.split(line)[:3]:
             bits = shlex.split(piece.strip()[1:])
