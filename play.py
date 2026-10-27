@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 269-guided (polish: label repair, filler cuts allowed, kept parts)"
+VERSION = "2026-10-27 build 270-guided (polish prompt fixes the draft's mistakes; fuller fact sheet)"
 
 HELP = """
 =============================================================================================
@@ -1249,8 +1249,18 @@ class Session:
                 what = r.get("submission") or "a hold"
                 facts.append(f"{r['attacker']} puts {what} on {poss_word(r.get('defender') or '')} "
                              f"{', '.join(p.lower() for p in parts) or 'body'}")
+            elif t == "grapple_start" and r.get("attacker"):
+                facts.append(f"{r['attacker']} grabs {poss_word(r.get('defender') or '')} "
+                             f"{str(r.get('part') or 'body').lower()}" + (f" with {r['with']}" if r.get("with") else "")
+                             + (" (a grip she already had, kept on)" if r.get("existing") else ""))
             elif t == "breather" and r.get("attacker"):
                 facts.append(f"{r['attacker']} takes a breather")
+            elif t in ("throw", "slam", "drag", "pin_start", "pin_forced", "struggle", "pickup") and r.get("attacker"):
+                facts.append(f"{r['attacker']}: {t.replace('_', ' ')}"
+                             + (f" on {r['defender']}" if r.get("defender") and r.get("defender") != r["attacker"] else ""))
+            if t == "instant" and r.get("dodged") and not r.get("hits"):
+                facts.append(f"{r.get('defender')} DODGES {poss_word(r.get('attacker') or '')} "
+                             f"{(mv or {}).get('name') or 'attack'}: it never touches her")
         for e in also or []:
             t, who = e.get("type"), e.get("fighter") or e.get("defender")
             if t in ("tap_out", "tap_count"):

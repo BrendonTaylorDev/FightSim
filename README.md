@@ -654,6 +654,13 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 270
+From comparing three of your Venice polishes. The prose came out better each time, but Venice was editing line by line and kept every mistake the draft had.
+- **The built-in polish prompt now tells Venice to put the draft's mistakes right.** It tells one blow once (your third sample told the Ice Fang twice). It gives each attack to the right fighter and limb ("Nerine's jaws ground down on Ripples' paw" when Nerine only kneed). It leaves a grip on when the facts say it's still on ("Ripples' grip opened" while her tails still held Nerine's nose). Anything the draft has happen that the facts don't support goes. Before, "never move or remove anything" stopped it from fixing any of that.
+- **Less chopped-up prose.** Venice is told to write mostly full sentences rather than strings of fragments ("Muscles taut. Joints strained. Clarity. Control."), and to go easy on dashes.
+- **The fact sheet now covers grabs, dodges, throws, slams, drags and pins.** Your second sample had no line at all for Ripples grabbing Nerine's nose, so Venice had nothing to check it against.
+- Your own prompt in polish_prompt.txt isn't changed. `/polish prompt reset` picks up the new built-in one.
+
 ## Build 269
 Fixes from the first real Venice polish you tried by hand. Its version was better, but `/polish paste` would have thrown it out twice:
 - **A part label that lost a dash** ("Nerine —" instead of "— Nerine —") is put right, and text from the chat page that got copied along with the answer ("Worked for 22s · 1 step") is cut. Before, that counted as "it changed the part labels".
