@@ -3373,8 +3373,17 @@ class Narrator:
             return ""
         level = min(3, beats - 1 + max(0, worst - 3) + (1 if sub else 0))
         nxt = self.STRUGGLE[min(3, level + 1)] if level < 3 else ""
+        if (getattr(self, "plans", None) or {}).get(att) == "serpent":
+            # (since build 275) a serpent grips with her coils, not a limb
+            nxt = nxt.replace("the gripping limb", "the coils")
+            return self._struggle_text(beats, pinned, dfn, self.STRUGGLE[level].replace("the gripping limb", "the coils"),
+                                       nxt, worst)
+        return self._struggle_text(beats, pinned, dfn, self.STRUGGLE[level], nxt, worst)
+
+    @staticmethod
+    def _struggle_text(beats, pinned, dfn, now, nxt, worst):
         return (f"  - HER STRUGGLE BUILDS ({beats} beat(s) {'under' if pinned else 'in'} it, and it hurts more): "
-                f"{dfn} fights it harder than before; {self.STRUGGLE[level]}"
+                f"{dfn} fights it harder than before; {now}"
                 + (f". Let it climb inside this part too: it starts there and, as the pain grows, edges towards: {nxt}"
                    if nxt and worst >= 3 else "")
                 + ". Never the same struggle as last beat told again.")
@@ -3476,6 +3485,18 @@ class Narrator:
             "spent": ["she lets her head hang in the grip"]}),
     ]
 
+    COIL_TRIES = {
+        "skill": ["she breathes all the way out and goes small inside the coils, trying to slide down out of them",
+                  "she arches her back against the inner loop, trying to force a gap open between her and it",
+                  "she works one shoulder up against the coils, trying to drag an arm free of them",
+                  "she rolls with the coils instead of against them, trying to unwind herself out of a loop",
+                  "she braces her feet on the ground and shoves her whole body against the loop round her middle"],
+        "thrash": ["she bucks and twists inside the coils, all of her at once, getting nowhere",
+                   "she drives the back of her head into the coils, again and again",
+                   "she bites at the nearest loop of scales, anything to make it give"],
+        "spent": ["she can only take the short breaths the coils leave her now",
+                  "she lies still inside the coils, saving what little is left of her"]}
+
     def _hold_tries_cfg(self):
         cfg = (self.rules.get("narration") or {}).get("hold_tries") or {}
         return cfg if cfg.get("enabled", True) else None
@@ -3492,6 +3513,10 @@ class Narrator:
             return cache[(att, dfn, now)]
         text = " ".join(str(p) for p in parts).lower()
         kind, menu = next(((k, m) for k, rx, m in self.HOLD_TRIES if re.search(rx, text)), (None, None))
+        if (getattr(self, "plans", None) or {}).get(att) == "serpent" and re.search(
+                r"chest|rib|belly|stomach|midsection|back|torso", text):
+            # (since build 275) wound in a serpent's coils, her arms pinned inside them: ways out with no free paw
+            kind, menu = "coil", self.COIL_TRIES
         if not menu:
             return None
         health = float((self.strengths or {}).get(dfn, 100) or 0)
@@ -4641,7 +4666,7 @@ class Narrator:
                     lv = 5 if e.get("breaking") in ("cracking", "last") else min(5, 2 + int(e.get("stage")
                                                                                            or min(3, n_)))
                     lines.append(f"  - HOW HARD TO TELL HER FIGHT AGAINST THE TAP ({lv} of 5; harder than the "
-                                 f"lighter signs before it): {self.TAP_INTENSITY[lv]}. Show what she looks like and "
+                                 f"lighter signs before it): {self._tap_intensity(lv, e)}. Show what she looks like and "
                                  f"what she thinks.")
                     # (since build 261) the story must give it room in proportion (narration.tap_fight_shown)
                     self.__dict__.setdefault("_tap_fights", []).append(
@@ -4685,7 +4710,7 @@ class Narrator:
                              + ("She is far from giving in" if lv == 1 else
                                 "It is getting to her, though she is not near her limit yet")
                              + f". Show her resisting it, with what it looks like and what she thinks. HOW HARD "
-                             f"({lv} of 5): {self.TAP_INTENSITY[lv]}. This beat, the sign of it (the program's pick; "
+                             f"({lv} of 5): {self._tap_intensity(lv, e)}. This beat, the sign of it (the program's pick; "
                              f"in your own words, or a sign of the same weight that fits her body, never one already "
                              f"used this fight): {sign}. She does NOT tap.")
             elif e["type"] == "tap_out":
@@ -4717,7 +4742,10 @@ class Narrator:
                                     f"or holding it, the pain with nowhere to go now but out; and {e['attacker']} lets "
                                     f"go and "
                                     + ("lies there beside her, too spent to rise" if e["attacker"] in (
-                                        getattr(self, "on_ground", None) or set()) else "stands over her")
+                                        getattr(self, "on_ground", None) or set()) else
+                                       "draws her coils back off her and rears over her"
+                                       if (getattr(self, "plans", None) or {}).get(e["attacker"]) == "serpent"
+                                       else "stands over her")
                                     + f", tired and hurting herself: what she makes of the win "
                                     f"and of the fighter who held on so long (not gloating, unless that is who she "
                                     f"is)." if ((self.rules.get("narration") or {}).get("tap_build") or {}).get(
@@ -6071,13 +6099,18 @@ class Narrator:
                                 f"ground unless the events say she goes down in it." if sub.get("upright") else ""))
             if t == "hold_start" and not kept and not a.get("continuing") and self._hold_position_on():
                 down = getattr(self, "on_ground", None) or set()
-                up = lambda w: "down on the ground" if w in down else "on her feet"
+                plans = getattr(self, "plans", None) or {}
+                # (since build 275) a serpent has no feet and no limbs: her coils, her head and her tail
+                up = lambda w: ("lies stretched along the ground" if w in down else
+                                "has her head and forebody raised off the ground") \
+                    if plans.get(w) == "serpent" else "is down on the ground" if w in down else "is on her feet"
+                limbs = ("coils, head and tail are" if plans.get(a["attacker"]) == "serpent" else "limbs is")
                 grips = "; ".join((self._own_with(a["attacker"], p["with"]) if p.get("with") else "a grip")
                                   + f" on her {p['part']}" for p in a["parts"])
                 lines.append(f"  - DRAW THE POSITION, plainly, once, early in the passage, so the reader can see it: "
-                             f"{a['attacker']} is {up(a['attacker'])} and {a['defender']} is {up(a['defender'])}; which "
+                             f"{a['attacker']} {up(a['attacker'])} and {a['defender']} {up(a['defender'])}; which "
                              f"way each faces and which side of her {a['attacker']} is on; what each of "
-                             f"{poss(a['attacker'])} limbs is doing ({grips}) and what she still has free; where the "
+                             f"{poss(a['attacker'])} {limbs} doing ({grips}) and what she still has free; where the "
                              f"trapped part sits and points (under her arm, across her lap, out in front, behind her "
                              f"back) and which way the force goes on it (bent back, twisted, crushed, pulled). Use plain "
                              f"directions (left, right, in front, behind, under, across), not only how it feels. "
@@ -7411,6 +7444,28 @@ class Narrator:
            "screaming to give in, tears or a broken sound, the refusal costing everything; in her head nothing "
            "left but a plea",
     }
+    # (since build 275) the same ladder with her arms trapped in coils round her body: no paw is free to rise
+    TAP_INTENSITY_TRAPPED = {
+        1: "felt but held easily: a tight jaw, a breath held against the squeeze; a thought of hers, if there is room "
+           "for one, that she can take this",
+        2: "it is getting to her: her breathing is harder against the coils, a sound she can't quite keep in, her "
+           "tail lifting and pressed flat again; a sharper thought (not yet, not to her)",
+        3: "close to her limit: her arms strain inside the coils with nowhere to go, her tail or a free foot rising "
+           "to slap and forced still; sweat, ragged breath, eyes squeezed shut; her thoughts short and fierce",
+        4: "very close: the word to stop is in her throat and she keeps swallowing it, cries she can't keep in, her "
+           "body jerking inside the coils; her thoughts breaking down to single words (no, don't, hold)",
+        5: "at the very edge: tell it viscerally and up close, her trapped body trembling inside the coils, every "
+           "part of her screaming to give in, tears or a broken sound, the refusal costing everything; in her head "
+           "nothing left but a plea",
+    }
+
+    def _tap_intensity(self, lv, e):
+        """How hard to tell her fight against the tap; with her arms trapped in coils, signs without a free paw."""
+        if e.get("arms_trapped"):
+            return self.TAP_INTENSITY_TRAPPED[lv] + (" (her arms are pinned inside the coils: no paw can rise or "
+                                                     "reach anything to tap)")
+        return self.TAP_INTENSITY[lv]
+
     TAP_REASONS = {
         "pride": "pride: she will not be the one who gave up",
         "anger": "anger at the one doing this to her, hot enough to hold the pain off a little longer",
@@ -7441,6 +7496,13 @@ class Narrator:
         "cry": "a cry that says it plainly ('enough', or 'stop'), and a slap on {spot} with it",
         "word": "one word, quiet and clear, and then her paw on {spot}, twice",
         "body": "her body giving in before her mind does: her paw slaps {spot} on its own, and she lets it",
+        # (since build 275) her arms trapped inside coils round her body: she can't reach anything with a paw
+        "tail": "her arms pinned in the coils, it is her tail (or a free foot) that does it: slapping {spot} again and "
+                "again",
+        "said": "her arms pinned in the coils, she can't reach to tap: she says it instead, 'enough', 'stop', aloud "
+                "and clear",
+        "slack": "her arms pinned in the coils, she gives it with her whole body: she goes slack inside them and cries "
+                 "out that she is done",
     }
 
     def _tap_spot(self, who, holder):
@@ -7454,6 +7516,8 @@ class Narrator:
         # when the holder grips with it: jaws or tails on the knee leave no arm near, so it is her shoulder
         if down:
             return "the ground"
+        if (getattr(self, "plans", None) or {}).get(holder) == "serpent":
+            return f"{poss(holder)} coils"      # (since build 275: a serpent has no arm or shoulder to tap on)
         withs = " ".join(str(g[3] or "") for g in (getattr(self, "grips", None) or []) if g[0] == holder and g[1] == who)
         return (f"{poss(holder)} arm" if not withs or re.search(r"\b(?:arm|paw|hand|foreleg|claw|wing)s?\b", withs, re.I)
                 else f"{poss(holder)} shoulder")

@@ -654,6 +654,27 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 275
+- **A serpent many times her size coils her middle, not one of her limbs** (`holds.coil.size`, on by default).
+  - A Milotic's body is thicker than a Buizel's arm, so it can't wrap that arm alone. A coiler with no limbs (Milotic, Arbok) that is at least `ratio` (3) times her length wraps her belly or chest first, at the full pressure the director asked for.
+  - The arm, leg, tail or neck it aimed at stays bound in under the coils half the time (`limbs_too`); otherwise it slips free.
+  - A grab with its coils becomes a loop round her middle. An invented submission keeps its limb, worked from coils round her middle. A coil already round her middle is left alone, and grips can be added to it. Your own commands are never changed.
+  - Sizes are in metres, by species or fighter name (`sizes`). A Milotic (6.2 m) dwarfs a Buizel or a Charizard, but not a Dragonite (2.2 m). An Arbok (3.5 m) dwarfs a Buizel, but not an Absol.
+  - The director is told about it, so it plans coils round the middle.
+  - Wound round the middle by such a serpent, her chance to wrench or buck free is x0.6 (`escape_mult`). Before, a Buizel had about a 64% chance a beat to buck a fresh Milotic's coil pin off.
+- **Her arms trapped in coils round her body: nothing needs a free paw.** Before, a Buizel in a Milotic's coil crush was told raising a paw to tap and yanking it back, with her arms pinned inside the coils.
+  - The signs of fighting the tap are now picked from the ones without a paw (her breath, her eyes, a word she swallows, her tail).
+  - The tap itself is her tail slapping, saying it out loud, or going slack and crying out that she is done.
+  - The ladder of how hard to tell it has its own wording for this.
+  - What she tries to get out of a serpent's coils is a set of its own: going small and sliding down, arching against the loop, working a shoulder free, biting the scales. It no longer has her getting both paws on the grip.
+- **The narrator no longer gives a serpent feet, limbs, an arm or a shoulder.**
+  - Drawing a hold's position, a Milotic "has her head and forebody raised off the ground", not "on her feet", and "her coils, head and tail" do the gripping, not her limbs.
+  - A tap on a standing serpent lands on her coils, not her arm or shoulder.
+  - Her struggle claws at "the coils", not "the gripping limb".
+  - After a tap she draws her coils back and rears over the loser.
+- **A one-grip hold that wraps the very limb it grips with is a coil.** "Wraps her twin tails round the tail", with "her twin tails", used to count as a plain grip. Now it binds or constricts like any coil.
+- Constricted, her stamina line reads "short of breath: the coils squeeze every breath short", not "no breath in her right now" (that one is for the wind knocked out of her).
+
 ## Build 274
 - **The tap meter now shows every hold that counts toward a tap, from its first beat.** In a submission match a squeeze, a crushing headlock, a coil or a held bite counts toward a tap, not only a named submission. Before, the meter only appeared for those holds on their second beat. Now it shows on the first beat too, with "first beat in it: she can't tap yet, but this hold counts toward one". Nothing extra is narrated that beat (`finish.submission.tap.meter_all`; false = as before).
 - **A grab that can't make her tap yet says so on the hold panel.** For example: "a grab: no tap until it is 100% hurt (now 42%)". A grab only counts once the part it holds is hurt that badly (`tap.grabs.min_damage`), or once her health is gone. Until then no meter appears for it.

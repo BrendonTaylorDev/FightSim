@@ -976,6 +976,8 @@ class Engine:
         "tap_dark": {"grey": 3, "roar": 2, "heavy": 2, "claw": 3, "count": 2},
         "tap_holder": {"cold": 3, "respect": 3, "pity": 2, "impatient": 2, "worry": 2, "tired": 2},
         "tap_way": {"slap": 4, "frantic": 3, "cry": 3, "word": 2, "body": 2},
+        # (since build 275) her arms trapped in coils round her body: no paw can reach anything to tap with
+        "tap_way_trapped": {"tail": 3, "said": 3, "slack": 2},
         "takedown": {"tackle": 3, "leg_hook": 3, "sweep": 3, "hip_throw": 3, "shoulder_drive": 2, "drag_down": 2,
                      "spin_down": 2, "trip_back": 2, "pull_forward": 2, "ride_down": 2},
     }
@@ -4459,6 +4461,18 @@ class Engine:
         return bool(re.search(r"\bcoil|\bwrap|\bwound\b|\blooped\b|tails? (?:round|around|wrapped)",
                               f"{with_part} {flavor}".lower()))
 
+    @staticmethod
+    def _wraps_with(with_part, flavor):
+        """(since build 275) a one-grip hold whose words wrap the very limb it grips with ("wraps her twin tails
+        round the tail", with "her twin tails"): a coil, though the grip's own words don't say how it holds."""
+        m = re.search(r"(\w+)\W*$", str(with_part or "").split(",")[0])
+        if not m or not flavor or m.group(1).lower() in ("her", "it", "them"):
+            return False
+        k = re.escape(m.group(1).lower())
+        f = str(flavor).lower()
+        return bool(re.search(rf"\b{k}\b\W+(?:\w+\W+){{0,2}}?(?:round|around|wound|wrapped|coiled|looped)\b", f)
+                    or re.search(rf"\b(?:wrap|coil|wind|wound|loop)\w*\s+(?:\w+\s+){{0,2}}?{k}\b", f))
+
     # ---------- tactics: setups and payoffs (a plan the director can follow and the narrator can show) ----------
     def _usable_moves(self, f, mtype=None, damaging=True):
         out = []
@@ -5407,6 +5421,12 @@ class Engine:
                 raise ValueError(f"the {key} can't go on as described: {why}. Grip with what she has: "
                                  f"{', '.join(a.parts)}")
         if enforce:
+            # (holds.coil.size, since build 275) a serpent that dwarfs her works the hold from coils round her middle
+            cs_, note_ = self.coil_body_first(a.name, d.name, [(p, 1.0, 0.0, w) for p, w in grips], flavor=flavor,
+                                              keep_limbs=1, rebind=False)
+            if note_:
+                grips = [(c[0], c[3]) for c in cs_][:3]
+        if enforce:
             # (since build 261) what her limbs can really do: trapped, wrecked, already busy, out of reach, and a
             # main grip that can be wrenched (holds.invented_check)
             grips, _why = self.check_grips(a.name, d.name, grips, submission=True)
@@ -5982,6 +6002,74 @@ class Engine:
         "throat" (neck: her air and blood squeezed), or "limb" (a leg, an arm, a tail, a wing: that limb BOUND)."""
         r = body_region(part)
         return "throat" if r == "neck" else "body" if r in ("chest", "belly", "back_up", "back_low") else "limb"
+
+    def coil_size_cfg(self):
+        """holds.coil.size (since build 275), or None when it is off."""
+        c = ((self.rules.get("holds") or {}).get("coil") or {}).get("size")
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
+    def size_m(self, f):
+        """Her length or height in metres (holds.coil.size.sizes, by her name, else her species), or None."""
+        sizes = (self.coil_size_cfg() or {}).get("sizes") or {}
+        for k in (f.name, species_of(f.description, f.appearance)):
+            if k and k in sizes:
+                return float(sizes[k])
+        return None
+
+    def coil_dwarfs(self, attacker, defender):
+        """A serpent big enough against her that its coils can't take one of her limbs alone (holds.coil.size):
+        a Milotic's body is thicker than a Buizel's arm, so a coil goes round her middle first."""
+        cfg = self.coil_size_cfg()
+        a, d = self.get(attacker), self.get(defender)
+        if not cfg or a is None or d is None or self.body_plan(a) != "serpent":
+            return False
+        sa, sd = self.size_m(a), self.size_m(d)
+        return bool(sa and sd and sa >= float(cfg.get("ratio", 3.0)) * sd)
+
+    MIDDLE_REGIONS = ("belly", "chest", "back_low", "back_up")
+
+    def coil_body_first(self, attacker, defender, contacts, move=None, flavor="", keep_limbs=None, rebind=True):
+        """holds.coil.size (since build 275): a coil from a serpent that dwarfs her goes round her MIDDLE first. A
+        coil the director put on her limbs (or her neck, or her tail) alone gets a main coil round her belly or chest,
+        at the strongest of its pressure, and each limb stays bound in under it limbs_too of the time (else that grip
+        goes; rebind False keeps a limb's own words, as a submission's wrench). A coil she already has round her
+        middle, or one that already takes it, is left alone. contacts: [(part, power, ramp, with)]. Returns
+        (contacts, what changed or "")."""
+        cfg = self.coil_size_cfg()
+        if not cfg or not contacts or not self.coil_dwarfs(attacker, defender):
+            return list(contacts), ""
+        a, d = self.get(attacker), self.get(defender)
+
+        def coil(c):
+            w = str(c[3] if len(c) > 3 else "")
+            return self.is_coil(move, w, "" if w else flavor) or bool(re.search(r"(?i)\bcoils?\b|\bbody\b", w))
+        coils = [c for c in contacts if coil(c)]
+        if not coils:
+            return list(contacts), ""
+        middle = lambda p: body_region(d.part(p).name) in self.MIDDLE_REGIONS
+        if any(middle(c[0]) for c in coils) or any(
+                h.coil and h.attacker == a.name and h.defender == d.name and body_region(h.part) in self.MIDDLE_REGIONS
+                for h in self.holds.values()):
+            return list(contacts), ""
+        taken = {c[0] for c in contacts}
+        body = [n for r in ("belly", "chest", "back_low", "back_up") for n in d.parts
+                if body_region(n) == r and n not in taken]
+        if not body:
+            return list(contacts), ""
+        top = max(coils, key=lambda c: c[1])
+        main = (body[0], top[1], top[2], "her coils, wound round her middle")
+        keep = float(cfg.get("limbs_too", 0.5)) if keep_limbs is None else float(keep_limbs)
+        rest, gone = [], []
+        for c in contacts:
+            if c in coils and self.rng.random() >= keep:
+                gone.append(c[0])
+                continue
+            rest.append((c[0], c[1], c[2], "her coils, binding it in under them") if c in coils and rebind else c)
+        note = (f"{poss_word(a.name)} body is too big to coil round {poss_word(d.name)} "
+                f"{', '.join(str(c[0]).lower() for c in coils)} alone: her coils go round {poss_word(d.name)} middle "
+                f"({body[0].lower()})" + (f", and the {', '.join(g.lower() for g in gone)} slips free of them" if gone
+                                          else ", binding it in under them"))
+        return [main] + rest, note
 
     def pin_cap(self):
         """How hard a pin's steady pressure (and the punishment for a failed struggle) can bite into a worn-down part:
@@ -7638,6 +7726,15 @@ class Engine:
             raise ValueError(f"{a.name} already has hold of {d.name}: strike her, throw her, or let go")
         if enforce:
             self._regrab_check(a, d)
+        coil_note = ""
+        if enforce and self.coil_scope(d.part(part).name) == "limb":
+            # (holds.coil.size, since build 275) a serpent that dwarfs her seizes her in a loop round her middle, not
+            # round one paw
+            cs, coil_note = self.coil_body_first(a.name, d.name, [(d.part(part).name, power, 0.0, with_part)],
+                                                 flavor=flavor, keep_limbs=0)
+            if coil_note:
+                part, with_part = cs[0][0], cs[0][3]
+                flavor = f"a loop of her coils thrown round {poss_word(d.name)} middle"
         before = a.energy
         if enforce:
             self._can_act(a, True)
@@ -7673,6 +7770,7 @@ class Engine:
         self._attacked(a.name, [d.name], landed=True)
         self.involved.update({a.name, d.name})
         return {"type": "grapple_start", "attacker": a.name, "defender": d.name, "defenders": [d.name],
+                **({"coil_moved": coil_note} if coil_note else {}),
                 "part": pname, "with": st.get("with", ""), "power": st["power"], "hold_id": st["hold_id"],
                 "hold_ids": [] if st.get("existing") else [st["hold_id"]], "existing": bool(st.get("existing")),
                 "flavor": flavor, "energy": [round(before), round(a.energy)],
@@ -8148,7 +8246,8 @@ class Engine:
             h = self.holds.get(started[-1]["hold_id"])
             # (a grip with words of its own is judged by them: "both paws, turning the foot" in a hold whose look
             # mentions the tails wound round the knee is not a coil)
-            if h is not None and self.is_coil(move, h.with_part, "" if h.with_part else flavor):
+            if h is not None and (self.is_coil(move, h.with_part, "" if h.with_part else flavor)
+                                  or (len(contacts) == 1 and self._wraps_with(h.with_part, flavor))):
                 h.coil = True
                 started[-1]["coil"] = True
         if joining:
@@ -8340,6 +8439,9 @@ class Engine:
             m *= float(cfg.get("grab_mult", 1.6))   # a grab holds her close; it doesn't lock her
         if any(h.coil for h in hs):
             m *= float((self.rules.get("holds", {}).get("coil") or {}).get("break_mult", 0.75))   # coils give nothing to push against
+        if any(h.coil and body_region(h.part) in self.MIDDLE_REGIONS for h in hs) and self.coil_dwarfs(a.name, d.name):
+            # (holds.coil.size) wound in the coils of something many times her size: nothing to lever them off with
+            m *= float((self.coil_size_cfg() or {}).get("escape_mult", 0.6))
         sc = self._cfg("status_effects")
         if self.has(d, "soaked"):
             m *= float(sc.get("soaked_slip_mult", 1.2))     # wet fur slides out of a grip
@@ -9515,6 +9617,11 @@ class Engine:
                 esc_try *= float(self._cfg("status_effects").get("soaked_escape_mult", 1.1))
             if self.has(dfn, "adrenaline"):
                 esc_try *= float(self._cfg("adrenaline").get("escape_mult", 1.5))
+            if any(h.coil and h.defender == dfn.name and h.attacker in {m.name for m in crew}
+                   and body_region(h.part) in self.MIDDLE_REGIONS and self.coil_dwarfs(h.attacker, dfn.name)
+                   for h in self.holds.values()):
+                # (holds.coil.size) pinned inside the coils of something many times her size: hard to buck off
+                esc_try *= float((self.coil_size_cfg() or {}).get("escape_mult", 0.6))
             if p.get("against"):   # jammed against something solid: nowhere to bridge or roll to on that side
                 esc_try *= float(cfg.get("against_escape_mult", 0.85))
             # holding a pin is work: every beat costs the pinner breath, and a pinner who is running out of it holds
@@ -9909,7 +10016,7 @@ class Engine:
                           "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure),
                           "spent_parts": self.spent_tap_parts(d)}
                     if how == "tap" and self._tap_vary_on():
-                        ev["way"] = self.vary("tap_way")
+                        ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
                     events.append(ev)
                     try:
                         events.append(self.release_between(a, dn, "let go after she tapped"))
@@ -9924,7 +10031,7 @@ class Engine:
                   "tap_no": len(d.learned.get("taps_given") or []) or 1,
                   "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure)}
             if how == "tap" and self._tap_vary_on():
-                ev["way"] = self.vary("tap_way")
+                ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
             ev["elimination"] = self.eliminate(dn, reason)
             if how == "tap" and cfg.get("tap_awake", True):
                 # she gave up: she is awake, beaten and hurting, not knocked out (the recovery stage before "up")
@@ -10211,6 +10318,27 @@ class Engine:
                     gaps.append([o.name, self.GAP_SHORT.get(self.gap_of(f.name, o.name), "")])
         return {"held": held, "holding": holding, "pin": pin, "pinning": pinning, "tap": tap, "gaps": gaps}
 
+    # the signs of fighting the tap that need a free paw (narrator.TAP_TELLS, TAP_URGE)
+    PAW_TELLS = ("fist", "claws", "reach", "yank", "fist_shake", "yank_back", "shake_hard", "twitch", "curl", "touch",
+                 "hover", "pin_paw", "grab_ground", "flat", "hangs")
+
+    def arms_trapped(self, d):
+        """(since build 275) coils wound round her body, her arms pinned inside them: no paw is free to tap."""
+        return self.has(d, "constricted") and any(h.coil and h.defender == d.name and self.coil_scope(h.part) == "body"
+                                                  for h in self.holds.values())
+
+    def _tell(self, key, d, used):
+        """One sign of fighting the tap from the set `key`, not one she showed lately, and none that needs a free paw
+        while her arms are trapped in coils."""
+        skip = list(used)
+        if self.arms_trapped(d):
+            table = dict(self.VARIETY.get(key, {}))
+            free = [k for k in table if k not in self.PAW_TELLS]
+            skip += [k for k in table if k in self.PAW_TELLS]
+            if not [k for k in free if k not in used]:
+                skip = [k for k in table if k in self.PAW_TELLS]
+        return self.vary(key, skip=skip)
+
     def _tap_urge(self, d, a, name, hs, pain, resist, beats, tcfg):
         """finish.submission.tap.urge: a hold that hurts but is nowhere near her limit (below tap.near) still shows
         her fighting the urge to tap: in a SUBMISSION every beat it is on, from the first (urge.submissions); in any
@@ -10230,7 +10358,8 @@ class Engine:
               "level": level}
         if self._tap_vary_on():
             used = list(d.learned.get("tap_ways") or [])
-            ev["tell"] = self.vary("tap_tell_urge" if level == 1 else "tap_tell_urge2", skip=used)
+            ev["tell"] = self._tell("tap_tell_urge" if level == 1 else "tap_tell_urge2", d, used)
+            ev["arms_trapped"] = self.arms_trapped(d)
             d.learned["tap_ways"] = (used + [ev["tell"]])[-15:]
         return [ev]
 
@@ -10253,7 +10382,8 @@ class Engine:
             elif stage > 1 and self.rng.random() < 0.2:
                 stage -= 1
             out["stage"] = stage
-            out["tell"] = self.vary(("tap_tell_first", "tap_tell_closer", "tap_tell_edge")[stage - 1], skip=used)
+            out["tell"] = self._tell(("tap_tell_first", "tap_tell_closer", "tap_tell_edge")[stage - 1], d, used)
+            out["arms_trapped"] = self.arms_trapped(d)
             pick = [out["tell"]]
             if over >= 0:
                 # the longer she refuses, the less of a reason she has left: stubbornness and a plea climb
@@ -11055,8 +11185,11 @@ class Engine:
         s = self.strength(f)
         if s < 0:
             stamina = "gasping, running out of energy"   # past her limit: her breath never reads better than this
-        elif any(self.has(f, st) for st in ("breathless", "sputtering", "constricted")):
+        elif any(self.has(f, st) for st in ("breathless", "sputtering")):
             stamina = "no breath in her right now"       # (the wind knocked out of her is not a fresh breath)
+        elif self.has(f, "constricted"):
+            # (since build 275) the coils squeeze each breath short; they don't knock the wind out of her
+            stamina = "short of breath: the coils squeeze every breath short" if e >= tired else stamina
         elif e >= 70 and s < float(self._cfg("energy").get("breath_back_below_strength", 40)):
             stamina = "her breath is back, but not her strength: the body under it is worn out"
         elif e >= 70 and s < float(self._cfg("energy").get("fresh_breath_min_strength", 80)):

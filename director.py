@@ -812,6 +812,20 @@ def low_health_hint(engine):
     return "\n".join(x for x in out if x)
 
 
+def coil_size_hint(engine):
+    """holds.coil.size (since build 275): a serpent that dwarfs her opponent coils her middle, never one limb alone."""
+    out = []
+    act = engine.active()
+    for a in act:
+        for d in act:
+            if a is not d and not (a.team and a.team == d.team) and engine.coil_dwarfs(a.name, d.name):
+                out.append(f"{a.name} is many times {poss_word(d.name)} size: her body is thicker than "
+                           f"{poss_word(d.name)} limbs, so her coils can't wrap one arm, leg or tail alone. When she "
+                           f"coils {d.name}, the coils go round {poss_word(d.name)} MIDDLE (chest or belly), and a "
+                           f"limb can be bound in under them")
+    return "\n".join(out)
+
+
 def taps_hint(engine):
     """finish.submission.taps: the tap tally for the director (how many each fighter has given, how many end it),
     which parts no longer count, and the part to work toward the next one: soften it with blows, then hold it."""
@@ -1508,6 +1522,15 @@ def resolve(engine, b):
                 if why:
                     raise ValueError(f"that grip can't go on as described: {why}. Grip with what she has: "
                                      f"{', '.join(engine.get(att).parts)}")
+        if not manual and act in ("hold_start", "pin"):
+            # (holds.coil.size, since build 275) a serpent that dwarfs her can't coil one of her limbs alone: her
+            # coils go round the middle first, the limbs bound in under them or not
+            contacts, coil_note = engine.coil_body_first(att, dfn, contacts, move_info or move, flavor)
+            if coil_note:
+                bits = ["her coils wound round her middle"] + [
+                    f"her {c[0].lower()} bound in under them" if str(c[3]).startswith("her coils, binding")
+                    else f"{c[3] or 'pressure'} on her {c[0].lower()}" for c in contacts[1:]]
+                flavor = ", ".join(bits)
         if not manual:
             # a face-down fighter can't have her chest pressed (and a face-up one her back): fit the contacts
             fitted, note = engine.fit_to_facing(dfn, [c[0] for c in contacts], flavor)
@@ -2449,6 +2472,9 @@ class Director:
         low = low_health_hint(engine)
         if low:
             rng_hint = (rng_hint + "\n" + low).strip()
+        big = coil_size_hint(engine)
+        if big:
+            rng_hint = (rng_hint + "\n" + big).strip()
         for extra in ((grudge_hint(engine), drag_to_pin_hint(engine), flight_hint(engine)) if not direction else ()):
             if extra:
                 rng_hint = (rng_hint + "\n" + extra).strip()

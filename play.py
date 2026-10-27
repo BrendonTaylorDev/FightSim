@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 274-guided (tap meter shows every hold that counts toward a tap)"
+VERSION = "2026-10-27 build 275-guided (big serpents coil the middle; serpent hold fixes)"
 
 HELP = """
 =============================================================================================
@@ -1553,6 +1553,7 @@ class Session:
                                 if self.eng.facing_of(f.name)}
         self.narrator.aliases = {self.eng.species(f): f.name for f in self.eng.fighters.values() if self.eng.species(f)}
         self.narrator.species_of = {f.name: self.eng.species(f) for f in self.eng.fighters.values() if self.eng.species(f)}
+        self.narrator.plans = {f.name: self.eng.body_plan(f) for f in self.eng.fighters.values()}   # (serpent, biped...)
         self.narrator.inner = {f.name: self.eng.inner_state(f.name) for f in self.eng.active()}
         self._sync_absent()
         self.narrator.out_names = [f.name for f in self.eng.fighters.values() if f.eliminated]

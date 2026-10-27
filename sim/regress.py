@@ -651,6 +651,68 @@ def tap_meter_all_check():
     return problems
 
 
+def coil_size_check():
+    """Build 275: a serpent many times her size coils her middle, never one of her limbs alone (holds.coil.size); it
+    is harder to wrench out of; with her arms trapped in the coils no tap sign or tap needs a free paw; and the
+    narrator never gives a serpent feet, limbs, an arm or a shoulder."""
+    import director
+    from narrator import Narrator
+    from engine import body_region
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    e.rules["finish"]["submission"]["enabled"] = True
+    for _ in range(20):
+        e.holds.clear()
+        e.get("Seraphina").energy = 100.0
+        director.resolve_many(e, [{"action": "hold_start", "attacker": "Seraphina", "defender": "Ripples", "move": "Wrap",
+                                   "hits": [{"part": "Left Upper Arm", "severity": "firm", "with": "her coils"}]}])
+        mid = [h for h in e.holds.values() if h.coil and body_region(h.part) in e.MIDDLE_REGIONS]
+        if not mid:
+            problems.append(f"a Milotic's coil on a Buizel's arm should go round her middle first: "
+                            f"{[(h.part, h.with_part) for h in e.holds.values()]}")
+            break
+    plain = e.hold_break_chance("Seraphina", "Ripples")
+    e.rules["holds"]["coil"]["size"]["enabled"] = False
+    if not plain < e.hold_break_chance("Seraphina", "Ripples"):
+        problems.append("wound in the coils of something many times her size should be harder to wrench out of")
+    e.holds.clear()
+    e.get("Seraphina").energy = 100.0
+    director.resolve_many(e, [{"action": "hold_start", "attacker": "Seraphina", "defender": "Ripples", "move": "Wrap",
+                               "hits": [{"part": "Left Upper Arm", "severity": "firm", "with": "her coils"}]}])
+    if [h.part for h in e.holds.values()] != ["Left Upper Arm"]:
+        problems.append("with holds.coil.size off, a coil should go where it is put")
+    e.rules["holds"]["coil"]["size"]["enabled"] = True
+    e.get("Seraphina").energy = 100.0
+    t = H.session(3, fighters="Seraphina,Tidecrest").eng
+    director.resolve_many(t, [{"action": "hold_start", "attacker": "Seraphina", "defender": "Tidecrest", "move": "Wrap",
+                               "hits": [{"part": "Left Upper Arm", "severity": "firm", "with": "her coils"}]}])
+    if [h.part for h in t.holds.values()] != ["Left Upper Arm"]:
+        problems.append("a Milotic is not three times a Dragonite's size: her arm can be coiled alone")
+    # her arms trapped: no sign of the urge, and no tap, needs a free paw
+    e.holds.clear()
+    director.resolve_many(e, [{"action": "hold_start", "attacker": "Seraphina", "defender": "Ripples", "move": "Wrap",
+                               "hits": [{"part": "Stomach", "severity": "firm", "with": "her coils"}]}])
+    d = e.get("Ripples")
+    e.set_status(d, "constricted", 2)
+    if not e.arms_trapped(d):
+        problems.append("coils round her stomach with her constricted should trap her arms")
+    picks = {e._tell(k, d, []) for k in ("tap_tell_urge", "tap_tell_urge2", "tap_tell_first", "tap_tell_closer",
+                                         "tap_tell_edge") for _ in range(30)}
+    if picks & set(e.PAW_TELLS):
+        problems.append(f"with her arms trapped no tap sign should need a free paw: {sorted(picks & set(e.PAW_TELLS))}")
+    if not e._wraps_with("her twin tails", "wraps her twin tails round the tail") or \
+            e._wraps_with("both paws", "her twin tails wound round the knee"):
+        problems.append("a one-grip hold wrapping the very limb it grips with should be a coil (and only that limb)")
+    n = Narrator.__new__(Narrator)
+    n.rules, n.plans, n.posture_start, n.on_ground, n.grips = e.rules, {"Seraphina": "serpent"}, {}, set(), []
+    if "coils" not in n._tap_spot("Ripples", "Seraphina"):
+        problems.append(f"a tap on a serpent standing should land on her coils: {n._tap_spot('Ripples', 'Seraphina')}")
+    if "paw" in n._tap_intensity(3, {"arms_trapped": True}).split("(")[0]:
+        problems.append("with her arms trapped the tap ladder should not have a paw rising")
+    return problems
+
+
 def sub_match_check():
     """Build 244: in a submission match, openings on her feet too (more once a part is worn) with the holder taking
     her down into it, and, in a several-tap match, her parts giving way faster the deeper below zero she is."""
@@ -2190,6 +2252,13 @@ def main(argv):
         probs = sub_match_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  submission matches: openings on her feet, takedown into the hold, part ramp below zero  ({time.time() - t:.1f}s)")
+        for p in probs[:6]:
+            print("      " + p)
+    if not want or any(w in "coil size serpent" for w in want):
+        t = time.time()
+        probs = coil_size_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  big serpents: coils round her middle, harder to escape, no paw to tap with  ({time.time() - t:.1f}s)")
         for p in probs[:6]:
             print("      " + p)
     if not want or any(w in "tap meter all" for w in want):
