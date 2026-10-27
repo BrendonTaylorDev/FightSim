@@ -1467,16 +1467,24 @@ def sub_sells_check():
                 problems.append(f"a tap-fight line reads as a tap: {t[:70]!r}")
             if c in ("tap_out", "tap_out_held") and re_.search(r"(?i)\btap|slap|beat", t) and not N.tap_really_shown(t):
                 problems.append(f"a tap line doesn't read as a tap: {t[:70]!r}")
-    s = H.session(1, fighters="Nerine,Ripples")
-    e = s.eng
-    e.rules["finish"]["submission"]["enabled"] = True
-    e.downed["Ripples"], e.facing["Ripples"] = 0, "face-down"
-    e.sub_window = {"Ripples": True}
-    _out, caps = H.beat(s, [{"attacker": "Nerine", "defender": "Ripples", "action": "submission",
-                             "submission": "boston crab", "flavor": "locks a boston crab"}], [], roll=False)
-    txt = "\n".join(m["content"] for msgs in caps for m in msgs if isinstance(m.get("content"), str))
+    # (build 269: over a few seeds, since which side a beat is told from is partly chance, and the held one's ideas
+    # come only when the telling reaches her side)
+    seen_ = set()
+    for seed_ in (1, 2, 3):
+        s = H.session(seed_, fighters="Nerine,Ripples")
+        e = s.eng
+        e.rules["finish"]["submission"]["enabled"] = True
+        e.downed["Ripples"], e.facing["Ripples"] = 0, "face-down"
+        e.sub_window = {"Ripples": True}
+        _out, caps = H.beat(s, [{"attacker": "Nerine", "defender": "Ripples", "action": "submission",
+                                 "submission": "boston crab", "flavor": "locks a boston crab"}], [], roll=False)
+        txt = "\n".join(m["content"] for msgs in caps for m in msgs if isinstance(m.get("content"), str))
+        seen_ |= {lb for lb in ("as it locks on", "fighting the tap (1 of 5)", "holding herself back from tapping")
+                  if lb in txt}
+        if len(seen_) == 3:
+            break
     for label in ("as it locks on", "fighting the tap (1 of 5)", "holding herself back from tapping"):
-        if label not in txt:
+        if label not in seen_:
             problems.append(f"the first beat of a submission offers no '{label}' idea")
     return problems
 
