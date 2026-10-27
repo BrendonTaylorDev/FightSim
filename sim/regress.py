@@ -1387,6 +1387,29 @@ def polish_check():
         _quiet(H.play.handle_command, s, "/polish paste")
         if s.story[-1] != better or better not in s.beat_records[-1]["text"]:
             problems.append("/polish paste didn't put the polished beat in the story and the beat's record")
+        # (build 271) several beats by hand: /polish copy 1-3, then one marked answer pasted back beat by beat
+        s._polish_hist = []
+        beats_ = {}
+        for t_ in (1, 2, 3):
+            s.eng.turn = t_
+            loc_ = local.replace("waiting", f"waiting ({t_})")
+            s._maybe_polish(loc_, [], [], [])
+            s.story.append(loc_)
+            s.beat_records.append({"fight": s.fight_no, "lineup": [], "turn": t_, "label": f"beat {t_}",
+                                   "text": "\n" + loc_ + "\n", "snapshot": {"fighters": []}})
+            beats_[t_] = len(s.story) - 1
+        _quiet(H.play.handle_command, s, "/polish copy 1-3")
+        req_ = open(polish.REQUEST_FILE, encoding="utf-8").read()
+        if not all(f"=== BEAT {t_} ===" in req_ for t_ in (1, 2, 3)):
+            problems.append("/polish copy 1-3 didn't put the three beats in the request by number")
+        new_ = {t_: better.replace("patient as stone", f"patient as stone ({t_})") for t_ in (1, 3)}
+        with open(polish.REPLY_FILE, "w", encoding="utf-8") as fh:
+            fh.write("".join(f"=== BEAT {t_} ===\n{new_[t_]}\n=== END BEAT {t_} ===\n\n" for t_ in (1, 3)))
+        _quiet(H.play.handle_command, s, "/polish paste")
+        if s.story[beats_[1]] != new_[1] or s.story[beats_[3]] != new_[3] or "(2)" not in s.story[beats_[2]]:
+            problems.append("/polish paste didn't put each marked beat back on its own beat (and leave the rest)")
+        if not any(new_[1] in r["text"] for r in s.beat_records):
+            problems.append("a polished earlier beat didn't reach its record (/exportfight)")
     finally:
         polish.call = real
     return problems

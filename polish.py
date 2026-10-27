@@ -238,3 +238,35 @@ def request_text(draft, facts, prior=""):
     """The whole request as one block of text, to paste into a chat window by hand (/polish copy)."""
     m = messages(draft, facts, prior)
     return (m[0]["content"] + "\n\n" + m[1]["content"] + "\n")
+
+
+# (since build 271) several beats in one request, for pasting into a chat window by hand (/polish copy 4)
+BATCH_NOTE = ("SEVERAL BEATS: below are {n} beats of the same fight, in order, each between a line '=== BEAT n ===' "
+              "and a line '=== END BEAT n ===' (n is the beat's number). Edit each one by itself, by all the rules above, using only its own "
+              "FACTS (each beat's FACTS are what is true at the end of THAT beat). Answer with every beat, in the "
+              "same order, each between the same two marker lines with the same number, and nothing else.")
+MARK = re.compile(r"(?m)^\s*\**\s*===\s*BEAT\s+(\d+)\s*===\s*\**\s*$")
+END_MARK = re.compile(r"(?m)^\s*\**\s*===\s*END\s+BEAT\s+(\d+)\s*===\s*\**\s*$")
+
+
+def batch_request(items):
+    """The whole request for several beats as one block of text: items = [(beat number, draft, facts, prior)],
+    oldest first; only the first carries the story before it (the beats after follow on from each other)."""
+    out = [system_prompt(), "", BATCH_NOTE.format(n=len(items)), ""]
+    for i, (k, draft, facts, prior) in enumerate(items):
+        user = messages(draft, facts, prior if i == 0 else "")[1]["content"]
+        out += [f"=== BEAT {k} ===", user, f"=== END BEAT {k} ===", ""]
+    return "\n".join(out)
+
+
+def split_batch(reply):
+    """{k: that beat's answer} from a reply to batch_request, by its marker lines ({} when it has none)."""
+    text = str(reply or "")
+    starts = list(MARK.finditer(text))
+    out = {}
+    for i, m in enumerate(starts):
+        end = starts[i + 1].start() if i + 1 < len(starts) else len(text)
+        body = text[m.end():end]
+        e = END_MARK.search(body)
+        out[int(m.group(1))] = (body[:e.start()] if e else body).strip()
+    return out

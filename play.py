@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 270-guided (polish prompt fixes the draft's mistakes; fuller fact sheet)"
+VERSION = "2026-10-27 build 271-guided (polish several beats at once, by beat number)"
 
 HELP = """
 =============================================================================================
@@ -360,7 +360,9 @@ HELP = """
                       /polish prompt edit opens them to change (polish_prompt.txt), /polish prompt reset brings
                       back the built-in ones. By hand instead: /polish copy (the request into
                       polish_request.txt and your clipboard: paste it into Venice's chat), then put its answer
-                      into polish_reply.txt and type /polish paste. Either way the program's checks decide
+                      into polish_reply.txt and type /polish paste. Several beats: /polish copy 5-9,
+                      /polish copy 7, /polish copy last 4 or /polish copy all; /polish paste puts each back by
+                      its number (/polish paste 7: an unmarked answer for beat 7). Either way the program's checks decide
   /compare            whether the polished version is kept. /compare: the last beat before and after polishing
   /repair on|off      on (default): a paragraph with a mistake is written again by itself and the rest of the
                       part stays word for word. off: the whole part is rewritten for any problem
@@ -895,7 +897,9 @@ class Session:
                 "recent_attacks": self.recent_attacks, "fight_no": self.fight_no, "results": self.results,
                 "story_before": self.story_before[-400:], "reason": getattr(self, "reason", None),
                 "reason_pick": getattr(self, "reason_pick", None), "reason_off": getattr(self, "reason_off", False),
-                "beat_records": self.beat_records[-400:]}
+                "beat_records": self.beat_records[-400:],
+                "polish_history": [{k: v for k, v in e.items() if k not in ("rejected",)}
+                                   for e in (getattr(self, "_polish_hist", None) or [])[-40:]]}
 
     # ---------- more than one fight ----------
     def lineup(self):
@@ -1031,6 +1035,9 @@ class Session:
         self.reason, self.reason_pick = extra.get("reason"), extra.get("reason_pick")
         self.reason_off = extra.get("reason_off", False)
         self.beat_records = extra.get("beat_records", [])
+        self._polish_hist = list(extra.get("polish_history") or [])
+        if self._polish_hist:
+            self._polish_last = self._polish_hist[-1]
         self.history, self.last_narration, self.pending = [], None, None
 
     # ---------- the narration test bench (narration.bench; /bench) ----------
@@ -1332,8 +1339,13 @@ class Session:
         cfg = polish.cfg_of(self.eng.rules)
         facts = self.polish_facts(results, also, headers)
         self._polish_last = {"local": text, "facts": facts, "prior": self.recent_story(), "polished": None,
-                             "why": "", "turn": int(self.eng.turn or 0)}
+                             "why": "", "turn": int(self.eng.turn or 0), "fight": self.fight_no,
+                             "index": len(self.story)}     # (where this beat's story will sit)
         self._polish_last["shown"] = text
+        # (since build 271) the beats kept for /polish copy 4 (several at once), saved with the game
+        hist = self.__dict__.setdefault("_polish_hist", [])
+        hist.append(self._polish_last)
+        del hist[:-int(cfg.get("history", 40))]
         if not cfg.get("enabled"):
             return text
         if str(cfg.get("when", "every")).lower() == "big" and not getattr(self.narrator, "_important", False) \
@@ -1343,10 +1355,12 @@ class Session:
         self._polish_last["shown"] = out
         return out
 
-    def _polish_now(self, text, reply=None):
+    def _polish_now(self, text, reply=None, entry=None):
         """Send this beat to the online model (or take a reply pasted in by hand) and judge it. Returns the
-        polished text when it is kept, else None (and says why)."""
-        last = getattr(self, "_polish_last", None) or {}
+        polished text when it is kept, else None (and says why). entry: an earlier beat (/polish copy 4): judged
+        without the narrator's sentence checks, which know only the last beat."""
+        last = entry if entry is not None else (getattr(self, "_polish_last", None) or {})
+        latest = last is getattr(self, "_polish_last", None)
         try:
             if reply is None:
                 self.progress("polishing the prose with " + (polish.cfg_of(self.eng.rules).get("model") or "?"))
@@ -1358,25 +1372,32 @@ class Session:
             return None
         names = [f.name for f in self.eng.fighters.values()]
         out = polish.tidy(reply, names, text)
-        keep, why = polish.judge(self.narrator, text, out, names, self.eng.rules, last.get("facts") or ())
+        keep, why = polish.judge(self.narrator if latest else None, text, out, names, self.eng.rules,
+                                 last.get("facts") or ())
         if keep:
             try:
                 out = self.narrator._mend_move_names(out)
             except Exception as e:
                 note_failure("the move-name mend on the polished beat", e)
         last.update(polished=out, why="" if keep else why, rejected=None if keep else out)
-        print("[polished: kept the improved version]" if keep else
-              f"[polish not used: {why}. The beat stays as the local model wrote it; /compare shows both]")
+        at = "" if latest else f" (beat {last.get('turn')})"
+        print(f"[polished{at}: kept the improved version]" if keep else
+              f"[polish not used{at}: {why}. The beat stays as the local model wrote it; /compare shows both]")
         return out if keep else None
 
-    def _replace_last_beat(self, new):
-        """Put a polished version in place of the last beat's story everywhere it is kept: the story the models
-        remember, and the beat's record (/exportfight, the saved fight)."""
-        last = getattr(self, "_polish_last", None) or {}
+    def _replace_last_beat(self, new, entry=None):
+        """Put a polished version in place of a beat's story everywhere it is kept: the story the models
+        remember, and the beat's record (/exportfight, the saved fight). entry: an earlier beat; else the last."""
+        last = entry if entry is not None else (getattr(self, "_polish_last", None) or {})
         old = last.get("shown") or last.get("local") or ""
-        if self.last_narration and self.last_narration.get("index", -1) < len(self.story):
+        i = last.get("index")
+        if isinstance(i, int) and 0 <= i < len(self.story) and self.story[i] == old:
+            self.story[i] = new
+        elif old in self.story:
+            self.story[len(self.story) - 1 - self.story[::-1].index(old)] = new
+        elif entry is None and self.last_narration and self.last_narration.get("index", -1) < len(self.story):
             self.story[self.last_narration["index"]] = new
-        for r in reversed(self.beat_records[-3:]):
+        for r in reversed(self.beat_records):
             if old and old in r.get("text", ""):
                 r["text"] = r["text"].replace(old, new, 1)
                 break
@@ -2955,6 +2976,44 @@ def _polish_command(s, a):
             s._replace_last_beat(new)
             print("\n" + new + "\n")
         return
+    hist = [e for e in (getattr(s, "_polish_hist", None) or []) if e.get("fight") == last.get("fight")]
+    if sub == "copy" and len(a) > 1:
+        # (since build 271) several beats at once, by beat number: /polish copy 5-9, /polish copy 7,
+        # /polish copy last 4, /polish copy all (up to batch_max of them)
+        cap = int(polish.cfg_of(s.eng.rules).get("batch_max", 6))
+        spec = " ".join(a[1:]).lower().replace(" ", "")
+        if spec == "all":
+            pick = hist
+        elif spec.startswith("last") and spec[4:].isdigit():
+            pick = hist[-int(spec[4:]):]
+        elif re.fullmatch(r"\d+(?:-\d+)?", spec):
+            lo, _, hi = spec.partition("-")
+            lo, hi = int(lo), int(hi or lo)
+            pick = [e for e in hist if lo <= int(e.get("turn") or 0) <= hi]
+        else:
+            raise ValueError("/polish copy 5-9 (beats 5 to 9), /polish copy 7, /polish copy last 4, /polish copy all")
+        if not pick:
+            have = ", ".join(str(e.get("turn")) for e in hist) or "none yet"
+            raise ValueError(f"no such beats to copy (the beats this game has kept for polishing: {have})")
+        if len(pick) > cap:
+            print(f"(that is {len(pick)} beats: only the first {cap} go in this request, polish.batch_max; copy the "
+                  f"rest after)")
+            pick = pick[:cap]
+        req = polish.batch_request([(int(e.get("turn") or 0), e.get("shown") or e.get("local", ""),
+                                     e.get("facts") or [], e.get("prior")) for e in pick])
+        with open(polish.REQUEST_FILE, "w", encoding="utf-8") as fh:
+            fh.write(req)
+        try:
+            open(polish.REPLY_FILE, "a", encoding="utf-8").close()
+        except OSError:
+            pass
+        clip = _to_clipboard(req)
+        turns = ", ".join(str(e.get("turn")) for e in pick)
+        print(f"The request for beats {turns} ({len(req.split())} words) is in {polish.REQUEST_FILE}"
+              + (" and on your clipboard" if clip else "")
+              + f". Paste it into a NEW Venice chat, copy its whole answer into {polish.REPLY_FILE} (replacing what "
+                f"is there), save it, and type /polish paste. Each beat goes back to its own place by its number, "
+                f"and each is checked and kept or not by itself."); return
     if sub == "copy":
         req = polish.request_text(last.get("local", ""), last.get("facts") or [], last.get("prior"))
         with open(polish.REQUEST_FILE, "w", encoding="utf-8") as fh:
@@ -2976,6 +3035,39 @@ def _polish_command(s, a):
             raise ValueError(f"no {polish.REPLY_FILE}: put the answer in it first (/polish copy makes it)")
         if not reply.strip():
             raise ValueError(f"{polish.REPLY_FILE} is empty: paste the answer into it and save it first")
+        parts = polish.split_batch(reply)
+        target = None
+        if len(a) > 1 and a[1].isdigit():
+            # /polish paste 7: an answer with no beat markers, for beat 7
+            target = next((e for e in reversed(hist) if int(e.get("turn") or 0) == int(a[1])), None)
+            if target is None:
+                raise ValueError(f"beat {a[1]} isn't one this game has kept for polishing")
+        if parts:
+            # several beats (or one, marked): each judged against its own local version and put back by its number
+            kept, done = 0, 0
+            for k, text_ in sorted(parts.items()):
+                e = next((x for x in reversed(hist) if int(x.get("turn") or 0) == k), None)
+                if e is None:
+                    print(f"[polish not used (beat {k}): this game hasn't kept that beat for polishing]")
+                    continue
+                done += 1
+                new = s._polish_now(e.get("local", ""), reply=text_, entry=e)
+                if new:
+                    s._replace_last_beat(new, entry=e)
+                    kept += 1
+            print(f"{kept} of {done} beats polished. /exportfight shows the whole fight with them in.")
+            try:
+                with open(polish.REPLY_FILE, "w", encoding="utf-8") as fh:
+                    fh.write("")
+            except OSError:
+                pass
+            return
+        if target is not None and target is not last:
+            new = s._polish_now(target.get("local", ""), reply=reply, entry=target)
+            if new:
+                s._replace_last_beat(new, entry=target)
+                print("\n" + new + "\n")
+            return
         new = s._polish_now(last.get("local", ""), reply=reply)
         if new:
             s._replace_last_beat(new)

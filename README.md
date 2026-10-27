@@ -654,6 +654,17 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 271
+- **Polish several beats at once on Venice's website.**
+  - `/polish copy 5-9` copies beats 5 to 9. You can also use `/polish copy 7`, `/polish copy last 4` or `/polish copy all`.
+  - Each beat goes into one request between `=== BEAT 7 ===` and `=== END BEAT 7 ===` lines, with its own facts.
+  - Paste the request into a new Venice chat, put the whole answer into polish_reply.txt, and type `/polish paste`.
+- **Each answer goes back to its own beat by that number.** It's checked and kept or not by itself, and it replaces the beat in the story the models remember and in the saved and exported fight. A beat missing from the answer is simply left as it was.
+- **An answer with no markers** can be put on a chosen beat with `/polish paste 7`.
+- **The game keeps the last 40 beats for this** (`narration.polish.history`), saved with the game, so a restart doesn't lose them.
+- **One request holds up to 6 beats** (`batch_max`), because a chat window may cut off a long answer.
+- Earlier beats are judged by the label, fighter, length and body-part checks. The program's sentence checks only know the latest beat, so they're used for that one alone.
+
 ## Build 270
 From comparing three of your Venice polishes. The prose came out better each time, but Venice was editing line by line and kept every mistake the draft had.
 - **The built-in polish prompt now tells Venice to put the draft's mistakes right.** It tells one blow once (your third sample told the Ice Fang twice). It gives each attack to the right fighter and limb ("Nerine's jaws ground down on Ripples' paw" when Nerine only kneed). It leaves a grip on when the facts say it's still on ("Ripples' grip opened" while her tails still held Nerine's nose). Anything the draft has happen that the facts don't support goes. Before, "never move or remove anything" stopped it from fixing any of that.
