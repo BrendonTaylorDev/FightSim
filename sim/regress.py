@@ -1422,6 +1422,22 @@ def polish_check():
         if s._polish_now(e1["local"], reply=worn_, entry=e1):
             problems.append("an earlier beat's polish with a slip the full checks catch (a fresh fighter called "
                             "worn) was kept")
+        # (build 273) the copies on disk: read back after a restart, and only the last keep_fights fights kept
+        e2 = s._polish_hist[1]
+        if not e2.get("fkey") or not s._load_nstate(dict(e2, _nstate=None)):
+            problems.append("a beat's copy of what the narrator knew wasn't saved to polish_states")
+        s._polish_hist[1] = dict(e2)
+        s._polish_hist[1].pop("_nstate", None)
+        if s._polish_now(e2["local"], reply=e2["local"].replace("and waited too",
+                                                                "and wondered how much Ripples had left in her"),
+                         entry=s._polish_hist[1]):
+            problems.append("after a restart an earlier beat's polish didn't get its full checks back from disk")
+        for k_ in range(4):
+            s.fight_no += 1
+            s._save_nstate(dict(e2))
+        kept_ = [d for d in os.listdir(s.STATE_DIR) if os.path.isdir(os.path.join(s.STATE_DIR, d))]
+        if len(kept_) != int(polish.cfg_of(s.eng.rules).get("keep_fights", 3)):
+            problems.append(f"polish_states keeps {len(kept_)} fights, not keep_fights")
     finally:
         polish.call = real
     return problems

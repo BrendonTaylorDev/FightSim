@@ -654,6 +654,19 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 273
+- **The full polish checks now survive closing the game.**
+  - What the narrator knew about each beat is saved in the polish_states folder, one small compressed file a beat (about 30-40 KB).
+  - Only the last 3 fights are kept (`narration.polish.keep_fights`). Older fights' files are removed as new ones come, so three 40-beat fights take about 4-5 MB.
+  - A polish pasted back after a restart gets every check, the same as one pasted right away. The folder is left out of git.
+- **Cards − and Cards + above the fighter cards** make them smaller or bigger, 10% at a time from 40% to 160%, so both fit on one screen. The size is kept for next time (`window.card_zoom`).
+  - At 100% the cards are drawn as before.
+  - At any other size, each card's pictures and labels are drawn the way the exported fight draws them, then scaled. The bars underneath shrink to the same width.
+  - Placing a part's point by clicking uses full size for that card.
+  - The story text has its own A− and A+, as before.
+- **The exported fight's pain gauges no longer hide their text.** Each label sat below its bar and was cut off at the bottom. Now it sits inside the bar, and a long one wraps onto a second line. `/exportfight` writes a fight again with the fix.
+- The polish copies no longer include the cleanup's record of the notes' wording, which grew every beat and isn't used by the checks.
+
 ## Build 272
 - **No limit on beats kept for polishing.** Every beat of a fight is kept, however long it runs (`narration.polish.history` 0). A number there keeps only that many of the latest.
 - **Earlier beats get the same full checks as the latest.** With each beat the game keeps a copy of what the narrator knew about it (its facts, grips, hits, who got up, the tap). When a polish of that beat is pasted back later, the checks run as they would have then, then the narrator is put back. That copy stays in memory, not in the save, so beats from before a restart get only the label, fighter, length and hit-part checks. The game says so when that happens.

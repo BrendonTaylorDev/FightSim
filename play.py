@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 272-guided (no polish history limit, full checks for earlier beats)"
+VERSION = "2026-10-27 build 273-guided (polish checks kept on disk, card size buttons, export gauge text)"
 
 HELP = """
 =============================================================================================
@@ -898,6 +898,7 @@ class Session:
                 "story_before": self.story_before[-400:], "reason": getattr(self, "reason", None),
                 "reason_pick": getattr(self, "reason_pick", None), "reason_off": getattr(self, "reason_off", False),
                 "beat_records": self.beat_records[-400:],
+                "fight_keys": dict(getattr(self, "_fight_keys", None) or {}),
                 "polish_history": [{k: v for k, v in e.items() if k not in ("rejected", "_nstate")}
                                    for e in (getattr(self, "_polish_hist", None) or [])]}
 
@@ -1036,6 +1037,7 @@ class Session:
         self.reason_off = extra.get("reason_off", False)
         self.beat_records = extra.get("beat_records", [])
         self._polish_hist = list(extra.get("polish_history") or [])
+        self._fight_keys = dict(extra.get("fight_keys") or {})
         if self._polish_hist:
             self._polish_last = self._polish_hist[-1]
         self.history, self.last_narration, self.pending = [], None, None
@@ -1346,6 +1348,7 @@ class Session:
         # (since build 272) what the narrator knew about THIS beat, so a polish of it pasted back later (/polish copy
         # 5-9) gets the same full sentence checks as the latest beat
         self._polish_last["_nstate"] = self._narrator_state()
+        self._save_nstate(self._polish_last)
         hist = self.__dict__.setdefault("_polish_hist", [])
         hist.append(self._polish_last)
         keep_ = int(cfg.get("history", 0) or 0)      # (0: every beat, no limit)
@@ -1361,7 +1364,9 @@ class Session:
         return out
 
     _NSTATE_SKIP = {"_block_store", "_line_store", "_passage_store", "_sample_keys", "rules", "_pm", "_deferred",
-                    "scene_cfg", "progress", "model", "host", "style", "check_tally", "_check_new"}
+                    "scene_cfg", "progress", "model", "host", "style", "check_tally", "_check_new",
+                    # (the cleanup's own memory of every note's wording, which only grows: the checks don't read it)
+                    "_beat_note_grams", "_beat_notes_low"}
 
     def _narrator_state(self):
         """A copy of what the narrator holds about the beat it just wrote (its facts, grips, hits, who rose, the
@@ -1377,6 +1382,64 @@ class Session:
             except Exception:
                 continue      # (something that can't be copied: the checks don't read it)
         return out
+
+    # (since build 273) those copies on disk too, for the last keep_fights fights (polish_states/, one small
+    # compressed file a beat), so a polish pasted back after the game was closed still gets every check
+    STATE_DIR = os.path.join(HERE, "polish_states")
+
+    def _fight_key(self):
+        keys = self.__dict__.setdefault("_fight_keys", {})
+        k = str(self.fight_no)
+        if k not in keys:
+            keys[k] = time.strftime("%Y%m%d-%H%M%S") + f"-fight{self.fight_no}"
+        return keys[k]
+
+    def _save_nstate(self, entry):
+        cfg = polish.cfg_of(self.eng.rules)
+        keep = int(cfg.get("keep_fights", 3) or 0)
+        if keep <= 0 or not entry.get("_nstate"):
+            return
+        import gzip
+        import pickle
+        import shutil
+        try:
+            entry["fkey"] = self._fight_key()
+            folder = os.path.join(self.STATE_DIR, entry["fkey"])
+            os.makedirs(folder, exist_ok=True)
+            data = {}
+            for k_, v_ in entry["_nstate"].items():
+                try:
+                    pickle.dumps(v_)
+                    data[k_] = v_
+                except Exception:
+                    continue      # (what can't be kept on disk: the checks don't need it)
+            with gzip.open(os.path.join(folder, f"beat_{int(entry.get('turn') or 0)}.pkl.gz"), "wb",
+                           compresslevel=6) as fh:
+                pickle.dump(data, fh, protocol=pickle.HIGHEST_PROTOCOL)
+            # only the latest keep_fights fights are kept; older ones go, so the drive doesn't fill
+            fights = sorted((d for d in os.listdir(self.STATE_DIR) if os.path.isdir(os.path.join(self.STATE_DIR, d))),
+                            key=lambda d: os.path.getmtime(os.path.join(self.STATE_DIR, d)), reverse=True)
+            for old in fights[keep:]:
+                if old != entry["fkey"]:
+                    shutil.rmtree(os.path.join(self.STATE_DIR, old), ignore_errors=True)
+        except (OSError, pickle.PicklingError) as e:
+            note_failure("saving a beat's polish checks (polish_states)", e)
+
+    def _load_nstate(self, entry):
+        """A beat's copy of what the narrator knew, read back from polish_states/ (None when it isn't there)."""
+        if not entry.get("fkey"):
+            return None
+        import gzip
+        import pickle
+        path = os.path.join(self.STATE_DIR, entry["fkey"], f"beat_{int(entry.get('turn') or 0)}.pkl.gz")
+        try:
+            with gzip.open(path, "rb") as fh:
+                return pickle.load(fh)
+        except FileNotFoundError:
+            return None
+        except (OSError, EOFError, pickle.UnpicklingError, AttributeError, ImportError) as e:
+            note_failure("reading a beat's polish checks back (polish_states)", e)
+            return None
 
     def _judge_as_then(self, entry, fn):
         """Run fn() with the narrator put back to how it was on that beat (entry["_nstate"]), then as it is now."""
@@ -1401,7 +1464,9 @@ class Session:
         polished text when it is kept, else None (and says why). entry: an earlier beat (/polish copy 4): judged
         without the narrator's sentence checks, which know only the last beat."""
         last = entry if entry is not None else (getattr(self, "_polish_last", None) or {})
-        latest = last is getattr(self, "_polish_last", None)
+        latest = last is getattr(self, "_polish_last", None) and bool(last.get("_nstate"))
+        if not last.get("_nstate"):
+            last["_nstate"] = self._load_nstate(last)      # (a beat from before the game was closed)
         try:
             if reply is None:
                 self.progress("polishing the prose with " + (polish.cfg_of(self.eng.rules).get("model") or "?"))
@@ -1427,8 +1492,9 @@ class Session:
             return k_, w_, o_
         keep, why, out = check() if latest else self._judge_as_then(last, check)
         if not full:
-            print(f"[beat {last.get('turn')} was played before this session, so only its labels, fighters, length "
-                  f"and hit parts can be checked]")
+            print(f"[beat {last.get('turn')}: its full checks weren't kept (an older fight than the last "
+                  f"{polish.cfg_of(self.eng.rules).get('keep_fights', 3)}, or played before build 273), so only its "
+                  f"labels, fighters, length and hit parts can be checked]")
         last.update(polished=out, why="" if keep else why, rejected=None if keep else out)
         at = "" if latest else f" (beat {last.get('turn')})"
         print(f"[polished{at}: kept the improved version]" if keep else

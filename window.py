@@ -361,6 +361,10 @@ class FighterCard(ttk.Frame):
         self.data = f
         pct = 100.0 * f["health"] / f["max"]
         calib_here = bool(self.app.calib and self.app.calib[0] is self)
+        z = self.app.card_zoom
+        if abs(z - 1.0) > 1e-3 and not calib_here:
+            return self.draw_scaled(f, pct, z)
+        self.canvas.configure(width=PIC + 2 * COL)
         panels = card_panels(f, self.book, self.app.card_opts(), plain=calib_here, cache=self.cache)
         st = panels[0]["state"] if panels else None
         self.head.configure(text=f["name"] + ("   — OUT" if f["out"] else f"   ({STATE_CAPTION[st]})" if st else ""))
@@ -401,6 +405,37 @@ class FighterCard(ttk.Frame):
             c.create_text(COL + PIC / 2, H - 8, font=("Segoe UI", 8, "italic"), fill=C("#2563eb"),
                           text=f"click either picture where her {self.app.calib[1].lower()} is"
                                + (" (the back picture moves it there)" if len(panels) > 1 else ""))
+        self._bars(f, pct)
+
+    def draw_scaled(self, f, pct, z):
+        """(since build 273) the card at another size (the Cards − / + buttons): her pictures and their labels drawn
+        as the exported fight draws them (cards.render_card), then made smaller or bigger to fit; the bars below are
+        as wide as it. Placing a part's point by clicking goes back to full size for it."""
+        from cards import render_card
+        st = None
+        try:
+            img = render_card(f, book=self.book, opts=self.app.card_opts())
+        except Exception as e:
+            note_failure("drawing the card at another size (window.card_zoom)", e)
+            img = None
+        if img is None:
+            self.app.card_zoom = 1.0
+            return self.draw_panels(f)
+        img = img.crop((0, 30, img.width, img.height - 40))      # (its own name line and bars: the window has them)
+        w, h = max(1, int(img.width * z)), max(1, int(img.height * z))
+        img = img.resize((w, h), Image.LANCZOS)
+        ph = ImageTk.PhotoImage(img)
+        try:
+            st = card_panels(f, self.book, self.app.card_opts(), cache=self.cache)[0]["state"]
+        except Exception:
+            st = None
+        self.head.configure(text=f["name"] + ("   — OUT" if f["out"] else f"   ({STATE_CAPTION[st]})" if st else ""))
+        self.sub.configure(text=f"{f['species']}  ·  {' / '.join(f['types'])}")
+        c = self.canvas
+        c.configure(width=w, height=h)
+        c.delete("all")
+        self.photos, self.panels = [ph], []
+        c.create_image(0, 0, image=ph, anchor="nw")
         self._bars(f, pct)
 
     def _taps(self, f):
@@ -456,7 +491,7 @@ class FighterCard(ttk.Frame):
         self._show(self.tm, bool(m))
         if not m:
             return
-        c, w = self.tm, PIC + 2 * COL
+        c, w = self.tm, self.app.card_w()
         c.delete("all")
         c.create_text(6, 9, anchor="w", text="Tap", font=("Segoe UI", 8, "bold"), fill=C("#111827"))
         x0, seg = 34, 30
@@ -478,7 +513,7 @@ class FighterCard(ttk.Frame):
         self._show(self.gp, bool(lines))
         if not lines:
             return
-        c, w = self.gp, PIC + 2 * COL
+        c, w = self.gp, self.app.card_w()
         c.delete("all")
         y = 2
         for text, col in lines:
@@ -498,7 +533,7 @@ class FighterCard(ttk.Frame):
             return
         if not self.pg.winfo_ismapped():
             self.pg.pack(fill="x", pady=(2, 0), before=self.state)
-        c, w = self.pg, PIC + 2 * COL
+        c, w = self.pg, self.app.card_w()
         c.delete("all")
 
         def bar(y, x, text):
@@ -520,8 +555,17 @@ class FighterCard(ttk.Frame):
             c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill=C("#6b7280"),
                           text="nothing held or struck this beat")
 
+    def _fit_width(self):
+        """(since build 273) every bar under the picture as wide as the card at its size (the Cards − / + buttons)."""
+        w = self.app.card_w()
+        for cv in (self.hp, self.en, self.tp, self.pg, self.tm, self.gp):
+            if int(float(cv.cget("width"))) != w:
+                cv.configure(width=w)
+        self.state.configure(wraplength=w)
+
     def _bars(self, f, pct):
-        w = PIC + 2 * COL
+        self._fit_width()
+        w = self.app.card_w()
         self.hp.delete("all")
         share = max(0.0, min(1.0, pct / 100.0))
         col = C("#22c55e") if pct >= 60 else C("#eab308") if pct >= 35 else C("#f97316") if pct >= 15 else C("#ef4444")
@@ -766,6 +810,17 @@ class App:
         ttk.Checkbutton(top, text="Weakened look", variable=self.weak_look,
                         command=self.redraw_cards).pack(side="right")
         self.follow = _Flag(value=True)
+        # (since build 273) the cards' size, so both fit on one screen (window.card_zoom, kept between runs)
+        try:
+            self.card_zoom = max(0.4, min(1.6, float((self._rules().get("window") or {}).get("card_zoom", 1.0) or 1.0)))
+        except (TypeError, ValueError):
+            self.card_zoom = 1.0
+        zoom_box = ttk.Frame(top)
+        zoom_box.pack(side="right", padx=(8, 0))
+        ttk.Button(zoom_box, text="Cards −", width=7, command=lambda: self.zoom_cards(-0.1)).pack(side="left")
+        self.zoom_label = ttk.Label(zoom_box, text=f"{self.card_zoom * 100:.0f}%", width=5, anchor="center")
+        self.zoom_label.pack(side="left")
+        ttk.Button(zoom_box, text="Cards +", width=7, command=lambda: self.zoom_cards(0.1)).pack(side="left")
         ttk.Checkbutton(top, text="Follow the fight", variable=self.follow, command=self.follow_changed).pack(side="right")
         ttk.Button(top, text="▶", width=3, command=lambda: self.step(1)).pack(side="right")
         ttk.Button(top, text="◀", width=3, command=lambda: self.step(-1)).pack(side="right")
@@ -1196,6 +1251,20 @@ class App:
         o["damage_marks"] = bool(self.damage_marks.get())
         o["poses"] = bool(self.poses.get())
         return o
+
+    def card_w(self):
+        """How wide a fighter card is at its size now (Cards − / +)."""
+        return int((PIC + 2 * COL) * getattr(self, "card_zoom", 1.0))
+
+    def zoom_cards(self, d):
+        """Cards − / +: the fighter cards 10% smaller or bigger (40% to 160%), kept for next time."""
+        self.card_zoom = round(max(0.4, min(1.6, self.card_zoom + d)), 2)
+        self.zoom_label.configure(text=f"{self.card_zoom * 100:.0f}%")
+        try:
+            play._save_rule_path(["window", "card_zoom"], self.card_zoom)
+        except Exception as e:
+            note_failure("saving the card size (window.card_zoom)", e)
+        self.redraw_cards()
 
     def redraw_cards(self):
         for card in self.cards.values():

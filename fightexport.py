@@ -178,8 +178,10 @@ h2{grid-column:1/-1;margin:0;font:600 18px system-ui,sans-serif}.pov{font:600 15
 .card{max-width:100%;height:auto;display:block;border-radius:4px;background:#fff}
 .who{font:14px system-ui,sans-serif}.dim{color:var(--dim);font:13px system-ui,sans-serif}
 .bar{position:relative;height:18px;background:var(--line);border-radius:3px;margin:6px 0 2px;overflow:hidden}
-.bar.thin{height:12px}.bar span{position:absolute;left:0;top:0;bottom:0}.bar em{position:relative;padding-left:6px;
-font:600 11px/18px system-ui,sans-serif;font-style:normal;color:#111}.bar.thin em{line-height:12px;font-size:10px}
+.bar.thin{height:12px}.bar span{position:absolute;left:0;top:0;bottom:0}.bar em{position:relative;display:block;
+padding:0 6px;font:600 11px/18px system-ui,sans-serif;font-style:normal;color:#111;white-space:nowrap;overflow:hidden;
+text-overflow:ellipsis}.bar.thin em{line-height:12px;font-size:10px}
+.bar.pain{height:auto;min-height:18px}.bar.pain em{white-space:normal;line-height:15px;padding:2px 6px}
 details{margin-top:8px;font:13px system-ui,sans-serif}summary{cursor:pointer;color:#2563eb}
 pre{white-space:pre-wrap;font:12px/1.45 Consolas,monospace;color:var(--dim);margin:6px 0 0}
 table{border-collapse:collapse;width:100%;margin-top:6px}td,th{padding:2px 6px;border-bottom:1px solid var(--line);text-align:left}
