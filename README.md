@@ -654,6 +654,26 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 277
+The four leftovers from the build-273 lakeside log, fixes from the build-275 Seraphina vs Ripples log, and a stronger `/plan dominate`.
+- **`/plan dominate` makes the opponent rarely fight back** (`director.plan_dominate`, on by default). The opponent gets a beat of her own only 15% of the time (`rival_turn_chance`). On the other beats the director is told the beat belongs to the winner, and the winner gets that beat's big-moment idea. If the director still gives the opponent an attack on her, it becomes a struggle against the grip on her, or a step back. Her chances to fight back on the dice (dodging, countering after a dodge, meeting a move with her own, breaking a hold, escaping a pin) are multiplied by 0.4 (`defence_mult`). A direction you type yourself is never changed.
+- **Serpents need fewer different parts for their taps** (`finish.submission.taps.serpent_different_parts`, 50 by default). In a match that needs several taps from different body parts, a Milotic or an Arbok has no limbs to put in a hold. A serpent now goes by this lower percentage: with 3 taps, two different parts are enough. `null` = serpents follow `different_parts` like everyone else.
+- **Blood in the mouth only for the one who bit.** In the lakeside log, Nocturne tasted blood when only Ripples had used her teeth. Each fighter's own weapons now count, not the whole beat's.
+- **"For once" is cut on the first beat**, where she has no past to measure against.
+- **Landing or lying on her side is caught** when the engine has her face-up or face-down.
+- **A fighter's colour changing is caught** ("Nocturne's colour was changing").
+- **A kept hold is named for what holds.** "Hold kept: Ripples' Right Forearm Fin on her right hock" was shown while her twin tails held it. A hold line that names one of the holder's own parts as the grip, when no grip is made with it, is rebuilt from the grips.
+- **An attack told without a part named counts as told.** "The water hit, spreading across Ripples" is the Hydro Pump. Before, beat 1 got an extra passage for an attack that was already there, so it was told three times.
+- **A sentence told again with the names and pronouns swapped is cut** ("She watched as the water hit, spreading across Ripples..." then "Seraphina watched the water hit Ripples, spreading across her body...").
+- **No balance or stance line for a fighter on the ground or in a grip.** The program had swapped in "She tested her balance, found it, and kept it." for Ripples, who had just been knocked flat.
+- **Standing firm is caught for the one a blow knocks down** ("Ripples stood firm, her feet planted").
+- **Coils squeezing with no coil on are caught.** In beat 2, Seraphina's coils "tightened around Ripples, squeezing her ribs", one beat before the coil crush began.
+- **A serpent with legs is caught** ("She kicked off from the solid ground" for a Milotic).
+- **Trapped arms stay trapped.** With her arms pinned inside the coils, Ripples "clutched at the coils with her webbed paws". That is caught now, and the note says plainly that her arms strain and can't come free.
+- **A drag at the water's edge goes over the wet sand**, not the root-knotted ground at the treeline. Seraphina was in the shallows.
+- **A paragraph cut off on a comma** ("This is mine, she thought,") gets its full stop.
+- The library line "the way an animal does when it understands it is caught" became "like a caught animal". Turning it into the past tense had left it half in the present.
+
 ## Build 276
 Fixes from the build-273 lakeside Ripples vs Nocturne log.
 - **The arena question ends once a fight starts.** Typing /newfight or /auto at the "Scene>" question played the fight inside the question, so "(Now the arena: ...)" and "Scene>" came back after every beat. Now the question closes as soon as a fight starts from it.

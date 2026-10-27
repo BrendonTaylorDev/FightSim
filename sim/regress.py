@@ -713,6 +713,88 @@ def coil_size_check():
     return problems
 
 
+def seraphina275_check():
+    """Build 277: the leftovers from the build-273 lakeside log and fixes from the build-275 Seraphina vs Ripples log.
+    Blood in the mouth of one who only clawed, "for once" on the first beat, landing on her side while face-up, a
+    colour changing, a kept hold named for the wrong limb, an attack told without a part named, a retold sentence
+    with the names swapped, a balance line for a downed fighter, standing firm while knocked down, coils squeezing
+    with no coil on, a serpent's feet, trapped paws clawing, a paragraph cut off on a comma, a drag at the water's
+    edge, and /plan dominate taking the fight-back away."""
+    import director
+    import narrator as N
+    from engine import Engine
+    problems = []
+    if N.Narrator.FIRST_BEAT_CLAUSE.sub("", "She flinched the right way for once, and it paid.") != \
+            "She flinched the right way, and it paid.":
+        problems.append("'for once' should go on the first beat")
+    if not N.SAYS_ON_SIDE.search("She landed hard on her side, and it throbbed.") or \
+            N.SAYS_ON_SIDE.search("A jolt ran into her side."):
+        problems.append("landing on her side should be caught, a jolt into her side not")
+    if not N.COLOUR_CHANGE.search("Nocturne's colour was changing."):
+        problems.append("a fighter's colour changing should be caught")
+
+    class A_:
+        parts = {"Right Forearm Fin": 1, "Twin Tails": 1}
+    fixed = Engine._holder_part_fix("Ripples' Right Forearm Fin on her right hock", A_,
+                                    [{"part": "Right Hock", "with": "with her twin tails"}])
+    if "fin" in fixed.lower() or "twin tails" not in fixed:
+        problems.append(f"a kept hold should be named for what holds it: {fixed!r}")
+    t = ("She watched as the water hit, spreading across Ripples in a cascade of force.\n\nSeraphina watched the "
+         "water hit Ripples, spreading across her body in a cascade of force. The power was immense.")
+    if "cascade" in N.Narrator._drop_inner_repeats(t).split("\n\n")[-1]:
+        problems.append("the same sentence with names and pronouns swapped should be told once")
+    for t in ("Seraphina's coils tightened around Ripples, squeezing her ribs.", "Her coils constricted Ripples' ribs."):
+        if not N.COIL_SQUEEZE.search(t):
+            problems.append(f"coils squeezing not caught: {t}")
+    if N.COIL_SQUEEZE.search("Seraphina's coils tightened, and her body undulated across the water."):
+        problems.append("a serpent bunching her own coils is not a squeeze")
+    if not N.SERPENT_LIMB.search("She kicked off from the solid ground behind her."):
+        problems.append("a serpent kicking should be caught")
+    if not N.TRAPPED_PAWS.search("She clutched at the coils with her webbed paws, her claws scraping."):
+        problems.append("trapped paws clutching at the coils should be caught")
+    if not N.STOOD_FIRM.search("Ripples stood firm, her feet planted on the ground.") or \
+            not N.UPRIGHT_LINE.search("She tested her balance, found it, and kept it."):
+        problems.append("standing firm, and a balance line, should be recognised")
+    s = H.session(3, fighters="Seraphina,Ripples")
+    n, e = s.narrator, s.eng
+    n.strengths = {"Seraphina": 100, "Ripples": 98}
+    n.damage_by = {"Seraphina": {"chest": 10}, "Ripples": {"right upper arm": 30}}
+    n._biters = {"Ripples"}
+    if not n._blood_lines("Seraphina tasted blood in her mouth."):
+        problems.append("blood in the mouth of one who didn't bite (and wasn't hit there) should be caught")
+    if n._blood_lines("Ripples tasted blood in her mouth."):
+        problems.append("the one who bit may taste blood")
+    cuts = n._program_cuts(["This is mine, she thought,"])
+    if not cuts[0].endswith("thought."):
+        problems.append(f"a paragraph cut off on a comma should end in a full stop: {cuts[0]!r}")
+    e.positions = "Seraphina: in the shallows; Ripples: on the soft beach"
+    with contextlib.redirect_stdout(io.StringIO()):
+        e.knock_down("Ripples")
+    e.rules.setdefault("director", {})["manhandle_cooldown"] = 0
+    with contextlib.redirect_stdout(io.StringIO()):
+        res = e.manhandle("Seraphina", "Ripples", "drag", enforce=False)
+    if "root" in str(res):
+        problems.append("a drag at the water's edge should not go over the root-knotted ground")
+    e.plan = {"shape": "dominate", "winner": "Seraphina"}
+    if not (e.dominated("Ripples") < 1.0 and e.dominated("Seraphina") == 1.0):
+        problems.append(f"/plan dominate should cut only the loser's fight-back: {e.dominated('Ripples')}")
+    e.directed = False
+    e._dominate_turn = (e.turn, False)
+    e.downed.pop("Ripples", None)
+    r, _ = director.resolve_many(e, [{"action": "strike", "attacker": "Ripples", "defender": "Seraphina",
+                                      "move": "Aqua Jet", "part": "Chest"}])
+    if any(x.get("type") == "instant" and x.get("attacker") == "Ripples" for x in r):
+        problems.append("on the winner's beat the dominated one's attack should become a step back")
+    e.plan = {}
+    taps = e.rules["finish"]["submission"]["taps"]
+    taps.update(enabled=True, needed=3, different_parts=100, serpent_different_parts=50)
+    if (e.taps_distinct_needed(e.get("Seraphina")), e.taps_distinct_needed(e.get("Ripples"))) != (2, 3):
+        problems.append(f"a serpent should need fewer different parts for her taps: "
+                        f"{e.taps_distinct_needed(e.get('Seraphina'))} / {e.taps_distinct_needed(e.get('Ripples'))}")
+    taps["enabled"] = False
+    return problems
+
+
 def lakeside273_check():
     """Build 276: fixes from the build-273 lakeside Ripples vs Nocturne log. A grip told with paws that hold nothing,
     a standing fighter told lying down, a biped given forelegs, a fur colour nobody has, memories
@@ -2308,6 +2390,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build-273 lakeside log: wrong limb, posture, paws, fur, memories, retold get-up, kick, &&  ({time.time() - t:.1f}s)")
         for p in probs[:8]:
+            print("      " + p)
+    if not want or any(w in "seraphina275 seraphina dominate" for w in want):
+        t = time.time()
+        probs = seraphina275_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build-275 Seraphina log: blood, for once, side, colour, kept-hold name, coils, serpent feet, trapped paws, dominate  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "coil size serpent" for w in want):
         t = time.time()

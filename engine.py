@@ -906,7 +906,7 @@ class Engine:
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
                     "_sustain_now", "_source", "_knock_on", "_tac_before", "beat_loss", "sub_window", "pin_window",
                     "nudges", "_windows_ready", "_pre_rolls", "directed", "ordered", "dice_mode", "lucky",
-                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking",
+                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking", "_dominate_turn",
                     "rules", "roster", "roster_species", "scenes", "scene_cfg", "scene_name", "scene", "movedex",
                     "variants", "variant_of", "settings_applied", "_seed0", "rng", "event_rng")
 
@@ -3283,7 +3283,7 @@ class Engine:
         her twice is one she has learned to read (learning.dodge_per_hit)."""
         if a.name in self.lucky:
             return None   # /play dice free: her attacks always land
-        ch = self.dodge_chance(a, d, target)
+        ch = self.dodge_chance(a, d, target) * self.dominated(d.name)
         lcfg = self.rules.get("learning") or {}
         seen = (d.learned.get("moves") or {}).get(f"{a.name}|{move_name}", 0) if move_name else 0
         if ch > 0 and seen >= 2 and lcfg.get("enabled", True):
@@ -3317,7 +3317,7 @@ class Engine:
         cfg = self._cfg("evasion")
         dc = ((self.rules.get("flight") or {}).get("dive_counter") or {})
         dive = bool(getattr(self, "_dive_now", False)) and dc.get("enabled", True)
-        cch = float(dc.get("on_dodge", 0.45) if dive else cfg.get("counter_chance", 0.35))
+        cch = float(dc.get("on_dodge", 0.45) if dive else cfg.get("counter_chance", 0.35)) * self.dominated(d.name)
         if not self.has(d, "flinched") and self._chance(cch, f"{d.name} countering after the dodge"
                                                              + (" as the dive goes past" if dive else ""),
                                                          "she counters", "no counter"):
@@ -3968,7 +3968,12 @@ class Engine:
         impacts = [(s, list(p or []), sev) for s, p, sev in (impacts or [])]
         if kind == "drag":
             under = self.underside_parts(d.name, 3) if down else []
-            impacts = impacts or [(self.scene_word("rough"), [], "light")]
+            # (since build 277) dragged at the water's edge: across the wet sand there, not the rough ground the
+            # treeline has ("Seraphina is in the shallows" while Ripples is dragged over the root-knotted ground)
+            wet = self.in_water(a.name) or self.in_water(d.name) or re.search(
+                r"\b(?:beach|sand|shore|waterline|shallows)\b", " ".join([self._where(a.name), self._where(d.name),
+                                                                    str((getattr(self, "lying_on", None) or {}).get(d.name) or "")]), re.I)
+            impacts = impacts or [(self.scene_word("slick" if wet else "rough"), [], "light")]
             # the first stretch of ground scrapes whatever she is lying on, unless parts were named
             if under and not impacts[0][1]:
                 impacts[0] = (impacts[0][0], under, impacts[0][2])
@@ -4392,7 +4397,7 @@ class Engine:
             options.append((self.move_math(d.name, a.name, m)["effective"], m))
         if not options:
             return None
-        if not self._chance(float(cfg.get("chance", 0.15)), f"{d.name} meeting {poss_word(a.name)} {move['name']} "
+        if not self._chance(float(cfg.get("chance", 0.15)) * self.dominated(d.name), f"{d.name} meeting {poss_word(a.name)} {move['name']} "
                             f"with an attack of her own", "CLASH", "no"):
             return None
         # how much force a move puts out, all told: a whole-body discharge spreads its power over every part, so
@@ -7956,6 +7961,26 @@ class Engine:
         bits = [f"{st.get('with') or 'pressure'} on her {str(st['part']).lower()}" for st in started]
         return ", ".join(bits[:-1]) + (" and " if len(bits) > 1 else "") + bits[-1]
 
+    @staticmethod
+    def _holder_part_fix(flavor, a, started):
+        """(since build 277) The line names one of the HOLDER's own parts as the grip ("Ripples' Right Forearm Fin on
+        her right hock") while every grip is made with something else (her twin tails): rebuilt from the grips."""
+        text = str(flavor or "")
+        if not text or not started:
+            return text
+        withs = " ".join(str(st.get("with") or "") for st in started).lower()
+        low = text.lower()
+        for p in sorted({str(x).lower() for x in getattr(a, "parts", {})}, key=len, reverse=True):
+            noun = p.split()[-1]
+            if len(p.split()) < 2 or not re.search(r"\b" + re.escape(p) + r"s?\b(?: \w+){0,2} (?:on|round|around|about|"
+                                                   r"over|gripping|clamp\w*|lock\w*|wrapp\w*|clutch\w*|holding)\b"
+                                                   r"(?! the (?:ground|floor|earth|sand|grass))", low):
+                continue
+            if not re.search(r"\b" + re.escape(noun.rstrip("s")) + r"s?\b", withs):
+                bits = [f"{st.get('with') or 'pressure'} on her {str(st['part']).lower()}" for st in started]
+                return ", ".join(bits[:-1]) + (" and " if len(bits) > 1 else "") + bits[-1]
+        return text
+
     # what pushes rather than grips (a press with it needs something behind her to push against), what can wrap round
     # her and haul her into it, and the parts of her body a wrap round her takes in
     # (her weight is not one: bearing down on a fighter, gravity is what pushes back)
@@ -8315,6 +8340,7 @@ class Engine:
                 self._source = keep_src
                 takedown["hard"] = bool(takedown["hits"])
         fixed = self._grip_flavor_fix(flavor, d, started)
+        fixed = self._holder_part_fix(fixed, a, started)
         if fixed != flavor:
             flavor = fixed
             for st in started:
@@ -8501,6 +8527,7 @@ class Engine:
                                           and esc.get("match_holds", True) and not all(h.grab for h in hs)):
                 # (in a submission match any hold that hurts can make her tap: she breaks it the same way)
                 ch, _ = self.sub_break_chance(ch, fd, hs)
+            ch *= self.dominated(fd.name)
             if fd.name in self.lucky:
                 ch = 1.0   # /play dice free: she breaks any hold on her at once
             if ch <= 0:
@@ -9615,6 +9642,7 @@ class Engine:
                 esc_try *= float(self._cfg("status_effects").get("breathless_escape_mult", 0.8))
             if self.has(dfn, "soaked"):     # wet fur: the grips slide
                 esc_try *= float(self._cfg("status_effects").get("soaked_escape_mult", 1.1))
+            esc_try *= self.dominated(dfn.name)
             if self.has(dfn, "adrenaline"):
                 esc_try *= float(self._cfg("adrenaline").get("escape_mult", 1.5))
             if any(h.coil and h.defender == dfn.name and h.attacker in {m.name for m in crew}
@@ -9771,6 +9799,19 @@ class Engine:
         sub = cfg.get("submission") if isinstance(cfg.get("submission"), dict) else {}
         return bool((cfg.get("knockout_only", False) and cfg.get("no_pins", False))
                     or (sub.get("enabled", False) and sub.get("no_pins", True)))
+
+    def dominated(self, name):
+        """(since build 277) director.plan_dominate: under /plan dominate, how much of her usual chance the one being
+        dominated gets to fight back (a dodge, a counter, meeting a move with her own, breaking a hold or a pin):
+        1.0 for anyone else, or with the switch off."""
+        cfg = (self.rules.get("director") or {}).get("plan_dominate") or {}
+        win = (self.plan or {}).get("winner")
+        if (self.plan or {}).get("shape") != "dominate" or not win or not cfg.get("enabled", True):
+            return 1.0
+        f, w = self.fighters.get(str(name).lower()), self.fighters.get(str(win).lower())
+        if not f or not w or f.name == w.name or f.team == w.team:
+            return 1.0
+        return max(0.0, float(cfg.get("defence_mult", 0.4)))
 
     def submission_match(self):
         """finish.submission.enabled: a submission match. Only a tap-out or a pass-out ends it: no knockouts from blows.
@@ -10050,14 +10091,18 @@ class Engine:
         t = self._taps_rule()
         return max(1, int(t.get("needed", 1))) if t else 1
 
-    def taps_distinct_needed(self):
+    def taps_distinct_needed(self, who=None):
         """How many different body parts her taps must come from: different_parts (a percentage) of the taps
         needed, rounded up, and never fewer than one. With 3 taps: up to 33% = any parts, 34-66% = at least two
-        different parts, 67-100% = all three different."""
+        different parts, 67-100% = all three different. (since build 277) A serpent (`who`), with no limbs to put
+        in a hold, goes by serpent_different_parts when that is lower."""
         t = self._taps_rule()
         if not t:
             return 1
         pct = max(0.0, min(100.0, float(t.get("different_parts", 0))))
+        f = (self.get(who) if isinstance(who, str) else who) if who is not None else None
+        if f is not None and t.get("serpent_different_parts") is not None and self.body_plan(f) == "serpent":
+            pct = min(pct, max(0.0, float(t.get("serpent_different_parts"))))
         return max(1, min(self.taps_needed(), math.ceil(pct / 100.0 * self.taps_needed() - 1e-9)))
 
     def tap_respite(self, who):
@@ -10146,7 +10191,7 @@ class Engine:
         given = self.taps_given(who)
         if not self._taps_rule() or not given:
             return []
-        repeats_left = (self.taps_needed() - self.taps_distinct_needed()) - (len(given) - len(set(given)))
+        repeats_left = (self.taps_needed() - self.taps_distinct_needed(who)) - (len(given) - len(set(given)))
         return [] if repeats_left > 0 else list(dict.fromkeys(given))
 
     def tap_steer(self, kind):
@@ -10205,7 +10250,7 @@ class Engine:
         if not aim:
             return None
         skip = set(self.spent_tap_parts(d)) | {aim}
-        if self.taps_distinct_needed() > 1:
+        if self.taps_distinct_needed(d) > 1:
             skip |= set(self.taps_given(d))      # (the next tap should be somewhere new where it can be)
         cur = d.learned.get("tap_next")
         if cur in d.parts and cur not in skip:

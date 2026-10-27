@@ -652,6 +652,34 @@ SAYS_FACE_UP = re.compile(r"\b(on (?:her|his) back|face-up|belly-up|stared? up a
 SAYS_FACE_DOWN = re.compile(r"\b(face-?down|face-first|on (?:her|his) (?:belly|stomach|front)|face (?:pressed|ground|"
                             r"mashed|shoved) (?:into|against)|(?:face|muzzle|cheek) (?:in|into|against) the (?:water|stone|"
                             r"floor|sand|grass|ice|snow|mud|deck|plating|planks|planking|boards|gravel|dirt|earth|grating|concrete|rubble|flagstones|basalt|shelf|scree|turf|moss|rock|pool)|chest (?:pressed|crushed|flat) (?:against|to|into) the (?:stone|floor|ground|rock))\b", re.I)
+# (since build 277) a library line only a fighter on her feet and free can have (her balance, her stance, a step)
+UPRIGHT_LINE = re.compile(r"\b(?:balance|planted|plant(?:s|ed|ing)? herself|steps?|stance|square|drew herself up|"
+                          r"faced front|gave her weight to the ground|leaned toward|feet|stood|footing|forward|"
+                          r"distance|shook the dust|up and down|taller)\b", re.I)
+# (since build 277) coils squeezing someone: only when a coil of hers is really on
+COIL_SQUEEZE = re.compile(r"\bcoils? (?:\w+ ){0,3}?(?:tighten|clamp|cinch|squeez|constrict|crush|wound|wrapp|lock)\w* "
+                          r"(?:\w+ ){0,2}?(?:around|round|about) (?!(?:her|it)self\b)\w+|"
+                          r"\b(?:squeez|constrict|crush)\w* (?:her|\w+['’]s?) (?:ribs|breath\w*|chest|lungs|middle|stomach)\b",
+                          re.I)
+# (since build 277) paws or arms put to work by a fighter whose arms are trapped inside coils
+TRAPPED_PAWS = re.compile(r"\b(?:paws?|claws?|hands?|arms?|forelegs?) (?:\w+ ){0,3}?(?:clutch|claw|scrap|pried|pry|prie|"
+                          r"push|shov|grabb|reach|pound|beat|scrabbl|rak|dug|dig|tore|tear|slapp|tapp|batt)\w*|"
+                          r"\b(?:clutch|claw|scrap|pried|pry|push|shov|grabb|reach|pound|beat|scrabbl|rak|tore|tear|slapp|"
+                          r"batt)\w* (?:\w+ ){0,4}?with her (?:\w+ )?(?:paws?|claws?|hands?|arms?)\b", re.I)
+# (since build 277) limbs a serpent hasn't got
+SERPENT_LIMB = re.compile(r"\b(?:kick(?:s|ed|ing)?|her (?:feet|foot|legs?|paws?|hands?|arms?|claws?|shoulders?|knees?|"
+                          r"toes|forelegs?|hind ?legs?)|on (?:all fours|her (?:feet|hind legs))|(?:stood|stands|standing) "
+                          r"(?:up|on))\b", re.I)
+# (since build 277) keeping her feet, said of the one a blow knocks down this beat
+STOOD_FIRM = re.compile(r"\b(?:stood (?:firm|fast|her ground|steady|unmoved|tall|solid)|held (?:her|its) ground|"
+                        r"kept (?:her|its) (?:feet|footing)|stayed (?:on (?:her|its) feet|upright|standing)|"
+                        r"(?:feet|paws) (?:stayed |remained |still )?planted|took the hit standing)\b", re.I)
+# (since build 277) a fighter's colour changing ("Nocturne's colour was changing"), which nothing in a fight does
+COLOUR_CHANGE = re.compile(r"\b(?:colou?rs?|hues?) (?:was |were |is |are |had |seemed to )?(?:been )?(?:chang\w+|shift\w+)\b|"
+                           r"\bchang\w+ colou?rs?\b", re.I)
+# (since build 277) landing or lying on her side, for a fighter the engine has face-up or face-down
+SAYS_ON_SIDE = re.compile(r"\b((?:landed|landing|lands|fell|falling|crashed|thudded|lay|lying|sprawled|flopped|dropped|"
+                          r"came down|ended up) (?:\w+ ){0,2}?(?:on|onto) (?:her|his) (?:left |right )?side)\b(?! of\b)", re.I)
 SAYS_SITTING = re.compile(r"\b(sat (?:up|upright|slumped|propped|there|back|hard|down hard|against)|sitting (?:up|upright|"
                           r"against|there|slumped|propped|on|in|at)|(?:was|ended|stayed|remained|left) sitting|ended (?:up )?"
                           r"sitting|on (?:her|his) haunches|propped (?:upright|up|against)|slumped (?:upright )?against)\b", re.I)
@@ -2532,6 +2560,8 @@ class Narrator:
         self.foreign_words = []     # body features nobody in this fight has ("scales" with no Milotic in it)
         self._weapons_ok = None     # claws / teeth / tail / horn named by this beat's moves (None: not a fight beat)
         self._attackers = set()
+        self._biters = set()
+        self._trapped = set()
         self._landed = set()        # fighters who crash into scenery this beat (their impacts are real)
         self._linger_pool = []      # (fighter, part, damage, pain label, kind) for every hit this beat
         self._hurt_now = None       # fighters actually hit this beat (None = not a fight beat)
@@ -4410,6 +4440,9 @@ class Narrator:
         # down this beat with no get-up roll: she doesn't try to rise (not even a failed try)
         self._no_getup = {e["fighter"] for e in evs if e.get("type") == "stays_down"} - rolled
         self._attackers = {a.get("attacker") for a in actions if a.get("type") == "instant" and a.get("attacker")}
+        # who bit with her own teeth this beat (her opponent's blood can be in her mouth; a clawer's mouth stays clean)
+        self._biters = {a.get("attacker") for a in actions if a.get("type") == "instant" and a.get("attacker")
+                        and "teeth" in self._weapons_named(a)}
         # the aftermath, or a beat where someone drops out: bodies lie around, so the "she's on her feet" check rests
         self._calm_beat = bool(bundle.get("after_win")) or any(
             a.get("type") in ("eliminated", "aftermath", "pinfall") or a.get("elimination") for a in actions) or any(
@@ -4421,6 +4454,8 @@ class Narrator:
         # a fighter who slips as she dodges on slick footing really does go down
         self._landed |= {a.get("defender") for a in actions if a.get("slipped")}
         self._rolled_up = {a.get("defender") for a in actions if a.get("environment") and a.get("kept_feet")}
+        # (since build 277) wound in coils with her arms pinned inside them: no paw of hers claws or pries at anything
+        self._trapped = {x.get("defender") for x in self._all_dicts(bundle) if x.get("arms_trapped") and x.get("defender")}
         # a fighter who taps out leaves the match awake, not knocked out
         self._tapped = {e.get("defender") for e in evs if e.get("type") == "tap_out" and e.get("how") == "tap"}
         # the tap-out (or pass-out) that ends the match: the passage must show it (narration.tap_shown)
@@ -6497,7 +6532,7 @@ class Narrator:
                 if re.search(r"\bmouth|tongue|lip|taste|coppery|metallic", sent, re.I):
                     hurt = max([d for p, d in mine.items() if re.search(r"jaw|muzzle|cheek|mouth|lip|nose|throat|head", p)]
                                or [0])
-                biter = w in (getattr(self, "_attackers", None) or set()) and "teeth" in (getattr(self, "_weapons_ok", None) or set())
+                biter = w in (getattr(self, "_biters", None) or set())
                 if hurt < 30 and not biter:
                     out.append((sent, w))
         return out
@@ -6988,7 +7023,7 @@ class Narrator:
         self._must_parts, self._must_struggle, self._struggle_kind = [], None, None
         self._must_block = None
         self._landed, self._slammed, self._charge_beat, self._one_strike = set(), set(), False, None
-        self._weapons_ok, self._attackers, self._no_getup = None, set(), set()
+        self._weapons_ok, self._attackers, self._no_getup, self._biters = None, set(), set(), set()
         self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
         self._getup_who = self._getup_event = None
         self._getup_failed = set()
@@ -7045,7 +7080,7 @@ class Narrator:
         self._must_parts, self._must_struggle, self._struggle_kind = [], None, None
         self._must_block = None
         self._landed, self._slammed, self._charge_beat, self._one_strike = set(), set(), False, None
-        self._weapons_ok, self._attackers, self._no_getup = None, set(), set()
+        self._weapons_ok, self._attackers, self._no_getup, self._biters = None, set(), set(), set()
         self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
         self._getup_who = self._getup_event = None
         self._getup_failed = set()
@@ -7480,8 +7515,8 @@ class Narrator:
     def _tap_intensity(self, lv, e):
         """How hard to tell her fight against the tap; with her arms trapped in coils, signs without a free paw."""
         if e.get("arms_trapped"):
-            return self.TAP_INTENSITY_TRAPPED[lv] + (" (her arms are pinned inside the coils: no paw can rise or "
-                                                     "reach anything to tap)")
+            return self.TAP_INTENSITY_TRAPPED[lv] + (" (her arms are pinned inside the coils: they strain and can't "
+                                                     "come free; no paw can claw, pry or tap)")
         return self.TAP_INTENSITY[lv]
 
     TAP_REASONS = {
@@ -11325,6 +11360,8 @@ class Narrator:
             fc = facing[whos[0]]
             m = (SAYS_FACE_UP.search(sent) if fc == "face-down" else
                  SAYS_FACE_DOWN.search(sent) if fc == "face-up" else None)
+            if not m and fc in ("face-up", "face-down"):
+                m = SAYS_ON_SIDE.search(sent)
             if m:
                 out.append((whos[0], fc, m.group(0)))
         return out
@@ -11363,6 +11400,13 @@ class Narrator:
         all_nouns = {p.split()[-1].rstrip("s") for parts in self.damage_by.values() for p in parts}
         struck_regions = {body_region(p) for p in struck} | {body_region(str(g[2])) for g in (getattr(self, "grips", None) or [])}
         last_named = []
+        coil_grips = {g[0] for g in (getattr(self, "grips", None) or []) if re.search(r"coil|tail|wrap|wound", str(g[3]), re.I)}
+        coil_grips |= {p_[0] for p_ in (getattr(self, "_grips_ended", None) or set())}
+        free_coilers = {n_ for n_, pl in (getattr(self, "plans", None) or {}).items() if pl == "serpent"
+                        and n_ in self.strengths and n_ not in coil_grips} if not getattr(self, "_pin_beat", False) else set()
+        plans_ = getattr(self, "plans", None) or {}
+        went_down = ((getattr(self, "_landed", None) or set()) - (getattr(self, "_rolled_up", None) or set())) \
+            & set(getattr(self, "facing", None) or {})
         for sent, whos, named in self._said(text):
             low = sent.lower()
             if BEAT_WORD.search(sent):
@@ -11425,6 +11469,37 @@ class Narrator:
                     if top != part and mine[part] < 0.6 * mine[top]:
                         add(sent, f"it says {poss(wf)} {part} has the worst of it, but her {top} is the one far worse "
                                   f"hurt: the {part} is the lesser of them")
+            m = COIL_SQUEEZE.search(sent)
+            if m and free_coilers and any(w in free_coilers for w in whos) and not RECALLED.search(sent) \
+                    and not re.search(r"\b(?:would|could|wanted|meant|ready|soon|if|once)\b", sent[:m.start()], re.I):
+                # (since build 277) "Seraphina's coils tightened around Ripples, squeezing her ribs" with no coil on
+                add(sent, f"it has {next(w for w in whos if w in free_coilers)}'s coils squeezing or constricting "
+                          f"(\"{m.group(0)}\"), but no coil of hers is round anyone this beat: tell what she really "
+                          f"does (the blows, the drag), not a crush that isn't on")
+            m = SERPENT_LIMB.search(sent) if len(whos) == 1 and plans_.get(whos[0]) == "serpent" else None
+            if m:
+                # (since build 277) "She kicked off from the solid ground behind her" for a Milotic
+                add(sent, f"it gives {whos[0]} legs, feet, paws or arms (\"{m.group(0)}\"), but she is a serpent: "
+                          f"she has none. She moves on her coils, her belly and her tail, and strikes with her head and "
+                          f"her tail")
+            m = TRAPPED_PAWS.search(sent) if len(whos) == 1 and whos[0] in (getattr(self, "_trapped", None) or ()) \
+                else None
+            if m and not RECALLED.search(sent):
+                # (since build 277) "She clutched at the coils with her webbed paws" with her arms pinned inside them
+                add(sent, f"it has {whos[0]} use her paws or arms (\"{m.group(0)}\"), but her arms are pinned inside "
+                          f"the coils: they strain and can't come free. She fights with her body, her legs, her tail, "
+                          f"her breath")
+            m = STOOD_FIRM.search(sent)
+            if m and len(whos) == 1 and whos[0] in went_down and not re.search(
+                    r"\b(?:not|never|no|couldn't|could not|failed|tried|try\w*|meant|would|wanted|struggl\w*|fought)\b"
+                    r"[^.;]{0,30}$", sent[:m.start()], re.I):
+                # (since build 277) "Ripples stood firm, her feet planted" for the one this beat's blow knocks down
+                add(sent, f"it has {whos[0]} stand firm (\"{m.group(0)}\"), but the blow knocks her DOWN this beat: "
+                          f"she doesn't keep her feet, she goes down")
+            if whos and COLOUR_CHANGE.search(sent) and not re.search(r"\b(?:light|sky|sun\w*|clouds?|water|lake|leaves|eyes?)\b", low):
+                # (since build 277) "Nocturne's colour was changing": nothing in a fight changes a fighter's colour
+                add(sent, "it says a fighter's colour is changing: her fur, scales and markings stay the colour they "
+                          "are (wet fur only darkens); say what really changes (her breath, her stance, her eyes)")
             who = whos[0] if len(whos) == 1 else None
             if not who or who not in self.strengths:
                 continue
@@ -12204,8 +12279,12 @@ class Narrator:
                 who = next(iter(rows[0][1]), None) if rows and rows[0][1] else None
                 foe = next((w for w in (self.strengths or {}) if w != who), "") if who else ""
                 st = story_blocks.state_of((self.strengths or {}).get(who, 100)) if who else None
+                # (since build 277) a fighter on the ground or in a grip gets no line about her balance, her stance
+                # or a step ("She tested her balance, found it, and kept it." for one knocked flat)
+                down_ = who and (who in (getattr(self, "facing", None) or {})
+                                 or any(g[1] == who for g in (getattr(self, "grips", None) or [])))
                 line = L.pick("resolve", 1, fmt={"foe": foe} if foe else {}, has=self._feats_of(who) if who else None,
-                              state=st)
+                              state=st, exclude=UPRIGHT_LINE if down_ else None)
                 if line:
                     text = text.replace(x, line[0], 1)
                     if self.progress:
@@ -13943,7 +14022,7 @@ class Narrator:
         self._pin_beat = False
         self._facts = None
         self._pin_holds = None
-        self._weapons_ok, self._attackers, self._no_getup = None, set(), set()
+        self._weapons_ok, self._attackers, self._no_getup, self._biters = None, set(), set(), set()
         self.fight_seen = set()
         self._sample_want, self._sample_rounds = ["opening"], {}
         if self.progress:
@@ -13971,7 +14050,7 @@ class Narrator:
         self._must_parts, self._must_struggle = [], None
         self._landed, self._calm_beat = set(), False  # a still snapshot: nobody falls, postures are as the engine has them
         self._slammed, self._charge_beat, self._one_strike = set(), False, None
-        self._weapons_ok, self._attackers, self._no_getup = None, set(), set()
+        self._weapons_ok, self._attackers, self._no_getup, self._biters = None, set(), set(), set()
         self._facts = None
         self._pin_holds = None
         if self.progress:
@@ -14065,7 +14144,7 @@ class Narrator:
                 k = " ".join(alias.get(w, w) for w in k.split() if not (w == "the" and alias))
             return k
         seen, paras, changed = [], [], False
-        short_seen, para_seen = set(), set()
+        short_seen, para_seen, named_seen = set(), set(), []
         for x in re.split(r"(?<=[.!?…])\s+|\n+", earlier or ""):
             w = key(x).split()
             if len(w) >= 6:
@@ -14088,6 +14167,16 @@ class Narrator:
                 ws = set(w)
                 if len(w) >= 6:
                     runs = {" ".join(w[i:i + 7]) for i in range(len(w) - 6)}
+                    # (since build 277) the same sentence with the names and pronouns moved about ("She watched as
+                    # the water hit, spreading across Ripples..." / "Seraphina watched the water hit Ripples,
+                    # spreading across her body..."): names and she / her count as one word
+                    xs = {"X" if (t.lower() in ("she", "her", "hers", "herself") or t.lower() in alias
+                                  or (i_ > 0 and t[:1].isupper())) else t.lower()
+                          for i_, t in enumerate(re.findall(r"[A-Za-z]+", x.replace("’s", "").replace("'s", "")))}
+                    if len(xs) >= 9 and any(len(xs & n2) / len(xs | n2) >= 0.8 for n2 in named_seen):
+                        changed = True
+                        continue
+                    named_seen.append(xs)
                     if any(w == w2 or len(ws & s2) / len(ws | s2) >= 0.75
                            or (w[:4] == w2[:4] and len(ws & s2) / len(ws | s2) >= 0.5)
                            # "Then the blast struck her muzzle full-force." / "Then the blast slammed into her muzzle."
@@ -16635,6 +16724,16 @@ class Narrator:
                               for s_ in sents_all):
             return True     # (the only blow on that part this beat, told without its name: "her right thigh took
             #                  the brunt of it" is the Knee Stomp)
+        same = [x for x in (getattr(self, "_acts_now", None) or []) if x is not a and x.get("hits")
+                and x.get("defender") == a["defender"] and str((x.get("move") or {}).get("type", "")).lower()
+                == str(a["move"].get("type", "")).lower()]
+        if trx and not same and any(re.search(r"\b(?:" + trx + r")\b", s_, re.I) and a["defender"] in s_
+                                    and re.search(r"\b(?:hit|hits|struck|strikes?|slamm\w+|slams?|caught|catch\w*|"
+                                                  r"crash\w*|smash\w*|engulf\w*|spread\w* (?:across|over)|"
+                                                  r"wash\w* over|knock\w*|land\w*)\b", s_, re.I)
+                                    for s_ in sents_all):
+            return True     # (since build 277) the only blow of its element on her, told as it lands on her without
+            #                  naming a part: "the water hit, spreading across Ripples" is the Hydro Pump told
         return bool(rx) and any(re.search(r"\b(?:" + rx + r")\b", s_, re.I) and (a["attacker"] in s_ or a["defender"] in s_)
                                 and any(found(s_.lower(), p) for p in parts) for s_ in sents_all)
         # (a part by its key word: "the blast hit Nocturne across her chest" tells a blow on her Chest Ruff)
@@ -17090,7 +17189,8 @@ class Narrator:
                                  r"rounds?|bouts?|fights?|wounds?|injur(?:y|ies)|bruises?)\b|\bstill (?:sore|aching|"
                                  r"hurting|stiff|tender|smarting) from\b|\bthe (?:old|earlier) (?:pain|hurt|ache)\b")
     FIRST_BEAT_CLAUSE = re.compile(r"(?i),? (?:still )?(?:left )?from (?:her|the) (?:last|earlier|previous) "
-                                   r"(?:dive|swim|fight|bout|match|run|round)\b")
+                                   r"(?:dive|swim|fight|bout|match|run|round)\b"
+                                   r"|,? for once\b(?=[,.;:!?\s])")   # (since build 277) "for once" needs a past
     # the hand-over between parts said out loud: "Nerine's reaction would follow."
     META_HANDOFF = re.compile(r"^(?:[A-Z][a-z]+(?:'s|’s|'|’)|Her|The other's) (?:reaction|response|answer|turn|"
                               r"reply) (?:would|will) (?:follow|come)(?: next| later| soon)?[.!]?$")
@@ -17166,6 +17266,8 @@ class Narrator:
                             continue
                     kept.append(x)
                 para_ = " ".join(kept)
+                if cfg.get("end_stop", True) and re.search(r"[A-Za-z]\*?[,;:]$", para_):
+                    para_ = para_[:-1]     # (since build 277) cut off on a comma ("This is mine, she thought,")
                 if cfg.get("end_stop", True) and re.search(r"[A-Za-z]\*?$", para_):
                     # a paragraph that stops mid-air ("*Let her feel it*"): it gets its full stop
                     para_ = re.sub(r"([A-Za-z])(\*?)$", r"\1.\2", para_)

@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 276-guided (fixes from the lakeside Ripples vs Nocturne log)"
+VERSION = "2026-10-27 build 277-guided (Seraphina log fixes; /plan dominate keeps the opponent from fighting back)"
 
 HELP = """
 =============================================================================================

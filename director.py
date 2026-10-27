@@ -831,7 +831,7 @@ def taps_hint(engine):
     which parts no longer count, and the part to work toward the next one: soften it with blows, then hold it."""
     if not engine._taps_rule():
         return ""
-    need, distinct = engine.taps_needed(), engine.taps_distinct_needed()
+    need, distinct = engine.taps_needed(), max(engine.taps_distinct_needed(f) for f in engine.active())
     out = [f"TAP COUNT: this match is won by the {ordinal(need)} tap-out" + ("" if need == 1 else ", not the first") + (f", and her taps must come from {distinct} different body parts" if distinct > 1
                                          else "") + ". A tap before that ends the hold, not the match."]
     for f in engine.active():
@@ -2079,6 +2079,29 @@ def resolve_many(engine, actions):
                  "flavor": f"steps back and lets {engine.get(dn).name} get up after the tap", "_respite": True}
         resp.append(b)
     actions = resp
+    # (since build 277) director.plan_dominate: a beat that belongs to the winner of /plan dominate. An attack the
+    # director still gave the other one on her becomes a struggle (held) or a step back
+    if getattr(engine, "_dominate_turn", None) and engine._dominate_turn == (engine.turn, False):
+        win_ = str((engine.plan or {}).get("winner") or "")
+        dom = []
+        for b in actions:
+            try:
+                att_ = engine.get(b.get("attacker")) if b.get("attacker") else None
+                dn_ = engine.get(str(b.get("defender") or "").split(",")[0].strip()) if b.get("defender") else None
+            except ValueError:
+                att_ = dn_ = None
+            if (not b.get("_manual") and att_ and dn_ and win_ and dn_.name.lower() == win_.lower()
+                    and att_.name != dn_.name and engine.dominated(att_.name) < 1.0
+                    and b.get("action") in ("strike", "combo", "hold_start", "submission", "grapple", "pin", "quickpin",
+                                            "throw", "slam", "drag", "charge")):
+                held_ = any(h.defender == att_.name and h.attacker == dn_.name for h in engine.holds.values())
+                b = ({"action": "struggle", "attacker": att_.name, "defender": dn_.name,
+                      "flavor": f"fights {poss_word(dn_.name)} grip with what little room she has", "_dominated": True}
+                     if held_ else
+                     {"action": "breather", "attacker": att_.name,
+                      "flavor": f"is given no room to answer {dn_.name}: she covers up and gives ground", "_dominated": True})
+            dom.append(b)
+        actions = dom
     # someone's landing written as an attack ("hard landing"): it comes from the throw, not from a blow
     landings = [b for b in actions if not b.get("_manual") and b.get("action") in ("strike", "combo")
                 and (LANDING_NAME.match(str(b.get("move") or "")) or (str(b.get("move") or "").lower() == "improvised"
@@ -2497,6 +2520,8 @@ class Director:
             m = re.search(r"\b(" + "|".join(re.escape(f.name) for f in engine.active()) + r")\b", hint or "")
             dcfg = engine.rules.get("director", {})
             who = m.group(1) if m else None
+            if dominate_turn(engine) is False:
+                who = engine.plan.get("winner")     # (/plan dominate: the big moment is hers this beat)
             held = big_moment_hint(engine, prefer=who)
             if held:
                 rng_hint = (rng_hint + "\n" + held).strip()
@@ -4006,6 +4031,28 @@ TARGETING_TEXT = {
 }
 
 
+def dominate_turn(engine):
+    """(since build 277) director.plan_dominate: under /plan dominate, whether the one being dominated may attack this
+    beat at all (True), or the beat is the winner's (False); None when no such plan is on. Rolled once a beat
+    (rival_turn_chance)."""
+    cfg = (engine.rules.get("director") or {}).get("plan_dominate") or {}
+    plan = engine.plan or {}
+    if plan.get("shape") != "dominate" or not plan.get("winner") or not cfg.get("enabled", True):
+        return None
+    if getattr(engine, "directed", False):
+        engine._dominate_turn = (engine.turn, True)    # your own direction this beat: it goes as you wrote it
+        return None
+    got = getattr(engine, "_dominate_turn", None)
+    if got and got[0] == engine.turn:
+        return got[1]
+    ch = float(cfg.get("rival_turn_chance", 0.15))
+    roll = engine.rng.random()
+    engine.note_roll(f"the dominated fighter getting a beat of her own against {plan['winner']} (/plan dominate)", ch,
+                     roll, "she gets one" if roll < ch else f"the beat is {plan['winner']}'s")
+    engine._dominate_turn = (engine.turn, roll < ch)
+    return engine._dominate_turn[1]
+
+
 def plan_hint(engine):
     """The author's nudge on how the fight should go, turned into a concrete note for this beat. It only steers
     the director's choices; the engine's rolls (dodges, escapes, statuses) still decide what actually happens."""
@@ -4036,6 +4083,10 @@ def plan_hint(engine):
         elif shape == "dominate" and w is not None:
             out.append(f"STORY PLAN (author's nudge): {w.name} DOMINATES. Most of the attacks are hers; {rival} gets "
                        f"only brief, desperate counters. {w.name} should land big hits, knockdowns, and pins.")
+            if dominate_turn(engine) is False:
+                out.append(f"THIS BEAT BELONGS TO {w.name.upper()} (the author's plan): {rival} gets no attack, grab or "
+                           f"pin of her own this beat; {w.name} acts, and {rival} can only take it, cover up or give "
+                           f"ground.")
         elif shape == "comeback" and w is not None:
             if ws > 50 and ws >= rs - 10:
                 out.append(f"STORY PLAN (author's nudge): a COMEBACK for {w.name}. For now, {rival} is on top: "
