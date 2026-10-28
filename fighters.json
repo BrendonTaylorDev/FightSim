@@ -184,6 +184,7 @@
       "personality": "Proud and fierce, cold to anyone she thinks beneath her, with flashes of grudging respect for anyone who earns it. Patient as a hunter: she waits for an opponent to be caught open and strikes then. She never admits pain, and she hates water.",
       "history": "A lone Absol from the high meadows, used to being feared and avoided as a bringer of disaster. She has fought to defend her ground many times, and has never liked water.",
       "veteran": true,
+      "heart_rest": 110,
       "relationships": {
         "Ripples": "A small, loud water-weasel who doesn't know when she is beaten. Nocturne finds her irritating, and grudgingly quick.",
         "Nerine": "A Buizel who wants to grab her. Nocturne means to keep her at the end of her blades.",
@@ -412,6 +413,7 @@
       "personality": "Eager, energetic and a little cocky: she throws herself into everything, learns fast, and a good hit goes straight to her head. Still new to real fights, so a hold she has never met frightens her and makes her angry, and she would rather be crushed than admit she is beaten. Cheeky to her opponent, honest with herself.",
       "history": "Grew up in a clear river with her family, swimming and playing rough with the other young water Pokemon. This is one of her first real fights, and she has never been properly held or put in a submission before.",
       "veteran": false,
+      "heart_rest": 140,
       "relationships": {
         "Nerine": "Another young Buizel from the same river, a little older and far more experienced. Ripples looks up to her and badly wants to prove she is just as good.",
         "Nocturne": "A stranger, and a frightening one: proud, fast, all blades. Ripples wants to show she isn't scared of her.",
@@ -602,6 +604,7 @@
       "personality": "Calm, confident and practical: a fighter who has done this many times. She doesn't waste moves or words, reads her opponent's habits, and keeps her head when things go wrong. Proud of her craft, a little dry, quietly competitive.",
       "history": "Raised further down the same river as Ripples, she has been brawling on the riverbanks since she was barely grown: dozens of bouts against bigger, older opponents, which is where she learned to grapple. She has won more than she has lost, and remembers the losses best.",
       "veteran": true,
+      "heart_rest": 120,
       "relationships": {
         "Ripples": "The eager youngster from upriver. Nerine thinks she is talented and reckless, and means to teach her what a real hold feels like.",
         "Nocturne": "A dangerous striker. Nerine knows the way to beat her is to get close and stay close.",
@@ -743,6 +746,7 @@
       "personality": "Graceful, calm and supremely confident. She doesn't hurry: she lets her strength and her coils do the work and takes a quiet satisfaction in doing it well. Gracious to a brave opponent, never cruel for its own sake, and very hard to rattle.",
       "history": "Lived for years in a deep, still lake, where she was the largest and strongest creature in it. She rarely needed to fight, and when she did, it was over quickly.",
       "veteran": true,
+      "heart_rest": 60,
       "relationships": {
         "Ripples": "A bright, brave little thing. Seraphina finds her charming, and has no intention of losing to her.",
         "Nerine": "A seasoned little grappler. Seraphina admires the skill, and knows she must not let her get a hold.",

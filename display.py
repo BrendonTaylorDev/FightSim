@@ -1225,6 +1225,14 @@ class Display:
                 out.append(f"😖 {e['defender']} {'fights the dark' if e.get('choke') else 'refuses to tap'} in "
                            f"{poss_word(e['attacker'])} {e['submission']} (pain {e['pain']} against her resistance "
                            f"{e['resist']}, beat {e['beats_held']} of it)")
+            elif e["type"] == "constriction":
+                # (since build 283) the coils round her body holding back her blood
+                out.append(f"🫀 {poss_word(e['attacker'])} coils on {poss_word(e['defender'])} "
+                           f"{', '.join(str(p).lower() for p in e.get('parts') or [])}: blood flow {e.get('pct', 0)}% cut "
+                           f"off, her heart " + {"pounding": "pounding", "slowing": "slowing and stumbling",
+                                                 "greying": "slow and uneven, the grey closing in"}.get(e.get("stage"), "")
+                           + (f" · heart about {e['heart']} a minute{', irregular' if e.get('irregular') else ''}, "
+                              f"blood pressure about {e['bp'][0]}/{e['bp'][1]}" if e.get("heart") else ""))
             elif e["type"] == "tap_urge":
                 out.append(f"😣 {e['defender']} fights the urge to tap in {poss_word(e['attacker'])} {e['submission']}, "
                            + ("far from her limit" if float(e.get("pain") or 0) < 0.75 * float(e.get("resist") or 1)

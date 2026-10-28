@@ -1035,20 +1035,30 @@ def tap_meter(f):
     if by_chance and feel >= 3 and lv < 3:
         # the pain is near or past what she can bear, but the chance this beat is still small
         notes.append("the pain is " + ("past what she can bear" if feel >= 4 else "near what she can bear"))
+    if float(t.get("out") or 0) > 0:
+        # (since build 283) the chance shown is of it ending this beat: a tap, or blacking out
+        notes.append(f"tap {pct_text(100 * float(t.get('tap_only') or 0))}, blacking out "
+                     f"{pct_text(100 * float(t['out']))}")
     if t.get("why_low") and pct < 10:
         # (since build 283) the pain can be far past what she bears while the chance stays tiny: say what holds it down
         notes.append("kept down by: " + ", ".join(f"{w} x{float(m):.2f}" for w, m in t["why_low"]))
     if t.get("refusals"):
         notes.append(f"refused {t['refusals']}x")
     if t.get("air") is not None:
-        notes.append(f"air {t['air']}% gone")
+        # (since build 283) coils round her body cut off her blood, not her air
+        notes.append(f"blood flow {t['air']}% cut off" if t.get("circ") else f"air {t['air']}% gone")
+    v = t.get("vitals") or {}
+    if v.get("heart"):
+        notes.append(f"heart about {v['heart']}/min{', irregular' if v.get('irregular') else ''}, blood pressure about "
+                     f"{v['bp'][0]}/{v['bp'][1]}")
     if by_chance:
         label = CHANCE_LADDER[lv] if not (t.get("first") or t.get("breaking") or t.get("held_on")) or lv else \
             "can't tap this beat"
-        if t.get("choke") and lv >= 3:
+        if (t.get("choke") or t.get("circ")) and lv >= 3:
             label = "fighting the dark"
     else:
-        label = "fighting the dark" if t.get("choke") and lv >= 3 else TAP_LADDER[lv] or "not fighting it yet"
+        label = "fighting the dark" if (t.get("choke") or t.get("circ")) and lv >= 3 else TAP_LADDER[lv] \
+            or "not fighting it yet"
     return {"level": lv, "chance": pct, "label": label, "note": " · ".join(notes),
             "pain": t.get("pain"), "resist": t.get("resist"), "by": t.get("by"), "sub": t.get("sub")}
 

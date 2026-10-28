@@ -800,6 +800,72 @@ def presets_help_check():
     return problems
 
 
+def constriction_check():
+    """Build 283: coils round her body put her out by her blood, as a real constriction does: the stages in order
+    (her heart pounding, then slowing, then the grey), rough heart and blood-pressure numbers rising and then
+    falling, a blackout told as the blood, the tap meter counting blackouts, and the switch."""
+    import cards
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    e.rules["finish"]["submission"]["enabled"] = True
+    e._hold_break_tick = lambda *a, **k: []
+    e.start_submission("Seraphina", "Ripples", "upright coil")
+    stages, hearts, out, meters = [], [], None, []
+    for _ in range(30):
+        e.turn += 1
+        ev = e.beat()
+        c = [x for x in ev if x["type"] == "constriction"]
+        if c:
+            stages.append(c[0]["stage"])
+            hearts.append(c[0]["heart"])
+        m = cards.tap_meter({"grips": e.card_state(e.get("Ripples"))})
+        if m:
+            meters.append(m)
+        out = next((x for x in ev if x["type"] == "tap_out"), None)
+        if out or not e.holds:
+            break
+    order = ["pounding", "slowing", "greying"]
+    if not stages or [order.index(x) for x in stages] != sorted(order.index(x) for x in stages) or "slowing" not in stages:
+        problems.append(f"the stages should run pounding, slowing, greying and never back: {stages}")
+    if len(hearts) < 4 or max(hearts) <= hearts[0] or hearts[-1] >= max(hearts):
+        problems.append(f"her heart should race first and then slow: {hearts}")
+    if not out:
+        problems.append("a long constriction should end the match")
+    elif out["how"] == "pass_out" and out.get("cause") != "constriction":
+        problems.append(f"a blackout in body coils is the constriction's: {out}")
+    if not any("blood flow" in m["note"] and "heart about" in m["note"] for m in meters):
+        problems.append(f"the tap meter should show the blood flow and her heart: {[m['note'] for m in meters[-2:]]}")
+    import narrator as N
+    n = s.narrator
+    lines = "\n".join(N.Narrator.CONSTRICT_STAGE.values())
+    if "choke" not in lines or "SLOW" not in lines:
+        problems.append("the constriction's notes should say it is the blood, not a choke, and the heart slowing")
+    n._circ_on = {"Ripples"}
+    off = n._choke_off_lines("Ripples", ["Chest"])
+    if not off or "blood comes back" not in off[0]:
+        problems.append(f"the coils coming off should bring her blood back: {off}")
+    # (the user's log) a serpent "standing tall" in a sentence naming both of them, and her "stance"
+    n.strengths = {"Seraphina": 100, "Ripples": 80}
+    n.plans = {"Seraphina": "serpent", "Ripples": "biped"}
+    n._hurt_now, n._calm_beat = set(), False
+    slips = [str(x) for x in n._log_slips("Seraphina stood tall and unyielding, her red eyes locked onto Ripples.")]
+    if not any("serpent" in x for x in slips):
+        problems.append(f"a serpent standing tall beside another's name should be caught: {slips}")
+    import blocks
+    b = s.narrator.blocks if getattr(s.narrator, "blocks", None) else None
+    if N.FOOTWORK_THOUGHT.search("*Make her turn. She hates turning.*") is None:
+        problems.append("a footwork thought should be kept from two fighters locked in a hold")
+    e2 = H.session(3, fighters="Seraphina,Ripples").eng
+    e2.rules["finish"]["submission"]["enabled"] = True
+    e2.rules["finish"]["submission"]["constriction"]["enabled"] = False
+    e2.start_submission("Seraphina", "Ripples", "upright coil")
+    e2.turn += 1
+    if any(x["type"] == "constriction" for x in e2.beat()):
+        problems.append("constriction.enabled false = no constriction")
+    return problems
+
+
 def tap_meter_check():
     """Build 283 (the user's window): the tap meter follows this beat's real chance, not how the pain feels: past what
     she can bear at 0.3% it doesn't read "at the edge of tapping", and it says what keeps the chance down."""
@@ -808,6 +874,7 @@ def tap_meter_check():
     s = H.session(3, fighters="Seraphina,Ripples")
     e = s.eng
     e.rules["finish"]["submission"]["enabled"] = True
+    e.rules["finish"]["submission"]["constriction"]["enabled"] = False     # (the pain alone here)
     e.start_submission("Seraphina", "Ripples", "upright coil")
     for p in ("Chest", "Left Hip"):
         e.get("Ripples").parts[p].damage = 150
@@ -2780,6 +2847,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "constriction coil blood" for w in want):
+        t = time.time()
+        probs = constriction_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  constriction: the blood, not the breath; heart racing then slowing; blackout; meter  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "tapmeter meter window" for w in want):

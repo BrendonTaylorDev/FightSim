@@ -287,6 +287,7 @@ class Fighter:
     history: str = ""                            # (since build 281) her past, as far as the story may use it
     relationships: dict = field(default_factory=dict)   # (since build 281) other fighter -> what she is to her
     veteran: bool = False                        # (since build 281) she has fought before: she may remember it
+    heart_rest: float = 0.0                      # (since build 283) her resting heart rate, for the constriction's numbers
 
     def part(self, name):
         found = match_part(list(self.parts), name)
@@ -491,7 +492,7 @@ class Engine:
                     favors=dict(fd.get("favors") or {}), personality=str(fd.get("personality") or ""),
                     history=str(fd.get("history") or ""),
                     relationships={k: v for k, v in (fd.get("relationships") or {}).items() if not str(k).startswith("_")},
-                    veteran=bool(fd.get("veteran", False)))
+                    veteran=bool(fd.get("veteran", False)), heart_rest=float(fd.get("heart_rest", 0) or 0))
         body = fd.get("body", "human")
         template = dict(body) if isinstance(body, dict) else dict(self.rules["body_templates"][body])
         template.update(fd.get("extra_parts", {}))
@@ -10242,13 +10243,69 @@ class Engine:
                     # (blend.chokes: the dark builds up the same way, so she doesn't black out on its second beat)
                     po *= min(1.0, max(0, beats - 1) / max(1.0, float(bl.get("ramp_beats", 8)))) ** float(
                         bl.get("ramp_power", 2))
+            # CONSTRICTION (finish.submission.constriction, since build 283): coils round her chest or middle press
+            # so hard that blood can't get back to her heart: her blood pressure falls, her heart slows and stumbles,
+            # and the blood to her head runs short. It is mostly the blood, not her breath (each breath out is
+            # taken up by the coils, so her breaths grow shallow, but she goes under from the circulation long before
+            # she would from the air). It builds like a choke's air, from the coils' count and how hard they
+            # press, against her endurance (her strength, her energy left, a surge); past it she may black out,
+            # and as the grey closes in panic may make her tap
+            kcfg = cfg.get("constriction") or {}
+            body_coils = [h for h in hs if h.coil and self.coil_scope(h.part) == "body"] if kcfg.get("enabled", True) \
+                else []
+            circ, circ_end, pc, constrict = 0.0, 0.0, 0.0, False
+            if body_coils:
+                tight = max(0.5, min(2.0, max(h.power for h in body_coils) / max(1.0, float(kcfg.get("power_ref", 16)))))
+                # what sets it apart from a submission: it goes by the SQUEEZE (the coils, how hard, how big the
+                # coiler is against her) and her breath and energy left to fight it, more than by her pain. Her
+                # health and the coiled parts still count, only less than in a submission
+                sa, sd = self.size_m(self.get(a)), self.size_m(d)
+                big = max(float(kcfg.get("size_min", 0.75)), min(float(kcfg.get("size_max", 1.4)),
+                          (sa / sd) ** float(kcfg.get("size_weight", 0.2)))) if sa and sd else 1.0
+                per = float(kcfg.get("per_beat", 16)) * (1.0 + float(kcfg.get("extra_coil", 0.35)) * (len(body_coils) - 1)) \
+                    * tight * big
+                circ = per * max(h.turns_active for h in body_coils)
+                ew = float(kcfg.get("energy_weight", 0.4))
+                worst = max((d.parts[h.part].damage for h in body_coils if h.part in d.parts), default=0.0)
+                part_f = 1.0 - float(kcfg.get("part_weight", 0.25)) * min(1.0, worst / 300.0)
+                circ_end = max(float(kcfg.get("endure_min", 30)), float(kcfg.get("endurance", 110))
+                               * (s_ / 100.0) ** float(kcfg.get("health_power", 0.5)) * surge * part_f
+                               * (1.0 - ew + ew * max(0.0, min(100.0, d.energy)) / 100.0))
+                # (no tap.blend build-up on top: the gauge itself builds beat by beat, from nothing)
+                pc = min(float(kcfg.get("max", 0.85)), max(0.0, (circ - circ_end) / float(kcfg.get("span", 70))))
+                near_k = float(kcfg.get("near", 0.75))
+                if circ >= near_k * circ_end and float(kcfg.get("grey_tap", 0.25)) > 0:
+                    # the grey closing in: panic as much as pain may make her give in
+                    tap = max(tap, float(kcfg.get("grey_tap", 0.25)) * min(1.0, (circ - near_k * circ_end)
+                                                                         / max(1.0, circ_end * (1 - near_k)
+                                                                               + float(kcfg.get("span", 70)))))
+                if pc > po:
+                    po, constrict = pc, True
+                order = ("pounding", "slowing", "greying")
+                frac = min(0.99, circ / max(1.0, circ_end + float(kcfg.get("span", 70))))
+                # (the stages follow the same curve as the numbers: racing to vitals.peak_at, then slowing, and the
+                # grey from stage_grey of the way)
+                stage = ("pounding" if frac < float((kcfg.get("vitals") or {}).get("peak_at", 0.25)) + 0.05 else
+                         "slowing" if frac < float(kcfg.get("stage_grey", 0.65)) else "greying")
+                # (a heart that has begun to slow doesn't race again while the same coils stay on: the stage holds)
+                pk = d.learned.get("circ_peak") or ["", 0, -1]
+                hid = min(h.id for h in body_coils)
+                if pk[0] == a and len(pk) > 2 and pk[2] == hid and order.index(stage) < int(pk[1]):
+                    stage = order[int(pk[1])]
+                d.learned["circ_peak"] = [a, order.index(stage), hid]
+                vit = self.constriction_vitals(d, frac, stage)
+                d.learned["circ_vitals"] = [self.turn, vit]      # (for the tap meter)
+                events.append(dict({"type": "constriction", "attacker": a, "defender": dn, "stage": stage,
+                                    "pct": round(100 * frac), "coils": len(body_coils),
+                                    "parts": [h.part for h in body_coils]}, **vit))
             # she holds on the first beat it goes past her limit, whatever it costs her: only after that can she
             # give in (d.learned keeps which grip she has already fought through once)
             # finish.submission.taps: a body part her taps have already used may no longer count toward the tally;
             # a grip on such a part (and nothing new besides) can't make her give in, so it doesn't roll
             # (for the window's pain gauge: the very numbers this check weighed, this beat)
             d.learned["sub_gauge"] = {"turn": self.turn, "pain": round(pain), "resist": round(resist),
-                                      "air": round(air), "endure": round(endure), "sub": name, "by": a,
+                                      "air": round(max(air, circ)), "endure": round(circ_end if circ > air else endure),
+                                      "circ": circ > air, "sub": name, "by": a,
                                       "base": round(base, 3) if blended else None}
             if first:
                 if urge_first:
@@ -10314,12 +10371,15 @@ class Engine:
             if tap > 0 and self._chance(tap, f"{dn} tapping out to {poss_word(a)} {name} (pain {pain:.0f} against "
                                         f"her resistance {resist:.0f})", "SHE TAPS", "she holds on"):
                 how = "tap"
-            elif po > 0 and self._chance(po, f"{dn} passing out in {poss_word(a)} choke (it has built to {air:.0f} "
-                                          f"against her endurance {endure:.0f})", "SHE PASSES OUT", "she stays awake"):
+            elif po > 0 and self._chance(po, (f"{dn} blacking out in {poss_word(a)} coils (the constriction has built to "
+                                              f"{circ:.0f} against her endurance {circ_end:.0f})") if constrict else
+                                         (f"{dn} passing out in {poss_word(a)} choke (it has built to {air:.0f} "
+                                          f"against her endurance {endure:.0f})"), "SHE PASSES OUT", "she stays awake"):
                 how = "pass_out"
             if not how:
                 near = float(tcfg.get("near", 0.75))
-                if pain >= near * resist or (choke and air >= near * endure) or (
+                if pain >= near * resist or (choke and air >= near * endure) or (body_coils and circ >= float(
+                        kcfg.get("near", 0.75)) * circ_end) or (
                         blended and base >= float(bl.get("near", 0.2)) and beats >= 2):
                     # close to her limit: she is fighting the urge to give in (or the dark), and holding. How many
                     # times she has refused her (in this grip or an earlier one) lets the telling climb toward the tap
@@ -10328,6 +10388,7 @@ class Engine:
                     d.learned["tap_refused"] = [a, refusals]
                     ev_ = {"type": "tap_resist", "attacker": a, "defender": dn, "submission": name,
                            "parts": [h.part for h in hs], "choke": choke and air >= near * endure,
+                           "constrict": bool(body_coils) and circ >= float(kcfg.get("near", 0.75)) * circ_end,
                            "over": over >= 0, "pain": round(pain), "resist": round(resist),
                            "beats_held": beats, "refusals": refusals, "spent": spent, "breaking": stage_ if breaking else None}
                     ev_.update(self._tap_tells(d, refusals, over, resist, ev_["choke"]))
@@ -10336,8 +10397,10 @@ class Engine:
                     # (tap.urge, since build 256) nowhere near her limit, but it hurts: she is shown fighting the
                     # urge all the same, lighter (it doesn't count as a refusal)
                     events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
-                self._note_tap_state(d, a, name, events, tap, pain, resist, held_on=first_over, spent=spent,
-                                     breaking=stage_ if breaking else None, air=(air, endure) if choke else None,
+                self._note_tap_state(d, a, name, events, tap, pain, resist, held_on=first_over, spent=spent, out=po,
+                                     breaking=stage_ if breaking else None,
+                                     air=(circ, circ_end, "circ") if body_coils and circ > air else
+                                     (air, endure) if choke else None,
                                      why_low=why_low if tap > 0 else ())
             if not how:
                 continue
@@ -10345,8 +10408,9 @@ class Engine:
                 # (since build 266) she blacked out from the choke: the pass-out is the neck's, not the worst-hurt
                 # part beside it (the build-264 log credited a tail strangle's pass-out to her upper back)
                 spent_ = set(self.spent_tap_parts(d))
-                tap_part = next((h.part for h in hs if re.search(r"(?i)neck|throat", h.part)
-                                 and h.part not in spent_), tap_part)
+                tap_part = next((h.part for h in (body_coils if constrict else hs)
+                                 if (constrict or re.search(r"(?i)neck|throat", h.part)) and h.part not in spent_),
+                                tap_part)
             parts = [h.part for h in hs]
             with_ = list(dict.fromkeys(h.with_part for h in hs if h.with_part))
             taps_ = self._taps_rule()
@@ -10371,7 +10435,8 @@ class Engine:
                           "parts": parts, "with": with_, "part": tap_part, "tap_no": len(given), "needed": need,
                           "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
                           "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure),
-                          "spent_parts": self.spent_tap_parts(d)}
+                          "spent_parts": self.spent_tap_parts(d),
+                          "cause": "constriction" if how == "pass_out" and constrict else ""}
                     if how == "tap" and self._tap_vary_on():
                         ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
                     events.append(ev)
@@ -10386,7 +10451,8 @@ class Engine:
                   "part": tap_part,
                   "with": with_, "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
                   "tap_no": len(d.learned.get("taps_given") or []) or 1,
-                  "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure)}
+                  "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure),
+                  "cause": "constriction" if how == "pass_out" and constrict else ""}
             if how == "tap" and self._tap_vary_on():
                 ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
             ev["elimination"] = self.eliminate(dn, reason)
@@ -10586,7 +10652,7 @@ class Engine:
         return bool(((self.rules.get("narration") or {}).get("tap_build") or {}).get("vary", True))
 
     def _note_tap_state(self, d, a, name, events, chance, pain, resist, first=False, held_on=False, spent=False,
-                        breaking=None, air=None, why_low=()):
+                        breaking=None, air=None, why_low=(), out=0.0):
         """For the window (window.hold_panel): how near she is to tapping, as the tap check left it this beat. level
         is the narrator's ladder (1-5: tap.urge's lighter signs, then the refusals near and past her limit), chance
         the tap chance this beat's roll was made at (0 on a beat she can't tap: her first beat in it, the first
@@ -10600,7 +10666,10 @@ class Engine:
                                                                             or min(3, int(ev.get("refusals") or 1))))
         else:
             level = 0
-        d.learned["tap_state"] = {"turn": self.turn, "by": a, "sub": name, "chance": round(float(chance), 4),
+        d.learned["tap_state"] = {"turn": self.turn, "by": a, "sub": name,
+                                  # (since build 283) the chance it ENDS this beat: a tap, or blacking out (out)
+                                  "chance": round(1.0 - (1.0 - float(chance)) * (1.0 - float(out or 0)), 4),
+                                  "tap_only": round(float(chance), 4), "out": round(float(out or 0), 4),
                                   "pain": round(pain), "resist": round(resist), "level": level,
                                   "refusals": int((d.learned.get("tap_refused") or ["", 0])[1])
                                   if (d.learned.get("tap_refused") or [""])[0] == a else 0,
@@ -10609,8 +10678,13 @@ class Engine:
                                   "why_low": [[w, round(float(m_), 3)] for w, m_ in why_low],
                                   "breaking": breaking, "choke": bool(ev.get("choke")),
                                   "air": min(99, round(air[0] / max(1.0, air[1] + float(
-                                      (((self.rules.get("finish") or {}).get("submission") or {}).get("choke") or {})
+                                      (((self.rules.get("finish") or {}).get("submission") or {}).get(
+                                          "constriction" if len(air) > 2 else "choke") or {})
                                       .get("span", 70))) * 100)) if air and air[0] else None,
+                                  # (since build 283) the gauge is a constriction's blood flow, not a choke's air
+                                  "circ": bool(air and len(air) > 2),
+                                  "vitals": ((d.learned.get("circ_vitals") or [None, None])[1]
+                                             if (d.learned.get("circ_vitals") or [None])[0] == self.turn else None),
                                   # (since build 265) the chance it is building toward (tap.blend), for the meter
                                   "toward": (sg_.get("base") if (sg_ := d.learned.get("sub_gauge") or {}).get("turn")
                                              == self.turn and sg_.get("by") == a else None)}
@@ -10690,6 +10764,31 @@ class Engine:
     # the signs of fighting the tap that need a free paw (narrator.TAP_TELLS, TAP_URGE)
     PAW_TELLS = ("fist", "claws", "reach", "yank", "fist_shake", "yank_back", "shake_hard", "twitch", "curl", "touch",
                  "hover", "pin_paw", "grab_ground", "flat", "hangs")
+
+    def constriction_vitals(self, d, frac, stage):
+        """finish.submission.constriction.vitals (since build 283): rough numbers for the screen while coils hold back
+        her blood: {"heart": beats a minute, "irregular", "bp": [systolic, diastolic]}, or {} when off. As in
+        constricted prey: at first fear and effort drive her heart and her blood pressure UP; then, with blood unable
+        to get back to her heart, her blood pressure falls and her heart SLOWS, beats skipping as it goes. Her
+        resting rate is fighters.json heart_rest (else vitals.heart_rest); the rest of the curve is vitals'.
+        Approximate by design: they are the story's numbers, never rolled against."""
+        v = (((self.rules.get("finish") or {}).get("submission") or {}).get("constriction") or {}).get("vitals") or {}
+        if not v.get("enabled", True):
+            return {}
+        rest = float(getattr(d, "heart_rest", 0) or v.get("heart_rest", 100))
+        peak_at, peak, low = float(v.get("peak_at", 0.25)), float(v.get("peak_mult", 1.6)), float(v.get("low_mult", 0.45))
+        if frac <= peak_at:
+            hr = rest * (1.25 + (peak - 1.25) * frac / max(0.01, peak_at))
+        else:
+            hr = rest * (peak + (low - peak) * (frac - peak_at) / max(0.01, 1.0 - peak_at))
+        sys0, dia0 = (float(x) for x in (v.get("bp_rest") or (120, 80)))
+        rise = float(v.get("bp_rise", 1.15))
+        if frac <= peak_at:
+            m = 1.0 + (rise - 1.0) * frac / max(0.01, peak_at)
+        else:
+            m = rise + (float(v.get("bp_low", 0.45)) - rise) * (frac - peak_at) / max(0.01, 1.0 - peak_at)
+        return {"heart": int(round(hr / 5.0) * 5), "irregular": stage != "pounding",
+                "bp": [int(round(sys0 * m / 5.0) * 5), int(round(dia0 * m / 5.0) * 5)]}
 
     def arms_trapped(self, d):
         """(since build 275) coils wound round her body, her arms pinned inside them: no paw is free to tap."""

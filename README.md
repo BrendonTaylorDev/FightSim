@@ -654,6 +654,43 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 285
+Constriction (`finish.submission.constriction`, on by default in a submission match). Coils round her chest, belly or
+back now put her out the way a real constrictor does: mostly by her blood, not her breath. The squeeze stops blood
+getting back to her heart, her blood pressure falls, and her heart, racing at first with fear and effort, slows and
+stumbles until she blacks out. Her breaths grow shallow too (the coils take up the slack each time she breathes out),
+but that is not what takes her.
+- A gauge builds each beat the coils are on, like a choke's air. It builds faster with more coils, a harder squeeze
+  and a coiler much bigger than her, against her endurance. What sets it apart from a submission (pain against her
+  will) and a pin (a clock) is that it goes mostly by the squeeze and her energy left to fight it (struggling spends
+  it). Her health and the coiled parts still count, but less than in a submission.
+- Past her endurance she may black out. As the grey closes in, panic can make her tap too.
+- Measured with Seraphina's upright coil on Ripples, no breaking free, 20 fights each:
+
+  | Ripples | Beats until it ends |
+  |---|---|
+  | fresh | about 10 (a plain submission: 10) |
+  | half health | about 8 |
+  | half health, energy 40 | about 7 |
+  | a quarter, energy 30 | about 6 |
+
+  Most end in a blackout.
+- The story is told in stages, in the order it really goes: her heart pounding; then slowing and stumbling, her head
+  swimming, pins and needles; then slow and uneven, the grey closing in. The blackout is told as the blood ("no
+  gasping for air"), and when the coils come off, her blood coming back: her heart catching and racing, her head
+  pounding, the tingling, the grey draining away.
+- Rough numbers on the screen (never in the prose, never rolled against): heart rate and blood pressure, rising at
+  first and then falling, irregular once her heart begins to slow (`constriction.vitals`; resting rates in
+  fighters.json `heart_rest`: Ripples 140, Nerine 120, Nocturne 110, Seraphina 60).
+- The tap meter's chance is now of the hold ENDING this beat, a tap or a blackout, with each shown beside it. It also
+  shows the blood flow cut off and her heart and blood pressure.
+- Coils on her neck are still a choke; on a limb they bind it.
+
+Fixes from the played log:
+- A serpent "standing tall" or with a "stance" is caught even in a sentence naming both fighters.
+- Two fighters locked in a hold get no thoughts about footwork or the next blow ("Make her turn. She hates turning."
+  inside Seraphina's coils).
+
 ## Build 284
 The tap meter follows the real chance now. Ripples read "at the edge of tapping, 0% chance this beat": her pain
 was far past what she could bear, but the chance was 0.3% (the hold's third beat, x0.06 while it builds; still on

@@ -656,6 +656,10 @@ SAYS_FACE_DOWN = re.compile(r"\b(face-?down|face-first|on (?:her|his) (?:belly|s
 UPRIGHT_LINE = re.compile(r"\b(?:balance|planted|plant(?:s|ed|ing)? herself|steps?|stance|square|drew herself up|"
                           r"faced front|gave her weight to the ground|leaned toward|feet|stood|footing|forward|"
                           r"distance|shook the dust|up and down|taller)\b", re.I)
+# (since build 283) thoughts about footwork, distance and the next blow: not for two fighters locked in a hold
+FOOTWORK_THOUGHT = re.compile(r"\b(?:turn\w*|gap|footing|step\w*|guard\w*|set\b|low, then high|hit, then gone|"
+                              r"strike|telegraph|reach\w* too far|ground behind|faster on one side|breathes\b|"
+                              r"wait for her|dip\w*|rush\w*|press now|come to her|wild)", re.I)
 # (since build 283) an impact told in a beat of grips alone ("The impact came first as a dull thud" in a coil)
 HOLD_IMPACT = re.compile(r"\b(?:the|an?) (?:\w+ )?impact\b|\ba (?:dull |heavy |sharp )?thud\b|\bthe (?:blow|hit) "
                          r"(?:came|landed|hit|struck|connected)\b", re.I)
@@ -4703,8 +4707,19 @@ class Narrator:
                              f"The same grips, not loosened: they keep wrenching as hard as ever and tighten further. From "
                              f"now on it can put her out like any pin. Show her being pinned in it as the last thing that "
                              f"happens.")
+            elif e["type"] == "constriction":
+                # (finish.submission.constriction, since build 283) what the coils round her body are doing to her
+                # blood and her heart this beat, in the order it really goes
+                self.__dict__.setdefault("_circ_on", set()).add(e["defender"])
+                lines.append(self.CONSTRICT_STAGE.get(e.get("stage"), self.CONSTRICT_STAGE["pounding"]).format(
+                    d=e["defender"], a=e["attacker"], ds=poss(e["defender"]),
+                    coils="coils" if int(e.get("coils") or 1) > 1 else "coil"))
             elif e["type"] == "tap_resist":
                 parts = " and ".join(p.lower() for p in e.get("parts") or [])
+                if e.get("constrict") and not e.get("choke"):
+                    lines.append(f"  - SHE FIGHTS THE GREY: the constriction has taken hold of {poss(e['defender'])} "
+                                 f"blood, and she is fighting to stay conscious as much as fighting the pain; she "
+                                 f"does not go under this beat.")
                 if e.get("choke"):
                     lines.append(f"  - SHE FIGHTS THE DARK: the {e['submission']} on {poss(e['defender'])} {parts} is "
                                  f"running out her air; "
@@ -4833,6 +4848,15 @@ class Narrator:
                                     f"and of the fighter who held on so long (not gloating, unless that is who she "
                                     f"is)." if ((self.rules.get("narration") or {}).get("tap_build") or {}).get(
                                         "enabled", True) else ""))
+                elif e.get("cause") == "constriction":
+                    lines.append(f"{e['defender']} BLACKS OUT at the END of this beat: the {e['submission']} on her "
+                                 f"{parts}" + (f" ({with_})" if with_ else "") + f" has held the blood back from her "
+                                 f"heart too long. Her heart has slowed to a heavy, stumbling beat, the grey closes in "
+                                 f"from the edges until there is only a pinpoint, the sounds go far away, her "
+                                 f"struggles stop answering her, and she goes limp in the coils, OUT, still breathing "
+                                 f"shallowly. {e['attacker']} feels her go slack and unwinds. It is the last thing "
+                                 f"that happens, and it ends the match. (No choking or gasping for air: it is the "
+                                 f"blood that takes her.)")
                 else:
                     lines.append(f"{e['defender']} PASSES OUT at the END of this beat: the {e['submission']} on her "
                                  f"{parts}" + (f" ({with_})" if with_ else "") + f" has held back her breath and blood "
@@ -4853,8 +4877,11 @@ class Narrator:
                     + (", and she gives up: " + (self.TAP_WAYS[e["way"]].format(
                         spot=self._tap_spot(e["defender"], e["attacker"])) if e.get("way") in self.TAP_WAYS else
                         "a paw slapping the ground, or a cry that says it plainly")
-                       if e["how"] == "tap" else ": her sight greys out and she goes slack, and comes round gasping "
-                                                 "as the grip comes off")
+                       if e["how"] == "tap" else (": her heart slows and stumbles, the grey closes in and she goes "
+                                                  "slack in the coils, and comes round dizzy, her head pounding, as "
+                                                  "they come off" if e.get("cause") == "constriction" else
+                                                  ": her sight greys out and she goes slack, and comes round gasping "
+                                                  "as the grip comes off"))
                     + f". {e['attacker']} feels it and LETS GO. THE MATCH IS NOT OVER: that is her "
                     f"{ordinal(e['tap_no'])} tap of the {e['needed']} that end it ({left} more to go). Show the "
                     f"tap, the grip coming off, and the two of them parting, hurting and breathing hard; she is "
@@ -7586,6 +7613,25 @@ class Narrator:
         "stubborn": "no reason any more, only a stubbornness she couldn't explain if she tried",
         "plea": "nothing but a wordless plea for it to stop on its own, so that she doesn't have to be the one",
     }
+    # (finish.submission.constriction, since build 283) coils round her body: what it does to her this beat. It is
+    # her blood, not her breath, that the squeeze takes: the pressure stops blood getting back to her heart, her
+    # blood pressure falls, and her heart (racing at first with fear and effort) slows and stumbles as it goes on
+    CONSTRICT_STAGE = {
+        "pounding": "  - THE CONSTRICTION ON {d} (early): {ds} heart is POUNDING, hard and fast, with fear and effort; "
+                    "each time she breathes out the {coils} take up the slack, so the next breath is shallower; a "
+                    "pressure building in her chest and throat, her face and ears hot and full. Tell it as that. (It is "
+                    "the squeeze on her blood, not a choke: her airway is open.)",
+        "slowing": "  - THE CONSTRICTION ON {d} (taking hold): the pounding in {ds} chest has begun to SLOW and "
+                   "stumble, the beats heavy and uneven, one skipping now and then, as the {coils} keep the blood from "
+                   "getting back to her heart; her head swims and feels thick, pins and needles creep into her paws "
+                   "and her tail, and a cold, weak feeling spreads through her limbs. Her breaths are short and "
+                   "shallow. (Not a choke: it is her blood, and her heart, that are failing.)",
+        "greying": "  - THE CONSTRICTION ON {d} (near the end): {ds} heartbeat is SLOW, heavy and irregular; the grey "
+                   "is closing in from the edges of her sight, sounds are going far away and muffled, her struggles "
+                   "come weaker and further apart and her limbs answer late. She is close to blacking out (only the "
+                   "events say whether she does). (Not a choke: no gasping for air; the blood is what is running "
+                   "out.)",
+    }
     TAP_DARK = {
         "grey": "her sight greying and narrowing to a tunnel",
         "roar": "a roaring in her ears that drowns out everything, her own heartbeat loud in it",
@@ -9131,8 +9177,12 @@ class Narrator:
 
         def mind(who, role, other, **more):      # one thought and one feeling that fit where the fight stands
             st = standing(who, other) if other else {"level"}
+            # (since build 283) locked together in a hold, no thought about footwork, distance or the next blow
+            # ("Make her turn. She hates turning." with Seraphina's coils round her)
+            locked = any({g[0], g[1]} == {who, other} for g in (getattr(self, "grips", None) or [])) if other else False
             add(f"{poss(who)} thought", B.pick("thought", 1, role={role} | (st - {"level"}), stage=stage, standing=st,
-                                                 fighter=who.lower(), **dict({"has": feats(who)}, **more)))
+                                                 fighter=who.lower(), exclude=FOOTWORK_THOUGHT if locked else None,
+                                                 **dict({"has": feats(who)}, **more)))
             add(f"what {who} feels", B.pick("emotion", 1, role={role}, stage=stage, standing=st, fighter=who.lower(),
                                             **dict({"has": feats(who)}, **more)))
 
@@ -10810,6 +10860,16 @@ class Narrator:
     def _choke_off_lines(self, who, parts):
         """narration.full_chokes: a grip on her neck comes off, and her air and blood come back (the whooping breath,
         the pressure draining from her head), told once, as it lets go."""
+        body = [p for p in parts if body_region(str(p or "")) in ("chest", "belly", "back_up", "back_low")]
+        if who in (getattr(self, "_circ_on", None) or set()) and body and not any(
+                body_region(str(p or "")) == "neck" for p in parts):
+            # (since build 283) coils round her body come off after the constriction had taken hold
+            self._circ_on.discard(who)
+            return [f"  - THE CONSTRICTION IS OFF {who}: as the coils come away the blood comes back: her heart, "
+                    f"which had slowed and stumbled, catches and starts to race, her head pounds and swims, a hot "
+                    f"tingling floods back into her paws and her tail, and the grey drains from the edges of her "
+                    f"sight; her chest heaves, free to fill at last. She is dizzy and unsteady for a moment. Show it "
+                    f"once, as it happens."]
         if not self._full_chokes() or not any(body_region(str(p or "")) == "neck" for p in parts):
             return []
         return [f"  - THE CHOKE IS OFF {who}: as it lets go her air and blood come back in a rush: great ragged, "
@@ -11635,9 +11695,20 @@ class Narrator:
                           f"the coils: they strain and can't come free. She fights with her body, her legs, her tail, "
                           f"her breath")
             m = SERPENT_STOOD.search(sent) if len(whos) == 1 and plans_.get(whos[0]) == "serpent" else None
+            stood_who = whos[0] if whos else ""
+            if m is None and len(whos) == 1 and plans_.get(whos[0]) == "serpent":
+                m = re.search(r"\b(?:her|" + re.escape(whos[0]) + r"(?:'s|’s)) (?:\w+ )?stance\b", sent, re.I)
+            if m is None:
+                # (since build 283) "Seraphina stood tall and unyielding" in a sentence naming both of them
+                for w_ in whos:
+                    if plans_.get(w_) == "serpent":
+                        m = re.search(r"\b" + re.escape(w_) + r" (?:\w+ ){0,2}?" + SERPENT_STOOD.pattern[2:], sent, re.I)
+                        if m:
+                            stood_who = w_
+                            break
             if m:
                 # (since build 279) "Seraphina stood firm, her coils shifting slightly under her"
-                add(sent, f"it has {whos[0]} stand (\"{m.group(0)}\"), but she is a serpent with nothing to stand on: "
+                add(sent, f"it has {stood_who} stand (\"{m.group(0)}\"), but she is a serpent with nothing to stand on: "
                           f"she holds her ground on her coils, rears, or braces her body")
             if named and len(whos) == 1 and "tails" not in self._feats_of(whos[0]) and re.search(
                     r"\b" + re.escape(whos[0]) + r"(?:'s|’s) (?:\w+ )?tails\b", sent):

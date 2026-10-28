@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 284 (the tap meter follows the real chance)"
+VERSION = "2026-10-28 build 285 (constriction: the blood, not the breath)"
 
 HELP = """
 =============================================================================================
@@ -1357,6 +1357,13 @@ class Session:
             elif t == "tap_resist":
                 facts.append(f"{e.get('defender')} refuses to tap in {poss_word(e.get('attacker') or '')} "
                              f"{e.get('submission') or 'hold'} (she does NOT tap this beat)")
+            elif t == "constriction":
+                facts.append(f"{poss_word(e.get('attacker') or '')} coils round {poss_word(who or '')} body hold back her "
+                             f"blood (not her air): her heart " + {"pounding": "pounding with fear and effort",
+                                                                     "slowing": "slowing and stumbling, her head swimming",
+                                                                     "greying": "slow and uneven, the grey closing in, "
+                                                                                "close to blacking out"}.get(
+                                 e.get("stage"), "labouring") + " (she does NOT black out unless it says so)")
             elif t == "quirk_moment":
                 facts.append(f"(her character, to show in how she does it, not a new event) {e.get('note')}")
             elif t == "tap_urge":
