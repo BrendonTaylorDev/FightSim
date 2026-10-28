@@ -690,7 +690,11 @@ COIL_SQUEEZE = re.compile(r"\bcoils? (?:\w+ ){0,3}?(?:tighten|clamp|cinch|squeez
                           r"\b(?:squeez|constrict|crush)\w* (?:her|\w+['’]s?) (?:ribs|breath\w*|chest|lungs|middle|stomach)\b",
                           re.I)
 # (since build 277) paws or arms put to work by a fighter whose arms are trapped inside coils
-TRAPPED_PAWS = re.compile(r"\b(?:paws?|claws?|hands?|arms?|forelegs?) (?:\w+ ){0,3}?(?:clutch|claw|scrap|pried|pry|prie|"
+TRAPPED_PAWS = re.compile(r"\bher (?:own |free |other )?(?:wrist|ankle)\b|\bher (?:free|other) (?:paw|hand|arm)\b|"
+                          # (since build 305) her own wrist bitten or gripped, her free paw locked round her ankle
+                          r"\b(?:bit|bites|gripped|grips|grabbed|clutched|locked|clamped) (?:\w+ ){0,4}?her own "
+                          r"(?:paw|hand|arm|wrist)\b|"
+                          r"\b(?:paws?|claws?|hands?|arms?|forelegs?) (?:\w+ ){0,3}?(?:clutch|claw|scrap|pried|pry|prie|"
                           r"push|shov|grabb|reach|pound|beat|scrabbl|rak|dug|dig|tore|tear|slapp|tapp|batt)\w*|"
                           r"\b(?:clutch|claw|scrap|pried|pry|push|shov|grabb|reach|pound|beat|scrabbl|rak|tore|tear|slapp|"
                           r"batt)\w* (?:\w+ ){0,4}?with her (?:\w+ )?(?:paws?|claws?|hands?|arms?)\b", re.I)
@@ -1078,8 +1082,15 @@ HAND_WEIGHT = re.compile(r"\bweight\b[^.!?]{0,25}?\b(?:on|onto|off|from)\b (?:of
 WEAPONS = (("claws", r"\bclaw|\btalon|\bscratch|\brak(?:e|es|ed|ing)\b|\bswipe"),
            ("teeth", r"\bbit(?:e|es|ing)?\b|\bfang|\bteeth|\bjaws?\b|\bcrunch|\bmaw\b"),
            ("tail", r"\btails?\b"),
-           ("horn", r"\bhorn|\bgore"))
-WEAPON_SAY = {"claws": "her CLAWS", "teeth": "her TEETH", "tail": "her TAIL", "horn": "her HORN"}
+           ("horn", r"\bhorn|\bgore"),
+           # (since build 305) a move delivered with her head (Headbutt, Zen Headbutt, Skull Bash)
+           ("head", r"\bhead[- ]?butt|\bskull\b"))
+# a blow landed with her head ("she snapped her head forward, striking Ripples' jaw") when this beat's blows are
+# delivered with her tail
+HEAD_STRIKE = re.compile(r"(?i)\b(?:snapp?ed|drove|slammed|thrust|jerked|whipped|shot|rammed|cracked) (?:her )?head "
+                         r"(?:forward|down|in|into|out)\b[^.!?…]{0,50}?\b(?:strik\w*|hit\w*|slam\w*|smash\w*|crack\w*|"
+                         r"catch\w*|caught|struck|into)\b|\bhead[- ]?butt\w*")
+WEAPON_SAY = {"claws": "her CLAWS", "teeth": "her TEETH", "tail": "her TAIL", "horn": "her HORN", "head": "her HEAD"}
 WEAPON_NOT = {"claws": "a claw swipe", "teeth": "a bite", "tail": "a tail strike"}
 # a weapon word whose object is the ground or the scenery ("rakes the ground", "her claws dug into the mud", "her tail
 # lashes the water"): not the weapon the blow lands with
@@ -1445,6 +1456,12 @@ NOT_UP = re.compile(r"\b(tried to|trying to|tries to|attempt\w* to|couldn't|coul
                     r"failed to|not|never|almost|nearly|struggl\w+ to|fought to|before she could|if she|halfway|half)\b"
                     r"[^.!?,;—]{0,30}$", re.I)
 # she passes out: what the last beat of a completed pin has to show
+# (since build 305) borne down in a hold: "pressed her down", "was borne down", "dragged down flat", "her legs folded"
+BORNE_DOWN = re.compile(r"(?i)\b(?:borne|bore|bear(?:s|ing)?|press(?:ed|ing)?|forc(?:ed|ing)|dragg(?:ed|ing)|crush(?:ed|ing)|"
+                        r"pull(?:ed|ing)|bent|weigh(?:ed|ing)|pinn(?:ed|ing)|drove|driven) (?:\w+ ){0,2}?(?:down|flat|"
+                        r"to (?:her|the) (?:knees|ground|grass|earth))\b|\blegs? (?:fold(?:ed|ing)?|gave|buckl\w*)\b|"
+                        r"\b(?:flat|face-down|face-up) (?:on|against|in) the (?:ground|grass|earth|sand|dirt|mud)\b|"
+                        r"\bon(?:to)? her knees\b")
 OUT_SAID = re.compile(
     r"\b(faint(?:ed|s|ing)|(?:a dead|in a|into a) faint|passed out|pass(?:es|ing) out|blacked out|black(?:ness)? (?:took|claimed|swallowed|closed)|went (?:limp|slack|"
     r"still|dark|out|quiet)|goes (?:limp|slack|still)|out cold|unconscious\w*|consciousness (?:slipped|left|fled|faded|went|"
@@ -2175,12 +2192,82 @@ def _unitalic_narration(text, names):
 
     def fix(m):
         inner = m.group(2)
-        if (who.match(inner.lstrip()) and re.search(r"\b(?:she|her)\b", inner)
+        lead = inner.lstrip()
+        # (since build 305) also a paragraph that opens like narration ("*The world narrowed to the pressure points,
+        # the grinding ache in her stomach...*", "*The place was alive with sound...*"), not only on her name
+        opens = who.match(lead) or re.match(r"(?:The|A|An|Her|She|Its|Their|Every|Each)\b", lead)
+        if (opens and (re.search(r"\b(?:she|her)\b", inner) or re.match(r"(?:The|A|An)\b", lead))
                 and re.search(r"\b(?:was|were|had|could|narrowed|watched|felt|saw|looked|moved)\b", inner)
-                and not re.search(r"\b(?:I|I'm|I'll|me|my|you)\b", inner)):
+                and not re.search(r"\b(?:I|I'm|I'll|I've|I'd|me|my|mine|myself|we|us|our|you|your)\b", inner)):
             return m.group(1) + inner
         return m.group(0)
     return rx.sub(fix, text)
+
+
+# (since build 305) a first-person thought slipped into the past ("*I needed to finish this soon,*"): a thought is
+# in her own present
+THOUGHT_PAST = (("I needed", "I need"), ("I wanted", "I want"), ("I was going to", "I'm going to"),
+                ("I had to", "I have to"), ("I was", "I am"), ("I knew", "I know"), ("I felt", "I feel"),
+                ("I couldn't", "I can't"), ("I could not", "I cannot"), ("I wasn't", "I'm not"),
+                ("I didn't", "I don't"), ("I did not", "I do not"))
+
+
+def _mend_thoughts(text):
+    """Thoughts mended with no call (narration.mend_thoughts, since build 305): a thought given a voice ("*I won't
+    lose,* she thought, her voice calm and measured": a thought is not heard) loses the voice; a first-person
+    thought slipped into the past is put back in her present; a thought said again a moment later ("*Not finished.
+    Not yet.*" and then "*Not finished.*") goes; and a thought one fighter had, given word for word to the other in her
+    own part ("*This time, I won't be gentle.*" in both), goes from the second."""
+    text = re.sub(r"\b((?:she|he|[A-Z][a-z]+) thought)(?:,| as| in) her voice\b[^.!?…*]*", r"\1", text)
+
+    def present(m):
+        t = m.group(0)
+        for a, b in THOUGHT_PAST:
+            t = re.sub(r"\b" + re.escape(a) + r"\b", b, t)
+        return t
+    text = re.sub(r"\*[^*\n]+\*", present, text)
+
+    def words(t):
+        t = t.lower().replace("’", "'")
+        for a, b in (("won't", "will not"), ("can't", "can not"), ("cannot", "can not"), ("n't", " not"),
+                     ("i'll", "i will"), ("i'm", "i am"), ("'ll", " will"), ("'re", " are"), ("'s", " is"),
+                     ("'ve", " have"), ("'d", " would")):
+            t = t.replace(a, b)
+        return set(re.findall(r"[a-z]+", t))
+    seen = []          # [(thought words, the part it was first had in)]
+    part, out = None, []
+    for para in text.split("\n"):
+        lab = re.match(r"^\s*— (.+) —\s*$", para)
+        if lab:
+            part = lab.group(1)
+            out.append(para)
+            continue
+        kept = para
+        for m in list(re.finditer(r"\*([^*\n]+)\*", para)):
+            w = words(m.group(1))
+            if len(w) < 2:
+                continue
+            lone = para.strip() == m.group(0).strip()
+            drop = False
+            for old, where in seen:
+                near = len(w) >= 3 and len(w & old) / max(1, len(w | old)) >= 0.8
+                if (near and where != part) or (lone and where == part and (near or w <= old)):
+                    # said again: by the other fighter in her own part (never hers), or as a lone line repeating one
+                    drop = True
+                    break
+            if drop:
+                kept = kept.replace(m.group(0), "", 1)
+            else:
+                seen.append((w, part))
+        kept = re.sub(r"\s{2,}", " ", kept).strip() if kept != para else para
+        # (a sentence left as only its tag: "The thought echoed through her mind" with the thought gone, goes too)
+        kept = re.sub(r"(?:^|(?<=[.!?…]\s))(?:She|He|[A-Z][a-z]+) thought[^.!?…]*[.!?…]\s*", "", kept) \
+            if kept != para else kept
+        kept = re.sub(r"(?:^|(?<=[.!?…]\s))The thought (?:echoed|rang|repeated)[^.!?…]*[.!?…]\s*", "", kept) \
+            if kept != para else kept
+        if kept.strip() or not para.strip():
+            out.append(kept)
+    return "\n".join(out)
 
 
 def _orphan_closers(line):
@@ -2480,13 +2567,37 @@ FILLER = re.compile(
     r"(?:with|in) (?:a )?(?:newfound|renewed|grim|fierce) (?:determination|resolve|purpose)|"
     r"would not let (?:this|it|that|her) (?:end|beat|break|finish) her)", re.I)
 
+# (since build 305) present tense the checks above missed: a plural subject ("The coils around Ripples tighten",
+# "Her paws scrabble"), a "can" or "will" ("She can see", "she will not let"), a verb after "and" ("and works by feel",
+# "and then squirms"). BASE_PAST mends the plural ones
+BASE_PAST = {"tighten": "tightened", "heave": "heaved", "scrabble": "scrabbled", "press": "pressed", "dig": "dug",
+             "tremble": "trembled", "shake": "shook", "kick": "kicked", "close": "closed", "burn": "burned",
+             "ache": "ached", "throb": "throbbed", "sink": "sank", "squeeze": "squeezed", "hold": "held", "rise": "rose",
+             "fall": "fell", "grind": "ground", "flex": "flexed", "strain": "strained", "clench": "clenched",
+             "twitch": "twitched", "lash": "lashed", "slip": "slipped", "sting": "stung", "pound": "pounded",
+             "cling": "clung", "crush": "crushed", "bite": "bit", "drip": "dripped", "spread": "spread", "fade": "faded",
+             "blur": "blurred", "swim": "swam", "squirm": "squirmed", "scrape": "scraped", "claw": "clawed",
+             "curl": "curled", "beat": "beat", "flare": "flared", "constrict": "constricted", "coil": "coiled",
+             "shift": "shifted", "settle": "settled", "give": "gave", "bulge": "bulged", "tense": "tensed",
+             "jerk": "jerked", "quiver": "quivered", "thrash": "thrashed", "writhe": "writhed", "grip": "gripped"}
+PRESENT_PLURAL = re.compile(r"\b(?:[Tt]he|[Hh]er|[Tt]heir|[Ii]ts|[A-Z][a-z]+(?:'s|’s|'|’))\s+(?:\w+\s+){0,2}?\w+s\s+"
+                            r"(?:(?:around|round|on|in|of|at|against|under|over)\s+(?:\w+\s+){1,2}?)?(?:\w+ly\s+)?"
+                            r"(" + "|".join(BASE_PAST) + r")\b(?!\s+(?:of|to)\b)")
+PRESENT_MODAL = re.compile(r"\b(?:[Ss]he|[Hh]e|[Ii]t|[A-Z][a-z]+)\s+(can|can't|can’t|cannot|will|won't|won’t)\s+\w+")
+PRESENT_AND = re.compile(r"\band (?:then |nearly |almost |still )(gets|works|squirms|jerks|escapes|breaks|kicks|"
+                         r"scrabbles|twists|pulls|pushes|presses|grips|holds|tries|shakes|trembles|feels|sees)\b|"
+                         r", and (gets|works|squirms|jerks|escapes|breaks|kicks|scrabbles|twists|tries|feels|sees) "
+                         r"(?:by|her|the|it|to|in|on|at|up|down|out|away|back|hard|again|free|loose)\b")
+MODAL_PAST = {"can": "could", "can't": "couldn't", "can’t": "couldn’t", "cannot": "could not", "will": "would",
+              "won't": "wouldn't", "won’t": "wouldn’t"}
+
 # present tense with a possessive subject: "Nocturne's weight presses down", "Her body trembles"
 PRESENT_POSS = re.compile(r"\b(?:[A-Z][a-z]+(?:'s|’s|'|’)|[Hh]er|[Tt]he Absol's|[Tt]he Buizel's|[Tt]he)\s+(?:\w+\s+){0,2}?"
                           r"(?:is|are|has|presses|comes|digs|rests|grips|clamps|works|twists|trembles|stutters|whirls|"
                           r"flares|heaves|sinks|burns|throbs|aches|pulses|holds|bites|drives|catches|shakes|tightens|"
                           r"pounds|races|screams|stays|seeps|clings|drips|writhes|lolls|sprawls|laps|picks up|rises|"
                           r"hangs|seems|spreads|drifts|slides|shifts|fades|watches|waits|blurs|thuds|stops|tilts|"
-                          r"favors|favours|breathes|swims|beats down|"
+                          r"favors|favours|breathes|swims|beats down|jerks|squirms|scrabbles|kicks|twitches|escapes|"
                           r"dig|press|tremble|stutter|whirl|flare|heave)\b")
 
 # a sentence about how a part hurts (for "the same hurt told again and again")
@@ -4811,7 +4922,10 @@ class Narrator:
                                  f"Her paw is ON {spot} now, lying flat and shaking, and all it has to do is lift and "
                                  f"fall: she holds it still, and it is the hardest thing she has ever done")
                     if spot != "the ground":
-                        reach = f"(She is on her feet in the hold: the ground is out of reach, so a tap is on {spot}.) " + reach
+                        # (since build 305) said as an instruction: "She was on her feet in the hold: the ground was
+                        # out of reach, so a tap was on Seraphina's coils." came out as prose
+                        reach = (f"(Where a tap of hers would land, if it came: on {spot}, since she is held up off the "
+                                 f"ground. Don't say this; just have it so.) ") + reach
                     lines.append(f"  - SHE WON'T TAP" + (f" (the {_ORD.get(n_, str(n_) + 'th')} time she has refused)"
                                                          if n_ > 1 else "")
                                  + f": the {e['submission']} on {poss(e['defender'])} {parts} is "
@@ -4855,9 +4969,12 @@ class Narrator:
                         lines.append(f"  - She may answer {e['attacker']} if spoken to, or speak first: one short "
                                      f"line through her teeth (a refusal, a 'no', her name), or nothing.")
                     if tb.get("enabled", True) and e.get("over") and n_ >= int(tb.get("holder_from", 2)):
-                        lines.append(f"  - WHAT {e['attacker'].upper()} FEELS THROUGH THE GRIP: the refusal "
-                                     f"coming through her own arms; her own grip tiring and holding anyway; what she "
-                                     f"thinks of {e['defender']} still refusing ("
+                        # (since build 305) in whole sentences, and in her coils for a coiler: "Seraphina's grip
+                        # tiring and holding anyway." was copied in as it stood
+                        through_ = "coils" if e.get("arms_trapped") else "arms"
+                        lines.append(f"  - WHAT {e['attacker'].upper()} FEELS THROUGH THE GRIP: she feels the refusal "
+                                     f"come through her own {through_}, and feels her own hold tiring, and keeps it on "
+                                     f"anyway. She thinks of {e['defender']} still refusing ("
                                      + (self.TAP_HOLDER[e["holder"]] + ", if that fits her; or her own"
                                         if e.get("holder") in self.TAP_HOLDER else
                                         "coldly, or with something like respect or pity, as fits her")
@@ -4970,7 +5087,10 @@ class Narrator:
                                                   "as the grip comes off"))
                     + f". {e['attacker']} feels it and LETS GO. THE MATCH IS NOT OVER: that is her "
                     f"{ordinal(e['tap_no'])} tap of the {e['needed']} that end it ({left} more to go). Show the "
-                    f"tap, the grip coming off, and the two of them parting, hurting and breathing hard; she is "
+                    + ("tap, the grip coming off" if e["how"] == "tap" else
+                       "moment she goes under (limp, gone, not a tap: she never gave up), the grip coming off and "
+                       "her coming round")
+                    + f", and the two of them parting, hurting and breathing hard; she is "
                     f"still in it, and both of them know what it cost her."
                     + (f" (A hold on her {', '.join(p.lower() for p in e['spent_parts'])} can't count again: her "
                        f"next tap has to come from somewhere else, and {e['attacker']} knows it.)"
@@ -5138,6 +5258,12 @@ class Narrator:
                                                 f"face, a thought."}.get(e.get("kind"), ""))
             elif e["type"] == "sub_collapse":
                 up_ = e.get("posture") == "standing"
+                if not up_:
+                    # (since build 305) borne down to her knees or flat in the hold: it must be shown (the Seraphina
+                    # vs Ripples fight never told either, and had her "fighting to stay upright" lying flat)
+                    self.__dict__.setdefault("_must_down", []).append(
+                        (e["defender"], "borne down to her knees in the hold" if e.get("posture") == "knees" else
+                         "borne down flat in the hold"))
                 lines.append(f"{e['defender'].upper()} IS BORNE DOWN IN THE HOLD"
                              + (f" (stage {e['stage_no']} of {e['stages']}: {e.get('stage', '')})" if e.get("stages") else "")
                              + f": {poss(e['attacker'])} {e['submission']} "
@@ -7855,7 +7981,7 @@ class Narrator:
     CONSTRICT_FEEL = {
         "pounding": {
             "holder": [
-                "the quick, frantic flutter of {ds} heart against her coils, like a trapped bird; she notes it and waits, "
+                "she feels the quick, frantic flutter of {ds} heart against her coils, like a trapped bird; she notes it and waits, "
                 "taking up the slack each time {d} breathes out",
                 "she can count {ds} heartbeat through her coils, fast and hard; she lets it run, patient, and tightens only "
                 "on the breath out",
@@ -7870,13 +7996,13 @@ class Narrator:
                 "she can feel her pulse in places she never has: her throat, her ears, behind her eyes"]},
         "slowing": {
             "holder": [
-                "the beat under her coils has changed: slower, heavier, spaced out, now and then one missing; she marks it "
+                "she feels {ds} heartbeat change under her coils: slower, heavier, spaced out, now and then one missing; she marks it "
                 "and eases a fraction, then draws in again, keeping {d} right there",
                 "{ds} heart has stopped racing and begun to labour; she feels each heavy thud and times her squeeze to the "
                 "gap after it",
                 "she feels the rhythm in {d} falter and pick up again; she holds the pressure exactly where it is, waiting "
                 "for it to falter again",
-                "the pulse against her coils has gone slow and uneven; she notes it the way a hunter notes a limp, and "
+                "she feels {ds} pulse go slow and uneven against her coils; she notes it the way a hunter notes a limp, and "
                 "doesn't hurry"],
             "held": [
                 "her heart is slowing, and she knows it shouldn't be: each beat heavier, the gaps longer, and one of them "
@@ -7886,13 +8012,13 @@ class Narrator:
                 "her heart stumbles, catches, goes on; she feels it like a misstep inside her chest"]},
         "greying": {
             "holder": [
-                "the beat she has been feeling for is faint now, slow and ragged; she knows exactly how close {d} is, and "
+                "she feels {ds} heartbeat, faint now, slow and ragged; she knows exactly how close {d} is, and "
                 "holds it there with her whole body",
                 "under her coils {ds} heart is a slow, weak knock with long silences in it; she waits, utterly still, for "
                 "the body inside her to go loose",
                 "she feels the heartbeat thread out under her scales; one more squeeze on the breath out, she judges, or "
                 "two",
-                "the pulse is a faint, uneven flutter now; she listens to it through her whole length and does not ease"],
+                "she feels {ds} pulse, a faint, uneven flutter now; she listens to it through her whole length and does not ease"],
             "held": [
                 "her heart is a slow, faraway thud she has to strain to feel, and between the beats there is nothing at "
                 "all",
@@ -8130,6 +8256,12 @@ class Narrator:
                     re.search(r"\b" + re.escape(w) + r"(?:'s|’s|'|’) (?:\w+ )?tails?\b", sent) for w in others)
                 if m and not theirs and any(_mentions(sent.lower(), p) for p in strikes):
                     out.append(("tail", m.group(0), sent))
+                    continue
+            if ok and "tail" in ok and "head" not in ok and "teeth" not in ok:
+                m = HEAD_STRIKE.search(sent)
+                if m and any(_mentions(sent.lower(), p) for p in strikes) and (
+                        any(w in sent for w in (getattr(self, "_attackers", None) or ())) or not named):
+                    out.append(("head", m.group(0), sent))
                     continue
             if ok and "horn" not in ok:
                 m = HORN_STRIKE.search(sent)
@@ -8548,12 +8680,14 @@ class Narrator:
                 up = False
         return up
 
-    def _shown_out(self, text):
-        """Did the prose show the fighter who faints this beat going out? Only sentences about HER count."""
+    def _shown_out(self, text, who=None):
+        """Did the prose show the fighter who faints this beat going out? Only sentences about HER count. who: a
+        fighter who blacks out without it ending the fight (a black-out that counts as one tap of several, since build
+        305: before, with nobody fainting for good, it always passed)."""
         f = getattr(self, "_faint", None)
-        if not f:
+        if not f and not who:
             return True
-        who = f[0]
+        who = who or f[0]
         names = list(dict.fromkeys(list(self.strengths) + [who]))
         for sent, whos, named in _who_said(text, names, getattr(self, "aliases", None), self._leads_for(text)):
             m = OUT_SAID.search(sent)
@@ -9339,7 +9473,10 @@ class Narrator:
         lying = bool(ps.get(who)) and bool(pe.get(who)) and all(
             re.match(r"(?:ON THE GROUND|ON TOP|LOCKED ONTO|OUT)", str(x.get(who, "")).upper()) for x in (ps, pe))
         # "dizzy": confused or dazed (no idea that has her steady and unmoved)
-        return cache.get(who, set()) | ({"aloft"} if self._aloft(who) else {"unfooted"}
+        # (since build 305) her arms pinned inside coils round her body: no idea that needs a free arm or paw ("she
+        # locks her free paw round her own ankle", "she bites the back of her own wrist")
+        pinned_arms = {"arms", "forelegs", "hands", "paws"} if who in (getattr(self, "_trapped", None) or ()) else set()
+        return (cache.get(who, set()) - pinned_arms) | ({"aloft"} if self._aloft(who) else {"unfooted"}
                                         if self._in_air(who) or lying else set()) | (
             self._pose_feats(who) if cache.get(who) else set()) \
             | ({"dizzy"} if who in (getattr(self, "dizzy", None) or ()) else set())     # (no body known: nothing to ban by)
@@ -11528,7 +11665,10 @@ class Narrator:
                 at_ = next((k for k, (sent, _w, _n) in enumerate(said_) if re.search(r"\b" + re.escape(m_.group(1))
                                                                                  + r"\b", sent, re.I)), None)
                 said_ = said_[at_:] if at_ is not None else said_
-            if not any(who in whos and (SLID_DOWN.search(sent) or FALL.search(sent) or GROUNDED.search(sent))
+            borne_ = how.startswith("borne down")
+            if not any((who in whos and (SLID_DOWN.search(sent) or FALL.search(sent) or GROUNDED.search(sent)))
+                       # (borne down in a hold: "Seraphina pressed her down" is about her too)
+                       or (borne_ and BORNE_DOWN.search(sent) and (who in whos or re.search(r"\bher\b", sent)))
                        for sent, whos, named in said_):
                 issues.append(f"it never showed {who} {how}: she ends this beat ON THE GROUND. Show her going down "
                               f"(it does no new damage)")
@@ -11544,7 +11684,7 @@ class Narrator:
                 issues.append(f"it never showed {te[0]} tapping out: this is the beat she gives up in {poss(te[1])} "
                               f"{te[3]}. End with it: her paw slapping the ground (or {te[1]}) again and again, or a "
                               f"cry that says it plainly, and {te[1]} letting go. She is awake, beaten, not out cold")
-            elif te[2] != "tap" and not self._shown_out(full):
+            elif te[2] != "tap" and not self._shown_out(full, te[0]):
                 issues.append(f"it never showed {te[0]} passing out in {poss(te[1])} {te[3]}: her struggles weaken, "
                               f"her sight greys, she goes limp, and {te[1]} feels her go slack and lets go")
         for tm in (getattr(self, "_tap_mid", None) or []) if coverage else ():
@@ -11553,7 +11693,7 @@ class Narrator:
                 issues.append(f"it never showed {tm[0]} tapping out (tap {tm[4]} of {tm[5]}) in {poss(tm[1])} {tm[3]}: "
                               f"her paw slapping the ground or {tm[1]}, or a cry that says it plainly, and {tm[1]} "
                               f"letting go. The match goes on after it")
-            elif tm[2] != "tap" and not self._shown_out(full):
+            elif tm[2] != "tap" and not self._shown_out(full, tm[0]):
                 issues.append(f"it never showed {tm[0]} blacking out in {poss(tm[1])} {tm[3]} (it counts as tap "
                               f"{tm[4]} of {tm[5]}): she goes limp a moment, {tm[1]} lets go, and she comes round")
         tcfg_ = (self.rules.get("narration") or {}).get("tap_fight_shown") or {}
@@ -11966,11 +12106,25 @@ class Narrator:
                 feats_ = self._feats_of(w_)
                 for word, rx, need in OWN_FEATURE:
                     mm = re.search(r"\b" + re.escape(w_.lower()) + r"(?:'s|’s|'|’) (?:\w+ ){0,2}?(?:" + rx + r")\b", low_)
+                    if not mm and not named and len(whos) == 1:
+                        # (since build 305) "Ripples was bent double over her stomach. Her antennae drooped": a
+                        # sentence that opens on "Her ..." is about the one the sentence before was about
+                        mm = re.match(r"\W*her (?:\w+ ){0,2}?(?:" + rx + r")\b", low_)
                     if not mm or need in parts_ or need in feats_ or any(need in f_ for f_ in feats_):
                         continue
                     add(sent, f"it gives {w_} {word} (\"{mm.group(0)}\"), but she has none: only what her body has "
                               f"(her parts: {', '.join(sorted(((getattr(self, 'damage_by', None) or {}).get(w_) or {}).keys())[:12])})")
                     break
+            if len(whos) == 1:
+                # (since build 305) "Her tails hung low" for a Milotic: one tail (an upper and a lower part of it, a
+                # fan at its end) is not "tails"; only a fighter with tails in the plural (Twin Tails) has them
+                w_ = whos[0]
+                body_ = " | ".join(((getattr(self, "damage_by", None) or {}).get(w_) or {}).keys()).lower()
+                pat_ = (r"\b" + re.escape(w_.lower()) + r"(?:'s|’s|'|’) (?:\w+ ){0,2}?tails\b") + (
+                    r"|^\W*her (?:\w+ ){0,2}?tails\b" if not named else "")
+                mt_ = re.search(pat_, sent.lower()) if body_ and "tail" in body_ else None
+                if mt_ and not re.search(r"\btails\b|\btwin\b", body_):
+                    add(sent, f"it gives {w_} tails (\"{mt_.group(0).strip()}\"), but she has ONE tail: her tail")
             m = COIL_SQUEEZE.search(sent)
             if m and free_coilers and any(w in free_coilers for w in whos) and not RECALLED.search(sent) \
                     and not re.search(r"\b(?:would|could|wanted|meant|ready|soon|if|once)\b", sent[:m.start()], re.I):
@@ -13486,6 +13640,9 @@ class Narrator:
                    and not re.match(r'^\s*["“]', x)]
         present += [x for para in thoughtless.split("\n") for x in _SENT.split(para.strip())
                     if x and x not in present and PRESENT_POSS.search(x) and not re.match(r'^\s*["“]', x)]
+        present += [x for para in thoughtless.split("\n") for x in _SENT.split(para.strip())
+                    if x and x not in present and not re.match(r'^\s*["“]', x)
+                    and (PRESENT_PLURAL.search(x) or PRESENT_MODAL.search(x) or PRESENT_AND.search(x))]
         if n.get("tense", "past") == "past" and (len(present) >= 3 or any(len(x.split()) >= 10 for x in present)):
             # (a long sentence in the present tense is never a stray thought: an idea block copied as it was given)
             for x in (present if len(present) >= 3 else [x for x in present if len(x.split()) >= 10]):
@@ -14849,6 +15006,8 @@ class Narrator:
         self._grips_before = list(getattr(self, "grips", None) or [])   # for next beat's check of grips it ends
         # the last cuts can split a thought again: the marks re-paired, and narration set in italics made plain
         text = _unitalic_narration(_balance_marks(text), list(self.strengths or {}))
+        if self.rules.get("narration", {}).get("mend_thoughts", True):
+            text = _mend_thoughts(text)
         text = re.sub(r"\n[ \t]*(?:\n[ \t]*)+\n", "\n\n", text)   # a paragraph emptied by the cuts leaves no gap
         if len(re.sub(r"(?m)^\s*— .+ —\s*$", "", text).strip()) < 40 and len((raw or "").strip()) >= 40:
             # (since build 265) the cuts above took the whole beat (a beat came out with no story at all): the
@@ -15109,6 +15268,13 @@ class Narrator:
                 "tearing": "tore", "spilling": "spilled", "leaking": "leaked"}
         out = []
         text = self._mend_copied(text)
+        # (since build 305) a note's label left in brackets: "(her stomach)", "(a glancing squeeze, still minor)",
+        # "(ruined)"; a sound in brackets ("(Yaaiiiip—)") stays
+        text = re.sub(r"\s*\((?![A-Z][a-z]*[-—–])([^()\n]{1,60})\)",
+                      lambda m: "" if re.search(r"\b(?:minor|sore|painful|excruciating|ruined|numb|bruised|glancing|"
+                                                r"still|hurt|her (?:stomach|chest|belly|back|ribs?|flank|neck|throat|"
+                                                r"head|jaw|shoulder|hip|thigh|knee|foot|paw|arm|tail\w*|wing))\b",
+                                                m.group(1)) and not re.search(r"[!?]", m.group(1)) else m.group(0), text)
         for para in text.split("\n"):
             sents, had_thought = [], False
             for x in _SENT.split(para.strip()) if para.strip() else []:
@@ -15219,7 +15385,8 @@ class Narrator:
         return "\n".join(out)
 
     # a sentence of the notes' wording copied as prose, or the model saying what it just did
-    COPIED_NOTE = re.compile(r"\bthe one (?:gripping, pressing|held, hurting in it)\b|^(?:That|This|Here) (?:is|was) the "
+    COPIED_NOTE = re.compile(r"\bthe ground (?:is|was) out of reach, so a tap\b|\bwhat each sign (?:tells|told)\b|"
+                             r"\bthe one (?:gripping, pressing|held, hurting in it)\b|^(?:That|This|Here) (?:is|was) the "
                              r"(?:paragraph|passage|part|scene|text|rewrite)\b|\b(?:paragraph|passage) (?:rewritten|"
                              r"revised)\b", re.I)
 
@@ -17330,7 +17497,8 @@ class Narrator:
                 r"heavy|harsh|wet|sudden|slow|low|long|labou?red|jagged|choked|strangled|muffled|stifled|panicked|"
                 r"tiny|sharp|fresh|strong|weak|wild|frenzied|fierce|violent|gentle|steady|uneven|broken|hot|cold|"
                 r"rapid|shuddering|halting|stuttering|great|big|huge|final|last|first|next|few|many|several|two|three")
-    PAST_OF = {"thuds": "thudded", "pulses": "pulsed", "favors": "favored", "favours": "favoured", "breathes": "breathed",
+    PAST_OF = {"squirms": "squirmed", "works": "worked", "jerks": "jerked", "escapes": "escaped",
+               "scrabbles": "scrabbled", "thuds": "thudded", "pulses": "pulsed", "favors": "favored", "favours": "favoured", "breathes": "breathed",
                "stops": "stopped", "throbs": "throbbed", "aches": "ached", "tightens": "tightened", "presses": "pressed",
                "grips": "gripped", "holds": "held", "feels": "felt", "knows": "knew", "sees": "saw", "takes": "took",
                "makes": "made", "comes": "came", "goes": "went", "sits": "sat", "stands": "stood", "tries": "tried",
@@ -17378,11 +17546,25 @@ class Narrator:
                         and re.match(r"\s+and\s+(\w+s)\b", after).group(1) not in self.PAST_OF):
                 return m.group(0)
             return self.PAST_OF[m.group(1)]
+        def mend(b):
+            # (since build 305) the plural, "can"/"will" and "and ..." present tense too
+            b = PRESENT_PLURAL.sub(lambda m: m.group(0)[:m.start(1) - m.start()] + BASE_PAST[m.group(1)], b)
+            b = PRESENT_MODAL.sub(lambda m: m.group(0)[:m.start(1) - m.start()] + MODAL_PAST[m.group(1)]
+                                  + m.group(0)[m.end(1) - m.start():], b)
+
+            def and_(m):
+                g = 1 if m.group(1) else 2
+                v = m.group(g)
+                return (m.group(0)[:m.start(g) - m.start()]
+                        + {"kicks": "kicked", "breaks": "broke"}.get(v, self.PAST_OF.get(v, v))
+                        + m.group(0)[m.end(g) - m.start():])
+            b = PRESENT_AND.sub(and_, b)
+            return rx.sub(verb, b)
         for sent in sents or []:
             if sent in text and not sent.lstrip().startswith(("*", "\"", "“")):
                 # (a thought or a line of speech inside the sentence keeps its own tense)
                 bits = re.split(r"(\*[^*\n]+\*|\"[^\"\n]+\"|“[^”\n]+”)", sent)
-                new = "".join(b if k % 2 else rx.sub(verb, b) for k, b in enumerate(bits))
+                new = "".join(b if k % 2 else mend(b) for k, b in enumerate(bits))
                 text = text.replace(sent, new, 1)
         return text
 
@@ -17430,8 +17612,11 @@ class Narrator:
             # build-254 Ripples vs Nocturne match): asked for again too, then said plainly
             mid = next((tm for tm in getattr(self, "_tap_mid", None) or ()
                         if tm[2] == "tap" and f"never showed {tm[0]} tapping out (tap" in issue), None)
+            # (since build 305) a black-out that counts as one tap of several: the passage has to show her go
+            mid_out = next((tm for tm in getattr(self, "_tap_mid", None) or ()
+                            if tm[2] != "tap" and f"never showed {tm[0]} blacking out in" in issue), None)
             text = ""
-            for _try in range(2 if tap_ask or mid else 1):
+            for _try in range(2 if tap_ask or mid or mid_out else 1):
                 try:
                     text = self._generate(context + ask, 80 if "; and " not in issue else 150)
                     text = self._drop_repeats(text, seen) if text else ""
@@ -17442,7 +17627,10 @@ class Narrator:
                 if mid:
                     if tap_really_shown(text or "", mid[0]):
                         break
-                elif not tap_ask or (tap_really_shown(text or "") if te[2] == "tap" else self._shown_out(text or "")):
+                elif mid_out:
+                    if self._shown_out(text or "", mid_out[0]):
+                        break
+                elif not tap_ask or (tap_really_shown(text or "") if te[2] == "tap" else self._shown_out(text or "", te[0])):
                     break
                 text = ""
             tf_ = next((x for x in getattr(self, "_tap_fights", None) or ()
@@ -17451,6 +17639,11 @@ class Narrator:
                 # (since build 261) the passage asked for still doesn't show her fighting the tap: the program's
                 # own sign of it, said plainly (narration.tap_fight_shown)
                 text = self._sign_said(tf_["who"], tf_["sign"])
+            if mid_out and not text:
+                text = (f"Then the grey closed over {mid_out[0]} and she went limp in {poss(mid_out[1])} "
+                        f"{mid_out[3]}, gone for a long, still moment. {mid_out[1]} felt her go slack and let go, and "
+                        f"she came round gasping on the ground. That was {mid_out[4]} of {mid_out[5]}, and it wasn't "
+                        f"over.")
             if mid and not text:
                 spot = self._tap_spot(mid[0], mid[1]).split(" or ")[0]
                 text = (f"{poss(mid[0])} paw came up and slapped {spot}, again and again; {mid[1]} felt it and let go. "

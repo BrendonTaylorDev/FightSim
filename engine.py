@@ -3969,6 +3969,11 @@ class Engine:
                 continue  # still pinned
             if any(h.defender == name and h.sub for h in self.holds.values()):
                 continue  # locked in a submission hold: she can't rise until it's off
+            ss_ = (self.get(name).learned.get("sub_stage") or {}).get("hold")
+            if ss_ in self.holds and self.holds[ss_].defender == name:
+                # (since build 305) borne down in a grip (a coil, a plain hold): it keeps her down while it's on;
+                # rising out of it in one beat and being borne down again the next told nothing true
+                continue
             if any(h.attacker == name and h.sub for h in self.holds.values()) and self.ground_lock_ok(name):
                 continue  # working a submission from the ground (submissions.from_ground): she stays down with it
             if name in self._fresh_down:

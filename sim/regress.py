@@ -800,6 +800,86 @@ def presets_help_check():
     return problems
 
 
+def narration_305_check():
+    """Build 305 (from the Seraphina vs Ripples submission fight): a black-out that counts as one tap of several must
+    be shown; being borne down in a hold must be shown, and it keeps her down while the grip is on; the present tense
+    in plural, "can" and "and ..." forms is caught and mended; a feature given to the wrong fighter by "Her ..."
+    and "tails" for a one-tailed fighter are caught; her free-arm lines go while her arms are pinned; thoughts lose
+    their "voice", stay in her present, aren't said twice or by the other fighter; italic narration is made plain;
+    a note's label in brackets goes; a head strike in a tail-blow beat is caught."""
+    import narrator as N
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e, n = s.eng, s.narrator
+    n.strengths = {"Seraphina": 90, "Ripples": 60}
+    # a counted black-out: _shown_out now checks the fighter named, not only one fainting for good
+    n._faint = None
+    if n._shown_out("The coils loosened and the relief was dizzying.", "Ripples"):
+        problems.append("a black-out that counts as one tap should have to be shown")
+    if not n._shown_out("Ripples went limp in the coils, gone for a long moment.", "Ripples"):
+        problems.append("a black-out told should count as shown")
+    if not all(N.BORNE_DOWN.search(t) for t in ("Seraphina pressed her down onto the ground.",
+                                                 "Ripples was borne down, her legs folding under her.")) \
+            or N.BORNE_DOWN.search("She fought to stay upright."):
+        problems.append("being borne down in a hold should be recognised when told")
+    # borne down in a plain grip: no get-up while it holds
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.start_submission("Seraphina", "Ripples", "upright coil")
+    for h in e.holds.values():
+        h.sub = ""
+    hid = min(e.holds)
+    rp = e.get("Ripples")
+    rp.learned["sub_stage"] = {"hold": hid, "at": 1}
+    e.knock_down("Ripples", facing="sitting up", why="test")
+    e.downed["Ripples"] = 3
+    if any(x.get("fighter") == "Ripples" for x in e.get_up_tick() if x.get("type") == "get_up"):
+        problems.append("a fighter borne down in a grip shouldn't get up while it holds her")
+    # present tense
+    txt = ("The coils around Ripples tighten with a slow pressure, the weight behind every squeeze. She can see Ripples "
+           "breathing in tiny, careful sips. She leaned in close, her forehead nearly touching Ripples' fur, and works by "
+           "feel. Her paw shook hard and nearly gets there, but she forced it back. Her body jerks inside the coils. "
+           "Her paws scrabble for purchase. Her legs would shake if she let them.")
+    flagged = [x for x, w in n._bad_sentences(txt).items() if "present tense" in str(w)]
+    fixed = n._past_words(txt, flagged)
+    for want in ("tightened", "could see", "worked by feel", "nearly got there", "body jerked", "scrabbled",
+                 "would shake"):
+        if want not in fixed:
+            problems.append(f"the present tense should be mended ({want}): {fixed[:200]}")
+            break
+    # body: "Her antennae" after a sentence about Ripples; "her tails" for one-tailed Seraphina
+    n.damage_by = {"Ripples": {p: 0 for p in rp.parts}, "Seraphina": {p: 0 for p in e.get("Seraphina").parts}}
+    n._hurt_now = {}
+    n._calm_beat = False
+    bad = dict(n._log_slips("Ripples was bent nearly double over her stomach. Her antennae drooped, a sure sign of pain. "
+                            "Seraphina's coils tightened. Her tails hung low behind her."))
+    if not any("antennae" in str(w) for w in bad.values()) or not any("ONE tail" in str(w) for w in bad.values()):
+        problems.append(f"a feature on the wrong fighter and tails on a one-tailed one should be caught: {bad}")
+    # pinned arms: no free-arm lines, and the slips caught
+    n._trapped = {"Ripples"}
+    n.__dict__.pop("_feats_cache", None)
+    if "arms" in n._blk_feats("Ripples"):
+        problems.append("a fighter with her arms pinned in coils should get no lines that need her arms")
+    if not N.TRAPPED_PAWS.search("She locked her free paw round her own ankle and held herself shut."):
+        problems.append("a free paw with her arms pinned should be caught")
+    # thoughts
+    t = ("— Seraphina —\n\nThe sound was loud. *This time, I'll not be gentle.*\n\n*Not finished. Not yet.*\n\n"
+         "*Not finished.*\n\n*I needed to finish this soon,* she thought, her voice a low, resonant hum.\n\n"
+         "— Ripples —\n\nShe felt the ache. *This time, I won't be gentle.* The thought echoed through her mind.\n\n"
+         "*The world narrowed to the pressure points, the sharp, grinding ache in her stomach and chest, and the "
+         "coils.*")
+    m_ = N._mend_thoughts(N._unitalic_narration(t, ["Seraphina", "Ripples"]))
+    if "her voice" in m_ or "I need to finish" not in m_ or m_.count("gentle") != 1 or m_.count("Not finished") != 1 \
+            or "*The world" in m_ or "echoed" in m_:
+        problems.append(f"thoughts should be mended: {m_}")
+    lo = N.Narrator._mend_leftovers(n, "She braced (her stomach) hard. It hurt (a glancing squeeze, still minor). "
+                                       "A yelp tore out of her (Yaaiip—).")
+    if "(her stomach)" in lo or "still minor" in lo or "(Yaaiip—)" not in lo:
+        problems.append(f"a note's label in brackets should go, a sound in brackets stay: {lo}")
+    if not N.HEAD_STRIKE.search("She snapped her head forward, striking Ripples' jaw with brutal force."):
+        problems.append("a head strike should be recognised")
+    return problems
+
+
 def save_history_check():
     """Build 301: a saved fight loads back whole: its beat records (the window's history: the start, each beat's text
     and numbers), its story and every number, and its /undo history, back to the start of the fight."""
@@ -3211,6 +3291,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "narration305 seraphina305 blackout borne" for w in want):
+        t = time.time()
+        probs = narration_305_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 305 narration fixes: black-outs and bearing down shown, tense, bodies, thoughts  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "save load history" for w in want):

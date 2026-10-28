@@ -1292,8 +1292,14 @@ class Display:
                            f"beats, on her {e['part']}"
                            + (f" (pain {e['pain']} against her resistance {e['resist']}: chance "
                               f"{e['chance'] * 100:.0f}%)" if e['how'] == 'tap' else
-                              f" (the choke built to {e['air']} against her endurance {e['endure']}: chance "
-                              f"{e['chance'] * 100:.0f}%)"))
+                              # (since build 305) a black-out in coils is told by the constriction's own numbers
+                              (f" (the constriction built to {e.get('circ')} against her endurance "
+                               f"{e.get('circ_end')}: chance {e['chance'] * 100:.0f}%)" if e.get("cause") == "constriction"
+                               else f" (the choke built to {e['air']} against her endurance {e['endure']}: chance "
+                                    f"{e['chance'] * 100:.0f}%)")))
+                if e.get("heart_stopped"):
+                    out.append("🫀 Her heart STOPS for a moment as she goes under, and starts again on its own as the "
+                               "coils come off")
                 out.append(f"- the grip comes off and the match goes on ({e['needed'] - e['tap_no']} more to end it)"
                            + (f"; her {', '.join(p.lower() for p in e['spent_parts'])} can't count for another tap"
                               if e.get("spent_parts") else ""))

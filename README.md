@@ -654,6 +654,42 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 305
+Fixes from the Seraphina vs Ripples submission fight.
+
+Things that happened and weren't told:
+- **A black-out that counts as one tap of several was never checked**: Ripples blacked out in the coils (tap 1 of 3)
+  and the story only had the coils loosening. The check that the prose shows her going under only ran for a
+  black-out that ends the fight. It now runs for every one; a passage that still doesn't show it is asked for once
+  more, then the program says it plainly. The note for it no longer says "show the tap", and the stat line gives the
+  constriction's own numbers, not "the choke built to 0 against her endurance 0".
+- **Being borne down in a hold** (to her knees, then flat) is now something the prose must show, like any fall.
+- **She no longer gets up out of a grip that bore her down** while it is still on her: she rose in the coils one beat
+  and was borne flat again in the same beat, and neither was told.
+
+Slips the checks now catch or mend:
+- the present tense with a plural subject ("The coils around Ripples tighten", "Her paws scrabble"), "can" and "will"
+  ("She can see"), and after "and" ("and works by feel", "and nearly gets there"), mended by the program itself;
+- a feature on the wrong fighter in a sentence that opens on "Her" ("Ripples was bent double. Her antennae
+  drooped": the antennae are Seraphina's), and "tails" for a fighter with one tail (Seraphina's upper and lower tail
+  are one tail);
+- her own wrist, her own ankle, her free paw while her arms are pinned in coils; the story-line libraries no longer
+  offer lines that need her arms then ("she locks her free paw round her own ankle");
+- a head strike in a beat whose blows are all with her tail ("she snapped her head forward, striking Ripples' jaw");
+- a note's label left in brackets ("(her stomach)", "(a glancing squeeze, still minor)", "(ruined)"); a sound in
+  brackets stays.
+
+Thoughts (`narration.mend_thoughts`): a thought loses a "voice" ("she thought, her voice calm and measured"), a
+first-person thought in the past goes back to her present ("*I needed to finish this soon*" becomes "*I need to*"), a
+thought said again a moment later goes, and a thought one fighter had is taken out of the other's part ("*This time,
+I won't be gentle*" in both). A paragraph of narration set in italics is made plain even when it doesn't start with a
+fighter's name.
+
+Notes the model copied word for word are now worded so they can't be: the coiler's heartbeat lines are whole
+sentences ("It was a frantic flutter" had lost its heart), the holder's feelings in a hold ("Seraphina's grip tiring
+and holding anyway"), where a tap would land ("She was on her feet in the hold: the ground was out of reach"), and an
+emotion line that claimed a blow had landed short.
+
 ## Build 304
 The grips on her as a picture (`window.hold_picture`, on by default): while a hold, a submission, a grab or a pin is
 on her, her card (and an exported fight) shows her body from the front, drawn by the program, with each part in a
