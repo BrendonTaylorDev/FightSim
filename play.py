@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 290 (dark mode for the newer parts of the window)"
+VERSION = "2026-10-28 build 291 (the vitals strip dark in dark mode, its trace six seconds wide)"
 
 HELP = """
 =============================================================================================

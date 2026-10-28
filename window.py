@@ -327,7 +327,8 @@ class FighterCard(ttk.Frame):
         # how near she is to tapping (window.hold_panel): five steps (the narrator's ladder) and this beat's chance
         self.tm = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg=C("#f3f4f6"))
         # (since build 287) coils round her body: her heart as a trace, the blood flow cut off, her blood pressure
-        self.vt = tk.Canvas(self, width=PIC + 2 * COL, height=44, highlightthickness=0, bg=C("#111827"))
+        # (a monitor: always dark, in either theme; build 290 ran it through C, which made it light in dark mode)
+        self.vt = tk.Canvas(self, width=PIC + 2 * COL, height=44, highlightthickness=0, bg="#111827")
         # the grips on her and by her, a pin, and how far she is from the others (window.hold_panel)
         self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg=C("#ffffff"))
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")

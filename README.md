@@ -654,6 +654,12 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 291
+- The vitals strip is dark in dark mode too: its dark background had been turned light by the dark-mode colours, which
+  hid its blood pressure.
+- Its heartbeat trace always shows about six seconds, however wide the card, so a fast heart on a wide card is no longer
+  a solid wall of beats: about 21 beats at 210 a minute, 7 at 70.
+
 ## Build 290
 Dark mode for the newer parts of the window:
 - The words on the pain gauges, the health bar and the energy bar get a dark edge, so the light letters can be read

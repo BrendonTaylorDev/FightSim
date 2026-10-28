@@ -1002,15 +1002,17 @@ def _tap_words(t):
     return TAP_LADDER[max(0, min(5, int(t[0])))] or "not fighting it yet"
 
 
-def ecg_points(heart, irregular, width, height, x0=0.0, y0=0.0):
-    """(since build 287) A heartbeat trace for the vitals strip: [(x, y)] across `width`, a beat every 60/heart
-    seconds (at 30 px a second), each a small bump, a sharp spike and a slower wave; irregular = the gaps uneven and
-    now and then a beat missed. The same heart rate always draws the same trace."""
+def ecg_points(heart, irregular, width, height, x0=0.0, y0=0.0, seconds=6.0):
+    """(since build 287) A heartbeat trace for the vitals strip: [(x, y)] across `width`, which always shows about
+    `seconds` of it (so a wide card doesn't crowd it with beats), a beat every 60/heart seconds, each a small bump, a
+    sharp spike and a slower wave (narrower when the beats come close); irregular = the gaps uneven and now and then
+    a beat missed. The same heart rate always draws the same trace."""
     import random as _r
     rng = _r.Random(int(heart) * 7 + (1 if irregular else 0))
     mid = y0 + height * 0.62
     amp = height * 0.5
-    gap = max(8.0, 30.0 * 60.0 / max(20.0, float(heart)))
+    gap = max(6.0, (float(width) / max(1.0, seconds)) * 60.0 / max(20.0, float(heart)))
+    k = min(1.0, gap / 20.0)       # the beat's own shape, squeezed when the beats come close
     pts, x = [(x0, mid)], x0 + gap * 0.4
     while x < x0 + width - 12:
         g = gap * (rng.uniform(0.65, 1.4) if irregular else 1.0)
@@ -1019,8 +1021,8 @@ def ecg_points(heart, irregular, width, height, x0=0.0, y0=0.0):
             continue
         for dx, dy in ((0, 0), (2, -0.12), (4, 0), (6, 0.12), (7.5, -1.0), (9, 0.35), (10.5, 0), (14, -0.22),
                        (17, 0)):
-            if x + dx < x0 + width:
-                pts.append((x + dx, mid + dy * amp))
+            if x + dx * k < x0 + width:
+                pts.append((x + dx * k, mid + dy * amp))
         x += g
     pts.append((x0 + width, mid))
     return pts
