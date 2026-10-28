@@ -2336,6 +2336,17 @@ def polish_check():
              "— Nerine —\nNerine circled to the left, her eyes never leaving Ripples, and waited too.")
     better = ("— Ripples —\nRipples let her breath out slow and kept her eyes on Nerine across the clearing.\n\n"
               "— Nerine —\nNerine drifted to the left, eyes fixed on Ripples, patient as stone.")
+    # build 303: no upper limit on length by default, and the editor told it may write more
+    longer = local.replace("waiting.", "waiting, every muscle in her slim body drawn tight, her twin tails stirring "
+                           "behind her as she weighed each step Nerine took and the wet grass cooled under her paws, "
+                           "her heart steady and her breath held low and even. " * 3)
+    ok_long, why_long = polish.judge(None, local, longer, ["Ripples", "Nerine"], s.eng.rules)
+    if not ok_long or "LENGTH:" not in polish.messages(local, [], "", s.eng.rules)[1]["content"]:
+        problems.append(f"a longer polished beat should be kept, and the editor told it may write more: {why_long}")
+    s.eng.rules["narration"]["polish"]["max_ratio"] = 1.5
+    if polish.judge(None, local, longer, ["Ripples", "Nerine"], s.eng.rules)[0]:
+        problems.append("max_ratio, when set, should still cap the length")
+    s.eng.rules["narration"]["polish"]["max_ratio"] = 0
     sent = []
     real = polish.call
     polish.call = lambda rules, msgs: (sent.append(msgs), answer[0])[1]

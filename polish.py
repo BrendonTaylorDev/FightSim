@@ -4,7 +4,8 @@ The local model writes the beat as always, with the engine's notes and every che
 beat, with a short fact sheet of what really happened, is sent to an online model (Venice.ai by default; any
 service that speaks the OpenAI chat format works) to make the writing better without changing what happens. Its
 version is kept only when the program's own checks find nothing in it that the local version had right, it keeps
-every "— Name —" part label, every fighter, and roughly the same length, and it is not a refusal. Otherwise the
+every "— Name —" part label, every fighter, and no less than about half its length, and it is not a refusal (it may be
+longer: since build 303 there is no upper limit unless max_ratio sets one). Otherwise the
 local version stands. Nothing is sent anywhere unless you turn it on.
 
 The same request can instead be copied out by hand (/polish copy) and the answer pasted back (/polish paste), so
@@ -22,7 +23,8 @@ REPLY_FILE = os.path.join(HERE, "polish_reply.txt")
 PROMPT_FILE = os.path.join(HERE, "polish_prompt.txt")   # (your own instructions for the editor: /polish prompt)
 
 DEFAULTS = {"enabled": False, "when": "every", "base_url": "https://api.venice.ai/api/v1", "model": "",
-            "temperature": 0.7, "timeout": 120, "min_ratio": 0.55, "max_ratio": 1.5, "allow_new_slips": 0,
+            "temperature": 0.7, "timeout": 120, "min_ratio": 0.55, "max_ratio": 0, "allow_new_slips": 0,
+            "expand": True,
             "extra_body": {"venice_parameters": {"include_venice_system_prompt": False}}}
 
 SYSTEM = (
@@ -136,8 +138,16 @@ def list_models(rules):
     return sorted(str(m.get("id")) for m in out.get("data") or [] if m.get("id"))
 
 
-def messages(draft, facts, prior=""):
-    """The request: the editor's instructions, the facts, the story just before this beat, and the draft."""
+# (since build 303, narration.polish.expand) leave to make it longer: the editor is no longer held to the draft's length
+EXPAND_NOTE = ("LENGTH: you are not held to the draft's length. Where it makes the beat better, make it longer: more of "
+               "what each fighter sees, hears, feels and thinks, more of the effort, the pain and the moment between "
+               "the blows, the big moments given room. Every word of it is still about what the FACTS have happen: "
+               "nothing longer means nothing new happening.\n\n")
+
+
+def messages(draft, facts, prior="", rules=None):
+    """The request: the editor's instructions, the facts, the story just before this beat, and the draft. rules: with
+    narration.polish.expand on (since build 303), the editor is told it may make the beat longer."""
     chars = [f for f in facts if f and str(f).startswith(("CHARACTER:", "(her character"))]
     user = ("FACTS (what really happened in this beat; never change them):\n"
             + "\n".join(f"- {f}" for f in facts if f) + "\n\n"
@@ -148,6 +158,7 @@ def messages(draft, facts, prior=""):
                "an event, a blow, a word spoken aloud or a memory beyond her HISTORY.\n\n" if chars else "")
             + (f"THE STORY JUST BEFORE THIS BEAT (for continuity only; do not rewrite it or repeat it):\n"
                f"{prior.strip()[-1500:]}\n\n" if prior and prior.strip() else "")
+            + (EXPAND_NOTE if rules is not None and cfg_of(rules).get("expand", True) else "")
             + "DRAFT (rewrite this):\n" + draft.strip())
     return [{"role": "system", "content": system_prompt()}, {"role": "user", "content": user}]
 
@@ -195,7 +206,8 @@ def tidy(text, names=(), draft=""):
 
 def judge(narrator, draft, polished, names, rules, facts=()):
     """(keep it?, why not). It is kept only when it is not a refusal, keeps every "— Name —" label in order and
-    every fighter the draft names, stays within min_ratio..max_ratio of the draft's length, and the program's own
+    every fighter the draft names, is at least min_ratio of the draft's length (and at most max_ratio, when that is set:
+    0, the default since build 303, is no upper limit), and the program's own
     sentence checks find no more in it than in the draft (allow_new_slips more at most)."""
     c = cfg_of(rules)
     if not polished.strip():
@@ -223,8 +235,11 @@ def judge(narrator, draft, polished, names, rules, facts=()):
             return False, f"it left out her {part.lower()}, which the blow landed on"
     wd, wp = len(draft.split()), len(polished.split())
     ratio = wp / max(1, wd)
-    if not float(c.get("min_ratio", 0.7)) <= ratio <= float(c.get("max_ratio", 1.5)):
-        return False, f"it changed the length too much ({wd} → {wp} words)"
+    top = float(c.get("max_ratio", 0) or 0)       # (0: no upper limit, since build 303)
+    if ratio < float(c.get("min_ratio", 0.7)):
+        return False, f"it cut too much of it ({wd} → {wp} words)"
+    if top > 0 and ratio > top:
+        return False, f"it made it longer than max_ratio allows ({wd} → {wp} words, over {top:g}x)"
     if narrator is not None:
         try:
             before = narrator._bad_sentences(draft)
@@ -240,9 +255,9 @@ def judge(narrator, draft, polished, names, rules, facts=()):
     return True, ""
 
 
-def request_text(draft, facts, prior=""):
+def request_text(draft, facts, prior="", rules=None):
     """The whole request as one block of text, to paste into a chat window by hand (/polish copy)."""
-    m = messages(draft, facts, prior)
+    m = messages(draft, facts, prior, rules)
     return (m[0]["content"] + "\n\n" + m[1]["content"] + "\n")
 
 
@@ -255,12 +270,12 @@ MARK = re.compile(r"(?m)^\s*\**\s*===\s*BEAT\s+(\d+)\s*===\s*\**\s*$")
 END_MARK = re.compile(r"(?m)^\s*\**\s*===\s*END\s+BEAT\s+(\d+)\s*===\s*\**\s*$")
 
 
-def batch_request(items):
+def batch_request(items, rules=None):
     """The whole request for several beats as one block of text: items = [(beat number, draft, facts, prior)],
     oldest first; only the first carries the story before it (the beats after follow on from each other)."""
     out = [system_prompt(), "", BATCH_NOTE.format(n=len(items)), ""]
     for i, (k, draft, facts, prior) in enumerate(items):
-        user = messages(draft, facts, prior if i == 0 else "")[1]["content"]
+        user = messages(draft, facts, prior if i == 0 else "", rules)[1]["content"]
         out += [f"=== BEAT {k} ===", user, f"=== END BEAT {k} ===", ""]
     return "\n".join(out)
 

@@ -654,6 +654,15 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 303
+The polish (Venice) may make a beat longer. Before, a polished beat more than 1.5 times the local one's length was
+thrown out ("it changed the length too much"), however good it was; `narration.polish.max_ratio` is now 0, no upper
+limit (set a number to bring a cap back). And with `narration.polish.expand` (on by default) the editor is told it is
+not held to the draft's length: more of what each fighter sees, feels and thinks, the big moments given room, never
+anything new happening. Everything else that decides whether its version is kept is as before: the part labels,
+every fighter, every part a blow landed on, no fewer than about half the words, and the program's own sentence
+checks finding nothing more wrong in it.
+
 ## Build 302
 How close she is to blacking out in the coils, and to her heart stopping:
 - the blood-flow bar has a line at her limit: past it she can black out (and her heart stop as she does);

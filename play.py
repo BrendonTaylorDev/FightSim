@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 302 (how close she is to blacking out; the strip side by side)"
+VERSION = "2026-10-28 build 303 (the polish may write longer)"
 
 HELP = """
 =============================================================================================
@@ -1641,7 +1641,8 @@ class Session:
         try:
             if reply is None:
                 self.progress("polishing the prose with " + (polish.cfg_of(self.eng.rules).get("model") or "?"))
-                reply = polish.call(self.eng.rules, polish.messages(text, last.get("facts") or [], last.get("prior")))
+                reply = polish.call(self.eng.rules, polish.messages(text, last.get("facts") or [], last.get("prior"),
+                                                                     self.eng.rules))
         except polish.PolishError as e:
             note_failure("polishing the beat (narration.polish)", e)
             print(f"[polish not used: {e}]")
@@ -3598,7 +3599,7 @@ def _polish_command(s, a):
                   f"rest after)")
             pick = pick[:cap]
         req = polish.batch_request([(int(e.get("turn") or 0), e.get("shown") or e.get("local", ""),
-                                     e.get("facts") or [], e.get("prior")) for e in pick])
+                                     e.get("facts") or [], e.get("prior")) for e in pick], s.eng.rules)
         with open(polish.REQUEST_FILE, "w", encoding="utf-8") as fh:
             fh.write(req)
         try:
@@ -3613,7 +3614,7 @@ def _polish_command(s, a):
                 f"is there), save it, and type /polish paste. Each beat goes back to its own place by its number, "
                 f"and each is checked and kept or not by itself."); return
     if sub == "copy":
-        req = polish.request_text(last.get("local", ""), last.get("facts") or [], last.get("prior"))
+        req = polish.request_text(last.get("local", ""), last.get("facts") or [], last.get("prior"), s.eng.rules)
         with open(polish.REQUEST_FILE, "w", encoding="utf-8") as fh:
             fh.write(req)
         try:
