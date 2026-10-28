@@ -169,6 +169,8 @@ def _gauges(f):
                     f'font-weight="bold">BP {bp[0]}/{bp[1]}</text>'
                     f'<rect x="{w}" y="30" width="80" height="10" fill="#1f2937" stroke="#4b5563"/>'
                     f'<rect x="{w}" y="30" width="{80 * min(1.0, bp[0] / 160.0):.0f}" height="10" fill="{col}"/>'
+                    f'<line x1="{w + 60}" y1="28" x2="{w + 60}" y2="42" stroke="#9ca3af" stroke-dasharray="2,2"/>'
+                    f'<text x="{w + 3}" y="38" fill="#f9fafb" font-size="8">pressure</text>'
                     f'</svg>')
     for text, col in cards.grip_lines(f):
         out += f'<div class="grip" style="color:{col}">{html.escape(text)}</div>'

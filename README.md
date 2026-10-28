@@ -654,12 +654,17 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 288
+The vitals strip's second bar is labelled "pressure", with the dashed mark at a resting 120 in exported fights
+too.
+
 ## Build 287
 The constriction drawn, in the window and in exported fights. Under the tap meter, while coils hold back her blood, is
 a small dark strip:
 - her heart rate, with a trace of it, its beats spreading out as her heart slows and uneven once it starts to skip;
 - a bar of how much of her blood flow the coils have cut off;
-- her blood pressure, with a bar against a resting 120.
+- her blood pressure, with a bar labelled "pressure": it fills with the first number (systolic) out of 160, with a
+  dashed mark at a resting 120.
 
 Its colour goes from green to red as the blood flow goes. The numbers came out of the tap meter's line, which is
 shorter for it. The part pain gauge now says "blood flow cut off" for a constriction, not "air gone".

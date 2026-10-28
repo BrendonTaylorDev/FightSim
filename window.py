@@ -541,6 +541,7 @@ class FighterCard(ttk.Frame):
         c.create_rectangle(sx, 30, sx + 80, 40, outline="#4b5563", fill="#1f2937")
         c.create_rectangle(sx, 30, sx + 80 * min(1.0, bp[0] / 160.0), 40, outline="", fill=col)
         c.create_line(sx + 80 * 120 / 160.0, 28, sx + 80 * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
+        c.create_text(sx + 3, 35, anchor="w", text="pressure", font=("Segoe UI", 7), fill="#f9fafb")
 
     def _grips(self, f):
         """The hold panel: who holds which of her parts and with what, the grips she has, a pin's count, and how
