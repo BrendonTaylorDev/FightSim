@@ -43,7 +43,7 @@ from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
                    held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour,
                    squeeze_shapes, squeeze_label, squeeze_figure, squeeze_colours, heart_shapes, heart_beat,
-                   picture_colours, squeeze_word, mix)
+                   picture_colours, squeeze_word, mix, squeeze_readout)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -548,6 +548,10 @@ class FighterCard(ttk.Frame):
                       font=("Segoe UI", 9, "bold"), fill=col)
         if v.get("irregular"):
             c.create_text(6, 25, anchor="w", text="irregular", font=("Segoe UI", 7), fill="#fca5a5")
+        if v.get("heart_rest"):
+            # (since build 300) her healthy numbers, to read these against
+            c.create_text(6, 37, anchor="w", text=f"normal {v['heart_rest']}/min", font=("Segoe UI", 7),
+                          fill="#9ca3af")
         wcfg = (self.app._rules().get("window") or {}) if hasattr(self.app, "_rules") else {}
         figure = v.get("squeeze") is not None and wcfg.get("squeeze_figure", True)
         c.configure(height=200 if figure else 60)
@@ -586,6 +590,9 @@ class FighterCard(ttk.Frame):
         bp = v.get("bp") or [120, 80]
         c.create_text(sx, 12, anchor="w", text=f"BP {bp[0]}/{bp[1]}", font=("Segoe UI", 9, "bold"),
                       fill="#f9fafb" if bp[0] >= 90 else "#fca5a5")
+        if v.get("bp_rest"):
+            c.create_text(sx, 23, anchor="w", text=f"normal {v['bp_rest'][0]}/{v['bp_rest'][1]}",
+                          font=("Segoe UI", 7), fill="#9ca3af")
         c.create_rectangle(sx, 30, sx + 80, 40, outline="#4b5563", fill="#1f2937")
         c.create_rectangle(sx, 30, sx + 80 * min(1.0, bp[0] / 160.0), 40, outline="", fill=col)
         c.create_line(sx + 80 * 120 / 160.0, 28, sx + 80 * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
@@ -593,7 +600,7 @@ class FighterCard(ttk.Frame):
 
     def _squeeze_figure(self, c, v, w):
         """window.squeeze_figure (since build 299): under the monitor, the squeeze as a picture: her torso from the
-        front in her own colours, the coiler's loops wound round it (as thick as the coiler is big against her),
+        front in her own colours, the coiler's loops wound round it (as thick as the coiler is big against her; only the coils on her, not the rest of the coiler),
         pressing her in, her ribs showing once it is crushing, her body paling as the blood is cut off; and beside it
         her heart, beating at her rate (window.vitals_animate), squeezed from the sides when the coils are on her
         chest, smaller as it fills less, still once it stops."""
@@ -604,9 +611,6 @@ class FighterCard(ttk.Frame):
         col = squeeze_colours(v, body, coil, belly)
         where = v.get("where") if v.get("where") in ("chest", "belly", "both") else "chest"
         fg = squeeze_figure(v["squeeze"], where, v.get("coils"), 14, y0, 84, 140, v.get("coil_ratio"))
-        if fg["trail"]:
-            c.create_polygon(*[q for p in fg["trail"]["poly"] for q in p], fill=col["coil"], outline=col["coil_edge"])
-            c.create_line(*[q for p in fg["trail"]["shine"] for q in p], fill=col["coil_shine"], width=2, smooth=True)
         c.create_polygon(*[q for p in fg["head"] for q in p], fill=col["body"], outline=col["body_edge"], smooth=True)
         c.create_polygon(*[q for p in fg["body"] for q in p], fill=col["body"], outline=col["body_edge"])
         for sh in fg["shade"]:
@@ -639,18 +643,18 @@ class FighterCard(ttk.Frame):
         self._fig = {"items": items, "args": (hx, hy, hr, v["squeeze"], on_chest, v.get("blood", 0)),
                      "heart": 0 if v.get("stopped") else v.get("heart", 0), "irregular": bool(v.get("irregular")),
                      "stopped": bool(v.get("stopped"))}
-        tx = 200
-        place = {"chest": "round her chest", "belly": "round her middle", "both": "round her chest and middle"}[where]
-        c.create_text(tx, y0 + 6, anchor="nw", width=max(60, w - tx - 6), font=("Segoe UI", 9, "bold"),
-                      fill="#f9fafb", text=f"{squeeze_word(v['squeeze']).capitalize()}: squeezed in {v['squeeze']}%")
-        c.create_text(tx, y0 + 26, anchor="nw", width=max(60, w - tx - 6), font=("Segoe UI", 8), fill="#d1d5db",
-                      text=f"{v.get('coils', 1)} coil{'s' if int(v.get('coils') or 1) > 1 else ''} {place}"
-                      + (f", {v['coiler']} {v['coil_ratio']:g}× her size" if v.get("coiler") and v.get("coil_ratio")
-                         and v["coil_ratio"] >= 1.5 else ""))
-        c.create_text(tx, y0 + 62, anchor="nw", width=max(60, w - tx - 6), font=("Segoe UI", 8), fill="#fca5a5",
-                      text=("her heart has stopped" if v.get("stopped") else
-                            "her heart " + ("squeezed between the coils, " if on_chest and v["squeeze"] >= 35 else "")
-                            + ("slow and skipping" if v.get("irregular") else "racing")))
+        # how tight, in words and real-world numbers (cards.squeeze_readout, shared with exported fights)
+        for sh in squeeze_readout(v, 200, y0 + 2, max(60, w - 206)):
+            if sh[0] == "text":
+                _, tx, ty, text, colr, size, bold = sh
+                c.create_text(tx, ty, anchor="nw", width=max(60, w - tx - 6), text=text, fill=colr,
+                              font=("Segoe UI", size, "bold" if bold else "normal"))
+            elif sh[0] == "rect":
+                _, a, b, c2, d2, fill, stroke = sh
+                c.create_rectangle(a, b, c2, d2, fill=fill, outline=stroke)
+            else:
+                _, a, b, c2, d2, colr, dashed = sh
+                c.create_line(a, b, c2, d2, fill=colr, width=1.5, dash=(2, 2) if dashed else None)
 
     def _heart_tick(self):
         """One step of the beating heart in the squeeze figure (driven by _ecg_tick)."""

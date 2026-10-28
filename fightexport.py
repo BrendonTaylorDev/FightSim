@@ -167,6 +167,10 @@ def _gauges(f, books=None, opts=None):
                     f'<text x="6" y="16" fill="{"#ef4444" if v.get("stopped") else col}" font-size="11" '
                     f'font-weight="bold">{"♥ stopped" if v.get("stopped") else "♥ " + str(v["heart"]) + "/min"}</text>'
                     + ('<text x="6" y="29" fill="#fca5a5" font-size="8">irregular</text>' if v.get("irregular") else "")
+                    + (f'<text x="6" y="41" fill="#9ca3af" font-size="7">normal {v["heart_rest"]}/min</text>'
+                       if v.get("heart_rest") else "")
+                    + (f'<text x="{w}" y="26" fill="#9ca3af" font-size="7">normal {v["bp_rest"][0]}/{v["bp_rest"][1]}</text>'
+                       if v.get("bp_rest") else "")
                     + ((lambda sh: f'<rect x="{sh[0][0]}" y="{sh[0][1]}" width="{sh[0][2] - sh[0][0]:.1f}" height="10" '
                        f'fill="none" stroke="#4b5563" stroke-dasharray="2,2"/>'
                        + "".join(f'<rect x="{b[0]:.1f}" y="{b[1]}" width="{max(1.0, b[2] - b[0]):.1f}" height="{b[3] - b[1]:.1f}" '

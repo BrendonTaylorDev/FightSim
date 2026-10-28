@@ -1252,8 +1252,13 @@ class Display:
                               else "")
                            + f"blood flow {e.get('pct', 0)}% cut off, her heart " + {"pounding": "pounding", "slowing": "slowing and stumbling",
                                                  "greying": "slow and uneven, the grey closing in"}.get(e.get("stage"), "")
-                           + (f" · heart about {e['heart']} a minute{', irregular' if e.get('irregular') else ''}, "
-                              f"blood pressure about {e['bp'][0]}/{e['bp'][1]}" if e.get("heart") else ""))
+                           + (f" · heart about {e['heart']} a minute{', irregular' if e.get('irregular') else ''}"
+                              + (f" (normal {e['heart_rest']})" if e.get("heart_rest") else "")
+                              + f", blood pressure about {e['bp'][0]}/{e['bp'][1]}"
+                              + (f" (normal {e['bp_rest'][0]}/{e['bp_rest'][1]})" if e.get("bp_rest") else "")
+                              if e.get("heart") else "")
+                           + (f" · coils pressing about {e['pressure']} mmHg" if e.get("pressure") is not None else "")
+                           + (f" · girth {e['girth'][1]} cm (normal {e['girth'][0]})" if e.get("girth") else ""))
             elif e["type"] == "tap_urge":
                 out.append(f"😣 {e['defender']} fights the urge to tap in {poss_word(e['attacker'])} {e['submission']}, "
                            + ("far from her limit" if float(e.get("pain") or 0) < 0.75 * float(e.get("resist") or 1)

@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 299 (the squeeze as a picture, with her heart beating beside it)"
+VERSION = "2026-10-28 build 300 (the squeeze in real numbers, against her healthy ones)"
 
 HELP = """
 =============================================================================================

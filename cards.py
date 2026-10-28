@@ -1090,10 +1090,9 @@ def squeeze_figure(squeeze, where, coils, x0, y0, w, h, ratio=None):
     between loops bulging out a little, more the harder she is squeezed (squeeze 0-100: a third of her width gone at
     92%); her ribs show through once it is crushing (her heart has its own picture: heart_shapes). where: chest,
     belly or both (back counts as chest). ratio: how many times her size the coiler is: a coiler much bigger than her
-    winds fewer, far thicker loops (one loop of a Milotic is most of a Buizel's chest), and the rest of her body trails
-    away out of the picture. Returns point lists: "head", "body", "shade" [left, right], "belly", "arms", "paws",
-    "loops" [{"poly", "dark", "shine"}] (each loop's near side), "trail" ({"poly", "shine"}: the rest of the coiler, behind her, or None),
-    "creases" (the flesh bulging at each loop's edges), "ribs"."""
+    winds fewer, far thicker loops (one loop of a Milotic is most of a Buizel's chest). Only the coils on her are drawn,
+    not the rest of the coiler. Returns point lists: "head", "body", "shade" [left, right], "belly", "arms", "paws",
+    "loops" [{"poly", "dark", "shine"}] (each loop's near side), "creases" (the flesh bulging at each loop's edges), "ribs"."""
     sq = max(0.0, min(100.0, float(squeeze or 0))) / 100.0
     where = where if where in ("chest", "belly", "both") else "chest"
     n = max(1, min(4, int(coils or 1)))
@@ -1166,15 +1165,6 @@ def squeeze_figure(squeeze, where, coils, x0, y0, w, h, ratio=None):
             for sgn in (-1, 1):
                 creases.append([(X(u * hw(c) * 0.9), Y(c + sgn * (th + 0.012) + sag * (1 - u * u) - tilt * u / 2))
                                 for u in (-0.8, -0.4, 0.0, 0.4, 0.8)])
-    trail = None
-    if big >= 1.5:
-        # the rest of a coiler much bigger than her, trailing away from the last loop out of the picture
-        c = centres[-1]
-        lw = hw(c) + 0.045 + th * 0.6
-        p0 = (X(lw), Y(c - th * 0.2))
-        path = [(p0[0] - w * 0.04 + w * 0.3 * (k / 12) ** 0.8, p0[1] + h * 0.3 * (k / 12) ** 1.6) for k in range(13)]
-        rad = h * th * 1.05
-        trail = {"poly": _tube(path, rad), "shine": [(x - rad * 0.35, y - rad * 0.35) for x, y in path[1:-1]]}
     ribs = []
     if sq >= 0.5 and where in ("chest", "both"):
         # crushing: her ribs show through between the loops
@@ -1185,7 +1175,7 @@ def squeeze_figure(squeeze, where, coils, x0, y0, w, h, ratio=None):
                 ribs.append([(X(side * w_ * 0.15), Y(t)), (X(side * w_ * 0.55), Y(t + 0.012)),
                              (X(side * w_ * 0.85), Y(t + 0.04))])
     return {"head": head, "body": body, "shade": shade, "belly": belly, "arms": arms, "paws": paws, "loops": loops,
-            "trail": trail, "creases": creases, "ribs": ribs, "sq": sq}
+            "creases": creases, "ribs": ribs, "sq": sq}
 
 
 def heart_points(cx, cy, r, scale=1.0):
@@ -1261,8 +1251,6 @@ def squeeze_svg(v, body="#c08457", coil="#5d8fcf", belly=None, width=440):
                 f'stroke-linecap="round" stroke-linejoin="round"/>')
     out = [f'<svg class="squeeze" viewBox="0 0 {width} 150" width="100%" style="background:#111827;'
            f'border-radius:4px;max-width:520px;margin-top:2px">']
-    if fg["trail"]:
-        out += [poly(fg["trail"]["poly"], col["coil"], col["coil_edge"]), line(fg["trail"]["shine"], col["coil_shine"], 2)]
     out += [poly(fg["head"], col["body"], col["body_edge"]), poly(fg["body"], col["body"], col["body_edge"])]
     out += [poly(sh, col["shade"]) for sh in fg["shade"]] + [poly(fg["belly"], col["belly"])]
     out += [line(r, col["rib"]) for r in fg["ribs"]]
@@ -1290,20 +1278,72 @@ def squeeze_svg(v, body="#c08457", coil="#5d8fcf", belly=None, width=440):
                  f'values="{vals}" dur="{cycle:.2f}s" repeatCount="indefinite"/>'
                  f'<g transform="translate({-hx},{-hy})">{heart}</g></g></g>')
     out.append(heart)
+    for sh in squeeze_readout(v, 200, 14, width - 206):
+        if sh[0] == "text":
+            _, tx, ty, text, colr, size, bold = sh
+            weight = ' font-weight="bold"' if bold else ""
+            out.append(f'<text x="{tx}" y="{ty + size}" fill="{colr}" font-size="{size + 1}"{weight}>'
+                       f'{_h.escape(text)}</text>')
+        elif sh[0] == "rect":
+            _, a, b, c2, d2, fill, stroke = sh
+            out.append(f'<rect x="{a:.1f}" y="{b}" width="{max(0.0, c2 - a):.1f}" height="{d2 - b}" fill="{fill}" '
+                       f'stroke="{stroke or "none"}"/>')
+        else:
+            _, a, b, c2, d2, colr, dashed = sh
+            dash = ' stroke-dasharray="2,2"' if dashed else ""
+            out.append(f'<line x1="{a:.1f}" y1="{b}" x2="{c2:.1f}" y2="{d2}" stroke="{colr}" stroke-width="1.5"{dash}/>')
+    out.append("</svg>")
+    return "".join(out)
+
+
+def squeeze_readout(v, x, y, width):
+    """(since build 299; real-world numbers since build 300) The words and gauge beside the squeeze picture, as
+    shapes for the window or an SVG: ("text", x, y, text, colour, size, bold), ("rect", x0, y0, x1, y1, fill,
+    outline), ("line", x0, y0, x1, y1, colour, dashed). How tight it is (the narrator's word and %), what the coils
+    press with against her blood pressure (a gauge from 0 to 200 mmHg, her pressure marked on it), her girth before and
+    now, the coils and the coiler, and her heart."""
+    where = v.get("where") if v.get("where") in ("chest", "belly", "both") else "chest"
+    on_chest = where in ("chest", "both")
+    out = [("text", x, y, f"{squeeze_word(v['squeeze']).capitalize()}: squeezed in {v['squeeze']}%", "#f9fafb", 9,
+            True)]
+    y += 18
+    bp = v.get("bp") or [120, 80]
+    p = v.get("pressure")
+    if p is not None:
+        past = p > bp[0]
+        rest = v.get("bp_rest")
+        out.append(("text", x, y, f"Coils press ~{p} mmHg · her BP {bp[0]}/{bp[1]}"
+                    + (f" (normal {rest[0]}/{rest[1]})" if rest else ""), "#fca5a5" if past else "#f9fafb", 8, False))
+        y += 14
+        gw = max(60.0, min(220.0, width - 8))
+        top = 200.0
+
+        def gx(val):
+            return x + gw * min(1.0, max(0.0, float(val)) / top)
+        out.append(("rect", x, y, x + gw, y + 8, "#1f2937", "#4b5563"))
+        out.append(("rect", x, y, gx(p), y + 8, "#dc2626" if past else "#f59e0b" if p > bp[1] else "#22c55e", ""))
+        out.append(("line", gx(bp[1]), y - 2, gx(bp[1]), y + 10, "#9ca3af", True))
+        out.append(("line", gx(bp[0]), y - 3, gx(bp[0]), y + 11, "#f9fafb", False))
+        y += 12
+        out.append(("text", x, y, "past her blood pressure: blood can't get back to her heart" if past else
+                    "past her lowest pressure: little blood gets back" if p > bp[1] else
+                    "under her blood pressure: blood still gets through", "#d1d5db", 7, False))
+        y += 14
+    g = v.get("girth")
+    if g:
+        out.append(("text", x, y, f"{'Chest' if where == 'chest' else 'Middle' if where == 'belly' else 'Chest and middle'}"
+                    f" {g[1]} cm (normal {g[0]} cm, {g[0] - g[1]} cm squeezed out)", "#f9fafb", 8, False))
+        y += 14
     place = {"chest": "round her chest", "belly": "round her middle", "both": "round her chest and middle"}[where]
     ratio = v.get("coil_ratio")
-    out.append(f'<text x="200" y="22" fill="#f9fafb" font-size="11" font-weight="bold">'
-               f'{_h.escape(squeeze_word(v["squeeze"]).capitalize())}: squeezed in {v["squeeze"]}%</text>')
-    out.append(f'<text x="200" y="40" fill="#d1d5db" font-size="9">{v.get("coils", 1)} coil'
-               f'{"s" if int(v.get("coils") or 1) > 1 else ""} {place}</text>')
-    if v.get("coiler") and ratio and ratio >= 1.5:
-        out.append(f'<text x="200" y="54" fill="#d1d5db" font-size="9">{_h.escape(str(v["coiler"]))} '
-                   f'{ratio:g}× her size</text>')
-    out.append(f'<text x="200" y="76" fill="#fca5a5" font-size="9">'
-               + ("her heart has stopped" if v.get("stopped") else
-                  "her heart " + ("squeezed between the coils, " if on_chest and v["squeeze"] >= 35 else "")
-                  + ("slow and skipping" if v.get("irregular") else "racing")) + '</text></svg>')
-    return "".join(out)
+    out.append(("text", x, y, f"{v.get('coils', 1)} coil{'s' if int(v.get('coils') or 1) > 1 else ''} {place}"
+                + (f", {v['coiler']} {ratio:g}× her size" if v.get("coiler") and ratio and ratio >= 1.5 else ""),
+                "#d1d5db", 8, False))
+    y += 14
+    out.append(("text", x, y, "her heart has stopped" if v.get("stopped") else
+                "her heart " + ("squeezed between the coils, " if on_chest and v["squeeze"] >= 35 else "")
+                + ("slow and skipping" if v.get("irregular") else "racing"), "#fca5a5", 8, False))
+    return out
 
 
 SQUEEZE_WORDS = ((35, "snug"), (60, "tight"), (80, "crushing"), (101, "held almost flat"))

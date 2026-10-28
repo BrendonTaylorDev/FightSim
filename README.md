@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 300
+The squeeze picture shows only the coils wound round her, no longer the rest of the coiler trailing off to one side.
+
+How tight the squeeze is, in real-world numbers, beside the squeeze picture (rough, like the rest of the vitals, never
+rolled against; `finish.submission.constriction.vitals.pressure` and `.girth`):
+- what the coils press on her with, in mmHg so it reads straight against her blood pressure, on a gauge with her
+  pressure marked: once the coils press harder than her blood pressure, blood can't get back to her heart. It grows
+  with the squeeze and with how big the coiler is against her: a coiler her own size reaches about 90 mmHg at a full
+  squeeze, Seraphina on Ripples about 170;
+- her girth round her chest or middle, now and normally ("Chest and middle 38 cm (normal 49 cm, 11 cm squeezed
+  out)").
+
+Her healthy numbers are shown with every reading: her resting heart rate under her heart rate, a normal 120/80 under
+her blood pressure, on the card, in exported fights and on the stat line. A heart that stops keeps the rest of its
+last reading (the squeeze, the normal numbers).
+
 ## Build 299
 The squeeze as a picture (`window.squeeze_figure`, on by default). While coils squeeze her, her card shows, under the
 heart monitor and in place of the old squeeze bar, a picture of its own (drawn by the program, not her artwork, which
@@ -661,7 +677,7 @@ may face any way):
 - her torso from the front in her own colours (taken from her picture): head, shoulders, her arms pinned to her sides,
   a lighter belly;
 - the coiler's loops wound round her in a spiral, in the coiler's colours, as thick as the coiler is big against her:
-  Seraphina's loops cover most of Ripples' chest, and the rest of her body trails away out of the picture;
+  Seraphina's loops cover most of Ripples' chest (only the coils on her are drawn, not the rest of the coiler);
 - each loop pressing her in and her flesh bulging between them, harder as the squeeze builds; her ribs showing once it
   is crushing; her body paling toward a cold grey-blue as her blood flow is cut off;
 - beside it, her heart: beating at her own rate (uneven and skipping when irregular), clenching on each beat,

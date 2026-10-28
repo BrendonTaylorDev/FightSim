@@ -896,10 +896,22 @@ def compression_check():
     # build 299 (window.squeeze_figure): the squeeze as a body, loops as thick as the coiler is big, a beating heart
     if not c or c.get("coiler") != "Seraphina" or not (c.get("coil_ratio") or 0) > 3:
         problems.append(f"the constriction should say who coils her and how much bigger: {c and c.get('coil_ratio')}")
+    # build 300: real-world numbers for the squeeze, and her healthy ones to read them against
+    if not c or not c.get("pressure") or not c.get("girth") or c["girth"][1] >= c["girth"][0] \
+            or not c.get("heart_rest") or c.get("bp_rest") != [120, 80]:
+        problems.append(f"the constriction should give the coil pressure, her girth and her normal numbers: "
+                        f"{c and {k: c.get(k) for k in ('pressure', 'girth', 'heart_rest', 'bp_rest')}}")
+    rp_ = e.get("Ripples")
+    if not (e.squeeze_numbers(rp_, 80, 6.2, 0.7)["pressure"] > e.squeeze_numbers(rp_, 80, 0.7, 0.7)["pressure"]
+            > e.squeeze_numbers(rp_, 30, 0.7, 0.7)["pressure"]):
+        problems.append("the coils should press harder the bigger the coiler and the tighter the squeeze")
+    rd = cards.squeeze_readout(dict(c or {}, squeeze=70, where="chest"), 0, 0, 200) if c else []
+    if not any(sh[0] == "text" and "normal" in sh[3] for sh in rd):
+        problems.append("the squeeze readout should show her normal numbers")
     giant = cards.squeeze_figure(70, "both", 1, 0, 0, 80, 120, ratio=8.9)
     same = cards.squeeze_figure(70, "both", 1, 0, 0, 80, 120, ratio=1.0)
-    if not (len(giant["loops"]) < len(same["loops"]) and giant["trail"] and not same["trail"]):
-        problems.append(f"a giant coiler should wind fewer, thicker loops and trail away: {len(giant['loops'])} "
+    if not (len(giant["loops"]) < len(same["loops"])) or "trail" in giant:
+        problems.append(f"a giant coiler should wind fewer, thicker loops, only the coils drawn: {len(giant['loops'])} "
                         f"{len(same['loops'])}")
     loose, tight = (cards.squeeze_figure(q, "chest", 1, 0, 0, 80, 120) for q in (5, 90))
     if not (max(x for x, _ in tight["body"]) < max(x for x, _ in loose["body"]) and tight["ribs"] and not loose["ribs"]):

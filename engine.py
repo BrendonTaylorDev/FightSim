@@ -10612,6 +10612,7 @@ class Engine:
                 vit["coiler"] = a
                 vit["coiler_species"] = species_of(self.get(a).description, getattr(self.get(a), "appearance", ""))
                 vit["coil_ratio"] = round(sa / sd, 2) if sa and sd else None
+                vit.update(self.squeeze_numbers(d, comp, sa, sd))
                 events.append(dict({"type": "constriction", "attacker": a, "defender": dn, "stage": stage,
                                     "pct": round(100 * frac), "coils": len(body_coils), "compress": round(comp),
                                     "where": (d.learned.get("compress") or {}).get("where", ""),
@@ -10741,8 +10742,9 @@ class Engine:
                         f"coils (it starts again once they come off)", "IT STOPS, for a moment", "it keeps beating"):
                     # (since build 293) her heart stops a moment as she goes under: never a death, it starts again
                     d.learned["heart_stopped"] = self.turn
-                    d.learned["circ_vitals"] = [self.turn, {"heart": 0, "irregular": False, "stopped": True,
-                                                            "bp": [30, 15]}]
+                    # (the rest of the last reading kept: the squeeze, her healthy numbers)
+                    d.learned["circ_vitals"] = [self.turn, dict((d.learned.get("circ_vitals") or [0, {}])[1] or {},
+                                                                heart=0, irregular=False, stopped=True, bp=[30, 15])]
                     ts_ = d.learned.get("tap_state")
                     if isinstance(ts_, dict) and ts_.get("turn") == self.turn:
                         ts_["vitals"] = d.learned["circ_vitals"][1]
@@ -11224,7 +11226,30 @@ class Engine:
         else:
             m = rise + (float(v.get("bp_low", 0.45)) - rise) * (frac - peak_at) / max(0.01, 1.0 - peak_at)
         return {"heart": int(round(hr / 5.0) * 5), "irregular": stage != "pounding",
-                "bp": [int(round(sys0 * m / 5.0) * 5), int(round(dia0 * m / 5.0) * 5)]}
+                "bp": [int(round(sys0 * m / 5.0) * 5), int(round(dia0 * m / 5.0) * 5)],
+                # (since build 300) her healthy numbers, to read the others against
+                "heart_rest": int(round(rest)), "bp_rest": [int(sys0), int(dia0)]}
+
+    def squeeze_numbers(self, d, comp, sa=None, sd=None):
+        """constriction.vitals.pressure and .girth (since build 300): how tight the squeeze is in real-world terms,
+        rough like the rest of the vitals and never rolled against. pressure: what the coils press on her with, in
+        mmHg so it reads against her blood pressure: base_mmhg at a full squeeze from a coiler her own size, x (the
+        coiler's size / hers) ** size_exp, never past max_mmhg, scaled by how far she is squeezed in (0-100). Once it is
+        past her blood pressure, blood can't get back to her heart. girth: round her chest or middle, before and now, in
+        cm: per_m cm for every metre of her size, less up to max_loss of it at a full squeeze. {} when off."""
+        v = (((self.rules.get("finish") or {}).get("submission") or {}).get("constriction") or {}).get("vitals") or {}
+        out = {}
+        pc, gc = v.get("pressure") or {}, v.get("girth") or {}
+        k = max(0.0, min(100.0, float(comp or 0))) / 100.0
+        if pc.get("enabled", True):
+            big = (sa / sd) if sa and sd else 1.0
+            full = min(float(pc.get("max_mmhg", 220)), float(pc.get("base_mmhg", 90)) * max(0.5, big) ** float(
+                pc.get("size_exp", 0.3)))
+            out["pressure"] = int(round(full * k))
+        if gc.get("enabled", True) and sd:
+            g0 = float(gc.get("per_m", 70)) * sd
+            out["girth"] = [int(round(g0)), int(round(g0 * (1.0 - float(gc.get("max_loss", 0.3)) * k)))]
+        return out
 
     def arms_trapped(self, d):
         """(since build 275) coils wound round her body, her arms pinned inside them: no paw is free to tap."""
