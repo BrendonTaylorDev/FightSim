@@ -654,6 +654,14 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 290
+Dark mode for the newer parts of the window:
+- The words on the pain gauges, the health bar and the energy bar get a dark edge, so the light letters can be read
+  over a bright bar and over the dark background alike. The pain gauge's grey bar is a dark grey.
+- The tap meter's words in its darkest colours (the dark red of "fighting the dark") are a lighter shade on the dark
+  background.
+- The Profiles window is dark too: its tabs, its background and its text boxes.
+
 ## Build 289
 The vitals strip (heart, blood flow, blood pressure) shows from a coil's first beat. Before, it waited for the
 second, although the part gauge already showed the blood flow; a choke's air on the tap meter likewise.

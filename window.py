@@ -66,7 +66,21 @@ DARK = {
     "#2563eb": "#60a5fa", "#1d4ed8": "#93c5fd", "#991b1b": "#f87171", "#b91c1c": "#f87171", "#7f1d1d": "#fca5a5",
     "#7c3aed": "#c4b5fd", "#c4b5fd": "#8b5cf6", "#b45309": "#fbbf24", "#15803d": "#4ade80", "#047857": "#34d399",
     "#0f766e": "#5eead4",
+    # (since build 290) the pain gauge's grey bar: a dark grey, so the light words on it can be read
+    "#a3a3a3": "#4b5563",
 }
+# (since build 290) the tap meter's words in its step colours, lighter on the dark background (the darkest steps were
+# dark red on near-black)
+DARK_TEXT = {"#ea580c": "#fb923c", "#dc2626": "#f87171", "#7f1d1d": "#fca5a5"}
+
+
+def halo_text(c, x, y, **kw):
+    """(since build 290) Words on a canvas that stay readable over a bright bar and over the dark background alike: in
+    dark mode a dark edge is drawn round the light letters first."""
+    if _THEME["dark"]:
+        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            c.create_text(x + dx, y + dy, **dict(kw, fill="#0b0c10"))
+    return c.create_text(x, y, **kw)
 _THEME = {"dark": False}
 
 
@@ -505,7 +519,9 @@ class FighterCard(ttk.Frame):
             c.create_rectangle(x0 + (i - 1) * (seg + 3), 2, x0 + i * seg + (i - 1) * 3, 16,
                                fill=TAP_COLORS[i] if on else C("#ffffff"), outline=C("#9ca3af"))
         c.create_text(x0 + 5 * (seg + 3) + 6, 9, anchor="w", font=("Segoe UI", 8, "bold"),
-                      fill=TAP_COLORS[max(1, m["level"])] if m["level"] >= 3 else C("#111827"),
+                      fill=((DARK_TEXT.get(TAP_COLORS[max(1, m["level"])], TAP_COLORS[max(1, m["level"])])
+                             if _THEME["dark"] else TAP_COLORS[max(1, m["level"])]) if m["level"] >= 3
+                            else C("#111827")),
                       text=f"{m['label']}  ·  {pct_text(m['chance'])} chance this beat")
         note = c.create_text(6, 19, anchor="nw", font=("Segoe UI", 8), fill=C("#4b5563"), width=w - 12,
                              text=(f"{poss_word(m['by'])} {m['sub']}: pain {m['pain']} against what she can bear "
@@ -578,7 +594,7 @@ class FighterCard(ttk.Frame):
             col = C("#a3a3a3") if share < 40 else C("#f59e0b") if share < 70 else C("#ea580c") if share < 100 else C("#b91c1c")
             c.create_rectangle(0, y, w * min(1.0, share / 150.0), y + 16, fill=col, outline="")
             c.create_line(w * 100 / 150.0, y, w * 100 / 150.0, y + 16, fill=C("#111827"), dash=(2, 2))
-            c.create_text(6, y + 8, anchor="w", font=("Segoe UI", 8, "bold"), text=text, fill=C("#111827"))
+            halo_text(c, 6, y + 8, anchor="w", font=("Segoe UI", 8, "bold"), text=text, fill=C("#111827"))
 
         o, pt = g.get("overall") or {}, g.get("part")
         bar(0, o, f"Pain {o.get('shown') or str(o.get('pct', 0)) + '%'}: {o.get('label', '')}"
@@ -608,11 +624,11 @@ class FighterCard(ttk.Frame):
         share = max(0.0, min(1.0, pct / 100.0))
         col = C("#22c55e") if pct >= 60 else C("#eab308") if pct >= 35 else C("#f97316") if pct >= 15 else C("#ef4444")
         self.hp.create_rectangle(0, 0, w * share, 18, fill=col, outline="")
-        self.hp.create_text(6, 9, anchor="w", text=f"Health {f['health']:.0f}%   ({pct:.0f}% of full)",
+        halo_text(self.hp, 6, 9, anchor="w", text=f"Health {f['health']:.0f}%   ({pct:.0f}% of full)",
                             font=("Segoe UI", 9, "bold"), fill=C("#111827"))
         self.en.delete("all")
         self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill=C("#60a5fa"), outline="")
-        self.en.create_text(6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
+        halo_text(self.en, 6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
@@ -677,11 +693,11 @@ class FighterCard(ttk.Frame):
         share = max(0.0, min(1.0, pct / 100.0))
         col = C("#22c55e") if pct >= 60 else C("#eab308") if pct >= 35 else C("#f97316") if pct >= 15 else C("#ef4444")
         self.hp.create_rectangle(0, 0, w * share, 18, fill=col, outline="")
-        self.hp.create_text(6, 9, anchor="w", text=f"Health {f['health']:.0f}%   ({pct:.0f}% of full)",
+        halo_text(self.hp, 6, 9, anchor="w", text=f"Health {f['health']:.0f}%   ({pct:.0f}% of full)",
                             font=("Segoe UI", 9, "bold"), fill=C("#111827"))
         self.en.delete("all")
         self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill=C("#60a5fa"), outline="")
-        self.en.create_text(6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
+        halo_text(self.en, 6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
@@ -812,6 +828,10 @@ class App:
         style.configure("Horizontal.TScrollbar", background=field, troughcolor=bg, arrowcolor=fg)
         style.configure("Horizontal.TScale", background=field, troughcolor=bg)
         style.configure("Sash", background=line)
+        # (since build 290) the Profiles window's tabs
+        style.configure("TNotebook", background=bg, bordercolor=line)
+        style.configure("TNotebook.Tab", background=field, foreground=fg, bordercolor=line, lightcolor=line)
+        style.map("TNotebook.Tab", background=[("selected", hi), ("active", line)], foreground=[("selected", fg)])
         for opt, val in (("*Background", bg), ("*Foreground", fg), ("*Canvas.Background", bg),
                          ("*selectBackground", hi), ("*insertBackground", fg)):
             self.root.option_add(opt, val)
@@ -955,7 +975,7 @@ class App:
         eng = getattr(sess, "eng", None)
         if eng is None:
             return
-        top = tk.Toplevel(self.root)
+        top = tk.Toplevel(self.root, bg=C("#fffdf8"))
         top.title("Profiles")
         top.geometry("760x620")
         _keep_alive(top)       # (closed windows are kept: a Tk object freed off the main thread kills Spyder)
@@ -966,7 +986,8 @@ class App:
 
         def area(parent, label, text, height):
             ttk.Label(parent, text=label, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(6, 0))
-            t = tk.Text(parent, height=height, wrap="word", font=("Segoe UI", 10))
+            t = tk.Text(parent, height=height, wrap="word", font=("Segoe UI", 10), bg=C("#ffffff"), fg=C("#111827"),
+                        insertbackground=C("#111827"))
             t.insert("1.0", text or "")
             t.pack(fill="x")
             return t

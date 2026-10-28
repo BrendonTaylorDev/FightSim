@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 289 (the vitals strip from the first beat)"
+VERSION = "2026-10-28 build 290 (dark mode for the newer parts of the window)"
 
 HELP = """
 =============================================================================================
