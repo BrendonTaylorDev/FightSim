@@ -10551,6 +10551,8 @@ class Engine:
                          air=(min(99, round(float(sg["air"]) / max(1.0, float(sg["endure"]) + float(
                              (((self.rules.get("finish") or {}).get("submission") or {}).get("choke") or {}).get(
                                  "span", 70))) * 100.0)) if sg.get("air") else None))
+            if part is not None and sg.get("circ"):
+                part["circ"] = True       # (since build 287) the gauge is the constriction's blood flow, not air
         elif held:
             worst = max(held, key=lambda h: f.parts[h.part].damage if h.part in f.parts else 0.0)
             pain = (f.parts[worst.part].damage if worst.part in f.parts else 0.0) \

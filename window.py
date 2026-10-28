@@ -41,7 +41,7 @@ from engine import species_of, body_region, note_failure, poss_word
 from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_color, text_on, short,
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
-                   held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text)
+                   held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -312,6 +312,8 @@ class FighterCard(ttk.Frame):
         self.pg = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg=C("#f3f4f6"))
         # how near she is to tapping (window.hold_panel): five steps (the narrator's ladder) and this beat's chance
         self.tm = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg=C("#f3f4f6"))
+        # (since build 287) coils round her body: her heart as a trace, the blood flow cut off, her blood pressure
+        self.vt = tk.Canvas(self, width=PIC + 2 * COL, height=44, highlightthickness=0, bg=C("#111827"))
         # the grips on her and by her, a pin, and how far she is from the others (window.hold_panel)
         self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg=C("#ffffff"))
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
@@ -473,7 +475,7 @@ class FighterCard(ttk.Frame):
     def _order(self):
         """The strips under her bars always in one order: taps, pain, tap meter, hold panel (each packs itself on
         when it has something, so one that appears later would otherwise land after the rest)."""
-        shown = [x for x in (self.tp, self.pg, self.tm, self.gp) if x.winfo_ismapped()]
+        shown = [x for x in (self.tp, self.pg, self.tm, self.vt, self.gp) if x.winfo_ismapped()]
         for x in shown:
             x.pack_forget()
         for x in shown:
@@ -491,6 +493,7 @@ class FighterCard(ttk.Frame):
         beat's tap chance and what is keeping it there."""
         m = tap_meter(f)
         self._show(self.tm, bool(m))
+        self._vitals(m.get("vitals") if m else None)
         if not m:
             return
         c, w = self.tm, self.app.card_w()
@@ -509,6 +512,35 @@ class FighterCard(ttk.Frame):
                                    f"{m['resist']}" + (f"  ·  {m['note']}" if m["note"] else "")))
         # (since build 286) as tall as its words: the longer notes were cut off at two lines
         c.configure(height=max(34, c.bbox(note)[3] + 3))
+
+    def _vitals(self, v):
+        """(since build 287) The constriction drawn: her heart rate and a trace of it (the beats spreading out as it
+        slows, uneven once it skips), a bar of how much of her blood flow the coils have cut off, and her blood
+        pressure against a resting 120/80. Rough numbers for the story, never rolled against."""
+        self._show(self.vt, bool(v))
+        if not v:
+            return
+        c, w = self.vt, self.app.card_w()
+        c.delete("all")
+        col = vitals_colour(v.get("blood", 0))
+        c.create_text(6, 12, anchor="w", text=f"♥ {v['heart']}/min", font=("Segoe UI", 9, "bold"), fill=col)
+        if v.get("irregular"):
+            c.create_text(6, 25, anchor="w", text="irregular", font=("Segoe UI", 7), fill="#fca5a5")
+        tx = 84
+        pts = ecg_points(v["heart"], v.get("irregular"), max(40, w - tx - 96), 22, tx, 2)
+        c.create_line(*[q for p in pts for q in p], fill=col, width=1.5)
+        bx, bw = tx, max(40, w - tx - 96)
+        c.create_rectangle(bx, 30, bx + bw, 40, outline="#4b5563", fill="#1f2937")
+        c.create_rectangle(bx, 30, bx + bw * min(1.0, v.get("blood", 0) / 100.0), 40, outline="", fill=col)
+        c.create_text(bx + 4, 35, anchor="w", text=f"blood flow {v.get('blood', 0)}% cut off",
+                      font=("Segoe UI", 7), fill="#f9fafb")
+        sx = w - 88
+        bp = v.get("bp") or [120, 80]
+        c.create_text(sx, 12, anchor="w", text=f"BP {bp[0]}/{bp[1]}", font=("Segoe UI", 9, "bold"),
+                      fill="#f9fafb" if bp[0] >= 90 else "#fca5a5")
+        c.create_rectangle(sx, 30, sx + 80, 40, outline="#4b5563", fill="#1f2937")
+        c.create_rectangle(sx, 30, sx + 80 * min(1.0, bp[0] / 160.0), 40, outline="", fill=col)
+        c.create_line(sx + 80 * 120 / 160.0, 28, sx + 80 * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
 
     def _grips(self, f):
         """The hold panel: who holds which of her parts and with what, the grips she has, a pin's count, and how
@@ -554,7 +586,8 @@ class FighterCard(ttk.Frame):
             parts = ", ".join(str(p).lower() for p in pt.get("parts") or [])
             bar(18, pt, f"{parts.capitalize() or 'Part'} {pt.get('shown') or str(pt.get('pct', 0)) + '%'}: {pt.get('label', '')}"
                         + (f"  ({pt['why']})" if pt.get("why") else "")
-                        + (f"  · air {pt['air']}% gone" if pt.get("air") is not None else ""))
+                        + (f"  · {'blood flow' if pt.get('circ') else 'air'} {pt['air']}% "
+                           f"{'cut off' if pt.get('circ') else 'gone'}" if pt.get("air") is not None else ""))
         else:
             c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill=C("#6b7280"),
                           text="nothing held or struck this beat")
@@ -562,7 +595,7 @@ class FighterCard(ttk.Frame):
     def _fit_width(self):
         """(since build 273) every bar under the picture as wide as the card at its size (the Cards − / + buttons)."""
         w = self.app.card_w()
-        for cv in (self.hp, self.en, self.tp, self.pg, self.tm, self.gp):
+        for cv in (self.hp, self.en, self.tp, self.pg, self.tm, self.vt, self.gp):
             if int(float(cv.cget("width"))) != w:
                 cv.configure(width=w)
         self.state.configure(wraplength=w)

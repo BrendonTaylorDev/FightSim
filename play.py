@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 286 (speed check: the model in system memory)"
+VERSION = "2026-10-28 build 287 (the constriction drawn: heart trace, blood flow, blood pressure)"
 
 HELP = """
 =============================================================================================

@@ -136,7 +136,8 @@ def _gauges(f):
             parts = ", ".join(str(p).lower() for p in pt.get("parts") or [])
             out += bar(pt, f"{parts.capitalize() or 'Part'} {pt.get('shown') or str(pt.get('pct', 0)) + '%'}: {pt.get('label', '')}"
                            + (f"  ({pt['why']})" if pt.get("why") else "")
-                           + (f"  · air {pt['air']}% gone" if pt.get("air") is not None else ""))
+                           + (f"  · {'blood flow' if pt.get('circ') else 'air'} {pt['air']}% "
+                           f"{'cut off' if pt.get('circ') else 'gone'}" if pt.get("air") is not None else ""))
         else:
             out += '<div class="dim">nothing held or struck this beat</div>'
     m = cards.tap_meter(f)
@@ -148,6 +149,27 @@ def _gauges(f):
                 f'beat</div><div class="dim">{html.escape(poss_word(str(m["by"])))} {html.escape(str(m["sub"]))}: pain '
                 f'{m["pain"]} against what she can bear {m["resist"]}'
                 + (f' · {html.escape(m["note"])}' if m["note"] else "") + '</div>')
+        v = m.get("vitals")
+        if v:
+            # (since build 287) the constriction drawn, as in the window: her heart as a trace, the blood flow cut
+            # off, her blood pressure
+            col, w = cards.vitals_colour(v.get("blood", 0)), 300
+            pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in cards.ecg_points(v["heart"], v.get("irregular"), w - 90, 22, 84, 2))
+            bp = v.get("bp") or [120, 80]
+            out += (f'<svg class="vitals" viewBox="0 0 {w + 90} 44" width="100%" style="background:#111827;'
+                    f'border-radius:4px;max-width:520px">'
+                    f'<text x="6" y="16" fill="{col}" font-size="11" font-weight="bold">♥ {v["heart"]}/min</text>'
+                    + ('<text x="6" y="29" fill="#fca5a5" font-size="8">irregular</text>' if v.get("irregular") else "")
+                    + f'<polyline points="{pts}" fill="none" stroke="{col}" stroke-width="1.5"/>'
+                    f'<rect x="84" y="30" width="{w - 90}" height="10" fill="#1f2937" stroke="#4b5563"/>'
+                    f'<rect x="84" y="30" width="{(w - 90) * min(1.0, v.get("blood", 0) / 100.0):.0f}" height="10" '
+                    f'fill="{col}"/><text x="88" y="38" fill="#f9fafb" font-size="8">blood flow {v.get("blood", 0)}% '
+                    f'cut off</text>'
+                    f'<text x="{w}" y="16" fill="{"#f9fafb" if bp[0] >= 90 else "#fca5a5"}" font-size="11" '
+                    f'font-weight="bold">BP {bp[0]}/{bp[1]}</text>'
+                    f'<rect x="{w}" y="30" width="80" height="10" fill="#1f2937" stroke="#4b5563"/>'
+                    f'<rect x="{w}" y="30" width="{80 * min(1.0, bp[0] / 160.0):.0f}" height="10" fill="{col}"/>'
+                    f'</svg>')
     for text, col in cards.grip_lines(f):
         out += f'<div class="grip" style="color:{col}">{html.escape(text)}</div>'
     return out

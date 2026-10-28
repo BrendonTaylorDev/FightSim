@@ -1002,6 +1002,35 @@ def _tap_words(t):
     return TAP_LADDER[max(0, min(5, int(t[0])))] or "not fighting it yet"
 
 
+def ecg_points(heart, irregular, width, height, x0=0.0, y0=0.0):
+    """(since build 287) A heartbeat trace for the vitals strip: [(x, y)] across `width`, a beat every 60/heart
+    seconds (at 30 px a second), each a small bump, a sharp spike and a slower wave; irregular = the gaps uneven and
+    now and then a beat missed. The same heart rate always draws the same trace."""
+    import random as _r
+    rng = _r.Random(int(heart) * 7 + (1 if irregular else 0))
+    mid = y0 + height * 0.62
+    amp = height * 0.5
+    gap = max(8.0, 30.0 * 60.0 / max(20.0, float(heart)))
+    pts, x = [(x0, mid)], x0 + gap * 0.4
+    while x < x0 + width - 12:
+        g = gap * (rng.uniform(0.65, 1.4) if irregular else 1.0)
+        if irregular and rng.random() < 0.15:
+            x += g             # a missed beat: the line runs on flat
+            continue
+        for dx, dy in ((0, 0), (2, -0.12), (4, 0), (6, 0.12), (7.5, -1.0), (9, 0.35), (10.5, 0), (14, -0.22),
+                       (17, 0)):
+            if x + dx < x0 + width:
+                pts.append((x + dx, mid + dy * amp))
+        x += g
+    pts.append((x0 + width, mid))
+    return pts
+
+
+def vitals_colour(blood):
+    """The colour of the vitals strip from how much blood flow is cut off (%)."""
+    return "#22c55e" if blood < 30 else "#f59e0b" if blood < 60 else "#ea580c" if blood < 80 else "#dc2626"
+
+
 def held_parts(f):
     """Her parts in someone's grip right now (for the rings on her picture)."""
     g = f.get("grips") or {}
@@ -1044,13 +1073,13 @@ def tap_meter(f):
         notes.append("kept down by: " + ", ".join(f"{w} x{float(m):.2f}" for w, m in t["why_low"]))
     if t.get("refusals"):
         notes.append(f"refused {t['refusals']}x")
-    if t.get("air") is not None:
-        # (since build 283) coils round her body cut off her blood, not her air
-        notes.append(f"blood flow {t['air']}% cut off" if t.get("circ") else f"air {t['air']}% gone")
+    vit = None
     v = t.get("vitals") or {}
-    if v.get("heart"):
-        notes.append(f"heart about {v['heart']}/min{', irregular' if v.get('irregular') else ''}, blood pressure about "
-                     f"{v['bp'][0]}/{v['bp'][1]}")
+    if t.get("circ") and v.get("heart"):
+        # (since build 287) the constriction's numbers are drawn (vitals_strip), not written into the line
+        vit = dict(v, blood=int(t.get("air") or 0))
+    elif t.get("air") is not None:
+        notes.append(f"blood flow {t['air']}% cut off" if t.get("circ") else f"air {t['air']}% gone")
     if by_chance:
         label = CHANCE_LADDER[lv] if not (t.get("first") or t.get("breaking") or t.get("held_on")) or lv else \
             "can't tap this beat"
@@ -1059,7 +1088,7 @@ def tap_meter(f):
     else:
         label = "fighting the dark" if (t.get("choke") or t.get("circ")) and lv >= 3 else TAP_LADDER[lv] \
             or "not fighting it yet"
-    return {"level": lv, "chance": pct, "label": label, "note": " · ".join(notes),
+    return {"level": lv, "chance": pct, "label": label, "note": " · ".join(notes), "vitals": vit,
             "pain": t.get("pain"), "resist": t.get("resist"), "by": t.get("by"), "sub": t.get("sub")}
 
 

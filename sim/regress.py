@@ -860,8 +860,15 @@ def constriction_check():
         problems.append("a long constriction should end the match")
     elif out["how"] == "pass_out" and out.get("cause") != "constriction":
         problems.append(f"a blackout in body coils is the constriction's: {out}")
-    if not any("blood flow" in m["note"] and "heart about" in m["note"] for m in meters):
-        problems.append(f"the tap meter should show the blood flow and her heart: {[m['note'] for m in meters[-2:]]}")
+    # (since build 287 drawn, not written: the vitals strip)
+    vs = [m["vitals"] for m in meters if m.get("vitals")]
+    if not vs or not all(k in vs[-1] for k in ("heart", "bp", "blood")) or any("heart about" in m["note"] for m in meters):
+        problems.append(f"the tap meter should carry her heart, blood pressure and blood flow for the strip: {vs[-1:]}")
+    pts = cards.ecg_points(60, False, 200, 20)
+    if len(pts) < 10 or len(cards.ecg_points(180, False, 200, 20)) <= len(pts):
+        problems.append("a faster heart should draw more beats in the trace")
+    import fightexport
+    fs = {f["name"]: f for f in H.play.fight_snapshot(s)["fighters"]}
     import narrator as N
     n = s.narrator
     lines = "\n".join(N.Narrator.CONSTRICT_STAGE.values())
