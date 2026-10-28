@@ -1238,8 +1238,10 @@ class Display:
                 # (since build 283) the coils round her body holding back her blood
                 out.append(f"🫀 {poss_word(e['attacker'])} coils on {poss_word(e['defender'])} "
                            f"{', '.join(str(p).lower() for p in e.get('parts') or [])}: "
-                           + (f"squeezed in {e['compress']}% ({e.get('where')}"
-                              f"{', she fought it' if e.get('struggled') else ''}), " if e.get("compress") is not None
+                           + (f"squeezed in {e['compress']}% ("
+                              + (f"all round her {'chest and middle' if e.get('where') == 'both' else 'middle' if e.get('where') == 'belly' else 'chest'}"
+                                 if e.get("ring_parts") else str(e.get("where")))
+                              + f"{', she fought it' if e.get('struggled') else ''}), " if e.get("compress") is not None
                               else "")
                            + f"blood flow {e.get('pct', 0)}% cut off, her heart " + {"pounding": "pounding", "slowing": "slowing and stumbling",
                                                  "greying": "slow and uneven, the grey closing in"}.get(e.get("stage"), "")

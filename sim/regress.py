@@ -828,6 +828,20 @@ def compression_check():
         problems.append(f"the chest and the belly read differently: {chest!r} {belly!r}")
     if e.compression_on(e.get("Ripples"), "Seraphina") <= 0:
         problems.append("compression_on should give the squeeze while the coils are on")
+    # build 296 (compression.ring): a coil goes all the way round her, front, sides and back
+    rp = e.get("Ripples")
+    if e.coil_ring(rp, "Left Flank") != ("belly", ["Stomach", "Left Flank", "Right Flank", "Lower Back"]) or \
+            e.coil_ring(rp, "Upper Back") != ("chest", ["Chest", "Left Ribs", "Right Ribs", "Upper Back"]):
+        problems.append(f"a coil should touch the whole band: {e.coil_ring(rp, 'Left Flank')} {e.coil_ring(rp, 'Upper Back')}")
+    if c and set(c.get("ring_parts") or ()) != {"Chest", "Left Ribs", "Right Ribs", "Upper Back"}:
+        problems.append(f"the constriction event names every part the coil lies on: {c and c.get('ring_parts')}")
+    rw = n._squeeze_words(70, "belly", "Ripples", "Seraphina", False, ["Stomach", "Left Flank", "Right Flank", "Lower Back"])
+    if "both her flanks" not in rw or "lower back" not in rw or "all the way round" not in rw:
+        problems.append(f"the story should name her flanks and back too: {rw!r}")
+    import cards
+    _, body_box, coil_boxes = cards.squeeze_shapes(60, 1, 0, 100, 0, 10, ring=True)
+    if not any(b[1] == 0 and b[2] - b[0] == 100 for b in coil_boxes) or body_box[1] <= 1:
+        problems.append(f"the bar should draw the coils across her front and back too: {coil_boxes}")
     import json as _json
     if "nause" in open("rules.json", encoding="utf-8").read().lower().replace("nauseous", "nause") and \
             ("nausea" in str(e.rules["finish"]["submission"]["constriction"]) or "nauseous" in str(e.rules["moves"]["body_jolts"])):

@@ -550,11 +550,12 @@ class FighterCard(ttk.Frame):
         if v.get("squeeze") is not None:
             # (since build 294) how far the coils have squeezed her in: her chest or belly as a band narrowing from
             # both sides, the coils across it
-            full, body, bands = squeeze_shapes(v["squeeze"], v.get("coils"), 84, max(40, w - 84 - 96), 46, 10)
+            full, body, bands = squeeze_shapes(v["squeeze"], v.get("coils"), 84, max(40, w - 84 - 96), 46, 10,
+                                           ring=bool(v.get("ring")))
             c.create_rectangle(*full, outline="#4b5563", dash=(2, 2))
             for b in bands:
                 c.create_rectangle(*b, outline="#1f2937", fill="#3b82f6")       # the coils pressing in from outside
-            c.create_rectangle(*body, outline="#60a5fa", width=2,              # her body, the coil wrapped round it
+            c.create_rectangle(*body, outline="#60a5fa", width=1 if v.get("ring") else 2,   # her body, inside the coils
                                fill="#c08457" if v.get("where") != "back" else "#a16207")
             c.create_text(6, 51, anchor="w", font=("Segoe UI", 8), fill="#f9fafb", text=squeeze_label(v))
         tx = 84

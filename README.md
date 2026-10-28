@@ -654,6 +654,16 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 296
+A coil round her body touches her all the way round, not only the part it was put on
+(`finish.submission.constriction.compression.ring`, on by default). Round her chest it lies on her chest (and ruff),
+her ribs on both sides and her upper back; round her middle, on her belly, both flanks and her lower back. She braces
+with the whole band, and the worst-hurt part anywhere in it counts against her endurance. A coil put on her back or
+flank counts as round her chest or her middle, so "back" is no longer a place of its own. The narrator is told every
+part it touches and that the pressure is even all round: front, sides and back. The stat line says "all round her
+chest", and the squeeze bar draws the coils along her front and back as well as at her flanks. Off, only the parts
+the coils were put on count, as before.
+
 ## Build 295
 The squeeze bar is drawn the way it happens: her body (tan) in the middle, narrowing as she is squeezed in, with the
 coil's blue edge wrapped round it, and the coils (blue blocks) pressing in from both ends, filling the room she has

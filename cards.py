@@ -1030,20 +1030,27 @@ def ecg_points(heart, irregular, width, height, x0=0.0, y0=0.0, seconds=6.0):
     return pts
 
 
-def squeeze_shapes(squeeze, coils, x0, width, y0, height):
+def squeeze_shapes(squeeze, coils, x0, width, y0, height, ring=False):
     """(since build 294; drawn from the outside in since build 295) The squeeze bar: her chest or belly as a band that
     narrows from both ends as the coils close in (squeeze: 0-100, down to about a third of its width at 92%), with the
     coils OUTSIDE her: wrapped round the band, and pressing in from both ends, filling the room she has lost (one
-    stripe a side for each coil round her). Returns (full outline box, squeezed body box, [coil boxes])."""
+    stripe a side for each coil round her). (since build 296) ring: a cross-section, the coils all the way round her,
+    along the top and bottom too (her front and back), so they touch her on every side, her flanks at the ends.
+    Returns (full outline box, squeezed body box, [coil boxes])."""
     full = (x0, y0, x0 + width, y0 + height)
-    cut = max(3.0, width * 0.35 * min(100.0, max(0.0, float(squeeze))) / 100.0)
-    body = (x0 + cut, y0 + 1, x0 + width - cut, y0 + height - 1)
+    sq = min(100.0, max(0.0, float(squeeze)))
+    cut = max(3.0, width * 0.35 * sq / 100.0)
+    edge = round(1.5 + 1.5 * sq / 100.0, 1) if ring else 0.0      # front and back: thicker as she is pressed flat
+    body = (x0 + cut, y0 + max(1.0, edge), x0 + width - cut, y0 + height - max(1.0, edge))
     n = max(1, min(4, int(coils or 1)))
     step = cut / n
     sides = []
     for k in range(n):
         sides.append((x0 + k * step, y0, x0 + (k + 1) * step - 1, y0 + height))                  # pressing in from the left
         sides.append((x0 + width - (k + 1) * step + 1, y0, x0 + width - k * step, y0 + height))  # and from the right
+    if ring:
+        sides.append((x0, y0, x0 + width, y0 + edge))                       # across her front
+        sides.append((x0, y0 + height - edge, x0 + width, y0 + height))     # and her back
     return full, body, sides
 
 

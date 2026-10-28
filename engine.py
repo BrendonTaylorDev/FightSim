@@ -10469,7 +10469,9 @@ class Engine:
                 circ = self._compress_tick(d, a, hid, body_coils, tight, big, kcfg, s_)
                 comp = float((d.learned.get("compress") or {}).get("c", 0.0))
                 ew = float(kcfg.get("energy_weight", 0.4))
-                worst = max((d.parts[h.part].damage for h in body_coils if h.part in d.parts), default=0.0)
+                worst = max((d.parts[p].damage for p in (self.coil_ring_parts(d, body_coils) if self.compress_cfg()
+                                                          else [h.part for h in body_coils]) if p in d.parts),
+                            default=0.0)
                 part_f = 1.0 - float(kcfg.get("part_weight", 0.25)) * min(1.0, worst / 300.0)
                 circ_end = max(float(kcfg.get("endure_min", 30)), float(kcfg.get("endurance", 110))
                                * (s_ / 100.0) ** float(kcfg.get("health_power", 0.5)) * surge * part_f
@@ -10500,9 +10502,11 @@ class Engine:
                 vit["squeeze"] = round(comp)
                 vit["where"] = (d.learned.get("compress") or {}).get("where", "")
                 vit["coils"] = len(body_coils)
+                vit["ring"] = bool((d.learned.get("compress") or {}).get("ring"))
                 events.append(dict({"type": "constriction", "attacker": a, "defender": dn, "stage": stage,
                                     "pct": round(100 * frac), "coils": len(body_coils), "compress": round(comp),
                                     "where": (d.learned.get("compress") or {}).get("where", ""),
+                                    "ring_parts": list((d.learned.get("compress") or {}).get("ring") or []),
                                     "struggled": bool((d.learned.get("compress") or {}).get("struggled")),
                                     "parts": [h.part for h in body_coils]}, **vit))
             # she holds on the first beat it goes past her limit, whatever it costs her: only after that can she
@@ -11016,6 +11020,24 @@ class Engine:
             return 0.0
         return float(cp.get("c", 0.0))
 
+    def coil_ring(self, d, part):
+        """(since build 296, constriction.compression.ring) A coil round her body goes all the way round her, so it lies
+        on every part of that band, not just the one it was aimed at: round her chest, her chest (and ruff), her ribs on
+        both sides and her upper back; round her middle, her belly, both flanks and her lower back (her one back, when
+        she has no lower back of her own). Returns ("chest" or "belly", [her parts in it])."""
+        band = "belly" if body_region(part) in ("belly", "back_low") else "chest"
+        want = ("chest", "back_up") if band == "chest" else ("belly", "back_low")
+        ring = [p for p in d.parts if body_region(p) in want]
+        if band == "belly" and not any(body_region(p) == "back_low" for p in d.parts):
+            ring += [p for p in d.parts if body_region(p) == "back_up"]
+        return band, ring or [part]
+
+    def coil_ring_parts(self, d, coils):
+        """Every part the body coils on her touch (coil_ring), or just the parts they were put on when ring is off."""
+        if not (self.compress_cfg() or {}).get("ring", True):
+            return [h.part for h in coils]
+        return list(dict.fromkeys(p for h in coils for p in self.coil_ring(d, h.part)[1]))
+
     def _compress_tick(self, d, a, hid, coils, tight, big, kcfg, s_):
         """finish.submission.constriction.compression (since build 294): how far the coils have squeezed her chest
         and middle in, kept from beat to beat while the same coils hold, and the constriction gauge it builds.
@@ -11035,7 +11057,9 @@ class Engine:
             cp = {"by": a, "hid": hid, "c": 0.0, "circ": 0.0, "turn": -1}
         if cp.get("turn") == self.turn:
             return float(cp.get("circ", 0.0))        # (once a beat, however many tap checks look at it)
-        res = [d.parts[h.part].resistance for h in coils if h.part in d.parts] or [100.0]
+        # (ring: she braces with the whole band the coils go round, front, sides and back, not one part)
+        ring = self.coil_ring_parts(d, coils)
+        res = [d.parts[p].resistance for p in ring if p in d.parts] or [100.0]
         brace = (float(cc.get("brace_base", 0.6)) + float(cc.get("brace_res", 0.4)) * (sum(res) / len(res)) / 100.0) \
             * (float(cc.get("brace_base", 0.6)) + (1.0 - float(cc.get("brace_base", 0.6))) * max(0.0, s_) / 100.0)
         gain = float(cc.get("gain", 10)) * tight * big * (1.0 + float(kcfg.get("extra_coil", 0.35)) * (n - 1)) \
@@ -11049,10 +11073,18 @@ class Engine:
         f = max(0.0, min(float(cc.get("over", 1.6)), (cp["c"] - floor) / max(1.0, span)))
         # where it squeezes: round her chest it bears straight on her heart and lungs; round her belly it drives her
         # gut up under her ribs (the breath pushed out from below, less on the heart); both, or her back
-        regs = {body_region(h.part) for h in coils}
-        chest = "chest" in regs or any(re.search(r"ribs", h.part, re.I) for h in coils)
-        belly = "belly" in regs
-        cp["where"] = "both" if chest and belly else "chest" if chest else "belly" if belly else "back"
+        if cc.get("ring", True):
+            # (ring) each coil goes all the way round her, so a coil on her back or flank is round her chest or her
+            # middle like any other
+            bands = {self.coil_ring(d, h.part)[0] for h in coils}
+            cp["where"] = "both" if len(bands) > 1 else bands.pop()
+            cp["ring"] = ring
+        else:
+            regs = {body_region(h.part) for h in coils}
+            chest = "chest" in regs or any(re.search(r"ribs", h.part, re.I) for h in coils)
+            belly = "belly" in regs
+            cp["where"] = "both" if chest and belly else "chest" if chest else "belly" if belly else "back"
+            cp.pop("ring", None)
         wm = cc.get("where_mult") or {}
         cp["circ"] = float(cp.get("circ", 0.0)) + float(cc.get("per_beat", 9)) * f * float(
             wm.get(cp["where"], {"chest": 1.1, "belly": 0.9, "both": 1.05, "back": 0.95}[cp["where"]]))

@@ -167,12 +167,12 @@ def _gauges(f):
                     + ('<text x="6" y="29" fill="#fca5a5" font-size="8">irregular</text>' if v.get("irregular") else "")
                     + ((lambda sh: f'<rect x="{sh[0][0]}" y="{sh[0][1]}" width="{sh[0][2] - sh[0][0]:.1f}" height="10" '
                        f'fill="none" stroke="#4b5563" stroke-dasharray="2,2"/>'
-                       + "".join(f'<rect x="{b[0]:.1f}" y="{b[1]}" width="{max(1.0, b[2] - b[0]):.1f}" height="10" '
+                       + "".join(f'<rect x="{b[0]:.1f}" y="{b[1]}" width="{max(1.0, b[2] - b[0]):.1f}" height="{b[3] - b[1]:.1f}" '
                                  f'fill="#3b82f6" stroke="#1f2937"/>' for b in sh[2])
-                       + f'<rect x="{sh[1][0]:.1f}" y="{sh[1][1]}" width="{sh[1][2] - sh[1][0]:.1f}" height="8" '
+                       + f'<rect x="{sh[1][0]:.1f}" y="{sh[1][1]}" width="{sh[1][2] - sh[1][0]:.1f}" height="{sh[1][3] - sh[1][1]:.1f}" '
                        f'fill="#c08457" stroke="#60a5fa" stroke-width="1.5"/>'
                        + f'<text x="6" y="54" fill="#f9fafb" font-size="9">{html.escape(cards.squeeze_label(v))}</text>')
-                       (cards.squeeze_shapes(v["squeeze"], v.get("coils"), 84, w - 90, 46, 10))
+                       (cards.squeeze_shapes(v["squeeze"], v.get("coils"), 84, w - 90, 46, 10, ring=bool(v.get("ring"))))
                        if v.get("squeeze") is not None else "")
                     + f'<clipPath id="{cid}"><rect x="84" y="0" width="{w - 90}" height="28"/></clipPath>'
                     f'<g clip-path="url(#{cid})"><g transform="translate(84,0)"><polyline points="{pts}" fill="none" '

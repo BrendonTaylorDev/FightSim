@@ -4739,7 +4739,8 @@ class Narrator:
                 if e.get("compress") is not None and e.get("where"):
                     # (since build 294, constriction.compression) how far in she is squeezed, and where
                     lines.append("  - HOW FAR THE COILS HAVE SQUEEZED HER IN: " + self._squeeze_words(
-                        int(e["compress"]), e["where"], e["defender"], e["attacker"], bool(e.get("struggled"))))
+                        int(e["compress"]), e["where"], e["defender"], e["attacker"], bool(e.get("struggled")),
+                        e.get("ring_parts")))
                 # (since build 293) the heartbeat between them: the coiler feels it through her coils and works her
                 # squeeze by it; the one held hears and feels her own heart as she never has (one idea each, varied
                 # by the beat; feelings and choices, never numbers)
@@ -7767,21 +7768,51 @@ class Narrator:
                    "out.)",
     }
     @staticmethod
-    def _squeeze_words(c, where, d, a, struggled):
+    def _ring_words(parts):
+        """Her parts a coil goes round, in a few words, pairs said once: "her chest, her ribs on both sides and her upper
+        back"."""
+        out, seen = [], set()
+        for p in parts or ():
+            m = re.match(r"(left|right) (.+)", p, re.I)
+            base = (m.group(2) if m else p).lower()
+            if base in seen:
+                continue
+            seen.add(base)
+            pair = m and any(re.fullmatch(r"(left|right) " + re.escape(base), q, re.I) and q != p for q in parts)
+            out.append(("her " + base + " on both sides" if base.endswith("s") else "both her " + base + "s")
+                       if pair else "her " + base)
+        return out[0] if len(out) == 1 else ", ".join(out[:-1]) + " and " + out[-1] if out else ""
+
+    @staticmethod
+    def _squeeze_words(c, where, d, a, struggled, ring=None):
         """(since build 294) How far the coils have squeezed her in (constriction.compression: 0-100) and where, in the
         story's words: round her chest it is her ribs that can't spring out and her heart pressed on; round her belly
-        her gut is driven up under her ribs and the breath pushed out from below; both; or her back bowed."""
+        her gut is driven up under her ribs and the breath pushed out from below; both; or her back bowed. (since build
+        296, compression.ring) A coil goes all the way round her, so the words name every side of her it lies on:
+        front, flanks and back, the pressure even all round, never her front alone."""
         level = ("snug: she can still breathe around them, if she is careful" if c < 35 else
                  "tight: her breath only half fills her before it meets the coils" if c < 60 else
                  "crushing: barely a sip of air fits between one squeeze and the next" if c < 80 else
                  "she is held almost flat: there is no room left for a breath to speak of")
-        place = {"chest": (f"round {poss(d)} chest: her ribs can't spring back out, every breath out the coils take "
-                           f"the room it leaves, and the pressure bears straight in on her heart"),
-                 "belly": (f"round {poss(d)} belly: her middle is pressed in and her gut driven up under her ribs, so "
-                           f"the breath is pushed out of her from below and she can't drop her belly to draw another"),
-                 "both": (f"round {poss(d)} chest and belly both: there is nowhere for the breath to go, above or below, "
-                          f"and the pressure bears in on her heart"),
-                 "back": f"round {poss(d)} back and middle: her spine bowed, her chest pressed from behind"}.get(where, "")
+        rw = Narrator._ring_words(ring)
+        if rw:
+            place = {"chest": (f"all the way round {poss(d)} chest, touching her everywhere it passes ({rw}): her ribs "
+                               f"can't spring back out at the front, the sides or the back, every breath out the coils "
+                               f"take the room it leaves, and the pressure bears in on her heart from every side"),
+                     "belly": (f"all the way round {poss(d)} middle, touching her everywhere it passes ({rw}): she is "
+                               f"pressed in evenly from belly to spine, her gut driven up under her ribs, so the breath "
+                               f"is pushed out of her from below and she can't drop her belly to draw another"),
+                     "both": (f"all the way round {poss(d)} chest and middle both, touching her everywhere they pass "
+                              f"({rw}): there is nowhere for the breath to go, above or below, front or back, and the "
+                              f"pressure bears in on her heart from every side")}.get(where, "")
+        else:
+            place = {"chest": (f"round {poss(d)} chest: her ribs can't spring back out, every breath out the coils take "
+                               f"the room it leaves, and the pressure bears straight in on her heart"),
+                     "belly": (f"round {poss(d)} belly: her middle is pressed in and her gut driven up under her ribs, so "
+                               f"the breath is pushed out of her from below and she can't drop her belly to draw another"),
+                     "both": (f"round {poss(d)} chest and belly both: there is nowhere for the breath to go, above or "
+                              f"below, and the pressure bears in on her heart"),
+                     "back": f"round {poss(d)} back and middle: her spine bowed, her chest pressed from behind"}.get(where, "")
         fight = (f" She fought it this beat, and every breath that cost her, {a} took up." if struggled else
                  f" She is keeping still, and even so each breath out gives {a} a little more.")
         return f"{level}; {place}.{fight} In her body and her breath, never as a number."
