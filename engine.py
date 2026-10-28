@@ -10111,6 +10111,11 @@ class Engine:
             return 1.0
         return max(0.0, float(cfg.get("defence_mult", 0.4)))
 
+    def sub_knockouts(self):
+        """finish.submission.allow_knockouts (since build 282, off by default): a submission match where a knockout
+        blow ends it too (the /preset anything match: a knockout, a pin held to its end or a tap-out)."""
+        return bool(((self.rules.get("finish") or {}).get("submission") or {}).get("allow_knockouts", False))
+
     def submission_match(self):
         """finish.submission.enabled: a submission match. Only a tap-out or a pass-out ends it: no knockouts from blows.
         Each beat a submission (or a choke, or a coil round her) has been on, the one in it may TAP OUT; in a choke
@@ -10811,7 +10816,7 @@ class Engine:
         Returns the elimination result, or None."""
         cfg = (self.rules.get("moves") or {}).get("knockout") or {}
         d = self.get(name)
-        if self.submission_match():
+        if self.submission_match() and not self.sub_knockouts():
             return None          # (a submission match: no blow puts her out, only a tap-out or a pass-out)
         if self.ko_only() and not d.eliminated and d.max_health:
             loss = lost / d.max_health * 100.0

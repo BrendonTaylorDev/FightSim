@@ -2566,7 +2566,13 @@ class Director:
             held = big_moment_hint(engine, prefer=who)
             if held:
                 rng_hint = (rng_hint + "\n" + held).strip()
-        if not direction and engine.submission_match():
+        if not direction and engine.submission_match() and engine.sub_knockouts():
+            # (since build 282, finish.submission.allow_knockouts) anything goes
+            rng_hint = (rng_hint + "\nANYTHING GOES: a KNOCKOUT blow, a PIN held to its end" if not engine.no_pins() else
+                        rng_hint + "\nANYTHING GOES: a KNOCKOUT blow") + (
+                ", or a TAP-OUT (or pass-out) in a submission all end this fight. Mix them as the fight goes: blows "
+                "to wear her down and maybe knock her out, and holds, submissions and coils when there is an opening.")
+        elif not direction and engine.submission_match():
             # a submission match: only a tap-out or a pass-out ends it, so the fight has to come to holds
             rng_hint = (rng_hint + "\nSUBMISSION MATCH: no blow ends this fight, only a TAP-OUT or a PASS-OUT. Blows "
                         "only soften her up for the hold. Work toward grips: take the submission openings, and put on "

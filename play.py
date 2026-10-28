@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 281-guided (personality, history and relationships in the prose; Profiles window)"
+VERSION = "2026-10-28 build 282-guided (setup questions, match presets, anything-goes match, help examples)"
 
 HELP = """
 =============================================================================================
@@ -258,8 +258,14 @@ HELP = """
 =============================================================================================
  STEERING THE STORY   (nudges for the director; the dice still decide)
 =============================================================================================
-  /plan close [winner]   /plan dominate <name>   /plan comeback <name>
-  /plan even             /plan winner <name>     /plan off
+  /plan <shape> [name]   the shape of the whole fight, told to the director every beat (/plan alone: what is set)
+          /plan close            back and forth, nobody pulls far ahead (/plan close Ripples: and she edges it)
+          /plan dominate Seraphina   she DOMINATES: the other gets a beat of her own only now and then
+                                 (director.plan_dominate.rival_turn_chance, 0.15), and her dodges, counters and
+                                 break-free rolls are cut (defence_mult 0.4). A direction you type is never changed.
+          /plan comeback Ripples     beaten down first, then she turns it around
+          /plan winner Nerine        she should win in the end, but make it earned
+          /plan even             share the attacks fairly          /plan off   no plan
   /encourage <kind> [blows/links] [attacker] [defender] [beats]   point the director hard at one kind of attack
           for a few beats (default 3; a nudge, not an order). Kinds: sustain pummel charge chain throw slam grab hold
           pin submission feint dive carry spike juggle launch, or your own words in quotes.
@@ -378,8 +384,27 @@ HELP = """
 =============================================================================================
  SETTINGS, SCREEN AND ARENAS
 =============================================================================================
-  /set <rule.path> <value> [nosave]     change any rule in rules.json      /set narration.swearing never
-  /get [rule.path]                      show rules                          /get pin.struggle
+  /set <rule.path> <value> [nosave]     change any rule in rules.json (and keep it in my_settings.json, so a new
+                      build doesn't undo it); nosave = this session only. A value is a number, true/false, a word,
+                      or JSON. A mistyped path says what it could be. Examples:
+                        /set narration.swearing never              /set finish.knockout_only true
+                        /set damage.damage_scale 4                 /set director.plan_dominate.rival_turn_chance 0.3
+                        /set traits.quirks.cocky.enabled false     /set narration.character.history false
+                        /set holds.coil.contest.stall_chance 0.5   /set narration.polish.when big
+                        /set moves.side_spill.power_mult 0.5 nosave
+                      Find the path first: /sets <word> (/sets coil), or /get <section> (/get holds.coil)
+  /get [rule.path]                      show rules                          /get pin.struggle    /get traits.quirks
+  The setup questions (setup.enabled, on by default): before a run begins the game asks, one short question at a
+                      time, where and who (arena, fighters, versions, whether you play one fighter, several or all,
+                      and with which dice), the match (opening passage, kind of match, taps, how often pins come),
+                      the story (plan, focus, targeting, why they fight), balance (length, damage scale), the
+                      writing (traits, personality and history, swearing and gore, how much is written, hazards,
+                      Venice) and anything else, then whether to go beat by beat or let the director run. Enter keeps
+                      what is set at every question; at the first one, Enter skips them all and a preset name asks
+                      only where, who and how you play. Fewer questions: /set setup.questions (a list), or
+                      /set setup.enabled false (only the arena question, as before).
+  /preset [name]      a whole kind of match at once (submission, submission3, knockout, pins, anything):
+                      /preset lists them, /preset submission ? shows what it changes. /help presets
   /bench [beats] <setting=value> ...   the narration test bench: your last saved beats (2 by default) told twice,
                       as your settings are (A) and with the changes (B), compared on words, paragraphs, model calls,
                       time, rewrites, the checks that fired and repeated phrases; both tellings go to bench_reports/.
@@ -409,7 +434,7 @@ HELP = """
 =============================================================================================
  SWITCHES   (the on/off settings people ask about; each is a /set, kept in my_settings.json)
 =============================================================================================
-  How fights end:
+  How fights end (or all at once with a preset: /preset submission | submission3 | knockout | pins | anything):
     knockouts only            /set finish.knockout_only true     (a fight ends only when a blow knocks her out)
     no pins at all            /set finish.no_pins true           (with knockouts only)
     submission match          /set finish.submission.enabled true   (only a tap-out or a pass-out ends it; no pins
@@ -461,6 +486,51 @@ HELP = """
                             health, and every body part's damage and resistance, as a page for your browser
   /save [file]   /load [file]   (every beat autosaves: /load autosave)
   /help   /quit
+
+=============================================================================================
+ MATCH PRESETS   (rules.json presets: each sets several /set lines at once and keeps them)
+=============================================================================================
+  /preset                    the list, with what each kind of match is
+  /preset submission         only a tap-out or a pass-out ends it; no knockouts, no pins
+  /preset submission3        won by the third tap-out, from three different body parts (two for a serpent)
+  /preset knockout           only a knockout blow ends it; no pins, no submissions
+  /preset pins               a pin held to the end of its clock wins, and a knockout blow can still end it
+  /preset anything           whatever happens first: a knockout, a pin held to its end, or a tap-out
+  /preset knockout ?         what a preset would change, without changing anything
+  /preset pins nosave        for this session only
+  Your own: add one to rules.json -> presets (a name, a description, and its settings: rule path -> value).
+
+=============================================================================================
+ EXAMPLES   (ways to do common things, start to finish)
+=============================================================================================
+  A whole fight on its own, as a submission match in the lakeside clearing:
+    /preset submission   /scene lakeside   /newfight Nerine Ripples   /auto 30
+  Steer it: Seraphina dominates, and her coils go for the middle:
+    /plan dominate Seraphina   /focus Seraphina core   /encourage hold 3 Seraphina Ripples
+  Play as one fighter and let the director run the other:
+    /play Ripples    then at "Ripples >" type her move: "Aqua Jet into her chest, then bite her arm"
+    (Enter lets the director choose for her; "wait" holds back; "does nothing" lets the other act on her)
+  Exactly the attack you want:
+    /move Nocturne Ripples "Night Slash" "Chest"         /move Nocturne Ripples "Slash" "Left Upper Arm" 3
+    /sustain Seraphina Ripples "Hydro Pump" 3 "an old oak" "Stomach, Chest"
+    /charge Ripples Nocturne "Aqua Jet" "an old oak"  +  /move Ripples Nocturne "Crunch" "Throat"
+  A hold, a coil, a pin:
+    /hold Seraphina Ripples "Stomach,Chest" crushing "her coils wound round her middle"
+    /release Seraphina Ripples      (she lets go)       /pin Nerine Ripples   then   /struggle Ripples   (fight the pin)
+  Better prose with Venice (narration.polish):
+    /polish key <your key>   /polish models   /polish model <name>   /polish on
+    /polish when big         (only the big moments: taps, knockouts, the finish)
+    /polish now              (polish the last beat now)     /polish off
+    By hand, no key: /polish copy (paste it into Venice's chat), put the answer in polish_reply.txt, /polish paste
+  Who they are:
+    /profile Ripples   /traits   (the window: the Profiles button, to edit personality, history, relationships)
+    /set traits.enabled false          (fight without traits and quirks)
+  Change any number, find it first:
+    /sets dominate      /get director.plan_dominate      /set director.plan_dominate.defence_mult 0.25
+  Fix a beat:
+    /undo   /reroll   /undo 3      /save before_finish   /load before_finish
+  Balance check with no model:
+    /simulate 50 Nocturne Ripples      /simulate 20 Seraphina Nerine
 """
 
 
@@ -2335,6 +2405,258 @@ def ask_scene(s, read=None):
             print(f"Error: {e}")
 
 
+def _match_kind(eng):
+    """What kind of match the rules make now, in a few words (for the setup questions)."""
+    if eng.submission_match():
+        if eng.sub_knockouts():
+            return "anything goes (knockout, " + ("" if eng.no_pins() else "pin, ") + "or tap-out)"
+        return f"submission ({eng.taps_needed()} taps)" if eng.taps_needed() > 1 else "submission"
+    if eng.ko_only():
+        return "knockout only" + (", no pins" if eng.no_pins() else "")
+    return "pins and knockouts"
+
+
+def setup_questions(s, read=None):
+    """(since build 282, setup.enabled) the questions asked before a run begins: a preset or the questions or
+    nothing, then the arena, the fighters, the opening passage, the kind of match, the story plan, the important
+    settings and anything more. Enter keeps what is set at every question; any /command works at any of them."""
+    eng = s.eng
+    cfg = eng.rules.get("setup") or {}
+    ask = list(cfg.get("questions") or ["scene", "fighters", "variants", "players", "intro", "match", "taps", "pins",
+                                        "plan", "focus", "targeting", "reason", "length", "damage", "traits",
+                                        "character", "words", "story", "hazards", "polish", "more", "begin"])
+    rd = read or input
+    started = {"yes": False}
+
+    def line_(prompt):
+        try:
+            return rd(prompt).strip()
+        except (EOFError, KeyboardInterrupt):
+            return None
+
+    def cmd_(c, quiet=False):
+        turn0 = eng.turn
+        try:
+            if quiet:
+                import contextlib, io
+                with contextlib.redirect_stdout(io.StringIO()):
+                    handle_command(s, c)
+            else:
+                handle_command(s, c)
+        except ValueError as e:
+            print(f"Error: {e}")
+            return False
+        if eng.turn != turn0 or re.match(r"/(?:auto|autofight|load|fight)\b", c, re.I):
+            started["yes"] = True        # a fight began from here: the questions are over
+        return True
+
+    def ask_(prompt, apply):
+        """One question: Enter keeps it; a /command runs and the question comes again; anything else is the
+        answer, given to apply (which says False when it couldn't use it)."""
+        for _ in range(4):
+            got = line_(prompt)
+            if got is None or got == "":
+                return
+            if got.startswith("/"):
+                cmd_(got)
+                if started["yes"]:
+                    return
+                continue
+            if apply(got) is not False:
+                return
+    pres = [k for k, v in (eng.rules.get("presets") or {}).items() if not str(k).startswith("_") and isinstance(v, dict)]
+    print("SETUP (Enter at any question keeps what is set; any /command works too; /set setup.enabled false turns "
+          "these questions off)")
+    print("  Match presets: " + "   ".join(f"{i}) {k}" for i, k in enumerate(pres, 1)))
+    first = line_(f"Start> Enter = begin now as things are ({_match_kind(eng)}), a preset number or name = that "
+                  f"kind of match, o = go through the setup questions: ")
+    if first is None or first == "":
+        return
+    if first.startswith("/"):
+        cmd_(first)
+        if started["yes"]:
+            return
+        first = "o"
+    if first.lower() not in ("o", "options", "q", "questions", "all"):
+        pick = pres[int(first) - 1] if first.isdigit() and 0 < int(first) <= len(pres) else first.lower()
+        if cmd_(f"/preset {pick}"):
+            ask = [q for q in ask if q in ("scene", "fighters", "players", "begin")]   # a preset: where, who, begin
+    rules = eng.rules
+    nar = rules.get("narration") or {}
+
+    def yesno(got):
+        return got.lower() in ("on", "y", "yes", "true", "1")
+
+    def q_scene():
+        if len(eng.scenes) > 1:
+            ask_scene(s, read=rd)
+
+    def q_fighters():
+        roster = list(eng.roster)
+        now = " vs ".join(f.name for f in eng.fighters.values())
+        print("  Fighters: " + "   ".join(f"{i}) {n}" for i, n in enumerate(roster, 1)))
+
+        def fighters(got):
+            names = [roster[int(w) - 1] if w.isdigit() and 0 < int(w) <= len(roster) else w
+                     for w in re.split(r"[\s,]+", got) if w and w.lower() not in ("vs", "and")]
+            if len(names) < 2:
+                print("Two or more fighters, by name or number (e.g. 3 7, or Nerine Ripples).")
+                return False
+            return cmd_("/newfight " + " ".join(names))
+        ask_(f"Fighters> who fights (names or numbers; Enter keeps {now}): ", fighters)
+
+    def q_variants():
+        for f in eng.fighters.values():
+            vs = [k for k in ((eng.variants or {}).get(f.name) or {}) if not str(k).startswith("_")] \
+                if isinstance(getattr(eng, "variants", None), dict) else []
+            if vs:
+                ask_(f"Variant> which {f.name}: {' | '.join(vs)} (Enter keeps {eng.variant_of.get(f.name, 'the one set')}): ",
+                     lambda got, n=f.name: cmd_(f"/variant {n} {got}"))
+
+    def q_players():
+        names = [f.name for f in eng.fighters.values()]
+        ask_(f"Players> will you play as a fighter yourself? one or more names ({', '.join(names)}), all, or Enter "
+             f"for none (the director runs everyone): ", lambda got: cmd_("/play " + got))
+        if getattr(s, "players", None):
+            ask_("Dice> for the fighters you play: fair (the dice decide; your /commands can still force things), "
+                 "strict (no forcing), or free (their tries always work) (Enter keeps fair): ",
+                 lambda got: cmd_("/play dice " + got.lower()))
+
+    def q_intro():
+        on = nar.get("scene_intro", True)
+        ask_(f"Intro> an opening passage that sets the scene, on or off (Enter keeps {'on' if on else 'off'}): ",
+             lambda got: cmd_(f"/intro {'on' if yesno(got) else 'off'}"))
+
+    def q_match():
+        print("  Match type: " + "   ".join(f"{i}) {k}" for i, k in enumerate(pres, 1)))
+        ask_(f"Match> which kind (Enter keeps {_match_kind(eng)}): ",
+             lambda got: cmd_("/preset " + (pres[int(got) - 1] if got.isdigit() and 0 < int(got) <= len(pres)
+                                            else got.lower())))
+
+    def q_taps():
+        if eng.submission_match():
+            ask_(f"Taps> how many tap-outs win it (Enter keeps {eng.taps_needed()}): ",
+                 lambda got: (cmd_(f"/set finish.submission.taps.enabled {'true' if int(got) > 1 else 'false'}"),
+                              cmd_(f"/set finish.submission.taps.needed {max(1, int(got))}")) if got.isdigit() else False)
+
+    def q_pins():
+        if not eng.no_pins():
+            sc = ((rules.get("director") or {}).get("pin_urge") or {}).get("scale", 0.5)
+            ask_(f"Pins> how often pin openings come: a number (0.5 = the default, 1 = twice as often, 0 = never), "
+                 f"or default (Enter keeps {sc:g}): ", lambda got: cmd_("/pins " + got))
+
+    def q_plan():
+        pl = eng.plan or {}
+        now = (pl.get("shape") or "none") + (f" {pl.get('winner')}" if pl.get("winner") else "")
+        ask_(f"Plan> the shape of the fight: close [name] | dominate <name> | comeback <name> | winner <name> | even | "
+             f"off (Enter keeps {now}): ", lambda got: cmd_("/plan " + got))
+
+    def q_focus():
+        ask_("Focus> where attacks aim: injured, vulnerable, core, head, neck, legs, arms, tail... (one fighter: "
+             "Nocturne legs), or off (Enter: wherever the fight takes them): ", lambda got: cmd_("/focus " + got))
+
+    def q_targeting():
+        ask_("Targeting> how many body parts each attack catches: one, few, many, all or auto (Enter keeps it): ",
+             lambda got: cmd_("/targeting " + got.lower()))
+
+    def q_reason():
+        if len(eng.fighters) == 2:
+            ask_("Reason> why they are fighting: on (one picked for you), list, a number from the list, your own "
+                 "words in quotes, or off (Enter keeps it): ", lambda got: cmd_("/reason " + got))
+
+    def q_length():
+        ask_("Length> about how many beats the fight runs: 30, 35, 40, 45, 50 or 60 (Enter keeps it): ",
+             lambda got: cmd_("/length " + got))
+
+    def q_damage():
+        sc = (rules.get("damage") or {}).get("damage_scale", 3)
+        ask_(f"Damage> how hard every hit lands, the damage scale (3 = the balanced default; Enter keeps {sc:g}): ",
+             lambda got: cmd_("/scale " + got))
+
+    def q_traits():
+        on = (rules.get("traits") or {}).get("enabled", True)
+        ask_(f"Traits> each fighter's traits and quirks (speed, grip, stubbornness...) on or off (Enter keeps "
+             f"{'on' if on else 'off'}): ", lambda got: cmd_(f"/set traits.enabled {'true' if yesno(got) else 'false'}"))
+
+    def q_character():
+        on = (nar.get("character") or {}).get("enabled", True)
+        ask_(f"Character> their personality, history and relationships in the story, on or off (Enter keeps "
+             f"{'on' if on else 'off'}; /profile shows them): ",
+             lambda got: cmd_(f"/set narration.character.enabled {'true' if yesno(got) else 'false'}"))
+
+    def q_words():
+        ask_(f"Swearing> never, rare or free (Enter keeps {nar.get('swearing', 'rare')}): ",
+             lambda got: cmd_("/set narration.swearing " + got.lower()) if got.lower() in ("never", "rare", "free")
+             else False)
+        ask_(f"Gore> none, mild or off (off = no limit) (Enter keeps {nar.get('gore_level', 'mild')}): ",
+             lambda got: cmd_("/set narration.gore_level " + got.lower()) if got.lower() in ("none", "mild", "off")
+             else False)
+
+    def q_story_length():
+        lm = (nar.get("rich") or {}).get("length_mult", 1.5)
+        ask_(f"Story> how much is written each beat: short, normal or long (Enter keeps it; now x{lm:g}): ",
+             lambda got: cmd_("/set narration.rich.length_mult " + {"short": "2.0", "normal": "1.5", "long": "1.0"}
+                              [got.lower()]) if got.lower() in ("short", "normal", "long") else False)
+
+    def q_hazards():
+        on = (rules.get("scene") or {}).get("events", True)
+        ask_(f"Hazards> the arena doing things by itself now and then, on or off (Enter keeps "
+             f"{'on' if on else 'off'}): ", lambda got: cmd_(f"/hazards {'on' if yesno(got) else 'off'}"))
+
+    def q_polish():
+        try:
+            import polish as _pol
+            has_key = bool(_pol.api_key(rules))
+        except Exception:
+            has_key = False
+        on = bool((nar.get("polish") or {}).get("enabled", False))
+        if not has_key:
+            print("  (Venice polish: no key yet. /polish key <your key> sets one; /help examples shows the steps.)")
+            return
+        ask_(f"Polish> Venice improves the prose: on, off, or big (only the big moments) (Enter keeps "
+             f"{'on' if on else 'off'}): ",
+             lambda got: (cmd_("/polish on"), cmd_("/polish when big")) if got.lower() == "big"
+             else cmd_("/polish " + ("on" if yesno(got) else "off")))
+
+    def q_more():
+        print("More> any other /commands, one per line (/encourage, /weakspots, /set ..., /help examples); Enter when "
+              "done.")
+        for _ in range(20):
+            got = line_("More> ")
+            if not got:
+                break
+            cmd_(got if got.startswith("/") else "/" + got)
+            if started["yes"]:
+                return
+
+    def q_begin():
+        got = line_("Begin> Enter = start, and press Enter for each beat; a number = let the director run that many "
+                    "beats on its own: ")
+        if got and got.isdigit():
+            s._setup_auto = int(got)      # (the run loop starts /auto with it once the fight is shown)
+
+    table = {"scene": q_scene, "fighters": q_fighters, "variants": q_variants, "players": q_players,
+             "intro": q_intro, "match": q_match, "taps": q_taps, "pins": q_pins, "plan": q_plan, "focus": q_focus,
+             "targeting": q_targeting, "reason": q_reason, "length": q_length, "damage": q_damage,
+             "traits": q_traits, "character": q_character, "words": q_words, "story": q_story_length,
+             "hazards": q_hazards, "polish": q_polish, "more": q_more, "begin": q_begin,
+             # (the first version's grouping, still understood)
+             "important": lambda: (q_length(), q_damage(), q_players(), q_polish())}
+    heads = {"scene": "WHERE AND WHO", "intro": "THE MATCH", "plan": "THE STORY", "length": "BALANCE",
+             "traits": "THE WRITING", "more": "ANYTHING ELSE"}
+    for q in ask:
+        if started["yes"]:
+            return
+        if q in heads:
+            print(f"\n— {heads[q]} —")
+        fn = table.get(q)
+        if fn is None:
+            continue
+        try:
+            fn()
+        except (ValueError, KeyError, IndexError) as e:
+            print(f"Error: {e}")
+
 HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the order of HELP's sections
     ("play", "playing play enter direction auto wait more interlude lull long", "playing: Enter, typed directions, /play as a fighter, /auto, /more, /interlude"),
     ("fights", "fights fight newfight autofight simulate team ally results", "fights: who is in them, /newfight, /autofight, /simulate, teams"),
@@ -2350,6 +2672,8 @@ HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the orde
     ("switches", "switches switch toggle knockout knockouts ko pins guided compact reads swearing context window intro rich", "switches: knockouts only, no pins, the opening passage, richer narration, guided narration, speed..."),
     ("looking", "looking status health look traits", "looking around: /status, /health, /look, /traits"),
     ("files", "files undo reroll save load export exportfight quit", "undo, files, quit: /undo, /reroll, /save, /load, /export, /exportfight"),
+    ("presets", "presets preset match matches submission knockout anything", "match presets: /preset submission | submission3 | knockout | pins | anything"),
+    ("examples", "examples example howto how recipes recipe", "examples: whole fights, steering, playing, attacks, holds, Venice polish, settings"),
 ]
 
 HELP_QUICK = """
@@ -2366,6 +2690,9 @@ QUICK START
   /undo   /reroll   /status  take a beat back, rewrite its narration, see where everyone stands
   /help switches             the on/off settings: knockouts only, no pins, the opening passage, richer narration...
   /sets   /sets <word>       every setting there is, ready to copy as a /set line (/sets all: all of them, to a file)
+  /preset submission         a whole kind of match at once (submission, submission3, knockout, pins, anything)
+  (at start-up)              the setup questions: arena, fighters, who you play, match type, plan... Enter skips any
+  /help examples             ways to do common things: steering, playing a fighter, holds, Venice polish, settings
 
 TOPICS   /help <topic>   ·   /help <command> (/help charge)   ·   /help <any word> searches everything
          (/help knockout, /help tumble)   ·   /help all = everything
@@ -4289,6 +4616,42 @@ def handle_command(s, line):
         if isinstance(val, dict):
             val = {k: v for k, v in val.items() if not k.startswith("_")}
         print(f"{a[0]} = {json.dumps(val, indent=1, ensure_ascii=False)}"); return
+    if cmd in ("preset", "presets", "match"):
+        # (since build 282) a whole kind of match at once: rules.json presets
+        pres = {k: v for k, v in (s.eng.rules.get("presets") or {}).items() if not str(k).startswith("_")
+                and isinstance(v, dict)}
+        if not a:
+            print("Match presets (/preset <name>; /preset <name> ? shows what it changes; add nosave for this session):")
+            for k, v in pres.items():
+                print(f"  {k:<12} {v.get('description', '')}")
+            return
+        name = a[0].lower()
+        if name not in pres:
+            raise ValueError(f"no preset called '{a[0]}': {', '.join(pres)}")
+        settings = pres[name].get("settings") or {}
+        if len(a) > 1 and a[1] in ("?", "show", "what"):
+            print(f"/preset {name}: {pres[name].get('description', '')}")
+            for path, v in settings.items():
+                try:
+                    node, key, _ = _rule_path(s.eng.rules, path)
+                    now = node[key]
+                except (KeyError, ValueError, TypeError):
+                    now = "(not set)"
+                print(f"  /set {path} {json.dumps(v)}" + ("" if now == v else f"     (now {json.dumps(now)})"))
+            return
+        nosave = a[-1].lower() == "nosave"
+        changed = []
+        for path, v in settings.items():
+            node, key, keys = _rule_path(s.eng.rules, path)
+            if node.get(key) != v:
+                changed.append(f"{path} {json.dumps(node.get(key))} → {json.dumps(v)}")
+            node[key] = v
+            if not nosave:
+                _save_rule_path(keys, v)
+        print(f"Preset {name}: {pres[name].get('description', '')}"
+              + (f"\n  changed: " + "; ".join(changed) if changed else "\n  (already set that way)")
+              + ("\n  (this session only)" if nosave else "\n  (saved: kept for new fights and new builds)"))
+        return
     if cmd == "set":
         if len(a) < 2:
             raise ValueError("Usage: /set <rule.path> <value>   e.g. /set pin.struggle.escape_chance 0.5  "
@@ -4957,6 +5320,9 @@ def _run(s, args):
             handle_command(s, "/scene " + args.scene)
         except ValueError as e:
             print(f"--scene: {e}")
+    elif (s.eng.rules.get("setup") or {}).get("enabled", True):
+        setup_questions(s)        # (since build 282) the questions before the run: preset, arena, fighters...
+        print()
     elif len(s.eng.scenes) > 1 and s.eng.rules.get("scene", {}).get("ask_at_start", True):
         ask_scene(s)
         print()
@@ -4967,6 +5333,13 @@ def _run(s, args):
     if os.path.exists(AUTOSAVE):
         print("\n(A previous fight was autosaved. Type /load autosave to pick it up where it left off.)")
     print("\nPress Enter to begin. Type a direction to steer, or /help for commands.\n")
+    if getattr(s, "_setup_auto", 0):
+        # (since build 282) the setup's last question: let the director run that many beats now
+        n_, s._setup_auto = s._setup_auto, 0
+        try:
+            handle_command(s, f"/auto {n_}")
+        except ValueError as e:
+            print(f"Error: {e}")
 
     while True:
         asked = s.play_order()[0] if s.use_llm and s.playing() else None

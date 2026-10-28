@@ -713,6 +713,72 @@ def coil_size_check():
     return problems
 
 
+def presets_help_check():
+    """Build 282: match presets (/preset), the anything-goes match (finish.submission.allow_knockouts), and the help:
+    every command the game takes is in it, with the new examples and presets topics."""
+    import re as _re
+    import play
+    problems = []
+    s = H.session(3, fighters="Nerine,Ripples")
+    e = s.eng
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.handle_command(s, "/preset knockout nosave")
+    if not (e.ko_only() and e.no_pins() and not e.submission_match()):
+        problems.append("/preset knockout should make a knockout-only match with no pins")
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.handle_command(s, "/preset submission3 nosave")
+    if not (e.submission_match() and e.taps_needed() == 3 and not e.ko_only()):
+        problems.append("/preset submission3 should make a three-tap submission match")
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.handle_command(s, "/preset anything nosave")
+    if not (e.submission_match() and e.sub_knockouts() and not e.no_pins() and not e.ko_only()):
+        problems.append("/preset anything: taps, pins and knockouts should all be possible")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        play.handle_command(s, "/preset pins ?")
+    if "/set finish.submission.enabled false" not in out.getvalue():
+        problems.append(f"/preset pins ? should show the /set lines: {out.getvalue()[:200]}")
+    src = open(os.path.join(os.path.dirname(play.__file__), "play.py"), encoding="utf-8").read()
+    cmds = set(_re.findall(r'cmd == "([a-z_]+)"', src))
+    for grp in _re.findall(r'cmd in \(([^)]*)\)', src):
+        names = _re.findall(r'"([a-z_]+)"', grp)
+        if names and not any(_re.search(r"/" + n + r"\b", play.HELP) for n in names):
+            problems.append(f"no help for /{names[0]} (or {', '.join(names[1:])})")
+    for c in cmds:
+        if c not in ("exit",) and not _re.search(r"/" + c + r"\b", play.HELP) and not any(
+                c in _re.findall(r'"([a-z_]+)"', g) for g in _re.findall(r'cmd in \(([^)]*)\)', src)):
+            problems.append(f"no help for /{c}")
+    for topic in ("examples", "presets"):
+        if "EXAMPLES" not in play.help_text("examples") or "MATCH PRESETS" not in play.help_text("presets"):
+            problems.append(f"/help {topic} should show its section")
+    for c in _re.findall(r"(?m)^    (/[a-z]+)", play.help_text("examples")):
+        if c.lstrip("/") not in cmds and not any(c.lstrip("/") in _re.findall(r'"([a-z_]+)"', g)
+                                                  for g in _re.findall(r'cmd in \(([^)]*)\)', src)):
+            problems.append(f"an example uses {c}, which is not a command")
+    # (the setup questions: all of them asked in order, Enter keeping everything; a preset asks only a few)
+    s2 = H.session(3, fighters="Nocturne,Ripples")
+    asked = []
+
+    def rd(prompt, answers=iter(["o"] + [""] * 40)):
+        asked.append(prompt.split(">")[0])
+        return next(answers, "")
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.setup_questions(s2, read=rd)
+    for want in ("Start", "Scene", "Fighters", "Players", "Intro", "Match", "Plan", "Focus", "Length", "Damage",
+                 "Traits", "Character", "Swearing", "Story", "Hazards", "More", "Begin"):
+        if want not in asked:
+            problems.append(f"the setup should ask {want}: {asked}")
+    asked.clear()
+    ans = iter(["knockout", "", "Nerine Ripples", "Ripples", "fair", "12"])
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.setup_questions(s2, read=lambda p: (asked.append(p.split(">")[0]), next(ans, ""))[1])
+    if asked != ["Start", "Scene", "Fighters", "Players", "Dice", "Begin"] or not s2.eng.ko_only() \
+            or s2.players != ["Ripples"] or getattr(s2, "_setup_auto", 0) != 12:
+        problems.append(f"a preset at the start should ask only where, who, players and begin, and apply them: {asked} "
+                        f"{s2.players} {getattr(s2, '_setup_auto', 0)}")
+    return problems
+
+
 def character_check():
     """Build 281: who each fighter is in the story (narration.character): personality, history and relationships in
     the narrator's notes and in the polishing model's facts; a quirk that decides something is told to the story;
@@ -2624,6 +2690,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build-273 lakeside log: wrong limb, posture, paws, fur, memories, retold get-up, kick, &&  ({time.time() - t:.1f}s)")
         for p in probs[:8]:
+            print("      " + p)
+    if not want or any(w in "presets preset help examples" for w in want):
+        t = time.time()
+        probs = presets_help_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "character personality history profile" for w in want):
         t = time.time()

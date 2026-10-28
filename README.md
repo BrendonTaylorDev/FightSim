@@ -654,6 +654,28 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 282
+Setup questions before a run, match presets, an anything-goes match, and a fuller help with examples.
+- **The setup questions** (`setup`, on by default). Before a run begins, the game asks one short question at a time:
+  - **Where and who:** the arena; the fighters; which version of a fighter, when she has more than one; whether you play as one fighter, several or all, and then with which dice.
+  - **The match:** the opening passage on or off; the kind of match; how many taps win (in a submission match); how often pin openings come (when there are pins).
+  - **The story:** the plan (close, dominate, comeback, winner...); where attacks aim; how many parts an attack catches; why they fight.
+  - **Balance:** about how many beats the fight runs; the damage scale.
+  - **The writing:** traits and quirks on or off; personality and history on or off; swearing; gore; how much is written each beat; the arena acting by itself; Venice (when you have a key).
+  - **Anything else:** any /commands you like; then Enter to go beat by beat, or a number of beats for the director to run on its own.
+
+  Enter keeps what is set at every question, and any /command works at any of them. At the first question, Enter skips them all, a preset name or number asks only the arena, the fighters and how you play, and `o` goes through the lot. `setup.questions` lists them, so you can drop any. `/set setup.enabled false` goes back to only the arena question.
+- **Match presets** (`presets` in rules.json, `/preset`). Each sets several /set lines at once and keeps them:
+  - `submission`: only a tap-out or a pass-out ends it.
+  - `submission3`: won by the third tap, from three different parts.
+  - `knockout`: only a knockout blow ends it; no pins.
+  - `pins`: a pin held to its end, or a knockout.
+  - `anything`: a knockout, a pin, or a tap-out, whichever comes first.
+
+  `/preset` lists them, `/preset knockout ?` shows what one would change, and `nosave` makes it last this session only. You can add your own.
+- **Anything goes** needed one new switch: `finish.submission.allow_knockouts` (off by default) lets a knockout blow end a submission match. The anything preset also sets `submissions.becomes_pin_after 0`. Without it, a submission held four beats turned into a pin before a tap could come, so no fight ever ended in a tap. In the no-model simulation, pins still finish most of these fights: when she can't break a submission, the holder may let go and pin her, and the stand-in nearly always does. The director is told that any of the three endings counts.
+- **Help.** `/help examples` is new: ways to do common things, start to finish (a whole fight, steering it, playing a fighter, exact attacks, holds and pins, Venice polish, finding and changing a setting, fixing a beat, a balance check). `/help presets` is new too. `/set` now has a page of examples, `/plan` explains every shape (with what dominate does), and the switches list starts with the presets. Every example was run against the game, and a test now fails if a command has no help or an example names something that isn't a command.
+
 ## Build 281
 Personality in the prose: who each fighter is, for the narrator and for Venice, and a Profiles window to edit it.
 - **Personality, history and relationships** (`narration.character`, on by default; each part switchable). New fields in fighters.json, drafted from your descriptions for Ripples, Nerine, Nocturne and Seraphina (edit them freely):
