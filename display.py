@@ -58,7 +58,11 @@ class Display:
         self.heart = rules["health"].get("icon", "❤️")
 
     STATUS_WORD = {"fury": "furious", "doubled_over": "doubled over", "off_balance": "off balance", "staggered": "staggered",
-                   "protecting": "protected", "countering": "set to counter", "mirroring": "coated in a mirror sheen"}
+                   "protecting": "protected", "countering": "set to counter", "mirroring": "coated in a mirror sheen",
+                   "wobbly": "legs gone", "seeing_double": "seeing double", "eyes_watering": "eyes watering",
+                   "ears_ringing": "ears ringing", "jaw_rattled": "jaw rattled", "dead_leg": "dead leg",
+                   "dead_arm": "dead arm", "ribs_aching": "ribs aching", "back_spasm": "back in spasm",
+                   "tail_numb": "tail numb", "swollen_eye": "eye swelling shut"}
 
     @staticmethod
     def _grip_words(oc):
@@ -77,7 +81,12 @@ class Display:
 
     STATUS_ICON = {"bound": "🪢", "fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "staggered": "🥴", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥", "greyed": "🌫️", "last_stand": "🩸", "overextended": "🫥",
-                   "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️"}
+                   "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️",
+                   # (since build 293) the head and body effects
+                   "rattled": "💥", "stunned": "🌟", "wobbly": "🦵", "seeing_double": "👀", "eyes_watering": "💧",
+                   "ears_ringing": "🔔", "jaw_rattled": "🦷", "whiplash": "↪️", "concussed": "🧠", "dead_leg": "🦵",
+                   "limping": "🩼", "dead_arm": "💪", "ribs_aching": "🫁", "back_spasm": "⚡", "tail_numb": "〰️",
+                   "nauseous": "🤢", "swollen_eye": "👁️"}
 
     def _status_tag(self, f):
         bits = [f"{self.STATUS_ICON.get(s, '')}{s} {n}" for s, n in f.status.items()]
@@ -1247,8 +1256,14 @@ class Display:
                            f"{poss_word(e['attacker'])} {e['submission']} after {e['beats_held']} beats"
                            + (f" (pain {e['pain']} against her resistance {e['resist']}: tap-out chance "
                               f"{e['chance'] * 100:.0f}%)" if e['how'] == 'tap' else
-                              f" (the choke built to {e['air']} against her endurance {e['endure']}: chance "
-                              f"{e['chance'] * 100:.0f}%)"))
+                              (f" (the constriction built to {e.get('circ')} against her endurance "
+                               f"{e.get('circ_end')}: chance {e['chance'] * 100:.0f}%)" if e.get("cause") == "constriction"
+                               else f" (the choke built to {e['air']} against her endurance {e['endure']}: chance "
+                                    f"{e['chance'] * 100:.0f}%)")))
+                if e.get("heart_stopped"):
+                    # (since build 293) the constriction's heart_stop: never a death, it starts again
+                    out.append("🫀 Her heart STOPS for a moment as she goes under, and starts again on its own as the "
+                               "coils come off")
                 if (e.get("elimination") or {}).get("winner"):
                     out.append(f"- 🏆 **Winner: {e['elimination']['winner']}** (by "
                                f"{'submission' if e['how'] == 'tap' else 'pass-out'})")

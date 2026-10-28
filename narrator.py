@@ -4736,6 +4736,29 @@ class Narrator:
                 lines.append(self.CONSTRICT_STAGE.get(e.get("stage"), self.CONSTRICT_STAGE["pounding"]).format(
                     d=e["defender"], a=e["attacker"], ds=poss(e["defender"]),
                     coils="coils" if int(e.get("coils") or 1) > 1 else "coil"))
+                # (since build 293) the heartbeat between them: the coiler feels it through her coils and works her
+                # squeeze by it; the one held hears and feels her own heart as she never has (one idea each, varied
+                # by the beat; feelings and choices, never numbers)
+                cf = ((self.rules.get("narration") or {}).get("constriction_feel") or {})
+                if cf.get("enabled", True):
+                    rng_ = random.Random(f"{getattr(self, '_beat_no', 0)}|{e['defender']}|heart")
+                    stg = e.get("stage") if e.get("stage") in self.CONSTRICT_FEEL else "pounding"
+                    fmt = dict(d=e["defender"], a=e["attacker"], ds=poss(e["defender"]), as_=poss(e["attacker"]))
+                    if e.get("heart"):
+                        # (the same heart and blood pressure the screen shows, as words: the story never says the numbers)
+                        hr, bp_ = int(e["heart"]), (e.get("bp") or [120, 80])[0]
+                        rate = ("racing wildly" if hr >= 200 else "racing" if hr >= 160 else "fast" if hr >= 120 else
+                                "slowed" if hr >= 85 else "slow and heavy" if hr >= 60 else "very slow, faint")
+                        press = ("up, pounding in her head" if bp_ >= 130 else "about as it should be" if bp_ >= 110
+                                 else "falling" if bp_ >= 90 else "low: her head light, her limbs cold"
+                                 if bp_ >= 70 else "very low: the grey coming")
+                        lines.append(f"  - HER HEART NOW: {rate}{', and skipping beats' if e.get('irregular') else ''}; "
+                                     f"her blood pressure {press}. Tell it in what she and {e['attacker']} feel, never as "
+                                     f"numbers.")
+                    lines.append(f"  - WHAT {e['attacker'].upper()} FEELS OF IT (an idea, in your own words): "
+                                 + rng_.choice(self.CONSTRICT_FEEL[stg]["holder"]).format(**fmt))
+                    lines.append(f"  - WHAT {e['defender'].upper()} FEELS OF HER OWN HEART (an idea, in your own words): "
+                                 + rng_.choice(self.CONSTRICT_FEEL[stg]["held"]).format(**fmt))
             elif e["type"] == "tap_resist":
                 parts = " and ".join(p.lower() for p in e.get("parts") or [])
                 if e.get("constrict") and not e.get("choke"):
@@ -4871,14 +4894,28 @@ class Narrator:
                                     f"is)." if ((self.rules.get("narration") or {}).get("tap_build") or {}).get(
                                         "enabled", True) else ""))
                 elif e.get("cause") == "constriction":
+                    # (since build 293, narration.constriction_feel.verify) a constrictor makes sure before she lets go
+                    verify = ((self.rules.get("narration") or {}).get("constriction_feel") or {}).get("verify", True)
                     lines.append(f"{e['defender']} BLACKS OUT at the END of this beat: the {e['submission']} on her "
                                  f"{parts}" + (f" ({with_})" if with_ else "") + f" has held the blood back from her "
                                  f"heart too long. Her heart has slowed to a heavy, stumbling beat, the grey closes in "
                                  f"from the edges until there is only a pinpoint, the sounds go far away, her "
-                                 f"struggles stop answering her, and she goes limp in the coils, OUT, still breathing "
-                                 f"shallowly. {e['attacker']} feels her go slack and unwinds. It is the last thing "
-                                 f"that happens, and it ends the match. (No choking or gasping for air: it is the "
-                                 f"blood that takes her.)")
+                                 f"struggles stop answering her, and she goes limp in the coils, OUT"
+                                 + (", still breathing shallowly" if not e.get("heart_stopped") else "") + ". "
+                                 + (f"{e['attacker']} does not let go at once: she holds a while longer, utterly still, "
+                                    f"feeling through her coils for any tension, any fight, any trick, until she is sure "
+                                    f"it is over; only then does she unwind. " if verify else
+                                    f"{e['attacker']} feels her go slack and unwinds. ")
+                                 + f"It is the last thing that happens, and it ends the match. (No choking or gasping "
+                                 f"for air: it is the blood that takes her.)"
+                                 + (f" HER HEART STOPS: as she goes under, the slow, stumbling beat {e['attacker']} has "
+                                    f"been feeling through her coils gives one last weak knock and then nothing. "
+                                    + (f"{e['attacker']} holds on through the silence, still feeling for it, making sure, "
+                                       f"a long, still moment; " if verify else f"A long, still moment; ")
+                                    + f"then, as the coils come away, it starts again on its own: a thud, a pause, "
+                                    f"another, ragged and then steadier, and a long shuddering breath goes into her. She "
+                                    f"is out cold, but alive and breathing. Tell the stop and the restart plainly, "
+                                    f"without gore; it is never a death." if e.get("heart_stopped") else ""))
                 else:
                     lines.append(f"{e['defender']} PASSES OUT at the END of this beat: the {e['submission']} on her "
                                  f"{parts}" + (f" ({with_})" if with_ else "") + f" has held back her breath and blood "
@@ -4900,8 +4937,12 @@ class Narrator:
                         spot=self._tap_spot(e["defender"], e["attacker"])) if e.get("way") in self.TAP_WAYS else
                         "a paw slapping the ground, or a cry that says it plainly")
                        if e["how"] == "tap" else (": her heart slows and stumbles, the grey closes in and she goes "
-                                                  "slack in the coils, and comes round dizzy, her head pounding, as "
-                                                  "they come off" if e.get("cause") == "constriction" else
+                                                  "slack in the coils"
+                                                  + (", and her heart STOPS for a long, still moment; as the coils come "
+                                                     "off it starts again on its own, a thud, another, and a shuddering "
+                                                     "breath, and she" if e.get("heart_stopped") else ", and")
+                                                  + " comes round dizzy, her head pounding, as they come off"
+                                                  if e.get("cause") == "constriction" else
                                                   ": her sight greys out and she goes slack, and comes round gasping "
                                                   "as the grip comes off"))
                     + f". {e['attacker']} feels it and LETS GO. THE MATCH IS NOT OVER: that is her "
@@ -6539,6 +6580,61 @@ class Narrator:
         "asleep": ("her eyes close and her body goes slack", "", "{other} sees her slump, helpless"),
         "confused": ("her eyes swim and she sways, unsure where anything is", "she can't trust her own sense of where things are",
                      "{other} sees her swaying, lost"),
+        # (since build 293, moves.head) a blow to the head, in the order it really goes: the jolt, the senses, the legs
+        "rattled": ("a hard blink, a sharp shake of the head, her eyes watering for a moment",
+                    "a jolt of it, there and gone; she knows she felt it",
+                    "{other} sees the blink and the shake of the head"),
+        "stunned": ("the lights flicker: for a moment nothing in her answers; her eyes go unfocused, her mouth slack, her "
+                    "body swaying where it stands or lies, a paw or a tail lifting and drifting down on its own",
+                    "there is no thought at all for a moment, only a white roar and the ground tilting; then the first "
+                    "dim one: where is she?",
+                    "{other} sees her go blank and sway: the door is wide open, for this beat she can do anything"),
+        "wobbly": ("her knees dip and catch, her feet go where she didn't put them, she sways like a tree in wind",
+                   "her legs feel a long way off and made of water",
+                   "{other} sees the knees go and the sway: she is out on her feet"),
+        "seeing_double": ("her eyes won't agree: two of {other} drift apart and back together",
+                          "which one is real? she has to guess, and she guesses wrong",
+                          "{other} sees her eyes sliding off, looking past her"),
+        "eyes_watering": ("her eyes stream from the blow to the nose, blinking hard through the blur",
+                          "she can't see clearly through the water and it makes her furious",
+                          "{other} sees her blinking through the tears"),
+        "ears_ringing": ("a high, thin whine fills her head; every other sound comes muffled and late",
+                         "she can't hear where {other} is moving, only the ringing",
+                         "{other} sees her turn her head to listen and not find her"),
+        "jaw_rattled": ("her jaw aches to close and her teeth don't meet quite right; she works it, wincing",
+                        "the hinge of it throbs every time she sets her teeth",
+                        "{other} sees her working her jaw"),
+        "whiplash": ("her neck stiff and hot from the wrench; she turns her whole body rather than her head",
+                     "every turn of her head pulls at it",
+                     "{other} sees how stiffly she holds her head"),
+        "concussed": ("a dull ache settles behind her eyes, the light suddenly too bright, a half-beat fog between seeing "
+                      "and doing", "her thoughts come slow and thick; she has to reach for them",
+                      "{other} sees the slight blankness and the squint against the light"),
+        # (since build 293, moves.body_jolts) what a hard blow leaves on the rest of her
+        "dead_leg": ("the thigh goes numb and heavy; the knee folds when she puts weight on it and she catches herself",
+                     "the leg feels like someone else's, a dead weight she has to drag",
+                     "{other} sees the leg buckle"),
+        "limping": ("she favours the leg, short, hopping steps, weight snatched off it",
+                    "every step sends it up her leg; she has to choose each one",
+                    "{other} sees the limp, and which side to work"),
+        "dead_arm": ("the arm drops, numb from the shoulder, the paw at the end of it slow to close",
+                     "pins and needles fizz down it and it won't do what she tells it",
+                     "{other} sees the arm hang"),
+        "ribs_aching": ("every breath catches on that side; she holds the arm or the elbow close over her ribs",
+                        "she breathes shallow and careful round it, and it still bites",
+                        "{other} sees her guarding her side"),
+        "back_spasm": ("the muscles across her lower back lock tight; she moves stiffly, careful of every twist",
+                       "every twist and every rise grabs at it",
+                       "{other} sees how carefully she moves"),
+        "tail_numb": ("her tail drags, numb at the base, and without it her balance is off; she turns wide",
+                      "she can't feel where her tail is and her body doesn't trust its turns",
+                      "{other} sees the tail drag and the wide turns"),
+        "nauseous": ("a sour, heaving queasiness rolls up from her gut; she swallows hard against it",
+                     "she feels sick and weak with it, and hates that it shows",
+                     "{other} sees her swallow and pale"),
+        "swollen_eye": ("the cheek and the brow puff up and the eye narrows to a slit",
+                        "the world has gone narrow on that side",
+                        "{other} sees the swelling, and which side she can't see from"),
     }
     STATUS_WORDS = {"armed": "armed with the weapon she made", "fury": "furious", "adrenaline": "on an adrenaline surge", "protecting": "behind her Protect barrier",
                     "countering": "set to counter", "mirroring": "behind her Mirror Coat", "airborne": "in the air"}
@@ -6556,6 +6652,22 @@ class Narrator:
         "constricted": "blood and breath come back into her in a rush",
         "paralyzed": "the last of the sparks fade and her muscles answer again",
         "confused": "her head clears; she knows where she is again",
+        "rattled": "she blinks it clear",
+        "stunned": "sense comes back into her eyes, and with it the fight",
+        "wobbly": "her legs come back under her, solid again",
+        "seeing_double": "the two of {other} slide together into one",
+        "eyes_watering": "her eyes clear",
+        "ears_ringing": "the ringing fades and the world's sounds come back",
+        "jaw_rattled": "her jaw closes right again",
+        "whiplash": "her neck loosens enough to turn",
+        "dead_leg": "feeling floods back into the thigh, hot and tingling",
+        "limping": "she can put her weight on it again, carefully",
+        "dead_arm": "the numbness drains out of the arm and her paw closes again",
+        "ribs_aching": "she can take a whole breath again",
+        "back_spasm": "the spasm lets go of her back",
+        "tail_numb": "feeling comes back into her tail and her balance with it",
+        "nauseous": "the sickness settles",
+        "swollen_eye": "the swelling goes down enough to see through",
         "fury": "the cold anger drains out of her and leaves her just tired",
         "adrenaline": "the surge drains out of her and every hurt comes back at full size",
         "greyed": "the grey clears from the edges of her sight and the sounds come back close",
@@ -7640,7 +7752,7 @@ class Narrator:
     # blood pressure falls, and her heart (racing at first with fear and effort) slows and stumbles as it goes on
     CONSTRICT_STAGE = {
         "pounding": "  - THE CONSTRICTION ON {d} (early): {ds} heart is POUNDING, hard and fast, with fear and effort; "
-                    "each time she breathes out the {coils} take up the slack, so the next breath is shallower; a "
+                    "each time she breathes out, the slack is taken up by the {coils}, so the next breath is shallower; a "
                     "pressure building in her chest and throat, her face and ears hot and full. Tell it as that. (It is "
                     "the squeeze on her blood, not a choke: her airway is open.)",
         "slowing": "  - THE CONSTRICTION ON {d} (taking hold): the pounding in {ds} chest has begun to SLOW and "
@@ -7653,6 +7765,56 @@ class Narrator:
                    "come weaker and further apart and her limbs answer late. She is close to blacking out (only the "
                    "events say whether she does). (Not a choke: no gasping for air; the blood is what is running "
                    "out.)",
+    }
+    # (since build 293) the heartbeat in a constriction, stage by stage (narration.constriction_feel): what the coiler
+    # feels of it through her coils and does about it, and what the one held feels of her own heart
+    CONSTRICT_FEEL = {
+        "pounding": {
+            "holder": [
+                "the quick, frantic flutter of {ds} heart against her coils, like a trapped bird; she notes it and waits, "
+                "taking up the slack each time {d} breathes out",
+                "she can count {ds} heartbeat through her coils, fast and hard; she lets it run, patient, and tightens only "
+                "on the breath out",
+                "{ds} pulse hammering against her scales tells her the fight is still all there; she keeps the squeeze "
+                "steady and lets the heart wear itself out",
+                "every beat of {ds} heart knocks against the inside of her coil; she reads it as she would a voice, and "
+                "settles her weight to match it"],
+            "held": [
+                "she has never heard her own heart so loud: it fills her ears, a fast drum she can't slow",
+                "her heart is hammering against the coils, and she can feel them feel it",
+                "every beat of her heart pushes against the pressure, and every beat the pressure pushes back",
+                "she can feel her pulse in places she never has: her throat, her ears, behind her eyes"]},
+        "slowing": {
+            "holder": [
+                "the beat under her coils has changed: slower, heavier, spaced out, now and then one missing; she marks it "
+                "and eases a fraction, then draws in again, keeping {d} right there",
+                "{ds} heart has stopped racing and begun to labour; she feels each heavy thud and times her squeeze to the "
+                "gap after it",
+                "she feels the rhythm in {d} falter and pick up again; she holds the pressure exactly where it is, waiting "
+                "for it to falter again",
+                "the pulse against her coils has gone slow and uneven; she notes it the way a hunter notes a limp, and "
+                "doesn't hurry"],
+            "held": [
+                "her heart is slowing, and she knows it shouldn't be: each beat heavier, the gaps longer, and one of them "
+                "so long she waits for the next in a cold rush of fear",
+                "she counts her own heartbeats without meaning to, and loses count in a gap",
+                "the pounding in her ears has thinned to slow, heavy thuds, each one a long way from the last",
+                "her heart stumbles, catches, goes on; she feels it like a misstep inside her chest"]},
+        "greying": {
+            "holder": [
+                "the beat she has been feeling for is faint now, slow and ragged; she knows exactly how close {d} is, and "
+                "holds it there with her whole body",
+                "under her coils {ds} heart is a slow, weak knock with long silences in it; she waits, utterly still, for "
+                "the body inside her to go loose",
+                "she feels the heartbeat thread out under her scales; one more squeeze on the breath out, she judges, or "
+                "two",
+                "the pulse is a faint, uneven flutter now; she listens to it through her whole length and does not ease"],
+            "held": [
+                "her heart is a slow, faraway thud she has to strain to feel, and between the beats there is nothing at "
+                "all",
+                "she is listening to her own heart the way you listen for footsteps in the dark, and it is getting quieter",
+                "each heartbeat comes late and weak, and the grey comes in on the gaps",
+                "she feels her heart labour and skip, and the fear of it is the last sharp thing left in her"]},
     }
     TAP_DARK = {
         "grey": "her sight greying and narrowing to a tunnel",

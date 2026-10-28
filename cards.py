@@ -1010,6 +1010,8 @@ def ecg_points(heart, irregular, width, height, x0=0.0, y0=0.0, seconds=6.0):
     import random as _r
     rng = _r.Random(int(heart) * 7 + (1 if irregular else 0))
     mid = y0 + height * 0.62
+    if float(heart) <= 0:
+        return [(x0, mid), (x0 + width, mid)]      # (since build 293) her heart stopped: a flat line
     amp = height * 0.5
     gap = max(6.0, (float(width) / max(1.0, seconds)) * 60.0 / max(20.0, float(heart)))
     k = min(1.0, gap / 20.0)       # the beat's own shape, squeezed when the beats come close
@@ -1077,11 +1079,14 @@ def tap_meter(f):
         notes.append(f"refused {t['refusals']}x")
     vit = None
     v = t.get("vitals") or {}
-    if t.get("circ") and v.get("heart"):
+    if t.get("circ") and v.get("heart") is not None:
         # (since build 287) the constriction's numbers are drawn (vitals_strip), not written into the line
         vit = dict(v, blood=int(t.get("air") or 0))
     elif t.get("air") is not None:
         notes.append(f"blood flow {t['air']}% cut off" if t.get("circ") else f"air {t['air']}% gone")
+    if t.get("done"):
+        return {"level": 5, "chance": 100.0, "label": str(t["done"]), "note": "", "vitals": vit, "pain": t.get("pain"),
+                "resist": t.get("resist"), "by": t.get("by"), "sub": t.get("sub")}
     if by_chance:
         label = CHANCE_LADDER[lv] if not (t.get("first") or t.get("breaking") or t.get("held_on")) or lv else \
             "can't tap this beat"

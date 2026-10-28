@@ -654,6 +654,45 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 293
+Head and body effects (`moves.head`, `moves.body_jolts`, both on by default; what each does is in `status_effects`).
+
+A hard blow to the head rolls ONE of these, by how hard it landed, what landed (a blunt blow far more than a cut), where
+(the jaw most of all, then the side of the head), whether her head was held and couldn't roll with it, her toughness,
+an adrenaline surge, and a concussion already:
+- rattled: a hard blink and a shake of the head; a little slower to dodge;
+- dazed: her eyes won't focus, everything a beat late: far slower to dodge, more misses, weaker blows;
+- stunned: the lights flicker; she loses her next action entirely: no attack, no grab, no dodge, no escape from a hold
+  or pin, no get-up. The director's orders for her become her swaying there. After it, her legs go (wobbly: worse at
+  dodging and getting up, easier to bear down in a hold) and she stays dazed a while.
+
+Then what that spot does besides: watering eyes from the nose (more misses), ringing ears from an ear or the side of the
+head, a rattled jaw (weaker bites), double vision after a dazing or a stun (far more misses), whiplash from a held head
+or a throw. Dazed or stunned three times, or a head part at 300%, and she is CONCUSSED for the rest of the fight: later
+head blows rattle her far more easily, getting up is harder, and the story carries the fog and the headache.
+
+The rest of her: a dead leg (a thigh), a limp (a knee or foot already badly hurt), a dead arm, aching ribs, a back in
+spasm, a numb tail base, nausea from the gut, an eye swelling shut. Each has its own effect, its icon on screen, its
+look, thought and opponent's read for the story, and its line when it wears off. Sizes go by the damage scale, so /scale
+15 doesn't make every blow the biggest. Balance (200 no-model fights a pair, effects on against off): Seraphina vs Ripples
+84% / 84%, Nocturne vs Ripples 55% / 56%, Nerine vs Ripples 59% / 64%.
+
+The heartbeat in a constriction (`narration.constriction_feel`):
+- each beat the story gets what the coiler feels of the other's heart through her coils and does about it (waiting for
+  the breath out, easing a fraction, holding it there), and what the one held feels of her own heart (loud in her ears,
+  then slowing and skipping, then faint with gaps), stage by stage;
+- the heart rate and blood pressure the screen shows go to the story as words (racing, slowed; up, falling, low), never
+  as numbers, so the two agree;
+- the coiler makes sure before she lets go (`verify`): she holds a while longer after the blackout, feeling for any fight
+  left, then unwinds.
+
+Her heart can stop (`constriction.heart_stop`, a third of blackouts): as she goes under, the slow, stumbling beat
+stops. The coiler holds on through the silence, and as the coils come away it starts again on its own. It is never a
+death: it ends the match like any blackout. The card shows "♥ stopped" and a flat line.
+
+The monitor moves (`window.vitals_animate`): the heart trace runs like a real monitor's at her own heart rate, in the
+window and in exported fights. It is one line redrawn a few times a second, so it uses no graphics-card memory.
+
 ## Build 292
 Fixes from the played Seraphina vs Ripples log:
 - "I headbutt Ripples' head four times and then squeeze even tighter" became a GRIP on her head, and no headbutt was

@@ -540,13 +540,25 @@ class FighterCard(ttk.Frame):
         c, w = self.vt, self.app.card_w()
         c.delete("all")
         col = vitals_colour(v.get("blood", 0))
-        c.create_text(6, 12, anchor="w", text=f"♥ {v['heart']}/min", font=("Segoe UI", 9, "bold"), fill=col)
+        if v.get("stopped"):
+            col = "#ef4444"
+        c.create_text(6, 12, anchor="w", text="♥ stopped" if v.get("stopped") else f"♥ {v['heart']}/min",
+                      font=("Segoe UI", 9, "bold"), fill=col)
         if v.get("irregular"):
             c.create_text(6, 25, anchor="w", text="irregular", font=("Segoe UI", 7), fill="#fca5a5")
         tx = 84
-        pts = ecg_points(v["heart"], v.get("irregular"), max(40, w - tx - 96), 22, tx, 2)
-        c.create_line(*[q for p in pts for q in p], fill=col, width=1.5)
         bx, bw = tx, max(40, w - tx - 96)
+        # (since build 293) the trace runs like a monitor's, at her own heart rate (window.vitals_animate): six seconds
+        # of it, drawn twice end to end and slid along under a fixed window
+        base = ecg_points(v["heart"], v.get("irregular"), bw, 22, 0, 2)
+        base = base + [(x + bw, y) for x, y in base[1:]]
+        line = c.create_line(*[q for x, y in base if x <= bw for q in (bx + x, y)], fill=col, width=1.5)
+        self._ecg = {"base": base, "line": line, "bx": bx, "bw": bw, "off": 0.0}
+        anim = ((self.app._rules().get("window") or {}).get("vitals_animate", True)
+                if hasattr(self.app, "_rules") else True)
+        if anim and not getattr(self, "_ecg_running", False):
+            self._ecg_running = True
+            self.after(60, self._ecg_tick)
         c.create_rectangle(bx, 30, bx + bw, 40, outline="#4b5563", fill="#1f2937")
         c.create_rectangle(bx, 30, bx + bw * min(1.0, v.get("blood", 0) / 100.0), 40, outline="", fill=col)
         c.create_text(bx + 4, 35, anchor="w", text=f"blood flow {v.get('blood', 0)}% cut off",
@@ -559,6 +571,23 @@ class FighterCard(ttk.Frame):
         c.create_rectangle(sx, 30, sx + 80 * min(1.0, bp[0] / 160.0), 40, outline="", fill=col)
         c.create_line(sx + 80 * 120 / 160.0, 28, sx + 80 * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
         c.create_text(sx + 3, 35, anchor="w", text="pressure", font=("Segoe UI", 7), fill="#f9fafb")
+
+    def _ecg_tick(self):
+        """One step of the moving heart trace: slide it on by as far as 60 ms of six seconds takes it, and keep going
+        while the strip is shown."""
+        st = getattr(self, "_ecg", None)
+        try:
+            if not st or not self.vt.winfo_ismapped():
+                self._ecg_running = False
+                return
+            st["off"] = (st["off"] + st["bw"] * 0.06 / 6.0) % st["bw"]
+            off, bx, bw = st["off"], st["bx"], st["bw"]
+            pts = [q for x, y in st["base"] if off <= x <= off + bw for q in (bx + x - off, y)]
+            if len(pts) >= 4:
+                self.vt.coords(st["line"], *pts)
+            self.after(60, self._ecg_tick)
+        except tk.TclError:
+            self._ecg_running = False     # (the card was closed or redrawn: the next strip starts its own)
 
     def _grips(self, f):
         """The hold panel: who holds which of her parts and with what, the grips she has, a pin's count, and how

@@ -800,6 +800,83 @@ def presets_help_check():
     return problems
 
 
+def head_body_check():
+    """Build 293: head effects (rattled, dazed, stunned and its wobbly legs, seeing double, watering eyes, ringing
+    ears, a rattled jaw, whiplash, concussed), body effects (dead leg, limp, dead arm, aching ribs, back spasm, numb
+    tail, nausea, a swelling eye), what they do, the director's stunned fighter swaying, the heartbeat words for the
+    story, and a heart that stops in a constriction blackout and starts again."""
+    import collections, cards, director as D
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    r, sr = e.get("Ripples"), e.get("Seraphina")
+    blunt, cut = collections.Counter(), collections.Counter()
+    for i in range(300):
+        for mv, cnt in (({"name": "Iron Tail", "about": ""}, blunt), ({"name": "Night Slash", "about": ""}, cut)):
+            r.status.clear()
+            r.learned.pop("head_jolts", None)
+            for x in e._jolts(r, [{"defender": "Ripples", "part": "Jaw", "damage_taken": 60, "damage_after": 60}], mv, sr):
+                cnt[x["status"]] += 1
+    if not blunt["stunned"] or blunt["stunned"] <= cut["stunned"] or not blunt["jaw_rattled"]:
+        problems.append(f"a blunt blow to the jaw should stun more than a cut, and rattle the jaw: {blunt} {cut}")
+    if not blunt["wobbly"] or blunt["wobbly"] != blunt["stunned"]:
+        problems.append(f"every stun leaves her legs gone: {blunt}")
+    r.status.clear()
+    e.set_status(r, "stunned", 1)
+    if e.dodge_chance(sr, r) > 0:
+        problems.append("a stunned fighter can't dodge")
+    try:
+        e._can_act(r, True)
+        problems.append("a stunned fighter can't act")
+    except ValueError:
+        pass
+    r.status.clear()
+    body = collections.Counter()
+    for i in range(300):
+        r.status.clear()
+        for x in e._jolts(r, [{"defender": "Ripples", "part": "Left Thigh", "damage_taken": 60, "damage_after": 100},
+                              {"defender": "Ripples", "part": "Left Ribs", "damage_taken": 60, "damage_after": 130},
+                              {"defender": "Ripples", "part": "Stomach", "damage_taken": 60, "damage_after": 200}],
+                          {"name": "Iron Tail", "about": ""}, sr):
+            body[x["status"]] += 1
+    for st in ("dead_leg", "ribs_aching", "nauseous"):
+        if not body[st]:
+            problems.append(f"no {st} from a hard blow there: {body}")
+    e.set_status(r, "back_spasm", 2)
+    if not any("spasm" in lbl for lbl, _ in e.power_extras(r, sr, "Normal", {"name": "Aqua Jet"})):
+        problems.append("a back spasm should weaken her blows")
+    e.rules["moves"]["head"]["enabled"] = False
+    e.rules["moves"]["body_jolts"]["enabled"] = False
+    r.status.clear()
+    for i in range(50):
+        for x in e._jolts(r, [{"defender": "Ripples", "part": "Left Thigh", "damage_taken": 60, "damage_after": 100}],
+                          {"name": "Iron Tail", "about": ""}, sr):
+            if x["status"] == "dead_leg":
+                problems.append("moves.body_jolts.enabled false = no body effects")
+                break
+    # the heart in a constriction: words for the story, and the stop
+    s2 = H.session(4, fighters="Seraphina,Ripples")
+    e2 = s2.eng
+    e2.rules["finish"]["submission"]["enabled"] = True
+    e2.rules["finish"]["submission"]["constriction"]["heart_stop"]["chance"] = 1.0
+    e2._hold_break_tick = lambda *a, **k: []
+    e2.start_submission("Seraphina", "Ripples", "upright coil")
+    out = None
+    for _ in range(30):
+        e2.turn += 1
+        ev = e2.beat()
+        out = next((x for x in ev if x["type"] == "tap_out"), None)
+        if out:
+            break
+    if not out or out["how"] != "pass_out" or not out.get("heart_stopped"):
+        problems.append(f"with heart_stop.chance 1 a constriction blackout stops her heart: {out}")
+    else:
+        m = cards.tap_meter({"grips": e2.card_state(e2.get("Ripples"))})
+        if not m or not (m.get("vitals") or {}).get("stopped") or len(cards.ecg_points(0, False, 100, 20)) != 2:
+            problems.append(f"the card should show the stopped heart, a flat trace: {m}")
+    return problems
+
+
 def orders_check():
     """Build 292 (the user's log): a player's order read right. "I headbutt Ripples' head four times and then squeeze
     even tighter" keeps the headbutts and tightens the coils she already has (it had become a grip on her head, and no
@@ -2923,6 +3000,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "head stun body jolts heart" for w in want):
+        t = time.time()
+        probs = head_body_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  head and body effects, a stunned fighter, the heart stopping and starting again  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "orders players words features" for w in want):

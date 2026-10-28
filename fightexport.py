@@ -154,13 +154,21 @@ def _gauges(f):
             # (since build 287) the constriction drawn, as in the window: her heart as a trace, the blood flow cut
             # off, her blood pressure
             col, w = cards.vitals_colour(v.get("blood", 0)), 300
-            pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in cards.ecg_points(v["heart"], v.get("irregular"), w - 90, 22, 84, 2))
+            # (since build 293) the trace runs like a monitor's: six seconds drawn twice end to end, slid along
+            base = cards.ecg_points(v["heart"], v.get("irregular"), w - 90, 22, 0, 2)
+            base = base + [(x + w - 90, y) for x, y in base[1:]]
+            pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in base)
+            cid = f"ecg{abs(hash((v['heart'], v.get('blood'), id(f)))) % 10**8}"
             bp = v.get("bp") or [120, 80]
             out += (f'<svg class="vitals" viewBox="0 0 {w + 90} 44" width="100%" style="background:#111827;'
                     f'border-radius:4px;max-width:520px">'
-                    f'<text x="6" y="16" fill="{col}" font-size="11" font-weight="bold">♥ {v["heart"]}/min</text>'
+                    f'<text x="6" y="16" fill="{"#ef4444" if v.get("stopped") else col}" font-size="11" '
+                    f'font-weight="bold">{"♥ stopped" if v.get("stopped") else "♥ " + str(v["heart"]) + "/min"}</text>'
                     + ('<text x="6" y="29" fill="#fca5a5" font-size="8">irregular</text>' if v.get("irregular") else "")
-                    + f'<polyline points="{pts}" fill="none" stroke="{col}" stroke-width="1.5"/>'
+                    + f'<clipPath id="{cid}"><rect x="84" y="0" width="{w - 90}" height="28"/></clipPath>'
+                    f'<g clip-path="url(#{cid})"><g transform="translate(84,0)"><polyline points="{pts}" fill="none" '
+                    f'stroke="{col}" stroke-width="1.5"><animateTransform attributeName="transform" type="translate" '
+                    f'from="0 0" to="-{w - 90} 0" dur="6s" repeatCount="indefinite"/></polyline></g></g>'
                     f'<rect x="84" y="30" width="{w - 90}" height="10" fill="#1f2937" stroke="#4b5563"/>'
                     f'<rect x="84" y="30" width="{(w - 90) * min(1.0, v.get("blood", 0) / 100.0):.0f}" height="10" '
                     f'fill="{col}"/><text x="88" y="38" fill="#f9fafb" font-size="8">blood flow {v.get("blood", 0)}% '

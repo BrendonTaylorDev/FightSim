@@ -1088,7 +1088,7 @@ class Engine:
         target = move.get("target", "targeted")
         aim = cfg.get("targeting", {}).get(target, 1.0)
         stab = cfg.get("same_type_bonus", 1.0) if move["type"] in a.types else 1.0
-        extras = self.power_extras(a, d, move["type"])
+        extras = self.power_extras(a, d, move["type"], move)
         limb = self.limb_mult(a, move)
         if limb:
             extras = extras + [limb]
@@ -1780,7 +1780,7 @@ class Engine:
                 res["fell_from_air"] = not res.get("auto_launch")   # no throw rolled: she just fell (labels only)
                 res["auto_launch"], res["drop_severity"] = res.get("auto_launch") or "thrown", res.get("drop_severity") or "solid"
         if hits and not d.eliminated:
-            jolt = self._jolts(d, hits)
+            jolt = self._jolts(d, hits, move, a)
             if jolt:
                 res["status_applied"] = (res.get("status_applied") or []) + jolt
         if hits and not d.eliminated and not dodge and not (guard and guard.get("kind") == "block") \
@@ -2522,6 +2522,15 @@ class Engine:
             miss *= float(cfg.get("open_mult", 0.6))
         if any(self.has(a, st) for st in ("dazed", "off_balance", "confused")):
             miss *= float(cfg.get("shaky_mult", 1.3))
+        sc_ = self._cfg("status_effects")
+        if self.has(a, "seeing_double"):
+            miss *= float(sc_.get("seeing_double_aim_mult", 1.6))     # (since build 293) which of the two is her?
+        if self.has(a, "eyes_watering"):
+            miss *= float(sc_.get("eyes_watering_aim_mult", 1.3))
+        if self.has(a, "swollen_eye"):
+            miss *= float(sc_.get("swollen_eye_aim_mult", 1.2))
+        if any(self.has(d, st) for st in ("stunned", "wobbly")):
+            miss *= float(cfg.get("open_mult", 0.6))
         miss *= float(cfg.get("scale", 1.0)) / self.trait(a, "striking")
         if miss <= 0 or not self._chance(min(0.9, miss), f"{poss_word(a.name)} blow sliding off the {part} it was aimed at",
                                          "it lands beside it", "on target"):
@@ -2929,10 +2938,25 @@ class Engine:
             return None
         return (f"{poss_word(a.name)} hurt {worst.name.lower()}", mult)   # (named: "her" reads as the defender's)
 
-    def power_extras(self, a, d, move_type):
+    def power_extras(self, a, d, move_type, move=None):
         """Status multipliers on a move's power: (label, multiplier) pairs."""
         cfg = self._cfg("status_effects")
         out = []
+        # (since build 293) what the head and body effects (moves.head, moves.body_jolts) do to her blows
+        import blocks as _bl
+        kinds = _bl.kind_of(str((move or {}).get("name", "")), str((move or {}).get("about", ""))) if move else set()
+        if self.has(a, "jaw_rattled") and "bite" in kinds:
+            out.append(("her jaw rattled", float(cfg.get("jaw_rattled_bite_mult", 0.75))))
+        if self.has(a, "dead_arm") and kinds & {"punch", "claw"}:
+            out.append(("her arm gone numb", float(cfg.get("dead_arm_power_mult", 0.8))))
+        if self.has(a, "limping") and kinds & {"charge"}:
+            out.append(("limping", float(cfg.get("limping_charge_mult", 0.8))))
+        if self.has(a, "back_spasm"):
+            out.append(("her back in spasm", float(cfg.get("back_spasm_power_mult", 0.85))))
+        if self.has(a, "ribs_aching"):
+            out.append(("her ribs aching", float(cfg.get("ribs_aching_power_mult", 0.92))))
+        if self.has(a, "nauseous"):
+            out.append(("sick to her stomach", float(cfg.get("nauseous_power_mult", 0.9))))
         if self.has(a, "stiff"):
             out.append(("stiff from the pin", float(cfg.get("stiff_power_mult", 0.85))))
         if self.has(a, "constricted") and any(h.coil and h.defender == a.name and self.coil_scope(h.part) == "body"
@@ -2958,6 +2982,8 @@ class Engine:
             out.append(("her sight greying out", float(cfg.get("greyed_power_mult", 0.85))))
         if self.has(a, "dazed"):
             out.append(("dazed", float(cfg.get("dazed_power_mult", 0.9))))
+        if self.has(a, "wobbly"):
+            out.append(("legs gone under her", float(cfg.get("wobbly_power_mult", 0.85))))
         if self._pin_mult(a, d) != 1.0:
             out.append(("pin damage", self._pin_mult(a, d)))
         if self.has(a, "paralyzed"):
@@ -3203,6 +3229,9 @@ class Engine:
         if enforce and self.has(a, "flinched"):
             raise ValueError(f"{a.name} FLINCHED and can't attack this beat; let someone else act, or have {a.name} "
                              f"recover (breather)")
+        if enforce and self.has(a, "stunned"):
+            raise ValueError(f"{a.name} is STUNNED from the blow to her head and can't act this beat: no attack, no "
+                             f"grab, no dodge; let someone else act, or have {a.name} sway there (breather)")
         for st in ("asleep", "frozen"):
             if enforce and self.has(a, st):
                 raise ValueError(f"{a.name} is {st.upper()} and can't act; let someone else act (her opponent can "
@@ -3257,6 +3286,15 @@ class Engine:
                (float(sc.get("off_balance_dodge_mult", 0.6)) if self.has(d, "off_balance") else 1.0) * \
                (float(sc.get("staggered_dodge_mult", 0.6)) if self.has(d, "staggered") else 1.0) * \
                (float(sc.get("dazed_dodge_mult", 0.4)) if self.has(d, "dazed") else 1.0) * \
+               (0.0 if self.has(d, "stunned") else 1.0) * \
+               (float(sc.get("dead_leg_dodge_mult", 0.75)) if self.has(d, "dead_leg") else 1.0) * \
+               (float(sc.get("limping_dodge_mult", 0.85)) if self.has(d, "limping") else 1.0) * \
+               (float(sc.get("ribs_aching_dodge_mult", 0.9)) if self.has(d, "ribs_aching") else 1.0) * \
+               (float(sc.get("tail_numb_dodge_mult", 0.85)) if self.has(d, "tail_numb") else 1.0) * \
+               (float(sc.get("rattled_dodge_mult", 0.85)) if self.has(d, "rattled") else 1.0) * \
+               (float(sc.get("wobbly_dodge_mult", 0.7)) if self.has(d, "wobbly") else 1.0) * \
+               (float(sc.get("ears_ringing_dodge_mult", 0.9)) if self.has(d, "ears_ringing") else 1.0) * \
+               (float(sc.get("whiplash_dodge_mult", 0.9)) if self.has(d, "whiplash") else 1.0) * \
                (float(sc.get("doubled_over_dodge_mult", 0.5)) if self.has(d, "doubled_over") else 1.0) * \
                (float(sc.get("greyed_dodge_mult", 0.3)) if self.has(d, "greyed") else 1.0) * \
                (self._low_cfg("last_stand").get("open_dodge_mult", 0.2) if self.has(d, "overextended") else 1.0)
@@ -3877,7 +3915,7 @@ class Engine:
                 # just went down this beat: no get-up roll yet (said out loud, so nobody has to guess)
                 events.append({"type": "stays_down", "fighter": name, "why": "fresh", "facing": self.facing.get(name)})
                 continue
-            if self.has(f, "asleep") or self.has(f, "frozen"):
+            if self.has(f, "asleep") or self.has(f, "frozen") or self.has(f, "stunned"):
                 continue  # out of action: she isn't trying to rise
             beats = self.downed[name] = self.downed[name] + 1
             plan = self.body_plan(f)
@@ -3895,6 +3933,15 @@ class Engine:
                 score += 0.2
             if self.has(f, "paralyzed"):
                 score -= 0.3
+            hsc = self._cfg("status_effects")
+            if self.has(f, "wobbly"):
+                score -= float(hsc.get("wobbly_getup", 0.25))     # (since build 293) her legs won't hold her yet
+            if self.has(f, "concussed"):
+                score -= float(hsc.get("concussed_getup", 0.1))
+            if self.has(f, "dead_leg"):
+                score -= float(hsc.get("dead_leg_getup", 0.2))
+            if self.has(f, "back_spasm"):
+                score -= float(hsc.get("back_spasm_getup", 0.15))
             # ruined: a leg past ruined.min folds under her as she pushes up on it; below zero she has less to rise with
             score -= self._ruined_getup(f, regions)
             ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
@@ -5673,6 +5720,8 @@ class Engine:
                 ch += float(cfg.get("leg", 0.15))
             worst = max((d.parts[h.part].damage for h in hs if h.part in d.parts), default=0.0)
             ch += float(cfg.get("per_100_worn", 0.1)) * min(3.0, worst / 100.0)
+            if any(self.has(d, st) for st in ("wobbly", "dead_leg")):
+                ch += float(self._cfg("status_effects").get("legs_gone_bear_down", 0.15))   # (since build 293)
             # a hold that carries her weight (a bear hug lifting her, a shoulder ride) holds her up rather than
             # bearing her down (supporting: those holds' names; support_mult)
             what = hs[0].sub or f"grip on her {hs[0].part.lower()}"
@@ -6607,20 +6656,22 @@ class Engine:
         return {"fighter": d.name, "part": big["part"], "how": how, "kind": kind, "strength": round(s),
                 "where": "held" if held else "down" if down else "holding" if holding else "standing"}
 
-    def _jolts(self, d, hits):
+    def _jolts(self, d, hits, move=None, a=None):
         """What a hard hit can do beyond the damage: the wind knocked out of her (chest or belly), dazed (head), or
         doubled over by a blow on a part that was already devastated (moves.jolts). Returns status records."""
         cfg = (self.rules.get("moves") or {}).get("jolts") or {}
         if not cfg.get("enabled", True):
             return []
-        out = []
+        head_on = bool(self.head_cfg())
+        out = self._head_jolts(d, hits, move, a) if head_on else []
+        out += self._body_jolts(d, hits, move)
         for h in sorted(hits, key=lambda h: -h.get("damage_taken", 0)):
             if h.get("defender", d.name) != d.name or h.get("damage_taken", 0) < float(cfg.get("min_damage", 40)):
                 continue
             reg = body_region(h["part"])
             for st, ok, key, dflt in (
                     ("breathless", reg in ("chest", "belly") and h.get("damage_after", 0) >= 90, "breathless", 0.3),
-                    ("dazed", reg == "head" and h.get("damage_after", 0) >= 150, "dazed", 0.25),
+                    ("dazed", reg == "head" and h.get("damage_after", 0) >= 150 and not head_on, "dazed", 0.25),
                     ("doubled_over", h.get("damage_before", 0) >= 300, "doubled_over", 0.15)):
                 if not ok or self.has(d, st) or any(x["status"] == st for x in out):
                     continue
@@ -6628,6 +6679,150 @@ class Engine:
                                 st.replace("_", " "), "no"):
                     self.set_status(d, st, 1)
                     out.append({"fighter": d.name, "status": st, "beats": 1})
+        return out
+
+    # (since build 293, moves.head) what a blow to the head can do, from a passing rattle to a concussion
+    HEAD_STATUSES = ("rattled", "dazed", "stunned", "wobbly", "seeing_double", "eyes_watering", "ears_ringing",
+                     "jaw_rattled", "whiplash", "concussed")
+
+    def head_cfg(self):
+        """moves.head (since build 293), or None when it is off."""
+        c = (self.rules.get("moves") or {}).get("head")
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
+    @staticmethod
+    def head_spot(part):
+        """Where on the head a part is: "jaw" (jaw, chin, muzzle, beak: the knockout button), "nose", "ear",
+        "side" (cheek, temple), or "crown" (the rest of the head)."""
+        p = str(part).lower()
+        return ("jaw" if re.search(r"jaw|chin|muzzle|beak|snout|mouth", p) else "nose" if "nose" in p else
+                "ear" if re.search(r"\bears?\b", p) else "side" if re.search(r"cheek|temple", p) else "crown")
+
+    def _head_jolts(self, d, hits, move=None, a=None):
+        """moves.head: the hardest blow to her head this time rolls ONE of rattled, dazed or stunned (stunned brings
+        wobbly legs after it), by how hard it landed, what landed (a blunt blow far more than a cut), where (the jaw
+        most of all), whether her head was held and couldn't roll with it, and her toughness, a surge, a concussion
+        already. Then what that spot does besides: a hit on the nose waters her eyes, on an ear rings it, on the jaw
+        rattles her bite; a dazing or a stun may double her sight; a held head wrenched by the blow gets whiplash.
+        Enough of it in one fight (head damage, or dazings and stuns) leaves her concussed for the rest of it.
+        Returns status records like _jolts'."""
+        cfg = self.head_cfg()
+        if not cfg:
+            return []
+        scale0 = float((self.rules.get("damage") or {}).get("damage_scale", 3) or 3) / 3.0
+        heads = [h for h in hits if h.get("defender", d.name) == d.name and body_region(h["part"]) == "head"
+                 and float(h.get("damage_taken", 0)) >= float(cfg.get("min_damage", 15)) * scale0]
+        if not heads:
+            return []
+        h = max(heads, key=lambda x: float(x.get("damage_taken", 0)))
+        spot = self.head_spot(h["part"])
+        # (the size of a blow against the damage scale: at /scale 15 every hit is five times the damage of one at 3)
+        scale_ = float((self.rules.get("damage") or {}).get("damage_scale", 3) or 3)
+        sev = min(float(cfg.get("max_size", 2.0)),
+                  float(h.get("damage_taken", 0)) / max(1.0, float(cfg.get("size", 20)) * scale_))
+        import blocks as _bl
+        kinds = _bl.kind_of(str((move or {}).get("name", "")), str((move or {}).get("about", ""))) if move else set()
+        m = cfg.get("mult") or {}
+        mod = (float(m.get("blunt", 1.3)) if kinds & {"punch", "charge", "tail", "throw", "horn"} else
+               float(m.get("sharp", 0.7)) if kinds & {"claw", "bite", "talon", "beak"} else
+               float(m.get("beam", 0.85)) if "beam" in kinds else 1.0)
+        held_head = any(x.defender == d.name and body_region(x.part) in ("head", "neck") for x in self.holds.values())
+        if held_head:
+            mod *= float(m.get("held", 1.3))     # she can't roll with it: the whole of it goes into her head
+        mod /= max(0.3, self.trait(d, "toughness"))
+        if self.has(d, "adrenaline"):
+            mod *= float(m.get("adrenaline", 0.6))
+        if self.has(d, "concussed"):
+            mod *= float(m.get("concussed", 1.5))
+        ch = cfg.get("chance") or {}
+        stun = float(ch.get("stunned", 0.08)) * sev * mod * (float(m.get("jaw_stun", 1.8)) if spot == "jaw" else
+                                                             float(m.get("side_stun", 1.2)) if spot == "side" else 1.0)
+        if self.has(d, "dazed") or self.has(d, "rattled"):
+            stun += float(ch.get("stun_when_dazed", 0.25)) * sev   # the second one, before the first has cleared
+        daze = float(ch.get("dazed", 0.28)) * sev * mod
+        rattle = float(ch.get("rattled", 0.5)) * sev * mod
+        stun, daze, rattle = min(0.9, stun), min(0.9, daze), min(0.95, rattle)
+        out, dur = [], cfg.get("beats") or {}
+
+        def put(st, beats, look=None):
+            beats = int(beats)
+            if beats <= 0 or self.has(d, st) and int(d.status.get(st, 0)) >= beats:
+                return
+            self.set_status(d, st, beats)
+            out.append(dict({"fighter": d.name, "status": st, "beats": beats, "head": spot, "part": h["part"]},
+                            **({"look": look} if look else {})))
+        roll = self.rng.random()
+        worst = ("stunned" if roll < stun else "dazed" if roll < stun + daze else
+                 "rattled" if roll < min(0.98, stun + daze + rattle) else None)
+        self.note_roll(f"the blow to {poss_word(d.name)} {h['part'].lower()} (stunned {stun:.0%}, dazed {daze:.0%}, "
+                       f"rattled {rattle:.0%})", min(0.98, stun + daze + rattle), roll, worst.upper() if worst else
+                       "she shakes it off")
+        if worst == "stunned":
+            put("stunned", dur.get("stunned", 1))
+            put("wobbly", dur.get("wobbly", 2))
+            put("dazed", dur.get("dazed_after_stun", 2))
+        elif worst == "dazed":
+            put("dazed", dur.get("dazed", 1) + (1 if sev >= 1.2 else 0))
+        elif worst == "rattled":
+            put("rattled", dur.get("rattled", 1))
+        side = cfg.get("side") or {}
+        for st, ok, key, dflt in (("eyes_watering", spot == "nose", "eyes_watering", 0.6),
+                                  ("ears_ringing", spot in ("ear", "side"), "ears_ringing", 0.5),
+                                  ("jaw_rattled", spot == "jaw", "jaw_rattled", 0.45),
+                                  ("seeing_double", worst in ("stunned", "dazed"), "seeing_double", 0.35),
+                                  ("whiplash", held_head or kinds & {"throw"}, "whiplash", 0.4)):
+            if ok and self._chance(min(0.95, float(side.get(key, dflt)) * max(0.5, sev)),
+                                   f"{d.name} {st.replace('_', ' ')} from the blow to her {h['part'].lower()}",
+                                   st.replace("_", " "), "no"):
+                put(st, dur.get(st, 2))
+        if worst in ("stunned", "dazed"):
+            d.learned["head_jolts"] = int(d.learned.get("head_jolts", 0)) + 1
+        cc = cfg.get("concussion") or {}
+        if cc.get("enabled", True) and not self.has(d, "concussed"):
+            hd = max((p.damage for p in d.parts.values() if body_region(p.name) == "head"), default=0.0)
+            if hd >= float(cc.get("head_damage", 300)) or int(d.learned.get("head_jolts", 0)) >= int(cc.get("jolts", 3)):
+                put("concussed", 999)
+        return out
+
+    # (since build 293, moves.body_jolts) what a hard blow can do to the rest of her for a few beats: (status, which
+    # parts, the least the blow must do, or the least the part must be left at, and the default chance and beats)
+    BODY_JOLTS = (("dead_leg", lambda p, plan: body_region(p) == "hind_up" or plan == "quadruped" and body_region(p) == "fore_up",
+                   45, 0, 0.3, 2),
+                  ("limping", lambda p, plan: body_region(p) == "hind_low" or plan == "quadruped" and body_region(p) == "fore_low",
+                   0, 120, 0.35, 4),
+                  ("dead_arm", lambda p, plan: plan in ("biped", "avian") and body_region(p) in ("shoulder", "fore_up", "fore_low"),
+                   40, 0, 0.3, 2),
+                  ("ribs_aching", lambda p, plan: bool(re.search(r"ribs|flank", p, re.I)), 40, 120, 0.35, 3),
+                  ("back_spasm", lambda p, plan: body_region(p) == "back_low", 45, 0, 0.25, 2),
+                  ("tail_numb", lambda p, plan: plan != "serpent" and bool(re.search(r"tail base|base of", p, re.I)), 40, 0, 0.3, 2),
+                  ("nauseous", lambda p, plan: bool(re.search(r"stomach|belly|gut", p, re.I)), 0, 150, 0.25, 2),
+                  ("swollen_eye", lambda p, plan: bool(re.search(r"cheek|eye|brow|temple", p, re.I)), 0, 150, 0.3, 8))
+
+    def _body_jolts(self, d, hits, move=None):
+        """moves.body_jolts (since build 293): beyond the head, what a hard blow can leave behind for a few beats: a
+        dead leg (a thigh), a limp (a knee or a foot already badly hurt), a numb arm, aching ribs, a back in spasm, a
+        numbed tail base, nausea from the gut, an eye swelling shut. Each one at most once at a time. Each its own
+        chance (chances.<name>), with what it does in status_effects. Returns status records."""
+        cfg = (self.rules.get("moves") or {}).get("body_jolts") or {}
+        if not cfg.get("enabled", True):
+            return []
+        plan, out = self.body_plan(d), []
+        ch, beats = cfg.get("chances") or {}, cfg.get("beats") or {}
+        tough = max(0.3, self.trait(d, "toughness"))
+        scale_ = float((self.rules.get("damage") or {}).get("damage_scale", 3) or 3) / 3.0   # (min_damage is at /scale 3)
+        for st, fits, min_taken, min_after, dflt, dur in self.BODY_JOLTS:
+            if self.has(d, st) or float(ch.get(st, dflt)) <= 0:
+                continue
+            h = next((h for h in sorted(hits, key=lambda h: -h.get("damage_taken", 0))
+                      if h.get("defender", d.name) == d.name and fits(h["part"], plan)
+                      and float(h.get("damage_taken", 0)) >= max(float(cfg.get("min_damage", 30)), min_taken) * scale_
+                      and float(h.get("damage_after", 0)) >= min_after), None)
+            if h is None:
+                continue
+            if self._chance(min(0.9, float(ch.get(st, dflt)) / tough), f"{d.name} {st.replace('_', ' ')} from the blow "
+                            f"to her {h['part'].lower()}", st.replace("_", " "), "no"):
+                self.set_status(d, st, int(beats.get(st, dur)))
+                out.append({"fighter": d.name, "status": st, "beats": int(beats.get(st, dur)), "part": h["part"]})
         return out
 
     def note_wear(self, f, mark):
@@ -8768,6 +8963,8 @@ class Engine:
             pas = getattr(self, "_passive", None)
             if pas and pas[0] == self.turn and fd.name in pas[1]:
                 continue   # (since build 278) her player has her do nothing: she doesn't try to break it
+            if self.has(fd, "stunned"):
+                continue   # (since build 293) stunned: nothing in her answers yet
             if fd.name in self.lucky and fa.name not in self.lucky:
                 ch = 1.0   # /play dice free: she breaks any hold on her at once (not one a dice-free holder has)
             if ch <= 0:
@@ -9940,6 +10137,8 @@ class Engine:
             pas = getattr(self, "_passive", None)
             if pas and pas[0] == self.turn and dfn.name in pas[1]:
                 attempt_p, forced_try = 0.0, False      # (since build 278) her player has her do nothing
+            if self.has(dfn, "stunned"):
+                attempt_p, forced_try = 0.0, False      # (since build 293) stunned: she can't try
             if forced_try or self._chance(attempt_p, f"{dfn.name} making an escape attempt", "she tries",
                                           "no real attempt"):
                 roll = self.rng.random()
@@ -10414,6 +10613,17 @@ class Engine:
                 tap_part = next((h.part for h in (body_coils if constrict else hs)
                                  if (constrict or re.search(r"(?i)neck|throat", h.part)) and h.part not in spent_),
                                 tap_part)
+                hs_cfg = kcfg.get("heart_stop") or {}
+                if constrict and hs_cfg.get("enabled", True) and self._chance(
+                        float(hs_cfg.get("chance", 0.35)), f"{poss_word(dn)} heart stopping as she goes under in the "
+                        f"coils (it starts again once they come off)", "IT STOPS, for a moment", "it keeps beating"):
+                    # (since build 293) her heart stops a moment as she goes under: never a death, it starts again
+                    d.learned["heart_stopped"] = self.turn
+                    d.learned["circ_vitals"] = [self.turn, {"heart": 0, "irregular": False, "stopped": True,
+                                                            "bp": [30, 15]}]
+                    ts_ = d.learned.get("tap_state")
+                    if isinstance(ts_, dict) and ts_.get("turn") == self.turn:
+                        ts_["vitals"] = d.learned["circ_vitals"][1]
             parts = [h.part for h in hs]
             with_ = list(dict.fromkeys(h.with_part for h in hs if h.with_part))
             taps_ = self._taps_rule()
@@ -10439,7 +10649,9 @@ class Engine:
                           "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
                           "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure),
                           "spent_parts": self.spent_tap_parts(d),
-                          "cause": "constriction" if how == "pass_out" and constrict else ""}
+                          "cause": "constriction" if how == "pass_out" and constrict else "",
+                  "heart_stopped": d.learned.get("heart_stopped") == self.turn,
+                  "circ": round(circ), "circ_end": round(circ_end)}
                     if how == "tap" and self._tap_vary_on():
                         ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
                     events.append(ev)
@@ -10455,7 +10667,9 @@ class Engine:
                   "with": with_, "beats_held": beats, "chance": round(tap if how == "tap" else po, 3),
                   "tap_no": len(d.learned.get("taps_given") or []) or 1,
                   "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure),
-                  "cause": "constriction" if how == "pass_out" and constrict else ""}
+                  "cause": "constriction" if how == "pass_out" and constrict else "",
+                  "heart_stopped": d.learned.get("heart_stopped") == self.turn,
+                  "circ": round(circ), "circ_end": round(circ_end)}
             if how == "tap" and self._tap_vary_on():
                 ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
             ev["elimination"] = self.eliminate(dn, reason)
@@ -10700,7 +10914,15 @@ class Engine:
         she has on others, a pin on her or by her (its count against its length), how near she is to tapping (from
         the tap check this beat: _note_tap_state) and how far she is from each other fighter. None when it is off."""
         cfg = ((self.rules.get("window") or {}).get("hold_panel") or {})
-        if not cfg.get("enabled", True) or f.eliminated:
+        if not cfg.get("enabled", True):
+            return None
+        if f.eliminated:
+            # (since build 293) the beat she blacked out in the coils: the card still shows her heart (stopped, or
+            # slow), and the meter says how it ended
+            ts, cv = f.learned.get("tap_state") or {}, f.learned.get("circ_vitals") or [None, None]
+            if cv[0] == self.turn and cv[1] and ts:
+                return {"held": [], "holding": [], "pin": None, "pinning": [], "gaps": [],
+                        "tap": dict(ts, circ=True, vitals=cv[1], done="blacked out in the coils")}
             return None
 
         def kind(h):
@@ -11600,6 +11822,28 @@ class Engine:
         "fury": "FURIOUS after breaking the pin: a cold, hard anger behind every blow",
         "breathless": "the WIND KNOCKED OUT of her: she can't get a full breath; every movement is short of air",
         "dazed": "DAZED from the blow to the head: her vision swims, sounds come late, she is slow to react",
+        # (since build 293: moves.head, moves.body_jolts)
+        "rattled": "RATTLED by the blow to her head: a hard blink, a shake of the head; a beat slow to dodge",
+        "stunned": "STUNNED by the blow to her head: the lights flickered; she CAN'T ACT this beat at all (no attack, no "
+                   "grab, no dodge, no escape, no get-up): she sways where she is, eyes unfocused, arms or tail not "
+                   "answering, and her opponent can do as she likes with her",
+        "wobbly": "her LEGS ARE GONE after the stun: knees dipping, feet not where she puts them; she can barely dodge, "
+                  "her blows have nothing under them, getting up or staying up is hard",
+        "seeing_double": "SEEING DOUBLE: two of everything; her blows go to the wrong one and slide off",
+        "eyes_watering": "her EYES STREAMING from the blow to the nose: blinking through the water, her aim gone soft",
+        "ears_ringing": "her EARS RINGING: a high whine over everything, sound muffled and late; she reacts a beat slow",
+        "jaw_rattled": "her JAW RATTLED: it aches to close, her teeth don't meet right; her bites are weak",
+        "whiplash": "WHIPLASH: her neck stiff and hot from the wrench; she can't turn her head fast",
+        "concussed": "CONCUSSED (for the rest of the fight): a dull headache behind her eyes, the light too bright, a "
+                     "half-beat fog over her thinking; every blow to the head now rattles her far more easily",
+        "dead_leg": "a DEAD LEG: the thigh gone numb and heavy, the knee folding when she puts weight on it",
+        "limping": "LIMPING: the knee or foot won't take her weight properly; she hops and favours it, slow to move",
+        "dead_arm": "a DEAD ARM: numb from the shoulder down, tingling, her paw slow to close; her blows with it are weak",
+        "ribs_aching": "her RIBS ACHING: every breath catches on that side; she holds it close and moves carefully",
+        "back_spasm": "her BACK IN SPASM: the muscles locked tight across it; twisting, rising and striking all hurt",
+        "tail_numb": "her TAIL NUMB at the base: her balance off without it, every turn a little wide",
+        "nauseous": "SICK TO HER STOMACH from the blow to the gut: a sour, heaving queasiness, weak with it",
+        "swollen_eye": "an EYE SWELLING SHUT: the cheek and brow puffed up, her sight narrowed on that side",
         "doubled_over": "DOUBLED OVER by the pain: folded round the hurt, guard down for a moment",
         "staggered": "STAGGERED: knocked a step or more by the last blow and still finding her feet; slow to dodge, open "
                    "to the next one, her own blows weaker",

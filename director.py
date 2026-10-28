@@ -2110,6 +2110,19 @@ def resolve_many(engine, actions):
             continue
         once.append(x)
     actions = once
+    # (since build 293, moves.head) a STUNNED fighter does nothing this beat, whatever she was given: she sways there
+    stunned_ = []
+    for b in actions:
+        f_ = engine.fighters.get(str((b or {}).get("attacker") or "").lower()) if isinstance(b, dict) else None
+        if f_ is not None and engine.has(f_, "stunned") and b.get("action") not in ("breather", "wait"):
+            if not any(x.get("attacker") == f_.name and x.get("action") == "breather" for x in stunned_):
+                stunned_.append({"action": "breather", "attacker": f_.name,
+                                 "flavor": "stunned, swaying where she is, nothing in her answering yet"})
+            continue
+        stunned_.append(b)
+    actions = stunned_
+    if not actions:
+        raise ValueError("a beat needs at least one action")
     # a hold followed by a pin on the same fighter in one beat is really one pin: fold the hold's contacts in
     pins = {(str(b.get("attacker")).lower(), str(b.get("defender")).lower()): b for b in actions if b.get("action") == "pin"}
     merged = []
