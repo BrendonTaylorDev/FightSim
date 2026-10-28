@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 299
+The squeeze as a picture (`window.squeeze_figure`, on by default). While coils squeeze her, her card shows, under the
+heart monitor and in place of the old squeeze bar, a picture of its own (drawn by the program, not her artwork, which
+may face any way):
+- her torso from the front in her own colours (taken from her picture): head, shoulders, her arms pinned to her sides,
+  a lighter belly;
+- the coiler's loops wound round her in a spiral, in the coiler's colours, as thick as the coiler is big against her:
+  Seraphina's loops cover most of Ripples' chest, and the rest of her body trails away out of the picture;
+- each loop pressing her in and her flesh bulging between them, harder as the squeeze builds; her ribs showing once it
+  is crushing; her body paling toward a cold grey-blue as her blood flow is cut off;
+- beside it, her heart: beating at her own rate (uneven and skipping when irregular), clenching on each beat,
+  flattened between the coils when they are round her chest, smaller as less blood gets back to fill it, and still
+  and grey once it stops.
+
+Exported fights (`/exportfight`) show the same picture, the heart beating there too. false = the plain bar, as before.
+
 ## Build 298
 Keeping coils on is work (`holds.coil.energy`, on by default). Each beat a coil costs the coiler 6 energy plus 0.4 for
 every beat it has been on, less the bigger she is than the one in her coils, more for a second coil; and she gets no

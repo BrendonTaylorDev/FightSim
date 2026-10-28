@@ -10608,6 +10608,10 @@ class Engine:
                 vit["where"] = (d.learned.get("compress") or {}).get("where", "")
                 vit["coils"] = len(body_coils)
                 vit["ring"] = bool((d.learned.get("compress") or {}).get("ring"))
+                # (since build 299, for the squeeze figure) who is coiling her, and how much bigger she is
+                vit["coiler"] = a
+                vit["coiler_species"] = species_of(self.get(a).description, getattr(self.get(a), "appearance", ""))
+                vit["coil_ratio"] = round(sa / sd, 2) if sa and sd else None
                 events.append(dict({"type": "constriction", "attacker": a, "defender": dn, "stage": stage,
                                     "pct": round(100 * frac), "coils": len(body_coils), "compress": round(comp),
                                     "where": (d.learned.get("compress") or {}).get("where", ""),

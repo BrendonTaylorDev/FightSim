@@ -42,7 +42,8 @@ from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
                    held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour,
-                   squeeze_shapes, squeeze_label)
+                   squeeze_shapes, squeeze_label, squeeze_figure, squeeze_colours, heart_shapes, heart_beat,
+                   picture_colours, squeeze_word, mix)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -547,7 +548,13 @@ class FighterCard(ttk.Frame):
                       font=("Segoe UI", 9, "bold"), fill=col)
         if v.get("irregular"):
             c.create_text(6, 25, anchor="w", text="irregular", font=("Segoe UI", 7), fill="#fca5a5")
-        if v.get("squeeze") is not None:
+        wcfg = (self.app._rules().get("window") or {}) if hasattr(self.app, "_rules") else {}
+        figure = v.get("squeeze") is not None and wcfg.get("squeeze_figure", True)
+        c.configure(height=200 if figure else 60)
+        self._fig = None
+        if figure:
+            self._squeeze_figure(c, v, w)
+        elif v.get("squeeze") is not None:
             # (since build 294) how far the coils have squeezed her in: her chest or belly as a band narrowing from
             # both sides, the coils across it
             full, body, bands = squeeze_shapes(v["squeeze"], v.get("coils"), 84, max(40, w - 84 - 96), 46, 10,
@@ -584,6 +591,82 @@ class FighterCard(ttk.Frame):
         c.create_line(sx + 80 * 120 / 160.0, 28, sx + 80 * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
         c.create_text(sx + 3, 35, anchor="w", text="pressure", font=("Segoe UI", 7), fill="#f9fafb")
 
+    def _squeeze_figure(self, c, v, w):
+        """window.squeeze_figure (since build 299): under the monitor, the squeeze as a picture: her torso from the
+        front in her own colours, the coiler's loops wound round it (as thick as the coiler is big against her),
+        pressing her in, her ribs showing once it is crushing, her body paling as the blood is cut off; and beside it
+        her heart, beating at her rate (window.vitals_animate), squeezed from the sides when the coils are on her
+        chest, smaller as it fills less, still once it stops."""
+        y0 = 50
+        them = (getattr(self.app, "cards", None) or {}).get(v.get("coiler"))
+        body, belly = picture_colours(self.book, "#c08457")
+        coil = picture_colours(getattr(them, "book", None), "#5d8fcf")[0]
+        col = squeeze_colours(v, body, coil, belly)
+        where = v.get("where") if v.get("where") in ("chest", "belly", "both") else "chest"
+        fg = squeeze_figure(v["squeeze"], where, v.get("coils"), 14, y0, 84, 140, v.get("coil_ratio"))
+        if fg["trail"]:
+            c.create_polygon(*[q for p in fg["trail"]["poly"] for q in p], fill=col["coil"], outline=col["coil_edge"])
+            c.create_line(*[q for p in fg["trail"]["shine"] for q in p], fill=col["coil_shine"], width=2, smooth=True)
+        c.create_polygon(*[q for p in fg["head"] for q in p], fill=col["body"], outline=col["body_edge"], smooth=True)
+        c.create_polygon(*[q for p in fg["body"] for q in p], fill=col["body"], outline=col["body_edge"])
+        for sh in fg["shade"]:
+            c.create_polygon(*[q for p in sh for q in p], fill=col["shade"], outline="")
+        c.create_polygon(*[q for p in fg["belly"] for q in p], fill=col["belly"], outline="", smooth=True)
+        for r in fg["ribs"]:
+            c.create_line(*[q for p in r for q in p], fill=col["rib"], width=1, smooth=True)
+        for a in fg["arms"] + fg["paws"]:
+            c.create_polygon(*[q for p in a for q in p], fill=col["arm"], outline=col["body_edge"])
+        for cr in fg["creases"]:
+            c.create_line(*[q for p in cr for q in p], fill=col["crease"], width=1, smooth=True)
+        for lp in fg["loops"]:
+            c.create_polygon(*[q for p in lp["poly"] for q in p], fill=col["coil"], outline=col["coil_edge"])
+            c.create_polygon(*[q for p in lp["dark"] for q in p], fill=col["coil_dark"], outline="")
+            c.create_line(*[q for p in lp["shine"] for q in p], fill=col["coil_shine"], width=2, smooth=True)
+        # her heart, on its own, beside her
+        hx, hy, hr = 160, y0 + 58, 22
+        on_chest = where in ("chest", "both")
+        hs = heart_shapes(hx, hy, hr, v["squeeze"], on_chest, v.get("blood", 0), 0.0, bool(v.get("stopped")))
+        for pr in hs["press"]:
+            c.create_polygon(*[q for p in pr for q in p], fill=col["coil"], outline=col["coil_edge"])
+        dark = mix(col["heart"], "#000000", 0.3)
+        items = {"vessels": [c.create_line(*[q for p in pts for q in p], fill=dark, width=wd, capstyle="round")
+                             for pts, wd in hs["vessels"]],
+                 "heart": c.create_polygon(*[q for p in hs["heart"] for q in p], fill=col["heart"],
+                                           outline=mix(col["heart"], "#000000", 0.5), smooth=True),
+                 "split": c.create_line(*[q for p in hs["split"] for q in p], fill=dark, smooth=True),
+                 "shine": c.create_line(*[q for p in hs["shine"] for q in p], fill=mix(col["heart"], "#ffffff", 0.5),
+                                        width=2, smooth=True)}
+        self._fig = {"items": items, "args": (hx, hy, hr, v["squeeze"], on_chest, v.get("blood", 0)),
+                     "heart": 0 if v.get("stopped") else v.get("heart", 0), "irregular": bool(v.get("irregular")),
+                     "stopped": bool(v.get("stopped"))}
+        tx = 200
+        place = {"chest": "round her chest", "belly": "round her middle", "both": "round her chest and middle"}[where]
+        c.create_text(tx, y0 + 6, anchor="nw", width=max(60, w - tx - 6), font=("Segoe UI", 9, "bold"),
+                      fill="#f9fafb", text=f"{squeeze_word(v['squeeze']).capitalize()}: squeezed in {v['squeeze']}%")
+        c.create_text(tx, y0 + 26, anchor="nw", width=max(60, w - tx - 6), font=("Segoe UI", 8), fill="#d1d5db",
+                      text=f"{v.get('coils', 1)} coil{'s' if int(v.get('coils') or 1) > 1 else ''} {place}"
+                      + (f", {v['coiler']} {v['coil_ratio']:g}× her size" if v.get("coiler") and v.get("coil_ratio")
+                         and v["coil_ratio"] >= 1.5 else ""))
+        c.create_text(tx, y0 + 62, anchor="nw", width=max(60, w - tx - 6), font=("Segoe UI", 8), fill="#fca5a5",
+                      text=("her heart has stopped" if v.get("stopped") else
+                            "her heart " + ("squeezed between the coils, " if on_chest and v["squeeze"] >= 35 else "")
+                            + ("slow and skipping" if v.get("irregular") else "racing")))
+
+    def _heart_tick(self):
+        """One step of the beating heart in the squeeze figure (driven by _ecg_tick)."""
+        fg = getattr(self, "_fig", None)
+        if not fg:
+            return
+        import time as _time
+        beat = heart_beat(fg["heart"], _time.monotonic(), fg["irregular"])
+        hs = heart_shapes(*fg["args"], beat=beat, stopped=fg["stopped"])
+        it, c = fg["items"], self.vt
+        c.coords(it["heart"], *[q for p in hs["heart"] for q in p])
+        c.coords(it["split"], *[q for p in hs["split"] for q in p])
+        c.coords(it["shine"], *[q for p in hs["shine"] for q in p])
+        for item, (pts, _) in zip(it["vessels"], hs["vessels"]):
+            c.coords(item, *[q for p in pts for q in p])
+
     def _ecg_tick(self):
         """One step of the moving heart trace: slide it on by as far as 60 ms of six seconds takes it, and keep going
         while the strip is shown."""
@@ -597,6 +680,7 @@ class FighterCard(ttk.Frame):
             pts = [q for x, y in st["base"] if off <= x <= off + bw for q in (bx + x - off, y)]
             if len(pts) >= 4:
                 self.vt.coords(st["line"], *pts)
+            self._heart_tick()
             self.after(60, self._ecg_tick)
         except tk.TclError:
             self._ecg_running = False     # (the card was closed or redrawn: the next strip starts its own)

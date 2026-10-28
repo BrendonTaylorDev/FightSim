@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 298 (coils cost energy; a spent coiler lets go unless the end is near)"
+VERSION = "2026-10-28 build 299 (the squeeze as a picture, with her heart beating beside it)"
 
 HELP = """
 =============================================================================================

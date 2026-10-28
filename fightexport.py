@@ -110,7 +110,7 @@ def _bars(f):
             f'<div class="dim">{html.escape(f.get("posture", ""))} · {html.escape(sts)}</div>')
 
 
-def _gauges(f):
+def _gauges(f, books=None, opts=None):
     """The window's tap tally and two pain gauges, as on screen (export.gauges): taps given against those needed,
     then overall pain and the part held or struck, each a share of what she can bear (full width 150%, a mark at
     100%). Beats saved before build 249 have no pain gauge, and a fight that isn't a submission match no tally."""
@@ -160,7 +160,9 @@ def _gauges(f):
             pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in base)
             cid = f"ecg{abs(hash((v['heart'], v.get('blood'), id(f)))) % 10**8}"
             bp = v.get("bp") or [120, 80]
-            out += (f'<svg class="vitals" viewBox="0 0 {w + 90} {60 if v.get("squeeze") is not None else 44}" width="100%" style="background:#111827;'
+            # (since build 299, window.squeeze_figure) the squeeze as a picture of its own, after the monitor
+            figure = v.get("squeeze") is not None and (opts or {}).get("squeeze_figure", True)
+            out += (f'<svg class="vitals" viewBox="0 0 {w + 90} {60 if v.get("squeeze") is not None and not figure else 44}" width="100%" style="background:#111827;'
                     f'border-radius:4px;max-width:520px">'
                     f'<text x="6" y="16" fill="{"#ef4444" if v.get("stopped") else col}" font-size="11" '
                     f'font-weight="bold">{"♥ stopped" if v.get("stopped") else "♥ " + str(v["heart"]) + "/min"}</text>'
@@ -173,7 +175,7 @@ def _gauges(f):
                        f'fill="#c08457" stroke="#60a5fa" stroke-width="1.5"/>'
                        + f'<text x="6" y="54" fill="#f9fafb" font-size="9">{html.escape(cards.squeeze_label(v))}</text>')
                        (cards.squeeze_shapes(v["squeeze"], v.get("coils"), 84, w - 90, 46, 10, ring=bool(v.get("ring"))))
-                       if v.get("squeeze") is not None else "")
+                       if v.get("squeeze") is not None and not figure else "")
                     + f'<clipPath id="{cid}"><rect x="84" y="0" width="{w - 90}" height="28"/></clipPath>'
                     f'<g clip-path="url(#{cid})"><g transform="translate(84,0)"><polyline points="{pts}" fill="none" '
                     f'stroke="{col}" stroke-width="1.5"><animateTransform attributeName="transform" type="translate" '
@@ -189,6 +191,10 @@ def _gauges(f):
                     f'<line x1="{w + 60}" y1="28" x2="{w + 60}" y2="42" stroke="#9ca3af" stroke-dasharray="2,2"/>'
                     f'<text x="{w + 3}" y="38" fill="#f9fafb" font-size="8">pressure</text>'
                     f'</svg>')
+            if figure:
+                body, belly = cards.picture_colours((books or {}).get(f["name"]), "#c08457")
+                coil = cards.picture_colours((books or {}).get(v.get("coiler")), "#5d8fcf")[0]
+                out += cards.squeeze_svg(v, body, coil, belly)
     for text, col in cards.grip_lines(f):
         out += f'<div class="grip" style="color:{col}">{html.escape(text)}</div>'
     return out
@@ -275,7 +281,7 @@ def write(s, path=None, fights=None):
             img = _card_img(f, pics, opts)
             sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool)
                             else k.replace("_", " ") for k, v in (f.get("status") or {}).items()) or "no statuses"
-            gz = _gauges(f) if gauges else ""
+            gz = _gauges(f, pics, opts) if gauges else ""
             side += (f'<div class="fighter">{img}<div class="dim">{html.escape(f.get("posture", ""))} · '
                      f'{html.escape(sts)}</div>{gz}{_table(f)}</div>' if img else
                      f'<div class="fighter">{_bars(f)}{gz}{_table(f)}</div>')

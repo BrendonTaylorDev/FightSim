@@ -1054,6 +1054,336 @@ def squeeze_shapes(squeeze, coils, x0, width, y0, height, ring=False):
     return full, body, sides
 
 
+# (since build 299) the squeeze figure: her torso from the front, a stylised shape of its own (her artwork may face any
+# way), its half-width down its length (t: 0 at the base of her neck, 1 at her hips), as a share of the figure's width
+TORSO_PROFILE = [(0.0, 0.17), (0.06, 0.30), (0.14, 0.42), (0.26, 0.42), (0.40, 0.39), (0.55, 0.34), (0.66, 0.34),
+                 (0.78, 0.37), (0.90, 0.39), (1.0, 0.36)]
+
+
+def _torso_hw(t):
+    for (t0, w0), (t1, w1) in zip(TORSO_PROFILE, TORSO_PROFILE[1:]):
+        if t0 <= t <= t1:
+            k = (t - t0) / max(1e-6, t1 - t0)
+            k = k * k * (3 - 2 * k)
+            return w0 + (w1 - w0) * k
+    return TORSO_PROFILE[-1][1]
+
+
+def _tube(path, rad):
+    """A thick band along a path of points (rad: its half-width at each point, or one number): its outline."""
+    rads = rad if isinstance(rad, (list, tuple)) else [rad] * len(path)
+    left, right = [], []
+    for k, (x, y) in enumerate(path):
+        xa, ya = path[max(0, k - 1)]
+        xb, yb = path[min(len(path) - 1, k + 1)]
+        dx, dy = xb - xa, yb - ya
+        n = math.hypot(dx, dy) or 1.0
+        nx, ny = -dy / n, dx / n
+        left.append((x + nx * rads[k], y + ny * rads[k]))
+        right.append((x - nx * rads[k], y - ny * rads[k]))
+    return left + list(reversed(right))
+
+
+def squeeze_figure(squeeze, where, coils, x0, y0, w, h, ratio=None):
+    """(since build 299) The squeeze drawn as a body: her torso from the front (head, shoulders, her arms pinned to
+    her sides, a lighter belly) with the coils wound round it in a spiral, each loop pressing her in and the flesh
+    between loops bulging out a little, more the harder she is squeezed (squeeze 0-100: a third of her width gone at
+    92%); her ribs show through once it is crushing (her heart has its own picture: heart_shapes). where: chest,
+    belly or both (back counts as chest). ratio: how many times her size the coiler is: a coiler much bigger than her
+    winds fewer, far thicker loops (one loop of a Milotic is most of a Buizel's chest), and the rest of her body trails
+    away out of the picture. Returns point lists: "head", "body", "shade" [left, right], "belly", "arms", "paws",
+    "loops" [{"poly", "dark", "shine"}] (each loop's near side), "trail" ({"poly", "shine"}: the rest of the coiler, behind her, or None),
+    "creases" (the flesh bulging at each loop's edges), "ribs"."""
+    sq = max(0.0, min(100.0, float(squeeze or 0))) / 100.0
+    where = where if where in ("chest", "belly", "both") else "chest"
+    n = max(1, min(4, int(coils or 1)))
+    t_top, t_bot = 0.16, 1.0
+    span = {"chest": (0.25, 0.58), "belly": (0.55, 0.92), "both": (0.25, 0.92)}[where]
+    # how thick her coils are against this body: a coiler her own size about a tenth of her torso, a giant far more
+    big = max(0.6, min(10.0, float(ratio or 1.0)))
+    th0 = max(0.04, min(0.17, 0.05 + 0.014 * big))
+    loops_n = max(1, min(5, int(round((span[1] - span[0]) / (2.1 * th0))) + (n - 1) // 2))
+    gap = (span[1] - span[0]) / loops_n
+    centres = [span[0] + gap * (i + 0.5) for i in range(loops_n)]
+    depth = 0.38 * sq
+    th = min(0.5 * gap, th0) * (1.0 - 0.15 * sq)        # each loop's half-thickness (a little thinner, pulled tight)
+
+    def pinch(t):
+        # pressed in under each loop, the flesh between them bulging back out a little, eased off past the coils
+        under = max((math.exp(-((t - c) / (0.55 * gap)) ** 2) for c in centres), default=0.0)
+        out = min(abs(t - span[0]), abs(t - span[1])) if not span[0] <= t <= span[1] else 0.0
+        return depth * (0.45 * math.exp(-(out / 0.07) ** 2) + 0.55 * under)
+
+    def X(u):
+        return x0 + w / 2 + u * w
+
+    def Y(t):
+        return y0 + h * t
+
+    def hw(t):
+        return 0.9 * _torso_hw((t - t_top) / (t_bot - t_top)) * (1 - pinch(t))
+
+    ts = [t_top + (t_bot - t_top) * i / 48 for i in range(49)]
+    body = [(X(hw(t)), Y(t)) for t in ts] + [(X(-hw(t)), Y(t)) for t in reversed(ts)]
+    # the roundness of her: shadow down each side
+    shade = [[(X(side * hw(t)), Y(t)) for t in ts] + [(X(side * hw(t) * 0.72), Y(t)) for t in reversed(ts)]
+             for side in (-1, 1)]
+    b_ts = [0.3 + 0.66 * i / 24 for i in range(25)]
+    belly = [(X(hw(t) * 0.5 * math.sin(math.pi * (t - 0.3) / 0.66) ** 0.5), Y(t)) for t in b_ts] + \
+            [(X(-hw(t) * 0.5 * math.sin(math.pi * (t - 0.3) / 0.66) ** 0.5), Y(t)) for t in reversed(b_ts)]
+    head = [(X(0.27 * math.cos(a)), Y(0.095 + 0.095 * math.sin(a)))
+            for a in (2 * math.pi * k / 36 for k in range(36))]
+    # her arms, pinned to her sides from the shoulder down, her paws showing at the ends
+    arms, paws = [], []
+    a_ts = [0.25 + 0.36 * i / 14 for i in range(15)]
+    for side in (-1, 1):
+        path = [(X(side * (hw(t) - 0.01)), Y(t)) for t in a_ts]
+        rads = [w * 0.05 * (1 - 0.3 * i / 14) for i in range(15)]
+        arms.append(_tube(path, rads))
+        # (the shoulder rounded over the top, the paw at the end)
+        sx_, sy_ = path[0]
+        paws.append([(sx_ + rads[0] * math.cos(a), sy_ + rads[0] * math.sin(a))
+                     for a in (2 * math.pi * k / 16 for k in range(16))])
+        px, py = path[-1]
+        paws.append([(px + w * 0.05 * math.cos(a), py + w * 0.035 + w * 0.045 * math.sin(a))
+                     for a in (2 * math.pi * k / 16 for k in range(16))])
+    loops, creases = [], []
+    for k, c in enumerate(centres):
+        lw = hw(c) + 0.045 + th * 0.6         # the loop lies OUTSIDE her, over her arms; a thick one stands out further
+        tilt = 0.3 * gap
+        sag = 0.03
+        top, bot, dark, shine = [], [], [], []
+        for i in range(25):
+            u = -1 + 2 * i / 24
+            dy = sag * (1 - u * u) - tilt * u / 2
+            r = th * math.sqrt(max(0.0, 1 - u ** 8))       # rounded off at the ends, where it turns behind her
+            top.append((X(u * lw), Y(c - r + dy)))
+            bot.append((X(u * lw), Y(c + r + dy)))
+            dark.append((X(u * lw), Y(c + 0.3 * r + dy)))
+            shine.append((X(u * lw * 0.9), Y(c - 0.5 * r + dy)))
+        loops.append({"poly": top + list(reversed(bot)), "dark": dark + list(reversed(bot)), "shine": shine})
+        if sq > 0.15:
+            for sgn in (-1, 1):
+                creases.append([(X(u * hw(c) * 0.9), Y(c + sgn * (th + 0.012) + sag * (1 - u * u) - tilt * u / 2))
+                                for u in (-0.8, -0.4, 0.0, 0.4, 0.8)])
+    trail = None
+    if big >= 1.5:
+        # the rest of a coiler much bigger than her, trailing away from the last loop out of the picture
+        c = centres[-1]
+        lw = hw(c) + 0.045 + th * 0.6
+        p0 = (X(lw), Y(c - th * 0.2))
+        path = [(p0[0] - w * 0.04 + w * 0.3 * (k / 12) ** 0.8, p0[1] + h * 0.3 * (k / 12) ** 1.6) for k in range(13)]
+        rad = h * th * 1.05
+        trail = {"poly": _tube(path, rad), "shine": [(x - rad * 0.35, y - rad * 0.35) for x, y in path[1:-1]]}
+    ribs = []
+    if sq >= 0.5 and where in ("chest", "both"):
+        # crushing: her ribs show through between the loops
+        for k in range(4):
+            t = 0.27 + 0.065 * k
+            w_ = hw(t)
+            for side in (-1, 1):
+                ribs.append([(X(side * w_ * 0.15), Y(t)), (X(side * w_ * 0.55), Y(t + 0.012)),
+                             (X(side * w_ * 0.85), Y(t + 0.04))])
+    return {"head": head, "body": body, "shade": shade, "belly": belly, "arms": arms, "paws": paws, "loops": loops,
+            "trail": trail, "creases": creases, "ribs": ribs, "sq": sq}
+
+
+def heart_points(cx, cy, r, scale=1.0):
+    """A heart shape round (cx, cy), r its half-width, as a point list (a canvas polygon or an SVG path)."""
+    pts = []
+    for i in range(36):
+        a = 2 * math.pi * i / 36
+        x = 16 * math.sin(a) ** 3
+        y = -(13 * math.cos(a) - 5 * math.cos(2 * a) - 2 * math.cos(3 * a) - math.cos(4 * a))
+        pts.append((cx + x / 16 * r * scale, cy + y / 16 * r * scale))
+    return pts
+
+
+def mix(c1, c2, k):
+    """Colour c1 moved toward c2 by k (0-1), both "#rrggbb"."""
+    a = [int(c1[i:i + 2], 16) for i in (1, 3, 5)]
+    b = [int(c2[i:i + 2], 16) for i in (1, 3, 5)]
+    k = max(0.0, min(1.0, k))
+    return "#%02x%02x%02x" % tuple(int(round(x + (y - x) * k)) for x, y in zip(a, b))
+
+
+def picture_colours(book, fallback="#c08457"):
+    """Her colours, from her own front picture: (main, lighter or None): the biggest group of like colours among its
+    opaque pixels (so a cream body with a few red spots reads as cream), and the next big group if it is clearly
+    lighter (a Buizel's cream belly). Kept on the book once worked out; (fallback, None) with no picture."""
+    if book is None or Image is None:
+        return fallback, None
+    got = getattr(book, "_main_colours", None)
+    if got:
+        return got
+    out = (fallback, None)
+    try:
+        base = book.base("front")
+        if base and base[0]:
+            im = Image.open(io.BytesIO(base[0])).convert("RGBA").resize((48, 48))
+            bins = {}
+            for r, g, b, a in im.getdata():
+                if a > 200:
+                    bins.setdefault((r // 48, g // 48, b // 48), []).append((r, g, b))
+            groups = sorted(bins.values(), key=len, reverse=True)
+            if groups:
+                avg = [tuple(sum(c[i] for c in grp) // len(grp) for i in range(3)) for grp in groups[:4]]
+                main = avg[0]
+                light = next((c for c, grp in zip(avg[1:], groups[1:4]) if sum(c) > sum(main) + 90
+                              and len(grp) >= 0.12 * len(groups[0])), None)
+                out = ("#%02x%02x%02x" % main, ("#%02x%02x%02x" % light) if light else None)
+    except Exception as e:
+        from engine import note_failure
+        note_failure("working out a fighter's colours for the squeeze figure", e)
+    try:
+        book._main_colours = out
+    except AttributeError:
+        pass
+    return out
+
+
+def squeeze_svg(v, body="#c08457", coil="#5d8fcf", belly=None, width=440):
+    """(since build 299) The squeeze figure as an SVG picture of its own (exported fights): her torso in the coils,
+    and her heart beside it beating at her rate (an animation drawn from heart_beat), as in the window."""
+    import html as _h
+    where = v.get("where") if v.get("where") in ("chest", "belly", "both") else "chest"
+    col = squeeze_colours(v, body, coil, belly)
+    fg = squeeze_figure(v["squeeze"], where, v.get("coils"), 14, 6, 84, 140, v.get("coil_ratio"))
+
+    def P(pts):
+        return " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+
+    def poly(pts, fill, stroke="none", sw=1):
+        return f'<polygon points="{P(pts)}" fill="{fill}" stroke="{stroke}" stroke-width="{sw}"/>'
+
+    def line(pts, stroke, sw=1):
+        return (f'<polyline points="{P(pts)}" fill="none" stroke="{stroke}" stroke-width="{sw}" '
+                f'stroke-linecap="round" stroke-linejoin="round"/>')
+    out = [f'<svg class="squeeze" viewBox="0 0 {width} 150" width="100%" style="background:#111827;'
+           f'border-radius:4px;max-width:520px;margin-top:2px">']
+    if fg["trail"]:
+        out += [poly(fg["trail"]["poly"], col["coil"], col["coil_edge"]), line(fg["trail"]["shine"], col["coil_shine"], 2)]
+    out += [poly(fg["head"], col["body"], col["body_edge"]), poly(fg["body"], col["body"], col["body_edge"])]
+    out += [poly(sh, col["shade"]) for sh in fg["shade"]] + [poly(fg["belly"], col["belly"])]
+    out += [line(r, col["rib"]) for r in fg["ribs"]]
+    out += [poly(a, col["arm"], col["body_edge"]) for a in fg["arms"] + fg["paws"]]
+    out += [line(c, col["crease"]) for c in fg["creases"]]
+    for lp in fg["loops"]:
+        out += [poly(lp["poly"], col["coil"], col["coil_edge"]), poly(lp["dark"], col["coil_dark"]),
+                line(lp["shine"], col["coil_shine"], 2)]
+    hx, hy, hr = 160, 64, 22
+    on_chest = where in ("chest", "both")
+    hs = heart_shapes(hx, hy, hr, v["squeeze"], on_chest, v.get("blood", 0), 0.0, bool(v.get("stopped")))
+    out += [poly(pr, col["coil"], col["coil_edge"]) for pr in hs["press"]]
+    dark = mix(col["heart"], "#000000", 0.3)
+    heart = ("".join(line(pts, dark, round(wd, 1)) for pts, wd in hs["vessels"])
+             + poly(hs["heart"], col["heart"], mix(col["heart"], "#000000", 0.5)) + line(hs["split"], dark)
+             + line(hs["shine"], mix(col["heart"], "#ffffff", 0.5), 2))
+    hrate = 0 if v.get("stopped") else float(v.get("heart") or 0)
+    if hrate > 0:
+        # the beat as an animation: her heart clenching (smaller) on each beat, through a cycle of her own rhythm
+        irr = bool(v.get("irregular"))
+        cycle = 60.0 / hrate * (sum(IRREGULAR_GAPS) if irr else 1.0)
+        steps = 40
+        vals = ";".join(f"{1 - 0.2 * heart_beat(hrate, cycle * k / steps, irr):.3f}" for k in range(steps + 1))
+        heart = (f'<g transform="translate({hx},{hy})"><g><animateTransform attributeName="transform" type="scale" '
+                 f'values="{vals}" dur="{cycle:.2f}s" repeatCount="indefinite"/>'
+                 f'<g transform="translate({-hx},{-hy})">{heart}</g></g></g>')
+    out.append(heart)
+    place = {"chest": "round her chest", "belly": "round her middle", "both": "round her chest and middle"}[where]
+    ratio = v.get("coil_ratio")
+    out.append(f'<text x="200" y="22" fill="#f9fafb" font-size="11" font-weight="bold">'
+               f'{_h.escape(squeeze_word(v["squeeze"]).capitalize())}: squeezed in {v["squeeze"]}%</text>')
+    out.append(f'<text x="200" y="40" fill="#d1d5db" font-size="9">{v.get("coils", 1)} coil'
+               f'{"s" if int(v.get("coils") or 1) > 1 else ""} {place}</text>')
+    if v.get("coiler") and ratio and ratio >= 1.5:
+        out.append(f'<text x="200" y="54" fill="#d1d5db" font-size="9">{_h.escape(str(v["coiler"]))} '
+                   f'{ratio:g}× her size</text>')
+    out.append(f'<text x="200" y="76" fill="#fca5a5" font-size="9">'
+               + ("her heart has stopped" if v.get("stopped") else
+                  "her heart " + ("squeezed between the coils, " if on_chest and v["squeeze"] >= 35 else "")
+                  + ("slow and skipping" if v.get("irregular") else "racing")) + '</text></svg>')
+    return "".join(out)
+
+
+SQUEEZE_WORDS = ((35, "snug"), (60, "tight"), (80, "crushing"), (101, "held almost flat"))
+
+
+def squeeze_word(sq):
+    """How the squeeze feels, in a word or two (the narrator's own steps)."""
+    return next(word for top, word in SQUEEZE_WORDS if float(sq or 0) < top)
+
+
+def squeeze_colours(v, body="#c08457", coil="#5d8fcf", belly=None):
+    """The squeeze figure's colours: her body paling toward a cold grey-blue as her blood flow is cut off, the coils
+    in their own colour with a lighter shine and a darker edge, her heart red (dull and dark once stopped)."""
+    blood = float(v.get("blood", 0) or 0) / 100.0
+    skin = mix(body, "#8a9bb0", 0.55 * blood)
+    return {"body": skin, "body_edge": mix(skin, "#000000", 0.45), "rib": mix(skin, "#000000", 0.35),
+            "arm": mix(skin, "#000000", 0.1), "shade": mix(skin, "#000000", 0.2),
+            "belly": mix(mix(belly or body, "#8a9bb0", 0.55 * blood), "#ffffff", 0.0 if belly else 0.35), "crease": mix(skin, "#000000", 0.5), "coil": coil,
+            "coil_edge": mix(coil, "#000000", 0.55), "coil_dark": mix(coil, "#000000", 0.28),
+            "coil_shine": mix(coil, "#ffffff", 0.5),
+            "heart": "#4b5563" if v.get("stopped") else mix("#ef4444", "#7f1d1d", 0.6 * blood)}
+
+
+# (an irregular heart: the gaps between beats, as shares of her rate's own gap; a long one is a skipped beat)
+IRREGULAR_GAPS = (1.0, 0.85, 1.25, 1.0, 1.9, 0.9, 1.1, 1.0, 1.6, 0.95)
+
+
+def heart_beat(heart, t, irregular=False):
+    """How far her heart is clenched at time t (seconds): 0 relaxed and full, 1 at the height of a beat (a quick
+    squeeze, a slower easing back), at her own rate; the gaps uneven, now and then a beat missing, when it is
+    irregular; 0 always once it has stopped."""
+    if not heart or heart <= 0:
+        return 0.0
+    base = 60.0 / float(heart)
+    gaps = IRREGULAR_GAPS if irregular else (1.0,)
+    cycle = base * sum(gaps)
+    x = t % cycle
+    for g in gaps:
+        if x < base * g:
+            break
+        x -= base * g
+    ph = x / base                      # seconds since this beat, in beats
+    if ph < 0.12:
+        return ph / 0.12
+    return max(0.0, math.exp(-(ph - 0.12) / 0.1))
+
+
+def heart_shapes(cx, cy, r, squeeze=0.0, on_chest=False, blood=0.0, beat=0.0, stopped=False):
+    """(since build 299) Her heart, drawn on its own: the heart (both sides, the great vessels on top), clenching on
+    each beat (beat 0-1: heart_beat), smaller the less blood is getting back to fill it (blood: % cut off), and with
+    the coils on her chest, flattened from the sides, the coils pressing in on it from both sides, closer the harder
+    she is squeezed (squeeze 0-100). Returns {"heart": points, "split": the line between its sides, "vessels":
+    [(points, width)], "press": [left, right] coil shapes or [], "shine": points}."""
+    sq = max(0.0, min(100.0, float(squeeze or 0))) / 100.0 if on_chest else 0.0
+    fill = 1.0 - 0.3 * max(0.0, min(100.0, float(blood or 0))) / 100.0
+    clench = 0.0 if stopped else 0.24 * beat
+    sx = fill * (1.0 - 0.32 * sq) * (1.0 - clench)
+    sy = fill * (1.0 + 0.1 * sq) * (1.0 - 0.55 * clench)
+    rr = r * 0.95
+    heart = [(cx + (x - cx) * sx, cy + (y - cy) * sy + r * 0.12) for x, y in heart_points(cx, cy, rr)]
+    split = [(cx + rr * 0.08 * sx, cy - rr * 0.45 * sy), (cx - rr * 0.08 * sx, cy + rr * 0.25 * sy),
+             (cx + rr * 0.05 * sx, cy + rr * 0.85 * sy)]
+    top = cy - rr * 0.55 * sy
+    vessels = [([(cx - rr * 0.12 * sx, top), (cx - rr * 0.1 * sx, top - r * 0.42)], max(2.0, r * 0.26)),
+               ([(cx + rr * 0.28 * sx, top + r * 0.02), (cx + rr * 0.34 * sx, top - r * 0.3)], max(1.5, r * 0.18))]
+    shine = [(cx - rr * 0.6 * sx, cy - rr * 0.1 * sy), (cx - rr * 0.52 * sx, cy - rr * 0.38 * sy),
+             (cx - rr * 0.32 * sx, cy - rr * 0.52 * sy)]
+    press = []
+    if sq > 0:
+        # the coils round her chest, pressing in on it from both sides (the gap between them closing)
+        gap = r * (1.25 - 0.45 * sq)
+        for side in (-1, 1):
+            xin, xout = cx + side * gap, cx + side * (gap + r * 0.5)
+            # its inner face rounded where it presses on her, flat outside
+            face = [(xin - side * r * 0.12 * math.cos(a), cy + r * 1.05 * math.sin(a))
+                    for a in (math.pi * (k / 12 - 0.5) for k in range(13))]
+            press.append(face + [(xout, cy + r * 1.05), (xout, cy - r * 1.05)])
+    return {"heart": heart, "split": split, "vessels": vessels, "press": press, "shine": shine}
+
+
 def squeeze_label(v):
     """The squeeze bar's few words: where and how far ("chest 52%", "belly 30%", "both 92%")."""
     return f"{(v.get('where') or 'body')} {v.get('squeeze', 0)}%"

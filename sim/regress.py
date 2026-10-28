@@ -893,6 +893,32 @@ def compression_check():
     if round(rp3.energy) != 100:
         problems.append(f"/energy =n should set it: {rp3.energy}")
     import cards
+    # build 299 (window.squeeze_figure): the squeeze as a body, loops as thick as the coiler is big, a beating heart
+    if not c or c.get("coiler") != "Seraphina" or not (c.get("coil_ratio") or 0) > 3:
+        problems.append(f"the constriction should say who coils her and how much bigger: {c and c.get('coil_ratio')}")
+    giant = cards.squeeze_figure(70, "both", 1, 0, 0, 80, 120, ratio=8.9)
+    same = cards.squeeze_figure(70, "both", 1, 0, 0, 80, 120, ratio=1.0)
+    if not (len(giant["loops"]) < len(same["loops"]) and giant["trail"] and not same["trail"]):
+        problems.append(f"a giant coiler should wind fewer, thicker loops and trail away: {len(giant['loops'])} "
+                        f"{len(same['loops'])}")
+    loose, tight = (cards.squeeze_figure(q, "chest", 1, 0, 0, 80, 120) for q in (5, 90))
+    if not (max(x for x, _ in tight["body"]) < max(x for x, _ in loose["body"]) and tight["ribs"] and not loose["ribs"]):
+        problems.append("a hard squeeze should press her in and show her ribs")
+
+    def _span(hs):
+        return max(x for x, _ in hs["heart"]) - min(x for x, _ in hs["heart"])
+    free = cards.heart_shapes(0, 0, 20, 80, False, 0)
+    pressed = cards.heart_shapes(0, 0, 20, 80, True, 0)
+    drained = cards.heart_shapes(0, 0, 20, 0, False, 90)
+    beating = cards.heart_shapes(0, 0, 20, 0, False, 0, beat=1.0)
+    if not (_span(pressed) < _span(free) and pressed["press"] and not free["press"] and _span(drained) < _span(free)
+            and _span(beating) < _span(free)):
+        problems.append("her heart should flatten between coils on her chest, shrink as it fills less, clench on a beat")
+    if cards.heart_beat(0, 1.3) != 0 or max(cards.heart_beat(60, t / 100) for t in range(200)) < 0.9:
+        problems.append("a stopped heart stays still; a beating one clenches")
+    vv = {"heart": 90, "squeeze": 70, "where": "chest", "coils": 1, "blood": 40, "coiler": "Seraphina", "coil_ratio": 8.9}
+    if "animateTransform" not in cards.squeeze_svg(vv) or "animateTransform" in cards.squeeze_svg(dict(vv, stopped=True)):
+        problems.append("the exported heart should beat, and not once it has stopped")
     _, body_box, coil_boxes = cards.squeeze_shapes(60, 1, 0, 100, 0, 10, ring=True)
     if not any(b[1] == 0 and b[2] - b[0] == 100 for b in coil_boxes) or body_box[1] <= 1:
         problems.append(f"the bar should draw the coils across her front and back too: {coil_boxes}")
