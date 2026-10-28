@@ -162,7 +162,11 @@ def _gauges(f, books=None, opts=None):
             bp = v.get("bp") or [120, 80]
             # (since build 299, window.squeeze_figure) the squeeze as a picture of its own, after the monitor
             figure = v.get("squeeze") is not None and (opts or {}).get("squeeze_figure", True)
-            out += (f'<svg class="vitals" viewBox="0 0 {w + 90} {60 if v.get("squeeze") is not None and not figure else 44}" width="100%" style="background:#111827;'
+            odds = cards.blackout_text(v)
+            vh = 60 if v.get("squeeze") is not None and not figure else 44
+            # (since build 302) the monitor and the squeeze picture side by side where the page is wide enough
+            out += '<div style="display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start">'
+            out += (f'<svg class="vitals" viewBox="0 0 {w + 90} {vh + (14 if odds[0] else 0)}" width="100%" style="flex:1 1 300px;background:#111827;'
                     f'border-radius:4px;max-width:520px">'
                     f'<text x="6" y="16" fill="{"#ef4444" if v.get("stopped") else col}" font-size="11" '
                     f'font-weight="bold">{"♥ stopped" if v.get("stopped") else "♥ " + str(v["heart"]) + "/min"}</text>'
@@ -194,11 +198,18 @@ def _gauges(f, books=None, opts=None):
                     f'<rect x="{w}" y="30" width="{80 * min(1.0, bp[0] / 160.0):.0f}" height="10" fill="{col}"/>'
                     f'<line x1="{w + 60}" y1="28" x2="{w + 60}" y2="42" stroke="#9ca3af" stroke-dasharray="2,2"/>'
                     f'<text x="{w + 3}" y="38" fill="#f9fafb" font-size="8">pressure</text>'
-                    f'</svg>')
+                    # (since build 302) her limit on the blood-flow gauge, and how near she is to blacking out
+                    + (f'<line x1="{84 + (w - 90) * min(1.0, v["out_at"] / 100.0):.1f}" y1="27" '
+                       f'x2="{84 + (w - 90) * min(1.0, v["out_at"] / 100.0):.1f}" y2="43" stroke="#f9fafb" '
+                       f'stroke-width="2"/>' if v.get("out_at") is not None else "")
+                    + (f'<text x="6" y="{vh + 9}" fill="{odds[1]}" font-size="9" font-weight="bold">'
+                       f'{html.escape(odds[0])}</text>' if odds[0] else "")
+                    + '</svg>')
             if figure:
                 body, belly = cards.picture_colours((books or {}).get(f["name"]), "#c08457")
                 coil = cards.picture_colours((books or {}).get(v.get("coiler")), "#5d8fcf")[0]
-                out += cards.squeeze_svg(v, body, coil, belly)
+                out += cards.squeeze_svg(v, body, coil, belly).replace('style="', 'style="flex:1 1 300px;', 1)
+            out += '</div>'
     for text, col in cards.grip_lines(f):
         out += f'<div class="grip" style="color:{col}">{html.escape(text)}</div>'
     return out

@@ -43,7 +43,7 @@ from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
                    held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour,
                    squeeze_shapes, squeeze_label, squeeze_figure, squeeze_colours, heart_shapes, heart_beat,
-                   picture_colours, squeeze_word, mix, squeeze_readout)
+                   picture_colours, squeeze_word, mix, squeeze_readout, blackout_text)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -571,20 +571,25 @@ class FighterCard(ttk.Frame):
         col = vitals_colour(v.get("blood", 0))
         if v.get("stopped"):
             col = "#ef4444"
-        c.create_text(6, 12, anchor="w", text="♥ stopped" if v.get("stopped") else f"♥ {v['heart']}/min",
-                      font=("Segoe UI", 9, "bold"), fill=col)
-        if v.get("irregular"):
-            c.create_text(6, 25, anchor="w", text="irregular", font=("Segoe UI", 7), fill="#fca5a5")
-        if v.get("heart_rest"):
-            # (since build 300) her healthy numbers, to read these against
-            c.create_text(6, 37, anchor="w", text=f"normal {v['heart_rest']}/min", font=("Segoe UI", 7),
-                          fill="#9ca3af")
         wcfg = (self.app._rules().get("window") or {}) if hasattr(self.app, "_rules") else {}
         figure = v.get("squeeze") is not None and wcfg.get("squeeze_figure", True)
-        c.configure(height=200 if figure else 60)
+        odds = blackout_text(v)
+        # (since build 302) with the squeeze picture, side by side: the picture and her heart on the left, the monitor
+        # and the readings to the right of them; without it, the monitor across the card as before
+        ox = 168 if figure else 0
+        ww = w - ox
+        c.configure(height=178 if figure else (72 if odds[0] else 60))
+        c.create_text(ox + 6, 12, anchor="w", text="♥ stopped" if v.get("stopped") else f"♥ {v['heart']}/min",
+                      font=("Segoe UI", 9, "bold"), fill=col)
+        if v.get("irregular"):
+            c.create_text(ox + 6, 25, anchor="w", text="irregular", font=("Segoe UI", 7), fill="#fca5a5")
+        if v.get("heart_rest"):
+            # (since build 300) her healthy numbers, to read these against
+            c.create_text(ox + 6, 37, anchor="w", text=f"normal {v['heart_rest']}/min", font=("Segoe UI", 7),
+                          fill="#9ca3af")
         self._fig = None
         if figure:
-            self._squeeze_figure(c, v, w)
+            self._squeeze_figure(c, v, w, ox)
         elif v.get("squeeze") is not None:
             # (since build 294) how far the coils have squeezed her in: her chest or belly as a band narrowing from
             # both sides, the coils across it
@@ -596,8 +601,7 @@ class FighterCard(ttk.Frame):
             c.create_rectangle(*body, outline="#60a5fa", width=1 if v.get("ring") else 2,   # her body, inside the coils
                                fill="#c08457" if v.get("where") != "back" else "#a16207")
             c.create_text(6, 51, anchor="w", font=("Segoe UI", 8), fill="#f9fafb", text=squeeze_label(v))
-        tx = 84
-        bx, bw = tx, max(40, w - tx - 96)
+        bx, bw = ox + 84, max(40, ww - 84 - 96)
         # (since build 293) the trace runs like a monitor's, at her own heart rate (window.vitals_animate): six seconds
         # of it, drawn twice end to end and slid along under a fixed window
         base = ecg_points(v["heart"], v.get("irregular"), bw, 22, 0, 2)
@@ -613,6 +617,14 @@ class FighterCard(ttk.Frame):
         c.create_rectangle(bx, 30, bx + bw * min(1.0, v.get("blood", 0) / 100.0), 40, outline="", fill=col)
         c.create_text(bx + 4, 35, anchor="w", text=f"blood flow {v.get('blood', 0)}% cut off",
                       font=("Segoe UI", 7), fill="#f9fafb")
+        if v.get("out_at") is not None:
+            # (since build 302) her limit on the gauge: past this line she can black out (and her heart stop)
+            lx = bx + bw * min(1.0, v["out_at"] / 100.0)
+            c.create_line(lx, 26, lx, 44, fill="#f9fafb", width=2)
+            c.create_text(lx, 25, anchor="s", text="limit", font=("Segoe UI", 6), fill="#f9fafb")
+        if odds[0]:
+            c.create_text(ox + 6, 53 if figure or v.get("squeeze") is None else 65, anchor="w", text=odds[0],
+                          width=ww - 12, font=("Segoe UI", 8, "bold"), fill=odds[1])
         sx = w - 88
         bp = v.get("bp") or [120, 80]
         c.create_text(sx, 12, anchor="w", text=f"BP {bp[0]}/{bp[1]}", font=("Segoe UI", 9, "bold"),
@@ -625,19 +637,19 @@ class FighterCard(ttk.Frame):
         c.create_line(sx + 80 * 120 / 160.0, 28, sx + 80 * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
         c.create_text(sx + 3, 35, anchor="w", text="pressure", font=("Segoe UI", 7), fill="#f9fafb")
 
-    def _squeeze_figure(self, c, v, w):
+    def _squeeze_figure(self, c, v, w, ox=200):
         """window.squeeze_figure (since build 299): under the monitor, the squeeze as a picture: her torso from the
         front in her own colours, the coiler's loops wound round it (as thick as the coiler is big against her; only the coils on her, not the rest of the coiler),
         pressing her in, her ribs showing once it is crushing, her body paling as the blood is cut off; and beside it
         her heart, beating at her rate (window.vitals_animate), squeezed from the sides when the coils are on her
         chest, smaller as it fills less, still once it stops."""
-        y0 = 50
+        y0 = 8
         them = (getattr(self.app, "cards", None) or {}).get(v.get("coiler"))
         body, belly = picture_colours(self.book, "#c08457")
         coil = picture_colours(getattr(them, "book", None), "#5d8fcf")[0]
         col = squeeze_colours(v, body, coil, belly)
         where = v.get("where") if v.get("where") in ("chest", "belly", "both") else "chest"
-        fg = squeeze_figure(v["squeeze"], where, v.get("coils"), 14, y0, 84, 140, v.get("coil_ratio"))
+        fg = squeeze_figure(v["squeeze"], where, v.get("coils"), 2, y0, 84, 140, v.get("coil_ratio"))
         c.create_polygon(*[q for p in fg["head"] for q in p], fill=col["body"], outline=col["body_edge"], smooth=True)
         c.create_polygon(*[q for p in fg["body"] for q in p], fill=col["body"], outline=col["body_edge"])
         for sh in fg["shade"]:
@@ -654,7 +666,7 @@ class FighterCard(ttk.Frame):
             c.create_polygon(*[q for p in lp["dark"] for q in p], fill=col["coil_dark"], outline="")
             c.create_line(*[q for p in lp["shine"] for q in p], fill=col["coil_shine"], width=2, smooth=True)
         # her heart, on its own, beside her
-        hx, hy, hr = 160, y0 + 58, 22
+        hx, hy, hr = 132, y0 + 64, 20
         on_chest = where in ("chest", "both")
         hs = heart_shapes(hx, hy, hr, v["squeeze"], on_chest, v.get("blood", 0), 0.0, bool(v.get("stopped")))
         for pr in hs["press"]:
@@ -671,7 +683,7 @@ class FighterCard(ttk.Frame):
                      "heart": 0 if v.get("stopped") else v.get("heart", 0), "irregular": bool(v.get("irregular")),
                      "stopped": bool(v.get("stopped"))}
         # how tight, in words and real-world numbers (cards.squeeze_readout, shared with exported fights)
-        for sh in squeeze_readout(v, 200, y0 + 2, max(60, w - 206)):
+        for sh in squeeze_readout(v, ox + 6, 66, max(60, w - ox - 12)):
             if sh[0] == "text":
                 _, tx, ty, text, colr, size, bold = sh
                 c.create_text(tx, ty, anchor="nw", width=max(60, w - tx - 6), text=text, fill=colr,

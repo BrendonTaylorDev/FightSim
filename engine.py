@@ -10651,6 +10651,8 @@ class Engine:
                     stage = order[int(pk[1])]
                 d.learned["circ_peak"] = [a, order.index(stage), hid]
                 vit = self.constriction_vitals(d, frac, stage)
+                # (since build 302) where on the blood-flow gauge her limit is: past it she can black out
+                vit["out_at"] = int(round(100.0 * circ_end / max(1.0, circ_end + float(kcfg.get("span", 70)))))
                 d.learned["circ_vitals"] = [self.turn, vit]      # (for the tap meter)
                 vit["squeeze"] = round(comp)
                 vit["where"] = (d.learned.get("compress") or {}).get("where", "")
@@ -11074,11 +11076,22 @@ class Engine:
                                       .get("span", 70))) * 100)) if air and air[0] else None,
                                   # (since build 283) the gauge is a constriction's blood flow, not a choke's air
                                   "circ": bool(air and len(air) > 2),
-                                  "vitals": ((d.learned.get("circ_vitals") or [None, None])[1]
-                                             if (d.learned.get("circ_vitals") or [None])[0] == self.turn else None),
+                                  "vitals": self._vitals_with_odds(d, out),
                                   # (since build 265) the chance it is building toward (tap.blend), for the meter
                                   "toward": (sg_.get("base") if (sg_ := d.learned.get("sub_gauge") or {}).get("turn")
                                              == self.turn and sg_.get("by") == a else None)}
+
+    def _vitals_with_odds(self, d, out):
+        """This beat's constriction vitals for the card, with (since build 302) the chance she blacks out this beat
+        (out_chance) and that her heart stops as she does (stop_chance: x heart_stop.chance), or None."""
+        cv = d.learned.get("circ_vitals") or [None, None]
+        if cv[0] != self.turn or not cv[1]:
+            return None
+        hs = ((((self.rules.get("finish") or {}).get("submission") or {}).get("constriction") or {})
+              .get("heart_stop") or {})
+        o = max(0.0, min(1.0, float(out or 0)))
+        return dict(cv[1], out_chance=round(o, 4),
+                    stop_chance=round(o * float(hs.get("chance", 0.35)), 4) if hs.get("enabled", True) else 0.0)
 
     def card_state(self, f):
         """window.hold_panel (since build 257): what is going on around her for the window and exported fights,

@@ -654,6 +654,19 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 302
+How close she is to blacking out in the coils, and to her heart stopping:
+- the blood-flow bar has a line at her limit: past it she can black out (and her heart stop as she does);
+- under it, a line: before the limit, how much more has to be cut off before she can ("Black-out: not yet (12% more
+  cut off before she can)"); past it, this beat's chances ("Past her limit: black-out 16%, heart stopping 5.6% this
+  beat"), coloured as they climb; once her heart has stopped, that.
+
+The heart-stop chance is the black-out chance x `constriction.heart_stop.chance`. On the card and in exported fights.
+
+With the squeeze picture on, the strip is laid out side by side: the picture and her heart on the left, the monitor,
+the black-out line and the readings to their right (178 pixels tall instead of over 200). Exported fights put the
+monitor and the picture side by side where the page is wide enough.
+
 ## Build 301
 A saved fight loads back whole:
 - The /undo history is kept in the save (`save.history`, the newest 30 beats), so a loaded fight can be undone back

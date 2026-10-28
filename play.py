@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 301 (a saved fight loads back whole; every fight starts its history at the start)"
+VERSION = "2026-10-28 build 302 (how close she is to blacking out; the strip side by side)"
 
 HELP = """
 =============================================================================================

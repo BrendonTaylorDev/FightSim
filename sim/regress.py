@@ -937,6 +937,17 @@ def compression_check():
     rd = cards.squeeze_readout(dict(c or {}, squeeze=70, where="chest"), 0, 0, 200) if c else []
     if not any(sh[0] == "text" and "normal" in sh[3] for sh in rd):
         problems.append("the squeeze readout should show her normal numbers")
+    # build 302: how close she is to blacking out, and to her heart stopping
+    if not c or not 0 < int(c.get("out_at") or 0) < 100:
+        problems.append(f"the constriction should say where her limit is on the blood-flow gauge: {c and c.get('out_at')}")
+    early = cards.blackout_text({"blood": 20, "out_at": 60, "out_chance": 0, "stop_chance": 0})[0]
+    late = cards.blackout_text({"blood": 70, "out_at": 60, "out_chance": 0.3, "stop_chance": 0.105})[0]
+    gone = cards.blackout_text({"stopped": True, "out_at": 60})[0]
+    if "40%" not in early or "30%" not in late or "10%" not in late or "stopped" not in gone:
+        problems.append(f"the black-out line should say how far off it is, then the chances: {early!r} {late!r} {gone!r}")
+    vo = e._vitals_with_odds(e.get("Ripples"), 0.4)
+    if vo is not None and abs(vo.get("stop_chance", 0) - 0.4 * 0.35) > 1e-6:
+        problems.append(f"the heart-stop chance is the black-out chance x heart_stop.chance: {vo}")
     giant = cards.squeeze_figure(70, "both", 1, 0, 0, 80, 120, ratio=8.9)
     same = cards.squeeze_figure(70, "both", 1, 0, 0, 80, 120, ratio=1.0)
     if not (len(giant["loops"]) < len(same["loops"])) or "trail" in giant:

@@ -1296,6 +1296,22 @@ def squeeze_svg(v, body="#c08457", coil="#5d8fcf", belly=None, width=440):
     return "".join(out)
 
 
+def blackout_text(v):
+    """(since build 302) How close she is to blacking out in the coils, and to her heart stopping, in a line:
+    (text, colour). Before her limit on the blood-flow gauge (out_at) she can't black out yet; past it, this beat's
+    chances."""
+    if v.get("stopped"):
+        return "Blacked out, her heart stopped (it starts again once the coils come off)", "#ef4444"
+    at, blood = v.get("out_at"), float(v.get("blood", 0) or 0)
+    o, h = float(v.get("out_chance") or 0) * 100, float(v.get("stop_chance") or 0) * 100
+    if at is None:
+        return "", "#d1d5db"
+    if blood < at and o <= 0:
+        return f"Black-out: not yet ({at - blood:.0f}% more cut off before she can)", "#d1d5db"
+    col = "#ef4444" if o >= 25 else "#f97316" if o >= 10 else "#f59e0b"
+    return f"Past her limit: black-out {pct_text(o)}, heart stopping {pct_text(h)} this beat", col
+
+
 def squeeze_readout(v, x, y, width):
     """(since build 299; real-world numbers since build 300) The words and gauge beside the squeeze picture, as
     shapes for the window or an SVG: ("text", x, y, text, colour, size, bold), ("rect", x0, y0, x1, y1, fill,
