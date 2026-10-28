@@ -855,6 +855,43 @@ def compression_check():
             or sound["res_before"] - sound["res_after"] <= plain["res_before"] - plain["res_after"]:
         problems.append(f"a coil should wear a sound part more and hurt it far less, and bite a worn one fully: "
                         f"{sound['damage_taken']} {plain['damage_taken']} {worn_hit['damage_taken']}")
+    # build 298 (holds.coil.energy): coils cost the coiler, a spent one lets go, and one who can feel the end hangs on
+    s2 = H.session(4, fighters="Seraphina,Ripples")
+    e2 = s2.eng
+    e2.rules["finish"]["submission"]["enabled"] = True
+    e2._hold_break_tick = lambda *a, **k: []
+    e2.start_submission("Seraphina", "Ripples", "upright coil")
+    sr2 = e2.get("Seraphina")
+    sr2.energy = 12
+    spent = hung = False
+    for _ in range(4):
+        e2.turn += 1
+        ev2 = e2.beat()
+        spent = spent or any(x["type"] == "hold_end" and x.get("spent") for x in ev2)
+    if not spent or any(h.coil for h in e2.holds.values()):
+        problems.append("a coiler with no energy left should have to let go")
+    s3 = H.session(4, fighters="Seraphina,Ripples")
+    e3 = s3.eng
+    e3.rules["finish"]["submission"]["enabled"] = True
+    e3._hold_break_tick = lambda *a, **k: []
+    e3.rules["holds"]["coil"]["energy"]["hang_on"] = 1.0
+    e3.start_submission("Seraphina", "Ripples", "upright coil")
+    e3.get("Seraphina").energy = 3
+    e3.get("Ripples").health = e3.get("Ripples").max_health * 0.1
+    e3.turn += 1
+    hung = any(x["type"] == "coil_hang_on" for x in e3.beat())
+    if not hung or not any(h.coil for h in e3.holds.values()):
+        problems.append("a spent coiler who can feel the end coming should be able to hang on")
+    import play as _play
+    rp3 = e3.get("Ripples")
+    rp3.energy = 40
+    _play.handle_command(s3, "/energy Ripples 25")
+    _play.handle_command(s3, "/energy Ripples -5")
+    if round(rp3.energy) != 60:
+        problems.append(f"/energy should add and take away energy: {rp3.energy}")
+    _play.handle_command(s3, "/energy Ripples =100")
+    if round(rp3.energy) != 100:
+        problems.append(f"/energy =n should set it: {rp3.energy}")
     import cards
     _, body_box, coil_boxes = cards.squeeze_shapes(60, 1, 0, 100, 0, 10, ring=True)
     if not any(b[1] == 0 and b[2] - b[0] == 100 for b in coil_boxes) or body_box[1] <= 1:

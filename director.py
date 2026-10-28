@@ -1249,6 +1249,7 @@ def resolve(engine, b):
                 and act == "hold_adjust"):
             b["hold_id"] = next(iter(engine.holds))  # only one hold, so it must be that one
 
+    b_aimed_at = b      # (what she aimed at, before any re-aiming below)
     if not manual and act in ("strike", "combo") and engine.get(att).name not in (getattr(engine, "ordered", None) or ()):
         # (a player's own order lands where she said: no re-aiming for the fighters you play)
         b = _apply_focus(engine, att, dfn, b)
@@ -1260,6 +1261,21 @@ def resolve(engine, b):
         if b.get("_steered_from"):
             # (moved onto the part being worked: its words were put right with it)
             flavor = short_phrase(b.get("flavor", ""), int(engine.rules.get("director", {}).get("flavor_words", 32)))
+    mv_aim = engine.find_move(att, b.get("move") or "") if b is not b_aimed_at and act in ("strike", "combo") \
+        and dfn else None
+    if mv_aim is not None:
+        # (since build 298) re-aimed (focus, variety, tap steer) onto a part she can't reach from where she holds her or
+        # is held: the blow goes where she aimed it instead
+        try:
+            a_, d_ = engine.get(att), engine.get(dfn)
+            from engine import match_part as _match
+            new = [p for p in ([b.get("part")] + [h.get("part") for h in b.get("hits") or [] if isinstance(h, dict)])
+                   if p and _match(list(d_.parts), p)]
+            new = [d_.part(p).name for p in new]
+            if new and (engine.held_reach_block(a_, d_, mv_aim, new) or engine.holder_reach_block(a_, d_, mv_aim, new)):
+                b = b_aimed_at
+        except ValueError as e:
+            note_failure("checking a re-aimed blow is still in reach", e)
             intent = b.get("intent", intent)
     if not manual and dfn and act in ("strike", "combo", "hold_start"):
         # (since build 261) a head butt reaches what a head can reach, and the words name the parts the engine
@@ -2280,6 +2296,11 @@ def resolve_many(engine, actions):
                         if last:
                             want = _fit_part(engine, who, b["part"])
                             got = engine.next_target(who, last, f"chain link {link[0]}")
+                            mv_, a_, d_ = engine.find_move(b["attacker"], b.get("move") or ""), \
+                                engine.get(b["attacker"]), engine.get(who)
+                            if got == last and mv_ and (engine.held_reach_block(a_, d_, mv_, [got])
+                                                        or engine.holder_reach_block(a_, d_, mv_, [got])):
+                                got = want      # (since build 298) the old spot is out of reach from her hold now
                             if got == last or want == last:
                                 hl = [dict(h) for h in (b.get("hits") or []) if isinstance(h, dict)]
                                 if hl and hl[0].get("part"):

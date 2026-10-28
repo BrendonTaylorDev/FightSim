@@ -1216,9 +1216,16 @@ class Display:
                            f"(#{', #'.join(str(i) for i in e['hold_ids'])}) after {e['beats_held']} "
                            f"beat{'s' if e['beats_held'] != 1 else ''} — break-free chance this beat "
                            f"{e['chance'] * 100:.0f}%{way('hold_break', e.get('manner'))}")
+            elif e["type"] == "hold_end" and e.get("spent"):
+                out.append(f"🔓 **{e['attacker']} is spent and lets her coils go** after {e['beats_held']} "
+                           f"beat{'s' if e['beats_held'] != 1 else ''}: no energy left to squeeze with")
+            elif e["type"] == "coil_hang_on":
+                out.append(f"💪 **{e['attacker']} is spent but hangs on**: she can feel {e['defender']} going "
+                           f"(chance {e['chance'] * 100:.0f}%{', again' if int(e.get('times') or 1) > 1 else ''})")
             elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
                 out.append(f"🔓 **{e['attacker']} lets the {e['submission'].upper()} go** after {e['beats_held']} "
-                           f"beat{'s' if e['beats_held'] != 1 else ''}: she can't keep it on any longer")
+                           f"beat{'s' if e['beats_held'] != 1 else ''}: the longest one hold can be kept on, she lets "
+                           f"go to reset her grip")
             elif e["type"] == "wing_strain":
                 h = (e.get("hits") or [{}])[0]
                 out.append(f"🪶 **{e['fighter']} strains her hurt {e['part']}** to stay in the air → +{num(h.get('damage_taken', 0))}% "

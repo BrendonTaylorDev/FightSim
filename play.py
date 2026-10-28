@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 297 (a coil wears her down before it hurts her)"
+VERSION = "2026-10-28 build 298 (coils cost energy; a spent coiler lets go unless the end is near)"
 
 HELP = """
 =============================================================================================
@@ -474,6 +474,7 @@ HELP = """
   /traits [name]        how each fighter fights: her traits, quirks, style and favourite moves (since build 280)
   /profile [name]       all that, and who she is: personality, history, relationships (the window: Profiles)
   /health [name]        every damaged body part, in stat format
+  /energy <name> [n]     give her n energy (25 if no number; -n takes it away; =n sets it), up to 100 (since build 298)
   /look [name]          the narrator describes the scene right now (doesn't advance the fight)
 
 =============================================================================================
@@ -3420,7 +3421,7 @@ def _autofight(s, a):
 
 
 STRICT_BLOCK = {"eliminate", "pinsuccess", "pinescape", "land", "down", "getup", "heal", "restore", "face", "part",
-                "fighter", "extendpin", "pinclock", "hazard", "undo"}
+                "fighter", "extendpin", "pinclock", "hazard", "undo", "energy"}
 
 
 def _strict_check(s, cmd):
@@ -4774,6 +4775,19 @@ def handle_command(s, line):
         s.autosave(); return
     if cmd == "health":
         print(s.display.health(s.eng, _clean_name(a[0]) if a else None)); return
+    if cmd == "energy":
+        # (since build 298) energy straight onto a fighter, no beat played: /energy Seraphina 30, /energy Ripples -10,
+        # /energy Nocturne =100. Alone, it lists everyone's energy
+        if not a:
+            print("  ".join(f"{f.name} {round(f.energy)}" for f in s.eng.fighters.values())); return
+        f = s.eng.get(_clean_name(a[0]))
+        amt = a[1] if len(a) > 1 else "25"
+        m = re.fullmatch(r"(=)?([+-]?\d+(?:\.\d+)?)", amt.strip())
+        if not m:
+            raise ValueError("/energy <name> [amount]: a number to add (25 if left out), -n to take away, =n to set")
+        before = f.energy
+        f.energy = max(0.0, min(100.0, float(m.group(2)) if m.group(1) else f.energy + float(m.group(2))))
+        print(f"{f.name}'s energy: {round(before)} -> {round(f.energy)}"); return
     if cmd in ("look", "describe"):
         who = _clean_name(a[0]) if a else None
         if who:

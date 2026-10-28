@@ -102,11 +102,13 @@ def _pick_action(eng, rng, f, d):
         else rng.choice(moves)
     parts = list(d.parts)
     a.update(action="strike", move=m["name"])
+    # (held on the ground, a bite lands only near what holds her: holds.held_reach; and from where she holds her,
+    # only what she can reach: a spread of blows too)
+    near = [p for p in parts if not eng.held_reach_block(f, d, m, [p]) and not eng.holder_reach_block(f, d, m, [p])]
     if m.get("target") in ("spread",):
-        a["hits"] = [{"part": p} for p in rng.sample(parts, min(3, len(parts)))]
+        pool = near or parts
+        a["hits"] = [{"part": p} for p in rng.sample(pool, min(3, len(pool)))]
     else:
-        # (held on the ground, a bite lands only near what holds her: holds.held_reach)
-        near = [p for p in parts if not eng.held_reach_block(f, d, m, [p]) and not eng.holder_reach_block(f, d, m, [p])]
         a["part"] = rng.choice(near or parts)
     if m.get("target") in ("targeted",) and not m.get("charge") and rng.random() < 0.1:
         a["feint"] = True

@@ -4975,11 +4975,26 @@ class Narrator:
                     + (f" (A hold on her {', '.join(p.lower() for p in e['spent_parts'])} can't count again: her "
                        f"next tap has to come from somewhere else, and {e['attacker']} knows it.)"
                        if e.get("spent_parts") else ""))
+            elif e["type"] == "hold_end" and e.get("spent"):
+                # (since build 298, holds.coil.energy) the coiler has run out of breath to squeeze with
+                lines.append(f"THE COILS COME OFF at the END of this beat: {e['attacker']} is SPENT. Holding {e['defender']} "
+                             f"has worn her out: her breath is ragged, her body trembling with the effort, and there is "
+                             f"nothing left in her to squeeze with; the coils go slack and slide off {poss(e['defender'])} "
+                             f"body. Not a choice and not a break-free: she simply can't hold any more. {e['defender']} "
+                             f"is left where she was, gasping, her chest and middle aching from them, free from the next "
+                             f"beat. Show it as the last thing that happens.")
+            elif e["type"] == "coil_hang_on":
+                # (since build 298) spent, but she can feel the end coming, so she holds on anyway
+                lines.append(f"{e['attacker']} is SPENT, her body burning and shaking with the effort of the coils, "
+                             f"and by rights she should have to let go. But she can feel {e['defender']} going under her, "
+                             f"close to the end, and she DIGS DEEP and HOLDS ON"
+                             + (" yet again, on nothing but will now" if int(e.get("times") or 1) > 1 else "")
+                             + ". Show both: how exhausted she is, and that she will not let go now.")
             elif e["type"] == "hold_end" and e.get("released") and e.get("submission"):
-                lines.append(f"THE {e['submission'].upper()} ENDS at the END of this beat: {e['attacker']} lets it go, "
-                             f"spent; she can't keep it on any longer. {e['defender']} is left on the ground where she "
-                             f"was, hurting from it, free to try to get up from the next beat. Show it as the last thing "
-                             f"that happens.")
+                lines.append(f"THE {e['submission'].upper()} ENDS at the END of this beat: {e['attacker']} lets it go; she "
+                             f"has worked it as long as she can and has to let go to reset her grip. {e['defender']} is "
+                             f"left on the ground where she was, hurting from it, free to try to get up from the next "
+                             f"beat. Show it as the last thing that happens.")
             elif e["type"] == "hold_end" and e.get("broke_free"):
                 parts = " and ".join(e.get("parts") or [])
                 with_ = " and ".join(dict.fromkeys(e.get("with") or []))

@@ -5518,6 +5518,9 @@ class Engine:
         """Why her body can't grip with this ('' when it can): the grip's words ask for a part she has none of."""
         names = " | ".join(n.lower() for n in f.parts)
         w = str(with_ or "").lower()
+        # (since build 298) "the leg", "the other leg", "Ripples' leg" are the one being gripped, not what grips:
+        # "her tail hauling the leg up" is a serpent's tail and nothing more
+        w = re.sub(r"\b(?:the|\w+'s?)\s+(?:(?:left|right|upper|lower|hind|front|other|near|far)\s+)*\w+", " ", w)
         if re.search(r"\b(?:teeth|fangs|jaws?)\b", w) and "beak" in names:
             return f"{f.name} has a beak, not teeth or jaws"
         for words, has in self.GRIP_NEEDS:
@@ -6003,6 +6006,68 @@ class Engine:
             res["submission"]["takedown"] = takedown["how"]
         return res
 
+    def coil_energy_cfg(self):
+        """holds.coil.energy (since build 298), or None when it is off."""
+        c = ((self.rules.get("holds") or {}).get("coil") or {}).get("energy")
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
+    def coil_near_win(self, a, d):
+        """(holds.coil.energy) Can the coiler feel the end coming? Her tap or black-out chance this beat at least
+        near_chance, the grey closing in on her (the constriction's last stage), or her health down to near_health %."""
+        cfg = self.coil_energy_cfg() or {}
+        ts = d.learned.get("tap_state") or {}
+        if ts.get("by") == a.name and int(ts.get("turn", -9)) >= self.turn - 1 \
+                and float(ts.get("chance") or 0) >= float(cfg.get("near_chance", 0.15)):
+            return True
+        pk = d.learned.get("circ_peak") or []
+        if len(pk) > 2 and pk[0] == a.name and int(pk[1]) >= 2:
+            return True
+        return 100.0 * d.health / max(1.0, d.max_health) <= float(cfg.get("near_health", 20))
+
+    def _coil_energy_tick(self, skip_hold_ids=()):
+        """holds.coil.energy (since build 298): keeping coils on her is work. Each beat it costs the coiler per_beat,
+        plus per_beat_growth for every beat it has been on (her body tires), less the bigger she is than the one in
+        them (size_exp, within size_min..size_max), more for each coil past the first (extra_coil). A coiler with
+        spent_below energy or less left has to let go, unless she can feel the fight about to end (coil_near_win):
+        then she digs deep and hangs on, with chance hang_on, x hang_on_decay for every beat she already has."""
+        cfg = self.coil_energy_cfg()
+        if not cfg or self.winner():
+            return []
+        events, by = [], {}
+        for h in self.holds.values():
+            if h.coil and h.id not in skip_hold_ids and self.pin_on(h.defender) is None:
+                by.setdefault((h.attacker, h.defender), []).append(h)
+        for (an, dn), hs in by.items():
+            a, d = self.get(an), self.get(dn)
+            if a is None or d is None or a.eliminated or d.eliminated:
+                continue
+            sa, sd = self.size_m(a), self.size_m(d)
+            size = max(float(cfg.get("size_min", 0.7)), min(float(cfg.get("size_max", 1.3)),
+                       (sd / sa) ** float(cfg.get("size_exp", 0.25)))) if sa and sd else 1.0
+            beats = max(h.turns_active for h in hs)
+            cost = (float(cfg.get("per_beat", 6)) + float(cfg.get("per_beat_growth", 0.4)) * beats) * size \
+                * (1.0 + float(cfg.get("extra_coil", 0.25)) * (len(hs) - 1))
+            a.energy = max(0.0, a.energy - cost)
+            if a.energy > float(cfg.get("spent_below", 5)):
+                continue
+            if self.coil_near_win(a, d):
+                hang = a.learned.get("coil_hang") or [-9, 0, ""]
+                n = int(hang[1]) if hang[2] == dn and int(hang[0]) >= self.turn - 1 else 0
+                ch = float(cfg.get("hang_on", 0.6)) * float(cfg.get("hang_on_decay", 0.6)) ** n
+                if self.rng.random() < ch:
+                    a.learned["coil_hang"] = [self.turn, n + 1, dn]
+                    events.append({"type": "coil_hang_on", "attacker": an, "defender": dn, "times": n + 1,
+                                   "chance": round(ch, 3), "energy": round(a.energy, 1)})
+                    continue
+            reason = (f"{an} is spent: there is nothing left in her to squeeze with, and her coils loosen and slide "
+                      f"off {poss_word(dn)} body")
+            ended = [self.release(h.id, reason) for h in hs]
+            events.append({"type": "hold_end", "released": True, "spent": True, "attacker": an, "defender": dn,
+                           "hold_ids": [x["hold_id"] for x in ended], "parts": [x["part"] for x in ended],
+                           "with": [h.with_part for h in hs if h.with_part], "beats_held": beats,
+                           "submission": next((h.sub for h in hs if h.sub), ""), "reason": reason})
+        return events
+
     def _submission_tick(self):
         """A submission hold that has run submissions.max_beats beats is let go: she can't keep it on any longer. One
         that has held submissions.becomes_pin_after beats first becomes a PIN: she is held down in it, the pin's clock
@@ -6033,7 +6098,8 @@ class Engine:
                                "beats_held": max(h.turns_active for h in hs), "parts": [h.part for h in hs],
                                "with": [h.with_part for h in hs if h.with_part]})
         for h in list(self.holds.values()):
-            if h.sub and h.turns_active >= cap:
+            if h.sub and h.turns_active >= cap and not (h.coil and self.coil_energy_cfg()):
+                # (a coil with holds.coil.energy on lasts as long as the coiler has breath for it instead)
                 done.setdefault((h.attacker, h.defender, h.sub), []).append(h)
         for (a, d, name), hs in done.items():
             for h in hs:
@@ -6041,7 +6107,8 @@ class Engine:
             events.append({"type": "hold_end", "released": True, "attacker": a, "defender": d, "submission": name,
                            "hold_ids": [h.id for h in hs], "parts": [h.part for h in hs],
                            "with": [h.with_part for h in hs if h.with_part], "beats_held": max(h.turns_active for h in hs),
-                           "reason": f"{a} lets the {name} go: she can't keep it on any longer"})
+                           "reason": f"{a} lets the {name} go: she has worked it as long as one hold can be kept "
+                                     f"on, and has to let go to reset her grip"})
         return events
 
     def _free_blow_tick(self, skip_hold_ids=()):
@@ -8980,6 +9047,10 @@ class Engine:
             if cc_ and any(h.coil and self.coil_scope(h.part) == "body" for h in hs):
                 # (since build 294) squeezed in, she has no room left to work with
                 ch *= max(0.0, 1.0 - float(cc_.get("escape_mult", 0.5)) * self.compression_on(fd, fa.name) / 100.0)
+            ce_ = self.coil_energy_cfg()
+            if ce_ and any(h.coil for h in hs) and fa.energy < float(self._cfg("energy").get("tired_below", 25)):
+                # (since build 298, holds.coil.energy) a coiler running out of breath holds less surely
+                ch *= float(ce_.get("tired_escape_mult", 1.25))
             if fd.name in self.lucky and fa.name not in self.lucky:
                 ch = 1.0   # /play dice free: she breaks any hold on her at once (not one a dice-free holder has)
             if ch <= 0:
@@ -9150,6 +9221,7 @@ class Engine:
         events += self._hold_break_tick(set(skip_hold_ids) | {i for e in contest for i in e.get("winner_holds", [])})
         events += self._tap_out_tick()
         events += self._upright_sub_tick()
+        events += self._coil_energy_tick(skip_hold_ids)
         events += self._submission_tick()
         events += self._free_blow_tick(skip_hold_ids)
         events += self._wing_strain_tick()
@@ -9286,7 +9358,10 @@ class Engine:
                 f.health = self._floor(f.health - loss)
                 events.append({"type": "status_tick", "fighter": f.name, "status": "poisoned",
                                "health_loss": round(loss, 2), "health_after": round(f.health, 2)})
-            regen = float(en.get("regen_per_beat", 5)) + (0 if f.name in self.involved else float(en.get("rest_bonus", 10)))
+            coiling = self.coil_energy_cfg() and any(h.coil and h.attacker == f.name for h in self.holds.values())
+            # (a coiler isn't resting: holds.coil.energy)
+            regen = float(en.get("regen_per_beat", 5)) + (0 if f.name in self.involved or coiling
+                                                          else float(en.get("rest_bonus", 10)))
             if self.has(f, "constricted"):      # the coils squeeze her breath: she gets none back, and loses some
                 regen = -float(cfg_s.get("constricted_energy_loss", 4))
                 if self.compress_cfg():

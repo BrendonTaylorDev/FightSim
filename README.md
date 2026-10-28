@@ -654,6 +654,31 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 298
+Keeping coils on is work (`holds.coil.energy`, on by default). Each beat a coil costs the coiler 6 energy plus 0.4 for
+every beat it has been on, less the bigger she is than the one in her coils, more for a second coil; and she gets no
+rest bonus while she coils, only the ordinary 5 a beat back. A tired coiler (under 25) holds less surely, and one with
+5 or less has to let go: "she is spent". Unless she can feel the fight about to end (a tap or black-out chance of 15%
+or more, the grey closing in on her, or her health at 20% or less): then she digs deep and hangs on, a 60% chance, less
+each beat she already has. Coils now last as long as the coiler has breath for them instead of a flat 10 beats.
+Seraphina is so much bigger than Ripples that she barely tires: at full energy every coil ended before she was spent,
+so nothing changed there; started at 25 energy, about half her coils on a fresh Ripples ended with her spent. Knockout
+fights barely move (Seraphina beats Ripples 85% of the time, 82% before).
+
+The 10-beat limit on other submissions is now told honestly: she has worked the hold as long as one can be kept on and
+lets go to reset her grip, not "she can't keep it on any longer".
+
+`/energy <name> [n]` gives a fighter energy straight away (25 if no number; `-n` takes it away, `=n` sets it, up to
+100); `/energy` alone lists everyone's.
+
+Fixed: a serpent's pin grip "her tail hauling the leg up" was refused because "the leg" (the one being held) was read
+as a leg she grips with. Words for the other fighter's body ("the leg", "the other leg", "Ripples' leg") are no longer
+counted. The dice stand-in also aims a spread of blows only at parts she can reach from where she holds her.
+
+Fixed: a blow the game re-aims on its own (/focus, target variety, the tap steer, or a chain follow-up going back to
+the last spot) could be moved onto a part she can't reach from her hold, and was then refused. It now stays where she
+aimed it.
+
 ## Build 297
 A coil round her body wears the whole band it goes round, not only the part it was put on
 (`finish.submission.constriction.compression.ring_wear`, 0.5 by default): half of its pressure each beat stays on that
