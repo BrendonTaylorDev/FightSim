@@ -10310,7 +10310,10 @@ class Engine:
             if first:
                 if urge_first:
                     events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
-                self._note_tap_state(d, a, name, events, 0.0, pain, resist, first=True)
+                # (since build 289 with its gauge: the constriction's blood flow and her heart show from the first beat)
+                self._note_tap_state(d, a, name, events, 0.0, pain, resist, first=True,
+                                     air=(circ, circ_end, "circ") if body_coils and circ > air else
+                                     (air, endure) if choke and air else None)
                 continue
             ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
             sub_ = next((h.sub for h in hs if h.sub), "")

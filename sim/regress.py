@@ -860,7 +860,9 @@ def constriction_check():
         problems.append("a long constriction should end the match")
     elif out["how"] == "pass_out" and out.get("cause") != "constriction":
         problems.append(f"a blackout in body coils is the constriction's: {out}")
-    # (since build 287 drawn, not written: the vitals strip)
+    # (since build 287 drawn, not written: the vitals strip; since build 289 from the hold's first beat)
+    if not meters or not meters[0].get("vitals"):
+        problems.append(f"the vitals strip should show from the coil's first beat: {meters[:1]}")
     vs = [m["vitals"] for m in meters if m.get("vitals")]
     if not vs or not all(k in vs[-1] for k in ("heart", "bp", "blood")) or any("heart about" in m["note"] for m in meters):
         problems.append(f"the tap meter should carry her heart, blood pressure and blood flow for the strip: {vs[-1:]}")

@@ -654,6 +654,10 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 289
+The vitals strip (heart, blood flow, blood pressure) shows from a coil's first beat. Before, it waited for the
+second, although the part gauge already showed the blood flow; a choke's air on the tap meter likewise.
+
 ## Build 288
 The vitals strip's second bar is labelled "pressure", with the dashed mark at a resting 120 in exported fights
 too.
