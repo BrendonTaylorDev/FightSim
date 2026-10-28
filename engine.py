@@ -283,6 +283,10 @@ class Fighter:
     quirks: list = field(default_factory=list)   # (since build 280) her named quirks (rules.json -> traits.quirks)
     style: str = ""                              # (since build 280) how she likes to fight, for the director
     favors: dict = field(default_factory=dict)   # (since build 280) move name -> how much she prefers it
+    personality: str = ""                        # (since build 281) who she is, for the story (narration.character)
+    history: str = ""                            # (since build 281) her past, as far as the story may use it
+    relationships: dict = field(default_factory=dict)   # (since build 281) other fighter -> what she is to her
+    veteran: bool = False                        # (since build 281) she has fought before: she may remember it
 
     def part(self, name):
         found = match_part(list(self.parts), name)
@@ -484,7 +488,10 @@ class Engine:
                     move_uses={m["name"]: int(m["uses"]) for m in fd.get("moves", []) if m.get("uses")},
                     traits={k: v for k, v in (fd.get("traits") or {}).items() if not str(k).startswith("_")},
                     quirks=list(fd.get("quirks") or []), style=str(fd.get("style") or ""),
-                    favors=dict(fd.get("favors") or {}))
+                    favors=dict(fd.get("favors") or {}), personality=str(fd.get("personality") or ""),
+                    history=str(fd.get("history") or ""),
+                    relationships={k: v for k, v in (fd.get("relationships") or {}).items() if not str(k).startswith("_")},
+                    veteran=bool(fd.get("veteran", False)))
         body = fd.get("body", "human")
         template = dict(body) if isinstance(body, dict) else dict(self.rules["body_templates"][body])
         template.update(fd.get("extra_parts", {}))
@@ -913,7 +920,7 @@ class Engine:
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
                     "_sustain_now", "_source", "_knock_on", "_tac_before", "beat_loss", "sub_window", "pin_window",
                     "nudges", "_windows_ready", "_pre_rolls", "directed", "ordered", "dice_mode", "lucky",
-                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking", "_dominate_turn", "_passive", "_overcommit_why",
+                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking", "_dominate_turn", "_passive", "_overcommit_why", "_quirks_now", "_ambush_try",
                     "rules", "roster", "roster_species", "scenes", "scene_cfg", "scene_name", "scene", "movedex",
                     "variants", "variant_of", "settings_applied", "_seed0", "rng", "event_rng")
 
@@ -1785,6 +1792,10 @@ class Engine:
                 res["status_applied"] = (res.get("status_applied") or []) + [reel]
             elif reel:
                 res["rocked"] = reel
+        qo = self.quirk(a, "overwhelming")
+        if qo and hits and not dodge and float(move.get("power") or 0) >= float(qo.get("big_from", 22)):
+            self.quirk_moment(a, "overwhelming", f"{a.name} hits with her whole enormous strength behind it: unhurried, "
+                                                 f"sure of herself, and it lands like a falling tree")
         if hits and not d.eliminated and not dodge:
             side = self._side_spill(d, move, hits, res)
             if side:
@@ -3340,6 +3351,10 @@ class Engine:
             return None
         # (the ways of dodging that need her legs, a step aside or a spring back, grow rarer as her legs are hurt;
         # in the air she dodges on her wings)
+        if q and float((move_name and next((m.get("power", 0) for m in a.moves if m["name"] == move_name), 0)) or 0) \
+                >= float(q.get("big_from", 22)):
+            self.quirk_moment(a, "overwhelming", f"{poss_word(a.name)} huge wind-up gave the blow away: all that "
+                                                 f"strength, and {d.name} saw it coming")
         ecfg = self._cfg("evasion")
         legw = 0.0 if self.has(d, "airborne") else self._leg_worst(d)
         legs_ok = 1.0 / (1.0 + legw / float(ecfg.get("leg_manner_halves_at", 80)))
@@ -4350,6 +4365,12 @@ class Engine:
                 change_per_turn = change_per_turn + float(q.get("ramp_add", 1.0))
             if self.quirk(d, "out_of_depth"):
                 d.learned["held_count"] = int(d.learned.get("held_count", 0)) + 1
+                if d.learned["held_count"] <= 2:
+                    self.quirk_moment(d, "out_of_depth", f"{d.name} has hardly ever been held like this: she doesn't "
+                                                         f"know the way out of it yet, and it frightens and angers her")
+                elif d.learned["held_count"] in (4, 5):
+                    self.quirk_moment(d, "out_of_depth", f"{d.name} is learning holds the hard way: this time she "
+                                                         f"knows a little better how to fight it")
         h = Hold(self.next_hold_id, a.name, d.name, pname, power, change_per_turn, flavor, 0, with_part)
         self.holds[h.id] = h
         self.next_hold_id += 1
@@ -5987,6 +6008,9 @@ class Engine:
             ch_ = min(0.9, ch * float(q.get("free_blow_mult", 1.6))) if q else ch
             self.note_roll(f"{an} getting a free blow in on {dn} during the {what}", ch_, r,
                            "she does" if r < ch_ else "no")
+            if r < ch_ and q:
+                self.quirk_moment(a, "clinch_fighter", f"{a.name} works close in like a seasoned brawler: holding on "
+                                                       f"with one part of her and striking with another")
             if r >= ch_:
                 continue
             usable = [m for m in a.moves if m.get("target") in ("targeted", "spread") and not m.get("charge")
@@ -6432,6 +6456,9 @@ class Engine:
         ch /= self.trait(d, "toughness")
         if not self._chance(min(float(cfg.get("max", 0.75)), ch), f"{d.name} knocked staggering by the blow to her {big['part']}",
                             "she stumbles", "she holds her ground"):
+            if self.quirk(d, "unshakeable") and dmg >= 1.5 * low:
+                self.quirk_moment(d, "unshakeable", f"a blow that would have sent another fighter reeling barely moves "
+                                                    f"{d.name}: her sheer bulk and composure take it")
             return self._rocked(a, d, big, dmg, cfg, reg, away, kind, held, holding)
         if kind == "bite":
             way = f"toward {a.name}, dragged by the jaws"
@@ -7461,6 +7488,7 @@ class Engine:
         if q and move.get("name") in (q.get("moves") or ["Sucker Punch", "Night Slash"]) and (
                 d.name in self.downed or any(self.has(d, st) for st in ("staggered", "off_balance", "dazed", "flinched"))):
             ch *= float(q.get("mult", 2.5)); reason, why = "position", why or "caught open"
+            self._ambush_try = (a.name, d.name)
         q = self.quirk(d, "disaster_sense")
         if q:
             ch *= float(q.get("mult", 0.6))      # (she feels the worst ones coming)
@@ -7470,7 +7498,12 @@ class Engine:
             self.rolls.append({"what": f"{poss_word(a.name)} {move['name']} landing devastatingly (your direction)",
                                "chance": 1.0, "roll": 0.0, "ok": True, "result": "DEVASTATING"})
         elif not self._chance(ch, f"{poss_word(a.name)} {move['name']} landing devastatingly", "DEVASTATING", "no"):
+            self._ambush_try = None
             return None
+        if getattr(self, "_ambush_try", None) == (a.name, d.name):
+            self.quirk_moment(a, "ambusher", f"{a.name} waited for {d.name} to be caught open, and struck the instant "
+                                             f"she was: this is how she likes to win")
+        self._ambush_try = None
         lo, hi = cfg.get("mult", [1.7, 2.2])
         mult = round(self.rng.uniform(float(lo), float(hi)), 2)
         text = self.DEV_REASONS[reason].format(why=why or "caught open", part=(plan[0] or "").lower(), parts="")
@@ -8694,6 +8727,9 @@ class Engine:
             bump = float(cfg.get("tighten", 3))
             for x in won:
                 x.power = round(x.power + bump, 2)
+            if self.quirk(win, "patient_constrictor"):
+                self.quirk_moment(win, "patient_constrictor", f"{win.name} never hurried: she waited for the other to "
+                                                              f"spend herself, and then she took the knot")
             ev.update(result="won", winner=win.name, loser=lose.name, winner_holds=[x.id for x in won],
                       shed=[x.part for x in lost], shed_ids=[x.id for x in lost], tighten=bump)
             events.append(ev)
@@ -10017,6 +10053,14 @@ class Engine:
         cfg = self.rules.get("traits") or {}
         return cfg if cfg.get("enabled", True) else None
 
+    def quirk_moment(self, f, quirk, note):
+        """(since build 281, narration.character.moments) a quirk of hers decided something this beat: said once to
+        the story (play.py puts it with the beat's other events), so her character shows where it matters."""
+        name = f.name if hasattr(f, "name") else str(f)
+        got = self.__dict__.setdefault("_quirks_now", [])
+        if not any(x[0] == name and x[1] == quirk for x in got):
+            got.append((name, quirk, note))
+
     def quirk(self, f, name):
         """(since build 280) traits.quirks.<name> for this fighter, when she has that quirk and it is switched on
         (its settings, a dict); None otherwise."""
@@ -10253,6 +10297,9 @@ class Engine:
             q = self.quirk(d, "stubborn")
             if tap > 0 and q:
                 tap *= float(q.get("tap_mult", 0.6))     # (since build 280) she holds out longer than she should
+                if tap >= 0.15:
+                    self.quirk_moment(d, "stubborn", f"{d.name} is past her limit and should be giving in, and she "
+                                                     f"won't: pure stubbornness, more than sense, keeps her from tapping")
             if tap > 0 and self._chance(tap, f"{dn} tapping out to {poss_word(a)} {name} (pain {pain:.0f} against "
                                         f"her resistance {resist:.0f})", "SHE TAPS", "she holds on"):
                 how = "tap"

@@ -713,6 +713,52 @@ def coil_size_check():
     return problems
 
 
+def character_check():
+    """Build 281: who each fighter is in the story (narration.character): personality, history and relationships in
+    the narrator's notes and in the polishing model's facts; a quirk that decides something is told to the story;
+    a veteran's memory of past fights is kept, anyone else's is cut; /profile lists it all."""
+    import play
+    import narrator as N
+    import polish
+    problems = []
+    s = H.session(3, fighters="Ripples,Nerine")
+    e = s.eng
+    note = s.notes()
+    for want in ("PERSONALITY: Eager", "HISTORY", "NERINE TO HER:", "RIPPLES TO HER:"):
+        if want not in note:
+            problems.append(f"the narrator's notes should have {want!r}")
+    facts = s.polish_facts([], [], [])
+    if not any(f.startswith("CHARACTER: Ripples") for f in facts):
+        problems.append(f"the polishing model should get each fighter's CHARACTER line: {facts[:3]}")
+    msgs = polish.messages("draft", facts)
+    if "Give her thoughts, her manner" not in msgs[1]["content"]:
+        problems.append("the polishing request should say what to do with the CHARACTER lines")
+    e.rules["narration"]["character"]["enabled"] = False
+    if "PERSONALITY" in s.notes():
+        problems.append("with narration.character off, no personality in the notes")
+    e.rules["narration"]["character"]["enabled"] = True
+    e._quirks_now = []
+    with contextlib.redirect_stdout(io.StringIO()):
+        e.start_hold("Nerine", "Ripples", "Left Upper Arm", 10, 1, "grip", "both paws")
+    if not any(q[1] == "out_of_depth" for q in e._quirks_now):
+        problems.append(f"a hold on Ripples should tell her quirk to the story: {e._quirks_now}")
+    N.VETERANS.clear(); N.IN_FIGHT.clear()
+    N.VETERANS.add("Nerine"); N.IN_FIGHT.update({"Nerine", "Ripples"})
+    kept = N._clean("Nerine had faced worse opponents than this before. Ripples had faced worse opponents than this before.") \
+        if hasattr(N, "_clean") else None
+    if kept is not None and ("Nerine had faced" not in kept or "Ripples had faced" in kept):
+        problems.append(f"a veteran's past fights should stay and a newcomer's go: {kept!r}")
+    if not N._veteran_said("Nerine had faced worse") or N._veteran_said("Ripples had faced worse"):
+        problems.append("only a veteran's memory of past fights is hers to keep")
+    N.VETERANS.clear(); N.IN_FIGHT.clear()
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        play.handle_command(s, "/profile Nerine")
+    if "has fought before" not in out.getvalue() or "Ripples to her" not in out.getvalue():
+        problems.append(f"/profile should show her history and relationships: {out.getvalue()[:300]}")
+    return problems
+
+
 def traits_check():
     """Build 280: traits and quirks (fighters.json traits, quirks, style, favors; rules.json traits). A fighter
     without traits is as before; the traits scale her rolls; quirks are switchable one by one and all at once; the
@@ -2578,6 +2624,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build-273 lakeside log: wrong limb, posture, paws, fur, memories, retold get-up, kick, &&  ({time.time() - t:.1f}s)")
         for p in probs[:8]:
+            print("      " + p)
+    if not want or any(w in "character personality history profile" for w in want):
+        t = time.time()
+        probs = character_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  character: personality, history, relationships to narrator and Venice, quirk moments, veterans' memories, /profile  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "traits quirks style" for w in want):
         t = time.time()

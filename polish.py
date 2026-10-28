@@ -138,8 +138,14 @@ def list_models(rules):
 
 def messages(draft, facts, prior=""):
     """The request: the editor's instructions, the facts, the story just before this beat, and the draft."""
+    chars = [f for f in facts if f and str(f).startswith(("CHARACTER:", "(her character"))]
     user = ("FACTS (what really happened in this beat; never change them):\n"
             + "\n".join(f"- {f}" for f in facts if f) + "\n\n"
+            # (since build 281, narration.character) who they are: the editor may give their prose that personality
+            + ("CHARACTER: each fighter's CHARACTER line above is who she is. Give her thoughts, her manner and the way "
+               "she moves that personality, let her history and what the other is to her colour what she thinks, and "
+               "show each '(her character...)' note in how she does what the FACTS say she does. Character never adds "
+               "an event, a blow, a word spoken aloud or a memory beyond her HISTORY.\n\n" if chars else "")
             + (f"THE STORY JUST BEFORE THIS BEAT (for continuity only; do not rewrite it or repeat it):\n"
                f"{prior.strip()[-1500:]}\n\n" if prior and prior.strip() else "")
             + "DRAFT (rewrite this):\n" + draft.strip())

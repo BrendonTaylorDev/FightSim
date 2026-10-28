@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 280-guided (traits and quirks; Ripples, Nerine, Nocturne, Seraphina rewritten)"
+VERSION = "2026-10-28 build 281-guided (personality, history and relationships in the prose; Profiles window)"
 
 HELP = """
 =============================================================================================
@@ -447,6 +447,7 @@ HELP = """
 =============================================================================================
   /status [full|name]   health, worst injuries, pins and positions
   /traits [name]        how each fighter fights: her traits, quirks, style and favourite moves (since build 280)
+  /profile [name]       all that, and who she is: personality, history, relationships (the window: Profiles)
   /health [name]        every damaged body part, in stat format
   /look [name]          the narrator describes the scene right now (doesn't advance the fight)
 
@@ -1237,6 +1238,10 @@ class Session:
                     if len(look) > cut:
                         look = look[:cut].rsplit(". ", 1)[0] + "."     # (whole sentences only)
                     facts.append(f"WHO: {f.name}: {look}")
+                    ch_ = self.character_note(f, short=True) if pc.get("character", True) else ""
+                    if ch_:
+                        # (since build 281) who she is, so the editor can give her prose her own personality
+                        facts.append(f"CHARACTER: {f.name}: {ch_}")
             sc = getattr(self.eng, "scene_cfg", None) or {}
             if sc.get("text"):
                 place = re.sub(r"\s+", " ", str(sc["text"])).strip()
@@ -1280,6 +1285,8 @@ class Session:
             elif t == "tap_resist":
                 facts.append(f"{e.get('defender')} refuses to tap in {poss_word(e.get('attacker') or '')} "
                              f"{e.get('submission') or 'hold'} (she does NOT tap this beat)")
+            elif t == "quirk_moment":
+                facts.append(f"(her character, to show in how she does it, not a new event) {e.get('note')}")
             elif t == "tap_urge":
                 facts.append(f"{e.get('defender')} fights the urge to tap (she does NOT tap this beat)")
             elif t == "get_up":
@@ -1555,6 +1562,13 @@ class Session:
         self.narrator.aliases = {self.eng.species(f): f.name for f in self.eng.fighters.values() if self.eng.species(f)}
         self.narrator.species_of = {f.name: self.eng.species(f) for f in self.eng.fighters.values() if self.eng.species(f)}
         self.narrator.plans = {f.name: self.eng.body_plan(f) for f in self.eng.fighters.values()}   # (serpent, biped...)
+        # (since build 281, narration.character.history) who has fought before: her memories of it may stay
+        import narrator as _nmod
+        hist_on = self._character_cfg().get("history", True)
+        _nmod.VETERANS.clear()
+        _nmod.VETERANS.update(f.name for f in self.eng.fighters.values() if hist_on and getattr(f, "veteran", False))
+        _nmod.IN_FIGHT.clear()
+        _nmod.IN_FIGHT.update(f.name for f in self.eng.fighters.values() if not f.eliminated)
         self.narrator.inner = {f.name: self.eng.inner_state(f.name) for f in self.eng.active()}
         self._sync_absent()
         self.narrator.out_names = [f.name for f in self.eng.fighters.values() if f.eliminated]
@@ -1772,6 +1786,32 @@ class Session:
             lines.append("\n" + why)
         return "\n".join(lines)
 
+    def _character_cfg(self):
+        c = (self.eng.rules.get("narration") or {}).get("character") or {}
+        return c if c.get("enabled", True) else {"moments": False, "personality": False, "history": False,
+                                                  "relationships": False}
+
+    def character_note(self, f, short=False):
+        """(since build 281, narration.character) who she is beyond her body: her personality, her history, and what
+        she is to the others in this fight (fighters.json personality, history, relationships). short: one line each,
+        for the polishing model."""
+        c = self._character_cfg()
+        others = [o.name for o in self.eng.fighters.values() if o is not f and not o.eliminated]
+        bits = []
+        if c.get("personality", True) and getattr(f, "personality", ""):
+            bits.append(f"PERSONALITY: {f.personality}")
+        if c.get("history", True) and getattr(f, "history", ""):
+            h = f.history
+            if short and len(h) > 300:
+                h = h[:300].rsplit(". ", 1)[0] + "."
+            bits.append(f"HISTORY (her only past: she may remember it, never anything beyond it): {h}")
+        if c.get("relationships", True):
+            for o in others:
+                r = (getattr(f, "relationships", None) or {}).get(o)
+                if r:
+                    bits.append(f"{o.upper()} TO HER: {r}")
+        return " ".join(bits)
+
     def _note(self, f, multi_team):
         return (
             f"{f.name}{f' (team {f.team})' if multi_team else ''}"
@@ -1779,6 +1819,7 @@ class Session:
             + (f" APPEARANCE: {f.appearance}" if getattr(f, "appearance", "") else "")
             + (f" TELLS (how she shows pain and effort): {f.tells}" if getattr(f, "tells", "") else "")
             + (f" VOICE: {f.voice}" if getattr(f, "voice", "") else "")
+            + (" " + self.character_note(f) if self.character_note(f) else "")
             + self._body_note(f))
 
     @staticmethod
@@ -1826,6 +1867,7 @@ class Session:
 
     def _play_beat(self, direction="", manual=None, orders=None):
         aftermath = self.over
+        self.eng._quirks_now = []      # (since build 281) the quirks that decide something this beat
         forced_recovery = None
         if not aftermath and isinstance(manual, dict) and manual.get("action") == "recover":
             print("/recover is for after the match. During the fight, use /getup to stand someone up.")
@@ -1943,6 +1985,10 @@ class Session:
                 self.recent_attacks.append(f"{res['attacker']}: {'pin' if res['type'] == 'pin_start' else 'hold'} on "
                                            f"{res['defender']}")
         also = self.eng.beat(skip_hold_ids=started)
+        if self._character_cfg().get("moments", True):
+            # (since build 281, narration.character.moments) her quirks, where they decided something
+            also = list(also) + [{"type": "quirk_moment", "fighter": f_, "quirk": q_, "note": n_}
+                                 for f_, q_, n_ in (getattr(self.eng, "_quirks_now", None) or [])]
         self.state_check()
         self.eng.record_beat(results, also)   # key moments and the strength track, for the end-of-fight summary
         self.eng.record_inner(results)        # what each fighter has learned this fight (narration.rich.inner)
@@ -3305,7 +3351,7 @@ def handle_command(s, line):
                                                 ". The director runs the rest.")
               + " Each beat you're asked for their moves; /commands still work for direct control. /play off to stop.")
         return
-    if cmd == "traits":
+    if cmd in ("traits", "profile", "profiles"):
         # (since build 280) how each fighter fights: her traits, her quirks, her style and favourite moves
         e = s.eng
         want = [e.get(x) for x in a] if a else e.active()
@@ -3315,6 +3361,11 @@ def handle_command(s, line):
             fav = ", ".join(f"{m} ×{w:g}" for m, w in sorted((f.favors or {}).items(), key=lambda kv: -float(kv[1])))
             print(f"{f.name}: traits {tr}\n   quirks: {qs}" + (f"\n   style: {f.style}" if f.style else "")
                   + (f"\n   favours: {fav}" if fav else ""))
+            if cmd != "traits":
+                # (since build 281) who she is: personality, history, and what the others are to her
+                print((f"   personality: {f.personality}\n" if f.personality else "")
+                      + (f"   history{' (has fought before)' if f.veteran else ''}: {f.history}\n" if f.history else "")
+                      + "".join(f"   {o} to her: {r}\n" for o, r in (f.relationships or {}).items()), end="")
         if not e.traits_cfg():
             print("(traits are switched off: /set traits.enabled true)")
         return

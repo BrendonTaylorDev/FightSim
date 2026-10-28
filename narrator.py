@@ -2063,6 +2063,20 @@ PROMPT_LINE = re.compile(r"^\s*[*_\-\s]*(?:POSTURE THIS BEAT|WHAT HAPPENS IN THI
 
 # a fighter remembering fights before this one ("She had faced worse than this", "the one she had battled earlier"):
 # the hard rules forbid memories from before the fight, so the sentence goes
+# (since build 281, narration.character.history) fighters whose history says they have fought before (play.py sets
+# these each beat): a memory of past fights is hers to have
+VETERANS, IN_FIGHT = set(), set()
+
+
+def _veteran_said(sent):
+    """A past-fights sentence that is a veteran's to say: it names her, or everyone in this fight is a veteran."""
+    if not VETERANS:
+        return False
+    if IN_FIGHT and IN_FIGHT <= VETERANS:
+        return True
+    return any(re.search(r"\b" + re.escape(v) + r"\b", sent) for v in VETERANS)
+
+
 PAST_FIGHTS = re.compile(r"\b(?:ha[ds]|have) (?:faced|fought|battled|beaten|survived|seen off) (?:worse|tougher|stronger|"
                          r"bigger|harder|fiercer|deadlier|better)\b|\b(?:battled|fought|faced) (?:earlier|before|long ago)\b|"
                          r"\b(?:in|from|of) (?:her|his|their) (?:past|previous|earlier|other|old|many) (?:fights|battles|"
@@ -2304,7 +2318,7 @@ def _clean(text, cut_off=None, open_end=False):
             key = WHITESPACE.sub(" ", re.sub(r"[^\w\s]", "", s.lower())).strip()
             if key in seen and (len(key) > 12 or (len(key) > 4 and len(sentences) == 1)):
                 continue  # a repeated sentence, or a repeated one-line beat like "*Damn it.*" / "Nothing moved."
-            if PAST_FIGHTS.search(s):
+            if PAST_FIGHTS.search(s) and not _veteran_said(s):
                 continue  # a memory from before this fight (the hard rules forbid them; nothing in the notes backs it)
             s = _past_compare(s)
             seen.add(key)
@@ -4866,6 +4880,11 @@ class Narrator:
                              + f"; {e['attacker']} is left with nothing in her grip. It does no damage, nobody falls, and "
                              f"no new attack follows it. When the beat ends, nothing of {poss(e['attacker'])} is on her.")
                 lines += self._choke_off_lines(e["defender"], e.get("parts") or [])
+            elif e["type"] == "quirk_moment":
+                # (since build 281, narration.character.moments) one of her quirks decided something this beat
+                lines.append(f"WHO {e['fighter'].upper()} IS, IN THIS MOMENT: {e.get('note')}. Let it show in what "
+                             f"she does, how she does it, or a short thought in her own voice; it adds nothing that "
+                             f"happens.")
             elif e["type"] == "coil_contest":
                 a_, d_ = e["fighters"]
                 on_a = " and ".join(p.lower() for p in (e.get("parts") or {}).get(a_, []))
@@ -15826,7 +15845,10 @@ class Narrator:
                 + "\n".join(lines) + "\n"
                 + ("" if (self.rules.get("narration") or {}).get("old_memories") else
                    "What she knows comes from THIS fight only: no earlier fights, no other opponents, no training, no "
-                   "smells or places she 'knew well' from before.\n") + "\n")
+                   "smells or places she 'knew well' from before"
+                   + (" (except what her HISTORY in the notes says: " + " and ".join(sorted(VETERANS))
+                      + " may remember the past it gives her, and nothing beyond it)" if VETERANS else "")
+                   + ".\n") + "\n")
 
     def _rich_part_note(self, key, seg_words, last):
         """What a rich part adds: how many paragraphs, a sense to lean on, and room to think."""

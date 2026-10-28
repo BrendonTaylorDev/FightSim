@@ -1263,6 +1263,8 @@ class Display:
                 out.append(f"🔒 **{poss_word(e['attacker'])} {e['submission'].upper()} becomes a PIN** after "
                            f"{e['beats_held']} beats: {e['defender']} is held down in it, the pin clock and pass-out start "
                            f"next beat, and the grips keep wrenching at full power, still building")
+            elif e["type"] == "quirk_moment":
+                out.append(f"✨ {e['fighter']} ({str(e.get('quirk', '')).replace('_', ' ')}): {e.get('note')}")
             elif e["type"] == "coil_contest":
                 a_, d_ = e["fighters"]
                 ch_ = e.get("chance") or {}

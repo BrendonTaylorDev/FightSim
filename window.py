@@ -901,6 +901,7 @@ class App:
         ttk.Button(bottom, text="Auto 5", command=lambda: self.send_line("/auto 5")).pack(side="left", padx=2)
         ttk.Button(bottom, text="Undo", command=lambda: self.send_line("/undo")).pack(side="left", padx=2)
         ttk.Button(bottom, text="Export", command=lambda: self.send_line("/exportfight")).pack(side="left", padx=2)
+        ttk.Button(bottom, text="Profiles", command=self.open_profiles).pack(side="left", padx=2)
         self.entry.focus_set()
 
     # ---- input ----
@@ -908,6 +909,81 @@ class App:
         line = self.entry.get()
         self.entry.delete(0, "end")
         self.send_line(line)
+
+    # ---- profiles (since build 281): personality, history and relationships, one tab per fighter ----
+    def open_profiles(self):
+        """A window with a tab for each fighter in the fight: her personality, her history and what each of the
+        others is to her (editable; Save writes them to fighters.json and the story uses them from the next beat),
+        and her traits, quirks and style to read."""
+        sess = getattr(self.game, "session", None)
+        eng = getattr(sess, "eng", None)
+        if eng is None:
+            return
+        top = tk.Toplevel(self.root)
+        top.title("Profiles")
+        top.geometry("760x620")
+        _keep_alive(top)       # (closed windows are kept: a Tk object freed off the main thread kills Spyder)
+        book = ttk.Notebook(top)
+        book.pack(fill="both", expand=True, padx=6, pady=6)
+        fighters = [f for f in eng.fighters.values()]
+        boxes = {}
+
+        def area(parent, label, text, height):
+            ttk.Label(parent, text=label, font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(6, 0))
+            t = tk.Text(parent, height=height, wrap="word", font=("Segoe UI", 10))
+            t.insert("1.0", text or "")
+            t.pack(fill="x")
+            return t
+        for f in fighters:
+            tab = ttk.Frame(book, padding=8)
+            book.add(tab, text=f.name)
+            b = {"personality": area(tab, "Personality", f.personality, 4),
+                 "history": area(tab, "History", f.history, 4), "rel": {}}
+            vet = _Flag(top, value=bool(f.veteran))
+            ttk.Checkbutton(tab, text="Has fought before (may remember it)", variable=vet).pack(anchor="w")
+            b["veteran"] = vet
+            for o in fighters:
+                if o is not f:
+                    b["rel"][o.name] = area(tab, f"{o.name}, to her", (f.relationships or {}).get(o.name, ""), 2)
+            tr = ", ".join(f"{k} ×{v:g}" for k, v in (f.traits or {}).items() if float(v) != 1.0) or "all as normal"
+            info = (f"Traits: {tr}\nQuirks: {', '.join(f.quirks or []) or 'none'}"
+                    + (f"\nStyle: {f.style}" if f.style else ""))
+            ttk.Label(tab, text=info, wraplength=700, justify="left").pack(anchor="w", pady=(8, 0))
+            boxes[f.name] = b
+
+        def save():
+            try:
+                path = os.path.join(os.path.dirname(os.path.abspath(play.__file__)), "fighters.json")
+                with open(path, encoding="utf-8") as fh:
+                    raw = json.load(fh)
+                roster = raw if isinstance(raw, list) else raw.get("fighters", raw)
+                entries = roster.values() if isinstance(roster, dict) else roster
+                for f in fighters:
+                    b = boxes[f.name]
+                    f.personality = b["personality"].get("1.0", "end").strip()
+                    f.history = b["history"].get("1.0", "end").strip()
+                    f.veteran = bool(b["veteran"].get())
+                    for o, t in b["rel"].items():
+                        v = t.get("1.0", "end").strip()
+                        if v:
+                            f.relationships[o] = v
+                        else:
+                            f.relationships.pop(o, None)
+                    for x in entries:
+                        if isinstance(x, dict) and x.get("name") == f.name:
+                            x["personality"], x["history"], x["veteran"] = f.personality, f.history, f.veteran
+                            x["relationships"] = dict(f.relationships)
+                with open(path, "w", encoding="utf-8") as fh:
+                    fh.write(json.dumps(raw, indent=2, ensure_ascii=False) + "\n")
+                status.configure(text="Saved to fighters.json: the story uses it from the next beat.")
+            except Exception as e:
+                note_failure("saving the profiles to fighters.json", e)
+                status.configure(text=f"Couldn't save: {e}")
+        bar = ttk.Frame(top)
+        bar.pack(fill="x", padx=6, pady=(0, 6))
+        ttk.Button(bar, text="Save", command=save).pack(side="right")
+        status = ttk.Label(bar, text="")
+        status.pack(side="left")
 
     def send_line(self, line):
         if line.strip().lower() in ("/stop", "stop") and not getattr(self.game, "waiting", True):

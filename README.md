@@ -654,6 +654,25 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 281
+Personality in the prose: who each fighter is, for the narrator and for Venice, and a Profiles window to edit it.
+- **Personality, history and relationships** (`narration.character`, on by default; each part switchable). New fields in fighters.json, drafted from your descriptions for Ripples, Nerine, Nocturne and Seraphina (edit them freely):
+  - `personality`: how she thinks and behaves.
+  - `history`: her past, as far as the story may use it.
+  - `veteran`: she has fought before.
+  - `relationships`: what each other fighter is to her.
+
+  The narrator gets them with her description and voice. A relationship is given only when both fighters are in the fight.
+- **Venice gets them too.** Each fighter has a CHARACTER line in the polishing request, along with an instruction to give her thoughts, manner and movement that personality, without ever adding an event. The instruction is in the request itself, so it also works with your own polish prompt. `narration.polish.character false` leaves it out.
+- **Quirk moments.** When one of her quirks decides something, the story is told in one line, to show in what she does. The screen shows it with a ✨. The moments:
+  - Ripples' stubbornness keeping her from tapping, and a hold she has never met.
+  - Nocturne's ambush striking the moment the other is caught open.
+  - Seraphina's huge wind-up being seen coming, or landing like a falling tree, and a blow that would stagger anyone else barely moving her.
+  - Nerine working close in.
+  - A patient constrictor taking the knot.
+- **Veterans may remember.** The program normally cuts memories of earlier fights ("she had faced worse before"). Now a fighter with `veteran: true` keeps hers. Nerine, Nocturne and Seraphina are veterans; Ripples is new, so hers are still cut. The narrator is told she may remember only what her history gives her.
+- **Profiles window.** The Profiles button opens a tab for each fighter in the fight. You can edit her personality, her history, whether she has fought before, and what each other fighter is to her, and read her traits, quirks and style. Save writes it all to fighters.json, and the story uses it from the next beat. In the console, `/profile [name]` shows the same.
+
 ## Build 280
 Traits and quirks: how each fighter fights. Ripples, Nerine, Nocturne and Seraphina are rewritten from your descriptions.
 - **Traits** (`traits`, on by default) are set per fighter in fighters.json. Each is a multiplier on today's rolls, 1.0 = as before:
