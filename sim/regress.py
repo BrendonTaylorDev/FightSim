@@ -800,6 +800,35 @@ def presets_help_check():
     return problems
 
 
+def save_history_check():
+    """Build 301: a saved fight loads back whole: its beat records (the window's history: the start, each beat's text
+    and numbers), its story and every number, and its /undo history, back to the start of the fight."""
+    problems = []
+    s = H.session(5, fighters="Nocturne,Ripples")
+    for mv in ("Night Slash", "Bite", "Night Slash"):
+        H.beat(s, [{"attacker": "Nocturne", "defender": "Ripples", "action": "strike", "move": mv, "part": "Chest"}], [])
+    labels = [r["label"] for r in s.beat_records if r["fight"] == s.fight_no]
+    if not labels or labels[0] != "the start":
+        problems.append(f"a fight's beat history should begin with the start, before the first blow: {labels}")
+    path = os.path.abspath("save_history_check.json")
+    s.eng.save(path, s._extra())
+    s2 = H.session(9, fighters="Nocturne,Ripples")
+    s2.load(path)
+    if [r["label"] for r in s2.beat_records] != [r["label"] for r in s.beat_records] or s2.story != s.story:
+        problems.append("a loaded fight should have its beat history and its story back")
+    if [round(f.health, 2) for f in s2.eng.fighters.values()] != [round(f.health, 2) for f in s.eng.fighters.values()]:
+        problems.append("a loaded fight should have every number back")
+    if len(s2.history) != len(s.history):
+        problems.append(f"a loaded fight should keep its /undo history: {len(s2.history)} of {len(s.history)}")
+    for _ in range(3):
+        s2.undo()
+    if s2.eng.turn != 0 or any(f.health < f.max_health for f in s2.eng.fighters.values()) \
+            or [r["label"] for r in s2.beat_records] != ["the start"]:
+        problems.append(f"undoing a loaded fight should go back to its start: turn {s2.eng.turn}, "
+                        f"{[r['label'] for r in s2.beat_records]}")
+    return problems
+
+
 def compression_check():
     """Build 294: compression in a constriction: it builds beat by beat (more when she fights it), drives the blood
     gauge, makes the coils harder to break, tells the chest and the belly apart in the story, and never brings
@@ -3141,6 +3170,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "save load history" for w in want):
+        t = time.time()
+        probs = save_history_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  a saved fight loads back whole: beat history, story, numbers, /undo  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "compression squeeze constriction" for w in want):

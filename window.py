@@ -211,6 +211,33 @@ def _install_routing():
                 g.out_q.put(("beat", snapshot(sess)))
     play_beat._real = beat
     play.Session.play_beat = play_beat
+    record = getattr(play.Session._record_beat, "_real", play.Session._record_beat)
+
+    def record_beat(sess, tlen, label=None):
+        # (since build 301) the start of a fight: a place of its own on the beat slider, before the first blow
+        n = len(sess.beat_records)
+        out = record(sess, tlen, label)
+        g = _current_game()
+        if g is not None and label == "the start" and len(sess.beat_records) > n:
+            g.out_q.put(("beat", sess.beat_records[-1]["snapshot"]))
+        return out
+    record_beat._real = record
+    play.Session._record_beat = record_beat
+    for name in ("undo", "load"):
+        real = getattr(getattr(play.Session, name), "_real", getattr(play.Session, name))
+
+        def rebuilt(sess, *a, _real=real, **k):
+            # (since build 301) after /undo or /load the window's story and beat history are rebuilt from the
+            # session's own record of every beat (its text, and every fighter as she stood), so nothing undone
+            # stays on the slider and a loaded fight comes back whole
+            out = _real(sess, *a, **k)
+            g = _current_game()
+            if g is not None:
+                g.out_q.put(("rebuild", ([(r.get("text", ""), r["snapshot"]) for r in sess.beat_records],
+                                         snapshot(sess, "now"))))
+            return out
+        rebuilt._real = real
+        setattr(play.Session, name, rebuilt)
 
 
 class GameThread(threading.Thread):
@@ -1230,6 +1257,8 @@ class App:
                         self.show(data, live=True)
                     else:
                         self.slider.configure(to=len(self.beats) + 1)
+                elif kind == "rebuild":
+                    self.rebuild(*data)
                 elif kind == "live":
                     self.live = data
                     if self.follow.get():
@@ -1399,6 +1428,25 @@ class App:
             self.text.insert("end", ch, tuple(tags) + (tag,))
             pos = m.end()
         self.text.insert("end", text[pos:], tags)
+
+    def rebuild(self, records, live):
+        """(since build 301) The story pane and the beat slider written again from the session's record of every
+        beat (after /undo or /load): each beat's text, and the fight as it stood after it."""
+        self.flush_pending()
+        self.text.configure(state="normal")
+        self.text.delete("1.0", "end")
+        self.text.configure(state="disabled")
+        self.beats = []
+        for text, snap in records:
+            if text:
+                self.add_text(text.rstrip("\n") + "\n")
+            self.flush_pending()
+            self.beats.append((self.text.index("end-1c"), snap))
+        self.live = live
+        self.follow.set(True)
+        self.set_slider(len(self.beats) + 1)
+        self.show(live, live=True)
+        self.text.see("end")
 
     # ---- which beat is shown ----
     # Positions on the slider: 1..N are the beats (each as it stood when that beat ended), N+1 is "now".

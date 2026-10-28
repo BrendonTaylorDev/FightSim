@@ -654,6 +654,21 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 301
+A saved fight loads back whole:
+- The /undo history is kept in the save (`save.history`, the newest 30 beats), so a loaded fight can be undone back
+  through its beats, to its start, as before it was saved. Each beat is about 40 KB in the file; it is worked out once,
+  so the autosave after every beat stays quick.
+- The window rebuilds its story pane and its beat slider from the save's record of every beat (its text and every
+  fighter's numbers as they stood after it), so the story, the pictures, the gauges and the numbers of each earlier
+  beat can be looked at again after loading.
+- /undo rebuilds them too, so an undone beat no longer stays on the slider.
+
+Every fight's beat history now begins with the fight as it stood before anything happened ("at the start"), on the
+window's slider and in exported fights: before, the first place you could go back to was the end of the first beat.
+
+What a beat's narration was written from isn't kept in the save, so /reroll works only on beats written after loading.
+
 ## Build 300
 The squeeze picture shows only the coils wound round her, no longer the rest of the coiler trailing off to one side.
 

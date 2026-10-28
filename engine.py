@@ -966,6 +966,54 @@ class Engine:
         self._knock_on = []
         self.rng.setstate(rng)
 
+    def snapshot_to_json(self, snap):
+        """(since build 301) An /undo snapshot (snapshot_state) as save-file data, so a loaded fight can still be
+        undone back through every beat the save kept: the main fields by name, the fighters and holds as plain data,
+        sets marked as sets, the dice's state as lists."""
+        names = self._SNAP_FIELDS + ("~rng",)
+        vals = list(snap)
+        out = {}
+        for k, v in zip(names, vals):
+            if k == "fighters":
+                v = {n: {**asdict(f), "parts": {pn: asdict(pp) for pn, pp in f.parts.items()}} for n, f in v.items()}
+            elif k == "holds":
+                v = {str(i): asdict(h) for i, h in v.items()}
+            out[k] = _to_json(v)
+        extra = vals[len(names)] if len(vals) > len(names) else {}
+        out["~more"] = {k: _to_json(v) for k, v in (extra or {}).items()}
+        return out
+
+    def snapshot_from_json(self, data):
+        """The other way: save-file data back into an /undo snapshot (restore_state takes it)."""
+        vals = []
+        for k in self._SNAP_FIELDS:
+            v = data.get(k)
+            if k == "fighters":
+                fs = {}
+                for n, fd in (v or {}).items():
+                    fd = dict(fd)
+                    parts = {pn: BodyPart(**self._known(BodyPart, _from_json(pp))) for pn, pp in fd.pop("parts").items()}
+                    fs[n] = Fighter(**self._known(Fighter, _from_json(fd)), parts=parts)
+                v = fs
+            elif k == "holds":
+                v = {int(i): Hold(**self._known(Hold, _from_json(h))) for i, h in (v or {}).items()}
+            elif k in ("involved", "_fresh_down", "_fresh_status"):
+                v = set(_from_json(v) or ())
+            elif k == "move_log":
+                v = [tuple(x) for x in (v or [])]
+            else:
+                v = _from_json(v)
+            vals.append(v)
+
+        def rng_state(st):
+            return (st[0], tuple(st[1]), st[2])
+        vals.append(rng_state(data["~rng"]))
+        more = {k: _from_json(v) for k, v in (data.get("~more") or {}).items()}
+        if more.get("~event_rng"):
+            more["~event_rng"] = rng_state(more["~event_rng"])
+        vals.append(more)
+        return tuple(vals)
+
     def note_roll(self, what, p, r, result):
         """Write down a roll that was made somewhere else (the director's nudges)."""
         if 0 < p < 1:

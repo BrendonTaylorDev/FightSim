@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 300 (the squeeze in real numbers, against her healthy ones)"
+VERSION = "2026-10-28 build 301 (a saved fight loads back whole; every fight starts its history at the start)"
 
 HELP = """
 =============================================================================================
@@ -706,6 +706,10 @@ class Session:
             del narrator_mod.CALL_LOG[:]     # (a beat stopped before its narration must not show the last one's steps)
         except Exception:
             pass
+        if not any(r.get("fight") == self.fight_no for r in self.beat_records):
+            # (since build 301) the fight as it stood before anything happened, kept first, so the window's beat
+            # history (and an exported fight) can go back to before the first blow
+            self._record_beat(len(self.transcript), label="the start")
         tlen = len(self.transcript)
         try:
             return self._play_beat(direction, manual, orders)
@@ -764,7 +768,7 @@ class Session:
             return
         self.beat_records.append({"fight": self.fight_no, "lineup": self.lineup(), "turn": int(self.eng.turn or 0),
                                   "label": label or f"beat {self.eng.turn}", "text": text,
-                                  "snapshot": fight_snapshot(self)})
+                                  "snapshot": fight_snapshot(self, "at the start" if label == "the start" else None)})
         self.beat_records = self.beat_records[-1500:]
         if self.over and (self.eng.rules.get("export") or {}).get("auto", True):
             try:
@@ -997,6 +1001,51 @@ class Session:
         if not auto:
             self.autosave()
 
+    def _save_cfg(self):
+        return (self.eng.rules.get("save") or {}) if self.eng else {}
+
+    def _history_json(self):
+        """save.history (since build 301): the /undo history as save-file data, so a loaded fight can be undone back
+        through its beats as before it was saved (the newest save.history_beats of them). Each beat is worked out
+        once and kept (autosave writes every beat). What the narration was written from (for /reroll) stays out."""
+        cfg = self._save_cfg()
+        if not cfg.get("history", True):
+            return []
+        cache = self.__dict__.setdefault("_hist_cache", {})
+        out, keep = [], set()
+        for h in self.history[-int(cfg.get("history_beats", 30)):]:
+            key = id(h)
+            keep.add(key)
+            if key not in cache:
+                eng, story, attacks, recent, over, tlen, _last, _pending, *more = h
+                try:
+                    item = {"engine": self.eng.snapshot_to_json(eng), "story": list(story), "attacks": attacks,
+                            "recent_attacks": list(recent), "over": over, "tlen": tlen,
+                            "records": more[0] if more else None}
+                    json.dumps(item)
+                    cache[key] = (h, item)          # (the tuple kept too, so its id can't be reused)
+                except (TypeError, ValueError) as e:
+                    note_failure("writing a beat of the /undo history into the save", e)
+                    out = []
+                    continue
+            out.append(cache[key][1])
+        for key in [k for k in cache if k not in keep]:
+            del cache[key]
+        return out
+
+    def _history_from(self, saved):
+        """The other way, on /load: the saved /undo history back as it was."""
+        out = []
+        for item in saved or []:
+            try:
+                out.append((self.eng.snapshot_from_json(item["engine"]), list(item.get("story") or []),
+                            item.get("attacks", 0), list(item.get("recent_attacks") or []), bool(item.get("over")),
+                            int(item.get("tlen") or 0), None, None, item.get("records")))
+            except (KeyError, TypeError, ValueError, IndexError) as e:
+                note_failure("reading a beat of the /undo history from the save", e)
+                return []
+        return out
+
     def _extra(self):
         return {"story": self.story, "style": self.narrator.style, "over": self.over,
                 "transcript": self.transcript[-4000:], "attacks": self.attacks,
@@ -1004,6 +1053,7 @@ class Session:
                 "story_before": self.story_before[-400:], "reason": getattr(self, "reason", None),
                 "reason_pick": getattr(self, "reason_pick", None), "reason_off": getattr(self, "reason_off", False),
                 "beat_records": self.beat_records[-400:],
+                "history": self._history_json(),
                 "fight_keys": dict(getattr(self, "_fight_keys", None) or {}),
                 "polish_history": [{k: v for k, v in e.items() if k not in ("rejected", "_nstate")}
                                    for e in (getattr(self, "_polish_hist", None) or [])]}
@@ -1146,7 +1196,9 @@ class Session:
         self._fight_keys = dict(extra.get("fight_keys") or {})
         if self._polish_hist:
             self._polish_last = self._polish_hist[-1]
-        self.history, self.last_narration, self.pending = [], None, None
+        self.last_narration, self.pending = None, None
+        # (since build 301) the /undo history comes back too, so a loaded fight can be undone as before
+        self.history = self._history_from(extra.get("history"))
 
     # ---------- the narration test bench (narration.bench; /bench) ----------
     BENCH_FILES = ("blocks_memory.json", "lines_memory.json", "phrase_memory.json", "check_counts.json")
