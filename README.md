@@ -654,6 +654,14 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 284
+The tap meter follows the real chance now. Ripples read "at the edge of tapping, 0% chance this beat": her pain
+was far past what she could bear, but the chance was 0.3% (the hold's third beat, x0.06 while it builds; still on
+her feet, x0.35; stubborn, x0.6), shown rounded to 0. The steps and words now follow this beat's chance (a tap is
+far off, a small chance, a real chance, close, at the edge), the line under it says when the pain is past what she
+can bear and what keeps the chance down, and a small chance is shown as it is (0.3%), not 0%.
+`window.hold_panel.meter_by pain` brings back the old steps.
+
 ## Build 283
 Fixes from the first real run of the setup questions:
 - After you chose the fighters, the later questions still looked at the old fight: the players question offered

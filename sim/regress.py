@@ -800,6 +800,37 @@ def presets_help_check():
     return problems
 
 
+def tap_meter_check():
+    """Build 283 (the user's window): the tap meter follows this beat's real chance, not how the pain feels: past what
+    she can bear at 0.3% it doesn't read "at the edge of tapping", and it says what keeps the chance down."""
+    import cards
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.start_submission("Seraphina", "Ripples", "upright coil")
+    for p in ("Chest", "Left Hip"):
+        e.get("Ripples").parts[p].damage = 150
+    for _ in range(3):
+        e.turn += 1
+        e.beat()
+    r = e.get("Ripples")
+    m = cards.tap_meter({"grips": e.card_state(r)})
+    if not m or m["level"] > 2 or "edge" in m["label"] or "kept down by" not in m["note"] \
+            or "past what she can bear" not in m["note"]:
+        problems.append(f"a tiny chance past her limit should read far off and say why: {m}")
+    line = cards.grip_lines({"grips": e.card_state(e.get("Seraphina"))})[0][0]
+    if "edge" in line or " 0% to tap" in line:
+        problems.append(f"the holder's line should give the real small chance: {line}")
+    if cards.chance_level(0) != 0 or cards.chance_level(0.3) != 1 or cards.chance_level(30) != 4 \
+            or cards.chance_level(60) != 5 or cards.pct_text(0.28) != "0.3%":
+        problems.append("the chance steps or the percentage text are off")
+    e.rules["window"]["hold_panel"]["meter_by"] = "pain"
+    if "edge" not in cards.tap_meter({"grips": e.card_state(r)})["label"]:
+        problems.append("meter_by pain keeps the pain ladder")
+    return problems
+
+
 def unrolled_blows_check():
     """Build 283 (the user's log): a submission whose words whip her and charge her into a pine the engine never
     resolved loses those words; a coil's own words stay."""
@@ -2048,8 +2079,9 @@ def hold_panel_check():
             problems.append(f"the holder's card doesn't show the hold and how near the tap is: {hl}")
         if cards.tap_meter(fs["Nerine"]):
             problems.append("the holder has a tap meter of her own")
-    if len(levels) < 3 or levels != sorted(levels) or levels[0] != 1 or chances[0] != 0:
-        problems.append(f"the tap meter doesn't climb from 1 at 0% on her first beat: levels {levels}, chances {chances}")
+    # (since build 283 the steps follow the real chance: none on her first beat, then climbing with it)
+    if len(levels) < 3 or levels != sorted(levels) or levels[0] != 0 or chances[0] != 0 or levels[-1] < 1:
+        problems.append(f"the tap meter doesn't climb from 0 at 0% on her first beat: levels {levels}, chances {chances}")
     snap = H.play.fight_snapshot(s)["fighters"]
     import fightexport
     body = fightexport._gauges(next(f for f in snap if f["name"] == "Ripples"))
@@ -2748,6 +2780,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "tapmeter meter window" for w in want):
+        t = time.time()
+        probs = tap_meter_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  the tap meter follows the real chance and says what keeps it down  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "unrolled blows preset" for w in want):

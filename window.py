@@ -41,7 +41,7 @@ from engine import species_of, body_region, note_failure, poss_word
 from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_color, text_on, short,
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
-                   held_parts, tap_meter, grip_lines, TAP_COLORS)
+                   held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -503,7 +503,7 @@ class FighterCard(ttk.Frame):
                                fill=TAP_COLORS[i] if on else C("#ffffff"), outline=C("#9ca3af"))
         c.create_text(x0 + 5 * (seg + 3) + 6, 9, anchor="w", font=("Segoe UI", 8, "bold"),
                       fill=TAP_COLORS[max(1, m["level"])] if m["level"] >= 3 else C("#111827"),
-                      text=f"{m['label']}  ·  {m['chance']:.0f}% chance this beat")
+                      text=f"{m['label']}  ·  {pct_text(m['chance'])} chance this beat")
         c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill=C("#4b5563"), width=w - 12,
                       text=(f"{poss_word(m['by'])} {m['sub']}: pain {m['pain']} against what she can bear {m['resist']}"
                             + (f"  ·  {m['note']}" if m["note"] else "")))

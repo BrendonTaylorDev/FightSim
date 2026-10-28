@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 283 (setup questions follow the chosen fight, no unresolved blows in a hold's words)"
+VERSION = "2026-10-28 build 284 (the tap meter follows the real chance)"
 
 HELP = """
 =============================================================================================

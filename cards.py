@@ -975,6 +975,31 @@ def draw_panel_pil(d, img, f, pnl, top, big, tiny, tinyb):
 TAP_LADDER = ("", "holding easily", "it's getting to her", "close to her limit", "very close to tapping",
               "at the edge of tapping")
 TAP_COLORS = ("#e5e7eb", "#facc15", "#f59e0b", "#ea580c", "#dc2626", "#7f1d1d")
+# (since build 283, window.hold_panel.meter_by "chance") the steps by this beat's real chance of a tap
+CHANCE_LADDER = ("no chance of a tap yet", "a tap is far off", "a small chance of a tap", "a real chance of a tap",
+                 "close to tapping", "at the edge of tapping")
+
+
+def chance_level(pct, steps=(3, 10, 25, 50)):
+    """The meter's step (0-5) for a tap chance in %: 0 = none at all, then one more step past each of `steps`."""
+    pct = float(pct or 0)
+    if pct <= 0:
+        return 0
+    return min(5, 1 + sum(1 for s in list(steps)[:4] if pct >= float(s)))
+
+
+def pct_text(p):
+    """A tap chance (%) for the screen: a small one isn't rounded to 0 (0.4%), a nil one is 0%."""
+    p = float(p or 0)
+    return "0%" if p <= 0 else "under 0.1%" if p < 0.1 else f"{p:.1f}%" if p < 10 else f"{p:.0f}%"
+
+
+def _tap_words(t):
+    """The hold panel's few words for how near the one she holds is to tapping: [feel level, chance %, meter_by,
+    steps] (by this beat's chance unless meter_by is "pain")."""
+    if len(t) > 2 and t[2] == "chance":
+        return CHANCE_LADDER[chance_level(t[1], t[3] if len(t) > 3 else (3, 10, 25, 50))]
+    return TAP_LADDER[max(0, min(5, int(t[0])))] or "not fighting it yet"
 
 
 def held_parts(f):
@@ -989,8 +1014,10 @@ def tap_meter(f):
     t = (f.get("grips") or {}).get("tap")
     if not t:
         return None
-    lv = max(0, min(5, int(t.get("level") or 0)))
+    feel = max(0, min(5, int(t.get("level") or 0)))
     pct = 100.0 * float(t.get("chance") or 0)
+    by_chance = str(t.get("meter_by", "chance")) == "chance"
+    lv = chance_level(pct, t.get("chance_steps") or (3, 10, 25, 50)) if by_chance else feel
     notes = []
     if t.get("first"):
         notes.append("first beat in it: she can't tap yet" + ("" if t.get("sub") not in ("hold", "choke") else
@@ -1005,11 +1032,23 @@ def tap_meter(f):
     if t.get("toward") and not t.get("first") and not t.get("spent") and 100.0 * float(t["toward"]) >= pct + 3:
         # (since build 265) tap.blend's build-up: early in a hold the chance is far below what it is climbing to
         notes.append(f"still building: up to {100.0 * float(t['toward']):.0f}% as it stays on")
+    if by_chance and feel >= 3 and lv < 3:
+        # the pain is near or past what she can bear, but the chance this beat is still small
+        notes.append("the pain is " + ("past what she can bear" if feel >= 4 else "near what she can bear"))
+    if t.get("why_low") and pct < 10:
+        # (since build 283) the pain can be far past what she bears while the chance stays tiny: say what holds it down
+        notes.append("kept down by: " + ", ".join(f"{w} x{float(m):.2f}" for w, m in t["why_low"]))
     if t.get("refusals"):
         notes.append(f"refused {t['refusals']}x")
     if t.get("air") is not None:
         notes.append(f"air {t['air']}% gone")
-    label = "fighting the dark" if t.get("choke") and lv >= 3 else TAP_LADDER[lv] or "not fighting it yet"
+    if by_chance:
+        label = CHANCE_LADDER[lv] if not (t.get("first") or t.get("breaking") or t.get("held_on")) or lv else \
+            "can't tap this beat"
+        if t.get("choke") and lv >= 3:
+            label = "fighting the dark"
+    else:
+        label = "fighting the dark" if t.get("choke") and lv >= 3 else TAP_LADDER[lv] or "not fighting it yet"
     return {"level": lv, "chance": pct, "label": label, "note": " · ".join(notes),
             "pain": t.get("pain"), "resist": t.get("resist"), "by": t.get("by"), "sub": t.get("sub")}
 
@@ -1046,7 +1085,7 @@ def grip_lines(f):
         t = x.get("tap")
         out.append((f"Holding: {x['what']} on {poss_word(x['on'])} {parts}" + (f" ({with_})" if with_ else "")
                     + f", beat {x.get('beats', 0)}"
-                    + (f"  · {x['on']}: {TAP_LADDER[max(0, min(5, t[0]))] or 'not fighting it yet'}, {t[1]}% to tap"
+                    + (f"  · {x['on']}: {_tap_words(t)}, {pct_text(t[1])} to tap"
                        if t else ""), "#1d4ed8"))
     p = g.get("pin")
     if p:

@@ -144,7 +144,7 @@ def _gauges(f):
         # (window.hold_panel) how near she is to tapping: five steps and this beat's chance, as in the window
         steps = "".join(f'<span class="step" style="background:{cards.TAP_COLORS[i] if i <= m["level"] else "#fff"}">'
                         f'</span>' for i in range(1, 6))
-        out += (f'<div class="taps"><b>Tap</b> {steps} {html.escape(m["label"])} · {m["chance"]:.0f}% chance this '
+        out += (f'<div class="taps"><b>Tap</b> {steps} {html.escape(m["label"])} · {cards.pct_text(m["chance"])} chance this '
                 f'beat</div><div class="dim">{html.escape(poss_word(str(m["by"])))} {html.escape(str(m["sub"]))}: pain '
                 f'{m["pain"]} against what she can bear {m["resist"]}'
                 + (f' · {html.escape(m["note"])}' if m["note"] else "") + '</div>')

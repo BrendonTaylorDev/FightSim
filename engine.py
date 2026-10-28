@@ -10208,6 +10208,7 @@ class Engine:
             # tap within two beats is rare and there is nearly always a visible struggle first
             bl = tcfg.get("blend") or {}
             blended, base = bool(bl.get("enabled", True)), 0.0
+            why_low = []    # (since build 283) what is keeping this beat's chance down, for the tap meter
             if blended:
                 pd = dmg[0] + float(tcfg.get("second_part", 0.4)) * sum(dmg[1:])
                 P = max(0.0, min(1.0, pd / max(1.0, float(bl.get("part_full", 300))))) ** float(bl.get("part_power", 1.5))
@@ -10216,8 +10217,11 @@ class Engine:
                            + float(bl.get("both", 0.47)) * P * Hh)
                 if surge > 1.0:
                     base *= float(bl.get("surge", 0.6))
+                    why_low.append(("an adrenaline surge", float(bl.get("surge", 0.6))))
                 ramp = min(1.0, max(0, beats - 1) / max(1.0, float(bl.get("ramp_beats", 8))))
                 tap = base * ramp ** float(bl.get("ramp_power", 2))
+                if ramp < 1.0:
+                    why_low.append((f"beat {beats} of the hold, still building", ramp ** float(bl.get("ramp_power", 2))))
             st0 = self.zero_stage(d)
             if st0 and tap > 0 and not blended:
                 # below_zero: the further below zero, the less of her is left to refuse with (stage tap_mult)
@@ -10259,6 +10263,7 @@ class Engine:
                 # likely to bear her down first than to make her give in standing (upright.standing_tap_mult; a hold
                 # that carries her weight, upright.supporting, isn't damped)
                 tap *= float(ucfg.get("standing_tap_mult", 0.35))
+                why_low.append(("still on her feet", float(ucfg.get("standing_tap_mult", 0.35))))
             key_ = f"{a}|{name}|{min(h.id for h in hs)}"
             # THE BREAKING POINT (tap.overwhelm, since build 254): a gripped part in horrible condition (devastated or
             # worse) with the pain past what she can bear is a tap that is coming. She holds out hold_out beats
@@ -10302,6 +10307,7 @@ class Engine:
             q = self.quirk(d, "stubborn")
             if tap > 0 and q:
                 tap *= float(q.get("tap_mult", 0.6))     # (since build 280) she holds out longer than she should
+                why_low.append(("stubborn", float(q.get("tap_mult", 0.6))))
                 if tap >= 0.15:
                     self.quirk_moment(d, "stubborn", f"{d.name} is past her limit and should be giving in, and she "
                                                      f"won't: pure stubbornness, more than sense, keeps her from tapping")
@@ -10331,7 +10337,8 @@ class Engine:
                     # urge all the same, lighter (it doesn't count as a refusal)
                     events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
                 self._note_tap_state(d, a, name, events, tap, pain, resist, held_on=first_over, spent=spent,
-                                     breaking=stage_ if breaking else None, air=(air, endure) if choke else None)
+                                     breaking=stage_ if breaking else None, air=(air, endure) if choke else None,
+                                     why_low=why_low if tap > 0 else ())
             if not how:
                 continue
             if how == "pass_out":
@@ -10579,7 +10586,7 @@ class Engine:
         return bool(((self.rules.get("narration") or {}).get("tap_build") or {}).get("vary", True))
 
     def _note_tap_state(self, d, a, name, events, chance, pain, resist, first=False, held_on=False, spent=False,
-                        breaking=None, air=None):
+                        breaking=None, air=None, why_low=()):
         """For the window (window.hold_panel): how near she is to tapping, as the tap check left it this beat. level
         is the narrator's ladder (1-5: tap.urge's lighter signs, then the refusals near and past her limit), chance
         the tap chance this beat's roll was made at (0 on a beat she can't tap: her first beat in it, the first
@@ -10593,11 +10600,13 @@ class Engine:
                                                                             or min(3, int(ev.get("refusals") or 1))))
         else:
             level = 0
-        d.learned["tap_state"] = {"turn": self.turn, "by": a, "sub": name, "chance": round(float(chance), 3),
+        d.learned["tap_state"] = {"turn": self.turn, "by": a, "sub": name, "chance": round(float(chance), 4),
                                   "pain": round(pain), "resist": round(resist), "level": level,
                                   "refusals": int((d.learned.get("tap_refused") or ["", 0])[1])
                                   if (d.learned.get("tap_refused") or [""])[0] == a else 0,
                                   "first": first, "held_on": bool(held_on), "spent": bool(spent),
+                                  # (since build 283) what keeps the chance down: [(why, multiplier)]
+                                  "why_low": [[w, round(float(m_), 3)] for w, m_ in why_low],
                                   "breaking": breaking, "choke": bool(ev.get("choke")),
                                   "air": min(99, round(air[0] / max(1.0, air[1] + float(
                                       (((self.rules.get("finish") or {}).get("submission") or {}).get("choke") or {})
@@ -10648,6 +10657,12 @@ class Engine:
         ts = f.learned.get("tap_state") or {}
         tap = dict(ts) if (self.submission_match() and ts and int(ts.get("turn", -9)) == self.turn
                            and any(h.attacker == ts.get("by") for h in on_her)) else None
+        # (since build 283) what the meter's steps follow: this beat's real chance (meter_by "chance") or how the
+        # pain feels against what she can bear (the narrator's ladder: "pain")
+        mby = str(cfg.get("meter_by", "chance")).lower()
+        steps = [float(x) for x in (cfg.get("chance_steps") or (3, 10, 25, 50))][:4]
+        if tap is not None:
+            tap["meter_by"], tap["chance_steps"] = mby, steps
         gcfg = ((((self.rules.get("finish") or {}).get("submission") or {}).get("tap") or {}).get("grabs") or {})
         if self.submission_match() and gcfg.get("enabled", True) and f.health > 0:
             for g in held:
@@ -10664,7 +10679,7 @@ class Engine:
                 o = self.fighters.get(str(g["on"]).lower())
                 ot = (o.learned.get("tap_state") or {}) if o else {}
                 if ot and int(ot.get("turn", -9)) == self.turn and ot.get("by") == f.name:
-                    g["tap"] = [int(ot.get("level") or 0), round(100 * float(ot.get("chance") or 0))]
+                    g["tap"] = [int(ot.get("level") or 0), round(100 * float(ot.get("chance") or 0), 1), mby, steps]
         gaps = []
         if cfg.get("distance", True) and self._gap_on():
             for o in self.active():
