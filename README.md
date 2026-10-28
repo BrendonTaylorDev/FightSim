@@ -654,6 +654,12 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 295
+The squeeze bar is drawn the way it happens: her body (tan) in the middle, narrowing as she is squeezed in, with the
+coil's blue edge wrapped round it, and the coils (blue blocks) pressing in from both ends, filling the room she has
+lost, a stripe a side for each coil round her. Before, the coil was a block in the middle of her body. The label is
+shorter: "chest 52%", "belly 30%", "both 92%".
+
 ## Build 294
 Compression in a constriction (`finish.submission.constriction.compression`). Before, the constriction built from how
 hard the coils pressed and how many beats they had held; nothing tracked how far she was squeezed in. Now it does,

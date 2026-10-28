@@ -42,7 +42,7 @@ from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
                    held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour,
-                   squeeze_shapes)
+                   squeeze_shapes, squeeze_label)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -552,11 +552,11 @@ class FighterCard(ttk.Frame):
             # both sides, the coils across it
             full, body, bands = squeeze_shapes(v["squeeze"], v.get("coils"), 84, max(40, w - 84 - 96), 46, 10)
             c.create_rectangle(*full, outline="#4b5563", dash=(2, 2))
-            c.create_rectangle(*body, outline="", fill="#c08457" if v.get("where") != "back" else "#a16207")
             for b in bands:
-                c.create_rectangle(*b, outline="#1f2937", fill="#60a5fa")
-            c.create_text(6, 51, anchor="w", font=("Segoe UI", 7), fill="#f9fafb",
-                          text=f"{(v.get('where') or 'body').replace('both', 'chest+belly')} squeezed {v['squeeze']}%")
+                c.create_rectangle(*b, outline="#1f2937", fill="#3b82f6")       # the coils pressing in from outside
+            c.create_rectangle(*body, outline="#60a5fa", width=2,              # her body, the coil wrapped round it
+                               fill="#c08457" if v.get("where") != "back" else "#a16207")
+            c.create_text(6, 51, anchor="w", font=("Segoe UI", 8), fill="#f9fafb", text=squeeze_label(v))
         tx = 84
         bx, bw = tx, max(40, w - tx - 96)
         # (since build 293) the trace runs like a monitor's, at her own heart rate (window.vitals_animate): six seconds

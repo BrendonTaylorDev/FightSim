@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 294 (compression in a constriction)"
+VERSION = "2026-10-28 build 295 (the squeeze bar drawn from the outside in)"
 
 HELP = """
 =============================================================================================
