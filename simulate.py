@@ -22,7 +22,7 @@ def _usable(eng, f, d, budget=None):
             continue
         if f.move_uses.get(m["name"], 1) <= 0 or m.get("target") == "hold":
             continue
-        if eng.energy_cost(m) > budget or eng.busy_with(f, m):     # (her jaws can't bite while they hold)
+        if eng.energy_cost(m) > budget or eng.busy_with(f, m) or eng.dead_limb(f, m):     # (her jaws can't bite while they hold; a limb not answering her this beat)
             continue
         if m.get("charge") and any(h.attacker == f.name and not h.grab for h in eng.holds.values()):
             continue      # (no charge launched from inside her own hold)
@@ -87,7 +87,7 @@ def _pick_action(eng, rng, f, d):
         close = [m for m in f.moves if not eng.is_ranged(m) and m.get("target") == "targeted" and not m.get("charge")
                  and not m.get("carry")
                  and f.move_uses.get(m["name"], 1) > 0 and eng.energy_cost(m) + float(lcfg.get("energy", 10)) <= f.energy
-                 and not eng.busy_with(f, m)]
+                 and not eng.busy_with(f, m) and not eng.dead_limb(f, m)]
         mine = [mm for who, mm in eng.move_log if who == f.name][-2:]
         close = [m for m in close if not (len(mine) == 2 and all(x == m["name"] for x in mine))]
         if close:

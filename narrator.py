@@ -4639,6 +4639,24 @@ class Narrator:
                             f"the trapped limbs going cold, heavy and tingling, her pulse pounding in her ears and then "
                             f"slowing, her sight greying at the edges, each breath shorter{more}. Her heart slows; it "
                             f"never stops. Squeezing, not striking: no new wounds.")
+                # (since build 297, compression.ring_wear) a coil round her body bruises the whole band it lies on
+                ring = list(dict.fromkeys(h["part"] for e in coiled for h in e.get("hits") or ()))
+                if not throat and len(ring) > 1:
+                    feel += (f" The pressure is all the way round her, so the ache is too, evenly in "
+                             f"{self._ring_words(ring)}, not one sore spot.")
+                if not throat and scopes != {"limb"}:
+                    # (since build 297, holds.coil.wear_first) the coil wears her down before it hurts her: what it
+                    # feels like follows how worn the band it lies on is
+                    cond = min((float(h.get("cond_after", 100)) for e in coiled for h in e.get("hits") or ()),
+                               default=100.0)
+                    wf = ((self.rules.get("holds") or {}).get("coil") or {}).get("wear_first") or {}
+                    if wf.get("enabled", True):
+                        feel += (" For now it is PRESSURE more than injury: a deep stiffness and soreness, her body "
+                                 "being worn down and softened, not yet hurt." if cond > float(wf.get("until", 40)) else
+                                 " It is starting to HURT now: the soreness has turned to real pain, her sides tender, "
+                                 "each squeeze pressing on bruised flesh." if cond > float(wf.get("full_at", 15)) else
+                                 " She is worn through where it holds: every squeeze now really hurts, deep, grinding "
+                                 "pain on bruised, tender flesh that has nothing left to resist with.")
                 lines.append(f"  - COILS: {poss(att)} "
                              + ("tails are wound round her throat" if throat else f"coils are wound round {dfn}")
                              + (" and TIGHTEN again this beat" if beats > 1 else ", and they will tighten every beat")

@@ -654,6 +654,24 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 297
+A coil round her body wears the whole band it goes round, not only the part it was put on
+(`finish.submission.constriction.compression.ring_wear`, 0.5 by default): half of its pressure each beat stays on that
+part and half is shared evenly over the rest of the band (her ribs on both sides and her upper back, or both flanks
+and her lower back). The stat line lists every part it wears, and the narrator is told the ache builds evenly all
+round her rather than in one sore spot. 0 = all of it on the one part, as before.
+
+A coil wears her down before it hurts her (`holds.coil.wear_first`, on by default). While the parts it lies on are in
+better than 40% condition, its damage (and so her health) is cut to 12% and its wear on their resistance doubled; the
+bite climbs steeply from there to full at 15% and below. It takes the place of the slow-bite and submission-grind
+curves for coils. A fresh fighter comes out of a long coil softened all round but with much of her health; a worn-down
+one is in real trouble, and her worn band lets the squeeze close in faster too. Ten coils on a fresh Ripples: 4-19% of
+her health lost (15-28% before), and in half of them the coiler gave out before she did; on a worn Ripples the coil
+finishes her as fast as before and takes more health doing it. Knockout fights barely move (Seraphina beats Ripples
+82% of the time, 81% before). The narrator is told which it is: pressure and soreness, pain starting, or worn through.
+
+The dice stand-in (`simulate.py`) no longer picks a move with a limb that isn't answering her that beat.
+
 ## Build 296
 A coil round her body touches her all the way round, not only the part it was put on
 (`finish.submission.constriction.compression.ring`, on by default). Round her chest it lies on her chest (and ruff),

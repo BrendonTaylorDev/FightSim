@@ -547,7 +547,8 @@ class Engine:
         return names
 
     # ---------- core math ----------
-    def _apply_damage(self, defender, part_name, power, cap=None, grind=None, health_scale=1.0, slow=None):
+    def _apply_damage(self, defender, part_name, power, cap=None, grind=None, health_scale=1.0, slow=None,
+                      wear_first=None):
         """One instance of damage, using the bracket rules. Returns every number involved. cap: {"mult", "health_mult"}
         upper limits on the bracket's multipliers (a pin's steady pressure doesn't tear into a worn part the way a
         blow does: pin.pressure_cap). grind (submissions.grind): a wrench that hurts little while the part is still
@@ -556,7 +557,10 @@ class Engine:
         health lost x this, the part's damage and wear untouched (a long hold's build climbs slower in health).
         slow (holds.slow_bite): a hold's pressure wears the part's resistance first and bites into it only slowly:
         its damage mult climbs from what it was on the sound part only as (worn / sound) ** exp, and its wear x
-        wear_mult (holds already grinding keep their own wear)."""
+        wear_mult (holds already grinding keep their own wear).
+        wear_first (holds.coil.wear_first, since build 297): a coil's pressure goes almost all into wearing the part
+        down while it is sound: its damage x min_mult down to `until` % condition, climbing steeply to the full bite at
+        `full_at` % and below, and its wear on the part x wear_mult. In place of slow."""
         r = self.rules
         p = defender.part(part_name)
         # the damage roll: every instance of damage (a move, a press, a landing, an impact) lands a little harder or
@@ -591,6 +595,12 @@ class Engine:
                 # a worn-out one
                 worn_ = 1.0 - max(0.0, min(1.0, float(cond_b) / 100.0))
                 bmult *= float(slow.get("start_mult", 0.6)) + (1.0 - float(slow.get("start_mult", 0.6))) * worn_
+        if wear_first:
+            # (a coil: the pressure softens the part first, and bites only once it is nearly worn through)
+            hi, lo = float(wear_first.get("until", 40)), float(wear_first.get("full_at", 15))
+            mn = float(wear_first.get("min_mult", 0.12))
+            t = max(0.0, min(1.0, (hi - float(cond_b)) / max(1.0, hi - lo)))
+            bmult *= mn + (1.0 - mn) * t * t
         capped = False
         if cap:
             if cap.get("mult") is not None and bmult > float(cap["mult"]):
@@ -631,6 +641,10 @@ class Engine:
             wear *= float(grind.get("wear_mult", 2.0))
             cap_res *= float(grind.get("wear_mult", 2.0))
             wear_math.append(["a submission grinds it down", float(grind.get("wear_mult", 2.0))])
+        elif wear_first:
+            wear *= float(wear_first.get("wear_mult", 2.0))
+            cap_res *= float(wear_first.get("wear_mult", 2.0))
+            wear_math.append(["coils wear it down first", float(wear_first.get("wear_mult", 2.0))])
         elif slow:
             wear *= float(slow.get("wear_mult", 1.5))
             cap_res *= float(slow.get("wear_mult", 1.5))
@@ -9078,8 +9092,23 @@ class Engine:
             grind = gcfg if (h.sub or h.locked) and gcfg.get("enabled", True) else None
             scfg = self.rules.get("holds", {}).get("slow_bite") or {}
             slow = scfg if scfg.get("enabled", True) and not in_pin else None
-            hit = self._apply_damage(d, h.part, round(power, 2), cap=cap, grind=grind, health_scale=health_scale,
-                                     slow=slow)
+            # (since build 297, constriction.compression.ring_wear) a coil round her body presses on the whole band it
+            # goes round, so its wear goes round with it: ring_wear of the pressure shared over the rest of that band
+            # (her flanks, her back...), the rest on the part it was put on
+            cc_r = self.compress_cfg() or {}
+            share = float(cc_r.get("ring_wear", 0.5)) if h.coil and cc_r.get("ring", True) and not in_pin \
+                and self.coil_scope(h.part) == "body" else 0.0
+            others = [p for p in self.coil_ring(d, h.part)[1] if p != h.part and p in d.parts] if share > 0 else []
+            if not others:
+                share = 0.0
+            wf = ((self.rules.get("holds") or {}).get("coil") or {}).get("wear_first") or {}
+            wf = wf if h.coil and not in_pin and wf.get("enabled", True) else None
+            if wf:
+                slow = grind = None     # (the coil's own curve, in place of slow_bite or a submission's grind)
+            hit = self._apply_damage(d, h.part, round(power * (1.0 - share), 2), cap=cap, grind=grind,
+                                     health_scale=health_scale, slow=slow, wear_first=wf)
+            ring_hits = [self._apply_damage(d, p, round(power * share / len(others), 2), cap=cap, grind=grind,
+                                            health_scale=health_scale, slow=slow, wear_first=wf) for p in others]
             h.turns_active += 1
             if h.coil and not d.eliminated:
                 # coils tighten every beat (holds.coil: tighten, max_power). Round her body or throat they squeeze her
@@ -9098,7 +9127,8 @@ class Engine:
                            "defender": h.defender, "flavor": h.flavor, "with": h.with_part, "grab": bool(h.grab),
                            "coil": bool(h.coil), "sub": h.sub or h.locked,
                            "choke_kind": self._hold_choke_kind(h),
-                           "beats_held": h.turns_active, "hits": [hit], "tags": self._tags([hit])})
+                           "beats_held": h.turns_active, "hits": [hit] + ring_hits,
+                           "tags": self._tags([hit] + ring_hits)})
             if not fresh:
                 # a tightening grip climbs to holds.max_power and no further (coils have their own cap above); an easing
                 # grip that has nothing left in it lets go (inside a pin a contact stays on, at its lightest)

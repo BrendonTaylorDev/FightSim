@@ -838,6 +838,23 @@ def compression_check():
     rw = n._squeeze_words(70, "belly", "Ripples", "Seraphina", False, ["Stomach", "Left Flank", "Right Flank", "Lower Back"])
     if "both her flanks" not in rw or "lower back" not in rw or "all the way round" not in rw:
         problems.append(f"the story should name her flanks and back too: {rw!r}")
+    # build 297 (compression.ring_wear): the coil wears the rest of the band too
+    worn = {p for p in ("Left Ribs", "Right Ribs", "Upper Back") if rp.parts[p].damage > 0}
+    if worn != {"Left Ribs", "Right Ribs", "Upper Back"}:
+        problems.append(f"a coil round her chest should wear her ribs and upper back too: {worn}")
+    # build 297 (holds.coil.wear_first): on a sound part a coil wears more than it hurts; on a worn one it bites fully
+    wf = e.rules["holds"]["coil"]["wear_first"]
+    e.rng.seed(1)
+    sound = e._apply_damage(rp, "Stomach", 20, wear_first=wf)
+    rp.parts["Lower Back"].resistance = 5
+    e.rng.seed(1)
+    worn_hit = e._apply_damage(rp, "Lower Back", 20, wear_first=wf)
+    e.rng.seed(1)
+    plain = e._apply_damage(rp, "Left Flank", 20)
+    if not (sound["damage_taken"] < 0.2 * plain["damage_taken"] and worn_hit["damage_taken"] > plain["damage_taken"]) \
+            or sound["res_before"] - sound["res_after"] <= plain["res_before"] - plain["res_after"]:
+        problems.append(f"a coil should wear a sound part more and hurt it far less, and bite a worn one fully: "
+                        f"{sound['damage_taken']} {plain['damage_taken']} {worn_hit['damage_taken']}")
     import cards
     _, body_box, coil_boxes = cards.squeeze_shapes(60, 1, 0, 100, 0, 10, ring=True)
     if not any(b[1] == 0 and b[2] - b[0] == 100 for b in coil_boxes) or body_box[1] <= 1:
