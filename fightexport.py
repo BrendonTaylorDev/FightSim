@@ -160,11 +160,20 @@ def _gauges(f):
             pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in base)
             cid = f"ecg{abs(hash((v['heart'], v.get('blood'), id(f)))) % 10**8}"
             bp = v.get("bp") or [120, 80]
-            out += (f'<svg class="vitals" viewBox="0 0 {w + 90} 44" width="100%" style="background:#111827;'
+            out += (f'<svg class="vitals" viewBox="0 0 {w + 90} {60 if v.get("squeeze") is not None else 44}" width="100%" style="background:#111827;'
                     f'border-radius:4px;max-width:520px">'
                     f'<text x="6" y="16" fill="{"#ef4444" if v.get("stopped") else col}" font-size="11" '
                     f'font-weight="bold">{"♥ stopped" if v.get("stopped") else "♥ " + str(v["heart"]) + "/min"}</text>'
                     + ('<text x="6" y="29" fill="#fca5a5" font-size="8">irregular</text>' if v.get("irregular") else "")
+                    + ((lambda sh: f'<rect x="{sh[0][0]}" y="{sh[0][1]}" width="{sh[0][2] - sh[0][0]:.1f}" height="10" '
+                       f'fill="none" stroke="#4b5563" stroke-dasharray="2,2"/><rect x="{sh[1][0]:.1f}" y="{sh[1][1]}" '
+                       f'width="{sh[1][2] - sh[1][0]:.1f}" height="8" fill="#c08457"/>'
+                       + "".join(f'<rect x="{b[0]:.1f}" y="{b[1]}" width="{b[2] - b[0]:.1f}" height="12" fill="#60a5fa" '
+                                 f'stroke="#1f2937"/>' for b in sh[2])
+                       + f'<text x="6" y="54" fill="#f9fafb" font-size="8">'
+                       f'{(v.get("where") or "body").replace("both", "chest+belly")} squeezed {v["squeeze"]}%</text>')
+                       (cards.squeeze_shapes(v["squeeze"], v.get("coils"), 84, w - 90, 46, 10))
+                       if v.get("squeeze") is not None else "")
                     + f'<clipPath id="{cid}"><rect x="84" y="0" width="{w - 90}" height="28"/></clipPath>'
                     f'<g clip-path="url(#{cid})"><g transform="translate(84,0)"><polyline points="{pts}" fill="none" '
                     f'stroke="{col}" stroke-width="1.5"><animateTransform attributeName="transform" type="translate" '

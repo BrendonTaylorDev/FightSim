@@ -654,6 +654,31 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 294
+Compression in a constriction (`finish.submission.constriction.compression`). Before, the constriction built from how
+hard the coils pressed and how many beats they had held; nothing tracked how far she was squeezed in. Now it does,
+from 0 to 92%, and that is what drives the rest:
+- Each beat the coils gain on her: more the harder they press, the bigger the coiler is than her and the more coils
+  there are; less the sturdier the parts they are on and the more strength she has to brace with. Each breath out
+  they take up the room she gave up, and more when she fights it: struggling spends breath, and the coils take it.
+  It closes in over about six beats.
+- The blood gauge builds by how far she is squeezed in: little while the coils are only snug, fast once they have her
+  in tight. Her heart and blood pressure follow the gauge, as before.
+- It makes the coils harder to break (up to half her chance gone, squeezed all the way in) and costs her more breath
+  (her energy loss x0.5 to x1.5).
+- Chest and belly differ, a little in the numbers and mostly in the telling: round her chest, her ribs can't spring
+  back out and the pressure bears straight in on her heart (the gauge a little faster); round her belly, her gut is
+  driven up under her ribs and the breath is pushed out of her from below (a little slower on the heart); both; or her
+  back bowed.
+- The story is told how far in she is (snug, tight, crushing, held almost flat) and where, and whether she fought it
+  this beat. The stat line says it, and the vitals strip draws it: her chest or belly as a band narrowing from both
+  sides as the coils close in, the coils across it, "chest squeezed 61%". The strip now shows from a coil's first
+  beat, before the squeeze has started on her blood.
+- Timing kept as before: fresh about 9.5 beats to the end, worn down about 6.
+
+No nausea anywhere: the nauseous body effect from build 293 is gone, and the old wording of a lurch of nausea (a
+numb, devastated part hit again; poison) is now a cold rush of shock and weakness.
+
 ## Build 293
 Head and body effects (`moves.head`, `moves.body_jolts`, both on by default; what each does is in `status_effects`).
 
@@ -672,7 +697,7 @@ or a throw. Dazed or stunned three times, or a head part at 300%, and she is CON
 head blows rattle her far more easily, getting up is harder, and the story carries the fog and the headache.
 
 The rest of her: a dead leg (a thigh), a limp (a knee or foot already badly hurt), a dead arm, aching ribs, a back in
-spasm, a numb tail base, nausea from the gut, an eye swelling shut. Each has its own effect, its icon on screen, its
+spasm, a numb tail base, an eye swelling shut. Each has its own effect, its icon on screen, its
 look, thought and opponent's read for the story, and its line when it wears off. Sizes go by the damage scale, so /scale
 15 doesn't make every blow the biggest. Balance (200 no-model fights a pair, effects on against off): Seraphina vs Ripples
 84% / 84%, Nocturne vs Ripples 55% / 56%, Nerine vs Ripples 59% / 64%.

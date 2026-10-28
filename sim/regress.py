@@ -800,10 +800,45 @@ def presets_help_check():
     return problems
 
 
+def compression_check():
+    """Build 294: compression in a constriction: it builds beat by beat (more when she fights it), drives the blood
+    gauge, makes the coils harder to break, tells the chest and the belly apart in the story, and never brings
+    nausea."""
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    e.rules["finish"]["submission"]["enabled"] = True
+    e._hold_break_tick = lambda *a, **k: []
+    e.start_submission("Seraphina", "Ripples", "upright coil")
+    comps = []
+    for _ in range(5):
+        e.turn += 1
+        ev = e.beat()
+        c = next((x for x in ev if x["type"] == "constriction"), None)
+        if c:
+            comps.append(c["compress"])
+    if len(comps) < 4 or comps != sorted(comps) or comps[0] >= comps[-1] or comps[-1] > 92:
+        problems.append(f"the squeeze should build beat by beat, up to its max: {comps}")
+    if not c or c.get("where") != "chest":
+        problems.append(f"coils on her chest are told as her chest: {c}")
+    n = s.narrator
+    chest = n._squeeze_words(70, "chest", "Ripples", "Seraphina", True)
+    belly = n._squeeze_words(70, "belly", "Ripples", "Seraphina", False)
+    if "heart" not in chest or "from below" not in belly or "took up" not in chest or "keeping still" not in belly:
+        problems.append(f"the chest and the belly read differently: {chest!r} {belly!r}")
+    if e.compression_on(e.get("Ripples"), "Seraphina") <= 0:
+        problems.append("compression_on should give the squeeze while the coils are on")
+    import json as _json
+    if "nause" in open("rules.json", encoding="utf-8").read().lower().replace("nauseous", "nause") and \
+            ("nausea" in str(e.rules["finish"]["submission"]["constriction"]) or "nauseous" in str(e.rules["moves"]["body_jolts"])):
+        problems.append("no nausea, from the coils or a blow")
+    return problems
+
+
 def head_body_check():
     """Build 293: head effects (rattled, dazed, stunned and its wobbly legs, seeing double, watering eyes, ringing
     ears, a rattled jaw, whiplash, concussed), body effects (dead leg, limp, dead arm, aching ribs, back spasm, numb
-    tail, nausea, a swelling eye), what they do, the director's stunned fighter swaying, the heartbeat words for the
+    tail, a swelling eye), what they do, the director's stunned fighter swaying, the heartbeat words for the
     story, and a heart that stops in a constriction blackout and starts again."""
     import collections, cards, director as D
     problems = []
@@ -839,7 +874,7 @@ def head_body_check():
                               {"defender": "Ripples", "part": "Stomach", "damage_taken": 60, "damage_after": 200}],
                           {"name": "Iron Tail", "about": ""}, sr):
             body[x["status"]] += 1
-    for st in ("dead_leg", "ribs_aching", "nauseous"):
+    for st in ("dead_leg", "ribs_aching"):
         if not body[st]:
             problems.append(f"no {st} from a hard blow there: {body}")
     e.set_status(r, "back_spasm", 2)
@@ -3000,6 +3035,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "compression squeeze constriction" for w in want):
+        t = time.time()
+        probs = compression_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  compression in a constriction: builds, drives the blood, chest or belly, no nausea  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "head stun body jolts heart" for w in want):

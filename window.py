@@ -41,7 +41,8 @@ from engine import species_of, body_region, note_failure, poss_word
 from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_color, text_on, short,
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
-                   held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour)
+                   held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour,
+                   squeeze_shapes)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -328,7 +329,7 @@ class FighterCard(ttk.Frame):
         self.tm = tk.Canvas(self, width=PIC + 2 * COL, height=34, highlightthickness=0, bg=C("#f3f4f6"))
         # (since build 287) coils round her body: her heart as a trace, the blood flow cut off, her blood pressure
         # (a monitor: always dark, in either theme; build 290 ran it through C, which made it light in dark mode)
-        self.vt = tk.Canvas(self, width=PIC + 2 * COL, height=44, highlightthickness=0, bg="#111827")
+        self.vt = tk.Canvas(self, width=PIC + 2 * COL, height=60, highlightthickness=0, bg="#111827")
         # the grips on her and by her, a pin, and how far she is from the others (window.hold_panel)
         self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg=C("#ffffff"))
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
@@ -546,6 +547,16 @@ class FighterCard(ttk.Frame):
                       font=("Segoe UI", 9, "bold"), fill=col)
         if v.get("irregular"):
             c.create_text(6, 25, anchor="w", text="irregular", font=("Segoe UI", 7), fill="#fca5a5")
+        if v.get("squeeze") is not None:
+            # (since build 294) how far the coils have squeezed her in: her chest or belly as a band narrowing from
+            # both sides, the coils across it
+            full, body, bands = squeeze_shapes(v["squeeze"], v.get("coils"), 84, max(40, w - 84 - 96), 46, 10)
+            c.create_rectangle(*full, outline="#4b5563", dash=(2, 2))
+            c.create_rectangle(*body, outline="", fill="#c08457" if v.get("where") != "back" else "#a16207")
+            for b in bands:
+                c.create_rectangle(*b, outline="#1f2937", fill="#60a5fa")
+            c.create_text(6, 51, anchor="w", font=("Segoe UI", 7), fill="#f9fafb",
+                          text=f"{(v.get('where') or 'body').replace('both', 'chest+belly')} squeezed {v['squeeze']}%")
         tx = 84
         bx, bw = tx, max(40, w - tx - 96)
         # (since build 293) the trace runs like a monitor's, at her own heart rate (window.vitals_animate): six seconds

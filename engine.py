@@ -2955,8 +2955,6 @@ class Engine:
             out.append(("her back in spasm", float(cfg.get("back_spasm_power_mult", 0.85))))
         if self.has(a, "ribs_aching"):
             out.append(("her ribs aching", float(cfg.get("ribs_aching_power_mult", 0.92))))
-        if self.has(a, "nauseous"):
-            out.append(("sick to her stomach", float(cfg.get("nauseous_power_mult", 0.9))))
         if self.has(a, "stiff"):
             out.append(("stiff from the pin", float(cfg.get("stiff_power_mult", 0.85))))
         if self.has(a, "constricted") and any(h.coil and h.defender == a.name and self.coil_scope(h.part) == "body"
@@ -6795,13 +6793,12 @@ class Engine:
                   ("ribs_aching", lambda p, plan: bool(re.search(r"ribs|flank", p, re.I)), 40, 120, 0.35, 3),
                   ("back_spasm", lambda p, plan: body_region(p) == "back_low", 45, 0, 0.25, 2),
                   ("tail_numb", lambda p, plan: plan != "serpent" and bool(re.search(r"tail base|base of", p, re.I)), 40, 0, 0.3, 2),
-                  ("nauseous", lambda p, plan: bool(re.search(r"stomach|belly|gut", p, re.I)), 0, 150, 0.25, 2),
                   ("swollen_eye", lambda p, plan: bool(re.search(r"cheek|eye|brow|temple", p, re.I)), 0, 150, 0.3, 8))
 
     def _body_jolts(self, d, hits, move=None):
         """moves.body_jolts (since build 293): beyond the head, what a hard blow can leave behind for a few beats: a
         dead leg (a thigh), a limp (a knee or a foot already badly hurt), a numb arm, aching ribs, a back in spasm, a
-        numbed tail base, nausea from the gut, an eye swelling shut. Each one at most once at a time. Each its own
+        numbed tail base, an eye swelling shut. Each one at most once at a time. Each its own
         chance (chances.<name>), with what it does in status_effects. Returns status records."""
         cfg = (self.rules.get("moves") or {}).get("body_jolts") or {}
         if not cfg.get("enabled", True):
@@ -8965,6 +8962,10 @@ class Engine:
                 continue   # (since build 278) her player has her do nothing: she doesn't try to break it
             if self.has(fd, "stunned"):
                 continue   # (since build 293) stunned: nothing in her answers yet
+            cc_ = self.compress_cfg()
+            if cc_ and any(h.coil and self.coil_scope(h.part) == "body" for h in hs):
+                # (since build 294) squeezed in, she has no room left to work with
+                ch *= max(0.0, 1.0 - float(cc_.get("escape_mult", 0.5)) * self.compression_on(fd, fa.name) / 100.0)
             if fd.name in self.lucky and fa.name not in self.lucky:
                 ch = 1.0   # /play dice free: she breaks any hold on her at once (not one a dice-free holder has)
             if ch <= 0:
@@ -9258,6 +9259,9 @@ class Engine:
             regen = float(en.get("regen_per_beat", 5)) + (0 if f.name in self.involved else float(en.get("rest_bonus", 10)))
             if self.has(f, "constricted"):      # the coils squeeze her breath: she gets none back, and loses some
                 regen = -float(cfg_s.get("constricted_energy_loss", 4))
+                if self.compress_cfg():
+                    # (since build 294) the further she is squeezed in, the less breath she gets: x0.5 to x1.5
+                    regen *= 0.5 + self.compression_on(f) / 100.0
             elif self.has(f, "sputtering"):     # coughing water up: no breath to get back
                 regen = 0.0
             elif self.has(f, "breathless"):     # winded: half the breath comes back (resting still helps)
@@ -10461,9 +10465,9 @@ class Engine:
                 sa, sd = self.size_m(self.get(a)), self.size_m(d)
                 big = max(float(kcfg.get("size_min", 0.75)), min(float(kcfg.get("size_max", 1.4)),
                           (sa / sd) ** float(kcfg.get("size_weight", 0.2)))) if sa and sd else 1.0
-                per = float(kcfg.get("per_beat", 16)) * (1.0 + float(kcfg.get("extra_coil", 0.35)) * (len(body_coils) - 1)) \
-                    * tight * big
-                circ = per * max(h.turns_active for h in body_coils)
+                hid = min(h.id for h in body_coils)
+                circ = self._compress_tick(d, a, hid, body_coils, tight, big, kcfg, s_)
+                comp = float((d.learned.get("compress") or {}).get("c", 0.0))
                 ew = float(kcfg.get("energy_weight", 0.4))
                 worst = max((d.parts[h.part].damage for h in body_coils if h.part in d.parts), default=0.0)
                 part_f = 1.0 - float(kcfg.get("part_weight", 0.25)) * min(1.0, worst / 300.0)
@@ -10488,14 +10492,18 @@ class Engine:
                          "slowing" if frac < float(kcfg.get("stage_grey", 0.65)) else "greying")
                 # (a heart that has begun to slow doesn't race again while the same coils stay on: the stage holds)
                 pk = d.learned.get("circ_peak") or ["", 0, -1]
-                hid = min(h.id for h in body_coils)
                 if pk[0] == a and len(pk) > 2 and pk[2] == hid and order.index(stage) < int(pk[1]):
                     stage = order[int(pk[1])]
                 d.learned["circ_peak"] = [a, order.index(stage), hid]
                 vit = self.constriction_vitals(d, frac, stage)
                 d.learned["circ_vitals"] = [self.turn, vit]      # (for the tap meter)
+                vit["squeeze"] = round(comp)
+                vit["where"] = (d.learned.get("compress") or {}).get("where", "")
+                vit["coils"] = len(body_coils)
                 events.append(dict({"type": "constriction", "attacker": a, "defender": dn, "stage": stage,
-                                    "pct": round(100 * frac), "coils": len(body_coils),
+                                    "pct": round(100 * frac), "coils": len(body_coils), "compress": round(comp),
+                                    "where": (d.learned.get("compress") or {}).get("where", ""),
+                                    "struggled": bool((d.learned.get("compress") or {}).get("struggled")),
                                     "parts": [h.part for h in body_coils]}, **vit))
             # she holds on the first beat it goes past her limit, whatever it costs her: only after that can she
             # give in (d.learned keeps which grip she has already fought through once)
@@ -10503,15 +10511,16 @@ class Engine:
             # a grip on such a part (and nothing new besides) can't make her give in, so it doesn't roll
             # (for the window's pain gauge: the very numbers this check weighed, this beat)
             d.learned["sub_gauge"] = {"turn": self.turn, "pain": round(pain), "resist": round(resist),
-                                      "air": round(max(air, circ)), "endure": round(circ_end if circ > air else endure),
-                                      "circ": circ > air, "sub": name, "by": a,
+                                      "air": round(max(air, circ)),
+                                      "endure": round(circ_end if body_coils and circ >= air else endure),
+                                      "circ": bool(body_coils) and circ >= air, "sub": name, "by": a,
                                       "base": round(base, 3) if blended else None}
             if first:
                 if urge_first:
                     events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
                 # (since build 289 with its gauge: the constriction's blood flow and her heart show from the first beat)
                 self._note_tap_state(d, a, name, events, 0.0, pain, resist, first=True,
-                                     air=(circ, circ_end, "circ") if body_coils and circ > air else
+                                     air=(circ, circ_end, "circ") if body_coils and circ >= air else
                                      (air, endure) if choke and air else None)
                 continue
             ucfg = (self.rules.get("submissions") or {}).get("upright") or {}
@@ -10601,7 +10610,7 @@ class Engine:
                     events += self._tap_urge(d, a, name, hs, pain, resist, beats, tcfg)
                 self._note_tap_state(d, a, name, events, tap, pain, resist, held_on=first_over, spent=spent, out=po,
                                      breaking=stage_ if breaking else None,
-                                     air=(circ, circ_end, "circ") if body_coils and circ > air else
+                                     air=(circ, circ_end, "circ") if body_coils and circ >= air else
                                      (air, endure) if choke else None,
                                      why_low=why_low if tap > 0 else ())
             if not how:
@@ -10991,6 +11000,65 @@ class Engine:
     # the signs of fighting the tap that need a free paw (narrator.TAP_TELLS, TAP_URGE)
     PAW_TELLS = ("fist", "claws", "reach", "yank", "fist_shake", "yank_back", "shake_hard", "twitch", "curl", "touch",
                  "hover", "pin_paw", "grab_ground", "flat", "hangs")
+
+    def compress_cfg(self):
+        """finish.submission.constriction.compression (since build 294), or None when it is off."""
+        c = ((((self.rules.get("finish") or {}).get("submission") or {}).get("constriction") or {})
+             .get("compression"))
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
+    def compression_on(self, d, holder=None):
+        """How far coils round her body have squeezed her in right now (0-100), or 0."""
+        cp = d.learned.get("compress") or {}
+        if not cp or (holder and cp.get("by") != holder):
+            return 0.0
+        if not any(h.coil and h.id == cp.get("hid") for h in self.holds.values()):
+            return 0.0
+        return float(cp.get("c", 0.0))
+
+    def _compress_tick(self, d, a, hid, coils, tight, big, kcfg, s_):
+        """finish.submission.constriction.compression (since build 294): how far the coils have squeezed her chest
+        and middle in, kept from beat to beat while the same coils hold, and the constriction gauge it builds.
+        Each beat the coils gain on her: gain x how hard they press (tight) x how much bigger the coiler is (big) x
+        each coil past the first; less, the sturdier the parts they are on (her resistance there) and the more strength
+        she has to brace with. Each breath out the coils take up the room she gave up (ratchet), and struggling spends
+        breath faster (struggle_ratchet), so fighting it tightens it. The gauge then builds by per_beat x how far she
+        is squeezed in (nothing much under floor %, full at floor + span %, more past it). Returns the gauge.
+        Off: the gauge builds as before, per_beat x the beats held x tight x big x the coils."""
+        cc = self.compress_cfg()
+        n = len(coils)
+        per = float(kcfg.get("per_beat", 4)) * (1.0 + float(kcfg.get("extra_coil", 0.35)) * (n - 1))
+        if not cc:
+            return per * tight * big * max(h.turns_active for h in coils)
+        cp = d.learned.get("compress") or {}
+        if cp.get("by") != a or cp.get("hid") != hid:
+            cp = {"by": a, "hid": hid, "c": 0.0, "circ": 0.0, "turn": -1}
+        if cp.get("turn") == self.turn:
+            return float(cp.get("circ", 0.0))        # (once a beat, however many tap checks look at it)
+        res = [d.parts[h.part].resistance for h in coils if h.part in d.parts] or [100.0]
+        brace = (float(cc.get("brace_base", 0.6)) + float(cc.get("brace_res", 0.4)) * (sum(res) / len(res)) / 100.0) \
+            * (float(cc.get("brace_base", 0.6)) + (1.0 - float(cc.get("brace_base", 0.6))) * max(0.0, s_) / 100.0)
+        gain = float(cc.get("gain", 10)) * tight * big * (1.0 + float(kcfg.get("extra_coil", 0.35)) * (n - 1)) \
+            / max(0.3, brace)
+        pas = getattr(self, "_passive", None)
+        struggled = not (pas and pas[0] == self.turn and d.name in pas[1]) and not self.has(d, "stunned") \
+            and d.energy > 5
+        gain += float(cc.get("ratchet", 3)) + (float(cc.get("struggle_ratchet", 3)) if struggled else 0.0)
+        cp["c"] = min(float(cc.get("max", 92)), float(cp.get("c", 0.0)) + gain)
+        floor, span = float(cc.get("floor", 15)), float(cc.get("span", 50))
+        f = max(0.0, min(float(cc.get("over", 1.6)), (cp["c"] - floor) / max(1.0, span)))
+        # where it squeezes: round her chest it bears straight on her heart and lungs; round her belly it drives her
+        # gut up under her ribs (the breath pushed out from below, less on the heart); both, or her back
+        regs = {body_region(h.part) for h in coils}
+        chest = "chest" in regs or any(re.search(r"ribs", h.part, re.I) for h in coils)
+        belly = "belly" in regs
+        cp["where"] = "both" if chest and belly else "chest" if chest else "belly" if belly else "back"
+        wm = cc.get("where_mult") or {}
+        cp["circ"] = float(cp.get("circ", 0.0)) + float(cc.get("per_beat", 9)) * f * float(
+            wm.get(cp["where"], {"chest": 1.1, "belly": 0.9, "both": 1.05, "back": 0.95}[cp["where"]]))
+        cp["turn"], cp["struggled"] = self.turn, struggled
+        d.learned["compress"] = cp
+        return cp["circ"]
 
     def constriction_vitals(self, d, frac, stage):
         """finish.submission.constriction.vitals (since build 283): rough numbers for the screen while coils hold back
@@ -11842,7 +11910,6 @@ class Engine:
         "ribs_aching": "her RIBS ACHING: every breath catches on that side; she holds it close and moves carefully",
         "back_spasm": "her BACK IN SPASM: the muscles locked tight across it; twisting, rising and striking all hurt",
         "tail_numb": "her TAIL NUMB at the base: her balance off without it, every turn a little wide",
-        "nauseous": "SICK TO HER STOMACH from the blow to the gut: a sour, heaving queasiness, weak with it",
         "swollen_eye": "an EYE SWELLING SHUT: the cheek and brow puffed up, her sight narrowed on that side",
         "doubled_over": "DOUBLED OVER by the pain: folded round the hurt, guard down for a moment",
         "staggered": "STAGGERED: knocked a step or more by the last blow and still finding her feet; slow to dodge, open "
@@ -11868,7 +11935,7 @@ class Engine:
         "frozen": "FROZEN: locked in a shell of ice, unable to move",
         "confused": "CONFUSED: dizzy and disoriented, swaying, her attacks wild (she may hurt herself)",
         "burned": "BURNED: a hot, stinging burn that flares with every movement and saps her strength",
-        "poisoned": "POISONED: nauseous and shaky, the poison sapping her a little every moment",
+        "poisoned": "POISONED: weak and shaky, the poison sapping her a little every moment",
         "adrenaline": "ADRENALINE SURGE: pain pushed to the back of her mind, eyes sharp, faster and hitting harder "
                       "than she should be able to",
         "greyed": "GREYING OUT: for a moment the edges of her sight go grey and the sound goes far away; she sways, "

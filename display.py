@@ -86,7 +86,7 @@ class Display:
                    "rattled": "💥", "stunned": "🌟", "wobbly": "🦵", "seeing_double": "👀", "eyes_watering": "💧",
                    "ears_ringing": "🔔", "jaw_rattled": "🦷", "whiplash": "↪️", "concussed": "🧠", "dead_leg": "🦵",
                    "limping": "🩼", "dead_arm": "💪", "ribs_aching": "🫁", "back_spasm": "⚡", "tail_numb": "〰️",
-                   "nauseous": "🤢", "swollen_eye": "👁️"}
+                   "swollen_eye": "👁️"}
 
     def _status_tag(self, f):
         bits = [f"{self.STATUS_ICON.get(s, '')}{s} {n}" for s, n in f.status.items()]
@@ -1237,8 +1237,11 @@ class Display:
             elif e["type"] == "constriction":
                 # (since build 283) the coils round her body holding back her blood
                 out.append(f"🫀 {poss_word(e['attacker'])} coils on {poss_word(e['defender'])} "
-                           f"{', '.join(str(p).lower() for p in e.get('parts') or [])}: blood flow {e.get('pct', 0)}% cut "
-                           f"off, her heart " + {"pounding": "pounding", "slowing": "slowing and stumbling",
+                           f"{', '.join(str(p).lower() for p in e.get('parts') or [])}: "
+                           + (f"squeezed in {e['compress']}% ({e.get('where')}"
+                              f"{', she fought it' if e.get('struggled') else ''}), " if e.get("compress") is not None
+                              else "")
+                           + f"blood flow {e.get('pct', 0)}% cut off, her heart " + {"pounding": "pounding", "slowing": "slowing and stumbling",
                                                  "greying": "slow and uneven, the grey closing in"}.get(e.get("stage"), "")
                            + (f" · heart about {e['heart']} a minute{', irregular' if e.get('irregular') else ''}, "
                               f"blood pressure about {e['bp'][0]}/{e['bp'][1]}" if e.get("heart") else ""))

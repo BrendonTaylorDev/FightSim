@@ -1030,6 +1030,19 @@ def ecg_points(heart, irregular, width, height, x0=0.0, y0=0.0, seconds=6.0):
     return pts
 
 
+def squeeze_shapes(squeeze, coils, x0, width, y0, height):
+    """(since build 294) The squeeze bar: her chest or belly as a band that narrows from both sides as the coils close
+    in (squeeze: 0-100, down to about a third of its width at 92%), with a coil drawn across it for each one round her.
+    Returns (full outline box, squeezed body box, [coil band boxes])."""
+    full = (x0, y0, x0 + width, y0 + height)
+    cut = width * 0.35 * min(100.0, max(0.0, float(squeeze))) / 100.0
+    body = (x0 + cut, y0 + 1, x0 + width - cut, y0 + height - 1)
+    n = max(1, min(4, int(coils or 1)))
+    bw = max(4.0, (body[2] - body[0]) / (n * 2 + 1))
+    bands = [(body[0] + bw * (2 * k + 1), y0 - 1, body[0] + bw * (2 * k + 2), y0 + height + 1) for k in range(n)]
+    return full, body, bands
+
+
 def vitals_colour(blood):
     """The colour of the vitals strip from how much blood flow is cut off (%)."""
     return "#22c55e" if blood < 30 else "#f59e0b" if blood < 60 else "#ea580c" if blood < 80 else "#dc2626"

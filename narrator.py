@@ -3226,11 +3226,11 @@ class Narrator:
                               quiet=self._reaction_size(h, after["label"], size == "glancing").startswith(("small",
                                                                                                           "clear")))
         if after["label"] == "numb with shock" and before["label"] == "numb with shock":
-            impact = "a dull, sickening jolt she barely feels as pain, then a lurch of nausea and shallow breath"
+            impact = "a dull, sickening jolt she barely feels as pain, then a cold rush of shock and shallow breath"
         if h.get("numb"):
             # the part is NUMB right now (numbness): no scream and no agony from it, only the dull wrongness
-            impact = ("a dull, sickening jolt she barely feels as pain (the part is NUMB for now), then a lurch of "
-                      "nausea and a shallow breath")
+            impact = ("a dull, sickening jolt she barely feels as pain (the part is NUMB for now), then a cold "
+                      "rush of shock and a shallow breath")
             change = "the part is still NUMB: the damage is real, but the pain stays shut out for now"
         raw = None if h.get("numb") else self._raw_reaction(h, before["label"])
         if raw:
@@ -4663,7 +4663,7 @@ class Narrator:
                     lines.append(f"{poss(e['fighter'])} burn flares on her {e['hits'][0]['part'].lower()}: a hot, "
                                  f"stinging throb she can't shake.")
                 elif e["status"] == "poisoned":
-                    lines.append(f"The poison works through {e['fighter']}: a wave of nausea and shakiness.")
+                    lines.append(f"The poison works through {e['fighter']}: a wave of weakness and shakiness.")
                 else:
                     lines.append(f"The {e['status']} keeps coming down: hailstones sting {e['fighter']} on her "
                                  f"{e['hits'][0]['part'].lower()}.")
@@ -4736,6 +4736,10 @@ class Narrator:
                 lines.append(self.CONSTRICT_STAGE.get(e.get("stage"), self.CONSTRICT_STAGE["pounding"]).format(
                     d=e["defender"], a=e["attacker"], ds=poss(e["defender"]),
                     coils="coils" if int(e.get("coils") or 1) > 1 else "coil"))
+                if e.get("compress") is not None and e.get("where"):
+                    # (since build 294, constriction.compression) how far in she is squeezed, and where
+                    lines.append("  - HOW FAR THE COILS HAVE SQUEEZED HER IN: " + self._squeeze_words(
+                        int(e["compress"]), e["where"], e["defender"], e["attacker"], bool(e.get("struggled"))))
                 # (since build 293) the heartbeat between them: the coiler feels it through her coils and works her
                 # squeeze by it; the one held hears and feels her own heart as she never has (one idea each, varied
                 # by the beat; feelings and choices, never numbers)
@@ -6629,9 +6633,6 @@ class Narrator:
         "tail_numb": ("her tail drags, numb at the base, and without it her balance is off; she turns wide",
                       "she can't feel where her tail is and her body doesn't trust its turns",
                       "{other} sees the tail drag and the wide turns"),
-        "nauseous": ("a sour, heaving queasiness rolls up from her gut; she swallows hard against it",
-                     "she feels sick and weak with it, and hates that it shows",
-                     "{other} sees her swallow and pale"),
         "swollen_eye": ("the cheek and the brow puff up and the eye narrows to a slit",
                         "the world has gone narrow on that side",
                         "{other} sees the swelling, and which side she can't see from"),
@@ -6666,7 +6667,6 @@ class Narrator:
         "ribs_aching": "she can take a whole breath again",
         "back_spasm": "the spasm lets go of her back",
         "tail_numb": "feeling comes back into her tail and her balance with it",
-        "nauseous": "the sickness settles",
         "swollen_eye": "the swelling goes down enough to see through",
         "fury": "the cold anger drains out of her and leaves her just tired",
         "adrenaline": "the surge drains out of her and every hurt comes back at full size",
@@ -7766,6 +7766,26 @@ class Narrator:
                    "events say whether she does). (Not a choke: no gasping for air; the blood is what is running "
                    "out.)",
     }
+    @staticmethod
+    def _squeeze_words(c, where, d, a, struggled):
+        """(since build 294) How far the coils have squeezed her in (constriction.compression: 0-100) and where, in the
+        story's words: round her chest it is her ribs that can't spring out and her heart pressed on; round her belly
+        her gut is driven up under her ribs and the breath pushed out from below; both; or her back bowed."""
+        level = ("snug: she can still breathe around them, if she is careful" if c < 35 else
+                 "tight: her breath only half fills her before it meets the coils" if c < 60 else
+                 "crushing: barely a sip of air fits between one squeeze and the next" if c < 80 else
+                 "she is held almost flat: there is no room left for a breath to speak of")
+        place = {"chest": (f"round {poss(d)} chest: her ribs can't spring back out, every breath out the coils take "
+                           f"the room it leaves, and the pressure bears straight in on her heart"),
+                 "belly": (f"round {poss(d)} belly: her middle is pressed in and her gut driven up under her ribs, so "
+                           f"the breath is pushed out of her from below and she can't drop her belly to draw another"),
+                 "both": (f"round {poss(d)} chest and belly both: there is nowhere for the breath to go, above or below, "
+                          f"and the pressure bears in on her heart"),
+                 "back": f"round {poss(d)} back and middle: her spine bowed, her chest pressed from behind"}.get(where, "")
+        fight = (f" She fought it this beat, and every breath that cost her, {a} took up." if struggled else
+                 f" She is keeping still, and even so each breath out gives {a} a little more.")
+        return f"{level}; {place}.{fight} In her body and her breath, never as a number."
+
     # (since build 293) the heartbeat in a constriction, stage by stage (narration.constriction_feel): what the coiler
     # feels of it through her coils and does about it, and what the one held feels of her own heart
     CONSTRICT_FEEL = {
