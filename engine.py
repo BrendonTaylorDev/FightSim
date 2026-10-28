@@ -279,6 +279,10 @@ class Fighter:
     voice: str = ""                              # how this fighter sounds (thoughts, cries, speech)
     out_beats: int = 0                           # beats since being put out (or since the last recovery stage)
     learned: dict = field(default_factory=dict)  # what she has learned this fight: pin shapes broken, moves felt
+    traits: dict = field(default_factory=dict)   # (since build 280) how she fights: speed, hold, escape... (1 = as now)
+    quirks: list = field(default_factory=list)   # (since build 280) her named quirks (rules.json -> traits.quirks)
+    style: str = ""                              # (since build 280) how she likes to fight, for the director
+    favors: dict = field(default_factory=dict)   # (since build 280) move name -> how much she prefers it
 
     def part(self, name):
         found = match_part(list(self.parts), name)
@@ -477,7 +481,10 @@ class Engine:
                     team=fd.get("team") or fd["name"],
                     types=list(fd.get("types", [])), moves=list(fd.get("moves", [])),
                     appearance=fd.get("appearance", ""), tells=fd.get("tells", ""), voice=fd.get("voice", ""),
-                    move_uses={m["name"]: int(m["uses"]) for m in fd.get("moves", []) if m.get("uses")})
+                    move_uses={m["name"]: int(m["uses"]) for m in fd.get("moves", []) if m.get("uses")},
+                    traits={k: v for k, v in (fd.get("traits") or {}).items() if not str(k).startswith("_")},
+                    quirks=list(fd.get("quirks") or []), style=str(fd.get("style") or ""),
+                    favors=dict(fd.get("favors") or {}))
         body = fd.get("body", "human")
         template = dict(body) if isinstance(body, dict) else dict(self.rules["body_templates"][body])
         template.update(fd.get("extra_parts", {}))
@@ -906,7 +913,7 @@ class Engine:
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
                     "_sustain_now", "_source", "_knock_on", "_tac_before", "beat_loss", "sub_window", "pin_window",
                     "nudges", "_windows_ready", "_pre_rolls", "directed", "ordered", "dice_mode", "lucky",
-                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking", "_dominate_turn", "_passive",
+                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking", "_dominate_turn", "_passive", "_overcommit_why",
                     "rules", "roster", "roster_species", "scenes", "scene_cfg", "scene_name", "scene", "movedex",
                     "variants", "variant_of", "settings_applied", "_seed0", "rng", "event_rng")
 
@@ -1119,6 +1126,9 @@ class Engine:
                 extras = extras + [("closing on her at speed in the air"
                                     + (f", {n} pass{'es' if n != 1 else ''} of speed behind it" if n else ""),
                                     round(float(ap.get("mult", 1.15)) * (1 + float(sp.get("per_pass", 0.1)) * n), 3))]
+        q = self.quirk(a, "overwhelming")
+        if q and target not in ("self", "status") and float(move.get("power") or 0) >= float(q.get("big_from", 22)):
+            extras.append(("her overwhelming strength", float(q.get("power_mult", 1.12))))   # (since build 280)
         if move.get("improvised"):
             stab = 1.0    # a technique she makes up on the spot isn't one of her own type's moves: no same-type bonus
         xm = 1.0
@@ -1652,8 +1662,12 @@ class Engine:
             res["aim"] = dict(self._aim_miss)      # aimed at one part, landed on the one beside it (moves.aim)
         if fe:
             res["feint"] = fe
+        if self.quirk(a, "cocky") and hits and max(float(h.get("damage_taken", 0)) for h in hits) >= float(
+                (self.quirk(a, "cocky") or {}).get("big_hit", 30)):
+            a.learned["landed_big"] = self.turn
         if self._overcommit_now:
             res["overcommit"] = True
+            res["overcommit_why"] = getattr(self, "_overcommit_why", "tired")
             self.set_status(a, "off_balance", 1)      # she overbalances on it
             self._overbalanced = getattr(self, "_overbalanced", set()) | {a.name}   # (her own lunge, not turned aside)
         self._overcommit_now = None
@@ -2496,7 +2510,7 @@ class Engine:
             miss *= float(cfg.get("open_mult", 0.6))
         if any(self.has(a, st) for st in ("dazed", "off_balance", "confused")):
             miss *= float(cfg.get("shaky_mult", 1.3))
-        miss *= float(cfg.get("scale", 1.0))
+        miss *= float(cfg.get("scale", 1.0)) / self.trait(a, "striking")
         if miss <= 0 or not self._chance(min(0.9, miss), f"{poss_word(a.name)} blow sliding off the {part} it was aimed at",
                                          "it lands beside it", "on target"):
             return part
@@ -3201,7 +3215,7 @@ class Engine:
                                 f"{self.energy_cost(kind='improvised'):.0f}), or let her catch her breath"
                                 if can else "Let her catch her breath ('breather'), or an improvised blow if she "
                                 f"has {self.energy_cost(kind='improvised'):.0f} energy"))
-        f.energy = max(0.0, f.energy - cost)
+        f.energy = max(0.0, f.energy - cost / self.trait(f, "stamina"))
 
     def dodge_chance(self, a, d, target="targeted"):
         cfg = self._cfg("evasion")
@@ -3302,10 +3316,15 @@ class Engine:
         her twice is one she has learned to read (learning.dodge_per_hit)."""
         if a.name in self.lucky:
             return None   # /play dice free: her attacks always land
-        ch = self.dodge_chance(a, d, target) * self.dominated(d.name)
+        ch = self.dodge_chance(a, d, target) * self.dominated(d.name) * self.trait(d, "speed")
+        q = self.quirk(a, "overwhelming")
+        if q and float((move_name and next((m.get("power", 0) for m in a.moves if m["name"] == move_name), 0)) or 0) \
+                >= float(q.get("big_from", 22)):
+            ch *= float(q.get("dodge_mult", 1.15))     # (a big wind-up: easier to see coming)
         lcfg = self.rules.get("learning") or {}
         seen = (d.learned.get("moves") or {}).get(f"{a.name}|{move_name}", 0) if move_name else 0
-        if ch > 0 and seen >= 2 and lcfg.get("enabled", True):
+        quick = 1 if (self.trait(d, "learning") >= 1.4 or self.quirk(a, "predictable")) else 2
+        if ch > 0 and seen >= quick and lcfg.get("enabled", True):
             ch = min(float(self._cfg("evasion").get("max", 0.35)) * 1.3,
                      ch * min(float(lcfg.get("dodge_cap", 1.5)), 1 + float(lcfg.get("dodge_per_hit", 0.2)) * (seen - 1)))
         wcfg = (self.rules.get("learning") or {}).get("wary") or {}
@@ -3314,7 +3333,9 @@ class Engine:
         if wary:      # it hurt her badly before: she flinches away from it early
             ch = min(0.6, ch * float(wcfg.get("dodge_mult", 1.25)))
         forced, self._force_dodge = bool(getattr(self, "_force_dodge", False)) and ch > 0, False
-        if not forced and (ch <= 0 or not self._chance(ch, f"{d.name} dodging {poss_word(a.name)} attack", "DODGED",
+        sp_ = self.trait(d, "speed")
+        if not forced and (ch <= 0 or not self._chance(ch, f"{d.name} dodging {poss_word(a.name)} attack"
+                                                       + (f" (speed ×{sp_:g})" if sp_ != 1 else ""), "DODGED",
                                                        "it lands")):
             return None
         # (the ways of dodging that need her legs, a step aside or a spring back, grow rarer as her legs are hurt;
@@ -3336,7 +3357,7 @@ class Engine:
         cfg = self._cfg("evasion")
         dc = ((self.rules.get("flight") or {}).get("dive_counter") or {})
         dive = bool(getattr(self, "_dive_now", False)) and dc.get("enabled", True)
-        cch = float(dc.get("on_dodge", 0.45) if dive else cfg.get("counter_chance", 0.35)) * self.dominated(d.name)
+        cch = float(dc.get("on_dodge", 0.45) if dive else cfg.get("counter_chance", 0.35)) * self.dominated(d.name) * self.trait(d, "speed")
         if not self.has(d, "flinched") and self._chance(cch, f"{d.name} countering after the dodge"
                                                              + (" as the dive goes past" if dive else ""),
                                                          "she counters", "no counter"):
@@ -4317,6 +4338,18 @@ class Engine:
                         "part": pname, "power": h.power, "change_per_beat": h.change_per_turn,
                         "flavor": flavor, "with": h.with_part, "existing": True,
                         "asked_with": asked if keep_with else "", "choke_kind": self._hold_choke_kind(h)}
+        if self.traits_cfg():
+            # (since build 280) traits.hold: how hard her grips bite; works_the_hold: hers build faster; a paw grip
+            # of one whose paws aren't made for it is weaker
+            power = round(power * self.trait(a, "hold"), 2)
+            q = self.quirk(a, "weak_paw_grip")
+            if q and re.search(r"\bpaws?\b|forepaws?|claws?", str(with_part or ""), re.I):
+                power = round(power * float(q.get("power_mult", 0.75)), 2)
+            q = self.quirk(a, "works_the_hold")
+            if q:
+                change_per_turn = change_per_turn + float(q.get("ramp_add", 1.0))
+            if self.quirk(d, "out_of_depth"):
+                d.learned["held_count"] = int(d.learned.get("held_count", 0)) + 1
         h = Hold(self.next_hold_id, a.name, d.name, pname, power, change_per_turn, flavor, 0, with_part)
         self.holds[h.id] = h
         self.next_hold_id += 1
@@ -4416,7 +4449,7 @@ class Engine:
             options.append((self.move_math(d.name, a.name, m)["effective"], m))
         if not options:
             return None
-        if not self._chance(float(cfg.get("chance", 0.15)) * self.dominated(d.name), f"{d.name} meeting {poss_word(a.name)} {move['name']} "
+        if not self._chance(float(cfg.get("chance", 0.15)) * self.dominated(d.name) * self.trait(d, "speed"), f"{d.name} meeting {poss_word(a.name)} {move['name']} "
                             f"with an attack of her own", "CLASH", "no"):
             return None
         # how much force a move puts out, all told: a whole-body discharge spreads its power over every part, so
@@ -5950,9 +5983,11 @@ class Engine:
             if a.eliminated or d.eliminated or any(self.has(a, st) for st in ("asleep", "frozen", "paralyzed", "flinched")):
                 continue
             r = self.rng.random()
-            self.note_roll(f"{an} getting a free blow in on {dn} during the {what}", ch, r,
-                           "she does" if r < ch else "no")
-            if r >= ch:
+            q = self.quirk(a, "clinch_fighter")
+            ch_ = min(0.9, ch * float(q.get("free_blow_mult", 1.6))) if q else ch
+            self.note_roll(f"{an} getting a free blow in on {dn} during the {what}", ch_, r,
+                           "she does" if r < ch_ else "no")
+            if r >= ch_:
                 continue
             usable = [m for m in a.moves if m.get("target") in ("targeted", "spread") and not m.get("charge")
                       and not m.get("carry") and float(m.get("power", 0) or 0) > 0
@@ -6394,6 +6429,7 @@ class Engine:
                float(cfg.get("sore_legs_mult", 1.15)) if legw >= float(cfg.get("sore_legs_at", 90)) else 1.0)
         if float(big.get("damage_before", 0)) >= float(cfg.get("bad_legs_at", 150)):
             ch *= float(cfg.get("hurt_spot_mult", 1.15))
+        ch /= self.trait(d, "toughness")
         if not self._chance(min(float(cfg.get("max", 0.75)), ch), f"{d.name} knocked staggering by the blow to her {big['part']}",
                             "she stumbles", "she holds her ground"):
             return self._rocked(a, d, big, dmg, cfg, reg, away, kind, held, holding)
@@ -6481,6 +6517,7 @@ class Engine:
             rc *= 0.7     # strong and fresh: a middling blow doesn't move her much
         elif s < float(cfg.get("weak_below", 30)) or self._leg_worst(d) >= float(cfg.get("bad_legs_at", 150)):
             rc = min(0.9, rc * 1.35)   # worn out, or on bad legs: even lighter blows move her
+        rc /= self.trait(d, "toughness")
         if not self._chance(rc, f"{d.name} rocked by the blow to her {big['part']}",
                             "it moves her", "she takes it where she is"):
             return None
@@ -6804,10 +6841,22 @@ class Engine:
         cfg = (self.rules.get("moves") or {}).get("exhaustion_mistakes") or {}
         if not cfg.get("enabled", True) or move.get("target") in ("status", "self", "hold"):
             return None
+        self._overcommit_why = "tired"
+        q = self.quirk(a, "cocky")
+        landed = (a.learned or {}).get("landed_big")
+        if q and landed is not None and self.turn - int(landed) <= 1 and self.strength(a) >= float(q.get("until_below", 60)):
+            # (since build 280) cocky: a good hit last beat, and she overreaches on the next one
+            if self._chance(float(q.get("chance", 0.25)), f"{a.name} overreaching, cocky after her last hit",
+                            "OVERREACHES", "no"):
+                self._overcommit_why = "cocky"
+                return a.name
         if a.energy >= float(cfg.get("below_energy", 20)) and self.strength(a) >= float(cfg.get("below_strength", 25)):
             return None
-        if not self._chance(float(cfg.get("chance", 0.12)), f"{a.name} overcommitting, sloppy with tiredness",
-                            "SLOPPY", "no"):
+        ch = float(cfg.get("chance", 0.12))
+        q = self.quirk(a, "ring_sense")
+        if q:
+            ch *= float(q.get("mult", 0.35))     # (experience: she doesn't get sloppy)
+        if not self._chance(ch, f"{a.name} overcommitting, sloppy with tiredness", "SLOPPY", "no"):
             return None
         return a.name
 
@@ -7407,6 +7456,14 @@ class Engine:
             ch *= float(cfg.get("open_mult", 2.0))
             if reason != "weak_point" or self.rng.random() < 0.5:
                 reason, why = "position", vu[0]
+        ch *= self.trait(a, "striking")
+        q = self.quirk(a, "ambusher")
+        if q and move.get("name") in (q.get("moves") or ["Sucker Punch", "Night Slash"]) and (
+                d.name in self.downed or any(self.has(d, st) for st in ("staggered", "off_balance", "dazed", "flinched"))):
+            ch *= float(q.get("mult", 2.5)); reason, why = "position", why or "caught open"
+        q = self.quirk(d, "disaster_sense")
+        if q:
+            ch *= float(q.get("mult", 0.6))      # (she feels the worst ones coming)
         ch = min(float(cfg.get("max_chance", 0.1)), ch)
         if self.__dict__.get("_force_dev") and not self.__dict__.get("_force_dev_used"):
             self._force_dev_used = True     # your direction asked for a devastating blow: this one is it
@@ -8578,6 +8635,9 @@ class Engine:
         s *= 0.5 + max(0.0, min(100.0, float(f.energy))) / 200.0
         if self.has(f, "adrenaline"):
             s *= float(cfg.get("adrenaline_mult", 1.25))
+        q = self.quirk(f, "patient_constrictor")
+        if q:
+            s *= float(q.get("contest_mult", 1.2))
         return s
 
     def _coil_contest_tick(self, skip_hold_ids=()):
@@ -8663,7 +8723,11 @@ class Engine:
                                           and esc.get("match_holds", True) and not all(h.grab for h in hs)):
                 # (in a submission match any hold that hurts can make her tap: she breaks it the same way)
                 ch, _ = self.sub_break_chance(ch, fd, hs)
-            ch *= self.dominated(fd.name)
+            ch *= self.dominated(fd.name) * self.trait(fd, "escape") / self.trait(fa, "hold")
+            q = self.quirk(fa, "weak_paw_grip")
+            if q and any(re.search(r"\bpaws?\b|forepaws?|claws?", str(h.with_part or ""), re.I) for h in hs):
+                ch *= float(q.get("break_mult", 1.35))   # (her paws aren't made for gripping)
+            ch = min(0.95, ch)
             pas = getattr(self, "_passive", None)
             if pas and pas[0] == self.turn and fd.name in pas[1]:
                 continue   # (since build 278) her player has her do nothing: she doesn't try to break it
@@ -8672,7 +8736,10 @@ class Engine:
             if ch <= 0:
                 continue
             cfg = self.rules.get("holds", {}).get("break", {})
-            ok, r = self._chance_r(ch, f"{d} breaking {poss_word(a)} hold on her", "she breaks free", "it holds")
+            tr_ = self.trait(fd, "escape") / self.trait(fa, "hold")
+            ok, r = self._chance_r(ch, f"{d} breaking {poss_word(a)} hold on her"
+                                   + (f" (her escape against the grip ×{tr_:.2g})" if abs(tr_ - 1) > 0.01 else ""),
+                                   "she breaks free", "it holds")
             if ok:
                 for h in hs:
                     self.holds.pop(h.id, None)
@@ -9783,7 +9850,8 @@ class Engine:
                 esc_try *= float(self._cfg("status_effects").get("breathless_escape_mult", 0.8))
             if self.has(dfn, "soaked"):     # wet fur: the grips slide
                 esc_try *= float(self._cfg("status_effects").get("soaked_escape_mult", 1.1))
-            esc_try *= self.dominated(dfn.name)
+            esc_try *= self.dominated(dfn.name) * self.trait(dfn, "escape") / max(
+                0.05, sum(self.trait(m, "hold") for m in crew) / max(1, len(crew)))
             if self.has(dfn, "adrenaline"):
                 esc_try *= float(self._cfg("adrenaline").get("escape_mult", 1.5))
             if any(h.coil and h.defender == dfn.name and h.attacker in {m.name for m in crew}
@@ -9944,6 +10012,47 @@ class Engine:
         sub = cfg.get("submission") if isinstance(cfg.get("submission"), dict) else {}
         return bool((cfg.get("knockout_only", False) and cfg.get("no_pins", False))
                     or (sub.get("enabled", False) and sub.get("no_pins", True)))
+
+    def traits_cfg(self):
+        cfg = self.rules.get("traits") or {}
+        return cfg if cfg.get("enabled", True) else None
+
+    def quirk(self, f, name):
+        """(since build 280) traits.quirks.<name> for this fighter, when she has that quirk and it is switched on
+        (its settings, a dict); None otherwise."""
+        cfg = self.traits_cfg()
+        f = self.get(f) if isinstance(f, str) else f
+        if not cfg or f is None or name not in (getattr(f, "quirks", None) or []):
+            return None
+        q = (cfg.get("quirks") or {}).get(name) or {}
+        return q if q.get("enabled", True) else None
+
+    def trait(self, f, name):
+        """(since build 280) traits: how she fights, as a multiplier on today's rolls (1.0 = as before): speed (her
+        dodge, her counter, meeting a move with her own), hold (how hard her grips bite and how hard they are to
+        break), escape (breaking holds, escaping pins), toughness (being staggered or rocked), stamina (what moves
+        cost her), striking (landing where she aims, devastating blows), learning (reading a move she has seen).
+        Her quirks move some of them where they fit (water_born, hates_water, out_of_depth)."""
+        cfg = self.traits_cfg()
+        f = self.get(f) if isinstance(f, str) else f
+        if not cfg or f is None:
+            return 1.0
+        v = float((getattr(f, "traits", None) or {}).get(name, 1.0))
+        wet = self.in_water(f.name) or self.has(f, "soaked")
+        q = self.quirk(f, "water_born")
+        if q and self.in_water(f.name) and name in ("speed", "escape"):
+            v *= float(q.get("mult", 1.15))
+        q = self.quirk(f, "hates_water")
+        if q and wet and name in ("speed", "striking"):
+            v *= float(q.get("mult", 0.88))
+        q = self.quirk(f, "out_of_depth")
+        if q and name == "escape":
+            seen = int((f.learned or {}).get("held_count", 0))
+            v *= min(1.0, float(q.get("start", 0.75)) + float(q.get("per_hold", 0.08)) * seen)
+        q = self.quirk(f, "unshakeable")
+        if q and name == "toughness":
+            v *= float(q.get("mult", 1.3))
+        return max(0.05, v)
 
     def dominated(self, name):
         """(since build 277) director.plan_dominate: under /plan dominate, how much of her usual chance the one being
@@ -10141,6 +10250,9 @@ class Engine:
             if first_over:
                 d.learned["tap_limit"] = key_
                 tap = 0.0
+            q = self.quirk(d, "stubborn")
+            if tap > 0 and q:
+                tap *= float(q.get("tap_mult", 0.6))     # (since build 280) she holds out longer than she should
             if tap > 0 and self._chance(tap, f"{dn} tapping out to {poss_word(a)} {name} (pain {pain:.0f} against "
                                         f"her resistance {resist:.0f})", "SHE TAPS", "she holds on"):
                 how = "tap"

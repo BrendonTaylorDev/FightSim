@@ -4,14 +4,14 @@
   "fighters": [
     {
       "name": "Nocturne",
-      "description": "A female Absol. Proud, furious, and fast; quadruped with a scythe-shaped horn on her head and a sickle-bladed tail. Fights with Slash-style raking claws, horn and tail-blade strikes, bites, and can channel stored electricity in limited bursts. Hates water and fights worse in it. Never gives up while she can still move.",
+      "description": "A female Absol. Proud, furious, and fast; quadruped with a scythe-shaped horn on her head and a sickle-bladed tail. A dark fighter: Night Slash, Sucker Punch and Dark Pulse first, then close-in raking claws, horn and tail-blade strikes, and above all her jaws: she bites, and when she holds, she holds with her teeth, because her paws were never made for gripping. Few holds and grapples. Senses a disaster coming and is hard to catch with the biggest blows; strikes hardest at an opponent caught open. Can channel stored electricity in limited bursts. Hates water and fights worse in it. Never gives up while she can still move.",
       "appearance": "Absol. Quadruped that walks with a bear-like pacing gait. Mostly WHITE fur; dark blue-gray face, scythe-shaped horn (on one side of her head) and scythe-like tail. A thick WHITE ruff around her neck and chest (white, never cream) and a tuft on top of her head. Red, almond-shaped eyes. Broad furred PAWS (not hooves, not webbed) with three claws each; dewclaw-like spikes on the heels of her hind legs and the elbows of her front legs.",
       "voice": "Terse, proud, and cutting. Thinks in short, hard sentences: cold assessments, contempt for weakness, flashes of grudging respect; rarely admits pain even to herself. Growls and hisses rather than cries out, until it truly breaks through.",
       "tells": "Ears flatten back; hackles rise along the ruff; the sickle tail lashes or goes rigid; lips peel back from her fangs; a low growl or a sharp hiss; red eyes narrow to slits or squeeze shut; she shakes her head hard to clear it.",
       "types": [
         "Dark"
       ],
-      "health": 1680,
+      "health": 1800,
       "body": {
         "Head": 92,
         "Horn": 222,
@@ -154,21 +154,47 @@
           "uses": 4,
           "sustainable": true
         }
-      ]
+      ],
+      "traits": {
+        "speed": 1.3,
+        "hold": 0.75,
+        "escape": 1.15,
+        "toughness": 1.1,
+        "stamina": 1.0,
+        "striking": 1.35,
+        "learning": 1.0
+      },
+      "quirks": [
+        "weak_paw_grip",
+        "disaster_sense",
+        "ambusher",
+        "hates_water"
+      ],
+      "style": "Dark and close: Night Slash, Sucker Punch and Dark Pulse before anything else, then slashes and bites up close. Few holds; any grip she takes is with her jaws.",
+      "favors": {
+        "Night Slash": 2.2,
+        "Sucker Punch": 2.0,
+        "Dark Pulse": 1.8,
+        "Bite": 1.8,
+        "Slash": 1.3,
+        "Pin Down": 0.5,
+        "Hydro Pump": 0.3,
+        "Will-O-Wisp": 0.7
+      }
     },
     {
       "name": "Ripples",
       "_balance_note": "Builds 79-82 evened Ripples out against Nocturne (who was winning about 85% of simulated fights; now 61-65%). Changed for Ripples: health 1400 -> 1600; every body part +8 resistance; Hydro Pump added (4 uses, sustainable). Her other move powers are the original ones. Changed for Nocturne: Thunderbolt power 10 -> 8, Take Down added. To go back: Ripples health 1400, take 8 off every body part, remove Hydro Pump; Nocturne Thunderbolt 10.",
-      "description": "A female Buizel. Small, wiry, stubborn, and patient; walks upright with webbed paws, fins on her forearms, an inflatable flotation sac around her neck, and powerful twin tails she spins like a propeller. Fights with Aqua Jet charges, bites, claws, and by binding limbs with her twin tails. Thrives in water, learns from every hold used on her, and never lets go once she has a grip.",
+      "description": "A female Buizel. Young, small, wiry and spritely: new to fighting, fast, energetic and a quick learner, and a little cocky with it; walks upright with webbed paws, fins on her forearms, an inflatable flotation sac around her neck, and powerful twin tails she spins like a propeller. A varied fighter: Aqua Jet charges, bites, Brick Break chops, water and ice attacks, and binding limbs with her twin tails. Thrives in water and learns from every move used on her. Inexperienced in submission holds: she struggles in them and doesn't yet know how to get out, but she is stubborn and holds out against tapping longer than she should.",
       "appearance": "Buizel. Upright, otter-like weasel with ORANGE fur and a cream underside (face and stomach). A yellow inflatable flotation sac (collar) around her neck. A blue fin on each forearm. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET.",
-      "voice": "Stubborn, scrappy, and quick. Thinks in quick bursts: practical little plans, sharp observations about her opponent, cheeky jabs, and flashes of stubborn pride. Chitters, squeaks, and barks; when hurt she gets snappish and inventive rather than weepy.",
+      "voice": "Young, energetic and a little cocky. Thinks in quick, bright bursts: eager little plans, sharp observations about her opponent, cheeky jabs, flashes of pride when something lands, and honest surprise when something works on her that she hasn't met before. Chitters, squeaks and barks; when hurt she gets snappish and stubborn rather than weepy, and in a hold she doesn't know, frustrated and a little scared, but never willing to give in.",
       "tells": "Her flotation sac deflates in a rush when the air is knocked out, or puffs up as she gasps; her twin tails stutter or whirl; ears pin back; she squeaks, chitters, or barks; the black cheek marks twitch as she grits her teeth; her webbed paws curl tight; she shakes water out of her fur.",
       "variants": {
         "_comment": "Other versions of this fighter. rules.json -> variants -> Ripples says which one a new fight uses (\"original\" = the entry as written above). Whatever a variant lists (description, appearance, tells, voice, body, health, types, moves) replaces the original's; what it leaves out stays. Switch with /variant Ripples sleek | original.",
         "sleek": {
           "label": "no flotation sac: a bare throat, breath shown in her fins, ribs and throat",
           "_balance_note": "Build 103. The flotation sac (148 resistance, the toughest thing near her head) is gone and a bare Throat (63) takes its place, so blows that jar into her neck area and chokes on it hurt her more: untuned, Nocturne won 67% of simulated fights against her instead of 60%. Her health is 1700 instead of 1600 to make up for it (60% again over 400 fights). To make the throat less of a weak point instead, raise Throat to about 118 and put health back to 1600.",
-          "description": "A female Buizel. Small, wiry, stubborn, and patient; a sleek river-bred line with no flotation sac: her neck and throat are bare, short fur. Walks upright with webbed paws, fins on her forearms, and powerful twin tails she spins like a propeller. With nothing to hold her up she rides low in the water and swims like a thrown knife, steering with her forearm fins. Fights with Aqua Jet charges, bites, claws, and by binding limbs with her twin tails. Thrives in water, learns from every hold used on her, and never lets go once she has a grip. She guards her bare throat by habit: chin tucked, shoulders up.",
+          "description": "A female Buizel. Young, small, wiry and spritely: new to fighting, fast, energetic and a quick learner, and a little cocky with it; a sleek river-bred line with no flotation sac: her neck and throat are bare, short fur. Walks upright with webbed paws, fins on her forearms, and powerful twin tails she spins like a propeller. With nothing to hold her up she rides low in the water and swims like a thrown knife, steering with her forearm fins. A varied fighter: Aqua Jet charges, bites, Brick Break chops, water and ice attacks, and binding limbs with her twin tails. Thrives in water and learns from every move used on her. Inexperienced in submission holds: she struggles in them and doesn't yet know how to get out, but she is stubborn and holds out against tapping longer than she should. She guards her bare throat by habit: chin tucked, shoulders up.",
           "appearance": "Buizel. Upright, otter-like weasel with ORANGE fur and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET.",
           "tells": "Her forearm fins flare wide when she braces or is startled and clamp flat to her arms when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, a ragged gulp as it comes back, her throat working as she swallows; she tucks her chin and hunches her shoulders to cover her throat; the fur on the back of her neck stands up; her twin tails stutter or whirl; ears pin back; she squeaks, chitters, or barks; the black cheek marks twitch as she grits her teeth; her webbed paws curl tight; she shakes water out of her fur.",
           "body": {
@@ -353,14 +379,35 @@
           ],
           "sustainable": true
         }
-      ]
+      ],
+      "traits": {
+        "speed": 1.25,
+        "hold": 1.0,
+        "escape": 0.8,
+        "toughness": 0.95,
+        "stamina": 1.15,
+        "striking": 1.0,
+        "learning": 1.5
+      },
+      "quirks": [
+        "stubborn",
+        "out_of_depth",
+        "cocky",
+        "water_born"
+      ],
+      "style": "Varied and quick: she mixes it up, rarely the same move twice in a row: darting Aqua Jets, bites, Brick Break chops, water and ice from range, and her twin tails binding a limb. Eager, and she goes in fast.",
+      "favors": {
+        "Aqua Jet": 1.3,
+        "Crunch": 1.1,
+        "Brick Break": 1.1
+      }
     },
     {
       "name": "Nerine",
       "_balance_note": "Made in build 192 from Ripples' sleek variant (no flotation sac): paws, forearm fins, tails and throat +5, back and hips -5; Crunch, Hydro Pump and Ice Beam swapped for Quick Attack, Aqua Tail (5 uses) and Bite. Health 1775: in simulated fights she beats Ripples about half the time (1700: 46%, 1850: 57%) and loses to Nocturne a little more often than Ripples does.",
-      "description": "A female Buizel. Small, quick, showy and impatient; a sleek river-bred Buizel with no flotation sac, her neck and throat bare, short fur. Walks upright with webbed paws, fins on her forearms, and twin tails she whips like a flail. A hit-and-run striker rather than a grappler: darting in with Quick Attack and Aqua Jet, slamming with water-wrapped tails, and out again before the answer comes. She rides low and fast in the water, steering with her forearm fins. Hates being held still, and fights dirtiest when she is.",
+      "description": "A female Buizel. Young but experienced: she has fought a lot for her age and it shows. Small, quick and strong for her size; a sleek river-bred Buizel with no flotation sac, her neck and throat bare, short fur. Walks upright with webbed paws, fins on her forearms, and twin tails she whips like a flail. A grappler and a brawler rather than a showy striker: she closes in, ties her opponent up with grabs, tail binds and pins, and works her over up close with chops, bites and water-wrapped tails. Not the most varied fighter, but sure of everything she does. She rides low and fast in the water, steering with her forearm fins, and keeps her head when she is held.",
       "appearance": "Buizel. Upright, otter-like weasel with ORANGE fur, a shade darker and redder than most, and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm; the left one has a small notch near its tip. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET.",
-      "voice": "Cocky, quick and restless. Thinks in fast, bright flashes: a dare to herself, a jab at her opponent, a running score of who has landed what. Chirps, yips and whistles through her teeth; when hurt she goes quiet and sharp, then comes back louder, and she hates admitting a blow got to her.",
+      "voice": "Steady, confident and a little dry: the voice of someone who has done this before. Thinks in short, practical lines: where the grip should go, what her opponent will try next, a quiet running score. Chirps and whistles through her teeth; when hurt she goes quiet and sharp, then gets back to work, and she hates admitting a blow got to her.",
       "tells": "Her tails flick and twitch even when she stands still, and lash when she is angry; her forearm fins flare wide when she is about to dart in and clamp flat when she is hurt; her breath shows in her ribs and her bare throat: quick and shallow when the air is knocked out of her, her throat working as she swallows; she bounces on the balls of her feet; ears pin back; the black cheek marks twitch when she grins or grits her teeth; she yips or whistles; her webbed paws flex open and shut; she shakes water out of her fur.",
       "types": [
         "Water"
@@ -508,14 +555,41 @@
           "target": "hold",
           "about": "pins with weight, knees, paws and teeth"
         }
-      ]
+      ],
+      "traits": {
+        "speed": 1.1,
+        "hold": 1.0,
+        "escape": 1.0,
+        "toughness": 1.05,
+        "stamina": 1.0,
+        "striking": 1.0,
+        "learning": 1.0
+      },
+      "quirks": [
+        "ring_sense",
+        "clinch_fighter",
+        "works_the_hold",
+        "predictable"
+      ],
+      "style": "A grappler and brawler: she closes the distance, grabs, binds with her tails, pins, and works her opponent over at close range. Few ranged moves; the same few tools, used well.",
+      "favors": {
+        "Tail Bind": 1.6,
+        "Pin Down": 1.4,
+        "Brick Break": 1.8,
+        "Bite": 1.6,
+        "Aqua Tail": 1.5,
+        "Quick Attack": 1.2,
+        "Water Gun": 0.4,
+        "Water Pulse": 0.4,
+        "Swift": 0.4
+      }
     },
     {
       "name": "Seraphina",
-      "description": "A female Milotic. Graceful, calm, and enormously strong; a long serpentine body with iridescent scales, a cream-scaled belly, long red antennae and fin-like 'hair' on her head, and a broad iridescent tail fan. Fights by coiling and constricting (she squeezes on her opponent's exhale), crushing with her body's weight, tail-fan lashes, bites, and water attacks. Deadly in water, slower on dry stone.",
+      "description": "A female Milotic. Graceful, calm, confident, and enormously strong; a long serpentine body with iridescent scales, a cream-scaled belly, long red antennae and fin-like 'hair' on her head, and a broad iridescent tail fan. Fights by overwhelming strength: very big attacks (Hydro Pump, Dragon Rush, Dragon Tail, Iron Tail) and, above all, coiling and constricting (she squeezes on her opponent's exhale), crushing with her body's weight. Her big blows are slow to wind up, but they land with everything behind them, and she is very hard to stagger or knock down. Deadly in water, slower on dry stone.",
       "appearance": "Milotic. Long serpentine body, primarily CREAM-colored and iridescent (scales shift color with the angle); blue and pink diamond-shaped scales outlined in black on her lower body. Long PINKISH antennae above red eyes, and long hair-like fins above her eyes that start thin and thicken toward the tips. A small straight spike on top of her head. Three black gill-like dots down each side of her neck. Tail fan of four overlapping blue fins with pink ovals in the centers. No limbs.",
       "voice": "Calm, measured, and almost serene, with steel underneath. Thinks in long, composed sentences; her voice is a low, resonant hum that only cracks when something truly hurts.",
-      "tells": "Her long antennae droop or snap rigid; the hair-like head fins flatten against her neck; her coils tighten reflexively; the tail fan snaps shut; her low, resonant humming note cracks into a hiss; her scales flare and dull; her red eyes close slowly against the pain.",
+      "tells": "Her long antennae droop or snap rigid; the hair-like head fins flatten against her neck; her coils tighten reflexively; the tail fan snaps shut; her low, resonant humming note cracks into a hiss; her scales flare and dull; her red eyes close slowly against the pain. Composed: she shows very little until she is badly hurt; a small hitch in her breath, her antennae stiffening, her fins drawing in. Only real damage breaks her grace.",
       "types": [
         "Water"
       ],
@@ -617,7 +691,31 @@
           "about": "a shockwave from the mouth",
           "sustainable": true
         }
-      ]
+      ],
+      "traits": {
+        "speed": 0.85,
+        "hold": 1.2,
+        "escape": 1.1,
+        "toughness": 1.25,
+        "stamina": 0.9,
+        "striking": 1.0,
+        "learning": 1.0
+      },
+      "quirks": [
+        "overwhelming",
+        "patient_constrictor",
+        "unshakeable"
+      ],
+      "style": "Overwhelming and unhurried: very big attacks and long constrictions. She coils whenever she can and does not waste effort on small blows.",
+      "favors": {
+        "Wrap": 2.5,
+        "Hydro Pump": 1.8,
+        "Dragon Rush": 1.8,
+        "Dragon Tail": 1.5,
+        "Iron Tail": 1.5,
+        "Dragon Pulse": 1.3,
+        "Ice Beam": 0.8
+      }
     },
     {
       "name": "Talon",

@@ -1421,6 +1421,28 @@
     "min_chance": 0.03,
     "min_beats_per_stage": 2
   },
+  "traits": {
+    "_comment": "traits and quirks (since build 280, on by default): how each fighter fights, set in fighters.json. traits is a set of multipliers on today's rolls, 1.0 = as before: speed (her chance to dodge, to counter after a dodge, to meet a move with her own), hold (how hard her grips bite when they close, and how hard they are to break), escape (her chance to break a hold or escape a pin), toughness (how easily she is staggered or rocked: the chance is divided by it), stamina (what her moves cost her: divided by it), striking (landing where she aims: the miss chance is divided by it; and her chance of a devastating blow), learning (1.4 or more: she reads a move after seeing it once, not twice). favors (fighters.json): move name -> how much she prefers it (the director is told her favourite and her seldom-used moves; /simulate weights its picks by them). style: a sentence for the director. quirks: named rules of her own, each below with its numbers, each switchable (enabled false). Balance: fighters without traits are as before; the pairs were simulated after setting them. enabled false = no traits or quirks at all (fighters.json keeps them).",
+    "enabled": true,
+    "quirks": {
+      "_comment": "stubborn: once past her limit in a submission her tap chance is x tap_mult (she holds out longer). out_of_depth: new to submission holds: her escape is x start at first, + per_hold for every hold she has been caught in this fight, up to x1. cocky: after a blow of hers that did big_hit damage or more, chance that her next attack overreaches (sloppy, half force, off balance), while her strength is until_below % or more. water_born: in the water her speed and escape x mult. ring_sense: experience: her chance of overcommitting when tired x mult. clinch_fighter: her free-blow chance while she holds someone x free_blow_mult. works_the_hold: her holds tighten ramp_add more each beat. predictable: an opponent reads her moves after one sight of them, not two. weak_paw_grip: a grip she makes with her paws presses x power_mult and is x break_mult easier to break (jaw grips are normal). disaster_sense: the chance of a devastating blow landing on her x mult. ambusher: her moves (moves) land devastatingly x mult more often on someone staggered, off balance, dazed, flinching or down. hates_water: soaked or in the water, her speed and striking x mult. overwhelming: her moves of base power big_from or more hit x power_mult and are x dodge_mult easier to dodge (a big wind-up). patient_constrictor: her strength in a contest of coils x contest_mult. unshakeable: her toughness x mult.",
+      "stubborn": {"enabled": true, "tap_mult": 0.6},
+      "out_of_depth": {"enabled": true, "start": 0.75, "per_hold": 0.08},
+      "cocky": {"enabled": true, "chance": 0.25, "big_hit": 30, "until_below": 60},
+      "water_born": {"enabled": true, "mult": 1.15},
+      "ring_sense": {"enabled": true, "mult": 0.35},
+      "clinch_fighter": {"enabled": true, "free_blow_mult": 1.6},
+      "works_the_hold": {"enabled": true, "ramp_add": 0.5},
+      "predictable": {"enabled": true},
+      "weak_paw_grip": {"enabled": true, "power_mult": 0.75, "break_mult": 1.35},
+      "disaster_sense": {"enabled": true, "mult": 0.6},
+      "ambusher": {"enabled": true, "mult": 2.5, "moves": ["Sucker Punch", "Night Slash"]},
+      "hates_water": {"enabled": true, "mult": 0.88},
+      "overwhelming": {"enabled": true, "big_from": 22, "power_mult": 1.06, "dodge_mult": 1.15},
+      "patient_constrictor": {"enabled": true, "contest_mult": 1.2},
+      "unshakeable": {"enabled": true, "mult": 1.3}
+    }
+  },
   "director": {
     "_comment": "initiative: once one fighter has made initiative_after attacks in a row (and an opponent still has at least initiative_min_strength % of full strength), each beat there's a chance the director is told to shift the momentum: initiative_chance at first, +initiative_step for every extra attack in the streak, up to initiative_max. Streaks can run long, just not usually. With /plan dominate, the winner's streaks shift only initiative_dominate_factor as often. initiative_after 0 turns it off.", "_words_to_parts_comment": "words_to_parts (since build 261): the director's words name one of her parts and its action another (told to work her right hip, it wrote 'wrapping tightly around Nerine's left knee'): the engine resolves the action's parts, so a part of hers named as hers in the words ('Nerine's left knee') is put right to the action's part. What the attacker uses is never changed. enabled false = the words stay as written.", "words_to_parts": {"enabled": true},
     "initiative_after": 3,

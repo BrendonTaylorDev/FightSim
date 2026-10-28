@@ -713,6 +713,55 @@ def coil_size_check():
     return problems
 
 
+def traits_check():
+    """Build 280: traits and quirks (fighters.json traits, quirks, style, favors; rules.json traits). A fighter
+    without traits is as before; the traits scale her rolls; quirks are switchable one by one and all at once; the
+    director is told each one's style; /traits lists them."""
+    import director
+    import play
+    problems = []
+    s = H.session(3, fighters="Ripples,Nocturne,Seraphina,Nerine")
+    e = s.eng
+    if e.trait("Ripples", "speed") != 1.25 or e.trait("Ripples", "made_up") != 1.0:
+        problems.append(f"Ripples' speed trait: {e.trait('Ripples', 'speed')}")
+    other = next((f for f in e.fighters.values() if not f.traits), None)
+    if other is not None and e.trait(other, "speed") != 1.0:
+        problems.append("a fighter with no traits should be as before")
+    with contextlib.redirect_stdout(io.StringIO()):
+        st = e.start_hold("Seraphina", "Ripples", "Stomach", 10, 1, "coils", "her coils")
+        sp = e.start_hold("Nocturne", "Nerine", "Left Upper Arm", 10, 1, "paws", "both forepaws")
+    want_ = round(10 * e.trait("Seraphina", "hold"), 2)
+    if abs(st["power"] - want_) > 0.01 or want_ == 10:
+        problems.append(f"Seraphina's hold trait should scale a 10 grip to {want_}: {st['power']}")
+    if abs(sp["power"] - 10 * 0.75 * 0.75) > 0.01:
+        problems.append(f"Nocturne's paw grip should be weaker (hold 0.75, paws 0.75): {sp['power']}")
+    if abs(st["change_per_beat"] - 1) > 0.01:
+        problems.append("only works_the_hold adds to a hold's tightening")
+    e.rules["traits"]["quirks"]["stubborn"]["enabled"] = False
+    if e.quirk("Ripples", "stubborn") or not e.quirk("Ripples", "cocky"):
+        problems.append("a quirk switched off should be off, and only that one")
+    e.rules["traits"]["quirks"]["stubborn"]["enabled"] = True
+    e.rules["traits"]["enabled"] = False
+    if e.trait("Ripples", "speed") != 1.0 or e.quirk("Ripples", "cocky"):
+        problems.append("traits switched off should change nothing")
+    e.rules["traits"]["enabled"] = True
+    hint = director.style_hint(e)
+    if "HOW NERINE FIGHTS" not in hint or "Tail Bind" not in hint:
+        problems.append(f"the director should be told each one's style and favourite moves: {hint[:200]}")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        play.handle_command(s, "/traits Nocturne")
+    if "weak_paw_grip" not in out.getvalue():
+        problems.append(f"/traits should list her quirks: {out.getvalue()[:200]}")
+    d = e.get("Ripples")
+    d.learned["held_count"] = 0
+    low = e.trait(d, "escape")
+    d.learned["held_count"] = 3
+    if not e.trait(d, "escape") > low:
+        problems.append("out_of_depth: she should get better at escaping each hold she is caught in")
+    return problems
+
+
 def coil_contest_check():
     """Build 279: the contest of coils (two fighters coiled round each other fight it out each beat; the loser's coils
     are torn off and the winner's tighten), the constriction and contest writing (story blocks by how many coils and
@@ -1400,6 +1449,7 @@ def tap_overwhelm_check():
     once: she holds out a few beats, how many from her strength left (no tap roll at all, and the narrator is told she is at her breaking point),
     then the tap is near certain. A part not yet that bad keeps the slow climb."""
     s = H.session(5, fighters="Nerine,Ripples")
+    s.eng.rules["traits"]["enabled"] = False     # (the base rules: no stubborn quirk on her tap)
     e, problems = s.eng, []
     a, d = e.get("Nerine"), e.get("Ripples")
     e.rules["finish"]["submission"]["enabled"] = True
@@ -1450,6 +1500,7 @@ def tap_blend_check():
     Fresh with a ruined part: a fair chance she can still fight; worn out with a healthy part: harder than fresh but
     resistible; worn out with a ruined part: near certain once it has built."""
     s = H.session(5, fighters="Nerine,Ripples")
+    s.eng.rules["traits"]["enabled"] = False     # (the base rules: no stubborn quirk on her tap)
     e, problems = s.eng, []
     a, d = e.get("Nerine"), e.get("Ripples")
     e.rules["finish"]["submission"]["enabled"] = True
@@ -2527,6 +2578,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build-273 lakeside log: wrong limb, posture, paws, fur, memories, retold get-up, kick, &&  ({time.time() - t:.1f}s)")
         for p in probs[:8]:
+            print("      " + p)
+    if not want or any(w in "traits quirks style" for w in want):
+        t = time.time()
+        probs = traits_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  traits and quirks: rolls scaled, holds, paw grips, switches, style for the director, /traits  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "coilcontest contest coil serpent" for w in want):
         t = time.time()

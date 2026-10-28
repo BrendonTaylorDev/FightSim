@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 279-guided (contest of coils; constriction writing by coil count and squeeze)"
+VERSION = "2026-10-28 build 280-guided (traits and quirks; Ripples, Nerine, Nocturne, Seraphina rewritten)"
 
 HELP = """
 =============================================================================================
@@ -446,6 +446,7 @@ HELP = """
  LOOKING AROUND
 =============================================================================================
   /status [full|name]   health, worst injuries, pins and positions
+  /traits [name]        how each fighter fights: her traits, quirks, style and favourite moves (since build 280)
   /health [name]        every damaged body part, in stat format
   /look [name]          the narrator describes the scene right now (doesn't advance the fight)
 
@@ -2301,7 +2302,7 @@ HELP_TOPICS = [   # (key, words that find it, one line for the menu) in the orde
     ("narration", "narration story words talk sounds sample blocks phrases model reader repair budget timing checks slow speed", "narration: /words, /talk, /sounds, /sample, /phrases, /model, the checks and their cost"),
     ("settings", "settings set sets get options layout math style scene arena hazards", "settings, screen, arenas: /set, /sets (every setting), /get, /settings, /layout, /scene, /hazards"),
     ("switches", "switches switch toggle knockout knockouts ko pins guided compact reads swearing context window intro rich", "switches: knockouts only, no pins, the opening passage, richer narration, guided narration, speed..."),
-    ("looking", "looking status health look", "looking around: /status, /health, /look"),
+    ("looking", "looking status health look traits", "looking around: /status, /health, /look, /traits"),
     ("files", "files undo reroll save load export exportfight quit", "undo, files, quit: /undo, /reroll, /save, /load, /export, /exportfight"),
 ]
 
@@ -3303,6 +3304,19 @@ def handle_command(s, line):
         print("You play: " + ", ".join(want) + (". Every fighter is yours." if len(want) >= len(s.eng.active()) else
                                                 ". The director runs the rest.")
               + " Each beat you're asked for their moves; /commands still work for direct control. /play off to stop.")
+        return
+    if cmd == "traits":
+        # (since build 280) how each fighter fights: her traits, her quirks, her style and favourite moves
+        e = s.eng
+        want = [e.get(x) for x in a] if a else e.active()
+        for f in want:
+            tr = ", ".join(f"{k} ×{v:g}" for k, v in (f.traits or {}).items() if float(v) != 1.0) or "all as normal"
+            qs = ", ".join(q + ("" if e.quirk(f, q) else " (off)") for q in (f.quirks or [])) or "none"
+            fav = ", ".join(f"{m} ×{w:g}" for m, w in sorted((f.favors or {}).items(), key=lambda kv: -float(kv[1])))
+            print(f"{f.name}: traits {tr}\n   quirks: {qs}" + (f"\n   style: {f.style}" if f.style else "")
+                  + (f"\n   favours: {fav}" if fav else ""))
+        if not e.traits_cfg():
+            print("(traits are switched off: /set traits.enabled true)")
         return
     if cmd == "status":
         if not a:

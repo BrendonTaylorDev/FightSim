@@ -2554,6 +2554,9 @@ class Director:
         plan_pull = game_plan_hint(engine) if not direction else ""
         if plan_pull:
             rng_hint = (rng_hint + "\n" + plan_pull).strip()
+        styled = style_hint(engine) if not direction else ""
+        if styled:
+            rng_hint = (rng_hint + "\n" + styled).strip()
         if not direction and "PIN " not in hint:
             m = re.search(r"\b(" + "|".join(re.escape(f.name) for f in engine.active()) + r")\b", hint or "")
             dcfg = engine.rules.get("director", {})
@@ -3606,6 +3609,24 @@ ENCOURAGE_ALIASES = {"stream": "sustain", "held": "sustain", "beam": "sustain", 
                      "grabs": "grab", "holds": "hold", "pins": "pin", "submissions": "submission", "sub": "submission",
                      "feints": "feint", "flight": "dive", "dives": "dive", "fly": "dive", "carries": "carry",
                      "spikes": "spike", "juggles": "juggle", "launches": "launch"}
+
+
+def style_hint(engine):
+    """(since build 280) traits: how each fighter likes to fight (fighters.json style) and the moves she reaches for
+    most (favors), so the director picks the way she would."""
+    if not engine.traits_cfg():
+        return ""
+    out = []
+    for f in engine.active():
+        fav = sorted(((m, w) for m, w in (f.favors or {}).items() if float(w) > 1 and any(x["name"] == m for x in f.moves)),
+                     key=lambda kv: -float(kv[1]))
+        rare = [m for m, w in (f.favors or {}).items() if float(w) < 1 and any(x["name"] == m for x in f.moves)]
+        if not f.style and not fav:
+            continue
+        out.append(f"HOW {f.name.upper()} FIGHTS: {f.style}".rstrip()
+                   + (f" She reaches most for {', '.join(m for m, _ in fav[:5])}." if fav else "")
+                   + (f" She seldom uses {', '.join(rare[:4])}." if rare else ""))
+    return "\n".join(out)
 
 
 def game_plan_hint(engine):

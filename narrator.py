@@ -5783,7 +5783,12 @@ class Narrator:
             if a.get("carry_failed"):
                 lines.append(f"  - {a['attacker']} gets her grip into {a['defender']} and beats her wings hard to haul her "
                              f"up off the ground, but she CAN'T LIFT HER: too heavy, too braced. She lets go.")
-            if a.get("overcommit"):
+            if a.get("overcommit") and a.get("overcommit_why") == "cocky":
+                # (since build 280, traits.quirks.cocky) not tired: too sure of herself after her last good hit
+                lines.append(f"  - {a['attacker']} is COCKY after her last good hit and OVERREACHES: she throws this one "
+                             f"too big and too sure, it lands sloppy and at half its force, and she overbalances on it "
+                             f"and has to catch herself (OFF BALANCE after it). Not tiredness: inexperience.")
+            elif a.get("overcommit"):
                 worn = (getattr(self, "strengths", None) or {}).get(a["attacker"], 0) < 60
                 lines.append(f"  - {a['attacker']} is so {'tired' if worn else 'out of breath'} she OVERCOMMITS: the blow is "
                              f"sloppy, badly timed, half its "

@@ -96,7 +96,10 @@ def _pick_action(eng, rng, f, d):
                         leap_from=rng.choice(eng.high_ground()))
     if not moves:
         return dict(a, action="breather")
-    m = rng.choice(moves)
+    fav = (getattr(f, "favors", None) or {}) if eng.traits_cfg() else {}
+    # (since build 280) the moves she favours (fighters.json favors), as the director is told
+    m = rng.choices(moves, weights=[max(0.05, float(fav.get(x["name"], 1.0))) for x in moves])[0] if fav \
+        else rng.choice(moves)
     parts = list(d.parts)
     a.update(action="strike", move=m["name"])
     if m.get("target") in ("spread",):

@@ -654,6 +654,56 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 280
+Traits and quirks: how each fighter fights. Ripples, Nerine, Nocturne and Seraphina are rewritten from your descriptions.
+- **Traits** (`traits`, on by default) are set per fighter in fighters.json. Each is a multiplier on today's rolls, 1.0 = as before:
+  - `speed`: her dodge, her counter after a dodge, meeting a move with her own.
+  - `hold`: how hard her grips bite, and how hard they are to break.
+  - `escape`: her chance to break a hold or escape a pin.
+  - `toughness`: how easily she is staggered or rocked.
+  - `stamina`: what her moves cost her.
+  - `striking`: landing where she aims, and her chance of a devastating blow.
+  - `learning`: at 1.4 or more, she reads a move after seeing it once, not twice.
+
+  Fighters without traits are unchanged. The roll lines show a trait when it changes a chance ("(speed ×1.25)").
+- **Quirks** are named rules of her own, each switchable in `traits.quirks`, with its numbers and an explanation there:
+  - stubborn, out_of_depth, cocky, water_born.
+  - ring_sense, clinch_fighter, works_the_hold, predictable.
+  - weak_paw_grip, disaster_sense, ambusher, hates_water.
+  - overwhelming, patient_constrictor, unshakeable.
+- **Style and favourite moves.** Each fighter has a `style` sentence and a `favors` table (move → how much she prefers it). The director is told both, and `/simulate` picks moves by them.
+- **/traits [name]** lists a fighter's traits, quirks, style and favourite moves.
+- **The four fighters:**
+  - **Ripples** is young, fast, energetic, a quick learner and a little cocky, with a varied style.
+    - Traits: speed 1.25, stamina 1.15, learning 1.5, toughness 0.95, escape 0.8.
+    - Quirks: **stubborn** (holds out against tapping longer), **out of her depth** (bad at escaping holds at first, better with each one she's caught in), **cocky** (after a good hit she sometimes overreaches), **water born** (quicker and slipperier in the water).
+    - Her description and voice are rewritten to match, for both versions of her.
+  - **Nerine** is young but experienced: a grappler and brawler, less varied, sure of what she does.
+    - Traits: speed 1.1, toughness 1.05.
+    - Quirks: **ring sense** (rarely gets sloppy when tired), **clinch fighter** (more free blows while she holds), **works the hold** (her holds build faster), **predictable** (opponents read her moves sooner).
+    - She favours tail binds, pins, chops, bites and Aqua Tail, and seldom uses ranged moves.
+    - Her description and voice are rewritten.
+  - **Nocturne** fights dark and close, with her jaws; she has few holds, because her paws aren't made for gripping.
+    - Traits: speed 1.3, striking 1.35, escape 1.15, toughness 1.1, hold 0.75.
+    - Health: 1680 → 1800.
+    - Quirks: **weak paw grip** (paw grips are weaker and easier to break; jaw grips are normal), **disaster sense** (devastating blows land on her less often), **ambusher** (Sucker Punch and Night Slash land devastatingly far more often on someone caught open), **hates water**.
+  - **Seraphina** is graceful, confident and overwhelming: very big attacks and constriction.
+    - Traits: hold 1.2, toughness 1.25, escape 1.1, speed 0.85, stamina 0.9.
+    - Quirks: **overwhelming** (her big moves hit ×1.06 but are easier to dodge), **patient constrictor** (stronger in a contest of coils), **unshakeable**.
+    - Her tells now say she shows very little until she is badly hurt.
+- **Balance** (simulated, traits off → on):
+
+  | Pair | Traits off | Traits on |
+  |---|---|---|
+  | Nocturne vs Ripples | 57% | 58% |
+  | Nerine vs Ripples | 54% | 59% |
+  | Seraphina vs Ripples | 80% | 87% |
+  | Nocturne vs Nerine | 61% | 62% |
+  | Nocturne vs Seraphina | 31% | 32% |
+  | Seraphina vs Nerine | 86% | 81% |
+
+  Ripples' traits were set once from your description and never tuned; everyone else was tuned around her. A larger-strengths-with-costs approach (Seraphina's big blows at 1.25× but costlier and easier to dodge) was discussed and kept for later.
+
 ## Build 279
 The contest of coils, writing for constriction and for serpents coiling serpents, and the narration slips left over from the build-276 played log.
 - **The contest of coils** (`holds.coil.contest`, on by default). When two fighters are coiled round each other, each beat after both coils have been on for a beat:
