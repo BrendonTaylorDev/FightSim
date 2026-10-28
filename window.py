@@ -1351,6 +1351,21 @@ class App:
             if self.live:
                 self.show(self.live, live=True)
 
+    def _repaint_cards(self):
+        """(since build 292) Make the cards show what was just drawn on them. They sit inside a scrolling canvas, and
+        on Windows a change inside one (a strip that appears, grows or shrinks) was only painted once the cards were
+        scrolled: lay them out now, put the scroll area right, and nudge the view by nothing to repaint it."""
+        cv = getattr(self, "cards_canvas", None)
+        if cv is None:
+            return
+        try:
+            self.cards_frame.update_idletasks()
+            cv.configure(scrollregion=cv.bbox("all"))
+            cv.xview_moveto(cv.xview()[0])
+            cv.yview_moveto(cv.yview()[0])
+        except tk.TclError as e:
+            note_failure("repainting the cards", e)
+
     def show(self, snap, live=False, index=None):
         self.shown = snap
         names = [f["name"] for f in snap["fighters"]]
@@ -1365,6 +1380,7 @@ class App:
                 self.load_picture(card, f)
         for f in snap["fighters"]:
             self.cards[f["name"]].draw(f)
+        self._repaint_cards()
         self.when.configure(text=("Now" if live else
                                   f"Beat {index} of {len(self.beats)}: as it stood {snap['label']}" if index else
                                   f"As it stood {snap['label']}"))

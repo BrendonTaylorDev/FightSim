@@ -654,6 +654,23 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 292
+Fixes from the played Seraphina vs Ripples log:
+- "I headbutt Ripples' head four times and then squeeze even tighter" became a GRIP on her head, and no headbutt was
+  thrown: "headbutt" wasn't one of the words read as an attack, and "squeeze" took the part from the whole order. Now
+  a squeeze, tighten or coil order while she already holds the other TIGHTENS what she has (crushing, tightening),
+  after the attack when there is one; a new grip takes its part from the words after the grip word.
+- The words an order is read by are much fuller: attacks and getting away (headbutt, slam, punch, whip, charge,
+  tackle, stomp, shove, throw, squirm, thrash, dodge, flee and many more), grips (tighten, clamp, choke, strangle,
+  hug, seize, clutch, engulf, crank...) and holding back (relax, go limp, wait, rest, endure, catch her breath...).
+- New story checks:
+  - a body constriction told as her air being cut off ("cutting off her air supply"): the coils hold back her
+    blood;
+  - her heart told as slowing while it is still racing;
+  - a fighter given a body part she doesn't have ("Ripples' antennae", "Seraphina's gills", "Seraphina's fur").
+- The window's cards repaint as soon as a beat is drawn. They sit in a scrolling area, and on Windows a change inside
+  it (a strip appearing, growing or shrinking) only showed once the cards were scrolled.
+
 ## Build 291
 - The vitals strip is dark in dark mode too: its dark background had been turned light by the dark-mode colours, which
   hid its blood pressure.

@@ -656,6 +656,27 @@ SAYS_FACE_DOWN = re.compile(r"\b(face-?down|face-first|on (?:her|his) (?:belly|s
 UPRIGHT_LINE = re.compile(r"\b(?:balance|planted|plant(?:s|ed|ing)? herself|steps?|stance|square|drew herself up|"
                           r"faced front|gave her weight to the ground|leaned toward|feet|stood|footing|forward|"
                           r"distance|shook the dust|up and down|taller)\b", re.I)
+# (since build 292) a body constriction told as her AIR being cut off (it is her blood), and her heart told as slowing
+# while it is still racing
+AIR_CUT = re.compile(r"\bcut(?:s|ting)? off (?:her |the )?(?:air|breath|oxygen)\w*|\bair supply\b|\b(?:could|can)(?:n't| ?not) "
+                     r"breathe\b|\bno air\b|\bstarv\w* (?:her |of |for )+(?:air|oxygen)|\bsuffocat\w*|\basphyxia\w*|"
+                     r"\blungs? (?:\w+ )?(?:fighting|screaming|burning|begging|desperate) for (?:air|breath|oxygen)|"
+                     r"\bfighting for (?:air|breath|every breath)\b|\bgasp\w* for (?:air|breath)\b|\bchok(?:e|ed|ing) "
+                     r"(?:her|the life)\b|\bstrangl\w*", re.I)
+HEART_SLOWS = re.compile(r"\b(?:pulse|heart(?:beat)?|heartbeat)s? (?:\w+ ){0,3}?(?:slow\w*|faltered|stumbl\w*|skipp\w*|"
+                         r"weaken\w*)", re.I)
+# (since build 292) body parts said to be hers that she doesn't have ("Ripples' antennae", "Seraphina's gills"):
+# the word, and what her body must have for it (a feature of blocks.features, or a word in one of her part names)
+OWN_FEATURE = (("antennae", r"antenna\w*", "antennae"), ("head fins", r"head fins?", "head fin"),
+               ("gills", r"gills?", "gill"), ("wings", r"wings?", "wing"), ("horn", r"horns?", "horn"),
+               ("beak", r"beak", "beak"), ("talons", r"talons?", "talon"), ("coils", r"coils?", "coils"),
+               ("feet", r"feet|foot", "foot"), ("paws", r"paws?|forepaws?", "paw"), ("hands", r"hands?|fingers?", "hand"),
+               ("arms", r"arms?|forearms?", "arm"), ("knees", r"knees?", "knee"), ("ears", r"ears?", "ear"),
+               ("mane", r"mane", "mane"), ("fur", r"fur", "fur"), ("scales", r"scales?", "scales"),
+               ("feathers", r"feathers?|plumage", "feathers"), ("hooves", r"hoo(?:f|ves)", "hoof"),
+               ("tail fan", r"tail fan|tail fin", "tail fan"),
+               ("flotation sac", r"flotation (?:sac|collar)", "flotation"), ("tusks", r"tusks?", "tusk"),
+               ("claws", r"claws?", "claw"), ("hood", r"hood", "hood"), ("shell", r"shell", "shell"))
 # (since build 283) thoughts about footwork, distance and the next blow: not for two fighters locked in a hold
 FOOTWORK_THOUGHT = re.compile(r"\b(?:turn\w*|gap|footing|step\w*|guard\w*|set\b|low, then high|hit, then gone|"
                               r"strike|telegraph|reach\w* too far|ground behind|faster on one side|breathes\b|"
@@ -4711,6 +4732,7 @@ class Narrator:
                 # (finish.submission.constriction, since build 283) what the coils round her body are doing to her
                 # blood and her heart this beat, in the order it really goes
                 self.__dict__.setdefault("_circ_on", set()).add(e["defender"])
+                self.__dict__.setdefault("_circ_stage", {})[e["defender"]] = e.get("stage")
                 lines.append(self.CONSTRICT_STAGE.get(e.get("stage"), self.CONSTRICT_STAGE["pounding"]).format(
                     d=e["defender"], a=e["attacker"], ds=poss(e["defender"]),
                     coils="coils" if int(e.get("coils") or 1) > 1 else "coil"))
@@ -11674,6 +11696,35 @@ class Narrator:
             if m and not RECALLED.search(sent) and not NEARLY.search(sent[:m.start()][-45:]):
                 add(sent, f"it tells an impact (\"{m.group(0)}\"), but no blow lands this beat: only grips. Tell the "
                           f"pressure building, the squeeze, the strain, not a hit")
+            circ_ = getattr(self, "_circ_on", None) or set()
+            neck_held = {g[1] for g in (getattr(self, "grips", None) or []) if body_region(str(g[2])) == "neck"}
+            m = AIR_CUT.search(sent) if circ_ else None
+            # (no RECALLED test here: "tightened again, cutting off her air supply" is about now)
+            if m and any(w in circ_ and w not in neck_held for w in (whos or list(circ_))):
+                w_ = next(w for w in (whos or list(circ_)) if w in circ_)
+                add(sent, f"it tells {poss(w_)} air being cut off (\"{m.group(0)}\"), but the coils are round her body, "
+                          f"not her throat: it is her BLOOD they hold back. Her breaths are short and shallow, and her "
+                          f"heart, her head and the grey are what tell it")
+            m = HEART_SLOWS.search(sent)
+            if m and not re.search(r"\b(?:will|would|soon|later|until|before)\b", sent, re.I):
+                stg = getattr(self, "_circ_stage", None) or {}
+                w_ = next((w for w in (whos or list(stg)) if stg.get(w) == "pounding"), None)
+                if w_:
+                    add(sent, f"it has {poss(w_)} heart slowing (\"{m.group(0)}\"), but it is still RACING, pounding with "
+                              f"fear and effort: it only slows later, as the constriction goes on")
+            for w_ in whos:
+                low_ = sent.lower()
+                parts_ = " ".join(((getattr(self, "damage_by", None) or {}).get(w_) or {}).keys()).lower()
+                if not parts_:
+                    continue
+                feats_ = self._feats_of(w_)
+                for word, rx, need in OWN_FEATURE:
+                    mm = re.search(r"\b" + re.escape(w_.lower()) + r"(?:'s|’s|'|’) (?:\w+ ){0,2}?(?:" + rx + r")\b", low_)
+                    if not mm or need in parts_ or need in feats_ or any(need in f_ for f_ in feats_):
+                        continue
+                    add(sent, f"it gives {w_} {word} (\"{mm.group(0)}\"), but she has none: only what her body has "
+                              f"(her parts: {', '.join(sorted(((getattr(self, 'damage_by', None) or {}).get(w_) or {}).keys())[:12])})")
+                    break
             m = COIL_SQUEEZE.search(sent)
             if m and free_coilers and any(w in free_coilers for w in whos) and not RECALLED.search(sent) \
                     and not re.search(r"\b(?:would|could|wanted|meant|ready|soon|if|once)\b", sent[:m.start()], re.I):

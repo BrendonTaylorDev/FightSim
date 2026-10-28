@@ -800,6 +800,47 @@ def presets_help_check():
     return problems
 
 
+def orders_check():
+    """Build 292 (the user's log): a player's order read right. "I headbutt Ripples' head four times and then squeeze
+    even tighter" keeps the headbutts and tightens the coils she already has (it had become a grip on her head, and no
+    headbutt was thrown); the word lists are fuller; and the prose checks for a constriction told as her air, her
+    heart slowing while it races, and a body part she doesn't have."""
+    import director as D
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    e.start_holds("Seraphina", "Ripples", [("Stomach", 8, 0, "her coils"), ("Upper Back", 8, 0, "her coils")], "coils")
+    acts = [{"action": "combo", "attacker": "Seraphina", "defender": "Ripples", "move": "Dragon Rush",
+             "hits": [{"part": "Head"}] * 4, "flavor": "headbutts"}]
+    got = D.apply_players(e, acts, {"Seraphina": "I headbutt Ripples head four times and then squeeze even tighter."})
+    if [b["action"] for b in got] != ["combo", "hold_adjust"]:
+        problems.append(f"the headbutts and a tightening: {[b['action'] for b in got]}")
+    for o, want in (("I squirm and try to wriggle free", "A"), ("I lie still and let her squeeze", "P"),
+                    ("I relax and catch my breath", "P"), ("I tighten my coils", "G"), ("I slam her into the oak", "A"),
+                    ("I bite her tail", "A"), ("I clamp down on her neck", "G")):
+        rx = {"A": D.ACTIVE_ORDER, "P": D.PASSIVE_ORDER, "G": D.GRIP_ORDER}[want]
+        if not rx.search(o):
+            problems.append(f"{o!r} should read as {want}")
+    n = s.narrator
+    n.strengths = {"Seraphina": 100, "Ripples": 90}
+    n.damage_by = {f.name: {p.lower(): 0 for p in f.parts} for f in e.fighters.values()}
+    n.plans = {"Seraphina": "serpent", "Ripples": "biped"}
+    n.coats = {"Seraphina": "scales", "Ripples": "fur"}
+    n._hurt_now, n._calm_beat = set(), False
+    n._circ_on, n._circ_stage = {"Ripples"}, {"Ripples": "pounding"}
+    n.grips = [("Seraphina", "Ripples", "stomach", "her coils")]
+    for sent, want in (("Ripples' antennae drooped, flat against her neck.", "gives Ripples antennae"),
+                       ("Seraphina's fur bristled.", "gives Seraphina fur"),
+                       ("The coils tightened again, cutting off Ripples' air supply.", "BLOOD"),
+                       ("Ripples felt her pulse slowed to a throb.", "RACING")):
+        if not any(want in str(x) for x in n._log_slips(sent)):
+            problems.append(f"{sent!r} should be caught ({want})")
+    for sent in ("Ripples' ears flattened.", "Seraphina's scales flared.", "Ripples' twin tails lashed."):
+        if n._log_slips(sent):
+            problems.append(f"{sent!r} is fine: {n._log_slips(sent)}")
+    return problems
+
+
 def speed_check_check():
     """Build 286: when part of the narrator model runs in system memory, the player is told once, with what helps."""
     import io, contextlib
@@ -2882,6 +2923,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "orders players words features" for w in want):
+        t = time.time()
+        probs = orders_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  players' orders read right; constriction told as blood; parts she has  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "speed offload gpu timing" for w in want):

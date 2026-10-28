@@ -2909,14 +2909,35 @@ def play_block(engine, players):
 
 
 # (since build 278) a played fighter's order that is doing nothing, that is a grip, or that is fighting back
+# (since build 278; much fuller since build 292) the words a player's order is read by: holding back, fighting
+# (any attack, struggle or getting away), and gripping
 PASSIVE_ORDER = re.compile(r"(?i)\b(?:(?:does|do|doing|did) nothing|(?:doesn't|does not|don't|do not|won't|will not) "
-                           r"(?:do|fight|struggle|move|resist)\w*|nothing|(?:can't|cannot|can not) (?:do|move|fight)|"
-                           r"(?:gets?|is|am|being) (?:constricted|held|squeezed|crushed|coiled|wrapped|pinned)|"
-                           r"lets? (?:her|it) happen|takes? it|stays? still|holds? still|gives? in)\b")
-ACTIVE_ORDER = re.compile(r"(?i)\b(?:struggl\w*|break\w*|escape\w*|wrench\w*|fights? back|bit(?:e|es)|attack\w*|"
-                          r"strik\w*|hits?|kick\w*|claws?|twist\w* free|pr(?:y|ies) )\b")
+                           r"(?:do|fight|struggle|move|resist|react|respond)\w*|nothing|(?:can't|cannot|can not) "
+                           r"(?:do|move|fight)|(?:gets?|is|am|being) (?:constricted|held|squeezed|crushed|coiled|wrapped|"
+                           r"pinned|choked|grabbed|gripped|bound)|lets? (?:her|it|them|herself) (?:happen|be|squeeze|"
+                           r"hold|coil|crush|win)|takes? it|stays? (?:still|limp|put|down|quiet)|holds? still|gives? in|"
+                           r"goes? limp|(?:lies|lie|lay|lays) still|relax\w*|rests?|resting|waits?|waiting|endur\w*|"
+                           r"accepts? it|(?:catch\w*|gets?) (?:her|my) breath|just breathes?|watch\w*|stand\w* there|"
+                           r"(?:sits?|sat) there|freez\w* up|playing dead|plays? dead)\b")
+ACTIVE_ORDER = re.compile(r"(?i)\b(?:struggl\w*|break\w*|escap\w*|wrench\w*|fights? (?:back|it|her)|fighting|bit(?:e|es|ing)?|"
+                          r"chomp\w*|gnaw\w*|snap\w* at|nip\w*|attack\w*|strik\w*|struck|hits?|hitting|smack\w*|slap\w*|"
+                          r"swat\w*|kick\w*|claw\w*|scratch\w*|rak(?:e|es|ed|ing)|slash\w*|swip\w*|twist\w* (?:free|away|out|loose)|"
+                          r"pr(?:y|ies|ied) |head[- ]?butt\w*|butts?|punch\w*|jabs?|jabb\w*|uppercut\w*|slam\w*|smash\w*|"
+                          r"bash\w*|batter\w*|pound\w*|hammer\w*|pummel\w*|whip\w*|lash\w* (?:at|out)|rams?|ramm\w*|"
+                          r"charg\w*|tackl\w*|chop\w*|stomp\w*|stamp\w*|knee\w* (?:her|ripples|\w+ in)|elbow\w*|shov\w*|"
+                          r"push\w* (?:her|off|away|back)|throw\w*|threw|toss\w*|hurl\w*|flip\w* (?:her|over)|squirm\w*|"
+                          r"wriggl\w*|thrash\w*|buck\w*|writh\w*|flail\w*|kick\w* free|spit\w*|spray\w*|shoot\w*|"
+                          r"blast\w*|fir(?:e|es|ing) (?:at|a|her)|beam\w*|breath(?:es)? (?:fire|ice)|gor(?:e|es|ing)|peck\w*|"
+                          r"stings?|stinging|tear\w* (?:at|into|free)|rip\w* (?:at|into|free)|cut\w* (?:at|into)|dodg\w*|"
+                          r"duck\w*|block\w*|parr\w*|counter\w*|retreat\w*|back\w* away|jump\w*|leap\w*|dives?|diving|"
+                          r"flee\w*|runs? away|rolls? (?:away|free|out)|break\w* free|pulls? (?:free|away|loose)|"
+                          r"slips? (?:free|out|away|loose)|tries to get (?:free|out|away|up)|gets? up|stands? up)\b")
 GRIP_ORDER = re.compile(r"(?i)\b(?:coil\w*|constrict\w*|wrap\w*|squeez\w*|crush\w* (?:her|ripples|\w+) in|bind\w*|"
-                        r"grab\w*|grip\w*|holds? (?:her|onto|on to)|wind\w* (?:round|around))\b")
+                        r"grab\w*|grip\w*|holds? (?:her|onto|on to|tight)|wind\w* (?:round|around)|wound (?:round|around)|"
+                        r"tighten\w*|clamp\w*|lock\w* (?:on|her|onto|round|around)|chok(?:e|es|ing)|strangl\w*|smother\w*|"
+                        r"cinch\w*|latch\w*|(?:bear )?hug\w*|envelop\w*|encircl\w*|entwin\w*|ensnar\w*|entangl\w*|"
+                        r"seiz\w*|snatch\w*|clutch\w*|grasp\w*|embrac\w*|engulf\w*|loop\w* (?:round|around|over)|"
+                        r"press\w* (?:harder|tighter)|crank\w*|wring\w*)\b")
 
 
 def apply_players(engine, actions, players):
@@ -2951,16 +2972,30 @@ def apply_players(engine, actions, players):
             foe = next((f for f in engine.active() if f.team != engine.get(n).team), None)
             if foe is None:
                 continue
-            named = [p for p in foe.parts if re.search(r"\b" + re.escape(p.lower()) + r"\b", o.lower())]
-            if not named and re.search(r"\b(?:midsection|middle|body|waist|torso|stomach|belly)\b", o, re.I):
+            me_ = engine.get(n).name
+            moves_ = [m["name"] for m in engine.get(n).moves]
+            active_ = bool(ACTIVE_ORDER.search(o) or any(re.search(r"\b" + re.escape(m) + r"\b", o, re.I) for m in moves_))
+            if any(h.attacker == me_ and h.defender == foe.name for h in engine.holds.values()):
+                # (since build 292) "squeeze harder" with her grip already on: it TIGHTENS what she has, it doesn't
+                # put a new grip on whatever part the order names ("I headbutt Ripples' head four times and then
+                # squeeze even tighter" became a grip on her head, and no headbutt was thrown)
+                tight = {"action": "hold_adjust", "attacker": me_, "defender": foe.name, "severity": "crushing",
+                         "ramp": "tightening", "flavor": "the coils drawn tighter" if engine.body_plan(engine.get(n))
+                         == "serpent" else "the grip drawn tighter"}
+                kept = kept + [tight] if active_ else [tight if b is mine[0] else b for b in kept]
+                continue
+            # (the part to grip is named AFTER the grip word: "headbutts her head and then coils round her chest")
+            gm = GRIP_ORDER.search(o)
+            tail_ = o[gm.start():] if gm and active_ else o
+            named = [p for p in foe.parts if re.search(r"\b" + re.escape(p.lower()) + r"\b", tail_.lower())]
+            if not named and re.search(r"\b(?:midsection|middle|body|waist|torso|stomach|belly)\b", tail_, re.I):
                 named = [p for p in foe.parts if body_region(p) in ("belly", "chest")][:2]
             if not named:
                 continue
             b0 = mine[0]
             grip = {"action": "hold_start", "attacker": engine.get(n).name, "defender": foe.name,
                     "hits": [{"part": p} for p in named], "flavor": str(b0.get("flavor") or o)}
-            moves_ = [m["name"] for m in engine.get(n).moves]
-            if ACTIVE_ORDER.search(o) or any(re.search(r"\b" + re.escape(m) + r"\b", o, re.I) for m in moves_):
+            if active_:
                 grip["flavor"] = o
                 kept = kept + [grip]          # an attack AND a grip ordered: the attack, then the grip
             else:
