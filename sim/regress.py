@@ -776,6 +776,49 @@ def presets_help_check():
             or s2.players != ["Ripples"] or getattr(s2, "_setup_auto", 0) != 12:
         problems.append(f"a preset at the start should ask only where, who, players and begin, and apply them: {asked} "
                         f"{s2.players} {getattr(s2, '_setup_auto', 0)}")
+    # build 283 (the user's log): the questions after the fighters one use the new fight, and its banner waits
+    s3 = H.session(3, fighters="Nocturne,Ripples,Nerine,Seraphina")
+    full, ans = [], iter(["1", "", "Seraphina Ripples", "all", "", ""])
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        play.setup_questions(s3, read=lambda p: (full.append(p), next(ans, ""))[1])
+    pl = next((p for p in full if p.startswith("Players")), "")
+    dice = next((p for p in full if p.startswith("Dice")), "")
+    if "Nocturne" in pl or "Seraphina, Ripples" not in pl or sorted(s3.players) != ["Ripples", "Seraphina"]:
+        problems.append(f"the players question should name the fighters just chosen: {pl!r} {s3.players}")
+    if f"Enter keeps {s3.dice_mode()}" not in dice:
+        problems.append(f"the dice question should say the mode that is set: {dice!r}")
+    if "Press Enter to begin" in out.getvalue():
+        problems.append("choosing the fighters in the setup shouldn't print the fight's banner mid-questions")
+    s3.use_llm, s3.story = True, []
+    s3.eng.rules["narration"]["scene_intro"] = False
+    if not s3.playing():
+        problems.append("with no opening passage, the fighters you play are asked from the very first beat")
+    s3.eng.rules["narration"]["scene_intro"] = True
+    if s3.playing():
+        problems.append("with an opening passage, the first Enter writes it before you are asked")
+    return problems
+
+
+def unrolled_blows_check():
+    """Build 283 (the user's log): a submission whose words whip her and charge her into a pine the engine never
+    resolved loses those words; a coil's own words stay."""
+    import director as D
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    f = ("A massive wave of power and motion as Seraphina whips Ripples with the tail, and charges her into a tall "
+         "pine, then presses her into the beach and the pine tree, before")
+    if D._unrolled_words(e, "submission", "Seraphina", f) != "":
+        problems.append(f"a submission's unresolved blows should go: {D._unrolled_words(e, 'submission', 'Seraphina', f)!r}")
+    got = D._unrolled_words(e, "hold", "Seraphina", "her coils wound round Ripples, then she slams her into the oak")
+    if got != "her coils wound round Ripples":
+        problems.append(f"a hold keeps its grip and loses the slam: {got!r}")
+    if D._unrolled_words(e, "hold", "Seraphina", "jaws clamped on her neck, biting hard") != "jaws clamped on her neck, biting hard":
+        problems.append("a jaw hold's biting is its grip, not a blow")
+    e.rules["holds"]["unrolled_words"]["blows"] = False
+    if D._unrolled_words(e, "submission", "Seraphina", f) != f:
+        problems.append("holds.unrolled_words.blows false keeps the words")
     return problems
 
 
@@ -940,6 +983,15 @@ def coil_contest_check():
     if not any("front first" in x for x in slips):
         problems.append(f"rolling onto her front after her knees should be caught: {slips}")
     n._getup_who = n._getup_rise = None
+    # build 283 (the user's log): an impact told in a beat of grips alone
+    n._strike_parts, n.grips = [], [("Seraphina", "Vesper", "chest", "her coils")]
+    slips = [str(x) for x in n._log_slips("The impact came first as a dull thud against Vesper's chest.")]
+    if not any("no blow lands" in x for x in slips):
+        problems.append(f"an impact in a beat of grips alone should be caught: {slips}")
+    n._strike_parts = ["chest"]
+    if any("no blow lands" in str(x) for x in n._log_slips("The impact came first as a dull thud against Vesper's chest.")):
+        problems.append("an impact in a beat with a blow is fine")
+    n._strike_parts, n.grips = [], []
     if not N.SERPENT_STOOD.search("Seraphina stood firm") or N.SERPENT_STOOD.search("Seraphina reared up"):
         problems.append("standing words for a serpent")
     tags = n._sample_tags("all", [], [], [{"type": "coil_contest", "result": "won", "fighters": ["A", "B"]}])
@@ -2696,6 +2748,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "unrolled blows preset" for w in want):
+        t = time.time()
+        probs = unrolled_blows_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  a hold's words don't tell blows the engine never resolved  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "character personality history profile" for w in want):

@@ -1406,12 +1406,12 @@ her weight coming back onto her own feet, or not coming back | posture: standing
 
 # A blow thrown at no distance: inside a grab, in a pummel. There is no room to wind up.
 == movement | kind: close
-short strokes, elbow to wrist, with no room behind them
-she works from the shoulder only; there is nowhere to step
+short strokes, elbow to wrist, with no room behind them | has: arms
+she works from the shoulder only; there is nowhere to step | has: arms
 the blows come up from underneath, between their two bodies
 she uses the grip itself to pull the other onto each one
 each one starts where the last one ended, with no drawing back
-she turns her wrist over at the end of each, for want of room to swing
+she turns her wrist over at the end of each, for want of room to swing | has: arms
 the rhythm is quick and ugly, like someone beating a rug
 she leans her forehead in close and works by feel
 

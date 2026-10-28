@@ -654,6 +654,24 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 283
+Fixes from the first real run of the setup questions:
+- After you chose the fighters, the later questions still looked at the old fight: the players question offered
+  Nocturne, Ripples, Nerine and Seraphina for a Seraphina vs Ripples fight. They now follow the fight you chose.
+- Choosing the fighters no longer prints the fight's banner and "Press Enter to begin." in the middle of the
+  questions; it says who fights, and the fight is shown in full when the questions end.
+- The dice question says the mode that is set (it said "Enter keeps fair" when free was set).
+- With the opening passage off, the fighters you play are asked from the very first beat (the director used to take
+  the first beat as if nobody were playing).
+- A hold's words no longer tell blows the engine never resolved. Seraphina's upright coil was labelled "whips
+  Ripples with the tail, and charges her into a tall pine, then presses her into the beach": none of it happened
+  (the director was nudged towards a charge and wrote it into the hold's words instead). Those clauses are now cut,
+  and when no grip is left in the words the engine names the hold itself (`holds.unrolled_words.blows`).
+- A beat of grips alone with "the impact came first as a dull thud" in it is caught and written again: no blow
+  landed.
+- The story blocks for blows thrown at no distance ("short strokes, elbow to wrist") are offered only to fighters
+  with arms: Seraphina was given one for a coil.
+
 ## Build 282
 Setup questions before a run, match presets, an anything-goes match, and a fuller help with examples.
 - **The setup questions** (`setup`, on by default). Before a run begins, the game asks one short question at a time:

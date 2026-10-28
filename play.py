@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 282-guided (setup questions, match presets, anything-goes match, help examples)"
+VERSION = "2026-10-28 build 283 (setup questions follow the chosen fight, no unresolved blows in a hold's words)"
 
 HELP = """
 =============================================================================================
@@ -775,7 +775,9 @@ class Session:
         return bool(self.players) and self.dice_mode() == "strict" and not self.over
 
     def playing(self):
-        return bool(self.play_order()) and not self.over and not self.pending and bool(self.story or not self.use_llm)
+        # (with the models and an opening passage, the first Enter writes that passage before you are asked)
+        intro = self.use_llm and self.eng.rules.get("narration", {}).get("scene_intro", True)
+        return bool(self.play_order()) and not self.over and not self.pending and bool(self.story or not intro)
 
     def play_panel(self, name, first=False):
         """What your fighter has to work with before you choose: her state, her moves, and this beat's openings."""
@@ -2420,8 +2422,8 @@ def setup_questions(s, read=None):
     """(since build 282, setup.enabled) the questions asked before a run begins: a preset or the questions or
     nothing, then the arena, the fighters, the opening passage, the kind of match, the story plan, the important
     settings and anything more. Enter keeps what is set at every question; any /command works at any of them."""
-    eng = s.eng
-    cfg = eng.rules.get("setup") or {}
+    # (s.eng, never a copy of it: /newfight at the fighters question puts a new engine in its place)
+    cfg = s.eng.rules.get("setup") or {}
     ask = list(cfg.get("questions") or ["scene", "fighters", "variants", "players", "intro", "match", "taps", "pins",
                                         "plan", "focus", "targeting", "reason", "length", "damage", "traits",
                                         "character", "words", "story", "hazards", "polish", "more", "begin"])
@@ -2435,7 +2437,7 @@ def setup_questions(s, read=None):
             return None
 
     def cmd_(c, quiet=False):
-        turn0 = eng.turn
+        turn0 = s.eng.turn
         try:
             if quiet:
                 import contextlib, io
@@ -2446,7 +2448,7 @@ def setup_questions(s, read=None):
         except ValueError as e:
             print(f"Error: {e}")
             return False
-        if eng.turn != turn0 or re.match(r"/(?:auto|autofight|load|fight)\b", c, re.I):
+        if s.eng.turn != turn0 or re.match(r"/(?:auto|autofight|load|fight)\b", c, re.I):
             started["yes"] = True        # a fight began from here: the questions are over
         return True
 
@@ -2464,11 +2466,11 @@ def setup_questions(s, read=None):
                 continue
             if apply(got) is not False:
                 return
-    pres = [k for k, v in (eng.rules.get("presets") or {}).items() if not str(k).startswith("_") and isinstance(v, dict)]
+    pres = [k for k, v in (s.eng.rules.get("presets") or {}).items() if not str(k).startswith("_") and isinstance(v, dict)]
     print("SETUP (Enter at any question keeps what is set; any /command works too; /set setup.enabled false turns "
           "these questions off)")
     print("  Match presets: " + "   ".join(f"{i}) {k}" for i, k in enumerate(pres, 1)))
-    first = line_(f"Start> Enter = begin now as things are ({_match_kind(eng)}), a preset number or name = that "
+    first = line_(f"Start> Enter = begin now as things are ({_match_kind(s.eng)}), a preset number or name = that "
                   f"kind of match, o = go through the setup questions: ")
     if first is None or first == "":
         return
@@ -2481,19 +2483,19 @@ def setup_questions(s, read=None):
         pick = pres[int(first) - 1] if first.isdigit() and 0 < int(first) <= len(pres) else first.lower()
         if cmd_(f"/preset {pick}"):
             ask = [q for q in ask if q in ("scene", "fighters", "players", "begin")]   # a preset: where, who, begin
-    rules = eng.rules
+    rules = s.eng.rules
     nar = rules.get("narration") or {}
 
     def yesno(got):
         return got.lower() in ("on", "y", "yes", "true", "1")
 
     def q_scene():
-        if len(eng.scenes) > 1:
+        if len(s.eng.scenes) > 1:
             ask_scene(s, read=rd)
 
     def q_fighters():
-        roster = list(eng.roster)
-        now = " vs ".join(f.name for f in eng.fighters.values())
+        roster = list(s.eng.roster)
+        now = " vs ".join(f.name for f in s.eng.fighters.values())
         print("  Fighters: " + "   ".join(f"{i}) {n}" for i, n in enumerate(roster, 1)))
 
         def fighters(got):
@@ -2502,24 +2504,26 @@ def setup_questions(s, read=None):
             if len(names) < 2:
                 print("Two or more fighters, by name or number (e.g. 3 7, or Nerine Ripples).")
                 return False
-            return cmd_("/newfight " + " ".join(names))
+            if not cmd_("/newfight " + " ".join(names), quiet=True):   # (shown in full once the questions end)
+                return False
+            print(f"  Fighters: {' vs '.join(f.name for f in s.eng.fighters.values())}")
         ask_(f"Fighters> who fights (names or numbers; Enter keeps {now}): ", fighters)
 
     def q_variants():
-        for f in eng.fighters.values():
-            vs = [k for k in ((eng.variants or {}).get(f.name) or {}) if not str(k).startswith("_")] \
-                if isinstance(getattr(eng, "variants", None), dict) else []
+        for f in s.eng.fighters.values():
+            vs = [k for k in ((s.eng.variants or {}).get(f.name) or {}) if not str(k).startswith("_")] \
+                if isinstance(getattr(s.eng, "variants", None), dict) else []
             if vs:
-                ask_(f"Variant> which {f.name}: {' | '.join(vs)} (Enter keeps {eng.variant_of.get(f.name, 'the one set')}): ",
+                ask_(f"Variant> which {f.name}: {' | '.join(vs)} (Enter keeps {s.eng.variant_of.get(f.name, 'the one set')}): ",
                      lambda got, n=f.name: cmd_(f"/variant {n} {got}"))
 
     def q_players():
-        names = [f.name for f in eng.fighters.values()]
+        names = [f.name for f in s.eng.fighters.values()]
         ask_(f"Players> will you play as a fighter yourself? one or more names ({', '.join(names)}), all, or Enter "
              f"for none (the director runs everyone): ", lambda got: cmd_("/play " + got))
         if getattr(s, "players", None):
             ask_("Dice> for the fighters you play: fair (the dice decide; your /commands can still force things), "
-                 "strict (no forcing), or free (their tries always work) (Enter keeps fair): ",
+                 f"strict (no forcing), or free (their tries always work) (Enter keeps {s.dice_mode()}): ",
                  lambda got: cmd_("/play dice " + got.lower()))
 
     def q_intro():
@@ -2529,24 +2533,24 @@ def setup_questions(s, read=None):
 
     def q_match():
         print("  Match type: " + "   ".join(f"{i}) {k}" for i, k in enumerate(pres, 1)))
-        ask_(f"Match> which kind (Enter keeps {_match_kind(eng)}): ",
+        ask_(f"Match> which kind (Enter keeps {_match_kind(s.eng)}): ",
              lambda got: cmd_("/preset " + (pres[int(got) - 1] if got.isdigit() and 0 < int(got) <= len(pres)
                                             else got.lower())))
 
     def q_taps():
-        if eng.submission_match():
-            ask_(f"Taps> how many tap-outs win it (Enter keeps {eng.taps_needed()}): ",
+        if s.eng.submission_match():
+            ask_(f"Taps> how many tap-outs win it (Enter keeps {s.eng.taps_needed()}): ",
                  lambda got: (cmd_(f"/set finish.submission.taps.enabled {'true' if int(got) > 1 else 'false'}"),
                               cmd_(f"/set finish.submission.taps.needed {max(1, int(got))}")) if got.isdigit() else False)
 
     def q_pins():
-        if not eng.no_pins():
+        if not s.eng.no_pins():
             sc = ((rules.get("director") or {}).get("pin_urge") or {}).get("scale", 0.5)
             ask_(f"Pins> how often pin openings come: a number (0.5 = the default, 1 = twice as often, 0 = never), "
                  f"or default (Enter keeps {sc:g}): ", lambda got: cmd_("/pins " + got))
 
     def q_plan():
-        pl = eng.plan or {}
+        pl = s.eng.plan or {}
         now = (pl.get("shape") or "none") + (f" {pl.get('winner')}" if pl.get("winner") else "")
         ask_(f"Plan> the shape of the fight: close [name] | dominate <name> | comeback <name> | winner <name> | even | "
              f"off (Enter keeps {now}): ", lambda got: cmd_("/plan " + got))
@@ -2560,7 +2564,7 @@ def setup_questions(s, read=None):
              lambda got: cmd_("/targeting " + got.lower()))
 
     def q_reason():
-        if len(eng.fighters) == 2:
+        if len(s.eng.fighters) == 2:
             ask_("Reason> why they are fighting: on (one picked for you), list, a number from the list, your own "
                  "words in quotes, or off (Enter keeps it): ", lambda got: cmd_("/reason " + got))
 

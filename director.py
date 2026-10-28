@@ -1027,7 +1027,25 @@ def _unrolled_words(engine, act, att, flavor):
     free of Nerine's jaws") lose it when nothing holds her any more."""
     if not (engine.rules.get("holds", {}).get("unrolled_words") or {}).get("enabled", True) or not flavor:
         return flavor
-    if act in ("hold", "submission", "grapple_hold") and TAKEDOWN_WORDS.search(flavor):
+    if act in ("hold", "submission", "grapple_hold") and (engine.rules.get("holds", {}).get("unrolled_words")
+                                                         or {}).get("blows", True):
+        # (since build 283) a hold whose words strike or charge her first ("whips Ripples with the tail, and charges
+        # her into a tall pine, then presses her into the beach"): blows the engine never resolved. Those clauses
+        # go, and with no grip left in what remains the hold is named by the engine instead
+        foes = [re.escape(f.name) for f in engine.active() if f.name.lower() != str(att).lower()]
+        who = r"(?:her|" + "|".join(foes) + r")" if foes else r"her"
+        blow = re.compile(r"\b(?:whip\w*|strik(?:e|es|ing)|struck|punch\w*|kick\w*|smash\w*|head[- ]?butt\w*|charg\w*|"
+                          r"tackl\w*|batter\w*|pound\w*)\s+(?:at\s+|into\s+)?" + who + r"\b|\b(?:charg\w*|ram\w*|driv\w*|"
+                          r"drove|press\w*|smash\w*|slam\w*|crash\w*|hurl\w*|carr\w*|pin\w*)\s+" + who
+                          + r"\s+(?:back\s+|hard\s+)?into\s+(?:a|an|the)\b", re.I)
+        if blow.search(flavor):
+            left = _drop_clauses(flavor, blow)
+            grip = re.compile(r"\b(?:hold\w*|grip\w*|clamp\w*|coil\w*|wrap\w*|lock\w*|squeez\w*|bind\w*|bound|chok\w*|"
+                              r"crush\w*|latch\w*|clutch\w*|constrict\w*|jaws?|teeth|fangs|wound|round|around)\b", re.I)
+            flavor = left if left and grip.search(left) else ("" if act == "submission" else "a tight grip")
+            if not flavor:
+                return flavor
+    if act in ("hold", "grapple_hold") and TAKEDOWN_WORDS.search(flavor):
         return _drop_clauses(flavor, TAKEDOWN_WORDS) or "a tight grip"
     if act == "breather":
         # a pause's words striking the other ("Head butts Ripples in the nose"): a blow the engine never resolved
@@ -1268,6 +1286,8 @@ def resolve(engine, b):
     if act == "submission":
         if not dfn:
             raise ValueError("'submission' needs a defender")
+        if not manual:
+            flavor = _unrolled_words(engine, "submission", att, flavor)
         name = str(b.get("improvised_name") or b.get("submission") or "").strip().lower()
         grips = [(_fit_part(engine, dfn, h["part"]), short_phrase(h.get("with") or "", 9))
                  for h in (b.get("hits") or []) if isinstance(h, dict) and h.get("part")]

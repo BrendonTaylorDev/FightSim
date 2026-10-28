@@ -656,6 +656,9 @@ SAYS_FACE_DOWN = re.compile(r"\b(face-?down|face-first|on (?:her|his) (?:belly|s
 UPRIGHT_LINE = re.compile(r"\b(?:balance|planted|plant(?:s|ed|ing)? herself|steps?|stance|square|drew herself up|"
                           r"faced front|gave her weight to the ground|leaned toward|feet|stood|footing|forward|"
                           r"distance|shook the dust|up and down|taller)\b", re.I)
+# (since build 283) an impact told in a beat of grips alone ("The impact came first as a dull thud" in a coil)
+HOLD_IMPACT = re.compile(r"\b(?:the|an?) (?:\w+ )?impact\b|\ba (?:dull |heavy |sharp )?thud\b|\bthe (?:blow|hit) "
+                         r"(?:came|landed|hit|struck|connected)\b", re.I)
 # (since build 277) coils squeezing someone: only when a coil of hers is really on
 COIL_SQUEEZE = re.compile(r"\bcoils? (?:\w+ ){0,3}?(?:tighten|clamp|cinch|squeez|constrict|crush|wound|wrapp|lock)\w* "
                           r"(?:\w+ ){0,2}?(?:around|round|about) (?!(?:her|it)self\b)\w+|"
@@ -11606,6 +11609,11 @@ class Narrator:
                     if top != part and mine[part] < 0.6 * mine[top]:
                         add(sent, f"it says {poss(wf)} {part} has the worst of it, but her {top} is the one far worse "
                                   f"hurt: the {part} is the lesser of them")
+            m = HOLD_IMPACT.search(sent) if self._hurt_now is not None and not (getattr(self, "_strike_parts", None) or []) \
+                and (getattr(self, "grips", None) or []) else None
+            if m and not RECALLED.search(sent) and not NEARLY.search(sent[:m.start()][-45:]):
+                add(sent, f"it tells an impact (\"{m.group(0)}\"), but no blow lands this beat: only grips. Tell the "
+                          f"pressure building, the squeeze, the strain, not a hit")
             m = COIL_SQUEEZE.search(sent)
             if m and free_coilers and any(w in free_coilers for w in whos) and not RECALLED.search(sent) \
                     and not re.search(r"\b(?:would|could|wanted|meant|ready|soon|if|once)\b", sent[:m.start()], re.I):
