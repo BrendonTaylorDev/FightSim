@@ -1296,6 +1296,296 @@ def squeeze_svg(v, body="#c08457", coil="#5d8fcf", belly=None, width=440):
     return "".join(out)
 
 
+# (since build 304) the hold picture: which way a grip presses, from what it holds and what it is called
+LOCK_WORDS = re.compile(r"(?i)\b(?:lock|bar|hammerlock|kimura|americana|crank|wrench|twist|nelson|hold|"
+                        r"split|stretch|scissor|leglock|heel|ankle|knee|wrist|elbow|shoulder)")
+CHOKE_WORDS = re.compile(r"(?i)\b(?:choke|sleeper|guillotine|strangle|triangle|throat)")
+CRUSH_WORDS = re.compile(r"(?i)\b(?:bear hug|body lock|crush|squeeze|body scissors|waist)")
+HEAD_WORDS = re.compile(r"(?i)\b(?:headlock|head lock|face lock|chancery|front lock)")
+
+
+def _side_of(part):
+    p = str(part).lower()
+    return -1 if p.startswith("right ") else 1 if p.startswith("left ") else 0   # (her left is the viewer's right)
+
+
+def grip_kind(g):
+    """What a grip on her does, for the hold picture: "choke", "lock" (a limb's joint forced), "crush" (her body
+    squeezed), "head", "bound" (coils round a limb), "grab" or "pin"."""
+    what = str(g.get("what") or "")
+    regs = [body_region(p) for p in g.get("parts") or ()]
+    limbs = [r for r in regs if r in ("fore_up", "fore_low", "hind_up", "hind_low", "shoulder", "tail")]
+    # (what the hold is called says it first: a full nelson holds her neck but cranks it; a sleeper chokes)
+    if CHOKE_WORDS.search(what):
+        return "choke"
+    if HEAD_WORDS.search(what):
+        return "head"
+    if CRUSH_WORDS.search(what):
+        return "crush"
+    if what == "coils":
+        return "choke" if "neck" in regs else "bound"
+    if what in ("grab", "hold") and not g.get("locked"):
+        return "grab"
+    if "neck" in regs and not limbs:
+        return "choke"
+    if regs and all(r == "head" for r in regs):
+        return "head"
+    return "lock" if limbs else "crush"
+
+
+def _arrow(x0, y0, x1, y1, size=5.0):
+    """An arrowhead at (x1, y1), pointing from (x0, y0): its three points."""
+    a = math.atan2(y1 - y0, x1 - x0)
+    return [(x1, y1), (x1 - size * math.cos(a - 0.45), y1 - size * math.sin(a - 0.45)),
+            (x1 - size * math.cos(a + 0.45), y1 - size * math.sin(a + 0.45))]
+
+
+def hold_shapes(f, x0, y0, w, h, tx, width, body="#c08457", belly=None, holders=None):
+    """(since build 304) The grips on her as a picture of their own, for the window and exported fights: her body
+    from the front (stylised, whatever way her artwork faces), each part in a grip outlined in the holder's colour,
+    and what each grip does to her drawn on it: a joint lock bends her limb past where it should go (further the
+    nearer the pain is to what she can bear) with an arrow round the joint; a choke presses in at her neck; a crush
+    squeezes her body from both sides; a head hold clamps her head; coils wind round a limb; a grab leaves grip marks;
+    a pin bears down on her. Beside it, each grip, a gauge (her pain against what she can bear, her air for a choke,
+    a pin's count) and this beat's tap chance. Shapes: ("poly", pts, fill, outline, width), ("line", pts, colour,
+    width), ("rect", x0, y0, x1, y1, fill, outline), ("text", x, y, text, colour, size, bold). Returns (shapes,
+    height), or ([], 0) when nothing holds her (coils round her body have their own picture: squeeze_figure)."""
+    gr = f.get("grips") or {}
+    held = [g for g in gr.get("held") or () if not (g.get("what") == "coils"
+                                                   and any(body_region(p) in ("chest", "belly", "back_up", "back_low")
+                                                           for p in g.get("parts") or ()))]
+    pin = gr.get("pin")
+    if not held and not pin:
+        return [], 0
+    holders = holders or {}
+    skin = mix(body, "#000000", 0.0)
+    edge = mix(skin, "#000000", 0.45)
+    out = []
+    cx = x0 + w / 2.0
+
+    def X(u):
+        return cx + u * w
+
+    def Y(t):
+        return y0 + t * h
+
+    def hw(t):
+        return 0.62 * _torso_hw((t - 0.2) / 0.42)
+    names = {p for g in held for p in g.get("parts") or ()}
+    has_tail = any("tail" in str(n).lower() for n, *_ in f.get("parts") or ())
+    # the joints of her limbs (shoulder, elbow, paw; hip, knee, foot), each side; a joint lock bends one past its range
+    pain = {}
+    t_ = gr.get("tap") or {}
+    if t_.get("pain") is not None and t_.get("resist"):
+        pain[t_.get("by")] = min(1.3, float(t_["pain"]) / max(1.0, float(t_["resist"])))
+    bend = {}
+    for g in held:
+        if grip_kind(g) == "lock":
+            k = 0.35 + 0.8 * pain.get(g.get("by"), 0.4)
+            for p in g.get("parts") or ():
+                r = body_region(p)
+                sd = _side_of(p) or 1
+                if r in ("fore_up", "fore_low", "shoulder"):
+                    bend[("arm", sd)] = max(bend.get(("arm", sd), 0), k)
+                elif r in ("hind_up", "hind_low"):
+                    bend[("leg", sd)] = max(bend.get(("leg", sd), 0), k)
+
+    def limb(kind, sd):
+        if kind == "arm":
+            a = (X(sd * (hw(0.25) + 0.02)), Y(0.25))
+            b = (X(sd * (hw(0.25) + 0.08)), Y(0.42))
+            down = (X(sd * (hw(0.25) + 0.1)), Y(0.58))
+        else:
+            a = (X(sd * 0.17), Y(0.62))
+            b = (X(sd * 0.2), Y(0.8))
+            down = (X(sd * 0.21), Y(0.98))
+        k = bend.get((kind, sd), 0)
+        if k:
+            # forced the wrong way at the joint: the lower limb swung out and up past straight
+            ang = math.atan2(down[1] - b[1], down[0] - b[0]) - sd * k * (1.4 if kind == "arm" else 1.1)
+            ln = math.hypot(down[0] - b[0], down[1] - b[1])
+            down = (b[0] + ln * math.cos(ang), b[1] + ln * math.sin(ang))
+        return [a, b, down]
+    joints = {(kd, sd): limb(kd, sd) for kd in ("arm", "leg") for sd in (-1, 1)}
+    # her body
+    if has_tail:
+        tp = [(X(0.06), Y(0.64)), (X(0.3), Y(0.6)), (X(0.42), Y(0.46)), (X(0.44), Y(0.34))]
+        out.append(("poly", _tube(tp, [w * 0.05, w * 0.045, w * 0.035, w * 0.02]), mix(skin, "#000000", 0.12), edge, 1))
+    for (kd, sd), pts in joints.items():
+        out.append(("poly", _tube(pts, w * (0.055 if kd == "arm" else 0.07)), mix(skin, "#000000", 0.08), edge, 1))
+    ts = [0.2 + 0.42 * i / 30 for i in range(31)]
+    out.append(("poly", [(X(hw(t)), Y(t)) for t in ts] + [(X(-hw(t)), Y(t)) for t in reversed(ts)], skin, edge, 1))
+    if belly:
+        bt = [0.3 + 0.3 * i / 16 for i in range(17)]
+        out.append(("poly", [(X(hw(t) * 0.5), Y(t)) for t in bt] + [(X(-hw(t) * 0.5), Y(t)) for t in reversed(bt)],
+                    belly, "", 0))
+    out.append(("poly", [(X(0.07), Y(0.15)), (X(0.07), Y(0.21)), (X(-0.07), Y(0.21)), (X(-0.07), Y(0.15))],
+                skin, edge, 1))
+    head = [(X(0.17 * math.cos(a)), Y(0.09 + 0.085 * math.sin(a))) for a in (2 * math.pi * k / 32 for k in range(32))]
+    out.append(("poly", head, skin, edge, 1))
+    # each grip, drawn where it is and how it presses
+    lines = []
+    for g in held:
+        col = holders.get(g.get("by")) or "#5d8fcf"
+        dark = mix(col, "#000000", 0.4)
+        kd = grip_kind(g)
+        parts = g.get("parts") or []
+        for p in parts:
+            r, sd = body_region(p), _side_of(p) or 1
+            if r == "shoulder":
+                (sx_, sy_) = joints[("arm", sd)][0]
+                ring = [(sx_ + w * 0.08 * math.cos(a), sy_ + w * 0.08 * math.sin(a))
+                        for a in (2 * math.pi * k / 16 for k in range(16))]
+            elif r in ("fore_up", "fore_low"):
+                pts = joints[("arm", sd)]
+                ring = _tube(pts[:2] if r == "fore_up" else pts[1:], w * 0.075)
+            elif r in ("hind_up", "hind_low"):
+                pts = joints[("leg", sd)]
+                ring = _tube(pts[:2] if r == "hind_up" else pts[1:], w * 0.09)
+            elif r == "head":
+                ring = head
+            elif r == "neck":
+                ring = [(X(0.09), Y(0.14)), (X(0.09), Y(0.22)), (X(-0.09), Y(0.22)), (X(-0.09), Y(0.14))]
+            elif r == "tail" and has_tail:
+                ring = _tube([(X(0.3), Y(0.6)), (X(0.42), Y(0.46))], w * 0.06)
+            else:
+                lo, hi = (0.2, 0.42) if r in ("chest", "back_up") else (0.4, 0.62)
+                tt = [lo + (hi - lo) * i / 10 for i in range(11)]
+                ring = [(X(hw(t)), Y(t)) for t in tt] + [(X(-hw(t)), Y(t)) for t in reversed(tt)]
+            out.append(("line", ring + ring[:1], col, 2.5))
+        if kd == "lock":
+            for (lk, sd), k in bend.items():
+                if not any(body_region(p) in (("fore_up", "fore_low", "shoulder") if lk == "arm" else
+                                              ("hind_up", "hind_low")) and (_side_of(p) or 1) == sd for p in parts):
+                    continue
+                bx, by_ = joints[(lk, sd)][1]
+                arc = [(bx + 11 * math.cos(a), by_ + 11 * math.sin(a))
+                       for a in (math.pi * (0.1 + 0.07 * i) * (1 if sd > 0 else -1) + (0 if sd > 0 else math.pi)
+                                 for i in range(10))]
+                out.append(("line", arc, "#fbbf24", 2))
+                out.append(("poly", _arrow(*arc[-2], *arc[-1]), "#fbbf24", "", 0))
+        elif kd == "choke":
+            for sd in (-1, 1):
+                a0, a1 = (X(sd * 0.32), Y(0.18)), (X(sd * 0.12), Y(0.18))
+                out.append(("line", [a0, a1], "#fbbf24", 2))
+                out.append(("poly", _arrow(*a0, *a1), "#fbbf24", "", 0))
+            out.append(("poly", [(X(0.1), Y(0.16)), (X(0.1), Y(0.2)), (X(-0.1), Y(0.2)), (X(-0.1), Y(0.16))],
+                        col, dark, 1))
+        elif kd == "crush":
+            for t in (0.33, 0.5):
+                for sd in (-1, 1):
+                    a0, a1 = (X(sd * (hw(t) + 0.22)), Y(t)), (X(sd * (hw(t) + 0.03)), Y(t))
+                    out.append(("line", [a0, a1], "#fbbf24", 2))
+                    out.append(("poly", _arrow(*a0, *a1), "#fbbf24", "", 0))
+            out.append(("poly", [(X(hw(0.4) + 0.03), Y(0.37)), (X(hw(0.4) + 0.03), Y(0.44)),
+                                 (X(-hw(0.4) - 0.03), Y(0.44)), (X(-hw(0.4) - 0.03), Y(0.37))], col, dark, 1))
+        elif kd == "head":
+            out.append(("poly", [(X(0.2), Y(0.07)), (X(0.2), Y(0.12)), (X(-0.2), Y(0.12)), (X(-0.2), Y(0.07))],
+                        col, dark, 1))
+        elif kd == "bound":
+            for p in parts:
+                r, sd = body_region(p), _side_of(p) or 1
+                lk = "arm" if r in ("fore_up", "fore_low", "shoulder") else "leg"
+                (ax, ay), (bx, by_), (dx, dy) = joints[(lk, sd)]
+                for k in (0.3, 0.55, 0.8):
+                    mx_, my_ = bx + (dx - bx) * k, by_ + (dy - by_) * k
+                    out.append(("poly", [(mx_ - 7, my_ - 3), (mx_ + 7, my_ - 1), (mx_ + 7, my_ + 3), (mx_ - 7, my_ + 1)],
+                                col, dark, 1))
+        else:   # a grab: the marks of her grip on the part
+            for p in parts[:2]:
+                r, sd = body_region(p), _side_of(p) or 1
+                if r in ("fore_up", "fore_low", "shoulder"):
+                    mx_, my_ = joints[("arm", sd)][1]
+                elif r in ("hind_up", "hind_low"):
+                    mx_, my_ = joints[("leg", sd)][1]
+                elif r == "head":
+                    mx_, my_ = X(0), Y(0.09)
+                else:
+                    mx_, my_ = X(0), Y(0.4)
+                for k in (-1, 0, 1):
+                    out.append(("line", [(mx_ + 4 * k - 2, my_ - 4), (mx_ + 4 * k, my_), (mx_ + 4 * k - 2, my_ + 4)],
+                                dark, 2))
+        lines.append((g, kd, col))
+    if pin:
+        for xx in (-0.15, 0.15):
+            for tt in (0.3, 0.6):
+                a0, a1 = (X(xx), Y(tt - 0.16)), (X(xx), Y(tt - 0.03))
+                out.append(("line", [a0, a1], "#fbbf24", 3))
+                out.append(("poly", _arrow(*a0, *a1, 6), "#fbbf24", "", 0))
+    # beside her: each grip, its gauge, the tap chance
+    y = y0 + 2
+    word = {"lock": "forcing a joint", "choke": "choking her", "crush": "crushing her", "head": "clamping her head",
+            "bound": "binding a limb", "grab": "holding on"}
+    for g, kd, col in lines[:3]:
+        what = str(g.get("what") or "hold")
+        on = ", ".join(str(p).lower() for p in (g.get("parts") or [])[:3])
+        out.append(("text", tx, y, f"{what[:1].upper() + what[1:]} by {g.get('by')}: {word[kd]}",
+                    mix(col, "#ffffff", 0.45), 9, True))
+        y += 15
+        out.append(("text", tx, y, f"on her {on} · beat {g.get('beats', 1)}", "#d1d5db", 8, False))
+        y += 14
+        if t_ and t_.get("by") == g.get("by"):
+            gw = max(60.0, min(240.0, width - 8))
+            if kd == "choke" and t_.get("air") is not None:
+                val, label, top = float(t_["air"]), f"air {t_['air']}% gone", 100.0
+                lim = None
+            else:
+                val = float(t_.get("pain") or 0)
+                top = max(1.0, float(t_.get("resist") or 1)) * 1.5
+                lim = float(t_.get("resist") or 0)
+                label = f"pain {round(val)} · what she can bear {round(lim)}"
+            frac = min(1.0, val / top)
+            past = lim is not None and val > lim
+            out.append(("rect", tx, y, tx + gw, y + 9, "#1f2937", "#4b5563"))
+            out.append(("rect", tx, y, tx + gw * frac, y + 9, "#ef4444" if past else "#f59e0b", ""))
+            if lim is not None:
+                lx = tx + gw * min(1.0, lim / top)
+                out.append(("line", [(lx, y - 3), (lx, y + 12)], "#f9fafb", 2))
+            out.append(("text", tx + 4, y - 1, label, "#f9fafb", 7, False))
+            y += 14
+            ch = float(t_.get("chance") or 0) * 100
+            out.append(("text", tx, y, ("past what she can bear: " if past else "") + f"tap or black-out this beat "
+                        f"{pct_text(ch)}", "#fca5a5" if ch >= 10 else "#d1d5db", 8, past))
+            y += 16
+        y += 2
+    if pin:
+        gw = max(60.0, min(240.0, width - 8))
+        out.append(("text", tx, y, f"Pinned by {pin.get('by')}", "#fbbf24", 9, True))
+        y += 15
+        sec, of = float(pin.get("seconds") or 0), max(1.0, float(pin.get("of") or 60))
+        out.append(("rect", tx, y, tx + gw, y + 9, "#1f2937", "#4b5563"))
+        out.append(("rect", tx, y, tx + gw * min(1.0, sec / of), y + 9, "#f59e0b", ""))
+        out.append(("text", tx + 4, y - 1, f"held {sec:.0f} of {of:.0f} s", "#f9fafb", 7, False))
+        y += 16
+    return out, max(h + 6, y - y0 + 4)
+
+
+def shapes_svg(shapes, width, height):
+    """(since build 304) A list of shapes (hold_shapes) as an SVG picture of its own, for exported fights."""
+    import html as _h
+
+    def P(pts):
+        return " ".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+    out = [f'<svg class="holds" viewBox="0 0 {width} {height:.0f}" width="100%" style="background:#111827;'
+           f'border-radius:4px;max-width:620px;margin-top:2px">']
+    for sh in shapes:
+        if sh[0] == "poly":
+            out.append(f'<polygon points="{P(sh[1])}" fill="{sh[2] or "none"}" stroke="{sh[3] or "none"}" '
+                       f'stroke-width="{sh[4] or 1}"/>')
+        elif sh[0] == "line":
+            out.append(f'<polyline points="{P(sh[1])}" fill="none" stroke="{sh[2]}" stroke-width="{sh[3]}" '
+                       f'stroke-linecap="round" stroke-linejoin="round"/>')
+        elif sh[0] == "rect":
+            out.append(f'<rect x="{sh[1]:.1f}" y="{sh[2]:.1f}" width="{max(0.0, sh[3] - sh[1]):.1f}" '
+                       f'height="{sh[4] - sh[2]:.1f}" fill="{sh[5] or "none"}" stroke="{sh[6] or "none"}"/>')
+        else:
+            weight = ' font-weight="bold"' if sh[6] else ""
+            out.append(f'<text x="{sh[1]:.1f}" y="{sh[2] + sh[5]:.1f}" fill="{sh[4]}" font-size="{sh[5] + 1}"{weight}>'
+                       f'{_h.escape(sh[3])}</text>')
+    out.append("</svg>")
+    return "".join(out)
+
+
 def blackout_text(v):
     """(since build 302) How close she is to blacking out in the coils, and to her heart stopping, in a line:
     (text, colour). Before her limit on the blood-flow gauge (out_at) she can't black out yet; past it, this beat's

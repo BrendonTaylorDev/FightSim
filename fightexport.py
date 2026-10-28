@@ -210,6 +210,15 @@ def _gauges(f, books=None, opts=None):
                 coil = cards.picture_colours((books or {}).get(v.get("coiler")), "#5d8fcf")[0]
                 out += cards.squeeze_svg(v, body, coil, belly).replace('style="', 'style="flex:1 1 300px;', 1)
             out += '</div>'
+    if (opts or {}).get("hold_picture", True):
+        # (since build 304) the grips on her as a picture beside their gauges, as in the window
+        gr = f.get("grips") or {}
+        who = {g.get("by") for g in gr.get("held") or ()} | ({(gr.get("pin") or {}).get("by")} - {None})
+        holders = {n: cards.picture_colours((books or {}).get(n), "#5d8fcf")[0] for n in who}
+        body, belly = cards.picture_colours((books or {}).get(f["name"]), "#c08457")
+        shapes, hh = cards.hold_shapes(f, 4, 6, 90, 150, 108, 500, body, belly, holders)
+        if shapes:
+            out += cards.shapes_svg(shapes, 616, hh + 4)
     for text, col in cards.grip_lines(f):
         out += f'<div class="grip" style="color:{col}">{html.escape(text)}</div>'
     return out

@@ -948,6 +948,25 @@ def compression_check():
     vo = e._vitals_with_odds(e.get("Ripples"), 0.4)
     if vo is not None and abs(vo.get("stop_chance", 0) - 0.4 * 0.35) > 1e-6:
         problems.append(f"the heart-stop chance is the black-out chance x heart_stop.chance: {vo}")
+    # build 304: the grips on her as a picture, by what each does to her
+    kinds = {cards.grip_kind(g) for g in (
+        {"what": "standing sleeper", "parts": ["Neck"]}, {"what": "full nelson", "parts": ["Neck", "Left Shoulder"]},
+        {"what": "hammerlock", "parts": ["Left Upper Arm"]}, {"what": "bear hug", "parts": ["Chest"]},
+        {"what": "side headlock", "parts": ["Head"]}, {"what": "grab", "parts": ["Left Paw"]},
+        {"what": "coils", "parts": ["Left Thigh"]})}
+    if kinds != {"choke", "lock", "crush", "head", "grab", "bound"}:
+        problems.append(f"each kind of grip should be told apart: {kinds}")
+    fh = {"parts": [("Left Upper Arm", 60, 80)], "grips": {"held": [{"by": "Nerine", "what": "hammerlock",
+          "parts": ["Left Upper Arm"], "beats": 2}], "pin": {"by": "Nerine", "seconds": 10, "of": 60},
+          "tap": {"by": "Nerine", "pain": 300, "resist": 200, "chance": 0.2}}}
+    shp, _ = cards.hold_shapes(fh, 0, 0, 90, 150, 100, 300)
+    texts = " ".join(x[3] for x in shp if x[0] == "text")
+    if "Hammerlock by Nerine" not in texts or "Pinned by Nerine" not in texts or "past what she can bear" not in texts \
+            or "<svg" not in cards.shapes_svg(shp, 400, 160):
+        problems.append(f"the hold picture should name each grip, its gauge and a pin: {texts}")
+    if cards.hold_shapes({"parts": [], "grips": {"held": [{"by": "S", "what": "coils", "parts": ["Chest"]}]}},
+                         0, 0, 90, 150, 100, 300)[0]:
+        problems.append("coils round her body have the squeeze picture, not the hold picture")
     giant = cards.squeeze_figure(70, "both", 1, 0, 0, 80, 120, ratio=8.9)
     same = cards.squeeze_figure(70, "both", 1, 0, 0, 80, 120, ratio=1.0)
     if not (len(giant["loops"]) < len(same["loops"])) or "trail" in giant:

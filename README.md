@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 304
+The grips on her as a picture (`window.hold_picture`, on by default): while a hold, a submission, a grab or a pin is
+on her, her card (and an exported fight) shows her body from the front, drawn by the program, with each part in a
+grip outlined in the holder's colours and what the grip does drawn on it. There are far too many holds for a picture
+each, so they are drawn by what they do, from the hold's name first and then the parts it grips:
+- a joint lock (hammerlock, arm bar, knee bar, full nelson...): the limb bent past where it should go, further the
+  nearer her pain is to what she can bear, with an arrow round the joint;
+- a choke (sleeper, guillotine...): arrows pressing in at her neck, a band round it;
+- a crush (bear hug, body lock...): her body squeezed from both sides;
+- a head hold (headlock...): her head clamped;
+- coils round a limb: bands wound round it (coils round her body keep the squeeze picture);
+- a grab: grip marks on the part; a pin: weight bearing down on her.
+
+Beside it, side by side, each grip (who, what, on which parts, how many beats), a gauge (her pain against what she
+can bear, with her limit marked; her air for a choke; a pin's count against its length) and this beat's tap chance.
+
 ## Build 303
 The polish (Venice) may make a beat longer. Before, a polished beat more than 1.5 times the local one's length was
 thrown out ("it changed the length too much"), however good it was; `narration.polish.max_ratio` is now 0, no upper

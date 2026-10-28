@@ -43,7 +43,7 @@ from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
                    held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour,
                    squeeze_shapes, squeeze_label, squeeze_figure, squeeze_colours, heart_shapes, heart_beat,
-                   picture_colours, squeeze_word, mix, squeeze_readout, blackout_text)
+                   picture_colours, squeeze_word, mix, squeeze_readout, blackout_text, hold_shapes)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -358,6 +358,8 @@ class FighterCard(ttk.Frame):
         # (since build 287) coils round her body: her heart as a trace, the blood flow cut off, her blood pressure
         # (a monitor: always dark, in either theme; build 290 ran it through C, which made it light in dark mode)
         self.vt = tk.Canvas(self, width=PIC + 2 * COL, height=60, highlightthickness=0, bg="#111827")
+        # (since build 304) the grips on her as a picture: what each does to her body (window.hold_picture)
+        self.hd = tk.Canvas(self, width=PIC + 2 * COL, height=160, highlightthickness=0, bg="#111827")
         # the grips on her and by her, a pin, and how far she is from the others (window.hold_panel)
         self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg=C("#ffffff"))
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
@@ -728,6 +730,38 @@ class FighterCard(ttk.Frame):
         except tk.TclError:
             self._ecg_running = False     # (the card was closed or redrawn: the next strip starts its own)
 
+    def _holds(self, f):
+        """window.hold_picture (since build 304): the grips on her as a picture beside their gauges (cards.hold_shapes):
+        each grip drawn on her body by what it does to her (a joint forced, her neck choked, her body crushed, her
+        head clamped, a limb bound, a grab, a pin bearing down), in the holder's colours."""
+        wcfg = (self.app._rules().get("window") or {}) if hasattr(self.app, "_rules") else {}
+        shapes, hh = [], 0
+        if wcfg.get("hold_picture", True):
+            cards_ = getattr(self.app, "cards", None) or {}
+            gr = f.get("grips") or {}
+            who = {g.get("by") for g in gr.get("held") or ()} | ({(gr.get("pin") or {}).get("by")} - {None})
+            holders = {n: picture_colours(getattr(cards_.get(n), "book", None), "#5d8fcf")[0] for n in who}
+            body, belly = picture_colours(self.book, "#c08457")
+            shapes, hh = hold_shapes(f, 4, 6, 90, 150, 108, self.app.card_w() - 114, body, belly, holders)
+        self._show(self.hd, bool(shapes))
+        if not shapes:
+            return
+        c = self.hd
+        c.delete("all")
+        c.configure(height=int(hh) + 4)
+        for sh in shapes:
+            if sh[0] == "poly":
+                c.create_polygon(*[q for p in sh[1] for q in p], fill=sh[2] or "", outline=sh[3] or "",
+                                 width=sh[4] or 1)
+            elif sh[0] == "line":
+                c.create_line(*[q for p in sh[1] for q in p], fill=sh[2], width=sh[3], capstyle="round",
+                              joinstyle="round")
+            elif sh[0] == "rect":
+                c.create_rectangle(sh[1], sh[2], sh[3], sh[4], fill=sh[5] or "", outline=sh[6] or "")
+            else:
+                c.create_text(sh[1], sh[2], anchor="nw", text=sh[3], fill=sh[4], width=self.app.card_w() - sh[1] - 6,
+                              font=("Segoe UI", sh[5], "bold" if sh[6] else "normal"))
+
     def _grips(self, f):
         """The hold panel: who holds which of her parts and with what, the grips she has, a pin's count, and how
         far she is from each other fighter (window.hold_panel)."""
@@ -804,6 +838,7 @@ class FighterCard(ttk.Frame):
         self._taps(f)
         self._pain(f)
         self._tap_meter(f)
+        self._holds(f)
         self._grips(f)
         self._order()
 
@@ -873,6 +908,7 @@ class FighterCard(ttk.Frame):
         self._taps(f)
         self._pain(f)
         self._tap_meter(f)
+        self._holds(f)
         self._grips(f)
         self._order()
 
