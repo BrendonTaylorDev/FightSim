@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 285 (constriction: the blood, not the breath)"
+VERSION = "2026-10-28 build 286 (speed check: the model in system memory)"
 
 HELP = """
 =============================================================================================
@@ -723,6 +723,37 @@ class Session:
                 self.timings.append(row)
                 if self.eng.rules.get("console", {}).get("timing", True):
                     print(timing_line(row))
+                    self._speed_check()
+
+    def _speed_check(self):
+        """console.speed_check (since build 286): when part of the narrator model is running in system memory
+        instead of on the graphics card, say so once (and again if it gets worse), with what to do about it. That
+        alone can make a beat several times slower, without anything being written differently."""
+        cfg = (self.eng.rules.get("console") or {}).get("speed_check") or {}
+        if not cfg.get("enabled", True):
+            return
+        try:
+            got = llm.loaded(self.narrator.host, self.narrator.model)
+        except Exception as e:
+            note_failure("asking Ollama where the model is loaded", e)
+            return
+        if not got or not got[0]:
+            return
+        size, vram = got
+        off = 1.0 - vram / size
+        if off < float(cfg.get("warn_from", 0.05)) or off <= getattr(self, "_offload_said", 0.0) + 0.05:
+            return
+        self._offload_said = off
+        ctx = int((self.eng.rules.get("narration") or {}).get("context_window", 8192))
+        print(f"⚠️ Speed: {off:.0%} of {self.narrator.model} ({size / 2**30:.1f} GB in all) is running in system "
+              f"memory, not on the graphics card: that part works many times slower, and it is likely most of why "
+              f"beats take so long. Nothing about the writing needs to change to fix it. What helps, from the most to "
+              f"the least: (1) close other programs using the graphics card (a browser with video, games, ComfyUI); "
+              f"(2) let Ollama keep its working memory smaller: set the Windows environment variables "
+              f"OLLAMA_FLASH_ATTENTION=1 and OLLAMA_KV_CACHE_TYPE=q8_0, then quit Ollama from the tray and start it "
+              f"again; (3) a slightly smaller download of the same model (a q4_K_S or IQ4_XS version). The notes "
+              f"need a context of {ctx} tokens. (`ollama ps` shows the split; /set console.speed_check.enabled false "
+              f"turns this off.)")
 
     def _record_beat(self, tlen, label=None):
         """Keep this beat for /exportfight: what was shown, and every fighter as she stands now. A finished fight

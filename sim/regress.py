@@ -800,6 +800,32 @@ def presets_help_check():
     return problems
 
 
+def speed_check_check():
+    """Build 286: when part of the narrator model runs in system memory, the player is told once, with what helps."""
+    import io, contextlib
+    problems = []
+    s = H.session(3, fighters="Seraphina,Ripples")
+    real = H.llm.loaded
+    try:
+        H.llm.loaded = lambda host, model: (16 * 2**30, 12 * 2**30)
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            s._speed_check()
+            s._speed_check()
+        if out.getvalue().count("system memory") != 1 or "OLLAMA_KV_CACHE_TYPE" not in out.getvalue():
+            problems.append(f"25% in system memory should be said once, with what helps: {out.getvalue()[:200]!r}")
+        H.llm.loaded = lambda host, model: (16 * 2**30, 16 * 2**30)
+        s._offload_said = 0.0
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            s._speed_check()
+        if out.getvalue():
+            problems.append("all of it on the graphics card: nothing to say")
+    finally:
+        H.llm.loaded = real
+    return problems
+
+
 def constriction_check():
     """Build 283: coils round her body put her out by her blood, as a real constriction does: the stages in order
     (her heart pounding, then slowing, then the grey), rough heart and blood-pressure numbers rising and then
@@ -2847,6 +2873,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "speed offload gpu timing" for w in want):
+        t = time.time()
+        probs = speed_check_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  the model partly in system memory is pointed out, once  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "constriction coil blood" for w in want):

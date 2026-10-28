@@ -65,6 +65,19 @@ def chat(model, messages, host="http://localhost:11434", temperature=0.8,
             time.sleep(wait)
 
 
+def loaded(host, model):
+    """(since build 286) How much of `model` Ollama holds on the graphics card right now: (size, size on the card),
+    in bytes, from its /api/ps; None when it can't say (not loaded, an old Ollama, not reachable)."""
+    try:
+        with urllib.request.urlopen(urllib.request.Request(f"{host}/api/ps"), timeout=5) as resp:
+            for m in json.loads(resp.read()).get("models") or []:
+                if m.get("name") == model or m.get("model") == model or str(m.get("name", "")).split(":")[0] == model:
+                    return int(m.get("size") or 0), int(m.get("size_vram") or 0)
+    except Exception:
+        return None
+    return None
+
+
 def _post(host, data, timeout):
     req = urllib.request.Request(f"{host}/api/chat", data=data, headers={"Content-Type": "application/json"})
     try:

@@ -1568,6 +1568,8 @@
     "layout": "clear",
     "_timing_comment": "timing: after each beat, one line says how long it took, how fast the model wrote and read, and what had to be written again. /timing shows the averages by narrator model; /timing off hides the line.",
     "timing": true,
+    "_speed_check_comment": "speed_check (since build 286): after a beat, Ollama is asked how much of the narrator model sits on the graphics card. When warn_from or more of it is running in system memory instead (which alone can make a beat several times slower, without anything being written differently), it says so once, and again only if it gets worse, with what to do: close other programs using the card, OLLAMA_FLASH_ATTENTION=1 and OLLAMA_KV_CACHE_TYPE=q8_0 so Ollama's working memory for the notes is smaller, or a slightly smaller version of the same model. enabled false = no check.",
+    "speed_check": {"enabled": true, "warn_from": 0.05},
     "styled_text": "auto",
     "bold_color": "",
     "_italic_colors_comment": "thought_color / sound_color: the story's italics are a fighter's thoughts or a sound she makes written out (*Nngh*). Spyder's console doesn't slant text, so each also gets a colour to stand out (yellow, cyan, green, magenta, red, blue, white, or empty for none). /set console.thought_color green",

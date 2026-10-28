@@ -504,9 +504,11 @@ class FighterCard(ttk.Frame):
         c.create_text(x0 + 5 * (seg + 3) + 6, 9, anchor="w", font=("Segoe UI", 8, "bold"),
                       fill=TAP_COLORS[max(1, m["level"])] if m["level"] >= 3 else C("#111827"),
                       text=f"{m['label']}  ·  {pct_text(m['chance'])} chance this beat")
-        c.create_text(6, 26, anchor="w", font=("Segoe UI", 8), fill=C("#4b5563"), width=w - 12,
-                      text=(f"{poss_word(m['by'])} {m['sub']}: pain {m['pain']} against what she can bear {m['resist']}"
-                            + (f"  ·  {m['note']}" if m["note"] else "")))
+        note = c.create_text(6, 19, anchor="nw", font=("Segoe UI", 8), fill=C("#4b5563"), width=w - 12,
+                             text=(f"{poss_word(m['by'])} {m['sub']}: pain {m['pain']} against what she can bear "
+                                   f"{m['resist']}" + (f"  ·  {m['note']}" if m["note"] else "")))
+        # (since build 286) as tall as its words: the longer notes were cut off at two lines
+        c.configure(height=max(34, c.bbox(note)[3] + 3))
 
     def _grips(self, f):
         """The hold panel: who holds which of her parts and with what, the grips she has, a pin's count, and how

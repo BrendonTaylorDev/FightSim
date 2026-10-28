@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 286
+Speed without touching the writing (`console.speed_check`). After a beat the game asks Ollama how much of the
+narrator model sits on the graphics card. When part of it is running in system memory instead, it says so once
+(and again only if it gets worse), with what helps. That alone can make a beat several times slower: the build-285
+log wrote at 14 tokens a second, slow for mistral-small:24b on a card that holds all of it. What helps:
+- close other programs that use the graphics card;
+- set `OLLAMA_FLASH_ATTENTION=1` and `OLLAMA_KV_CACHE_TYPE=q8_0` (Windows environment variables), then restart
+  Ollama, so its working memory for the notes takes about half the room;
+- use a slightly smaller download of the same model.
+
+In the window, the tap meter's line under the steps is now as tall as its words: the longer notes (what keeps the
+chance down, the refusals, the blood flow and heart) were cut off after two lines.
+
+The notes themselves were checked for a coil beat: about 40,000 characters a part with nothing repeated worth cutting,
+and every call already uses the same context size, so the model is not reloaded between calls.
+
 ## Build 285
 Constriction (`finish.submission.constriction`, on by default in a submission match). Coils round her chest, belly or
 back now put her out the way a real constrictor does: mostly by her blood, not her breath. The squeeze stops blood
