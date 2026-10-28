@@ -713,6 +713,80 @@ def coil_size_check():
     return problems
 
 
+def coil_contest_check():
+    """Build 279: the contest of coils (two fighters coiled round each other fight it out each beat; the loser's coils
+    are torn off and the winner's tighten), the constriction and contest writing (story blocks by how many coils and
+    how hard, story lines, sample tags), and the narration slips from the build-276 played log: a serpent standing
+    firm, one tail told as tails, the get-up told out of order, a grip still told after she tore free, a bite at
+    the coils made up."""
+    import blocks
+    import narrator as N
+    problems = []
+    s = H.session(3, fighters="Seraphina,Vesper")
+    e, n = s.eng, s.narrator
+    won = stall = 0
+    for i in range(60):
+        for h in list(e.holds):
+            e.release(h, "test")
+        with contextlib.redirect_stdout(io.StringIO()):
+            e.start_hold("Seraphina", "Vesper", "Midsection", 10, 1, "coils", "her coils")
+            e.start_hold("Vesper", "Seraphina", "Midsection", 10, 1, "coils", "her coils")
+            for h in e.holds.values():
+                h.coil = True
+            evs = e._coil_contest_tick(())
+        ev = next((x for x in evs if x["type"] == "coil_contest"), None)
+        if ev is None:
+            problems.append("two fighters coiled round each other should have a contest")
+            break
+        if ev["result"] == "won":
+            won += 1
+            left = {(h.attacker, h.defender) for h in e.holds.values()}
+            if left != {(ev["winner"], ev["loser"])}:
+                problems.append(f"the loser's coils should be torn off and the winner's stay: {left}")
+                break
+        else:
+            stall += 1
+        e.get("Seraphina").energy = e.get("Vesper").energy = 100
+    if not (won and stall):
+        problems.append(f"the contest should sometimes stall and sometimes be won: {won} won, {stall} stalled")
+    e.rules["holds"]["coil"]["contest"]["enabled"] = False
+    if e._coil_contest_tick(()):
+        problems.append("with the contest switched off there should be none")
+    e.rules["holds"]["coil"]["contest"]["enabled"] = True
+    import json as _json
+    b = blocks.Blocks(_json.load(open("rules.json")), memory=os.path.join(os.getcwd(), "_mem_test.json"))
+    for cat, ctx in (("constriction", {"coils": "many", "squeeze": "crushing", "body": "other"}),
+                     ("coiling", {"coils": "two", "squeeze": "firm", "body": "serpent"}),
+                     ("coil_contest", {"result": "won", "role": "loser"}), ("coil_contest", {"result": "stall"})):
+        if not b.pick(cat, 1, **ctx):
+            problems.append(f"no story block for {cat} {ctx}")
+    n.strengths = {"Seraphina": 97, "Vesper": 90}
+    n.plans = {"Seraphina": "serpent", "Vesper": "serpent"}
+    n.damage_by = {"Seraphina": {"upper tail": 10}, "Vesper": {"midsection": 10}}
+    n._hurt_now, n._calm_beat = set(), False
+    slips = [str(x) for x in n._log_slips("Seraphina stood firm, her coils shifting slightly under her. "
+                                          "Seraphina's tails hung lower now and had bunched together behind her.")]
+    if not any("serpent" in x for x in slips) or not any("ONE tail" in x for x in slips):
+        problems.append(f"a serpent standing firm and one tail told as tails should be caught: {slips}")
+    n._broke_free = [("Seraphina", "Vesper")]
+    slips = [str(x) for x in n._log_slips("With one hard wrench of her whole body, Vesper tore herself free. Seraphina's "
+                                          "coils were still tight around Vesper's middle.")]
+    if not any("still on" in x for x in slips):
+        problems.append(f"a grip told as still on after she tore free should be caught: {slips}")
+    n._broke_free = []
+    n._getup_who, n._getup_rise = "Vesper", "roll"
+    slips = [str(x) for x in n._log_slips("Vesper pushed herself up onto her hands and knees, then rolled onto her front.")]
+    if not any("front first" in x for x in slips):
+        problems.append(f"rolling onto her front after her knees should be caught: {slips}")
+    n._getup_who = n._getup_rise = None
+    if not N.SERPENT_STOOD.search("Seraphina stood firm") or N.SERPENT_STOOD.search("Seraphina reared up"):
+        problems.append("standing words for a serpent")
+    tags = n._sample_tags("all", [], [], [{"type": "coil_contest", "result": "won", "fighters": ["A", "B"]}])
+    if "coil contest won" not in tags:
+        problems.append(f"a contest beat should ask for the contest passage: {tags}")
+    return problems
+
+
 def played276_check():
     """Build 278: fixes from the build-276 played Ripples vs Seraphina log, Buizel ribs and flanks, and a big blow
     on the shoulder carrying on into her side. A squeeze ordered with no hold yet starts the coil; an order to do
@@ -2453,6 +2527,13 @@ def main(argv):
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build-273 lakeside log: wrong limb, posture, paws, fur, memories, retold get-up, kick, &&  ({time.time() - t:.1f}s)")
         for p in probs[:8]:
+            print("      " + p)
+    if not want or any(w in "coilcontest contest coil serpent" for w in want):
+        t = time.time()
+        probs = coil_contest_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  contest of coils, constriction writing, serpent standing, one tail, grip after it ended, get-up order  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "played276 played ribs side" for w in want):
         t = time.time()

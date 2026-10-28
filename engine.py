@@ -8565,6 +8565,81 @@ class Engine:
                         "reason": f"{why} shook it loose", "share": round(share, 3)})
         return out
 
+    def coil_contest_cfg(self):
+        cfg = ((self.rules.get("holds") or {}).get("coil") or {}).get("contest") or {}
+        return cfg if cfg.get("enabled", True) else None
+
+    def coil_strength(self, f):
+        """How hard she can work her coils in a contest of coils (holds.coil.contest): her strength, her size
+        (size_weight: a bigger serpent's coils carry more), how much energy she has left, a surge of adrenaline."""
+        cfg = self.coil_contest_cfg() or {}
+        size = max(0.1, float(self.size_m(f) or 1.0))
+        s = (0.25 + max(0.0, min(100.0, self.strength(f))) / 100.0) * size ** float(cfg.get("size_weight", 0.5))
+        s *= 0.5 + max(0.0, min(100.0, float(f.energy))) / 200.0
+        if self.has(f, "adrenaline"):
+            s *= float(cfg.get("adrenaline_mult", 1.25))
+        return s
+
+    def _coil_contest_tick(self, skip_hold_ids=()):
+        """holds.coil.contest (since build 279): two fighters coiled round each other at once fight it out. Each beat
+        (once both coils have been on for a beat) they strain against each other: stall_chance of the time both
+        coils hold and it costs them both; otherwise one out-coils the other, with the chance of coil_strength
+        against coil_strength (strength, size, energy). The loser's coils are shed and the winner's tighten
+        (tighten power) and take over: her grip gets no break-free roll from the loser this beat."""
+        cfg = self.coil_contest_cfg()
+        if not cfg:
+            return []
+        events, seen = [], set()
+        coils = [h for h in self.holds.values() if h.coil]
+        for h in coils:
+            a, d = h.attacker, h.defender
+            if (d, a) in seen or (a, d) in seen:
+                continue
+            mine = [x for x in coils if x.attacker == a and x.defender == d]
+            theirs = [x for x in coils if x.attacker == d and x.defender == a]
+            if not theirs:
+                continue
+            seen.add((a, d))
+            if all(x.id in skip_hold_ids for x in mine) or all(x.id in skip_hold_ids for x in theirs):
+                continue      # one of the coils only closed this beat: the contest starts next beat
+            fa, fd = self.fighters.get(a.lower()), self.fighters.get(d.lower())
+            if not fa or not fd or fa.eliminated or fd.eliminated:
+                continue
+            cost = float(cfg.get("energy_cost", 4))
+            for f in (fa, fd):
+                f.energy = max(0.0, f.energy - cost)
+            sa, sd = self.coil_strength(fa), self.coil_strength(fd)
+            p_a = sa / (sa + sd) if sa + sd > 0 else 0.5
+            stall = float(cfg.get("stall_chance", 0.35))
+            ev = {"type": "coil_contest", "fighters": [a, d], "chance": {a: round(p_a, 3), d: round(1 - p_a, 3)},
+                  "parts": {a: [x.part for x in theirs], d: [x.part for x in mine]},
+                  "with": {a: [x.with_part for x in mine if x.with_part], d: [x.with_part for x in theirs if x.with_part]}}
+            if self._chance(stall, f"{a} and {d} both holding on in the contest of coils", "both hold",
+                            "one gives"):
+                ev["result"] = "stall"
+                events.append(ev)
+                continue
+            r = self.rng.random()
+            self.note_roll(f"{a} out-coiling {d} ({sa:.2f} against {sd:.2f})", p_a, r,
+                           f"{a} wins it" if r < p_a else f"{d} wins it")
+            win, lose = (fa, fd) if r < p_a else (fd, fa)
+            won = mine if win is fa else theirs
+            lost = theirs if win is fa else mine
+            ended = []
+            for x in lost:
+                if x.id in self.holds:
+                    why = f"out-coiled: {win.name}'s coils forced hers off"
+                    ended.append(dict(self.release(x.id, why), type="hold_end", hold_ids=[x.id], parts=[x.part],
+                                      contest=True))
+            bump = float(cfg.get("tighten", 3))
+            for x in won:
+                x.power = round(x.power + bump, 2)
+            ev.update(result="won", winner=win.name, loser=lose.name, winner_holds=[x.id for x in won],
+                      shed=[x.part for x in lost], shed_ids=[x.id for x in lost], tighten=bump)
+            events.append(ev)
+            events += ended
+        return events
+
     def _hold_break_tick(self, skip_hold_ids=()):
         """Once a beat, after the pressure has landed, each fighter in a plain hold gets one roll to break it.
         Holds that only started this beat don't roll yet; a fighter who is pinned breaks nothing but the pin."""
@@ -8738,7 +8813,9 @@ class Engine:
                                            reason="eased off until nothing was left of the grip"))
 
         events += self._advance_pins(skip_hold_ids)
-        events += self._hold_break_tick(skip_hold_ids)
+        contest = self._coil_contest_tick(skip_hold_ids)
+        events += contest
+        events += self._hold_break_tick(set(skip_hold_ids) | {i for e in contest for i in e.get("winner_holds", [])})
         events += self._tap_out_tick()
         events += self._upright_sub_tick()
         events += self._submission_tick()

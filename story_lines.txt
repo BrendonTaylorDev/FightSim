@@ -4555,3 +4555,92 @@ Her struggles had become small, tired things, far apart.
 == pin_under | fade: nearly out
 She lay still for so long that it seemed she had stopped, and then moved, just once, weakly.
 There was hardly any fight left in her, only a slow refusal to be still.
+
+# ---------------------------------------------------------------------------------------------------------------
+# (since build 279) CONSTRICTION: the one in the coils, by how many coils (one, two, many) and how hard (light, firm,
+# crushing); body: serpent when she is a serpent herself
+# ---------------------------------------------------------------------------------------------------------------
+== constriction
+Every time she breathed out, the coils took the slack and kept it.
+The squeeze did not hurry, and it did not stop.
+She pushed against the coils, and they took the push and gave nothing back.
+The loops shifted and settled, each one finding a softer place to sit.
+Her heartbeat thudded against the coils and was pressed back into her.
+
+== constriction | coils: one
+One thick loop lay round her middle, and every breath had to get past it.
+It was only a single coil, but it sat exactly where her breath came from.
+
+== constriction | coils: two
+The second loop lay across the first, and where they crossed, the pressure doubled.
+She worked one coil a little looser, and the other took up the slack at once.
+
+== constriction | coils: many
+She was wound so thickly that only her head was clear of the coils.
+Whichever way she pushed, another loop was already there.
+Loop lay on loop, until she could not tell where one ended and the next began.
+
+== constriction | squeeze: light
+The coil held more than it crushed, snug and patient, and that was worse to wait under.
+She could still breathe round it, if she breathed carefully.
+
+== constriction | squeeze: firm
+Her ribs creaked under the steady squeeze.
+Each breath in was a little smaller than the one before.
+
+== constriction | squeeze: crushing
+The coils bore down so hard that her ribs flexed under them.
+There was no breath left to take; the squeeze had taken it first.
+The pressure was enormous and even, and it folded her smaller with every breath out.
+
+== constriction | body: serpent
+Her whole length heaved against the coils, a serpent straining in a serpent's grip.
+She tried to slide out lengthwise, the way she would slip between rocks, and the coils slid with her.
+She knew this hold from the other side, and knowing it did not help at all.
+
+# ---------------------------------------------------------------------------------------------------------------
+# (since build 279) COILING: the one doing the constricting
+# ---------------------------------------------------------------------------------------------------------------
+== coiling
+She waited for the breath out, and then she tightened.
+She held her head up out of reach and let the coils do the work.
+A slow ripple ran down the length of her body as the coils drew in.
+She felt each struggle inside her coils before it came, and took up the slack after it.
+
+== coiling | coils: one
+One loop was all she needed, and she set it exactly where the breath was.
+
+== coiling | coils: two
+She laid a second loop over the first and drew the two together.
+
+== coiling | coils: many
+She drew every loop in at once, the whole of her length working as one.
+She had wound herself round so many times that the other was hardly to be seen.
+
+== coiling | squeeze: light
+She held the coil snug and no tighter, feeling for the weak place.
+
+== coiling | squeeze: firm
+She drew the coils in a little at every breath out and gave none of it back.
+
+== coiling | squeeze: crushing
+She bore down with the whole weight of her body behind the coils.
+She crushed, slow and enormous, and the struggle inside her coils grew smaller.
+
+== coiling | body: serpent
+She knew every trick the other had, because they were her own.
+
+# ---------------------------------------------------------------------------------------------------------------
+# (since build 279) THE CONTEST OF COILS: two fighters coiled round each other
+# ---------------------------------------------------------------------------------------------------------------
+== coil_contest | result: stall
+Coil strained against coil, scale ground on scale, and neither of them gave an inch.
+They were knotted together so tightly that every squeeze one gave, the other felt in her own coils.
+For a long moment the knot of them did not move at all.
+One loop slipped a little and was dragged back, and the knot held.
+Each of them tightened whenever the other breathed out, and neither could breathe out for long.
+
+== coil_contest | result: won
+The other's coils weakened, and hers bore down into the gap and pressed them open.
+Loop by loop, one set of coils was forced off, and the other closed into its place.
+The knot had been even half a breath before; now it belonged to one of them.

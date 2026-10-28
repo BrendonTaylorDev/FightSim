@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-27 build 278-guided (Buizel ribs and flanks, side spill, played-order fixes)"
+VERSION = "2026-10-28 build 279-guided (contest of coils; constriction writing by coil count and squeeze)"
 
 HELP = """
 =============================================================================================

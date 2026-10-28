@@ -17,7 +17,7 @@
 #   has:   tails, tail, fins, horn, ruff, coils, arms, forelegs, legs, ears, antennae, wings, beak, talons, hood
 #   state: fresh, winded, tired, spent                 her overall condition
 #   kind:  claw, bite, charge, tail, beam, punch, horn, throw, grab, wing, beak, talon      what kind of move it is
-#   role:  attacker, receiver, pinner, pinned, winning, losing
+#   role:  attacker, receiver, pinner, pinned, winning, losing, winner, loser (the contest of coils)
 #   fade:  fighting, weakening, fading, nearly out      how far gone a pinned fighter is
 #   posture: standing, down                          whether she is on her feet
 #   held:  early, middle, long                        how long a pin has been held
@@ -29,6 +29,10 @@
 #   earlier: blows, hurt, hurt_other                  a blow landed in an earlier beat; she (hurt) or the other
 #                                                     (hurt_other) still carries a hurt from one (none on the first blow)
 #   waking: yes                                       after the match: she is coming round (the engine says stirring)
+#   coils: one, two, many                             (since build 279) how many coils are wound on her
+#   squeeze: light, firm, crushing                    how hard those coils press (from the grip's power)
+#   body: serpent, other                              whether the one in the coils is a serpent herself
+#   result: stall, won                                the contest of coils: neither gave, or one out-coiled the other
 # In the text of a block, {part} is the body part in question ("left thigh") and {next} a part beside it.
 # Add as many lines as you like: more blocks means more variety. /blocks shows the counts.
 
@@ -12806,3 +12810,149 @@ her breath slowly comes back to her, a little at a time
 the pain she ignored all fight comes in now, one part after another, asking to be noticed
 she looks down at herself as if checking that she is all still there
 she feels very tired, and very far from pleased, and a little proud
+
+# ---------------------------------------------------------------------------------------------------------------
+# (since build 279) CONSTRICTION BY HOW MANY COILS AND HOW HARD: the one in the coils
+#   coils:   one, two, many        how many coils are wound on her
+#   squeeze: light, firm, crushing how hard they press (from the grip's power)
+#   body:    serpent, other        whether the one in the coils is a serpent herself
+# ---------------------------------------------------------------------------------------------------------------
+== constriction | coils: one
+one thick loop round her middle, and everything she does has to pass through it
+a single coil, but it sits where her breath comes from
+one band of muscle round her, and it is enough
+the loop lies across her like a belt cinched one notch too far, then another
+there is only one coil, and it seems to know exactly where to sit
+
+== constriction | coils: two
+two loops, one above the other, and the gap between them closes when she breathes out
+the second coil lies across the first, and where they cross the pressure doubles
+one loop holds her middle; the other pins what she would have pushed with
+she gets one coil to shift a little and the second one takes up the slack
+
+== constriction | coils: many
+loop on loop on loop, until she can hardly tell where one ends and the next begins
+she is wrapped so thickly that only her head is clear of the coils
+the coils stack round her like rope round a post
+whichever way she pushes, there is another loop there already
+the weight of so many coils is a pressure all of its own, even before they squeeze
+
+== constriction | squeeze: light
+the coil holds more than it crushes: snug, patient, waiting
+she can still breathe round it, if she breathes carefully
+the pressure is a promise more than a punishment, for now
+it is a hold, not yet a crush, and she knows the difference will not last
+
+== constriction | squeeze: firm
+each breath out is taken and kept; each breath in is a little smaller
+the squeeze is steady and does not hurry
+her ribs creak under it, a slow complaint
+the loops press in evenly, finding every soft place
+
+== constriction | squeeze: crushing
+the coils bear down so hard her ribs flex under them
+there is no breath to take: the squeeze takes it first
+the pressure is enormous and even, a slow, grinding crush
+every heartbeat thuds against the coils and is pressed back
+her whole body is being folded smaller, one breath at a time
+
+== constriction | coils: many | squeeze: crushing
+so many coils, and all of them crushing at once: the world shrinks to the inside of the squeeze
+the stacked loops tighten together, and the pressure comes from everywhere
+
+== constriction | coils: one | squeeze: light
+a single loose loop: there is room inside it, and she can feel the room shrinking
+
+== constriction | body: serpent
+her own body heaves against the coils, a serpent's whole length straining in a serpent's grip
+she tries to slide out lengthwise, the way she would through rocks, and the coils follow
+her tail thrashes free of the loops and finds nothing to grip
+she knows exactly what this is from the other side, and knowing does not help
+she bunches the muscle under her scales, trying to make herself thicker than the squeeze
+
+== constriction | body: serpent | coils: many
+she is wound up like a rope on a rope, coil inside coil
+the loops round her are wider than her own, and they lie the length of her
+
+# ---------------------------------------------------------------------------------------------------------------
+# (since build 279) COILING: the one doing the constricting, by how many coils and how hard
+# ---------------------------------------------------------------------------------------------------------------
+== coiling
+she feels every movement inside her coils before it happens and takes up the slack after it
+she lets the squeeze do the work, breathing slowly while the other one does not
+the long muscles along her body tighten in a slow ripple, front to back
+she holds her head up out of reach and watches, unhurried
+she waits for the breath out, and then she tightens
+
+== coiling | coils: one
+one loop is all she needs, and she sets it exactly where the breath is
+she keeps the single coil low and tight and saves the rest of her length
+
+== coiling | coils: two
+she lays a second loop over the first and draws them together
+two coils, and she works them in turn, one tightening while the other holds
+
+== coiling | coils: many
+she has wound herself round so many times that the other is hardly to be seen
+she draws every loop in at once, the whole of her length working together
+she shifts the coils one over the other, closing each gap the struggle opens
+
+== coiling | squeeze: light
+she holds the coil snug and no more, testing, feeling for the weak place
+she keeps it light for now: there is no hurry
+
+== coiling | squeeze: firm
+she squeezes steadily, and keeps squeezing, and does not look away
+she draws the coils in a little at every breath out and gives none of it back
+
+== coiling | squeeze: crushing
+she bears down with the whole weight of her body behind the coils
+she crushes, slow and enormous, and the struggle inside the coils grows smaller
+her scales grind on the fur inside the loops as she bears down | body: other
+her scales grind on the other's scales inside the loops as she bears down | body: serpent
+
+== coiling | body: serpent
+she knows every trick the other has, because they are her own tricks
+the other's length thrashes against her coils, and she rides it, tightening
+two serpents' worth of muscle, and only hers is winning, for now
+
+# ---------------------------------------------------------------------------------------------------------------
+# (since build 279) THE CONTEST OF COILS: two fighters coiled round each other (holds.coil.contest)
+#   result: stall (neither gives), won (one out-coils the other)    role: winner, loser (with won)
+# ---------------------------------------------------------------------------------------------------------------
+== coil_contest | result: stall
+coil against coil, scale grinding on scale, and neither of them gives an inch
+they are knotted together so tightly that every squeeze one gives, the other feels in her own coils
+each tightens when the other breathes out, and neither can breathe out for long
+their bodies heave together, one mass of muscle straining against itself
+for a long moment the knot of them does not move at all, and it is the hardest moment of the fight
+one loop slips a little and is clawed back; the knot holds
+they lock together, each squeezing, each being squeezed, a contest of who can bear it longer
+the knot rolls half over on the ground and stops, still locked
+
+== coil_contest | result: stall | squeeze: crushing
+both of them crushing at once: the breath goes out of them together and neither will let it back in
+the pressure between them is enormous, and it holds, and holds
+
+== coil_contest | result: stall | coils: many
+so many loops between them that it is hard to say whose coil is whose
+
+== coil_contest | result: won | role: winner
+she feels the other's coils weaken, and bears down into the gap
+her loops slide over the other's and press them flat and open
+she tightens just as the other's grip gives, and the knot is hers
+the other's coils fall away from her, and hers close into their place
+she squeezes through the other's grip and out the far side of it
+
+== coil_contest | result: won | role: winner | squeeze: crushing
+she crushes the other's coils loose and keeps crushing
+
+== coil_contest | result: won | role: loser
+her coils are forced open, loop by loop, and slide off
+she feels her own grip break, and the other's close where hers had been
+she is still wound in the other's coils, and now her own are holding nothing
+she strains to wind back on and finds no room left to wind into
+the knot was hers half a breath ago; now it is not
+
+== coil_contest | result: won | role: loser | coils: many
+loop after loop of the other's settles round her as her own come away

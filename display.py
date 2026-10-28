@@ -1263,6 +1263,17 @@ class Display:
                 out.append(f"🔒 **{poss_word(e['attacker'])} {e['submission'].upper()} becomes a PIN** after "
                            f"{e['beats_held']} beats: {e['defender']} is held down in it, the pin clock and pass-out start "
                            f"next beat, and the grips keep wrenching at full power, still building")
+            elif e["type"] == "coil_contest":
+                a_, d_ = e["fighters"]
+                ch_ = e.get("chance") or {}
+                if e.get("result") == "won":
+                    out.append(f"🐍 **{e['winner']} out-coils {e['loser']}**: {poss_word(e['loser'])} coils are torn off "
+                               f"her ({', '.join(e.get('shed') or [])}) and {poss_word(e['winner'])} tighten "
+                               f"+{num(e.get('tighten', 0))} (contest of coils: {a_} {ch_.get(a_, 0) * 100:.0f}% / "
+                               f"{d_} {ch_.get(d_, 0) * 100:.0f}%)")
+                else:
+                    out.append(f"🐍 {a_} and {d_} strain coil against coil; neither gives this beat (contest of coils: "
+                               f"{a_} {ch_.get(a_, 0) * 100:.0f}% / {d_} {ch_.get(d_, 0) * 100:.0f}% when one gives)")
             elif e["type"] == "hold_loosened":
                 if not self.tight():
                     out.append("")

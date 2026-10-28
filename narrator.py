@@ -666,6 +666,16 @@ TRAPPED_PAWS = re.compile(r"\b(?:paws?|claws?|hands?|arms?|forelegs?) (?:\w+ ){0
                           r"push|shov|grabb|reach|pound|beat|scrabbl|rak|dug|dig|tore|tear|slapp|tapp|batt)\w*|"
                           r"\b(?:clutch|claw|scrap|pried|pry|push|shov|grabb|reach|pound|beat|scrabbl|rak|tore|tear|slapp|"
                           r"batt)\w* (?:\w+ ){0,4}?with her (?:\w+ )?(?:paws?|claws?|hands?|arms?)\b", re.I)
+# (since build 279) a serpent standing; a fighter coming free of a grip; a grip still told as on
+SERPENT_STOOD = re.compile(r"\b(?:stood|stands?|standing) (?:firm|fast|her ground|steady|still|tall|up|unmoved|solid|"
+                           r"on)\b", re.I)
+FREED_SAID = re.compile(r"\b(?:tore (?:herself )?(?:free|loose|out)|broke (?:free|loose|out)|wrench\w* (?:herself )?"
+                        r"(?:free|loose|out)|came away|slid away|(?:coils?|grip|hold|tail fan) (?:released|let go|came off|"
+                        r"opened|loosened and)|pries? (?:the|it|them) off|pried (?:the|it|them) off|shook (?:herself )?"
+                        r"free|free of (?:the|her|\w+'s) (?:coils?|grip|hold))\b", re.I)
+STILL_GRIPPED = re.compile(r"\b(?:coils?|grip|hold|tails?|jaws) (?:were |was |are |is )?still (?:tight|wrapped|clamped|"
+                           r"locked|holding|round|around|on|digging|squeezing)\b|\bstill (?:held|gripped|coiled|wrapped|"
+                           r"trapped|caught) (?:in|by|fast)\b", re.I)
 # (since build 277) limbs a serpent hasn't got
 SERPENT_LIMB = re.compile(r"\b(?:kick(?:s|ed|ing)?|her (?:feet|foot|legs?|paws?|hands?|arms?|claws?|shoulders?|knees?|"
                           r"toes|forelegs?|hind ?legs?)|on (?:all fours|her (?:feet|hind legs))|(?:stood|stands|standing) "
@@ -4335,6 +4345,7 @@ class Narrator:
         self._raw_parts = {}        # fighter -> the part that had it
         self._getup_tries = None
         self._getup_who = None
+        self._getup_rise = None
         self._getup_event = None
         self._faint = None          # (who faints, who pinned her, seconds) on the beat a pin is held to the end
         self._must_reposition = None
@@ -4855,6 +4866,24 @@ class Narrator:
                              + f"; {e['attacker']} is left with nothing in her grip. It does no damage, nobody falls, and "
                              f"no new attack follows it. When the beat ends, nothing of {poss(e['attacker'])} is on her.")
                 lines += self._choke_off_lines(e["defender"], e.get("parts") or [])
+            elif e["type"] == "coil_contest":
+                a_, d_ = e["fighters"]
+                on_a = " and ".join(p.lower() for p in (e.get("parts") or {}).get(a_, []))
+                on_d = " and ".join(p.lower() for p in (e.get("parts") or {}).get(d_, []))
+                if e.get("result") == "won":
+                    w_, l_ = e["winner"], e["loser"]
+                    lines.append(f"THE CONTEST OF COILS (both of them wound round each other: {poss(a_)} coils round "
+                                 f"{poss(d_)} {on_d}, {poss(d_)} round {poss(a_)} {on_a}): they strain coil against "
+                                 f"coil, scale grinding on scale, and {w_} WINS IT. {poss(w_)} coils bear down and "
+                                 f"tighten, and {poss(l_)} coils are forced open and torn off her: {l_} is left wound in "
+                                 f"{poss(w_)} coils with her own body unwound and holding nothing. Show the strain on both "
+                                 f"of them, the moment one gives, and the winner's coils sliding into the loser's place. "
+                                 f"No blow lands; nobody falls.")
+                else:
+                    lines.append(f"THE CONTEST OF COILS (both of them wound round each other: {poss(a_)} coils round "
+                                 f"{poss(d_)} {on_d}, {poss(d_)} round {poss(a_)} {on_a}): they strain coil against "
+                                 f"coil, each trying to crush the other loose, and NEITHER gives this beat. Both coils "
+                                 f"stay exactly where they are; both of them tire. No blow lands; nobody falls.")
             elif e["type"] in ("hold_loosened", "hold_strain"):
                 parts = " and ".join(e.get("parts") or [])
                 with_ = " and ".join(dict.fromkeys(e.get("with") or []))
@@ -6756,6 +6785,7 @@ class Narrator:
         self._getup_tries = e["tries"] if e["stands"] else None
         self._getup_who = who if e["stands"] else None
         self._getup_event = e if e["stands"] else None
+        self._getup_rise = e.get("rise") if e["stands"] else None
         if e["stands"] and e["tries"] == 1:
             lines = [f"GETTING UP: {who} is on the ground and rises; she {how}. ONE smooth attempt: no failed tries, "
                      f"no slipping back down, no counting attempts, and she ends fully on her feet, not on her knees:"]
@@ -7027,7 +7057,7 @@ class Narrator:
         self._landed, self._slammed, self._charge_beat, self._one_strike = set(), set(), False, None
         self._weapons_ok, self._attackers, self._no_getup, self._biters = None, set(), set(), set()
         self._calm_beat, self._no_electric, self._getup_tries, self._must_reposition = False, False, None, None
-        self._getup_who = self._getup_event = None
+        self._getup_who = self._getup_event = self._getup_rise = None
         self._getup_failed = set()
         self._rose_now = set()
         self._must_manhandle = None
@@ -7730,8 +7760,14 @@ class Narrator:
             return []
         out = []
         strikes = list(dict.fromkeys(getattr(self, "_strike_parts", []) or []))
+        jaws_on = {g[0] for g in (getattr(self, "grips", None) or [])
+                   if re.search(r"\bjaws?\b|teeth|fangs?|mouth|bite", str(g[3]), re.I)}
         for sent, whos, named in self._said(text):
-            if ("teeth" not in ok and not getattr(self, "_pin_beat", False) and not getattr(self, "_ongoing", False)
+            # (since build 279) in a hold that is going on, a bite is still made up when the one biting has no grip
+            # with her jaws ("She bit at the coils, her teeth sinking into the scaled flesh", wound in a coil)
+            no_jaws = len(whos) == 1 and whos[0] not in jaws_on and not getattr(self, "_pin_beat", False)
+            if ("teeth" not in ok and not getattr(self, "_pin_beat", False)
+                    and (not getattr(self, "_ongoing", False) or no_jaws)
                     and not re.search(r"\b(had|memory|remember\w*|earlier|before|still)\b", sent, re.I)):
                 m = _biting(sent)
                 if m:
@@ -9557,19 +9593,60 @@ class Narrator:
         torso_ = lambda e: any(reg_(str(p)) in ("chest", "belly", "back_up", "back_low", "neck")
                                for p in ([e.get("part")] + list(e.get("parts") or [])
                                          + [x.get("part") for x in e.get("hits") or () if isinstance(x, dict)]) if p)
+        def coil_ctx(dfn):
+            # (since build 279) how many coils are on her and how hard they squeeze, for the blocks' coils: and
+            # squeeze: conditions; body: serpent when the one in the coils is a serpent herself
+            on = [x for x in list(also or ()) + list(pin_events or ()) if isinstance(x, dict) and x.get("coil")
+                  and x.get("defender") == dfn and x.get("type") in ("hold_ongoing", "hold_start", None)]
+            n_ = len({str(x.get("hold_id") or x.get("part")) for x in on}) or len(
+                [g for g in (getattr(self, "grips", None) or []) if g[1] == dfn
+                 and re.search(r"coil|wound|wrap", str(g[3]), re.I)]) or 1
+            pw = max([float(x.get("hold_power") or x.get("power") or 0) for x in on] or [0.0])
+            plan_ = (getattr(self, "plans", None) or {}).get(dfn)
+            return {"coils": "one" if n_ <= 1 else "two" if n_ == 2 else "many",
+                    "squeeze": "light" if pw and pw < 12 else "crushing" if pw >= 22 else "firm",
+                    "body": "serpent" if plan_ == "serpent" else "other"}
         for e_ in pin_events or ():
             if take and ((e_.get("out_cause") or {}).get("cause") == "constriction" or (e_.get("coil") and torso_(e_))):
                 side[0] = "take"
                 add(f"{e_.get('defender')}, in the coils", B.pick("constriction", 1, fade={
                     "fighting hard": "fighting", "weakening": "weakening", "fading": "fading",
-                    "nearly gone": "nearly out"}.get(e_.get("fight_left"), "fighting")))
+                    "nearly gone": "nearly out"}.get(e_.get("fight_left"), "fighting"), **coil_ctx(e_.get("defender"))))
             if take and e_.get("struggle") == "escape" and e_.get("aftereffects"):
                 side[0] = "take"
                 add(f"{e_.get('defender')}, free of it", B.pick("escape_after", 1))
+        coiled_told, contest_told = set(), False
         for e_ in also or ():
-            if take and e_.get("type") == "hold_ongoing" and e_.get("coil") and torso_(e_):
+            if take and e_.get("type") == "hold_ongoing" and e_.get("coil") and torso_(e_) \
+                    and e_.get("defender") not in coiled_told:
+                coiled_told.add(e_.get("defender"))
                 side[0] = "take"
-                add(f"{e_.get('defender')}, in the coils", B.pick("constriction", 1))
+                cx = coil_ctx(e_.get("defender"))
+                add(f"{e_.get('defender')}, in the coils", B.pick("constriction", 1, has=feats(e_.get("defender")), **cx))
+                self._offer_line(add, f"a finished line for {e_.get('defender')} in the coils", "constriction", **cx)
+            elif act and e_.get("type") == "hold_ongoing" and e_.get("coil") and torso_(e_) \
+                    and e_.get("attacker") not in coiled_told:
+                # (since build 279) the one doing the squeezing: how it feels from her side
+                coiled_told.add(e_.get("attacker"))
+                side[0] = "act"
+                cx = coil_ctx(e_.get("defender"))
+                add(f"{e_.get('attacker')}, working her coils", B.pick("coiling", 1, has=feats(e_.get("attacker")), **cx))
+                self._offer_line(add, f"a finished line for {e_.get('attacker')} squeezing", "coiling", **cx)
+            if e_.get("type") == "coil_contest" and not contest_told:
+                # (since build 279, holds.coil.contest) both of them coiled round each other
+                contest_told = True
+                a_c, d_c = e_["fighters"]
+                res_ = e_.get("result") or "stall"
+                cx = coil_ctx(d_c)
+                if res_ == "won":
+                    for who_, role_ in ((e_["winner"], "winner"), (e_["loser"], "loser")):
+                        add(f"{who_}, in the contest of coils", B.pick("coil_contest", 1, result="won", role=role_,
+                                                                       **coil_ctx(e_["loser"] if role_ == "winner"
+                                                                                  else e_["winner"])))
+                    self._offer_line(add, "a finished line for the contest of coils", "coil_contest", result="won")
+                else:
+                    add("the two of them, coil against coil", B.pick("coil_contest", 2, result="stall", **cx))
+                    self._offer_line(add, "a finished line for the contest of coils", "coil_contest", result="stall")
         # a submission hold (finish.submission; narration.sub_blocks): what it is like by now from the side this part
         # is told from: the one held (sub_held) or the one holding it (sub_hold), by how long it has been on and how
         # badly the worst of the held parts hurts
@@ -10393,8 +10470,18 @@ class Narrator:
             add("pin hold", "pin struggle")
         elif any(t in ("pin_start", "pin_forced") for t in types):
             add("pin start", "pin start take")
+        cc_ = next((e for e in also or () if e.get("type") == "coil_contest"), None)
+        if cc_:
+            # (since build 279) two serpents coiled round each other: the passage for how this beat's contest went
+            t_ = "coil contest won" if cc_.get("result") == "won" else "coil contest stall"
+            add(t_, t_)
         if any((e.get("out_cause") or {}).get("cause") == "constriction" for e in pin_events) \
                 or any(e.get("type") == "hold_ongoing" and e.get("coil") for e in also or ()):
+            # (since build 279) a crushing squeeze, or many coils, asks for that passage first
+            pw = max([float(e.get("hold_power") or 0) for e in also or ()
+                      if e.get("type") == "hold_ongoing" and e.get("coil")] or [0.0])
+            if pw >= 22:
+                add("coil crushing", "coil take crushing")
             add("coil", "coil take")
         if any(e.get("struggle") == "escape" and e.get("aftereffects") for e in pin_events):
             add(None, "escape aftermath")
@@ -11407,6 +11494,30 @@ class Narrator:
         free_coilers = {n_ for n_, pl in (getattr(self, "plans", None) or {}).items() if pl == "serpent"
                         and n_ in self.strengths and n_ not in coil_grips} if not getattr(self, "_pin_beat", False) else set()
         plans_ = getattr(self, "plans", None) or {}
+        # (since build 279) she rolls onto her front FIRST and then gets her knees under her: not the other way round
+        # ("pushed herself up onto her hands and knees, then rolled onto her front")
+        gw = getattr(self, "_getup_who", None)
+        if gw and getattr(self, "_getup_rise", None) == "roll":
+            low_t = text.lower()
+            k = re.search(r"\b(?:hands and knees|onto her knees|on all fours|to her knees)\b", low_t)
+            r_ = re.search(r"\brolled (?:over )?(?:onto|on to) her (?:front|belly|stomach)\b", low_t)
+            if k and r_ and k.start() < r_.start():
+                sent_ = next((x for x in _SENT.split(text) if r_.group(0) in x.lower()), None)
+                if sent_:
+                    add(sent_, f"it has {gw} roll onto her front AFTER getting up on her knees: she rolls onto her "
+                               f"front first, then gathers her knees under her and pushes up")
+        # (since build 279) a grip she tore out of this beat, told as still on after the passage has her tear free
+        if getattr(self, "_broke_free", None):
+            sents_ = [x for para in text.split("\n") for x in _SENT.split(para.strip()) if x]
+            at = next((i for i, x in enumerate(sents_) if FREED_SAID.search(x)), None)
+            if at is not None:
+                for x in sents_[at + 1:]:
+                    m_ = STILL_GRIPPED.search(x)
+                    if m_ and not re.search(r"\b(?:had been|earlier|before|remember\w*|memory|felt|feel|ghost|"
+                                            r"echo|phantom|where)\b", x, re.I):
+                        add(x, f"it tells the grip as still on (\"{m_.group(0)}\") after she has torn free of it: "
+                               f"the grip is gone; only its ache or its marks stay")
+                        break
         went_down = ((getattr(self, "_landed", None) or set()) - (getattr(self, "_rolled_up", None) or set())) \
             & set(getattr(self, "facing", None) or {})
         for sent, whos, named in self._said(text):
@@ -11491,6 +11602,15 @@ class Narrator:
                 add(sent, f"it has {whos[0]} use her paws or arms (\"{m.group(0)}\"), but her arms are pinned inside "
                           f"the coils: they strain and can't come free. She fights with her body, her legs, her tail, "
                           f"her breath")
+            m = SERPENT_STOOD.search(sent) if len(whos) == 1 and plans_.get(whos[0]) == "serpent" else None
+            if m:
+                # (since build 279) "Seraphina stood firm, her coils shifting slightly under her"
+                add(sent, f"it has {whos[0]} stand (\"{m.group(0)}\"), but she is a serpent with nothing to stand on: "
+                          f"she holds her ground on her coils, rears, or braces her body")
+            if named and len(whos) == 1 and "tails" not in self._feats_of(whos[0]) and re.search(
+                    r"\b" + re.escape(whos[0]) + r"(?:'s|’s) (?:\w+ )?tails\b", sent):
+                # (since build 279) "Seraphina's tails hung lower now": she has one tail
+                add(sent, f"it gives {whos[0]} tails, but she has ONE tail: say her tail")
             m = STOOD_FIRM.search(sent)
             if m and len(whos) == 1 and whos[0] in went_down and not re.search(
                     r"\b(?:not|never|no|couldn't|could not|failed|tried|try\w*|meant|would|wanted|struggl\w*|fought)\b"

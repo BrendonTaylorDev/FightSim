@@ -654,6 +654,30 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 279
+The contest of coils, writing for constriction and for serpents coiling serpents, and the narration slips left over from the build-276 played log.
+- **The contest of coils** (`holds.coil.contest`, on by default). When two fighters are coiled round each other, each beat after both coils have been on for a beat:
+  - Both spend 4 energy, and 35% of the time neither gives (`stall_chance`).
+  - Otherwise one out-coils the other. The chance goes by each one's strength, her size (to the power `size_weight`, 0.5), how much energy she has left, and adrenaline.
+  - The loser's coils are forced off her. The winner's tighten by 3 and take over: the loser gets no roll to break them that beat.
+  - Seraphina (6.2 m) wins 59% of the contests that are decided against an Arbok (3.5 m).
+  - The screen shows "🐍 ... out-coils ..." or "strain coil against coil". The narrator gets a note for each outcome, and the director is told that a serpent wound in another's coils can wind her own back round her.
+- **Writing for constriction, by how many coils and how hard.** Story blocks have three new conditions:
+  - `coils:` one, two or many coils on her.
+  - `squeeze:` light, firm or crushing, from the grip's power.
+  - `body:` serpent, when the one in the coils is a serpent herself.
+
+  The library now has:
+  - Blocks for the one in the coils (`constriction`), for the one squeezing (`coiling`), and for the contest (`coil_contest`: stall, or won from the winner's and the loser's side).
+  - Finished story lines for all three.
+  - Sample passages (style_sample_scenes.txt): one or two coils, many coils crushing, a serpent in a serpent's coils, a contest where neither gives, and two where one wins (one of them won by the smaller serpent).
+  - A crushing squeeze (power 22 or more) asks for the "coil crushing" passages first. A contest asks for "coil contest stall" or "coil contest won", as the beat went.
+- **A serpent that "stood firm" is caught**: she holds her ground on her coils, rears, or braces.
+- **One tail told as tails is caught** ("Seraphina's tails hung lower"), for any fighter with one tail.
+- **The get-up told out of order is caught.** "Up onto her hands and knees, then rolled onto her front" is wrong when she rolls onto her front first.
+- **A grip told as still on after she tore free is caught** ("The Milotic's coils were still tight around Ripples' middle", after Ripples wrenched loose).
+- **A bite made up during a hold is caught.** During a hold, a bite was let through as part of the struggle. Now it counts only if the one biting holds with her jaws. Ripples, wound in coils, "bit at the coils, her teeth sinking into the scaled flesh".
+
 ## Build 278
 Fixes from the build-276 played Ripples vs Seraphina log, Buizel ribs and flanks, and big blows that carry on into her side.
 - **Buizels have ribs and flanks.** Ripples (both versions) and Nerine now have Left and Right Ribs (88), the side of the chest, and Left and Right Flank (83), the soft side below them at the waist. Over 400 simulated fights Nocturne still wins 59.5% against Ripples (59% before), so nothing else was rebalanced. Your clicked part points (images/anchors.json) don't have the new parts yet: their marks go where the picture's outline guesses until you place them.

@@ -823,6 +823,26 @@ def coil_size_hint(engine):
                            f"{poss_word(d.name)} limbs, so her coils can't wrap one arm, leg or tail alone. When she "
                            f"coils {d.name}, the coils go round {poss_word(d.name)} MIDDLE (chest or belly), and a "
                            f"limb can be bound in under them")
+    if engine.coil_contest_cfg():
+        # (since build 279, holds.coil.contest) a serpent in another's coils can wind her own round her holder
+        for h in engine.holds.values():
+            if not h.coil:
+                continue
+            held, holder = engine.get(h.defender), engine.get(h.attacker)
+            if engine.body_plan(held) != "serpent" or any(
+                    x.coil and x.attacker == held.name and x.defender == holder.name for x in engine.holds.values()):
+                continue
+            out.append(f"{held.name} is a serpent wound in {poss_word(holder.name)} coils: she can wind her OWN coils "
+                       f"round {holder.name} (a hold_start on {poss_word(holder.name)} middle) and fight it out, coil "
+                       f"against coil; each beat one may out-coil the other and take over")
+            break
+        for h in engine.holds.values():
+            if h.coil and any(x.coil and x.attacker == h.defender and x.defender == h.attacker
+                              for x in engine.holds.values()):
+                out.append(f"{h.attacker} and {h.defender} are coiled round EACH OTHER: a contest of coils. The engine "
+                           f"decides each beat who out-coils whom; your actions are the straining, crushing and "
+                           f"tightening, not strikes")
+                break
     return "\n".join(out)
 
 

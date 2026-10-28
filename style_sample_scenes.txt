@@ -11,7 +11,7 @@
 # Tags the program asks for: opening; strike act, strike take, strike take light (the part ends minor or sore), strike take mid (hurting or very painful), strike take hard (a blow that leaves a part excruciating or worse), strike take worn (the one hit is tired or spent overall), pinned take (a blow on a fighter who is pinned, held or down, with nowhere to go), knockdown take (the blow puts her down); chain; breaking point; sustain take; grab, grab take; sub start, sub start take (a submission hold locking on; falls back to grab);
 # pummel; throw, throw take; getup; dodge; pin start, pin start take; pin hold, pin struggle; escape; faint;
 # aftermath, aftermath take; clash, clash take; dive, dive take; sputter take; coil, coil take; escape aftermath; tap resist, tap resist take (a submission
-# match: she fights the urge to tap); tap out, tap out take.
+# match: she fights the urge to tap); tap out, tap out take; coil crushing, coil take crushing, coil contest stall, coil contest won (since build 279).
 # super effective act, super effective take (an attack her body has no answer for); resisted act, resisted take (one
 # her body is made to take, or that can't touch her).
 # A tag nothing answers to falls back to the next one asked for, then to the first section.
@@ -6676,3 +6676,84 @@ It was a new kind of pain. Sharper, higher, completely different from the long g
 She breathed through her nose. In. Out. The knee had crossed a line in that fall. She could feel it. Whatever it had been before, it was something worse now, something that would not let her forget it for a single step.
 
 *Up,* she thought. *Up anyway.*
+
+# ---------------------------------------------------------------------------------------------------------------
+# (since build 279) CONSTRICTION BY HOW MANY COILS AND HOW HARD, and SERPENTS COILING SERPENTS (the contest of coils)
+# "coil crushing" / "coil take crushing" are asked for first when the coils press hard (power 22 or more);
+# "coil contest stall" / "coil contest won" when two fighters are coiled round each other (neither gave / one out-coiled
+# the other).
+# ---------------------------------------------------------------------------------------------------------------
+== coil | has_a: coils | has_b: arms
+{A} put one loop round {B}'s middle and left it there, loose, the way a hand rests on a door before it pushes.
+
+She did not squeeze yet. She waited. {B} twisted inside the loop, testing it, and every twist told {A} something: which way she favoured, where her breath sat, how long she could hold it. On the third twist {A} let a second loop slide down over the first, low across her hips, and drew the two together.
+
+Now there were two, and the gap between them closed every time {B} breathed out.
+
+*Slowly. She'll do the rest herself.*
+
+== coil take | has_a: coils | has_b: arms
+One coil, round her middle. It did not seem like much at first.
+
+{B} could still breathe. She braced her feet and threw her whole body against the loop, and it was like shoving a warm wall. The scales slid a finger's width over her fur and came back.
+
+Then the second loop came down over the first, and where they crossed it felt like a hand closing. Her next breath stopped halfway in. She held it, waiting for the squeeze to ease, and it didn't. When she let the breath go, the coils took the room it left and kept it.
+
+*One breath at a time. Just the next one.*
+
+== coil crushing, coil | has_a: coils | has_b: arms
+{A} had wound herself round {B} three times over, chest, middle and hips, until only {B}'s head and the ends of her tail showed above the coils.
+
+Then she bore down. Not quickly. She let the weight of her whole body settle into the loops, the long muscles tightening one after another down her length like a slow wave going out to sea, and she felt everything inside them grow smaller.
+
+{B}'s struggles came through the scales as a muffled drumming, quick at first, then less often. {A} held her head high and still above it all and breathed, slow and easy, the one of them who could.
+
+== coil take crushing, coil take | has_a: coils | has_b: arms
+There were so many coils that she could not have said how many. They lay on her from her chest to her hips, loop on loop, and when they tightened they tightened all together.
+
+Her ribs flexed under it. She felt them bend and hold and bend a little further, and the air went out of her in a thin, whistling squeeze she had not meant to make. There was no breathing in after it. There was nowhere for a breath to go.
+
+Her arms were somewhere under the loops, pressed flat to her sides, and she could not feel her paws any more, only a cold, dull heaviness where they should have been. Her heartbeat filled her ears, thick and slow, pushing against the coils and pressed back every time.
+
+*Not yet. Not yet. Not—*
+
+The grey crept in at the edges, soft, and the squeeze went on.
+
+== coil take | has_a: coils | has_b: coils
+{B} knew the feel of a coil from the inside of her own. That was the worst of it.
+
+{A} had only one loop round her, a little behind her head, and it was not tight, not yet. {B} pulled against it lengthwise, the way she would have slipped between two rocks, and the loop slid with her. She doubled back on herself and it doubled with her. Every trick she tried was a trick {A} already knew, because it was her own.
+
+She went still for a moment, thinking, her tail flicking, and in that moment the loop drew in by a finger's width and stayed there.
+
+== coil crushing, coil | has_a: coils | has_b: coils
+{A} wound the whole of her length round {B}, loop over loop, until the two of them made one knot of scales on the ground, and then she crushed.
+
+It was not like crushing something soft. {B}'s body was all muscle too, and it fought back the way only a serpent's can, swelling against the coils, rippling, heaving, trying to make itself thicker than the squeeze. {A} felt every heave and rode it, and when it eased she took the room it left.
+
+Each time {B} swelled, {A} gave a little. Each time {B} sagged, {A} took a little more. She was taking more than she gave.
+
+== coil contest stall, coil contest | has_a: coils | has_b: coils
+For a long moment neither of them moved at all.
+
+{A} had two loops round {B}'s middle; {B} had one round {A}'s, thick and low, and it was crushing. They lay knotted together on the ground, scale grinding on scale, each squeezing, each being squeezed, and every time one of them breathed out the other tightened, so that neither of them dared breathe out for long.
+
+{A}'s head swayed above the knot. {B}'s did the same, a length away, watching. Their eyes met over the coils.
+
+*Who gives first.*
+
+Neither did. The knot creaked, and shifted a hand's width across the ground, and held.
+
+== coil contest won | has_a: coils | has_b: coils
+It was {A} who felt it first: the smallest give in the loop round her middle, a softening, as if {B} had breathed in when she meant to hold.
+
+She bore down into it at once. Her own coils slid over {B}'s, pressing them flat, forcing them open one loop at a time, and {B}'s grip came off her like a belt unbuckled. {A} drew her length in through the gap and wound it round where {B}'s coils had been.
+
+Now there was only one knot, and it was hers. {B} was still wound inside it, her own body loose and holding nothing, and she knew it. {A} felt the knowing go through her, a long shudder down the length of her. Then {A} tightened.
+
+== coil contest won | has_a: coils | has_b: coils
+{B} was the smaller of them, and it should have ended the other way.
+
+But {A} had tired first. {B} felt it in the coils round her, a heaviness, a slackening between one squeeze and the next, and she did not waste it. She swelled against {A}'s loops with everything she had, all at once, and they opened, just for a breath, and she was through them and wound round {A} before the breath was over.
+
+{A}'s coils slid off her and lay slack on the ground. {B} drew hers in. She was smaller, but she was the one squeezing now, and {A} was the one inside.
