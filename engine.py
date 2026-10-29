@@ -664,6 +664,10 @@ class Engine:
         raw_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital * health_scale
         health_loss = self._soften_loss(defender, raw_loss, power)
         defender.health = self._floor(hp_b - health_loss)
+        if hp_b > defender.health:
+            # (since build 324) what each part's wounds have cost her, for the part's report (window.limb_report)
+            hl = defender.learned.setdefault("hp_by_part", {})
+            hl[p.name] = round(float(hl.get(p.name, 0.0)) + hp_b - defender.health, 2)
         # the health the soft cap kept from her doesn't vanish: a share of it wears the part down further
         # (health.soft_cap.to_resistance resistance points per point of health softened away)
         over = max(0.0, raw_loss - health_loss)
@@ -11805,6 +11809,32 @@ class Engine:
                 pick += [out["reason"], out["holder"]]
         d.learned["tap_ways"] = (used + pick)[-15:]     # (most of each set: no sign shown again for a while)
         return out
+
+    def match_kind(self):
+        """What kind of match the rules make now, in a few words (the setup questions, and since build 324 the
+        match badge over the window's cards and the console's stat block: window.match_badge)."""
+        if self.submission_match():
+            if self.sub_knockouts():
+                return "anything goes (knockout, " + ("" if self.no_pins() else "pin, ") + "or tap-out)"
+            return f"submission ({self.taps_needed()} taps)" if self.taps_needed() > 1 else "submission"
+        if self.ko_only():
+            return "knockout only" + (", no pins" if self.no_pins() else "")
+        return "pins and knockouts"
+
+    def match_badge(self):
+        """(since build 324, window.match_badge) What kind of fight this is, where, and in what weather, in one line,
+        so it is always in sight: over the window's cards and at the top of the console's stat block. None when off."""
+        if not (self.rules.get("window") or {}).get("match_badge", True):
+            return None
+        bits = [f"MATCH: {self.match_kind()}"]
+        if self.submission_match() and not self.sub_knockouts():
+            bits[0] += " (ends on a tap-out or a pass-out)"
+        elif self.ko_only() and not self.submission_match():
+            bits[0] += " (ends on a knockout)"
+        bits.append(f"ARENA: {self.scene_cfg.get('title') or self.scene_name}")
+        if arena_weather.word(self):
+            bits.append(f"WEATHER: {arena_weather.word(self)}")
+        return "  ·  ".join(bits)
 
     def ko_only(self):
         """finish.knockout_only: a fight ends only when someone is KNOCKED OUT by a blow. A pin run to its end can't

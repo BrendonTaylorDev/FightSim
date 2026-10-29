@@ -1429,6 +1429,7 @@ LOCK_WORDS = re.compile(r"(?i)\b(?:lock|bar|hammerlock|kimura|americana|crank|wr
                         r"split|stretch|scissor|leglock|heel|ankle|knee|wrist|elbow|shoulder)")
 CHOKE_WORDS = re.compile(r"(?i)\b(?:choke|sleeper|guillotine|strangle|triangle|throat)")
 CRUSH_WORDS = re.compile(r"(?i)\b(?:bear hug|body lock|crush|squeeze|body scissors|waist)")
+COIL_WORDS = re.compile(r"(?i)\b(?:coil|constrict|wrap)")
 HEAD_WORDS = re.compile(r"(?i)\b(?:headlock|head lock|face lock|chancery|front lock)")
 
 
@@ -1450,8 +1451,12 @@ def grip_kind(g):
         return "head"
     if CRUSH_WORDS.search(what):
         return "crush"
-    if what == "coils":
-        return "choke" if "neck" in regs else "bound"
+    if what == "coils" or COIL_WORDS.search(what):
+        # (since build 324) a coil submission (an upright coil, a constriction) squeezes: it never forces a joint
+        # (the build-323 picture bent Ripples' hip in Seraphina's upright coil, round her ribs and hip)
+        if "neck" in regs:
+            return "choke"
+        return "bound" if regs and len(limbs) == len(regs) else "crush"
     if what in ("grab", "hold") and not g.get("locked"):
         return "grab"
     if "neck" in regs and not limbs:

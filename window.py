@@ -380,11 +380,19 @@ class FighterCard(ttk.Frame):
         self.hd = tk.Canvas(self, width=PIC + 2 * COL, height=160, highlightthickness=0, bg="#111827")
         # the grips on her and by her, a pin, and how far she is from the others (window.hold_panel)
         self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg=C("#ffffff"))
-        self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
-        self.state.pack(anchor="w", pady=(4, 0))
-        # (since build 312, window.explain) hovering her status line explains every status on her
-        self.state.bind("<Enter>", self._status_tip)
-        self.state.bind("<Leave>", lambda _e: self.app.tip.hide())
+        # (since build 324) her posture and statuses as text of their own: hovering one status explains it, with
+        # what it does to her numbers and (for the body's own statuses) where she is now (window.explain)
+        sty = ttk.Style()
+        self.state = tk.Text(self, height=1, wrap="word", relief="flat", borderwidth=0, highlightthickness=0,
+                             cursor="arrow", font=("Segoe UI", 9), padx=0, pady=0,
+                             bg=sty.lookup("TFrame", "background") or C("#ffffff"),
+                             fg=sty.lookup("TLabel", "foreground") or C("#111827"))
+        self.state.tag_configure("st", underline=True)
+        self.state.pack(fill="x", anchor="w", pady=(4, 0))
+        self.state.configure(state="disabled")
+        # (since build 312, window.explain) hovering her posture explains every status on her at once
+        self.state.tag_bind("posture", "<Enter>", self._status_tip)
+        self.state.tag_bind("posture", "<Leave>", lambda _e: self.app.tip.hide())
 
     # ---- the picture ----
     def set_picture(self, data):
@@ -475,7 +483,8 @@ class FighterCard(ttk.Frame):
                     lx = COL - 4 if side == "L" else COL + PIC + 4
                     calib = self.app.calib == (self, part)
                     c.create_line(lx, ly, ax, ay, fill=C("#2563eb") if calib else C("#9ca3af"), width=2 if calib else 1)
-                    c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline=C("#111827"))
+                    dot = c.create_oval(ax - 4, ay - 4, ax + 4, ay + 4, fill=dmg_color(dmg), outline=C("#111827"))
+                    self._tip_raw(c, dot, self._part_tip(part, dmg, res))
                     self._ring(c, f, part, ax, ay)
                     self._label(c, side, lx, ly, part, dmg, res, calib)
             top += pn["height"] + gap
@@ -933,12 +942,42 @@ class FighterCard(ttk.Frame):
             self._squeeze_figure(c, v, w, ox, low)
         c.configure(height=max(150 if figure else 0, max(c.bbox(i)[3] for i in c.find_all()) + 6))
 
+    def _set_state(self, f):
+        """Her posture, then each status (its beats left), each status a hover of its own: what it is, what it does
+        to her numbers, and where she is now (the snapshot's status_tips, else window.explain's general words)."""
+        t = self.state
+        t.configure(state="normal")
+        t.delete("1.0", "end")
+        t.insert("end", f["posture"], ("posture",))
+        tips = f.get("status_tips") or {}
+        rules = self.app._rules() if hasattr(self.app, "_rules") else {}
+        items = list((f.get("status") or {}).items())
+        t.insert("end", "  ·  " + ("" if items else "no statuses"), ("posture",))
+        for i, (k, v) in enumerate(items):
+            word = k.replace("_", " ") + (f" ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool)
+                                          and v < 99 else "")
+            tag = f"st_{i}"
+            t.insert("end", word, ("st", tag))
+            if i < len(items) - 1:
+                t.insert("end", ", ")
+            if self._explain_on():
+                tip = tips.get(k) or explain.status_text(k, v, rules)
+                import textwrap
+                tip = "\n".join("\n".join(textwrap.wrap(p, 70)) or "" for p in tip.split("\n"))
+                t.tag_bind(tag, "<Enter>", lambda e, x=tip: self.app.tip.show(e.x_root, e.y_root, x))
+                t.tag_bind(tag, "<Leave>", lambda e: self.app.tip.hide())
+        chars = len(t.get("1.0", "end-1c"))
+        per = max(20, int(self.app.card_w() / 7)) if hasattr(self.app, "card_w") else 70
+        t.configure(height=max(1, math.ceil(chars / per)), state="disabled")
+
     def _status_tip(self, e):
         f = self.data or {}
         if not self._explain_on() or not f:
             return
         import textwrap
-        text = explain.statuses_text(f.get("status") or {}, self.app._rules() if hasattr(self.app, "_rules") else {})
+        tips = f.get("status_tips") or {}
+        text = ("\n\n".join(tips.values()) if tips else
+                explain.statuses_text(f.get("status") or {}, self.app._rules() if hasattr(self.app, "_rules") else {}))
         self.app.tip.show(e.x_root, e.y_root, "\n".join("\n".join(textwrap.wrap(p, 70)) for p in text.split("\n")))
 
     def _stream(self, key, heart, irregular):
@@ -958,6 +997,11 @@ class FighterCard(ttk.Frame):
         """window.explain (since build 312): hover tips on her statuses and her vitals."""
         return bool(((self.app._rules().get("window") or {}) if hasattr(self.app, "_rules") else {})
                     .get("explain", True))
+
+    def _tip_raw(self, c, item, text):
+        """A hover tip on one canvas item, its text already laid out."""
+        c.tag_bind(item, "<Enter>", lambda e, t=text: self.app.tip.show(e.x_root, e.y_root, t))
+        c.tag_bind(item, "<Leave>", lambda e: self.app.tip.hide())
 
     def _tip(self, c, item, text, on=True):
         """A hover tip on one canvas item (window.explain)."""
@@ -1165,7 +1209,6 @@ class FighterCard(ttk.Frame):
         for cv in (self.hp, self.en, self.hb, self.tp, self.pg, self.tm, self.vt, self.gp):
             if int(float(cv.cget("width"))) != w:
                 cv.configure(width=w)
-        self.state.configure(wraplength=w)
 
     def _bars(self, f, pct):
         self._fit_width()
@@ -1179,10 +1222,7 @@ class FighterCard(ttk.Frame):
         self.en.delete("all")
         self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill=C("#60a5fa"), outline="")
         halo_text(self.en, 6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
-        sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool)
-                        and v < 99 else
-                        k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
-        self.state.configure(text=f"{f['posture']}  ·  {sts}")
+        self._set_state(f)
         self._monitor(f)
         self._taps(f)
         self._pain(f)
@@ -1234,7 +1274,8 @@ class FighterCard(ttk.Frame):
                 calib = self.app.calib == (self, part)
                 line = C("#2563eb") if calib else C("#9ca3af")
                 c.create_line(lx, ly, ax, ay, fill=line, width=2 if calib else 1)
-                c.create_oval(ax - 3, ay - 3, ax + 3, ay + 3, fill=dmg_color(dmg), outline=C("#111827"))
+                dot = c.create_oval(ax - 4, ay - 4, ax + 4, ay + 4, fill=dmg_color(dmg), outline=C("#111827"))
+                self._tip_raw(c, dot, self._part_tip(part, dmg, res))
                 self._ring(c, f, part, ax, ay)
                 self._label(c, side, lx, ly, part, dmg, res, calib)
         if f["out"]:
@@ -1253,9 +1294,7 @@ class FighterCard(ttk.Frame):
         self.en.delete("all")
         self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill=C("#60a5fa"), outline="")
         halo_text(self.en, 6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
-        sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
-                        k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
-        self.state.configure(text=f"{f['posture']}  ·  {sts}")
+        self._set_state(f)
         self._monitor(f)
         self._taps(f)
         self._pain(f)
@@ -1264,11 +1303,22 @@ class FighterCard(ttk.Frame):
         self._grips(f)
         self._order()
 
+    def _part_tip(self, part, dmg, res):
+        """The hover over a part: (since build 324, window.limb_report) the part in detail from the snapshot (how
+        hurt, how it looks, what it is doing, the grips on it, what it does to her), else its two numbers."""
+        rep = ((self.data or {}).get("limb_report") or {}).get(part)
+        if rep:
+            import textwrap
+            rep = "\n".join("\n".join(textwrap.wrap(p, 78, subsequent_indent="  " if p.startswith("- ") else ""))
+                            or "" for p in rep.split("\n"))
+            return rep + "\n\n(click this label, then the picture, to move its point)"
+        return (f"{part}\ndamage {dmg:.1f}%  ({next(n for at, cc, n in DMG_STEPS if dmg >= at)})\n"
+                f"resistance {res:.1f}%  ({next(n for at, cc, n in RES_STEPS if res >= at)})\n"
+                f"(click this, then the picture, to move its point)")
+
     def _label(self, c, side, lx, ly, part, dmg, res, calib):
         name = short(part)
-        tip = (f"{part}\ndamage {dmg:.1f}%  ({next(n for at, cc, n in DMG_STEPS if dmg >= at)})\n"
-               f"resistance {res:.1f}%  ({next(n for at, cc, n in RES_STEPS if res >= at)})\n"
-               f"(click this, then the picture, to move its point)")
+        tip = self._part_tip(part, dmg, res)
         d, r = f"{dmg:.0f}%", f"{res:.0f}%"
         # [name] [damage on its colour] [resistance in its colour's frame], laid out away from the picture
         widths = (76, 38, 40)
@@ -1434,6 +1484,10 @@ class App:
         ttk.Checkbutton(top, text="Follow the fight", variable=self.follow, command=self.follow_changed).pack(side="right")
         ttk.Button(top, text="▶", width=3, command=lambda: self.step(1)).pack(side="right")
         ttk.Button(top, text="◀", width=3, command=lambda: self.step(-1)).pack(side="right")
+        # (since build 324, window.match_badge) what kind of fight this is, the arena and the weather, always in sight
+        self.badge = tk.Label(left, text="", anchor="w", font=("Segoe UI", 9, "bold"), padx=6, pady=2,
+                              bg=C("#1e3a8a") if _THEME.get("dark") else C("#dbeafe"),
+                              fg="#f9fafb" if _THEME.get("dark") else "#1e3a8a")
         self.slider = ttk.Scale(left, from_=0, to=0, orient="horizontal", command=self.slid)
         self.slider.pack(fill="x", pady=(4, 6))
         legend = ttk.Frame(left)
@@ -1460,7 +1514,8 @@ class App:
         self.effect_flags = {}
         names = {"all": "All of them", "breathing": "Breathing", "pulse": "Pain pulsing with her heart",
                  "impact": "Blows: flash and jolt", "grey": "The grey closing in", "grips": "Grip rings in the holder's "
-                 "colours", "monitor": "Heart monitor", "settling": "Injuries settling in (the story)"}
+                 "colours", "monitor": "Heart monitor", "settling": "Injuries settling in (the story)",
+                 "holdpic": "Hold picture (the body figure in a hold)", "badge": "Match badge (kind of fight)"}
         for k, on in play.effects_state(self._rules()):
             self.effect_flags[k] = _Flag(value=on)
             menu.add_checkbutton(label=names.get(k, k), variable=self.effect_flags[k],
@@ -1468,6 +1523,9 @@ class App:
             if k == "all":
                 menu.add_separator()
         self.effects_btn.pack(side="left", padx=(10, 0))
+        # (since build 324, window.replay_button) the blows of the beat shown landing again: the flash and jolt
+        if (self._rules().get("window") or {}).get("replay_button", True):
+            ttk.Button(row, text="↻ Replay hits", command=self.replay_hits).pack(side="left", padx=(8, 0))
 
         holder = ttk.Frame(left)
         holder.pack(fill="both", expand=True, pady=(6, 0))
@@ -1981,11 +2039,52 @@ class App:
             card.hits = impacts(card.data, f) if step and card.data else ([], 0.0)
             card.draw(f)
         self._shown_turn = turn
+        self._show_badge()
         self._sync_effects()
         self._repaint_cards()
         self.when.configure(text=("Now" if live else
                                   f"Beat {index} of {len(self.beats)}: as it stood {snap['label']}" if index else
                                   f"As it stood {snap['label']}"))
+
+    def _show_badge(self):
+        """The match badge over the cards (window.match_badge): the shown beat's match, arena and weather."""
+        on = (self._rules().get("window") or {}).get("match_badge", True)
+        badge = (getattr(self, "shown", None) or {}).get("match") if on else None
+        try:
+            if badge:
+                self.badge.configure(text=badge)
+                if not self.badge.winfo_ismapped():
+                    self.badge.pack(fill="x", pady=(0, 4), before=self.slider)
+            elif self.badge.winfo_ismapped():
+                self.badge.pack_forget()
+        except (tk.TclError, AttributeError) as e:
+            note_failure("showing the match badge", e)
+
+    def replay_hits(self):
+        """(since build 324) The Replay hits button: what landed in the beat shown flashes and jolts on the cards
+        again, from the beat before it (window.alive.impact must be on to see it)."""
+        snap = getattr(self, "shown", None)
+        if not snap:
+            return
+        turn = snap.get("turn")
+        pos = next((k for k, (m, b) in enumerate(self.beats) if b is snap), len(self.beats))
+        prev = next((b for m, b in reversed(self.beats[:pos]) if b.get("turn") is not None and turn is not None
+                     and b["turn"] < turn), None)
+        if prev is None:
+            self.when.configure(text=self.when.cget("text").split("   (")[0] + "   (no beat before this one to replay)")
+            return
+        before = {f["name"]: f for f in prev["fighters"]}
+        landed = False
+        for f in snap["fighters"]:
+            card = self.cards.get(f["name"])
+            if card is None:
+                continue
+            card.hits = impacts(before.get(f["name"]), f)
+            landed = landed or bool(card.hits[0]) or card.hits[1] > 0
+            card.draw(f)
+        self._repaint_cards()
+        base = self.when.cget("text").split("   (")[0]
+        self.when.configure(text=base + ("" if landed else "   (nothing landed in this beat)"))
 
     def _rules(self):
         s = getattr(getattr(self, "game", None), "session", None)
@@ -2038,6 +2137,7 @@ class App:
                 self.effect_flags[name].set(on)
         except Exception as e:
             note_failure("turning an effect on or off (the Effects button)", e)
+        self._show_badge()
         self.redraw_cards()
 
     def redraw_cards(self):

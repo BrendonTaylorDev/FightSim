@@ -923,6 +923,90 @@ def mark(eng):
         state(f)["e_last"] = round(float(f.energy), 2)
 
 
+def status_numbers(eng, f, key):
+    """(since build 324, window.explain) What one of the body's statuses is doing to her right now, with its own
+    numbers: how far along it is and what that makes of her blows, dodging, pain and breath. [] for a status this
+    file doesn't run."""
+    st = f.learned.get("body") or {}
+    p = lambda m: f"{abs(1 - m) * 100:.0f}%"
+    out = []
+    if key in ("short_of_air", "starved_of_air"):
+        c = cfg(eng, "air")
+        if c:
+            a = float(st.get("air", 100))
+            k = float(c["power_min"]) + (1 - float(c["power_min"])) * min(1.0, a / float(c["low"]))
+            kd = float(c["dodge_min"]) + (1 - float(c["dodge_min"])) * min(1.0, a / float(c["low"]))
+            out.append(f"air {a:.0f}% (short below {float(c['low']):.0f}): blows {p(k)} weaker, dodging {p(kd)} worse")
+    elif key in ("pale", "light_headed", "bleeding"):
+        c = cfg(eng, "blood")
+        if c:
+            out.append(f"blood {float(st.get('blood', 100)):.0f}% (weakens below {float(c['low']):.0f}, pale below "
+                       f"{float(c['pale']):.0f}): blows {p(_blood_k(c, st, 'power_min'))} weaker, dodging "
+                       f"{p(_blood_k(c, st, 'dodge_min'))} worse")
+            bl = st.get("bleed") or {}
+            if bl:
+                out.append("bleeding from " + ", ".join(f"her {k.lower()} ({v:.2f} a beat)" for k, v in bl.items()))
+    elif key in ("keyed_up", "adrenaline", "adrenaline_crash"):
+        c = cfg(eng, "adrenaline")
+        if c:
+            ad = float(st.get("adrenaline", 0))
+            out.append(f"adrenaline {ad:.0f} (keyed up from {float(c['high']):.0f}): blows "
+                       f"{float(c['power']) * ad:.0f}% harder, the pain counting {float(c['pain']) * ad:.0f}% less "
+                       f"against her, her heart quicker")
+            if key == "adrenaline_crash":
+                out.append(f"crashing: energy back {p(float(c['crash_regen']))} slower, blows 5% weaker")
+    elif key in ("flushed", "heat_exhausted", "shivering", "numbed"):
+        c = cfg(eng, "heat")
+        if c:
+            t = _temp(f)
+            out.append(f"core {float(c['normal']) + t:.1f}°C ({t:+.1f} from her normal; flushed from "
+                       f"+{float(c['warm']):.1f}, heat-exhausted from +{float(c['hot']):.1f}, shivering from "
+                       f"{float(c['chill']):.1f}): blows {p(_heat_k(eng, f, 'power_min'))} weaker, dodging "
+                       f"{p(_heat_k(eng, f, 'dodge_min'))} worse, energy back {p(_heat_k(eng, f, 'regen_min'))} slower")
+    elif key == "unsteady":
+        c = cfg(eng, "footing")
+        if c:
+            low = _footing(f) < float(c["low"])
+            out.append(f"footing {_footing(f):.0f}% (unsteady below {float(c['unsteady']):.0f}): a blow "
+                       f"{p(footing_mult(eng, f, 'stumble'))} likelier to stagger her, "
+                       f"{p(footing_mult(eng, f, 'keep_feet'))} less likely to keep her feet"
+                       + (f", blows {p(_footing_k(c, f, 'power_min'))} weaker, dodging "
+                          f"{p(_footing_k(c, f, 'dodge_min'))} worse" if low else ""))
+    elif key == "unnerved":
+        c = cfg(eng, "mind")
+        if c:
+            cp = _composure(f)
+            out.append(f"composure {cp:.0f} (unnerved below {float(c['unnerved']):.0f}): blows "
+                       f"{p(float(c['power_min']))} weaker, dodging {p(float(c['dodge_min']))} worse, fear reactions "
+                       f"x{mind_chance(eng, f, 'shaken'):.2f} as likely, she gives in to a hold "
+                       f"{float(c['tap']) * (1 - cp / 100.0) * 100:.0f}% sooner")
+    elif key.startswith("tired_"):
+        c, limb = cfg(eng, "limbs"), key[6:]
+        if c:
+            x = float((st.get("limbs") or {}).get(limb, 0))
+            k = _tired(c, x)
+            out.append(f"her {LIMB_WORD.get(limb, limb)} {x:.0f}% worn (tired from {float(c['tired']):.0f}): blows "
+                       f"with them {p(1 - (1 - float(c['power_min'])) * k)} weaker"
+                       + (f", dodging {float(c['dodge_legs']) * k * 100:.0f}% worse" if limb == "legs" else "")
+                       + (f", her grips {float(c['grip_break']) * k * 100:.0f}% easier to break"
+                          if limb in GRIP_LIMB.values() and limb != "head" else ""))
+    elif key == "swollen":
+        c = cfg(eng, "tissue")
+        sw = st.get("swell") or {}
+        if c and sw:
+            out.append("swelling: " + ", ".join(f"her {k.lower()} {v:.0f}" for k, v in
+                                                 sorted(sw.items(), key=lambda kv: -kv[1])[:3])
+                       + f" (stiff from {float(c['from']):.0f}, swollen from {float(c['swollen']):.0f})")
+    elif key == "broken_bone":
+        fr = f.learned.get("fractures") or {}
+        if fr:
+            out.append("broken: " + ", ".join(f"her {k.lower()} (beat {v})" for k, v in fr.items()))
+    # (what isn't changed at all yet isn't said: "blows 0% weaker")
+    out = [re.sub(r"(?:,| and)? [a-z' ]+? 0% (?:weaker|worse|slower|sooner|harder|less|likelier|less likely)"
+                  r"(?: [a-z' ]+?)?(?=,|$)", "", x) for x in out]
+    return [re.sub(r": ?$", "", re.sub(r":,", ":", x)).strip() for x in out]
+
+
 def card(f):
     """For the card and the snapshot: her air and her limbs."""
     st = f.learned.get("body") or {}

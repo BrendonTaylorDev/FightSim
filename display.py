@@ -98,6 +98,33 @@ class Display:
         """A status as words ("doubled over", not "doubled_over")."""
         return self.STATUS_WORD.get(status, str(status).replace("_", " "))
 
+    # (since build 324) a status said as a sentence about her: "Ripples has a dead arm", "Ripples' ribs are aching",
+    # not "Ripples is dead arm"; {n} her name, {p} her name's possessive. Anything not here: "Ripples is <word>".
+    STATUS_SAY = {
+        "dead_arm": "{n} has a dead arm", "dead_leg": "{n} has a dead leg", "bite_wounds": "{n} has bite wounds",
+        "blood_in_eye": "{n} has blood in her eye", "broken_bone": "{n} has a broken bone",
+        "grit_in_eyes": "{n} has grit in her eyes", "head_rush": "{n} has a head rush",
+        "headache": "{n} has a headache", "nosebleed": "{n} has a nosebleed",
+        "pins_and_needles": "{n} has pins and needles", "stinging_cuts": "{n} has stinging cuts",
+        "sting_swelling": "{n} has a stinging swelling", "joint_strained": "{n} has a strained joint",
+        "throat_raw": "{p} throat is raw", "throat_struck": "{n} was struck in the throat",
+        "swollen_eye": "{p} eye is swelling shut", "ears_ringing": "{p} ears are ringing",
+        "eyes_watering": "{p} eyes are watering", "jaw_rattled": "{p} jaw is rattled",
+        "ribs_aching": "{p} ribs are aching", "back_spasm": "{p} back is in spasm", "tail_numb": "{p} tail is numb",
+        "wobbly": "{p} legs are going", "adrenaline_crash": "{n} is crashing from the adrenaline",
+        "adrenaline": "{n} has adrenaline surging", "tired_arms": "{p} arms are tired", "tired_legs": "{p} legs are tired",
+        "tired_jaws": "{p} jaws are tired", "tired_head": "{p} neck is tired", "tired_tail": "{p} tail is tired",
+        "tired_wings": "{p} wings are tired", "wary_of_grip": "{n} is wary of the grip",
+        "protecting": "{n} is protected", "countering": "{n} is set to counter", "fury": "{n} is furious",
+        "airborne": "{n} is up in the air", "bleeding": "{n} is bleeding", "head_blow": "{n} took a blow to the head",
+    }
+
+    def says(self, name, status):
+        """A status as a sentence about her (STATUS_SAY): "Ripples has a dead arm"."""
+        from engine import poss_word
+        t = self.STATUS_SAY.get(status)
+        return t.format(n=name, p=poss_word(name)) if t else f"{name} is {self.sw(status)}"
+
     STATUS_ICON = {"bound": "🪢", "fury": "😤", "breathless": "😮", "dazed": "💫", "doubled_over": "🤕", "off_balance": "🌀", "staggered": "🥴", "protecting": "🛡️", "countering": "↩️", "mirroring": "🪞", "stiff": "🪵", "cramped": "🦵", "sputtering": "💦", "constricted": "🐍", "airborne": "🪽",
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥", "greyed": "🌫️", "last_stand": "🩸", "overextended": "🫥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️",
@@ -560,7 +587,7 @@ class Display:
         if e.get("hits_on_pinner"):
             out += self.hits_block(e["hits_on_pinner"][0].get("defender", e["attacker"]), e["hits_on_pinner"])
         for x in e.get("aftereffects") or []:
-            out.append(f"- {self.STATUS_ICON.get(x['status'], '✳️')} **{x['fighter']} is {self.sw(x['status'])}** ({x['beats']} "
+            out.append(f"- {self.STATUS_ICON.get(x['status'], '✳️')} **{self.says(x['fighter'], x['status'])}** ({x['beats']} "
                        f"beat{'s' if x['beats'] != 1 else ''})"
                        + {"stiff": ": trapped limbs numb and slow after the pin",
                           "fury": ": a cold, hard anger after being held down so long (harder blows)"}.get(
@@ -1183,7 +1210,7 @@ class Display:
                                                   if a.get("holds_moved") else ""))
 
         for s in a.get("status_applied", []) or []:
-            out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{s['fighter']} is {self.sw(s['status'])}** ({s['beats']} beat{'s' if s['beats'] != 1 else ''}"
+            out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{self.says(s['fighter'], s['status'])}** ({s['beats']} beat{'s' if s['beats'] != 1 else ''}"
                        + (f"; from {s['hazard']}" if s.get("hazard") else "")
                        + (f": {s['stumble']['steps']} {s['stumble']['way']}" if s.get("stumble") else "") + ")")
         if (a.get("ground_back") or {}).get("hits"):
@@ -1193,7 +1220,8 @@ class Display:
                        + (" (shallow water softens it)" if gb.get("in_water") == "shallow" else ""))
         if a.get("rocked"):
             rk = a["rocked"]
-            out.append(f"↪️ {rk['fighter']} rocked by the {rk['part'].lower()} hit: {rk['how']}")
+            out.append(f"↪️ {rk['fighter']} is rocked by the blow to her {rk['part'].lower()}: {rk['how']}"
+                       if rk.get("part") else f"↪️ {rk['fighter']} is rocked by the blow: {rk['how']}")
         if a.get("side_hits"):
             out.append(f"↘️ The blow carries on into {a.get('defender')}'s side as it moves her: "
                        f"{', '.join(a['side_hits'])} (moves.side_spill)")
@@ -1436,7 +1464,7 @@ class Display:
                 for who, hs in by.items():
                     out += self.hits_block(who, hs)
                 for s in e.get("status_applied") or []:
-                    out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{s['fighter']} is {self.sw(s['status'])}** "
+                    out.append(f"{self.STATUS_ICON.get(s['status'], '✳️')} **{self.says(s['fighter'], s['status'])}** "
                                f"({s['beats']} beat{'s' if s['beats'] != 1 else ''})")
                 if not e.get("hits") and not e.get("status_applied"):
                     out.append("- nobody is hurt by it")
@@ -1611,6 +1639,9 @@ class Display:
         fs = [engine.get(name)] if name else list(engine.fighters.values())
         out = []
         multi_team = any(f.team != f.name for f in engine.fighters.values())
+        badge = engine.match_badge() if not name and hasattr(engine, "match_badge") else None
+        if badge:
+            out += [badge, ""]       # (since build 324, window.match_badge) the kind of fight, always in sight
         for f in fs:
             team = f" — team {f.team}" if multi_team else ""
             out_tag = f" ❌ out ({engine.recovery_stage(f)['label']})" if f.eliminated else ""

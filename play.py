@@ -30,8 +30,10 @@ import narrator as narrator_mod
 import llm
 import polish
 import body as _body
+import explain
+import limbreport as _limbreport
 
-VERSION = "2026-10-29 build 323 (setup asks the weather and the body)"
+VERSION = "2026-10-29 build 324 (limb reports, status hovers, replay hits, match badge)"
 
 HELP = """
 =============================================================================================
@@ -477,6 +479,7 @@ HELP = """
 =============================================================================================
   /status [full|name]   health, worst injuries, pins and positions
   /explain [name|status]   what each status on her does and what her heart, blood pressure and breathing mean
+  /limb <name> [part]      one part in detail: damage, how it looks, what it is doing, grips, what it does to her
   /traits [name]        how each fighter fights: her traits, quirks, style and favourite moves (since build 280)
   /profile [name]       all that, and who she is: personality, history, relationships (the window: Profiles)
   /health [name]        every damaged body part, in stat format
@@ -652,9 +655,28 @@ def fight_snapshot(s, label=None):
             # the grips on her and by her, a pin, how near she is to tapping, how far from the others
             # (window.hold_panel): the window's hold panel and tap meter
             "grips": eng.card_state(f) if hasattr(eng, "card_state") else None,
+            # (since build 324) each part in detail and each status with its numbers now, for the window's hovers
+            # (window.limb_report, window.explain) and /limb
+            "limb_report": _limbreport.reports(eng, f) if _limbreport.enabled(eng.rules) else None,
+            "status_tips": _status_tips(eng, f),
         })
     return {"turn": int(getattr(eng, "turn", 0) or 0), "fighters": out,
-            "label": label or f"after beat {getattr(eng, 'turn', 0)}"}
+            "label": label or f"after beat {getattr(eng, 'turn', 0)}", "match": match_badge(eng)}
+
+
+def _status_tips(eng, f):
+    if not (eng.rules.get("window") or {}).get("explain", True):
+        return None
+    try:
+        return explain.status_tips(eng, f)
+    except Exception as e:
+        note_failure("writing the status tips for the window", e)
+        return None
+
+
+def match_badge(eng):
+    """(since build 324, window.match_badge) The match, arena and weather in one line (Engine.match_badge)."""
+    return eng.match_badge()
 
 
 class Session:
@@ -2529,13 +2551,7 @@ def ask_scene(s, read=None):
 
 def _match_kind(eng):
     """What kind of match the rules make now, in a few words (for the setup questions)."""
-    if eng.submission_match():
-        if eng.sub_knockouts():
-            return "anything goes (knockout, " + ("" if eng.no_pins() else "pin, ") + "or tap-out)"
-        return f"submission ({eng.taps_needed()} taps)" if eng.taps_needed() > 1 else "submission"
-    if eng.ko_only():
-        return "knockout only" + (", no pins" if eng.no_pins() else "")
-    return "pins and knockouts"
+    return eng.match_kind()
 
 
 BODY_WORDS = {"air": "breath", "heart": "heart rate", "blood": "bleeding", "adrenaline": "adrenaline",
@@ -3422,7 +3438,9 @@ def _save_rules_key(keys, value):
 EFFECTS = {"all": ["window", "alive", "enabled"], "breathing": ["window", "alive", "breathing"],
            "pulse": ["window", "alive", "pulse"], "impact": ["window", "alive", "impact"],
            "grey": ["window", "alive", "grey_in"], "grips": ["window", "alive", "grip_outline"],
-           "monitor": ["window", "alive", "heart_monitor"], "settling": ["narration", "settling_in", "enabled"]}
+           "monitor": ["window", "alive", "heart_monitor"], "settling": ["narration", "settling_in", "enabled"],
+           # (since build 324) the hold picture (the body figure beside a grip's gauges), and the match badge
+           "holdpic": ["window", "hold_picture"], "badge": ["window", "match_badge"]}
 
 
 def effects_state(rules):
@@ -3898,8 +3916,31 @@ def handle_command(s, line):
                              f"{', '.join(sorted(s.eng.STATUS_LOOK))})")
         for f in rows:
             m = cards.tap_meter(f) or {}
-            print(f"=== {f['name']} ===\n" + explain.statuses_text(f.get("status") or {}, s.eng.rules) + "\n\n"
+            tips = f.get("status_tips") or {}
+            print(f"=== {f['name']} ===\n" + ("\n\n".join(tips.values()) if tips else
+                                              explain.statuses_text(f.get("status") or {}, s.eng.rules)) + "\n\n"
                   + explain.vitals_text(cards.body_signs(f, cards.alive_opts(s.eng.rules)), m.get("vitals")) + "\n")
+        return
+    if cmd in ("limb", "part"):
+        # (since build 324, window.limb_report) one part in detail: how hurt, how it looks, what it is doing, the
+        # grips on it and what it does to her (the window shows the same when you hover a part's label)
+        import limbreport
+        if not a:
+            raise ValueError("/limb <fighter> [part]: e.g. /limb Ripples left foreleg (no part: her hurt parts)")
+        f = s.eng.get(_clean_name(a[0]))
+        if f is None:
+            raise ValueError(f"no fighter called '{a[0]}'")
+        if len(a) > 1:
+            part = limbreport.find_part(f, a[1:])
+            if part is None:
+                raise ValueError(f"{f.name} has no part like '{' '.join(a[1:])}' (her parts: {', '.join(f.parts)})")
+            print("\n".join(limbreport.report(s.eng, f, part)))
+            return
+        hurt = sorted((p for p in f.parts.values() if p.damage >= 30), key=lambda p: -p.damage)
+        if not hurt:
+            print(f"{f.name}: no part hurt past sore yet (/limb {f.name} <part> for any one).")
+        for p in hurt:
+            print("\n".join(limbreport.report(s.eng, f, p.name)) + "\n")
         return
     if cmd == "status":
         if not a:

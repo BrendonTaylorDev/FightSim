@@ -654,17 +654,37 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
-## Build 323
-The setup questions at the start now ask the weather and the body, and both are kept in my_settings.json (so they
-hold across new builds, and override rules.json, as everything you set does).
-- **Weather>** after the arena: the arena's own (the default), random, clear, rain, storm, snow, heat or wind. Not
-  asked for an indoor arena. A preset asks it too.
-- **THE BODY:** each part of the simulated body listed with whether it is on: air, heart, blood, adrenaline, tissue
-  (swelling), bones, footing, heat, mind (composure), limbs. Enter keeps them; all, none, off <names> or on <names>
-  (e.g. off heat mind).
-- **The same at any time:** /weather and /body (new), both saved.
-- A questions list kept in my_settings.json from before still gets the two new questions, where they go
-  (setup.skip lists any you never want added that way).
+## Build 324
+More of the fight you can see without remembering it, and a fix to the hold picture.
+- **Replay hits** (a button beside Effects): the blows of the beat shown flash and jolt on the cards again. It
+  works on any beat in the history. It needs the Effects menu's "Blows: flash and jolt" on.
+- **Each part in detail.** Hover over a part's label, or its dot on her picture, for that part's report:
+  - its damage and resistance, and what its wounds have cost her in health;
+  - what did it and when;
+  - how it looks now;
+  - what it is doing: throbbing with her heartbeat, swelling, bleeding, singed, frost-numbed, cut, punctured,
+    numb, broken, tired from use, wet;
+  - the grips on it;
+  - what it does to the rest of her, with the numbers: her blows and dodging with that limb, her pain, her blood
+    and breath, her nerve (composure), and the statuses it has given her.
+  - The console has the same: /limb Ripples left hip (or /limb Ripples for every hurt part).
+  - window.limb_report.enabled false = the old two-number tip.
+- **Each status its own hover.** The status line under each card is now one hover per status: what it is, what it
+  does to her numbers, and, for the body's own statuses, where she is right now (keyed up: her adrenaline and how
+  much harder she hits; unnerved: her composure and how much sooner she gives in; flushed: her core temperature;
+  unsteady: her footing; short of air: her air; pale: her blood). /explain prints the same. Hovering her posture
+  still shows them all at once.
+- **The match badge.** A line over the cards, and at the top of the console's stat block, saying what kind of fight
+  it is and how it ends (knockout only, submission, pins and knockouts...), the arena and the weather.
+  window.match_badge, or the Effects menu.
+- **The hold picture can be switched off** from the Effects menu ("Hold picture"), or /effects holdpic off. Only
+  the body figure beside a grip goes; the coils' squeeze picture and the heart monitor stay.
+- **Fix:** a coil submission (Seraphina's upright coil round Ripples' ribs and hip) was drawn as "forcing a joint",
+  with her leg bent back. A coil now squeezes in the picture: round her body, it crushes; round a limb alone, it
+  binds; round her neck, it chokes.
+- **Fix:** the status lines in the numbers read as sentences: "Ripples has a dead arm", "Ripples has stinging
+  cuts", "Ripples' ribs are aching", "Ripples is rocked by the blow to her right hip", not "Ripples is dead arm" or
+  "Ripples rocked by the right hip hit".
 
 ## Build 323
 The setup questions at the start now ask the weather and the body, and both are kept in my_settings.json (so they

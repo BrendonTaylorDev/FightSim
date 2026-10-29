@@ -800,6 +800,55 @@ def presets_help_check():
     return problems
 
 
+def limb_324_check():
+    """Build 324: each part's report (window.limb_report) says how hurt it is, what it cost her, how it looks, what it
+    is doing, the grips on it and what that does to her; every status has a tip with her own numbers; the match badge
+    says the kind of fight; a coil submission's hold picture squeezes, it never forces a joint; /limb prints it."""
+    import play
+    import cards
+    import limbreport
+    problems = []
+    s = H.session(1, fighters="Seraphina,Ripples")
+    s.eng.rules["finish"]["submission"]["enabled"] = True
+    H.beat(s, [{"attacker": "Seraphina", "defender": "Ripples", "action": "strike", "move": "Dragon Rush",
+                "part": "Left Hip", "severity": "heavy"}], [])
+    try:
+        s.eng.start_submission("Seraphina", "Ripples", "upright coil")
+    except ValueError:
+        s.eng.start_submission("Seraphina", "Ripples", "coil crush")     # (on her feet: the standing one)
+    H.beat(s, [{"attacker": "Seraphina", "defender": "Ripples", "action": "breather", "flavor": "squeezes"}], [])
+    snap = play.fight_snapshot(s)
+    r = next(f for f in snap["fighters"] if f["name"] == "Ripples")
+    rep = (r.get("limb_report") or {}).get("Left Hip") or ""
+    for want in ("Damage", "cost her", "Looks:", "Now:", "Grips: Seraphina's ", "What it does to her"):
+        if want.replace("upright coil", "") not in rep:
+            problems.append(f"the left hip's report should say '{want}': {rep[:300]!r}")
+    if "her her" in rep:
+        problems.append("the report doubles 'her' before what the grip is made with")
+    if not r.get("status_tips") or set(r["status_tips"]) != set(r["status"]):
+        problems.append(f"every status should have its own tip: {list(r.get('status_tips') or {})} vs {list(r['status'])}")
+    if not str(snap.get("match") or "").startswith("MATCH: submission"):
+        problems.append(f"the match badge should say it is a submission match: {snap.get('match')}")
+    for g in (r.get("grips") or {}).get("held") or ():
+        if cards.grip_kind(g) == "lock":
+            problems.append(f"a coil submission's picture should squeeze, not force a joint: {g}")
+    f = s.eng.get("Ripples")
+    if limbreport.find_part(f, ["left", "hip"]) != "Left Hip" or limbreport.find_part(f, ["hip", "left"]) != "Left Hip":
+        problems.append("/limb should find a part from its words in either order")
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        play.handle_command(s, "/limb Ripples left hip")
+    if "RIPPLES: LEFT HIP" not in buf.getvalue():
+        problems.append("/limb Ripples left hip should print the hip's report")
+    import body as B
+    f.learned.setdefault("body", {})["composure"] = 20
+    f.status["unnerved"] = 2
+    nums = B.status_numbers(s.eng, f, "unnerved")
+    if not nums or "composure 20" not in nums[0] or " 0% " in nums[0]:
+        problems.append(f"unnerved's tip should give her composure and what it does, nothing at 0%: {nums}")
+    return problems
+
+
 def setup_323_check():
     """Build 323: the setup asks the weather and the body (a questions list kept from before gets them too), and
     /weather and /body set them and keep them in my_settings.json (here the harness's throwaway copy)."""
@@ -814,18 +863,6 @@ def setup_323_check():
         return _setup_323(play, B, W, problems)
     finally:       # (the saved choices, in my_settings.json and rules.json, must not reach the checks after this one)
         open(rules_path, "w", encoding="utf-8").write(rules_before)
-        if before is None:
-            if os.path.exists(play.MY_SETTINGS):
-                os.remove(play.MY_SETTINGS)
-        else:
-            open(play.MY_SETTINGS, "w").write(before)
-
-
-def _setup_323(play, B, W, problems):
-    before = open(play.MY_SETTINGS).read() if os.path.exists(play.MY_SETTINGS) else None
-    try:
-        return _setup_323(play, B, W, problems)
-    finally:       # (the saved choices must not reach the checks after this one)
         if before is None:
             if os.path.exists(play.MY_SETTINGS):
                 os.remove(play.MY_SETTINGS)
@@ -4262,6 +4299,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "limb324" for w in want):
+        t = time.time()
+        probs = limb_324_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 324: limb reports, status tips with numbers, match badge, coil picture  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "setup323" for w in want):

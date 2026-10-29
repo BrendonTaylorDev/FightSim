@@ -305,3 +305,23 @@ def vitals_text(sg, v=None):
     out.append("(These are the story's numbers: they follow the gauges that decide the fight, but nothing is rolled "
                "against them.)")
     return "\n\n".join(out)
+
+
+def status_tips(eng, f):
+    """(since build 324) {status: its tip} for every status on her, each with what it is doing to her right now in
+    her own numbers where the body runs it (body.status_numbers: her composure, her core heat, her adrenaline...),
+    for the window's hover over each status (kept in the snapshot, so a past beat shows its own)."""
+    import body
+    out = {}
+    for k, v in (f.status or {}).items():
+        t = status_text(k, v, eng.rules)
+        try:
+            now = body.status_numbers(eng, f, k)
+        except Exception as e:
+            from engine import note_failure
+            note_failure("working out a status's numbers (window.explain)", e)
+            now = []
+        if now:
+            t += "\nRight now: " + "; ".join(now) + "."
+        out[k] = t
+    return out
