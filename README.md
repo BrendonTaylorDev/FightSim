@@ -654,6 +654,16 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 307
+The effects from build 306 can each be turned off without editing settings.
+- **The Effects button** above the cards (beside Poses) opens a list with a tick for each: breathing, pain pulsing
+  with her heart, the flash and jolt of blows, the grey closing in, grip rings in the holder's colours, the heart
+  monitor, and the injuries settling in (the story). "All of them" turns every one off or on. The cards change at once.
+- **`/effects`** does the same from the game's prompt: `/effects` alone shows what is on, `/effects off` (or `on`)
+  turns them all off, `/effects monitor off` or `/effects breathing grey off` turns off just those. The names are
+  breathing, pulse, impact, grey, grips, monitor and settling. The window picks the change up within a second.
+- Either way the choice is kept for next time (in my_settings.json, as /set keeps things).
+
 ## Build 306
 The fighter cards come alive, all from her own artwork (nothing new drawn over it), and the prose shows hurts coming
 on. Every piece is a switch in rules.json `window.alive` (with `enabled` false for none of it).

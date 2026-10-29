@@ -893,6 +893,28 @@ def alive_306_check():
     snap = play.fight_snapshot(s)
     if not all("heart_rest" in x for x in snap["fighters"]):
         problems.append("the snapshot should carry each fighter's resting heart rate")
+    # /effects: each piece, or all of them, on and off
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        play.handle_command(s, "/effects grey off")
+        play.handle_command(s, "/effects")
+    al = e.rules["window"]["alive"]
+    if al["grey_in"] is not False or al["breathing"] is not True or "grey off" not in out.getvalue():
+        problems.append(f"/effects grey off should turn only the grey off and say so: {out.getvalue()!r}")
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.handle_command(s, "/effects off")
+    if al["enabled"] or al["heart_monitor"] or e.rules["narration"]["settling_in"]["enabled"]:
+        problems.append("/effects off should turn every effect off, the settling-in notes too")
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.handle_command(s, "/effects on")
+    if not (al["enabled"] and al["grey_in"] and e.rules["narration"]["settling_in"]["enabled"]):
+        problems.append("/effects on should turn them all back on")
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            play.handle_command(s, "/effects sparkles off")
+        problems.append("/effects with an unknown effect should say what it takes")
+    except ValueError:
+        pass
     return problems
 
 

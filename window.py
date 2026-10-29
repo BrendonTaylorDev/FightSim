@@ -563,6 +563,9 @@ class FighterCard(ttk.Frame):
         """Get her picture's living frames ready for _alive_tick: her signs (cards.body_signs), each picture with
         what its frames are made from, and this beat's blows (self.hits, set by App.show) to jolt and flash."""
         o = self._alive_cfg()
+        if not getattr(self, "_alive_running", False):
+            self._alive_running = True        # (always ticking, so /effects turned on later is picked up)
+            self.after(30, self._alive_tick)
         if not o.get("enabled", True):
             self._alive = None
             return
@@ -577,9 +580,6 @@ class FighterCard(ttk.Frame):
             mine = [(q, s) for q, s in hits if q in p["spots"]]
             p["flash_l"] = flash_layer(p["src"], p["spots"], mine) if mine and p.get("src") is not None else None
         self._alive = {"sg": sg, "o": o, "pics": pics, "t0": _time.monotonic(), "jolt": jolt if hits else 0.0}
-        if not getattr(self, "_alive_running", False):
-            self._alive_running = True
-            self.after(30, self._alive_tick)
 
     def _alive_frame(self, p, bq, tq, fq):
         """One frame of a picture: her hurts glowing brighter by tq, a blow's flash by fq, breathed in by bq, the
@@ -615,6 +615,13 @@ class FighterCard(ttk.Frame):
                 return
             al = self._alive
             fps = 12
+            self._tickn = getattr(self, "_tickn", 0) + 1
+            o_now = self._alive_cfg() if self._tickn % 12 == 0 else None      # (about once a second)
+            if o_now is not None and self.data \
+                    and (al["o"] if al else None) != (o_now if o_now.get("enabled", True) else None):
+                # (/effects or /set changed the effects: draw the card again with them)
+                self.draw(self.data)
+                al = self._alive
             if al:
                 o, sg = al["o"], al["sg"]
                 fps = max(4, min(30, int(o.get("fps", 12))))
@@ -1246,11 +1253,6 @@ class App:
         self.weak_look = _Flag(value=bool(o.get("weak_look", True)))
         self.damage_marks = _Flag(value=bool(o.get("damage_marks", True)))
         self.poses = _Flag(value=bool(o.get("poses", True)))
-        ttk.Checkbutton(top, text="Poses", variable=self.poses, command=self.redraw_cards).pack(side="right")
-        ttk.Checkbutton(top, text="Damage marks", variable=self.damage_marks, command=self.redraw_cards).pack(side="right")
-        ttk.Checkbutton(top, text="Back view", variable=self.back_view, command=self.redraw_cards).pack(side="right")
-        ttk.Checkbutton(top, text="Weakened look", variable=self.weak_look,
-                        command=self.redraw_cards).pack(side="right")
         self.follow = _Flag(value=True)
         # (since build 273) the cards' size, so both fit on one screen (window.card_zoom, kept between runs)
         try:
@@ -1277,6 +1279,29 @@ class App:
         for at, c, n in RES_STEPS:
             tk.Label(legend, text=" " + n.split(" ")[0] + " ", bg=C("#ffffff"), fg=C("#111827"), font=("Segoe UI", 7),
                      highlightbackground=c, highlightthickness=2).pack(side="left", padx=1)
+        # (since build 307) the picture switches on a row of their own under the legend (on the bar above they
+        # pushed the beat arrows off it), with the Effects button
+        row = ttk.Frame(left)
+        row.pack(fill="x", pady=(3, 0))
+        ttk.Checkbutton(row, text="Weakened look", variable=self.weak_look, command=self.redraw_cards).pack(side="left")
+        ttk.Checkbutton(row, text="Back view", variable=self.back_view, command=self.redraw_cards).pack(side="left")
+        ttk.Checkbutton(row, text="Damage marks", variable=self.damage_marks, command=self.redraw_cards).pack(side="left")
+        ttk.Checkbutton(row, text="Poses", variable=self.poses, command=self.redraw_cards).pack(side="left")
+        # (since build 307) the living cards' pieces and the settling-in notes on or off (play.EFFECTS, as /effects)
+        self.effects_btn = ttk.Menubutton(row, text="Effects")
+        menu = tk.Menu(self.effects_btn, tearoff=False, postcommand=self._sync_effects)
+        self.effects_btn["menu"] = menu
+        self.effect_flags = {}
+        names = {"all": "All of them", "breathing": "Breathing", "pulse": "Pain pulsing with her heart",
+                 "impact": "Blows: flash and jolt", "grey": "The grey closing in", "grips": "Grip rings in the holder's "
+                 "colours", "monitor": "Heart monitor", "settling": "Injuries settling in (the story)"}
+        for k, on in play.effects_state(self._rules()):
+            self.effect_flags[k] = _Flag(value=on)
+            menu.add_checkbutton(label=names.get(k, k), variable=self.effect_flags[k],
+                                 command=lambda k=k: self.effect_changed(k))
+            if k == "all":
+                menu.add_separator()
+        self.effects_btn.pack(side="left", padx=(10, 0))
 
         holder = ttk.Frame(left)
         holder.pack(fill="both", expand=True, pady=(6, 0))
@@ -1790,6 +1815,7 @@ class App:
             card.hits = impacts(card.data, f) if step and card.data else ([], 0.0)
             card.draw(f)
         self._shown_turn = turn
+        self._sync_effects()
         self._repaint_cards()
         self.when.configure(text=("Now" if live else
                                   f"Beat {index} of {len(self.beats)}: as it stood {snap['label']}" if index else
@@ -1826,6 +1852,26 @@ class App:
             play._save_rule_path(["window", "card_zoom"], self.card_zoom)
         except Exception as e:
             note_failure("saving the card size (window.card_zoom)", e)
+        self.redraw_cards()
+
+    def _sync_effects(self):
+        """The Effects menu's ticks as the settings are now (/effects typed in the game changes them too)."""
+        try:
+            for name, on in play.effects_state(self._rules()):
+                if name in getattr(self, "effect_flags", {}):
+                    self.effect_flags[name].set(on)
+        except Exception as e:
+            note_failure("showing which effects are on (the Effects button)", e)
+
+    def effect_changed(self, k):
+        """The Effects button: one effect on or off (play.set_effect, kept like /set), then the cards drawn again."""
+        try:
+            rules = self._rules()
+            play.set_effect(rules, k, bool(self.effect_flags[k].get()))
+            for name, on in play.effects_state(rules):
+                self.effect_flags[name].set(on)
+        except Exception as e:
+            note_failure("turning an effect on or off (the Effects button)", e)
         self.redraw_cards()
 
     def redraw_cards(self):

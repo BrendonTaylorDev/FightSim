@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-29 build 306 (living cards, a heart monitor on every card, injuries settling in)"
+VERSION = "2026-10-29 build 307 (the Effects button and /effects)"
 
 HELP = """
 =============================================================================================
@@ -476,6 +476,9 @@ HELP = """
   /health [name]        every damaged body part, in stat format
   /energy <name> [n]     give her n energy (25 if no number; -n takes it away; =n sets it), up to 100 (since build 298)
   /look [name]          the narrator describes the scene right now (doesn't advance the fight)
+  /effects [what] [on|off]  the living cards and the settling-in notes (since build 306): alone, what is on; with
+                        on/off, all of them; or one: breathing, pulse, impact, grey, grips, monitor, settling
+                        (the window: the Effects button above the cards)
 
 =============================================================================================
  UNDO, FILES, QUIT
@@ -3357,6 +3360,36 @@ def _save_rules_key(keys, value):
     return True
 
 
+# /effects and the window's Effects button (since build 306): each piece of window.alive, and the settling-in notes
+EFFECTS = {"all": ["window", "alive", "enabled"], "breathing": ["window", "alive", "breathing"],
+           "pulse": ["window", "alive", "pulse"], "impact": ["window", "alive", "impact"],
+           "grey": ["window", "alive", "grey_in"], "grips": ["window", "alive", "grip_outline"],
+           "monitor": ["window", "alive", "heart_monitor"], "settling": ["narration", "settling_in", "enabled"]}
+
+
+def effects_state(rules):
+    """[(effect, on)] for /effects and the window's Effects button ("all" is the switch for the cards' pieces)."""
+    out = []
+    for k, keys in EFFECTS.items():
+        node = rules
+        for x in keys[:-1]:
+            node = (node or {}).get(x) or {}
+        out.append((k, bool(node.get(keys[-1], True))))
+    return out
+
+
+def set_effect(rules, what, on):
+    """Turn one effect on or off (or every one, with "all": the cards' pieces and the settling-in notes), in this
+    session's rules and kept for next time (my_settings.json, as /set does)."""
+    for k in (list(EFFECTS) if what == "all" else [what]):
+        keys = EFFECTS[k]
+        node = rules
+        for x in keys[:-1]:
+            node = node.setdefault(x, {})
+        node[keys[-1]] = bool(on)
+        _save_rule_path(keys, bool(on))
+
+
 def _save_rule_path(keys, value):
     """Write one nested value back into rules.json, keeping the file's layout and comments.
     Returns False if it couldn't (the change still applies to this session)."""
@@ -4843,6 +4876,21 @@ def handle_command(s, line):
         before = f.energy
         f.energy = max(0.0, min(100.0, float(m.group(2)) if m.group(1) else f.energy + float(m.group(2))))
         print(f"{f.name}'s energy: {round(before)} -> {round(f.energy)}"); return
+    if cmd == "effects":
+        # (since build 306) the window.alive pieces and narration.settling_in on or off, kept like /set
+        if not a:
+            print("Effects: " + "   ".join(f"{k} {'on' if on else 'off'}" for k, on in effects_state(s.eng.rules)))
+            return
+        words = [x.lower() for x in a]
+        on = next((_parse_value(x) for x in words if x in ("on", "off", "true", "false", "yes", "no")), None)
+        what = [x for x in words if x not in ("on", "off", "true", "false", "yes", "no")] or ["all"]
+        bad = [x for x in what if x not in EFFECTS]
+        if bad or on is None:
+            raise ValueError("/effects [breathing|pulse|impact|grey|grips|monitor|settling|all] on|off")
+        for x in what:
+            set_effect(s.eng.rules, x, on)
+        print("Effects: " + "   ".join(f"{k} {'on' if v else 'off'}" for k, v in effects_state(s.eng.rules)))
+        return
     if cmd in ("look", "describe"):
         who = _clean_name(a[0]) if a else None
         if who:
