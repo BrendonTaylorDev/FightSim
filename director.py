@@ -823,6 +823,13 @@ def coil_size_hint(engine):
                            f"{poss_word(d.name)} limbs, so her coils can't wrap one arm, leg or tail alone. When she "
                            f"coils {d.name}, the coils go round {poss_word(d.name)} MIDDLE (chest or belly), and a "
                            f"limb can be bound in under them")
+    for a in act:
+        for d in act:
+            if a is not d and not (a.team and a.team == d.team) and engine.coil_too_small(a.name, d.name):
+                # (since build 314) the other way round: far too small to wind anything round her
+                out.append(f"{d.name} is many times {poss_word(a.name)} size: {poss_word(a.name)} tails or coils are "
+                           f"far too short to go round {poss_word(d.name)} body or neck. {a.name} grips with her paws "
+                           f"or jaws, or binds the thin end of {poss_word(d.name)} tail at most")
     if (((engine.rules.get("holds") or {}).get("busy_limbs") or {}).get("coils_use_tail", True)):
         # (since build 311) her coils are her tail: while they hold someone, she has no tail to strike with
         for f in engine.active():

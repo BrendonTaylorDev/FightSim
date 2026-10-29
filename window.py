@@ -688,7 +688,7 @@ class FighterCard(ttk.Frame):
         tips = self._explain_on()
         heart_tip = explain.heart_text(sg["heart"], sg["heart_rest"], sg["irregular"], sg["stopped"])
         row_tips = (explain.bp_text(sg["bp"], sg["bp_rest"]),
-                    explain.breath_text(sg["breath"], sg["breath_rest"], sg["depth"], sg["words"]))
+                    explain.breath_text(sg["breath"], sg["breath_rest"], sg["depth"], sg["words"], sg.get("air")))
         self._tip(c, c.create_text(6, 11, anchor="w", text=rd[0][0], font=("Segoe UI", 9, "bold"), fill=rd[0][1]),
                   heart_tip, tips)
         self._tip(c, c.create_text(6, 24, anchor="w", text=rd[1][0], font=("Segoe UI", 7), fill=rd[1][1]),

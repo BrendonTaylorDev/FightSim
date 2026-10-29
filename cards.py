@@ -1887,6 +1887,8 @@ STATUS_SIGNS.update({"panicking": (0.3, 0.6, "panicking"), "shaken": (0.12, 0.15
                      "angry": (0.15, 0.15, "angry"), "head_rush": (0.1, 0.2, "head rush"),
                      "nauseous": (0.08, 0.15, "nauseous"), "throat_raw": (0.05, 0.25, "throat raw"),
                      "overheated": (0.15, 0.4, "overheated"), "nosebleed": (0.0, 0.1, "nosebleed")})
+# (since build 314, body.air) short of air, she breathes fast and her heart works harder
+STATUS_SIGNS.update({"short_of_air": (0.12, 0.6, "short of air"), "starved_of_air": (0.25, 0.9, "starved of air")})
 TORSO_WORDS = ("chest", "rib", "stomach", "belly", "flank", "torso")
 
 
@@ -1984,7 +1986,8 @@ def body_signs(f, o=None, rest=None):
             "stopped": stopped, "bp": bp, "bp_rest": [120, 80], "breath": int(round(breath)),
             "breath_rest": int(br_rest), "depth": round(max(0.0, depth), 3), "grey": round(grey, 3),
             "throb": round(max(0.0, min(1.0, (pct - tf) / max(1.0, 100.0 - tf))), 3),
-            "words": list(dict.fromkeys(words)), "colour": colour, "coiled": bool(v)}
+            "words": list(dict.fromkeys(words)), "colour": colour, "coiled": bool(v),
+            "air": ((f.get("body") or {}).get("air"))}
 
 
 def breath_phase(rate, t):
@@ -2078,5 +2081,7 @@ def monitor_words(sg):
            (f"BP {sg['bp'][0]}/{sg['bp'][1]}", "#f9fafb" if sg["bp"][0] >= 90 else "#fca5a5", True),
            (f"normal {sg['bp_rest'][0]}/{sg['bp_rest'][1]}", "#9ca3af", False),
            (f"breathing {sg['breath']}/min" + (", shallow" if sg["depth"] < 0.6 and sg["breath"] else ""),
-            "#f9fafb", True), (f"normal {sg['breath_rest']}", "#9ca3af", False)]
+            "#f9fafb", True), (f"normal {sg['breath_rest']}" + (f" · air {sg['air']}%" if sg.get("air") is not None
+                                                                and sg["air"] < 95 else ""),
+                               "#fca5a5" if (sg.get("air") or 100) < 35 else "#9ca3af", False)]
     return out

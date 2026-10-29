@@ -13,6 +13,7 @@ import re
 from dataclasses import dataclass, field, asdict
 
 import reactions
+import body
 
 
 _FAILED_ONCE = set()
@@ -1430,6 +1431,7 @@ class Engine:
         self.move_log = (self.move_log + [(a.name, move["name"])])[-20:]
         energy_before = a.energy
         self._spend(a, self.energy_cost(move), enforce, move["name"])
+        body.on_attack(self, a, move)      # (since build 314, body.limbs) the limb she throws it with tires
         self._use_move(a, move)
         self._source = f"{poss_word(a.name)} {move['name']}"
         self._feint_open = None
@@ -3091,6 +3093,7 @@ class Engine:
             out.append(("burned", float(cfg.get("burned_power_mult", 0.85))))
         if move_type == "Electric" and self.has(d, "soaked"):
             out.append(("soaked", float(cfg.get("soaked_electric_mult", 1.5))))
+        out += body.power_mult(self, a, move)     # (since build 314) short of air; the limb she throws it with tired
         rc = reactions.cfg(self)
         if rc and rc.get("effects", True):
             # (since build 308, moves.reactions) her body's and her mind's reactions: sick, numb, shaken, angry...
@@ -3405,7 +3408,8 @@ class Engine:
                (float(sc.get("doubled_over_dodge_mult", 0.5)) if self.has(d, "doubled_over") else 1.0) * \
                (float(sc.get("greyed_dodge_mult", 0.3)) if self.has(d, "greyed") else 1.0) * \
                (self._low_cfg("last_stand").get("open_dodge_mult", 0.2) if self.has(d, "overextended") else 1.0) * \
-               reactions.mult(self, d, "dodge")     # (since build 308) twitching, shaken, a head rush...
+               reactions.mult(self, d, "dodge") * \
+               body.dodge_mult(self, d)     # (since build 314) short of air, her legs tired
         s = max(0.0, min(1.0, self.strength(d) / 100))
         # what she runs on: a biped's or a bird's fore_low is arms or wingtips, not legs
         feet = ("hind_up", "hind_low", "tail") + (("fore_low",) if self.body_plan(d) == "quadruped" else ())
@@ -5585,10 +5589,14 @@ class Engine:
                 continue     # (an upright hold needs the holder up: one lying on the ground can't stand behind her)
             lands = next((x for x in ("face-down", "face-up", "on her side") if x in s["facing"]), None) \
                 if stand and lie not in s["facing"] else None
+            if lands and self.too_big_to_take_down(a.name, d.name):
+                continue      # (since build 314) she can't take one that size down into it
             if plan not in s["by"] or (lie not in s["facing"] and not lands):
                 continue
             if s.get("has") == "tails" and not any(re.search(r"\btails?\b", n.lower()) for n in a.parts):
                 continue
+            if s.get("has") == "tails" and self.coil_too_small(a.name, d.name):
+                continue      # (since build 314) her tails are far too short to go round a body that size
             prop = {"near": prop_near, "ground": prop_ground}.get(s.get("prop")) if s.get("prop") else ""
             if s.get("prop") and not prop:
                 continue      # (nothing there to use)
@@ -5726,6 +5734,12 @@ class Engine:
         # (submissions.upright: it may bear her down later); any other is a takedown into it
         up = self._upright_on() and (bool(upright) if upright is not None
                                      else bool(self.UPRIGHT_WORDS.search(f"{name} {flavor or ''}")))
+        if d.name not in self.downed and enforce and not up and self.too_big_to_take_down(a.name, d.name):
+            # (since build 314) far too big to bring down: the hold goes on with her where she is, or not at all
+            if not self._upright_on():
+                raise ValueError(f"{d.name} is far bigger than {a.name}: she can't take her down into a hold. Strike, "
+                                 f"or wait for her to go down")
+            up = True
         if d.name not in self.downed and enforce and not up:
             takedown = self._sub_takedown(a, d, "face-down" if re.search(r"\bfrom behind\b|\bback\b", str(flavor or ""),
                                                                          re.I) else "face-up")
@@ -5742,6 +5756,7 @@ class Engine:
         self._count(f"subname:{key}", a.name)
         if takedown:
             res["takedown"], res["taken_down"] = takedown, True
+            res["was_up"] = "upright" if self.body_plan(d) == "serpent" else "on her feet"
         res["submission"] = {"name": key, "look": flavor or key, "free": "", "invented": True,
                              "from_ground": a.name in self.downed, "takedown": (takedown or {}).get("how"),
                              "upright": self._upright_word(d),
@@ -6096,6 +6111,9 @@ class Engine:
                 return slip
         takedown = None
         if d.name not in self.downed and s.get("lands") and "standing" not in self.SUBMISSIONS[key]["facing"]:
+            if enforce and self.too_big_to_take_down(a.name, d.name):
+                raise ValueError(f"{d.name} is far bigger than {a.name}: she can't take her down into the {key}. "
+                                 f"Choose a hold that works on her where she is, or strike")
             takedown = self._sub_takedown(a, d, s["lands"])
         main, second = float(cfg.get("power", 16)), float(cfg.get("second_power", 9))
         ramp, ramp2 = float(cfg.get("ramp", 3)), float(cfg.get("second_ramp", 1))
@@ -6125,6 +6143,7 @@ class Engine:
                              "upright": self._upright_word(d)}
         if takedown:
             res["takedown"], res["taken_down"] = takedown, True
+            res["was_up"] = "upright" if self.body_plan(d) == "serpent" else "on her feet"
             res["submission"]["takedown"] = takedown["how"]
         return res
 
@@ -6360,6 +6379,29 @@ class Engine:
             return False
         sa, sd = self.size_m(a), self.size_m(d)
         return bool(sa and sd and sa >= float(cfg.get("ratio", 3.0)) * sd)
+
+    def coil_too_small(self, attacker, defender):
+        """holds.coil.size.too_small (since build 314): the other way round from coil_dwarfs. A coiler this many
+        times smaller than her (her length or height against the coiler's) can't wind coils or tails round her body
+        or her neck: a Buizel's two short tails can't go twice round the ribs of a serpent nine times her size. She
+        can still bind a limb or the thin end of a tail."""
+        cfg = self.coil_size_cfg()
+        a, d = self.get(attacker), self.get(defender)
+        if not cfg or a is None or d is None or not float(cfg.get("too_small", 2.5)):
+            return False
+        sa, sd = self.size_m(a), self.size_m(d)
+        return bool(sa and sd and sd >= float(cfg.get("too_small", 2.5)) * sa)
+
+    def too_big_to_take_down(self, attacker, defender):
+        """holds.coil.size.takedown (since build 314): she is this many times the holder's size, so the holder can't
+        take her off her feet (or bring a reared serpent down) into a hold: a Buizel doesn't pull a Milotic nine times
+        her size down. The hold goes on with her upright, or not at all."""
+        cfg = self.coil_size_cfg()
+        a, d = self.get(attacker), self.get(defender)
+        if not cfg or a is None or d is None or not float(cfg.get("takedown", 2.5)):
+            return False
+        sa, sd = self.size_m(a), self.size_m(d)
+        return bool(sa and sd and sd >= float(cfg.get("takedown", 2.5)) * sa)
 
     MIDDLE_REGIONS = ("belly", "chest", "back_low", "back_up")
 
@@ -8716,6 +8758,17 @@ class Engine:
             self._regrab_check(a, d)
         if a is d:
             raise ValueError(f"{a.name} can't hold or pin herself")
+        if enforce and self.coil_too_small(a.name, d.name):
+            # (since build 314, holds.coil.size.too_small) a coil far too short for the body it is put round
+            for c in contacts:
+                w = str(c[3]) if len(c) > 3 else ""
+                pn = d.part(c[0]).name if d.part(c[0]) else str(c[0])
+                if self.coil_scope(pn) in ("body", "throat") and (self.is_coil(move, w, "" if w else flavor)
+                                                                  or self._wraps_with(w, flavor)):
+                    raise ValueError(f"{d.name} is far bigger than {a.name}: {poss_word(a.name)} "
+                                     f"{'tails' if re.search(r'tails?', w + ' ' + flavor, re.I) else 'coils'} can't go "
+                                     f"round her {pn.lower()}. Grip with paws or jaws, bind the thin end of her tail, "
+                                     f"or strike")
         if enforce:
             # one mouth: jaws already clamped somewhere (or named twice in this pin) can't close on a second part
             jaws = lambda w: bool(re.search(r"\b(jaws?|teeth|fangs?|mouth|bite)\b", str(w or "").lower()))
@@ -9205,6 +9258,7 @@ class Engine:
                 # (since build 298, holds.coil.energy) a coiler running out of breath holds less surely
                 ch *= float(ce_.get("tired_escape_mult", 1.25))
             ch *= self.hold_endurance(fa, fd, hs)      # (since build 308) coils and submissions last longer
+            ch *= body.grip_break_mult(self, fa, hs)  # (since build 314, body.limbs) the limbs holding it tired
             if fd.name in self.lucky and fa.name not in self.lucky:
                 ch = 1.0   # /play dice free: she breaks any hold on her at once (not one a dice-free holder has)
             if ch <= 0:
@@ -9424,8 +9478,10 @@ class Engine:
                                 "health_tier": ht["label"], "health_tier_changed": ht["label"] != tier_b and won_since is None,
                                 "reaction_guide": self.tier_reaction(f, ht)}
         events += reactions.tick(self)     # (since build 308, moves.reactions) holds felt, panic, a hold's aftermath
+        events += body.tick(self)          # (since build 314) her air and her limbs
         events += self.recover_tick()
         events += self._tick_status_energy()
+        body.mark(self)
         events += self._weather_tick()
         events += self._alliance_tick()
         self.pin_window = {}  # openings are rolled fresh for every beat
@@ -9530,6 +9586,7 @@ class Engine:
                 regen *= float(cfg_s.get("breathless_regen_mult", 0.5))
             if regen > 0:
                 regen *= reactions.mult(self, f, "regen")    # (since build 308) a raw throat, a sick stomach...
+                regen *= body.regen_mult(self, f)            # (since build 314) short of air: her strength comes back slower
             regen -= reactions.drain(self, f)                # (panic burns breath she doesn't have)
             f.energy = max(0.0, min(100.0, f.energy + regen))
             if (ad.get("enabled", True) and not f.adrenaline_used and not self.winner()
@@ -10712,13 +10769,20 @@ class Engine:
             if choke:
                 # A CHOKE runs out her air and blood, not her will: it builds every beat it is on, and her strength
                 # decides how long she stays conscious under it
+                ba = body.choke_air(self, d)
                 air = float(ccfg.get("air_per_beat", 22)) * beats
                 endure = float(ccfg.get("endurance", 110)) * (s_ / 100.0) ** power * surge
                 # (choke.endure_min, since build 265) even with nothing left she has some breath in her: without it a
                 # fighter at zero health had no endurance at all, read "air 2200% gone" on the choke's first beat
                 endure = max(endure, float(ccfg.get("endure_min", 30)))
                 po = min(float(ccfg.get("max", 0.85)), max(0.0, (air - endure) / float(ccfg.get("span", 70))))
-                if blended and bl.get("chokes", True):
+                if ba:
+                    # (since build 314, body.air.chokes) the choke goes by the air really left in her: it runs out
+                    # beat by beat (faster the tighter the grip and the more worn she is, and she starts the choke
+                    # with whatever breath the fight has left her); she can go under once it is nearly gone
+                    air, endure = ba
+                    po = body.choke_out_chance(self, d)
+                elif blended and bl.get("chokes", True):
                     # (blend.chokes: the dark builds up the same way, so she doesn't black out on its second beat)
                     po *= min(1.0, max(0, beats - 1) / max(1.0, float(bl.get("ramp_beats", 8)))) ** float(
                         bl.get("ramp_power", 2))
@@ -12468,6 +12532,7 @@ class Engine:
                         "off balance, slow, gasping",
     }
     STATUS_LOOK.update({k: v["look"] for k, v in reactions.REACT.items()})     # (since build 308, moves.reactions)
+    STATUS_LOOK.update(body.LOOK)     # (since build 314: body.air, body.limbs)
 
     # the same status from a move that is not cold: CHILLED is the engine's word for any slowing
     STATUS_LOOK_NOT_COLD = {

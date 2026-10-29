@@ -654,6 +654,31 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 314
+The first of the simulated-body builds: her breath and each limb's tiredness are running numbers now (body.air,
+body.limbs, each switchable). The dice still decide how hard each blow and each struggle is; these are what the dice
+act on.
+- **Air (0 to 100).** Fighting hard spends it, a grip on her throat cuts it off (faster the tighter the grip and the
+  more worn she is), coils squeezing her chest let her breathe only shallowly, and being winded, coughing up water or
+  panicking costs her some. Breathing freely brings it back quickly. Under 40% she hits softer, dodges slower and gets
+  her energy back slower. Under 35% she is SHORT OF AIR, under 15% STARVED OF AIR, and the story is told so.
+- **Chokes go by the air really left in her.** She can go under once it is nearly gone, in place of the old fixed
+  count of beats. A fighter already out of breath from the fight goes under sooner.
+- **Limbs (0 to 100 each: arms, legs, jaws, head, tail, wings).** Every blow thrown with a limb tires it, more for a
+  heavier move, and every beat she holds a grip with it. A limb she isn't using recovers, slower when her energy is
+  low. From 30 its blows weaken (down to x0.75) and a grip held with it is easier to break. Tired legs dodge worse.
+  From 55 the story is told: her ARMS HEAVY, her JAWS ACHING. Coils go by their own energy cost, as before.
+- **On the card:** air shows beside her breathing on the heart monitor once it drops under 95% (red under 35%). The
+  new statuses sit on her status line; hover for what they do.
+- **Measured:**
+
+  | | Body systems off | Body systems on |
+  |---|---|---|
+  | Nocturne vs Ripples, 300 knockout fights | Nocturne 167 wins, 42.9 beats | Nocturne 167 wins, 43.1 beats |
+  | Nerine vs Ripples, 150 submission matches | Nerine 94 wins, 40.2 beats, 10 choke pass-outs | Nerine 92 wins, 40.5 beats, 12 choke pass-outs |
+
+  Low air comes mostly from chokes, then from long hard exchanges.
+
 ## Build 313
 Her heart under the coils, simulated; the coils staying on her after it stops; and the writing weaknesses from the
 IQ4_XS paste.

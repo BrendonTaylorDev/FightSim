@@ -14,6 +14,7 @@ import re
 
 import blocks as story_blocks
 import reactions as _reactions
+import body as _body
 import llm
 
 import sys as _sys
@@ -6963,6 +6964,9 @@ class Narrator:
     STATUS_STORY.update(_reactions.STORY)
     STATUS_ENDS.update(_reactions.ENDS)
     STATUS_WORDS.update(_reactions.WORD)
+    STATUS_STORY.update(_body.STORY)       # (since build 314: body.air, body.limbs)
+    STATUS_ENDS.update(_body.ENDS)
+    STATUS_WORDS.update(_body.WORD)
 
     def _status_story(self, s, other=None):
         """The three-part telling for a status that just landed (the tell, her taking it, her opponent reading it)."""

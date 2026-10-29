@@ -800,6 +800,70 @@ def presets_help_check():
     return problems
 
 
+def body_314_check():
+    """Build 314 (body.air, body.limbs): her breath and each limb's tiredness as running numbers. A choke drains her
+    air and she goes under by it; free, it comes back; short of air she hits softer; a limb thrown again and again
+    tires and its blows weaken, and rests back."""
+    from engine import Hold
+    import body as B
+    problems = []
+    e = Engine(seed=5, only=["Nerine", "Ripples"])
+    e.rules["finish"]["submission"]["enabled"] = True
+    r = e.get("Ripples")
+    e._hold_break_tick = lambda *a, **k: []
+    e.holds[1] = Hold(1, "Nerine", "Ripples", "Throat", 18, 0, "", turns_active=1, with_part="both paws", sub="sleeper")
+    airs, out = [], None
+    for _ in range(14):
+        e.turn += 1
+        evs = e.beat()
+        airs.append((r.learned.get("body") or {}).get("air"))
+        if any(x.get("type") == "tap_out" for x in evs):
+            out = next(x for x in evs if x.get("type") == "tap_out")
+            break
+    if not (airs[0] < 100 and all(b <= a for a, b in zip(airs, airs[1:]))):
+        problems.append(f"a choke should drain her air beat by beat: {airs}")
+    if not out or out.get("how") != "pass_out":
+        problems.append(f"she should pass out once her air runs out under the choke: {airs} {out}")
+    e2 = Engine(seed=5, only=["Nerine", "Ripples"])
+    r2 = e2.get("Ripples")
+    B.state(r2)["air"] = 20.0
+    lab = [w for w, _m in e2.power_extras(r2, e2.get("Nerine"), "Water", {"name": "Tackle", "power": 40,
+                                                                       "target": "targeted"})]
+    if "short of air" not in lab:
+        problems.append(f"short of air she should hit softer: {lab}")
+    e2.turn += 1
+    e2.beat()
+    if not (B.state(r2)["air"] > 20.0):
+        problems.append("breathing freely her air should come back")
+    mv = {"name": "Mega Punch", "about": "a punch", "power": 80, "target": "targeted"}
+    for _ in range(8):
+        B.on_attack(e2, r2, mv)
+    tired = B.state(r2)["limbs"].get("arms", 0)
+    m = dict(e2.power_extras(r2, e2.get("Nerine"), "Normal", mv))
+    if not (tired >= 60 and any("arms tired" in k for k in m)):
+        problems.append(f"punching again and again should tire her arms and weaken them: {tired} {m}")
+    for _ in range(5):
+        e2.turn += 1
+        e2.beat()
+    if not B.state(r2)["limbs"]["arms"] < tired:
+        problems.append("resting, her arms should come back")
+    # (holds.coil.size.too_small / takedown) a Buizel can't coil, or take down, a serpent nine times her size
+    e3 = Engine(seed=5, only=["Seraphina", "Ripples"])
+    e3.rules["finish"]["submission"]["enabled"] = True
+    if not e3.coil_too_small("Ripples", "Seraphina") or e3.coil_too_small("Seraphina", "Ripples"):
+        problems.append("Ripples should be too small to coil Seraphina, and not the other way round")
+    if any(e3.SUBMISSIONS[k].get("has") == "tails" for k in e3.submission_shapes("Ripples", "Seraphina")):
+        problems.append("a tails submission shouldn't be offered to Ripples on Seraphina")
+    try:
+        e3.start_holds("Ripples", "Seraphina", [("Upper Back", 16, 3, "her tails, wound round it and squeezing")],
+                       "coil crush", enforce=True)
+        problems.append("Ripples' tails round Seraphina's back should be refused")
+    except ValueError as exc:
+        if "far bigger" not in str(exc):
+            problems.append(f"refused for the wrong reason: {exc}")
+    return problems
+
+
 def prose_313_check():
     """Build 313 (the writing in the IQ4_XS paste): the seams a cut leaves (a clause ending on its article, a line of
     speech with its speaker gone, a sentence leaning back on a cut one), a dialogue tag no longer eaten after a
@@ -3778,6 +3842,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "body314 body" for w in want):
+        t = time.time()
+        probs = body_314_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 314: her air and her limbs as running numbers (chokes by the air left, tired limbs)  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "prose313 prose" for w in want):

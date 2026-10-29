@@ -52,6 +52,16 @@ _EXTRA = {
     "greyed": "a moment from blacking out",
     "overextended": "wide open: her dodging is down to a fraction",
     "bound": "that limb is numb and weak",
+    "short_of_air": "her blows softer, her dodging slower and her energy coming back slower, the less air she has "
+                    "(body.air); it comes back when she can breathe freely",
+    "starved_of_air": "everything she does weaker and slower; under a choke she is close to going under (body.air)",
+    "tired_arms": "blows with her arms weaker, and a grip she holds with them easier to break; they come back as she "
+                  "rests them (body.limbs)",
+    "tired_legs": "kicks weaker and her dodging slower; they come back as she rests them (body.limbs)",
+    "tired_jaws": "bites weaker, and a grip with her teeth easier to break (body.limbs)",
+    "tired_head": "blows with her head weaker (body.limbs)",
+    "tired_tail": "tail strikes weaker, and a grip with it easier to break (body.limbs)",
+    "tired_wings": "wing strikes weaker (body.limbs)",
 }
 
 _DEFAULTS = None
@@ -185,14 +195,17 @@ def bp_text(bp, rest=(120, 80), coiled=False):
                "heart: the falling number is the one that matters." if coiled else ""))
 
 
-def breath_text(breath, rest, depth, words=()):
+def breath_text(breath, rest, depth, words=(), air=None):
     deep = ("very shallow: the air barely gets in" if depth < 0.3 else "shallow: she can't fill her chest"
             if depth < 0.6 else "deep and heavy" if depth > 1.2 else "normal depth")
     if not breath:
         return "Breathing: none."
     why = [w for w in words if re.search(r"breath|winded|spent|ribs|coils|air", w)]
     return (f"Breathing: {breath} breaths a minute; at rest {rest}. Each breath is {deep}. Fast and shallow means she "
-            f"is short of air; fast and deep, working hard." + (f"\nWhy: {', '.join(why)}." if why else ""))
+            f"is short of air; fast and deep, working hard." + (f"\nWhy: {', '.join(why)}." if why else "")
+            + (f"\nAir {air}%: the breath she has in her (body.air). Fighting hard spends it, a choke cuts it off, "
+               f"coils let her breathe only shallowly; breathing freely brings it back. Under 40% she hits and dodges "
+               f"slower; under a choke she goes under when it runs out." if air is not None else ""))
 
 
 def heart_wear_text(v):

@@ -29,8 +29,9 @@ from narrator import Narrator, strip_pov, _is_sound
 import narrator as narrator_mod
 import llm
 import polish
+import body as _body
 
-VERSION = "2026-10-29 build 313 (her heart under the coils simulated, the coils staying on after it stops, writing fixes)"
+VERSION = "2026-10-29 build 314 (simulated body: her air and each limb's tiredness; size limits on coils and takedowns)"
 
 HELP = """
 =============================================================================================
@@ -633,6 +634,7 @@ def fight_snapshot(s, label=None):
             "name": f.name, "species": species_of(f.description, f.appearance), "types": list(f.types or []),
             "health": round(float(f.health), 2), "max": float(f.max_health or 1), "energy": round(float(f.energy), 1),
             "status": {k: v for k, v in (f.status or {}).items()}, "out": bool(f.eliminated), "posture": posture,
+            "body": _body.card(f),      # (since build 314: her air and how tired each limb is)
             "parts": [(p.name, round(float(p.damage), 2), round(float(p.resistance), 2)) for p in f.parts.values()],
             # for the pictures: which way she lies, and the marks on each hurt part (window.poses, window.damage_marks)
             "facing": facing, "marks": _marks_of(eng, f),
