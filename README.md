@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 316
+Her heart rate carried from beat to beat, and blood chokes as their own thing.
+- **The heart rate is a running number (body.heart).** It used to be worked out fresh each beat from her state. Now
+  each beat it moves toward what her body asks of it (her resting rate, pushed up by effort, pain, fear or panic, short
+  of air), quickly when it has to rise and slowly as it settles, with a little natural unevenness. A hard exchange
+  leaves it racing for a few beats after, and a rest brings it down gradually. Under coils it is the constriction's
+  own heart. The monitor shows it, and with build 315's live trace each beat comes at the rate she has then.
+- **Blood chokes have their own gauge.** A grip closing on the sides of her neck (legs, arms or coils round it, hands
+  or jaws round it) cuts off the blood to her head. She can still breathe a little, and she goes under by whichever of
+  her blood and her air runs out first. They are a little faster than an air choke, not dramatically so: in testing a
+  blood choke put her out at beat 6 with three-quarters of her air left, a windpipe choke at beat 7 with none.
+- **Blood chokes are the usual kind now:** a neck grip whose words don't say it presses across the front of her
+  throat counts as one (body.air.blood_default).
+- Balance: in 150 submission matches Nerine beat Ripples 83 times (92 in build 314's run). Part of that is chance,
+  because the new heart draws on the same dice and changes every fight's rolls.
+
 ## Build 315
 The window: a heart monitor that looks simulated, and zoomed cards that stay alive.
 - **The heart trace is laid down beat by beat (window.live_ecg).** Before, one fixed pattern was drawn twice and slid

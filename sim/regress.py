@@ -800,6 +800,51 @@ def presets_help_check():
     return problems
 
 
+def heart_316_check():
+    """Build 316 (body.heart, blood chokes): her heart rate is carried from beat to beat (it climbs with a hard
+    exchange and settles slowly after), and a blood choke cuts the blood to her head and puts her out a little
+    sooner than one on her windpipe, while she can still breathe."""
+    from engine import Hold
+    import body as B
+    problems = []
+    e = Engine(seed=5, only=["Nerine", "Ripples"])
+    r = e.get("Ripples")
+    rest = float(r.heart_rest or 100)
+    r.energy = 30.0
+    e.turn += 1
+    e.beat()
+    up = B.state(r)["heart"]
+    r.energy = 100.0
+    seq = []
+    for _ in range(6):
+        e.turn += 1
+        e.beat()
+        seq.append(B.state(r)["heart"])
+    if not (up > rest * 1.1 and seq[0] > rest * 1.05 and seq[-1] < seq[0]):
+        problems.append(f"her heart should climb after a hard exchange and settle slowly: {up} then {seq} (rest {rest})")
+    if e.choke_kind("Nerine", "") != "blood" or e.choke_kind("Nerine", "her forearm barred across the throat") != "air":
+        problems.append("an unworded neck grip should be a blood choke, one barred across the front an air choke")
+
+    def out_beat(with_):
+        x = Engine(seed=5, only=["Nerine", "Ripples"])
+        x.rules["finish"]["submission"]["enabled"] = True
+        x._hold_break_tick = lambda *a, **k: []
+        x.rng.random = lambda: 0.5
+        x.holds[1] = Hold(1, "Nerine", "Ripples", "Throat", 18, 0, "", turns_active=1, with_part=with_, sub="choke")
+        for b in range(1, 16):
+            x.turn += 1
+            if any(ev.get("type") == "tap_out" for ev in x.beat()):
+                return b, B.state(x.get("Ripples"))
+        return 99, B.state(x.get("Ripples"))
+    nb, sb = out_beat("her legs locked round the sides of her neck")
+    na, sa = out_beat("her forearm barred across the throat")
+    if not (nb < na <= nb + 3):
+        problems.append(f"a blood choke should put her out a little sooner than an air choke: {nb} against {na}")
+    if not sb.get("air", 0) > sa.get("air", 100):
+        problems.append("under a blood choke she should still have more air than under one on her windpipe")
+    return problems
+
+
 def ecg_315_check():
     """Build 315 (window.live_ecg): the heart trace is laid down beat by beat, not one pattern repeated: a healthy
     heart's gaps vary a little, an irregular one's a lot (with skipped and early beats), a stopped one is flat, and
@@ -3873,6 +3918,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "heart316 bloodchoke" for w in want):
+        t = time.time()
+        probs = heart_316_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 316: her heart rate carried from beat to beat; blood chokes the usual kind, a little faster  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "ecg315 ecg" for w in want):

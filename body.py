@@ -26,7 +26,10 @@ LIMB_WORD = {"arms": "arms", "legs": "legs", "jaws": "jaws", "head": "neck and h
 DEFAULTS = {
     "air": {"enabled": True, "regen": 14, "spent_regen": 0.6, "per_energy": 0.5, "choke": 16, "coils": 8,
             "winded": 6, "low": 40, "power_min": 0.8, "dodge_min": 0.8, "regen_min": 0.5, "short": 35, "starved": 15,
-            "chokes": True, "out_from": 15, "out_max": 0.85, "health_drain": 0.3},
+            "chokes": True, "out_from": 15, "out_max": 0.85, "health_drain": 0.3, "blood_choke": 20,
+            "blood_back": 40, "blood_default": True},
+    "heart": {"enabled": True, "exert": 0.45, "pain": 0.3, "air": 0.35, "max": 1.85, "rise": 0.5, "settle": 0.2,
+              "wobble": 0.02},
     "limbs": {"enabled": True, "strike": 7, "grip": 5, "rest": 6, "from": 30, "power_min": 0.75, "grip_break": 0.6,
               "dodge_legs": 0.25, "tired": 55},
 }
@@ -167,18 +170,29 @@ def grip_break_mult(eng, holder, holds):
     return 1 + float(cl["grip_break"]) * worst
 
 
-def choke_air(eng, d):
-    """For the choke's pass-out (body.air.chokes): (how much air she has lost, where she can start to go under)."""
+def choke_air(eng, d, kinds=()):
+    """For the choke's pass-out (body.air.chokes): (how far she has gone, where she can start to go under). A blood
+    choke (the sides of her neck squeezed: kinds has "blood" or "both") goes by the blood reaching her head, which
+    runs out within a few beats; an air choke (the windpipe pressed) by the air left in her. The one nearer the end
+    counts."""
     ca = cfg(eng, "air")
     if not ca or not ca.get("chokes", True):
         return None
-    a = float((d.learned.get("body") or {}).get("air", 100))
-    return 100.0 - a, 100.0 - float(ca["out_from"])
+    st = d.learned.get("body") or {}
+    a = float(st.get("air", 100))
+    hb = float(st.get("head_blood", 100))
+    lost = 100.0 - a
+    if set(kinds) & {"blood", "both"}:
+        lost = max(lost, 100.0 - hb)
+    return lost, 100.0 - float(ca["out_from"])
 
 
-def choke_out_chance(eng, d):
+def choke_out_chance(eng, d, kinds=()):
     ca = cfg(eng, "air")
-    a = float((d.learned.get("body") or {}).get("air", 100))
+    st = d.learned.get("body") or {}
+    a = float(st.get("air", 100))
+    if set(kinds) & {"blood", "both"}:
+        a = min(a, float(st.get("head_blood", 100)))
     lo = float(ca["out_from"])
     if a > lo:
         return 0.0
@@ -189,7 +203,7 @@ def tick(eng):
     """End of a beat, before her energy comes back: her air and her limbs, and the statuses that tell them."""
     ca, cl = cfg(eng, "air"), cfg(eng, "limbs")
     events = []
-    if not ca and not cl:
+    if not ca and not cl and not cfg(eng, "heart"):
         return events
     for f in eng.fighters.values():
         if f.eliminated:
@@ -209,6 +223,20 @@ def tick(eng):
             loss += float(ca["coils"]) * coils / 100.0
             if any(eng.has(f, s) for s in ("breathless", "sputtering", "throat_struck", "panicking")):
                 loss += float(ca["winded"])
+            # (since build 316) the blood to her head: a blood choke (the sides of her neck squeezed) cuts it off
+            # fast, whatever air she has; free of it, it comes rushing back
+            kinds = {eng._hold_choke_kind(h) for h in choked}
+            hb = float(st.get("head_blood", 100.0))
+            if kinds & {"blood", "both"}:
+                tight = max(0.5, min(2.0, max(h.power for h in choked) / 16.0)) ** 0.5
+                hb -= float(ca.get("blood_choke", 20)) * tight * (0.7 if "blood" not in kinds else 1.0) \
+                    * (1 + float(ca["health_drain"]) * (1 - share))
+            else:
+                hb += float(ca.get("blood_back", 40))
+            st["head_blood"] = round(max(0.0, min(100.0, hb)), 1)
+            if choked and not (kinds & {"air", "both"}):
+                # (a blood choke leaves her windpipe open: she can still breathe, if badly)
+                loss -= float(ca["choke"]) * 0.75 * tight
             gain = 0.0
             if not choked:
                 gain = float(ca["regen"]) * (float(ca["spent_regen"]) if spent > 10 else 1.0)
@@ -228,6 +256,9 @@ def tick(eng):
                                    "reaction": True, "why": "fighting hard and not getting enough breath"
                                    if not choked else "the grip on her throat"})
                 eng.set_status(f, now_, 2)
+        ch_ = cfg(eng, "heart")
+        if ch_:
+            _heart_tick(eng, f, st, ch_)
         if cl:
             used = st.get("used") or {}
             for h in eng.holds.values():
@@ -253,6 +284,42 @@ def tick(eng):
     return events
 
 
+def _heart_tick(eng, f, st, c):
+    """body.heart (since build 316): her heart rate as a running number. Each beat it moves toward what her body
+    is asking of it (her resting rate, pushed up by how hard she has fought, the pain she is in, fear, panic or a
+    surge, short of air, a choke), quickly when it has to rise and slowly as it settles, with a little natural
+    unevenness; so a hard exchange leaves it racing for a few beats after, and a rest brings it down only
+    gradually. Under coils round her body it is the constriction's own heart (constriction.heart)."""
+    rest = float(getattr(f, "heart_rest", 0) or 100)
+    hr = float(st.get("heart", rest * 1.1))
+    coil = f.learned.get("coil_heart") or {}
+    if coil.get("turn") == eng.turn:
+        st["heart"] = float(coil.get("bpm") or 0)
+        return
+    if coil.get("stopped") or eng.has(f, "limp"):
+        st["heart"] = 0.0
+        return
+    if st.get("heart") == 0.0:
+        hr = rest * 1.5           # (started again: racing as the blood comes back)
+    exert = 1.0 - max(0.0, min(100.0, f.energy)) / 100.0
+    worst = max((p.damage for p in f.parts.values()), default=0.0)
+    pain = min(1.5, worst / 200.0 + (1.0 - max(0.0, min(1.0, eng._health_pct(f) / 100.0))) * 0.5)
+    try:
+        import cards as _cards
+        signs = _cards.STATUS_SIGNS
+    except Exception as exc:          # (no pictures library: the statuses' share is left out)
+        eng.note_failure("body.heart status signs", exc)
+        signs = {}
+    sm = sum(signs.get(k, (0.0, 0.0, None))[0] for k in f.status)
+    air = float(st.get("air", 100))
+    target = rest * (1.0 + float(c["exert"]) * exert + float(c["pain"]) * pain + sm
+                     + float(c["air"]) * max(0.0, 1.0 - air / 100.0))
+    target = max(rest * 0.6, min(rest * float(c["max"]), target))
+    k = float(c["rise"]) if target > hr else float(c["settle"])
+    hr += (target - hr) * k + eng.rng.gauss(0.0, rest * float(c["wobble"]))
+    st["heart"] = round(max(rest * 0.5, min(rest * float(c["max"]), hr)), 1)
+
+
 def mark(eng):
     """After her energy has come back this beat: what she starts the next one with (for the air she spends)."""
     if not cfg(eng, "air"):
@@ -264,5 +331,7 @@ def mark(eng):
 def card(f):
     """For the card and the snapshot: her air and her limbs."""
     st = f.learned.get("body") or {}
-    return {"air": round(float(st.get("air", 100))), "limbs": {k: round(v) for k, v in (st.get("limbs") or {}).items()
+    return {"air": round(float(st.get("air", 100))), "heart": (round(float(st["heart"])) if st.get("heart") is not None
+                                                              else None),
+            "head_blood": round(float(st.get("head_blood", 100))), "limbs": {k: round(v) for k, v in (st.get("limbs") or {}).items()
                                                                if v >= 1}}

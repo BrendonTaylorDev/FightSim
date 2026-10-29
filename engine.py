@@ -6348,7 +6348,9 @@ class Engine:
             return "air"
         if plan in ("biped", "serpent") and (rounds or re.search(r"\bpaws?\b|\bhands?\b|\bfingers\b|\barms?\b", w)):
             return "blood"
-        return "air"
+        # (since build 316) nothing in the words says she is pressing on the front of the throat: the grip closes on
+        # the sides, as most do, and it is the blood to her head that goes (air chokes are the pressed ones)
+        return "blood" if ((self.rules.get("body") or {}).get("air") or {}).get("blood_default", True) else "air"
 
     @staticmethod
     def coil_scope(part):
@@ -10769,7 +10771,8 @@ class Engine:
             if choke:
                 # A CHOKE runs out her air and blood, not her will: it builds every beat it is on, and her strength
                 # decides how long she stays conscious under it
-                ba = body.choke_air(self, d)
+                kinds_ = {self._hold_choke_kind(h) for h in hs if re.search(r"(?i)neck|throat", h.part)}
+                ba = body.choke_air(self, d, kinds_)
                 air = float(ccfg.get("air_per_beat", 22)) * beats
                 endure = float(ccfg.get("endurance", 110)) * (s_ / 100.0) ** power * surge
                 # (choke.endure_min, since build 265) even with nothing left she has some breath in her: without it a
@@ -10781,7 +10784,7 @@ class Engine:
                     # beat by beat (faster the tighter the grip and the more worn she is, and she starts the choke
                     # with whatever breath the fight has left her); she can go under once it is nearly gone
                     air, endure = ba
-                    po = body.choke_out_chance(self, d)
+                    po = body.choke_out_chance(self, d, kinds_)
                 elif blended and bl.get("chokes", True):
                     # (blend.chokes: the dark builds up the same way, so she doesn't black out on its second beat)
                     po *= min(1.0, max(0, beats - 1) / max(1.0, float(bl.get("ramp_beats", 8)))) ** float(

@@ -2031,12 +2031,17 @@ def body_signs(f, o=None, rest=None):
         bp = list(v.get("bp") or [120, 80])
     else:
         heart = rest * (1.0 + float(o.get("exert", 0.45)) * exert + float(o.get("pain", 0.3)) * pain + hm)
+        tracked = (f.get("body") or {}).get("heart")
+        if tracked is not None:
+            # (since build 316, body.heart) the engine keeps her heart rate from beat to beat now: that is the one
+            heart = float(tracked)
         if air:
             heart *= 1.0 + 0.3 * min(air, 60) / 60.0
             if air > 60:
                 heart *= 1.0 - 0.45 * (air - 60) / 40.0
-        heart = max(rest * 0.4, min(rest * float(o.get("heart_max", 1.8)), heart))
-        if out:
+        heart = max(rest * 0.4, min(rest * float(o.get("heart_max", 1.85)), heart)) if tracked is None or tracked > 0 \
+            else 0.0
+        if out and not (tracked == 0):
             heart = rest * 0.75
         irregular, stopped = "paralyzed" in st or air > 70, False
         up = heart / rest - 1.0
