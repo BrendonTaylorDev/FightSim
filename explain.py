@@ -63,6 +63,12 @@ _EXTRA = {
                         "a few beats (body.adrenaline)",
     "broken_bone": "a bone broken in the fight or found broken after it: blows with that limb much weaker, a "
                    "broken leg dodges worse; it heals, nothing permanent, and never her spine (body.bones)",
+    "flushed": "hot from the fight (or the fire she has taken): her energy and breath come back slower, her blows and "
+               "dodges a touch weaker, her heart quicker; she cools as she eases off (body.heat)",
+    "heat_exhausted": "dangerously hot: her energy and breath come back much slower and she is weaker and slower; "
+                      "never a danger to her life (body.heat)",
+    "shivering": "chilled (ice, water, rain): her blows and dodges a little weaker until she warms (body.heat)",
+    "numbed": "chilled through: her blows and dodges weaker until she warms (body.heat)",
     "unsteady": "her feet not under her after the blows (worst to her legs and head): a blow staggers her more "
                 "easily, a knockdown is likelier to put her down, she slips more on slick ground, and her blows and "
                 "dodges are a little weaker; it comes back as she sets herself (body.footing)",
@@ -211,6 +217,21 @@ def bp_text(bp, rest=(120, 80), coiled=False):
                "heart: the falling number is the one that matters." if coiled else ""))
 
 
+def temp_text(temp, normal=38.5):
+    """(body.heat, since build 320) Her core temperature, for the heart monitor's tip."""
+    if temp is None:
+        return ""
+    d = temp - normal
+    how = ("dangerously hot: heat-exhausted, everything slower" if d >= 2.4 else
+           "hot: flushed, her energy and breath slower to come back" if d >= 1.5 else
+           "warm from the fight" if d >= 0.5 else
+           "chilled through: numbed, stiff and slow" if d <= -2.2 else
+           "cold: shivering, a little slower" if d <= -1.2 else
+           "a little cool" if d <= -0.5 else "normal")
+    return (f"Temperature: {temp:.1f}°C (normal {normal:.1f}): {how}. Hard fighting and fire heat her; ice, water and "
+            f"rain cool her; she settles back toward normal as she eases off (body.heat).")
+
+
 def breath_text(breath, rest, depth, words=(), air=None):
     deep = ("very shallow: the air barely gets in" if depth < 0.3 else "shallow: she can't fill her chest"
             if depth < 0.6 else "deep and heavy" if depth > 1.2 else "normal depth")
@@ -269,6 +290,8 @@ def vitals_text(sg, v=None):
     out = [heart_text(sg["heart"], sg["heart_rest"], sg.get("irregular"), sg.get("stopped"), sg.get("coiled")),
            bp_text(sg["bp"], sg.get("bp_rest") or (120, 80), sg.get("coiled")),
            breath_text(sg["breath"], sg["breath_rest"], sg["depth"], sg.get("words") or ())]
+    if sg.get("temp") is not None:
+        out.append(temp_text(sg["temp"]))
     if sg.get("grey"):
         out.append(grey_text(sg["grey"]))
     if v:

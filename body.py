@@ -7,6 +7,7 @@ on her card.
   chest let her take only shallow breaths, being winded or coughing up water costs her some; breathing freely brings
   it back fast. Short of air she hits softer, dodges slower and gets her energy back slower. Under a choke she
   passes out when it runs out (it replaces the choke's fixed count of beats).
+- heat (since build 320): her core temperature; see _heat_tick.
 - footing (since build 319): how steady she is on her feet; see _footing_tick.
 - limbs: how tired each limb is, 0 to 100: her arms, legs, jaws, head, tail and wings. Every blow thrown with a
   limb tires it, and every beat she holds a grip with it; a limb she isn't using recovers. A tired limb throws
@@ -51,6 +52,10 @@ DEFAULTS = {
                 "off_balance": 10, "regen": 16, "getup": 55, "slick_top": 85, "dazed_top": 70, "faint_top": 75,
                 "low": 60, "power_min": 0.9, "dodge_min": 0.85, "stumble": 0.6, "keep_feet": 0.5, "slip": 1.0,
                 "unsteady": 35},
+    "heat": {"enabled": True, "normal": 38.5, "per_energy": 0.013, "burn": 0.004, "cold": 0.004, "hit_max": 0.8, "sun": 0.12,
+             "rain": 0.1, "hail": 0.2, "water": 0.25, "held": 0.04, "cool": 0.15, "cool_spent": 0.5,
+             "own_type": 0.4, "warm": 1.5, "hot": 2.4, "chill": -1.2, "cold_at": -2.2, "min": -4.0, "max": 4.0,
+             "regen_min": 0.75, "power_min": 0.93, "dodge_min": 0.93, "air_min": 0.7, "heart": 0.06},
     "limbs": {"enabled": True, "strike": 7, "grip": 5, "rest": 6, "from": 30, "power_min": 0.75, "grip_break": 0.6,
               "dodge_legs": 0.25, "tired": 55},
 }
@@ -72,6 +77,10 @@ LOOK = {
     "light_headed": "LIGHT-HEADED from the blood she has lost: the world tilting, her legs unsure, a cold sweat",
     "keyed_up": "KEYED UP: adrenaline running hot, the pain dulled and far away, everything sharp and fast",
     "adrenaline_crash": "the ADRENALINE CRASH: the rush gone out of her, shaky and heavy, the pain flooding back",
+    "flushed": "FLUSHED with heat: panting, her body burning hot from the fight, her strength slower to come back",
+    "heat_exhausted": "HEAT-EXHAUSTED: dangerously hot, panting hard, heavy and slow, her strength draining out",
+    "shivering": "SHIVERING: chilled through, muscles tight and shaking, slow to move",
+    "numbed": "NUMBED with cold: chilled to the core, her limbs stiff and clumsy, every movement slow",
     "unsteady": "UNSTEADY: her feet not under her, her weight in the wrong place, swaying as she tries to set "
                 "herself",
     "swollen": "SWELLING: the beaten part puffed up, hot and tight, stiff to move",
@@ -104,12 +113,21 @@ STORY = {
     "adrenaline_crash": ("the fire gone out of her: shaky, heavy-limbed, the pain all coming back at once",
                          "everything she pushed away catches up with her", "{other} sees her sag"),
     "broken_bone": ("the broken limb held close, useless", "every movement jars it", "{other} sees she can't use it"),
+    "flushed": ("panting, her tongue out, heat coming off her", "she is burning up inside and can't shed it",
+                "{other} sees her pant"),
+    "heat_exhausted": ("panting hard, heavy and slow, the heat dragging at every limb", "her head swims with the heat "
+                       "and her strength is draining out of her", "{other} sees her flag in the heat"),
+    "shivering": ("shivering, her muscles tight and shaking", "the cold has got into her and won't leave",
+                  "{other} sees her shiver"),
+    "numbed": ("stiff and clumsy with cold, her movements slowed", "she can hardly feel her paws",
+               "{other} sees how slow the cold has made her"),
     "unsteady": ("her feet not quite under her, swaying as she tries to plant them", "the ground feels wrong under "
                  "her, and she can't set herself", "{other} sees her sway"),
     "swollen": ("the beaten part puffed up, hot and tight under the fur", "it is stiff and won't move as it should",
                 "{other} sees the swelling"),
 }
-ENDS = {"unsteady": "she gets her feet under her again", "bleeding": "the bleeding slows and stops", "pale": "some colour comes back into her",
+ENDS = {"flushed": "she cools down", "heat_exhausted": "the worst of the heat goes out of her",
+        "shivering": "the shivering stops", "numbed": "warmth comes back into her limbs", "unsteady": "she gets her feet under her again", "bleeding": "the bleeding slows and stops", "pale": "some colour comes back into her",
         "light_headed": "the world steadies", "keyed_up": "the rush ebbs", "adrenaline_crash": "she steadies",
         "swollen": "the swelling eases a little", "broken_bone": "it is set and starts to heal",
         "short_of_air": "she gets her breath back", "starved_of_air": "air comes back into her",
@@ -117,7 +135,7 @@ ENDS = {"unsteady": "she gets her feet under her again", "bleeding": "the bleedi
         "tired_jaws": "her jaws have come back to her", "tired_head": "her neck has eased",
         "tired_tail": "her tail has come back to her", "tired_wings": "her wings have come back to her"}
 WORD = {k: k.replace("_", " ") for k in LOOK}
-ICON = {"unsteady": "🌀", "bleeding": "🩸", "pale": "🫥", "light_headed": "😵‍💫", "keyed_up": "⚡", "adrenaline_crash": "📉",
+ICON = {"flushed": "🥵", "heat_exhausted": "🫠", "shivering": "🥶", "numbed": "🧊", "unsteady": "🌀", "bleeding": "🩸", "pale": "🫥", "light_headed": "😵‍💫", "keyed_up": "⚡", "adrenaline_crash": "📉",
         "swollen": "🔴", "broken_bone": "🦴", "short_of_air": "😮‍💨", "starved_of_air": "🫁", "tired_arms": "💪", "tired_legs": "🦵", "tired_jaws": "🦷",
         "tired_head": "🤕", "tired_tail": "〰️", "tired_wings": "🪽"}
 
@@ -142,10 +160,16 @@ def on_damage(eng, d, part, added, source):
     """(since build 318) A part hurt by `added` damage: a cut or a bite opens it to bleed (body.blood), and any blow
     starts it swelling over the next beats (body.tissue), each by what did it."""
     cb, ct, cf = cfg(eng, "blood"), cfg(eng, "tissue"), cfg(eng, "footing")
-    if not cb and not ct and not cf and not cfg(eng, "bones"):
+    if not cb and not ct and not cf and not cfg(eng, "bones") and not cfg(eng, "heat"):
         return
     kind = eng.wound_kind(source)
     st = state(d)
+    ch = cfg(eng, "heat")
+    if ch and kind in ("burn", "cold"):
+        own = "Fire" if kind == "burn" else "Ice"
+        k = float(ch["burn" if kind == "burn" else "cold"]) * added * (float(ch["own_type"]) if own in (d.types or [])
+                                                                         else 1.0)
+        st["heat_in"] = round(float(st.get("heat_in", 0.0)) + (k if kind == "burn" else -k), 3)
     if cf and _on_feet(eng, d):
         k = float((cf.get("regions") or {}).get(_region(part), cf["region_other"])) \
             * float((cf.get("kinds") or {}).get(kind, 0.8)) * float((cf.get("plans") or {}).get(eng.body_plan(d), 1.0))
@@ -284,6 +308,9 @@ def power_mult(eng, a, move):
     cf = cfg(eng, "footing")
     if cf and move and not eng.is_ranged(move) and _on_feet(eng, a) and _footing(a) < float(cf["low"]):
         out.append(("her feet not under her", round(_footing_k(cf, a, "power_min"), 3)))
+    hk = _heat_k(eng, a, "power_min")
+    if hk < 1.0:
+        out.append(("the heat in her" if _temp(a) > 0 else "the cold in her", round(hk, 3)))
     cbn = cfg(eng, "bones")
     limb3 = _limb_of_move(eng, move) if cbn and move else None
     if limb3 and any(_region(p) in LIMB_REGIONS.get(limb3, ())
@@ -341,6 +368,7 @@ def dodge_mult(eng, d):
     cb = cfg(eng, "blood")
     if cb and float(st.get("blood", 100)) < float(cb["low"]):
         m *= _blood_k(cb, st, "dodge_min")
+    m *= _heat_k(eng, d, "dodge_min")
     cf = cfg(eng, "footing")
     if cf and _on_feet(eng, d) and _footing(d) < float(cf["low"]):
         m *= _footing_k(cf, d, "dodge_min")
@@ -352,6 +380,26 @@ def dodge_mult(eng, d):
         sw = _limb_swelling(eng, d, "legs")
         m *= 1 - float(ct["dodge_legs"]) * max(0.0, min(1.0, (sw - float(ct["from"])) / max(1.0, 100 - float(ct["from"]))))
     return m
+
+
+def _temp(f):
+    """How far her core is from normal, in degrees (body.heat): + hot, - cold."""
+    return float((f.learned.get("body") or {}).get("heat", 0.0))
+
+
+def _heat_k(eng, f, key, hot_only=False):
+    """x1 within warm..chill, falling to the key's minimum at hot (or, cold, at cold_at) and past it."""
+    ch = cfg(eng, "heat")
+    if not ch:
+        return 1.0
+    t = _temp(f)
+    if t > float(ch["warm"]):
+        x = (t - float(ch["warm"])) / max(0.1, float(ch["hot"]) - float(ch["warm"]))
+    elif t < float(ch["chill"]) and not hot_only:
+        x = (float(ch["chill"]) - t) / max(0.1, float(ch["chill"]) - float(ch["cold_at"]))
+    else:
+        return 1.0
+    return 1 - (1 - float(ch[key])) * max(0.0, min(1.0, x))
 
 
 def _on_feet(eng, f):
@@ -389,7 +437,7 @@ def regen_mult(eng, f):
     cd = cfg(eng, "adrenaline")
     if cd and f.status.get("adrenaline_crash"):
         m *= float(cd["crash_regen"])
-    return m
+    return m * _heat_k(eng, f, "regen_min", hot_only=True)
 
 
 def grip_break_mult(eng, holder, holds):
@@ -485,6 +533,7 @@ def tick(eng):
                     gain *= max(0.2, 1 - coils / 100.0)
                 if any(eng.has(f, s) for s in ("breathless", "sputtering", "throat_struck")):
                     gain *= 0.4
+                gain *= _heat_k(eng, f, "air_min", hot_only=True)    # (body.heat) panting in the heat
             st["air"] = round(max(0.0, min(100.0, a - loss + gain)), 1)
             now_ = ("starved_of_air" if st["air"] < float(ca["starved"]) else
                     "short_of_air" if st["air"] < float(ca["short"]) else None)
@@ -501,6 +550,7 @@ def tick(eng):
         events += _adrenaline_tick(eng, f, st)
         events += _tissue_tick(eng, f, st)
         events += _footing_tick(eng, f, st)
+        events += _heat_tick(eng, f, st)
         ch_ = cfg(eng, "heart")
         if ch_:
             _heart_tick(eng, f, st, ch_)
@@ -683,6 +733,49 @@ def _footing_tick(eng, f, st):
     return ev
 
 
+def _heat_tick(eng, f, st):
+    """body.heat (since build 320): her core temperature, as degrees from her normal (0 = normal; the card shows it
+    from normal). Each beat fighting hard heats her (per_energy for every point of energy she spent), fire that hits
+    her heats her (burn x the damage) and ice cools her (cold x the damage), at most hit_max a beat, each x own_type for her own type (a Fire
+    type shrugs off heat, an Ice type cold); the sun heats her, rain and hail cool her, and standing in water cools
+    her; bodies pressed together in a hold warm both a little (held). She sheds it back toward normal by cool of the
+    way a beat (x cool_spent after a hard beat). Past warm she is FLUSHED, past hot HEAT-EXHAUSTED: her energy comes
+    back slower (to regen_min), her blows and dodges a touch weaker, her breath slower to come back, her heart
+    quicker. Under chill she is SHIVERING, under cold_at NUMBED: her blows and dodges weaker. Within min..max: never a
+    danger to her life."""
+    ch = cfg(eng, "heat")
+    ev = []
+    if not ch:
+        return ev
+    t = float(st.get("heat", 0.0))
+    spent = max(0.0, float(st.get("e_last", f.energy)) - float(f.energy))
+    types = f.types or []
+    hot_k = float(ch["own_type"]) if "Fire" in types else 1.0
+    cold_k = float(ch["own_type"]) if "Ice" in types else 1.0
+    hit = float(st.pop("heat_in", 0.0))
+    gain = float(ch["per_energy"]) * spent + max(-float(ch["hit_max"]), min(float(ch["hit_max"]), hit))
+    wx = (getattr(eng, "weather", None) or {}).get("kind")
+    if wx == "sun":
+        gain += float(ch["sun"]) * hot_k
+    elif wx in ("rain", "hail"):
+        gain -= float(ch[wx]) * cold_k
+    if eng.in_water(f.name) and "Water" not in types:
+        gain -= float(ch["water"]) * cold_k
+    elif eng.in_water(f.name):
+        gain -= float(ch["water"]) * 0.3
+    if any(f.name in (h.attacker, h.defender) for h in eng.holds.values()):
+        gain += float(ch["held"])
+    t += gain
+    t -= t * float(ch["cool"]) * (float(ch["cool_spent"]) if spent > 10 else 1.0)
+    t = max(float(ch["min"]), min(float(ch["max"]), t))
+    st["heat"] = round(t, 2)
+    _status(eng, f, "heat_exhausted", t >= float(ch["hot"]), "the heat of the fight building in her", ev)
+    _status(eng, f, "flushed", float(ch["warm"]) <= t < float(ch["hot"]), "the heat of the fight building in her", ev)
+    _status(eng, f, "numbed", t <= float(ch["cold_at"]), "the cold getting into her", ev)
+    _status(eng, f, "shivering", float(ch["cold_at"]) < t <= float(ch["chill"]), "the cold getting into her", ev)
+    return ev
+
+
 def _heart_tick(eng, f, st, c):
     """body.heart (since build 316): her heart rate as a running number. Each beat it moves toward what her body
     is asking of it (her resting rate, pushed up by how hard she has fought, the pain she is in, fear, panic or a
@@ -711,11 +804,12 @@ def _heart_tick(eng, f, st, c):
         signs = {}
     sm = sum(signs.get(k, (0.0, 0.0, None))[0] for k in f.status)
     air = float(st.get("air", 100))
-    cb, cd = cfg(eng, "blood"), cfg(eng, "adrenaline")
+    cb, cd, chh = cfg(eng, "blood"), cfg(eng, "adrenaline"), cfg(eng, "heat")
     target = rest * (1.0 + float(c["exert"]) * exert + float(c["pain"]) * pain + sm
                      + float(c["air"]) * max(0.0, 1.0 - air / 100.0)
                      + (float(cb["heart"]) * (1.0 - float(st.get("blood", 100)) / 100.0) if cb else 0.0)
-                     + (float(cd["heart"]) * float(st.get("adrenaline", 0)) / 100.0 if cd else 0.0))
+                     + (float(cd["heart"]) * float(st.get("adrenaline", 0)) / 100.0 if cd else 0.0)
+                     + (float(chh["heart"]) * max(0.0, float(st.get("heat", 0))) if chh else 0.0))
     target = max(rest * 0.6, min(rest * float(c["max"]), target))
     k = float(c["rise"]) if target > hr else float(c["settle"])
     hr += (target - hr) * k + eng.rng.gauss(0.0, rest * float(c["wobble"]))
@@ -724,7 +818,7 @@ def _heart_tick(eng, f, st, c):
 
 def mark(eng):
     """After her energy has come back this beat: what she starts the next one with (for the air she spends)."""
-    if not cfg(eng, "air"):
+    if not cfg(eng, "air") and not cfg(eng, "heat"):
         return
     for f in eng.fighters.values():
         state(f)["e_last"] = round(float(f.energy), 2)
@@ -738,6 +832,7 @@ def card(f):
             "head_blood": round(float(st.get("head_blood", 100))), "blood": round(float(st.get("blood", 100)), 1),
             "bleeding": {k: round(v, 2) for k, v in (st.get("bleed") or {}).items()},
             "adrenaline": round(float(st.get("adrenaline", 0))), "footing": round(float(st.get("footing", 100))),
+            "heat": round(float(st.get("heat", 0)), 1),
             "swell": {k: round(v) for k, v in (st.get("swell") or {}).items() if v >= 5},
             "fractures": sorted((f.learned.get("fractures") or {})), "limbs": {k: round(v) for k, v in (st.get("limbs") or {}).items()
                                                                if v >= 1}}

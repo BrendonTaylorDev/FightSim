@@ -302,9 +302,13 @@ def on_hits(eng, a, d, move, hits, jolts=()):
             add(_give(eng, d, "stinging_cuts", c, "the cuts adding up"))
         if mtype == "Electric" and not eng.has(d, "paralyzed") and ready("twitching"):
             add(_give(eng, d, "twitching", c, f"the shock of {move.get('name', 'it')}"))
-        if mtype == "Fire" and ready("overheated", "fire"):
+        # (since build 320) with body.heat on, her core temperature tells the heat and the cold (flushed,
+        # shivering...): these two would only say it again
+        import body as _body
+        core = bool(_body.cfg(eng, "heat"))
+        if mtype == "Fire" and not core and ready("overheated", "fire"):
             add(_give(eng, d, "overheated", c, "the fire she has taken"))
-        if mtype == "Ice" and not eng.has(d, "frozen") and ready("numb_cold", "cold"):
+        if mtype == "Ice" and not core and not eng.has(d, "frozen") and ready("numb_cold", "cold"):
             add(_give(eng, d, "numb_cold", c, "the cold she has taken"))
         if mtype == "Psychic" and ready("headache", "mind"):
             add(_give(eng, d, "headache", c, "the mind attacks"))

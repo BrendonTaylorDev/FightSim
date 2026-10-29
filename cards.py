@@ -2017,6 +2017,9 @@ STATUS_SIGNS.update({"bleeding": (0.08, 0.15, "bleeding"), "pale": (0.15, 0.2, "
                      "broken_bone": (0.12, 0.15, "a broken bone")})
 # (since build 319, body.footing)
 STATUS_SIGNS.update({"unsteady": (0.04, 0.1, "unsteady on her feet")})
+# (since build 320, body.heat) heat makes her pant and her heart race; cold slows her breathing a little
+STATUS_SIGNS.update({"flushed": (0.06, 0.35, "hot"), "heat_exhausted": (0.12, 0.6, "overheated"),
+                     "shivering": (0.03, 0.05, "shivering"), "numbed": (0.0, 0.0, "chilled through")})
 TORSO_WORDS = ("chest", "rib", "stomach", "belly", "flank", "torso")
 
 
@@ -2123,7 +2126,9 @@ def body_signs(f, o=None, rest=None):
             "breath_rest": int(br_rest), "depth": round(max(0.0, depth), 3), "grey": round(grey, 3),
             "throb": round(max(0.0, min(1.0, (pct - tf) / max(1.0, 100.0 - tf))), 3),
             "words": list(dict.fromkeys(words)), "colour": colour, "coiled": bool(v),
-            "air": ((f.get("body") or {}).get("air"))}
+            "air": ((f.get("body") or {}).get("air")),
+            "temp": (round(38.5 + float((f.get("body") or {}).get("heat")), 1)
+                     if (f.get("body") or {}).get("heat") is not None else None)}
 
 
 def breath_phase(rate, t):

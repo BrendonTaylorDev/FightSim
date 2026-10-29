@@ -800,6 +800,51 @@ def presets_help_check():
     return problems
 
 
+def heat_320_check():
+    """Build 320 (body.heat): fire heats her (less if she is a Fire type), ice cools her, she settles back toward
+    normal, and hot she is flushed with her energy coming back slower; it stays within its bounds."""
+    import body as B
+    import cards as C
+    import explain as X
+    problems = []
+    got = {}
+    for who in ("Ripples", "Blaze"):
+        e = Engine(seed=5, only=["Nocturne", who])
+        f = e.get(who)
+        e._source = "Nocturne's Flamethrower"
+        e._apply_damage(f, "Chest", 80.0)
+        e.turn += 1
+        e.beat()
+        got[who] = B.state(f).get("heat", 0)
+    if not got["Ripples"] > got["Blaze"] > 0:
+        problems.append(f"fire should heat her, a Fire type less: {got}")
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r = e.get("Ripples")
+    e._source = "Nocturne's Ice Beam"
+    e._apply_damage(r, "Chest", 80.0)
+    e.turn += 1
+    e.beat()
+    if not B.state(r)["heat"] < 0:
+        problems.append(f"ice should cool her: {B.state(r)['heat']}")
+    B.state(r)["heat"] = 3.0
+    m = B.regen_mult(e, r)
+    seq = []
+    for _ in range(4):
+        e.turn += 1
+        e.beat()
+        seq.append(B.state(r)["heat"])
+    if not (m < 1 and all(b < a for a, b in zip([3.0] + seq, seq)) and "heat_exhausted" not in r.status):
+        problems.append(f"hot she should get her energy back slower and cool down over the beats: {m} {seq} "
+                        f"{sorted(r.status)}")
+    B.state(r)["heat"] = 2.0
+    if "Temperature: 40.5" not in X.temp_text(38.5 + B.state(r)["heat"]):
+        problems.append("the heart monitor's tip should tell her temperature")
+    e.rules["body"]["heat"]["enabled"] = False
+    if B.regen_mult(e, r) != 1.0 and not B.cfg(e, "air"):
+        problems.append("body.heat.enabled false should leave her energy alone")
+    return problems
+
+
 def footing_319_check():
     """Build 319 (body.footing): a hard blow to her legs knocks her footing down more than one to her arm, it comes
     back over the beats she isn't hit, and unsteady she is staggered more easily and kept up less often."""
@@ -4065,6 +4110,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "heat320" for w in want):
+        t = time.time()
+        probs = heat_320_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 320: body heat from fire, ice and effort, cooling back  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "footing319" for w in want):

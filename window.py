@@ -727,6 +727,8 @@ class FighterCard(ttk.Frame):
         # (since build 312, window.explain) each reading explains itself on hover
         tips = self._explain_on()
         heart_tip = explain.heart_text(sg["heart"], sg["heart_rest"], sg["irregular"], sg["stopped"])
+        if sg.get("temp") is not None:
+            heart_tip += "\n" + explain.temp_text(sg["temp"])     # (since build 320, body.heat)
         row_tips = (explain.bp_text(sg["bp"], sg["bp_rest"]),
                     explain.breath_text(sg["breath"], sg["breath_rest"], sg["depth"], sg["words"], sg.get("air")))
         self._tip(c, c.create_text(6, 11, anchor="w", text=rd[0][0], font=("Segoe UI", 9, "bold"), fill=rd[0][1]),

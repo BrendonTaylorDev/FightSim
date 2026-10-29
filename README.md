@@ -654,6 +654,24 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 320
+Her body heat simulated (body.heat, its own switch in rules.json): her core temperature, carried from beat to beat.
+- **What heats and cools her.** Hard fighting warms her a little. Fire that hits her heats her and ice cools her,
+  less for her own type (a Fire type shrugs off heat, an Ice type the cold). The sun warms her; rain, hail and
+  standing in water cool her; bodies pressed together in a hold warm a little. She settles back toward normal every
+  beat, more slowly straight after a hard one.
+- **What it does.** Hot, she is FLUSHED, and past that HEAT-EXHAUSTED: her energy and breath come back slower, her
+  blows and dodges a touch weaker, her heart quicker. Cold, she is SHIVERING, then NUMBED: her blows and dodges
+  weaker. It stays within a few degrees of normal: never a danger to her life.
+- **Where to see it.** Her temperature is in the heart monitor's hover tip and /explain. Nothing new on screen.
+- With it on, the older one-off "overheated" and "numb with cold" reactions to a fire or ice hit are left to it, so
+  the heat isn't told twice.
+- **Measured:**
+  - In an ordinary fight she hardly ever gets hot enough to matter. Nocturne won 173 of 300 against Ripples with it
+    on and off alike.
+  - Under a fire-heavy fight (Cinder against Glacia) Glacia was flushed about 7 or 8 beats of a 35-beat fight, and the
+    results hardly moved (Cinder won 90 of 100 with it, 91 without).
+
 ## Build 319
 Her footing simulated (body.footing, its own switch in rules.json): how steady she is on her feet, 0 to 100, carried
 from beat to beat.
