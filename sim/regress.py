@@ -800,6 +800,28 @@ def presets_help_check():
     return problems
 
 
+def fixes_310_check():
+    """Build 310 (the second Seraphina vs Ripples paste): a paragraph told in the present tense with verbs the check
+    didn't know ("her antennae droop", "her scales shimmer", "the breeze rustles") is caught, "the faintest tremble"
+    is a noun, and bones "jutting out at odd angles ... it was broken" count as a broken bone."""
+    import narrator as N
+    problems = []
+    rx = (N.PRESENT_TENSE, N.PRESENT_POSS, N.PRESENT_PLURAL)
+    for x in ("Seraphina's antennae droop slightly, her gaze fixed on Ripples.", "Her scales shimmer under the sun.",
+              "The warm breeze rustles the grass and carries the scent of pine."):
+        if not any(r.search(x) for r in rx):
+            problems.append(f"present tense not caught: {x!r}")
+    for x in ("Her antennae stiffened, picking up the faintest tremble in the air.", "Her scales shimmered.",
+              "The faint shimmer of her scales caught the light."):
+        if any(r.search(x) for r in rx):
+            problems.append(f"past tense taken for present: {x!r}")
+    if not N.BONE_SEVERE.search("She could see the bones underneath, jutting out at odd angles, and knew it was broken."):
+        problems.append("bones jutting at odd angles should count as broken")
+    if N.BONE_SEVERE.search("The spell was broken when the bird called."):
+        problems.append("a broken spell is no broken bone")
+    return problems
+
+
 def fixes_309_check():
     """Build 309 (the build-307 Seraphina vs Ripples log): a legless Milotic can't throw a Knee Strike or grip with
     claws; Ripples' twin tails aren't lent to Seraphina's Tail Whip; a dominated fighter's breather keeps its subject;
@@ -3604,6 +3626,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "fixes310 tense310" for w in want):
+        t = time.time()
+        probs = fixes_310_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 310 fixes: present tense of the scenery caught, bones jutting at odd angles  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "fixes309 serpent tap309" for w in want):

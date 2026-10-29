@@ -399,6 +399,9 @@ BONE_SEVERE = re.compile(
     r"(?:completely|totally|clearly|definitely) broken|like a (?:\w+ )?(?:branch|stick|twig) (?:breaking|snapping|cracking)|(?:snapp\w*|broke) (?:the |her |his )?bone|"
     r"bone grinding|grinding bone|bone against bone|bones? (?:grating|scraping|grinding|rasping) (?:against|on) bone|scraping bone|scrape[sd]? (?:against )?bone|bone yield\w*|"
     r"(?:an? )?(?:unnatural|impossible|sickening|wrong) angle|bent (?:back(?:ward)?|wrong)|bending wrong|"
+    # (since build 310) "the shape of the bones underneath, jutting out at odd angles ... it was broken"
+    r"jutting (?:out )?at (?:odd|strange|awkward|wrong|unnatural|impossible) angles?|bones? (?:\w+ ){0,3}jutting|"
+    r"(?:knew|know|certain|sure|realized|realised) (?:\w+ ){0,5}(?:that )?it was broken\b|"
     r"joints? that (?:shouldn't|should not) bend|something (?:\w+ ){0,3}(?:snapped|cracked|broke)|cartilage (?:grind|pop)\w*|neck snapp\w*|"
     r"something (?:\w+ ){0,2}gave(?: way)?\b|gave (?:way )?with a (?:\w+ )?(?:pop|crack|snap|crunch)|(?:a |the )?sound like "
     r"(?:splitting|snapping|breaking|cracking)|joint (?:twist\w+|popp\w+|gave)|(?:shifted|sat|moved|twisted) wrong|"
@@ -2580,8 +2583,13 @@ BASE_PAST = {"tighten": "tightened", "heave": "heaved", "scrabble": "scrabbled",
              "blur": "blurred", "swim": "swam", "squirm": "squirmed", "scrape": "scraped", "claw": "clawed",
              "curl": "curled", "beat": "beat", "flare": "flared", "constrict": "constricted", "coil": "coiled",
              "shift": "shifted", "settle": "settled", "give": "gave", "bulge": "bulged", "tense": "tensed",
-             "jerk": "jerked", "quiver": "quivered", "thrash": "thrashed", "writhe": "writhed", "grip": "gripped"}
-PRESENT_PLURAL = re.compile(r"\b(?:[Tt]he|[Hh]er|[Tt]heir|[Ii]ts|[A-Z][a-z]+(?:'s|’s|'|’))\s+(?:\w+\s+){0,2}?\w+s\s+"
+             "jerk": "jerked", "quiver": "quivered", "thrash": "thrashed", "writhe": "writhed", "grip": "gripped",
+             # (since build 310) the scenery and her look in the present ("her antennae droop", "her scales shimmer")
+             "droop": "drooped", "shimmer": "shimmered", "glint": "glinted", "gleam": "gleamed",
+             "glisten": "glistened", "sparkle": "sparkled", "flicker": "flickered", "sway": "swayed",
+             "flutter": "fluttered", "glow": "glowed", "shine": "shone", "rustle": "rustled", "stiffen": "stiffened"}
+PRESENT_PLURAL = re.compile(r"\b(?:[Tt]he|[Hh]er|[Tt]heir|[Ii]ts|[A-Z][a-z]+(?:'s|’s|'|’))\s+(?:\w+\s+){0,2}?"
+                            r"(?:\w+s|antennae|feet|teeth)\s+"
                             r"(?:(?:around|round|on|in|of|at|against|under|over)\s+(?:\w+\s+){1,2}?)?(?:\w+ly\s+)?"
                             r"(" + "|".join(BASE_PAST) + r")\b(?!\s+(?:of|to)\b)")
 PRESENT_MODAL = re.compile(r"\b(?:[Ss]he|[Hh]e|[Ii]t|[A-Z][a-z]+)\s+(can|can't|can’t|cannot|will|won't|won’t)\s+\w+")
@@ -2599,7 +2607,11 @@ PRESENT_POSS = re.compile(r"\b(?:[A-Z][a-z]+(?:'s|’s|'|’)|[Hh]er|[Tt]he Abso
                           r"pounds|races|screams|stays|seeps|clings|drips|writhes|lolls|sprawls|laps|picks up|rises|"
                           r"hangs|seems|spreads|drifts|slides|shifts|fades|watches|waits|blurs|thuds|stops|tilts|"
                           r"favors|favours|breathes|swims|beats down|jerks|squirms|scrabbles|kicks|twitches|escapes|"
-                          r"dig|press|tremble|stutter|whirl|flare|heave)\b")
+                          # (a base form after "the faintest", "a slight" is a noun: "the faintest tremble")
+                          r"(?<!est )(?<!ight )(?<! a )(?:dig|press|tremble|stutter|whirl|flare|heave)|"
+                          # (since build 310) the scenery told in the present ("the warm breeze rustles the grass")
+                          r"rustles|carries|shimmers|glints|gleams|glistens|sparkles|flickers|quivers|flutters|glows|"
+                          r"stirs|shines|droops|stiffens)\b(?!\s+of\b)")
 
 # a sentence about how a part hurts (for "the same hurt told again and again")
 HURT_SAID = re.compile(r"\b(?:throb\w*|ach(?:e|ed|es|ing)|burn\w*|sting\w*|pain\w*|hurt\w*|sore\w*|flar\w+|pulse\w*|"
@@ -17539,6 +17551,11 @@ class Narrator:
                "radiates": "radiated", "shoots": "shot", "tenses": "tensed", "thinks": "thought", "finds": "found",
                "jolts": "jolted", "glares": "glared", "growls": "growled", "hisses": "hissed", "winces": "winced",
                "sways": "swayed", "leans": "leaned",
+               # (since build 310)
+               "rustles": "rustled", "carries": "carried", "shimmers": "shimmered", "glints": "glinted",
+               "gleams": "gleamed", "glistens": "glistened", "sparkles": "sparkled", "flickers": "flickered",
+               "quivers": "quivered", "flutters": "fluttered", "glows": "glowed", "stirs": "stirred",
+               "shines": "shone", "droops": "drooped", "stiffens": "stiffened",
                # (since build 278) more verbs a left-out passage came back with
                "scrabble": "scrabbled", "scrabbles": "scrabbled", "writhes": "writhed", "writhe": "writhed", "snap": "snapped", "snaps": "snapped", "pries": "pried", "forces": "forced", "manages": "managed", "surges": "surged", "blots": "blotted", "fades": "faded", "intensifies": "intensified", "tighten": "tightened", "shudders": "shuddered", "strains": "strained", "constricts": "constricted", "claws": "clawed", "can": "could", "hears": "heard", "struggles": "struggled", "bucks": "bucked", "thrashes": "thrashed", "begins": "began"}
 

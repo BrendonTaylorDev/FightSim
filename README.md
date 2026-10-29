@@ -654,6 +654,18 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 310
+Fixes from the second paste of the Seraphina vs Ripples fight.
+- **A paragraph in the present tense got through:** "Seraphina's antennae droop slightly... Her scales shimmer... The
+  warm breeze rustles the grass and carries..." The check didn't know these verbs (droop, shimmer, glint, gleam,
+  glisten, sparkle, flicker, sway, flutter, glow, shine, rustle, stiffen) or that "antennae" is a plural. It knows them
+  now, and puts them into the past itself. An older false alarm is fixed along the way: "the faintest tremble in the
+  air" was being read as a verb.
+- **Bones "jutting out at odd angles, ... it was broken"** now count as a broken bone. Like any other, it's cut unless
+  that part is hurt badly enough to break.
+- The "coat torn and bleeding where Seraphina's coils had dug in" came from her grip "with her full body weight and
+  claws". Build 309 already rules that grip out for a Milotic.
+
 ## Build 309
 Fixes from your build-307 Seraphina vs Ripples submission fight.
 - **A Milotic has no knees or claws:** the director gave Seraphina a "Knee Strike" with her "right foreleg" (power 45,
