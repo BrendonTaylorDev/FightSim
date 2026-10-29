@@ -6989,7 +6989,10 @@ class Narrator:
     FLAVOR_FEATS = [(r"\bblades?\b|\bedges? of (?:her|its) tails?", "blade"), (r"\bfins?\b", "fins"),
                     (r"\bhorns?\b", "horn"), (r"\bwings?\b", "wings"), (r"\btalons?\b", "talons"),
                     (r"\bbeak\b", "beak"), (r"\bcoils?\b", "coils"), (r"\bfeathers?\b", "feathers"),
-                    (r"\bmane\b", "mane"), (r"\bcrest\b", "crest")]
+                    (r"\bmane\b", "mane"), (r"\bcrest\b", "crest"),
+                    # (since build 309) Ripples' twin tails lent to Seraphina's Tail Whip: only a fighter with more
+                    # than one tail swings her tails
+                    (r"\btwin tails\b|\bboth (?:of )?(?:her )?tails\b|\bher tails\b", "tails")]
 
     def _clean_flavor(self, a):
         """The director's one-line direction can give the attacker a body she lacks (tail blades, a fin) or the
@@ -7026,7 +7029,7 @@ class Narrator:
                 bad = bans is not None and bans.search(bit) and not re.search(r"\b(?:opponent|foe|other)\b", low)
                 bad = bad or (gripless and HELD_CLAIM.search(bit) is not None)
                 for rx, tag in self.FLAVOR_FEATS:
-                    if re.search(rx, low) and tag not in feats and tag.rstrip("s") not in parts \
+                    if re.search(rx, low) and tag not in feats and (tag == "tails" or tag.rstrip("s") not in parts) \
                             and not re.search(rx, mv) and not (dfn and dfn.lower() in low):
                         bad = True
                     elif re.search(rx, low) and mv and tag in ("fins", "blade") and not re.search(rx, mv) \

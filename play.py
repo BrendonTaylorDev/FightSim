@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-29 build 308 (body and mind reactions, longer holds, the face)"
+VERSION = "2026-10-29 build 309 (fixes from the Seraphina vs Ripples fight)"
 
 HELP = """
 =============================================================================================

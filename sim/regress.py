@@ -800,6 +800,82 @@ def presets_help_check():
     return problems
 
 
+def fixes_309_check():
+    """Build 309 (the build-307 Seraphina vs Ripples log): a legless Milotic can't throw a Knee Strike or grip with
+    claws; Ripples' twin tails aren't lent to Seraphina's Tail Whip; a dominated fighter's breather keeps its subject;
+    a tap comes on faster the further past her limit the pain is (tap.blend.past_limit)."""
+    import director as D
+    import narrator as N
+    from engine import Hold
+    problems = []
+    e = Engine(seed=3, only=["Seraphina", "Ripples"])
+    sp, rp = e.get("Seraphina"), e.get("Ripples")
+    if not e.strike_problem(sp, "Knee Strike") or e.strike_problem(rp, "Knee Strike") or e.strike_problem(sp, "Tail Whip"):
+        problems.append("a Knee Strike should need legs (a Milotic has none, a Buizel does), a Tail Whip only a tail")
+    if not e.grip_problem(sp, "her full body weight and claws"):
+        problems.append("a Milotic has no claws to grip with")
+    try:
+        D.resolve_many(e, [{"action": "strike", "attacker": "Seraphina", "defender": "Ripples", "move": "Knee Strike",
+                            "part": "Left Knee", "flavor": "she brings her right foreleg down on the knee"}])
+        problems.append("the director's Knee Strike for a Milotic should be refused")
+    except ValueError:
+        pass
+    n = N.Narrator("x", e.rules)
+    n.damage_by = {"Seraphina": {p: 0 for p in sp.parts}, "Ripples": {p: 0 for p in rp.parts}}
+    fl = n._clean_flavor({"attacker": "Seraphina", "defender": "Ripples", "move": {"name": "Tail Whip", "about": ""},
+                          "flavor": "twin tails slam across the left foot"})
+    if "twin tails" in fl:
+        problems.append(f"Seraphina has one tail: twin tails should be dropped from her flavor: {fl!r}")
+    # the tap build-up runs faster far past her limit
+    def chance(on):
+        t = Engine(seed=5, only=["Seraphina", "Ripples"])
+        t.rules["finish"]["submission"]["enabled"] = True
+        t.rules["finish"]["submission"]["tap"]["blend"]["past_limit"]["enabled"] = on
+        r = t.get("Ripples")
+        r.health = r.max_health * 0.18
+        r.part("Left Foot").damage = 500
+        t.downed["Ripples"] = 0
+        t.holds[1] = Hold(1, "Seraphina", "Ripples", "Left Foot", 30, 0, "", turns_active=3, with_part="her tail")
+        t.rng.random = lambda: 0.9999
+        t._tap_out_tick()
+        return float((r.learned.get("tap_state") or {}).get("tap_only") or 0)
+    off, on = chance(False), chance(True)
+    if not on > 1.5 * off:
+        problems.append(f"far past her limit the tap should come on faster: {off:.3f} without past_limit, {on:.3f} with")
+    # coils wound on again soon after start part of the way along (constriction.recovery), her heart still raised
+    c = Engine(seed=5, only=["Seraphina", "Ripples"])
+    c.rules["finish"]["submission"]["enabled"] = True
+    c._hold_break_tick = lambda *a, **k: []
+    c.rng.random = lambda: 0.9999
+    cr = c.get("Ripples")
+    c.holds[1] = Hold(1, "Seraphina", "Ripples", "Chest", 20, 0, "", turns_active=1, with_part="her coils", coil=True)
+    for _ in range(5):
+        c.beat()
+    c.holds.clear()
+    c.beat()
+    c.holds[2] = Hold(2, "Seraphina", "Ripples", "Chest", 20, 0, "", turns_active=1, with_part="her coils", coil=True)
+    c.beat()
+    cp = cr.learned.get("compress") or {}
+    hr = ((cr.learned.get("tap_state") or {}).get("vitals") or {}).get("heart") or 0
+    if not (cp.get("carried") and float(cp.get("circ", 0)) > 5 and hr > float(cr.heart_rest or 100)):
+        problems.append(f"coils wound on again soon after should start part of the way along, her heart above resting: "
+                        f"{cp.get('carried')} circ {cp.get('circ')} heart {hr}")
+    # in coils round her body she blacks out more than she taps (constriction.tap_mult)
+    t = Engine(seed=5, only=["Seraphina", "Ripples"])
+    t.rules["finish"]["submission"]["enabled"] = True
+    r = t.get("Ripples")
+    r.health = r.max_health * 0.18
+    r.part("Chest").damage = 500
+    t.downed["Ripples"] = 0
+    t.holds[1] = Hold(1, "Seraphina", "Ripples", "Chest", 30, 0, "", turns_active=3, with_part="her coils", coil=True)
+    t.rng.random = lambda: 0.9999
+    t._tap_out_tick()
+    why = [w for w, _m in (r.learned.get("tap_state") or {}).get("why_low") or ()]
+    if not any("coils take her blood" in w for w in why):
+        problems.append(f"a tap in coils round her body should be damped (constriction.tap_mult): {why}")
+    return problems
+
+
 def reactions_308_check():
     """Build 308 (moves.reactions, holds.endurance, concussion.min_blows, director.face_chance): a blow leaves what it
     should by what it was and where it landed, the ones that add up only once they have, never more than a few at once
@@ -1262,7 +1338,8 @@ def compression_check():
     if "40%" not in early or "30%" not in late or "10%" not in late or "stopped" not in gone:
         problems.append(f"the black-out line should say how far off it is, then the chances: {early!r} {late!r} {gone!r}")
     vo = e._vitals_with_odds(e.get("Ripples"), 0.4)
-    if vo is not None and abs(vo.get("stop_chance", 0) - 0.4 * 0.35) > 1e-6:
+    hs_ = float(e.rules["finish"]["submission"]["constriction"]["heart_stop"]["chance"])
+    if vo is not None and abs(vo.get("stop_chance", 0) - 0.4 * hs_) > 1e-6:
         problems.append(f"the heart-stop chance is the black-out chance x heart_stop.chance: {vo}")
     # build 304: the grips on her as a picture, by what each does to her
     kinds = {cards.grip_kind(g) for g in (
@@ -3527,6 +3604,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "fixes309 serpent tap309" for w in want):
+        t = time.time()
+        probs = fixes_309_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 309 fixes: no knees or claws on a Milotic, no borrowed tails, faster taps far past her limit  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "reactions308 endurance face" for w in want):

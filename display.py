@@ -1105,7 +1105,10 @@ class Display:
             if a.get("winner"):
                 out.append(f"- 🏆 **Winner: {a['winner']}**")
         elif t == "breather":
-            out.append(f"⏸️ **Breather**" + (f": {a['flavor']}" if str(a.get("flavor") or "").strip() else
+            fl_ = str(a.get("flavor") or "").strip()
+            if fl_ and a.get("attacker") and fl_[:1].islower():
+                fl_ = f"{a['attacker']} {fl_}"     # (since build 309) "is given no room..." had lost its subject
+            out.append(f"⏸️ **Breather**" + (f": {fl_}" if fl_ else
                                              f" ({a['attacker']} catches her breath)" if a.get("attacker") else ""))
         elif t == "heal":
             out.append(f"💚 **{a['fighter']} recovers**" + (f": {a['flavor']}" if a.get("flavor") else ""))

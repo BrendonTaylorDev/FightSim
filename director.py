@@ -1403,7 +1403,7 @@ def resolve(engine, b):
             raise ValueError(f"'{named_}' is a move {b.get('attacker')} doesn't know. Use one of hers ({own_}), or "
                              f"name an improvised blow by what it is (a kick, a tail swipe, a shoulder)")
         if not manual and exact_:
-            why = engine.grip_problem(engine.get(b.get("attacker")), named_)
+            why = engine.strike_problem(engine.get(b.get("attacker")), named_)
             if why:
                 raise ValueError(f"'{named_}' can't be done: {why}. Name an improvised blow by what her body has: "
                                  f"{', '.join(engine.get(b.get('attacker')).parts)}")
@@ -1448,6 +1448,11 @@ def resolve(engine, b):
             # instead of a bare hit that skips them
             target = ("spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1
                       else "targeted")
+            why_ = engine.strike_problem(engine.get(att), b.get("move"))
+            if why_:
+                # (since build 309) a Knee Strike from a Milotic: name the blow by what her body has
+                raise ValueError(f"'{b.get('move')}' can't be done: {why_}. Name the blow by what her body has: "
+                                 f"{', '.join(engine.get(att).parts)}")
             move = engine.improvised_move(b.get("move"), "Normal", b.get("severity"), target, b.get("flavor", ""))
         elif move is None and not manual and act in ("strike", "combo") and mv_name in ("attack", "strike", "blow"):
             target = ("spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1

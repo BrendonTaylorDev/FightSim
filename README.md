@@ -654,6 +654,43 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 309
+Fixes from your build-307 Seraphina vs Ripples submission fight.
+- **A Milotic has no knees or claws:** the director gave Seraphina a "Knee Strike" with her "right foreleg" (power 45,
+  the strongest blow of the fight) and a grip "with her full body weight and claws". An improvised blow whose name
+  asks for a limb she has none of (a kick, a knee, a punch, a claw swipe, from a body with no legs or arms) is now
+  refused, and the director is told to name the blow by what her body has. A grip with claws needs paws, hands, feet
+  or talons.
+- **No borrowed twin tails:** Seraphina's Tail Whip came with "twin tails slam across Ripples' left foot", which are
+  Ripples' tails, and the prose followed it. Twin tails are now dropped from the attack's direction for a fighter who
+  has one tail.
+- **"Breather: is given no room to answer Seraphina"** had lost its subject on the screen: it now reads "Ripples is
+  given no room...".
+- **Taps come a little sooner when the pain is far past her limit** (`finish.submission.tap.blend.past_limit`): with
+  her foot crushed past 500% and almost no health left, Ripples' tap chance on a hold's third beat was 1%. The chance
+  builds up over a hold's first eight beats, and that build-up started over every time the grip was let go and put
+  back on. It now runs up to 1.35 times faster the further past her resistance the pain is. Bigger values made 3-tap
+  matches a sixth shorter or more in testing, so it is kept small. Not for coils round her body (below).
+- **In coils, she blacks out more than she taps** (`constriction.tap_mult` 0.35, `constriction.heart_stop.chance`
+  0.35 → 0.6): coils round her chest or middle make her tap only about a third as often as other holds would. When she
+  blacks out in them, her heart now stops for a moment (and starts again on its own) more often than not. In 80 3-tap
+  Seraphina vs Ripples matches, coils ended a round:
+  - before: 50 taps, 79 black-outs, 40 black-outs with her heart stopping;
+  - after (with the recovery below): 14 taps, 75 black-outs, 78 black-outs with her heart stopping.
+- **Coils wound on again soon after start where her body still is** (`constriction.recovery`): before, each new coil
+  started from nothing, even one wound on a beat after the last let go. What the last coils did to her blood now fades
+  by half each beat, and how far her chest was squeezed in fades faster. Coils back on within four beats start part of
+  the way along: her heart is still raised (racing as the blood came back, never below her resting rate), and it slows
+  and greys sooner than the first time.
+- **Balance** (3-tap submission matches, 80 no-model fights each, build 308 against this build):
+
+  | Pairing | Wins | Fight length |
+  |---|---|---|
+  | Seraphina vs Ripples | Seraphina 44, Ripples 28 (8 unfinished) → Seraphina 41, Ripples 32 (7 unfinished) | 107 → 101 beats |
+  | Nerine vs Ripples | Nerine 43, Ripples 36 → Nerine 41, Ripples 39 | 83 → 77 beats |
+
+  Knockout matches don't change.
+
 ## Build 308
 Attacks now cause the body and mind reactions you'd expect, small and short-lived, so fights run as long as before.
 Coils and submissions can last longer, and the face gets hit sometimes. Everything is a switch in rules.json

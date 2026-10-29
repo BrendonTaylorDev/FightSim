@@ -5579,7 +5579,26 @@ class Engine:
                   (r"\btails?\b", r"tail"), (r"\bwings?\b", r"wing"), (r"\btalons?\b", r"talon"),
                   (r"\bhorns?\b", r"horn"), (r"\bfins?\b", r"fin"),
                   (r"\b(?:legs?|knees?|feet|foot|heels?|thighs?|shins?)\b", r"thigh|leg|knee|foot|hock|talon"),
-                  (r"\bcoils?\b", r"^(?!.*(?:thigh|leg|knee|foot|hock|talon)).*$")]
+                  (r"\bcoils?\b", r"^(?!.*(?:thigh|leg|knee|foot|hock|talon)).*$"),
+                  # (since build 309) claws grow on paws, hands or feet: a Milotic gripping "with her full body weight
+                  # and claws" has none
+                  (r"\bclaws?\b", r"arm|paw|hand|foreleg|foot|talon|claw")]
+    # (since build 309) what an improvised blow's name asks of her body: a serpent has nothing to kick or knee with
+    STRIKE_NEEDS = [(r"\b(?:kicks?|kicked|stomps?|stamps?|knee(?:s|d)?|knee ?strike|heel|roundhouse)\b",
+                     r"thigh|leg|knee|foot|hock|talon"),
+                    (r"\b(?:punch\w*|jabs?|uppercut|fists?|elbows?|chops?|palm strike)\b", r"arm|paw|hand|foreleg"),
+                    (r"\b(?:claw\w*|scratch\w*|swipes?)\b", r"arm|paw|hand|foreleg|foot|talon|claw|wing")]
+
+    def strike_problem(self, f, name):
+        """(since build 309) Why her body can't throw this improvised blow ('' when it can): the name asks for a limb
+        she has none of (a Knee Strike from a Milotic)."""
+        names = " | ".join(n.lower() for n in f.parts)
+        w = str(name or "").lower()
+        for words, has in self.STRIKE_NEEDS:
+            m = re.search(words, w)
+            if m and not re.search(has, names):
+                return f"{f.name} has nothing to {m.group(0)} with"
+        return self.grip_problem(f, w)
 
     def grip_problem(self, f, with_):
         """Why her body can't grip with this ('' when it can): the grip's words ask for a part she has none of."""
@@ -10631,7 +10650,15 @@ class Engine:
                 if surge > 1.0:
                     base *= float(bl.get("surge", 0.6))
                     why_low.append(("an adrenaline surge", float(bl.get("surge", 0.6))))
-                ramp = min(1.0, max(0, beats - 1) / max(1.0, float(bl.get("ramp_beats", 8))))
+                # (since build 309, blend.past_limit) the further past what she can bear the pain is, the faster the
+                # build-up runs: pain 956 against a resistance of 42 was still at 1% on the hold's third beat (the
+                # Seraphina vs Ripples log). x (1 + per x how many times over her resistance it is), at most max
+                pl = bl.get("past_limit") or {}
+                fast = 1.0
+                coiled_ = any(h.coil and self.coil_scope(h.part) == "body" for h in hs)
+                if pl.get("enabled", True) and over > 0 and not coiled_:    # (coils go by the blood: constriction)
+                    fast = min(float(pl.get("max", 3.0)), 1.0 + float(pl.get("per", 0.25)) * over / max(1.0, resist))
+                ramp = min(1.0, max(0, beats - 1) * fast / max(1.0, float(bl.get("ramp_beats", 8))))
                 tap = base * ramp ** float(bl.get("ramp_power", 2))
                 if ramp < 1.0:
                     why_low.append((f"beat {beats} of the hold, still building", ramp ** float(bl.get("ramp_power", 2))))
@@ -10799,6 +10826,12 @@ class Engine:
                 if tap >= 0.15:
                     self.quirk_moment(d, "stubborn", f"{d.name} is past her limit and should be giving in, and she "
                                                      f"won't: pure stubbornness, more than sense, keeps her from tapping")
+            tm_ = float(kcfg.get("tap_mult", 1.0)) if body_coils else 1.0
+            if tap > 0 and tm_ != 1.0:
+                # (since build 309, constriction.tap_mult) in coils round her body she blacks out far more often than
+                # she gives in: the squeeze takes her blood and her breath before it takes her will
+                tap *= tm_
+                why_low.append(("the coils take her blood before her will", tm_))
             if tap > 0 and self._chance(tap, f"{dn} tapping out to {poss_word(a)} {name} (pain {pain:.0f} against "
                                         f"her resistance {resist:.0f})", "SHE TAPS", "she holds on"):
                 how = "tap"
@@ -11282,7 +11315,18 @@ class Engine:
             return per * tight * big * max(h.turns_active for h in coils)
         cp = d.learned.get("compress") or {}
         if cp.get("by") != a or cp.get("hid") != hid:
+            # (since build 309, constriction.recovery) coils let go and wound on again soon after: her body hasn't
+            # caught up yet. What the last coils did to her blood and her chest fades by keep (blood) and keep_squeeze
+            # (her chest springing back) for every beat since, so the new coils start part of the way along: her
+            # heart still racing as the blood came back, then slowing again sooner than the first time
+            rc = kcfg.get("recovery") or {}
+            gap = self.turn - int(cp.get("turn", -99))
+            carry = cp if rc.get("enabled", True) and cp and 1 <= gap <= int(rc.get("beats", 4)) else None
             cp = {"by": a, "hid": hid, "c": 0.0, "circ": 0.0, "turn": -1}
+            if carry:
+                cp["circ"] = round(float(carry.get("circ", 0.0)) * float(rc.get("keep", 0.5)) ** gap, 2)
+                cp["c"] = round(float(carry.get("c", 0.0)) * float(rc.get("keep_squeeze", 0.3)) ** gap, 2)
+                cp["carried"] = [gap, cp["circ"]]
         if cp.get("turn") == self.turn:
             return float(cp.get("circ", 0.0))        # (once a beat, however many tap checks look at it)
         # (ring: she braces with the whole band the coils go round, front, sides and back, not one part)
