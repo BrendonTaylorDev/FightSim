@@ -2184,6 +2184,24 @@ def resolve_many(engine, actions):
     stunned_ = []
     for b in actions:
         f_ = engine.fighters.get(str((b or {}).get("attacker") or "").lower()) if isinstance(b, dict) else None
+        if f_ is not None and engine.has(f_, "limp") and b.get("action") not in ("breather", "wait"):
+            # (since build 313) out in the coils, her heart stopped: she does nothing at all
+            if not any(x.get("attacker") == f_.name and x.get("action") == "breather" for x in stunned_):
+                stunned_.append({"action": "breather", "attacker": f_.name,
+                                 "flavor": "hangs limp in the coils, knowing nothing"})
+            continue
+        lim_ = None
+        try:
+            dn_ = str(b.get("defender") or "").split(",")[0].strip()
+            lim_ = engine.get(dn_) if dn_ and f_ is not None and dn_.lower() != f_.name.lower() else None
+        except ValueError:
+            lim_ = None
+        if lim_ is not None and engine.has(lim_, "limp") and not b.get("_manual") \
+                and (lim_.learned.get("limp") or [None])[0] == f_.name:
+            # the coiler, holding her limp: she keeps the coils on and waits, nothing more
+            stunned_.append({"action": "breather", "attacker": f_.name,
+                             "flavor": f"keeps her coils on {lim_.name}, still and patient, feeling for a heartbeat"})
+            continue
         if f_ is not None and engine.has(f_, "stunned") and b.get("action") not in ("breather", "wait"):
             if not any(x.get("attacker") == f_.name and x.get("action") == "breather" for x in stunned_):
                 stunned_.append({"action": "breather", "attacker": f_.name,

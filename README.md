@@ -654,6 +654,37 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 313
+Her heart under the coils, simulated; the coils staying on her after it stops; and the writing weaknesses from the
+IQ4_XS paste.
+- **The heart is its own number now (constriction.heart).** Instead of a 60% roll when she blacks out, her heart
+  wears down beat by beat. How fast depends on what the coils press with (mmHg) against her blood pressure, how far
+  she is squeezed in, chest or middle, the number of coils, and how long they have held. Her health and energy slow
+  it, and a small wobble each beat keeps it from playing out the same way twice. It races at first, then slows, then
+  goes uneven, and while uneven it can now and then give out early. When it reaches zero it stops, and she blacks out
+  with it.
+- **The black-out is almost always her heart.** The blood gauge can still put her out first, at a tenth of its old
+  chance (`gauge_out_mult`).
+- **The card shows it coming:** the line under the coils' monitor reads "Her heart is slowing: 125/min; it stops at
+  about 40/min", then "failing", then "nearly gone". Hovering explains what drives it.
+- **The coils stay on after her heart stops (after_hold).** For `beats_min` to `beats_max` more beats (1 to 3), the
+  coiler keeps holding her limp body. She can't act, nobody strikes her, and the coils do her no more harm. The story
+  is told what that looks like, without gore. Then the coils come off, her heart starts again on its own, and she
+  comes round. In the match's final black-out it is told rather than played. It is never a death.
+- **Measured:** in 80 three-tap Seraphina vs Ripples matches, 153 of 155 coil black-outs came with her heart stopping
+  (96 of 154 before). Taps in coils went from 23 to 13. Match length was unchanged (94.7 beats against 94.6).
+- **Writing fixes:**
+  - **A dialogue tag after a quote is no longer deleted.** `"No," she hissed.` used to lose "she hissed" to the clean-up
+    rule for sentences left starting mid-clause. That is how "Give up, little one," was left with no speaker.
+  - **Cut seams are mended:** a clause ending on its article ("slow and even, a deliberate."), a line of speech whose
+    speaker was cut, and a sentence leaning on a cut one ("She glanced down at it") go with it.
+  - **Repeats across beats (narration.repeat_across):** a phrase from the last two beats is caught like one repeated
+    within a beat, and five-word runs count too ("her vision greying at the edges").
+  - **Blunt blows (narration.blow_feel):** "a line of fire drawn in one swift, brutal stroke" for a head-butt is
+    caught when nothing that cuts landed this beat.
+  - **Room in the coils (narration.coil_room):** at 80% squeezed in or more, twisting round to look, spinning,
+    arching or thrashing is caught and rewritten to small movements.
+
 ## Build 312
 What the card shows, explained, without anything new drawn on it (window.explain, on by default).
 - **Hover over her status line** to see each status on her: what it is, how many beats it has left, and what it does

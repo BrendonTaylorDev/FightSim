@@ -27,6 +27,8 @@ _WHAT = {
 # what some statuses do that isn't a multiplier
 _EXTRA = {
     "stunned": "she can't act this beat at all: no attack, no dodge, no escape, no get-up",
+    "limp": "she can't act, and nobody may strike her; the coils do her no more harm, and when they come off her "
+            "heart starts again on its own",
     "flinched": "she can't attack this beat",
     "asleep": "she can't act or dodge until she wakes",
     "frozen": "she can't act or dodge until the ice breaks",
@@ -191,6 +193,18 @@ def breath_text(breath, rest, depth, words=()):
     why = [w for w in words if re.search(r"breath|winded|spent|ribs|coils|air", w)]
     return (f"Breathing: {breath} breaths a minute; at rest {rest}. Each breath is {deep}. Fast and shallow means she "
             f"is short of air; fast and deep, working hard." + (f"\nWhy: {', '.join(why)}." if why else ""))
+
+
+def heart_wear_text(v):
+    """constriction.heart (since build 313): her heart under the coils, worn down beat by beat."""
+    r = v.get("heart_reserve")
+    if r is None:
+        return ""
+    return (f"Her heart under the coils: {round(float(r) * 100)}% of its strength left. Every beat the coils take some: "
+            f"more the harder they press past her blood pressure, the further in she is squeezed, round her chest more "
+            f"than her middle, more coils, a bigger coiler, the longer they stay on; less the more health and energy she "
+            f"has. It races at first, then slows, then goes uneven; at about {v.get('stop_at')}/min it stops, and she "
+            f"blacks out with it. Coils off, it comes back. It never kills: it always starts again.")
 
 
 def blood_text(blood, out_at=None):

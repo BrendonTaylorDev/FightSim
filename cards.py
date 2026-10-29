@@ -1601,6 +1601,19 @@ def blackout_text(v):
         return "Blacked out, her heart stopped (it starts again once the coils come off)", "#ef4444"
     at, blood = v.get("out_at"), float(v.get("blood", 0) or 0)
     o, h = float(v.get("out_chance") or 0) * 100, float(v.get("stop_chance") or 0) * 100
+    if v.get("heart_reserve") is not None:
+        # (since build 313, constriction.heart) her heart is what takes her: how far it has worn down, and where it
+        # stops, so it can be watched coming
+        hr, stop = v.get("heart", 0), v.get("stop_at", 0)
+        r = float(v["heart_reserve"])
+        extra = f" · black-out from the blood alone {pct_text(o)}" if o > 0 else ""
+        if v.get("would_stop"):
+            return f"Her heart is nearly gone: {hr}/min, it stops at about {stop}/min{extra}", "#ef4444"
+        if v.get("irregular"):
+            return f"Her heart is failing: {hr}/min and uneven; it stops at about {stop}/min{extra}", "#f97316"
+        if r < 0.75:
+            return f"Her heart is slowing: {hr}/min; it stops at about {stop}/min{extra}", "#f59e0b"
+        return f"Her heart is racing ({hr}/min) against the squeeze; it holds for now{extra}", "#d1d5db"
     if at is None:
         return "", "#d1d5db"
     if blood < at and o <= 0:

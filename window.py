@@ -790,7 +790,8 @@ class FighterCard(ttk.Frame):
         t1 = c.create_text(ox + 6, 12, anchor="w", text="♥ stopped" if v.get("stopped") else f"♥ {v['heart']}/min",
                            font=("Segoe UI", 9, "bold"), fill=col)
         heart_tip = explain.heart_text(v.get("heart", 0), v.get("heart_rest") or 100, v.get("irregular"),
-                                       v.get("stopped"), True)
+                                       v.get("stopped"), True) + ("\n\n" + explain.heart_wear_text(v)
+                                                                  if v.get("heart_reserve") is not None else "")
         self._tip(c, t1, heart_tip, tips)
         if v.get("irregular"):
             self._tip(c, c.create_text(ox + 6, 25, anchor="w", text="irregular", font=("Segoe UI", 7),
@@ -874,7 +875,7 @@ class FighterCard(ttk.Frame):
         if odds[0]:
             od = c.create_text(ox + 6, low, anchor="nw", text=odds[0], width=ww - 12, font=("Segoe UI", 8, "bold"),
                                fill=odds[1])
-            self._tip(c, od, blood_tip, tips)
+            self._tip(c, od, explain.heart_wear_text(v) or blood_tip, tips)
             low = c.bbox(od)[3] + 4
         if figure:
             self._squeeze_figure(c, v, w, ox, low)

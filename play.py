@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-29 build 312 (statuses and vitals explain themselves on hover, /explain)"
+VERSION = "2026-10-29 build 313 (her heart under the coils simulated, the coils staying on after it stops, writing fixes)"
 
 HELP = """
 =============================================================================================

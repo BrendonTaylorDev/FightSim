@@ -800,6 +800,87 @@ def presets_help_check():
     return problems
 
 
+def prose_313_check():
+    """Build 313 (the writing in the IQ4_XS paste): the seams a cut leaves (a clause ending on its article, a line of
+    speech with its speaker gone, a sentence leaning back on a cut one), a dialogue tag no longer eaten after a
+    quote, five-word repeats and repeats across beats, a blunt blow told as a cut, and big moves in tight coils."""
+    import narrator as N
+    problems = []
+    m = N._mend_orphans('The constriction was slow and even, a deliberate. "No," she hissed. "Give up, little one," '
+                        "Ripples' breath went out.")
+    if "even." not in m or "a deliberate" in m or "she hissed" not in m or '"Give up, little one."' not in m:
+        problems.append(f"the seams should be mended and the speaker kept: {m!r}")
+    left = N._cut_with_leaners(["She smelled the earth.", "Her arm was swollen.", "She glanced down at it.", "Fine."],
+                               {1})
+    if left != ["She smelled the earth.", "Fine."]:
+        problems.append(f"a sentence leaning on a cut one should go with it: {left}")
+    s_ = H.session(3, fighters="Seraphina,Ripples")
+    n = s_.narrator
+    rep = n._repeated_phrases("Her vision greying at the edges, she held on. Then her vision greying at the edges "
+                              "again.")
+    if not rep:
+        problems.append("a five-word repeat ('her vision greying at the edges') should be caught")
+    rep = n._repeated_phrases("Seraphina hummed, a calm contrast to the ragged breaths.", "",
+                              "Her voice was a calm contrast to the ragged breaths below.")
+    if not rep or not rep[0][2]:
+        problems.append(f"a phrase from the last beat should be caught: {rep}")
+    n._blow_kinds, n._squeezed = {"Ripples": {"blunt"}}, {"Ripples": 92}
+    bad = n._bad_sentences("It was a line of fire drawn in one swift, brutal stroke. Ripples twisted round to look at "
+                           "her back. Seraphina felt her go still.")
+    if not any("BLUNT" in str(w) for w in bad.values()):
+        problems.append("a blunt blow told as a cut should be caught")
+    if not any("almost no room" in str(w) for w in bad.values()):
+        problems.append("twisting round in a 92% squeeze should be caught")
+    n._blow_kinds, n._squeezed = {"Ripples": {"cut", "blunt"}}, {}
+    if any("BLUNT" in str(w) for w in n._bad_sentences("A line of fire across her ribs.").values()):
+        problems.append("a claw this beat should let a cut be told")
+    return problems
+
+
+def heart_313_check():
+    """Build 313 (constriction.heart): her heart under the coils wears down beat by beat (racing, then slowing, then
+    uneven) and stopping is what puts her out; in a several-tap match the coils stay on her limp body for
+    after_hold beats doing no harm, then come off and her heart starts again."""
+    from engine import Hold
+    problems = []
+    with contextlib.redirect_stdout(io.StringIO()):
+        s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.rules["finish"]["submission"]["taps"]["enabled"] = True
+    e.rules["finish"]["submission"]["constriction"]["heart"]["sudden"] = 0
+    e.rules["finish"]["submission"]["constriction"]["heart"]["after_hold"].update(beats_min=2, beats_max=2)
+    e._hold_break_tick = lambda *a, **k: []
+    e.start_submission("Seraphina", "Ripples", "upright coil")
+    r = e.get("Ripples")
+    rs, bpms, ended, limp_hp = [], [], None, []
+    for _ in range(30):
+        e.turn += 1
+        evs = e.beat()
+        ch = r.learned.get("coil_heart") or {}
+        if not e.has(r, "limp") and ended is None:
+            rs.append(ch.get("r"))
+            bpms.append(ch.get("bpm"))
+        ends = [x for x in evs if x.get("type") == "tap_count"]
+        if ends:
+            ended = ends[0]
+        if e.has(r, "limp"):
+            limp_hp.append(r.health)
+        if any(x.get("type") == "heart_back" for x in evs):
+            break
+    if not ended or not ended.get("heart_stopped") or not ended.get("after_hold"):
+        problems.append(f"the coils should end in her heart stopping, the coils staying on: {ended}")
+    if any(b is not None and a is not None and b > a for a, b in zip(rs, rs[1:])):
+        problems.append(f"her heart's reserve should only wear down while the coils hold: {rs}")
+    if not (max(b for b in bpms if b) > bpms[0] and bpms[-2] < max(b for b in bpms if b)):
+        problems.append(f"her heart should race first, then slow: {bpms}")
+    if len(limp_hp) >= 2 and limp_hp[0] - limp_hp[-1] > 0.02 * r.max_health:
+        problems.append(f"the coils on her limp body should do her no more harm: {limp_hp}")
+    if e.has(r, "limp") or any(h.defender == "Ripples" for h in e.holds.values()):
+        problems.append("after the after-hold the coils should be off and she should come round")
+    return problems
+
+
 def explain_312_check():
     """Build 312 (window.explain, /explain): a status explains what it is and what it does, with the numbers from the
     rules in force (a /set change shows); the vitals say what is normal and what hers means."""
@@ -1430,8 +1511,10 @@ def compression_check():
         problems.append(f"the black-out line should say how far off it is, then the chances: {early!r} {late!r} {gone!r}")
     vo = e._vitals_with_odds(e.get("Ripples"), 0.4)
     hs_ = float(e.rules["finish"]["submission"]["constriction"]["heart_stop"]["chance"])
-    if vo is not None and abs(vo.get("stop_chance", 0) - 0.4 * hs_) > 1e-6:
-        problems.append(f"the heart-stop chance is the black-out chance x heart_stop.chance: {vo}")
+    want_ = (0.4 if vo.get("would_stop") else 0.0) if vo is not None and vo.get("heart_reserve") is not None \
+        else 0.4 * hs_   # (since build 313, constriction.heart: it stops as she goes under only if worn that low)
+    if vo is not None and abs(vo.get("stop_chance", 0) - want_) > 1e-6:
+        problems.append(f"the heart-stop chance should follow the heart (or heart_stop.chance with it off): {vo}")
     # build 304: the grips on her as a picture, by what each does to her
     kinds = {cards.grip_kind(g) for g in (
         {"what": "standing sleeper", "parts": ["Neck"]}, {"what": "full nelson", "parts": ["Neck", "Left Shoulder"]},
@@ -3695,6 +3778,20 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "prose313 prose" for w in want):
+        t = time.time()
+        probs = prose_313_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 313: cut seams mended, speakers kept, repeats across beats, blunt blows, room in the coils  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "heart313 heart" for w in want):
+        t = time.time()
+        probs = heart_313_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 313: her heart wears down in the coils and stops; the coils stay on her limp, harmlessly, then she comes round  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "explain312 explain" for w in want):

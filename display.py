@@ -1285,11 +1285,21 @@ class Display:
                                     f"{e['chance'] * 100:.0f}%)")))
                 if e.get("heart_stopped"):
                     # (since build 293) the constriction's heart_stop: never a death, it starts again
-                    out.append("🫀 Her heart STOPS for a moment as she goes under, and starts again on its own as the "
-                               "coils come off")
+                    out.append(("🫀 Her heart GIVES OUT in the coils, and she goes under with it" if e.get("heart_first")
+                                else "🫀 Her heart STOPS as she goes under")
+                               + (f"; the coils stay on her {e['after_hold']} more beat{'s' if e['after_hold'] != 1 else ''}, "
+                                  f"then come off and it starts again on its own" if e.get("after_hold") else
+                                  ", and starts again on its own as the coils come off"))
                 if (e.get("elimination") or {}).get("winner"):
                     out.append(f"- 🏆 **Winner: {e['elimination']['winner']}** (by "
                                f"{'submission' if e['how'] == 'tap' else 'pass-out'})")
+            elif e["type"] == "coil_after":
+                out.append(f"🫥 {e['defender']} out in {poss_word(e['attacker'])} coils, her heart stopped (beat "
+                           f"{e.get('beat')} of {e.get('of')}): they stay on her, doing her no more harm")
+            elif e["type"] == "heart_back":
+                out.append(f"💓 {e['attacker']} unwinds; {poss_word(e['defender'])} heart starts again on its own "
+                           f"after {e.get('beats_after')} beat{'s' if e.get('beats_after') != 1 else ''}, and she comes "
+                           f"round")
             elif e["type"] == "tap_count":
                 if not self.tight():
                     out.append("")
@@ -1304,8 +1314,16 @@ class Display:
                                else f" (the choke built to {e['air']} against her endurance {e['endure']}: chance "
                                     f"{e['chance'] * 100:.0f}%)")))
                 if e.get("heart_stopped"):
-                    out.append("🫀 Her heart STOPS for a moment as she goes under, and starts again on its own as the "
-                               "coils come off")
+                    out.append(("🫀 Her heart GIVES OUT in the coils, and she goes under with it" if e.get("heart_first")
+                                else "🫀 Her heart STOPS as she goes under")
+                               + (f"; the coils stay on her {e['after_hold']} more beat{'s' if e['after_hold'] != 1 else ''} "
+                                  f"(constriction.heart.after_hold), then come off and it starts again on its own"
+                                  if e.get("after_hold") else ", and starts again on its own as the coils come off"))
+                if e.get("after_hold"):
+                    out.append(f"- the match goes on ({e['needed'] - e['tap_no']} more to end it) once the coils come "
+                               f"off" + (f"; her {', '.join(p.lower() for p in e['spent_parts'])} can't count for "
+                                         f"another tap" if e.get("spent_parts") else ""))
+                    continue
                 out.append(f"- the grip comes off and the match goes on ({e['needed'] - e['tap_no']} more to end it)"
                            + (f"; her {', '.join(p.lower() for p in e['spent_parts'])} can't count for another tap"
                               if e.get("spent_parts") else ""))

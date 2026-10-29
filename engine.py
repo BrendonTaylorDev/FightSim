@@ -3333,6 +3333,9 @@ class Engine:
         if enforce and self.has(a, "flinched"):
             raise ValueError(f"{a.name} FLINCHED and can't attack this beat; let someone else act, or have {a.name} "
                              f"recover (breather)")
+        if enforce and self.has(a, "limp"):
+            raise ValueError(f"{a.name} is OUT in the coils, her heart stopped: she can't act at all; let someone "
+                             f"else act, or have {a.name} hang there (breather)")
         if enforce and self.has(a, "stunned"):
             raise ValueError(f"{a.name} is STUNNED from the blow to her head and can't act this beat: no attack, no "
                              f"grab, no dodge; let someone else act, or have {a.name} sway there (breather)")
@@ -3390,7 +3393,7 @@ class Engine:
                (float(sc.get("off_balance_dodge_mult", 0.6)) if self.has(d, "off_balance") else 1.0) * \
                (float(sc.get("staggered_dodge_mult", 0.6)) if self.has(d, "staggered") else 1.0) * \
                (float(sc.get("dazed_dodge_mult", 0.4)) if self.has(d, "dazed") else 1.0) * \
-               (0.0 if self.has(d, "stunned") else 1.0) * \
+               (0.0 if self.has(d, "stunned") or self.has(d, "limp") else 1.0) * \
                (float(sc.get("dead_leg_dodge_mult", 0.75)) if self.has(d, "dead_leg") else 1.0) * \
                (float(sc.get("limping_dodge_mult", 0.85)) if self.has(d, "limping") else 1.0) * \
                (float(sc.get("ribs_aching_dodge_mult", 0.9)) if self.has(d, "ribs_aching") else 1.0) * \
@@ -4026,7 +4029,7 @@ class Engine:
                 # just went down this beat: no get-up roll yet (said out loud, so nobody has to guess)
                 events.append({"type": "stays_down", "fighter": name, "why": "fresh", "facing": self.facing.get(name)})
                 continue
-            if self.has(f, "asleep") or self.has(f, "frozen") or self.has(f, "stunned"):
+            if self.has(f, "asleep") or self.has(f, "frozen") or self.has(f, "stunned") or self.has(f, "limp"):
                 continue  # out of action: she isn't trying to rise
             beats = self.downed[name] = self.downed[name] + 1
             plan = self.body_plan(f)
@@ -9191,8 +9194,8 @@ class Engine:
             pas = getattr(self, "_passive", None)
             if pas and pas[0] == self.turn and fd.name in pas[1]:
                 continue   # (since build 278) her player has her do nothing: she doesn't try to break it
-            if self.has(fd, "stunned"):
-                continue   # (since build 293) stunned: nothing in her answers yet
+            if self.has(fd, "stunned") or self.has(fd, "limp"):
+                continue   # (since build 293) stunned: nothing in her answers yet (limp: out in the coils)
             cc_ = self.compress_cfg()
             if cc_ and any(h.coil and self.coil_scope(h.part) == "body" for h in hs):
                 # (since build 294) squeezed in, she has no room left to work with
@@ -9274,6 +9277,8 @@ class Engine:
             if fresh and first <= 0:
                 continue
             d = self.get(h.defender)
+            if self.has(d, "limp"):
+                continue        # (since build 313) out in the coils after her heart stopped: they do her no more harm
             # during a pin, pressure is per reference_seconds and scales with the length of the beat
             ramp = 1.0
             if in_pin:
@@ -10401,7 +10406,7 @@ class Engine:
             pas = getattr(self, "_passive", None)
             if pas and pas[0] == self.turn and dfn.name in pas[1]:
                 attempt_p, forced_try = 0.0, False      # (since build 278) her player has her do nothing
-            if self.has(dfn, "stunned"):
+            if self.has(dfn, "stunned") or self.has(dfn, "limp"):
                 attempt_p, forced_try = 0.0, False      # (since build 293) stunned: she can't try
             if forced_try or self._chance(attempt_p, f"{dfn.name} making an escape attempt", "she tries",
                                           "no real attempt"):
@@ -10619,6 +10624,9 @@ class Engine:
                 continue      # (the match ended a moment ago, or the one holding her is out: that grip is gone)
             if not d or d.eliminated or self.pinned_by(dn):
                 continue
+            if (d.learned.get("limp") or [None])[0] == a:
+                events += self._limp_tick(d, a)     # (since build 313) out in the coils: nothing to tap or resist
+                continue
             # (the hold's first beat: nobody taps yet, but in a submission the urge is already there: tap.urge)
             first = max(h.turns_active for h in hs) < 2
             urge_first = any(h.sub for h in hs) and ((tcfg.get("urge") or {}).get("enabled", True)
@@ -10725,6 +10733,7 @@ class Engine:
             body_coils = [h for h in hs if h.coil and self.coil_scope(h.part) == "body"] if kcfg.get("enabled", True) \
                 else []
             circ, circ_end, pc, constrict = 0.0, 0.0, 0.0, False
+            heart_now = False
             if body_coils:
                 tight = max(0.5, min(2.0, max(h.power for h in body_coils) / max(1.0, float(kcfg.get("power_ref", 16)))))
                 # what sets it apart from a submission: it goes by the SQUEEZE (the coils, how hard, how big the
@@ -10752,6 +10761,11 @@ class Engine:
                     tap = max(tap, float(kcfg.get("grey_tap", 0.25)) * min(1.0, (circ - near_k * circ_end)
                                                                          / max(1.0, circ_end * (1 - near_k)
                                                                                + float(kcfg.get("span", 70)))))
+                hc0 = self._heart_cfg(kcfg)
+                if hc0 and pc > 0:
+                    # (since build 313, constriction.heart.gauge_out_mult) she blacks out almost always because her
+                    # heart gives out, now and then from the blood to her head alone first
+                    pc *= float(hc0.get("gauge_out_mult", 0.1))
                 if pc > po:
                     po, constrict = pc, True
                 order = ("pounding", "slowing", "greying")
@@ -10778,6 +10792,15 @@ class Engine:
                 vit["coiler_species"] = species_of(self.get(a).description, getattr(self.get(a), "appearance", ""))
                 vit["coil_ratio"] = round(sa / sd, 2) if sa and sd else None
                 vit.update(self.squeeze_numbers(d, comp, sa, sd))
+                ht = self._coil_heart(d, a, hid, vit, comp, len(body_coils), beats, s_, surge, kcfg)
+                if ht:
+                    # (since build 313, constriction.heart) her heart is its own number now, worn down beat by beat
+                    vit.update(heart=ht["bpm"], irregular=ht["irregular"], heart_reserve=ht["r"],
+                               stop_at=ht["stop_bpm"], would_stop=ht["would_stop"])
+                    if ht["r"] < float((kcfg.get("heart") or {}).get("slow_at", 0.75)) and stage == "pounding":
+                        stage = "slowing"         # (the story follows her heart: it has begun to slow)
+                    if ht["stopped"]:
+                        heart_now = True
                 events.append(dict({"type": "constriction", "attacker": a, "defender": dn, "stage": stage,
                                     "pct": round(100 * frac), "coils": len(body_coils), "compress": round(comp),
                                     "where": (d.learned.get("compress") or {}).get("where", ""),
@@ -10864,8 +10887,12 @@ class Engine:
                 # she gives in: the squeeze takes her blood and her breath before it takes her will
                 tap *= tm_
                 why_low.append(("the coils take her blood before her will", tm_))
-            if tap > 0 and self._chance(tap, f"{dn} tapping out to {poss_word(a)} {name} (pain {pain:.0f} against "
-                                        f"her resistance {resist:.0f})", "SHE TAPS", "she holds on"):
+            if heart_now:
+                # (since build 313, constriction.heart) her heart has given out in the coils: with no blood moving she
+                # is out at once, whatever the gauge says
+                how, constrict = "pass_out", True
+            elif tap > 0 and self._chance(tap, f"{dn} tapping out to {poss_word(a)} {name} (pain {pain:.0f} against "
+                                          f"her resistance {resist:.0f})", "SHE TAPS", "she holds on"):
                 how = "tap"
             elif po > 0 and self._chance(po, (f"{dn} blacking out in {poss_word(a)} coils (the constriction has built to "
                                               f"{circ:.0f} against her endurance {circ_end:.0f})") if constrict else
@@ -10908,9 +10935,21 @@ class Engine:
                                  if (constrict or re.search(r"(?i)neck|throat", h.part)) and h.part not in spent_),
                                 tap_part)
                 hs_cfg = kcfg.get("heart_stop") or {}
-                if constrict and hs_cfg.get("enabled", True) and self._chance(
+                hc_ = self._heart_cfg(kcfg)
+                if hc_ and constrict:
+                    # (since build 313) not a roll: her heart stops if it had already given out, or if it is worn so
+                    # low that going under takes the last of it (the monitor says so beforehand: would_stop)
+                    ch_ = d.learned.get("coil_heart") or {}
+                    stops = heart_now or bool(ch_.get("would_stop"))
+                    if stops and not heart_now:
+                        self._chance(1.0, f"{poss_word(dn)} heart, worn to {ch_.get('bpm')}/min, giving out as she "
+                                          f"goes under in the coils (it starts again once they come off)",
+                                     "IT STOPS, for a moment", "it keeps beating")
+                else:
+                    stops = constrict and hs_cfg.get("enabled", True) and self._chance(
                         float(hs_cfg.get("chance", 0.35)), f"{poss_word(dn)} heart stopping as she goes under in the "
-                        f"coils (it starts again once they come off)", "IT STOPS, for a moment", "it keeps beating"):
+                        f"coils (it starts again once they come off)", "IT STOPS, for a moment", "it keeps beating")
+                if stops:
                     # (since build 293) her heart stops a moment as she goes under: never a death, it starts again
                     d.learned["heart_stopped"] = self.turn
                     # (the rest of the last reading kept: the squeeze, her healthy numbers)
@@ -10945,10 +10984,21 @@ class Engine:
                           "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure),
                           "spent_parts": self.spent_tap_parts(d),
                           "cause": "constriction" if how == "pass_out" and constrict else "",
-                  "heart_stopped": d.learned.get("heart_stopped") == self.turn,
+                  "heart_stopped": d.learned.get("heart_stopped") == self.turn, "heart_first": heart_now,
                   "circ": round(circ), "circ_end": round(circ_end)}
                     if how == "tap" and self._tap_vary_on():
                         ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
+                    n_after = self._after_hold_beats(kcfg) if how == "pass_out" and constrict else 0
+                    if n_after:
+                        # (since build 313, constriction.heart.after_hold) she is out, her heart stopped, and the
+                        # coils stay on her a while yet, as a constrictor's do: no more harm done, then they let go
+                        d.learned["limp"] = [a, self.turn, self.turn + n_after]
+                        self.set_status(d, "limp", n_after + 1)
+                        d.learned["tap_respite"] = [a, self.turn + n_after + int(
+                            ((taps_.get("respite") or {}).get("beats", 1)))]
+                        ev["after_hold"] = n_after
+                        events.append(ev)
+                        continue
                     events.append(ev)
                     try:
                         events.append(self.release_between(a, dn, "let go after she tapped"))
@@ -10963,10 +11013,13 @@ class Engine:
                   "tap_no": len(d.learned.get("taps_given") or []) or 1,
                   "pain": round(pain), "resist": round(resist), "air": round(air), "endure": round(endure),
                   "cause": "constriction" if how == "pass_out" and constrict else "",
-                  "heart_stopped": d.learned.get("heart_stopped") == self.turn,
+                  "heart_stopped": d.learned.get("heart_stopped") == self.turn, "heart_first": heart_now,
                   "circ": round(circ), "circ_end": round(circ_end)}
             if how == "tap" and self._tap_vary_on():
                 ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
+            if how == "pass_out" and constrict and ev.get("heart_stopped"):
+                # (constriction.heart.after_hold) the match is over, and the coils still stay on her a while first
+                ev["after_hold"] = self._after_hold_beats(kcfg)
             ev["elimination"] = self.eliminate(dn, reason)
             if how == "tap" and cfg.get("tap_awake", True):
                 # she gave up: she is awake, beaten and hurting, not knocked out (the recovery stage before "up")
@@ -11211,6 +11264,9 @@ class Engine:
         hs = ((((self.rules.get("finish") or {}).get("submission") or {}).get("constriction") or {})
               .get("heart_stop") or {})
         o = max(0.0, min(1.0, float(out or 0)))
+        if cv[1].get("heart_reserve") is not None:
+            # (constriction.heart) her heart stops as she goes under only if it is worn that low: no separate roll
+            return dict(cv[1], out_chance=round(o, 4), stop_chance=round(o, 4) if cv[1].get("would_stop") else 0.0)
         return dict(cv[1], out_chance=round(o, 4),
                     stop_chance=round(o * float(hs.get("chance", 0.35)), 4) if hs.get("enabled", True) else 0.0)
 
@@ -11395,6 +11451,112 @@ class Engine:
         cp["turn"], cp["struggled"] = self.turn, struggled
         d.learned["compress"] = cp
         return cp["circ"]
+
+    def _heart_cfg(self, kcfg):
+        hc = (kcfg or {}).get("heart") or {}
+        return hc if hc.get("enabled", True) else None
+
+    def _after_hold_beats(self, kcfg):
+        """constriction.heart.after_hold: how many beats the coils stay on her once her heart has stopped (rolled
+        from beats_min to beats_max), 0 when off."""
+        hc = self._heart_cfg(kcfg) or {}
+        ah = hc.get("after_hold") or {}
+        if not hc or not ah.get("enabled", True):
+            return 0
+        lo, hi = int(ah.get("beats_min", 1)), int(ah.get("beats_max", 3))
+        return self.rng.randint(min(lo, hi), max(lo, hi)) if max(lo, hi) > 0 else 0
+
+    def _limp_tick(self, d, a):
+        """constriction.heart.after_hold (since build 313): she is out in the coils, her heart stopped. Each beat the
+        coiler keeps them on: her body as it is (limp, no heartbeat under the scales, the cold in her paws), and no
+        harm done to her by it; on the last, the coils come off and her heart starts again on its own."""
+        lp = d.learned.get("limp") or [a, self.turn, self.turn]
+        start, until = int(lp[1]), int(lp[2])
+        still = [h for h in self.holds.values() if h.attacker == a and h.defender == d.name]
+        cv = (d.learned.get("circ_vitals") or [0, {}])[1] or {}
+        d.learned["circ_vitals"] = [self.turn, dict(cv, heart=0, irregular=False, stopped=True, bp=[30, 15])]
+        ts = d.learned.get("tap_state")
+        if isinstance(ts, dict):
+            d.learned["tap_state"] = dict(ts, turn=self.turn, vitals=d.learned["circ_vitals"][1],
+                                          done="out in the coils, her heart stopped")
+        if self.turn >= until or not still or self.get(a).eliminated:
+            d.learned.pop("limp", None)
+            d.status.pop("limp", None)
+            ch = d.learned.get("coil_heart") or {}
+            if ch:
+                # her heart going again, racing as the blood comes back: a re-coil soon finds it part of the way back
+                d.learned["coil_heart"] = dict(ch, r=float(((self._heart_cfg(
+                    (((self.rules.get("finish") or {}).get("submission") or {}).get("constriction") or {})) or {})
+                    .get("restart_reserve", 0.4))), turn=self.turn, stopped=False)
+            out = [{"type": "heart_back", "attacker": a, "defender": d.name, "beats_after": self.turn - start}]
+            if still:
+                try:
+                    out.append(self.release_between(a, d.name, "let go of her once her heart had stopped"))
+                except ValueError as exc:
+                    self.note_failure("after_hold release", exc)
+            return out
+        return [{"type": "coil_after", "attacker": a, "defender": d.name, "beat": self.turn - start,
+                 "of": until - start, "parts": [h.part for h in still]}]
+
+    def _coil_heart(self, d, a, hid, vit, comp, n, beats, s_, surge, kcfg):
+        """constriction.heart (since build 313): her heart under the coils as its own number, worn down beat by beat
+        instead of a roll at the end. Her heart's RESERVE runs from 1 (fresh) to 0 (it stops). Each beat the coils
+        take: base x how far what they press with (mmHg) is past press_floor of her resting blood pressure x (0.5 +
+        0.5 x how far she is squeezed in) x where (her chest worst) x (1 + extra_coil a coil past the first) x (1 +
+        per_beat a beat held, up to dur_max) / her heart's hardiness (her health and energy left, a surge), with a
+        small wobble (the dice: +-wobble). Her heart RATE follows it: racing at first (to vitals.peak_mult of her
+        resting rate while the reserve is above slow_at), then slowing toward stop_mult of it as the reserve runs
+        out, uneven below irregular_at; there, sudden of the time a beat (more the lower it is) it can give out early.
+        At 0 it stops and she is out at once. Blacking out from the blood first, it stops as she goes under only if
+        what is left is under going_under (the monitor says so: would_stop). Coils off, the reserve comes back regain
+        a beat. Returns {"r", "bpm", "irregular", "stopped", "stop_bpm", "would_stop"}, or None when off. Once a
+        beat."""
+        hc = self._heart_cfg(kcfg)
+        if not hc:
+            return None
+        ch = d.learned.get("coil_heart") or {}
+        if ch.get("turn") == self.turn and ch.get("by") == a:
+            return ch
+        rest = float(getattr(d, "heart_rest", 0) or (kcfg.get("vitals") or {}).get("heart_rest", 100))
+        if ch.get("by") != a or ch.get("hid") != hid:
+            # new coils: her heart starts fresh, or (within constriction.recovery.beats of the last) part of the way
+            # back from where the last ones left it
+            gap = self.turn - int(ch.get("turn", -99))
+            back = float(hc.get("regain", 0.15)) * gap
+            r0 = min(1.0, float(ch.get("r", 1.0)) + back) if ch and gap <= int(
+                (kcfg.get("recovery") or {}).get("beats", 4)) else 1.0
+            ch = {"by": a, "hid": hid, "r": r0}
+        v = kcfg.get("vitals") or {}
+        sys0 = float((v.get("bp_rest") or (120, 80))[0])
+        press = float(vit.get("pressure") or 0) / max(1.0, sys0)
+        where = {"chest": 1.15, "belly": 0.85, "both": 1.1, "back": 0.95}.get(vit.get("where") or "chest", 1.0) \
+            * float((hc.get("where_mult") or {}).get(vit.get("where") or "chest", 1.0))
+        drive = max(0.0, press - float(hc.get("press_floor", 0.4))) * (0.5 + 0.5 * max(0.0, min(1.0, comp / 100.0))) \
+            * where * (1.0 + float(hc.get("extra_coil", 0.25)) * max(0, n - 1)) \
+            * min(float(hc.get("dur_max", 1.6)), 1.0 + float(hc.get("per_beat", 0.05)) * max(0, beats - 1))
+        hardy = (0.5 + 0.5 * max(0.0, min(1.0, s_ / 100.0))) * (0.75 + 0.25 * max(0.0, min(1.0, d.energy / 100.0))) \
+            * (1.2 if surge > 1.0 else 1.0)
+        wob = float(hc.get("wobble", 0.25))
+        drop = float(hc.get("base", 0.09)) * drive / max(0.2, hardy) * (1.0 - wob + 2 * wob * self.rng.random())
+        r = max(0.0, float(ch["r"]) - drop)
+        slow_at, irr_at = float(hc.get("slow_at", 0.75)), float(hc.get("irregular_at", 0.55))
+        stopped = r <= 0.0
+        if not stopped and r < irr_at and float(hc.get("sudden", 0.05)) > 0:
+            # uneven and failing: now and then a heart gives out before it has run all the way down
+            stopped = self._chance(float(hc.get("sudden", 0.05)) * (irr_at - r) / irr_at,
+                                   f"{poss_word(d.name)} heart, slow and uneven, giving out early in the coils",
+                                   "IT STOPS", "it keeps going")
+        peak, stop_m = float(v.get("peak_mult", 1.6)), float(hc.get("stop_mult", 0.3))
+        start = float(hc.get("start_mult", 1.3))
+        if r >= slow_at:
+            bpm = rest * (start + (peak - start) * (1.0 - r) / max(0.01, 1.0 - slow_at))
+        else:
+            bpm = rest * (stop_m + (peak - stop_m) * r / max(0.01, slow_at))
+        ch.update(turn=self.turn, r=round(0.0 if stopped else r, 3), bpm=0 if stopped else int(round(bpm / 5.0) * 5),
+                  irregular=r < irr_at, stopped=stopped, stop_bpm=int(round(rest * stop_m / 5.0) * 5),
+                  would_stop=stopped or r <= float(hc.get("going_under", 0.2)))
+        d.learned["coil_heart"] = ch
+        return ch
 
     def constriction_vitals(self, d, frac, stage):
         """finish.submission.constriction.vitals (since build 283): rough numbers for the screen while coils hold back
@@ -12299,6 +12461,9 @@ class Engine:
                       "than she should be able to",
         "greyed": "GREYING OUT: for a moment the edges of her sight go grey and the sound goes far away; she sways, "
                   "a beat behind everything, and drags herself back",
+        "limp": "OUT IN THE COILS, her heart stopped: limp and silent, her head lolling, no heartbeat under the scales "
+                "pressed to her, her paws gone cold; she knows nothing of it. It does her no harm: once the coils come "
+                "off her heart starts again on its own",
         "overextended": "WIDE OPEN after her last stand: she threw everything and has nothing left to cover with, "
                         "off balance, slow, gasping",
     }

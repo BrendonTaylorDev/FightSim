@@ -2166,6 +2166,27 @@ def _past_compare(text):
     return re.sub(r"\s+([,.!?;])", r"\1", text)
 
 
+_DANGLE_ADJ = (r"deliberate|slow|steady|cruel|heavy|soft|hard|tight|low|high|dull|sharp|sudden|long|deep|cold|hot|"
+               r"\w+(?:ive|ous|ful|less|ent|ant|ate|ic|ical|ish)")
+_SPEECH_VERBS = (r"said|says|whispered|whispers|hissed|hisses|growled|growls|murmured|murmurs|asked|asks|replied|"
+                 r"replies|snarled|snarls|called|calls|breathed|breathes|told|tells|added|adds|went on|spat|spits|"
+                 r"rasped|rasps|muttered|mutters|purred|purrs|hummed|hums|crooned|croons|gasped|gasps|managed")
+# (since build 313) a sentence that only makes sense after the one before it: it opens on a pronoun for a thing, or
+# looks "at it" within its first words. When the sentence before it is cut, it goes too ("She glanced down at it")
+_LEANS_BACK = re.compile(r"^(?:It|This|That|These|Those)\b(?!\s+(?:was|is)\s+(?:a|an|the)\b)|"
+                         r"^(?:\S+\s+){0,4}?(?:at|on|to|into|over|from|toward|towards)\s+(?:it|them)\b")
+
+
+def _cut_with_leaners(sents, drop):
+    """The sentences with the ones in drop (a set of indexes) cut, and each sentence right after a cut one that leans
+    back on it (_LEANS_BACK) cut too."""
+    drop = set(drop)
+    for i in range(len(sents)):
+        if i - 1 in drop and i not in drop and _LEANS_BACK.search(sents[i].strip()):
+            drop.add(i)
+    return [x for i, x in enumerate(sents) if i not in drop]
+
+
 def _mend_orphans(text):
     """What a cut leaves behind: a thought tag whose thought is gone ("... strength. , she thought, ." or ". , Cinder
     thought, her mind racing as..."), a doubled full stop. The tag goes; a clause that went on after it keeps going as
@@ -2178,7 +2199,19 @@ def _mend_orphans(text):
     text = re.sub(r"(?m)^[ \t]*[.,][ \t]*", "", text)
     # a sentence whose start was cut away, left beginning mid-clause ("drifted to her, a contrast to the damp."):
     # it goes (never a sound or a thought, which start with their marks)
-    text = re.sub(r"(?m)(^|(?<=[.!?\"”])[ \t]+)(?:[a-z][a-z'’]*)(?=[ ,])[^.!?\n*\"“”]*[.!?](?=\s|$)", r"\1", text)
+    # (since build 313: only after a sentence's end, never after the comma inside a quote: '"No," she hissed.' lost
+    # its "she hissed", and a line of speech was left with no one saying it)
+    text = re.sub(r"(?m)(^|(?:(?<=[.!?])|(?<=[.!?][\"”]))[ \t]+)(?:[a-z][a-z'’]*)(?=[ ,])[^.!?\n*\"“”]*[.!?](?=\s|$)",
+                  r"\1", text)
+    # (since build 313) a clause cut off after its article: "The constriction was slow and even, a deliberate." The
+    # dangling ", a deliberate" goes and the sentence ends where it was whole
+    text = re.sub(r",\s+(?:a|an|the|her|its|their|this|that)(?:\s+(?:" + _DANGLE_ADJ + r"))?\s*([.!?])(?=\s|$|[\"”])",
+                  r"\1", text, flags=re.I)
+    # (since build 313) a line of speech whose speaker was cut ("\"Give up, little one,\" Ripples' breath went out"):
+    # its trailing comma becomes a full stop, so the next sentence stands on its own
+    text = re.sub(r"([^\"“”\n]{2,}),([\"”])(\s+)(?=[A-Z])(?!(?:She|He|It|They)\s+(?:" + _SPEECH_VERBS + r")\b)"
+                  r"(?![A-Z][a-z]+(?:'s|’s)?\s+(?:voice\s+)?(?:" + _SPEECH_VERBS + r")\b)",
+                  lambda m: m.group(1) + "." + m.group(2) + m.group(3), text)
     # a paragraph left as a scrap of a word or two with no end to it ("I", "She could"): it goes
     text = "\n".join(l for l in text.split("\n")
                      if not (l.strip() and len(l.split()) <= 3 and not re.search(r"[.!?…*\"”“:]\s*$", l.strip())))
@@ -4553,6 +4586,18 @@ class Narrator:
         self._takedown = None       # (pinner, pinned): she was on her feet and is taken down into the pin this beat
         self._clash = None          # (defender, her move, its type): she met the attack with a move of her own
         self._must_surfaces = []    # (fighter, surface): scenery she is thrown, knocked or dragged into this beat
+        # (since build 313, narration.blow_feel) what kind of blows landed on each fighter this beat: "blunt" only, or
+        # something that cuts too; and (narration.coil_room) how far coils have squeezed her in this beat
+        self._blow_kinds, self._squeezed = {}, {}
+        for x in self._all_dicts(bundle):
+            if x.get("type") == "instant" and x.get("hits") and x.get("defender") and not x.get("environment"):
+                mv = x.get("move") if isinstance(x.get("move"), dict) else {}
+                what = f"{mv.get('name', '')} {mv.get('about', '')} {x.get('flavor', '')}".lower()
+                self._blow_kinds.setdefault(str(x["defender"]), set()).add(
+                    "cut" if re.search(r"slash|claw|swipe|scratch|rake|cut|bite|fang|crunch|jaw|horn|scythe|sting|"
+                                       r"blade|leaf|razor|fury|peck|beak|drill|talon", what) else "blunt")
+            if x.get("type") == "constriction" and x.get("compress") is not None:
+                self._squeezed[str(x["defender"])] = int(x["compress"])
         self._escape_blows = []     # (pinned, pinner, parts): the blow she breaks a pin with, which has to be told
         self._escaped = []          # (freed, pinner): every grip that pinner had on her ended this beat
         self._chain_beat = False    # several attacks by one fighter this beat (a chain, a pummel): "again" is right
@@ -5049,26 +5094,46 @@ class Narrator:
                 elif e.get("cause") == "constriction":
                     # (since build 293, narration.constriction_feel.verify) a constrictor makes sure before she lets go
                     verify = ((self.rules.get("narration") or {}).get("constriction_feel") or {}).get("verify", True)
-                    lines.append(f"{e['defender']} BLACKS OUT at the END of this beat: the {e['submission']} on her "
-                                 f"{parts}" + (f" ({with_})" if with_ else "") + f" has held the blood back from her "
-                                 f"heart too long. Her heart has slowed to a heavy, stumbling beat, the grey closes in "
-                                 f"from the edges until there is only a pinpoint, the sounds go far away, her "
-                                 f"struggles stop answering her, and she goes limp in the coils, OUT"
-                                 + (", still breathing shallowly" if not e.get("heart_stopped") else "") + ". "
-                                 + (f"{e['attacker']} does not let go at once: she holds a while longer, utterly still, "
-                                    f"feeling through her coils for any tension, any fight, any trick, until she is sure "
-                                    f"it is over; only then does she unwind. " if verify else
-                                    f"{e['attacker']} feels her go slack and unwinds. ")
-                                 + f"It is the last thing that happens, and it ends the match. (No choking or gasping "
-                                 f"for air: it is the blood that takes her.)"
-                                 + (f" HER HEART STOPS: as she goes under, the slow, stumbling beat {e['attacker']} has "
-                                    f"been feeling through her coils gives one last weak knock and then nothing. "
-                                    + (f"{e['attacker']} holds on through the silence, still feeling for it, making sure, "
-                                       f"a long, still moment; " if verify else f"A long, still moment; ")
-                                    + f"then, as the coils come away, it starts again on its own: a thud, a pause, "
-                                    f"another, ragged and then steadier, and a long shuddering breath goes into her. She "
-                                    f"is out cold, but alive and breathing. Tell the stop and the restart plainly, "
-                                    f"without gore; it is never a death." if e.get("heart_stopped") else ""))
+                    if e.get("after_hold") and e.get("heart_stopped"):
+                        # (since build 313, constriction.heart) her heart gives out, and the coils stay on her a while
+                        n_ = int(e["after_hold"])
+                        lines.append(
+                            f"{e['defender']} BLACKS OUT at the END of this beat, and it is her HEART that takes her: "
+                            f"the {e['submission']} on her {parts}" + (f" ({with_})" if with_ else "") + " has held "
+                            f"the blood back from it so long that it has been slowing beat by beat, heavy and "
+                            f"stumbling; now it gives one last weak knock and STOPS, and she goes out with it, limp in "
+                            f"the coils. It is the last thing that happens, and it ends the match. {e['attacker']} does "
+                            f"NOT let go: she keeps her coils on {poss(e['defender'])} limp body "
+                            + ("one beat" if n_ == 1 else f"{n_} beats") + " longer, utterly still, feeling through "
+                            f"them for a heartbeat that isn't there, as a constrictor does. Tell what that looks like, "
+                            f"plainly and without gore: {poss(e['defender'])} head lolling, her eyes half-open and "
+                            f"seeing nothing, her limbs hanging loose, no rise of her chest, no beat under the scales "
+                            f"pressed to her, the fur flattened in bands where the coils lie, her paws gone cold. Then "
+                            f"{e['attacker']} unwinds, and as the coils come away her heart starts again on its own: a "
+                            f"thud, a pause, another, ragged and then steadier, and a long shuddering breath goes into "
+                            f"her. She is out cold but alive and breathing, and none of it does her lasting harm: it is "
+                            f"never a death. (No choking or gasping for air: it is the blood that takes her.)")
+                    else:
+                        lines.append(f"{e['defender']} BLACKS OUT at the END of this beat: the {e['submission']} on her "
+                                     f"{parts}" + (f" ({with_})" if with_ else "") + f" has held the blood back from her "
+                                     f"heart too long. Her heart has slowed to a heavy, stumbling beat, the grey closes in "
+                                     f"from the edges until there is only a pinpoint, the sounds go far away, her "
+                                     f"struggles stop answering her, and she goes limp in the coils, OUT"
+                                     + (", still breathing shallowly" if not e.get("heart_stopped") else "") + ". "
+                                     + (f"{e['attacker']} does not let go at once: she holds a while longer, utterly still, "
+                                        f"feeling through her coils for any tension, any fight, any trick, until she is sure "
+                                        f"it is over; only then does she unwind. " if verify else
+                                        f"{e['attacker']} feels her go slack and unwinds. ")
+                                     + f"It is the last thing that happens, and it ends the match. (No choking or gasping "
+                                     f"for air: it is the blood that takes her.)"
+                                     + (f" HER HEART STOPS: as she goes under, the slow, stumbling beat {e['attacker']} has "
+                                        f"been feeling through her coils gives one last weak knock and then nothing. "
+                                        + (f"{e['attacker']} holds on through the silence, still feeling for it, making sure, "
+                                           f"a long, still moment; " if verify else f"A long, still moment; ")
+                                        + f"then, as the coils come away, it starts again on its own: a thud, a pause, "
+                                        f"another, ragged and then steadier, and a long shuddering breath goes into her. She "
+                                        f"is out cold, but alive and breathing. Tell the stop and the restart plainly, "
+                                        f"without gore; it is never a death." if e.get("heart_stopped") else ""))
                 else:
                     lines.append(f"{e['defender']} PASSES OUT at the END of this beat: the {e['submission']} on her "
                                  f"{parts}" + (f" ({with_})" if with_ else "") + f" has held back her breath and blood "
@@ -5079,6 +5144,25 @@ class Narrator:
                 win_ = (e.get("elimination") or {}).get("winner")
                 if win_:
                     lines.append(f"  - {win_} has won, by {'submission' if e['how'] == 'tap' else 'pass-out'}.")
+            elif e["type"] == "coil_after":
+                # (since build 313, constriction.heart.after_hold) she is out in the coils, her heart stopped
+                lines.append(
+                    f"{e['defender']} is OUT in {poss(e['attacker'])} coils, her HEART STOPPED, the whole of this beat "
+                    f"(beat {e.get('beat')} of the {e.get('of')} the coils stay on her): she knows nothing of it and "
+                    f"does nothing. {e['attacker']} keeps the coils on her, still and patient, feeling through them "
+                    f"for a heartbeat that isn't there, as a constrictor does; nobody strikes her. Tell what her body "
+                    f"looks like in them, plainly and without gore: limp, her head lolling, her eyes half-open and "
+                    f"seeing nothing, her limbs hanging loose, no rise of her chest, the fur pressed flat in bands "
+                    f"where the coils lie, her paws and lips gone pale and cold. It does her no lasting harm, and it is "
+                    f"never a death. She does NOT come round this beat.")
+            elif e["type"] == "heart_back":
+                lines.append(
+                    f"{e['attacker']} UNWINDS her coils from {e['defender']} this beat, at last. As they come away, "
+                    f"{poss(e['defender'])} HEART STARTS AGAIN on its own: a thud, a pause, another, ragged and then "
+                    f"steadier; a long shuddering breath goes into her, then another; the colour comes back into her "
+                    f"lips and paws, and with the blood rushing back come pins and needles and a pounding head. She "
+                    f"comes round slowly, dizzy and weak, not sure for a moment where she is. No lasting harm: THE "
+                    f"MATCH GOES ON, and nobody strikes her while she comes round.")
             elif e["type"] == "tap_count":
                 # finish.submission.taps: a tap that counts but doesn't end the match (one of several needed)
                 parts = " and ".join(p.lower() for p in e.get("parts") or [])
@@ -5098,13 +5182,21 @@ class Narrator:
                                                   if e.get("cause") == "constriction" else
                                                   ": her sight greys out and she goes slack, and comes round gasping "
                                                   "as the grip comes off"))
-                    + f". {e['attacker']} feels it and LETS GO. THE MATCH IS NOT OVER: that is her "
-                    f"{ordinal(e['tap_no'])} tap of the {e['needed']} that end it ({left} more to go). Show the "
-                    + ("tap, the grip coming off" if e["how"] == "tap" else
-                       "moment she goes under (limp, gone, not a tap: she never gave up), the grip coming off and "
-                       "her coming round")
-                    + f", and the two of them parting, hurting and breathing hard; she is "
-                    f"still in it, and both of them know what it cost her."
+                    + (f". Her heart has been slowing beat by beat under the coils, and now it STOPS: she is out "
+                       f"cold, limp in them, and {e['attacker']} does NOT let go yet. She keeps her coils on her, "
+                       f"utterly still, feeling for a heartbeat (she lets go in the beats to come). End this beat with "
+                       f"her limp in the coils, her heart stopped: she does NOT come round yet. THE MATCH IS NOT OVER: "
+                       f"that is her " if e.get("after_hold") else
+                       f". {e['attacker']} feels it and LETS GO. THE MATCH IS NOT OVER: that is her ")
+                    + f"{ordinal(e['tap_no'])} tap of the {e['needed']} that end it ({left} more to go). Show the "
+                    + ("moment her heart gives out and she goes under (limp, gone, not a tap: she never gave up), "
+                       "and the coils staying on her" if e.get("after_hold") else
+                       ("tap, the grip coming off" if e["how"] == "tap" else
+                        "moment she goes under (limp, gone, not a tap: she never gave up), the grip coming off and "
+                        "her coming round")
+                       + ", and the two of them parting, hurting and breathing hard; she is still in it, and both of "
+                         "them know what it cost her")
+                    + "."
                     + (f" (A hold on her {', '.join(p.lower() for p in e['spent_parts'])} can't count again: her "
                        f"next tap has to come from somewhere else, and {e['attacker']} knows it.)"
                        if e.get("spent_parts") else ""))
@@ -11412,25 +11504,42 @@ class Narrator:
             self._part_words_cache = frozenset(words)
         return self._part_words_cache
 
-    def _repeated_phrases(self, text, prior=""):
+    _SLASH_WORDS = re.compile(r"\bline of (?:fire|pain|agony)\b|\b(?:sliced|slashed|slicing|slashing|knife|knives|"
+                              r"blade|razor|scalpel)\b|\bcut(?:ting)? (?:into|through|across) her\b|"
+                              r"\bin one (?:\w+,? )*stroke\b|\bdrawn (?:across|along|down) her\b", re.I)
+    _BIG_MOVES = re.compile(r"\btwist(?:ed|ing|s)? (?:round|around|to (?:look|see|face))\b|\bturn(?:ed|ing|s)? to "
+                            r"(?:look|see|face)\b|\b(?:spun|whirled|lunged|leapt|leaped|sprang)\b|\barch(?:ed|ing|es) "
+                            r"(?:her back|up|backward)\b|\bthrash(?:ed|ing|es) (?:wildly|about|around)\b|"
+                            r"\brolled (?:over|away|clear)\b|\bkicked (?:out|free)\b", re.I)
+
+    def _repeated_phrases(self, text, prior="", earlier=""):
         """Sentences that say again, word for word, a phrase already used in this beat ("the sound of cloth tearing"
-        three times): [(sentence, phrase)]. A phrase counts when four words in a row carry at least three that mean
-        something (not a body part, a side, a name, or a small word), so saying again WHERE it hurts never counts."""
+        three times): [(sentence, phrase, from an earlier beat?)]. A phrase counts when four words in a row carry at
+        least three that mean something (not a body part, a side, a name, or a small word), so saying again WHERE it
+        hurts never counts; (since build 313) or five words in a row with three ("her vision greying at the edges"
+        slipped through as four). earlier: the last beats' finished prose (narration.repeat_across), so a turn of
+        phrase the model has fallen into ("a calm contrast to Ripples' ragged breaths" two beats running) counts
+        too."""
         names = {w.lower() for x in (getattr(self, "strengths", None) or {}) for w in re.findall(r"[A-Za-z]+", x)}
         skip = self._STOP | self._part_words() | names
 
         def grams(s):
             w = [re.sub(r"(?:'s|’s|')$", "", x) for x in re.findall(r"[a-z'’]+", s.lower())]
             out = {}
-            for i in range(len(w) - 3):
-                g = w[i:i + 4]
-                if sum(1 for x in g if len(x) > 2 and x not in skip) >= 3:
-                    out.setdefault(" ".join(g), None)
+            for k in (4, 5):
+                for i in range(len(w) - k + 1):
+                    g = w[i:i + k]
+                    if sum(1 for x in g if len(x) > 2 and x not in skip) >= 3:
+                        out.setdefault(" ".join(g), None)
             return out
-        seen = set()
+        seen, before = set(), set()
         for para in str(prior or "").split("\n"):
             for s in _SENT.split(para.strip()):
                 seen |= set(grams(s))
+        for para in str(earlier or "").split("\n"):
+            for s in _SENT.split(para.strip()):
+                before |= set(grams(s))
+        notes = set(getattr(self, "_notes_grams", frozenset()) or ())
         out = []
         for para in str(text or "").split("\n"):
             for s in _SENT.split(para.strip()):
@@ -11439,7 +11548,12 @@ class Narrator:
                 g = grams(s)
                 hit = [x for x in g if x in seen]
                 if hit:
-                    out.append((s, hit[0]))
+                    out.append((s, hit[0], False))
+                else:
+                    # (an earlier beat's phrase the notes hand it again this beat, an injury's own words, may stand)
+                    old_ = [x for x in g if x in before and not any(x in ng for ng in notes)]
+                    if old_:
+                        out.append((s, old_[0], True))
                 seen |= set(g)
         return out
 
@@ -14131,9 +14245,39 @@ class Narrator:
             add(sent, why)
         for sent, why in self._too_intense(text):
             add(sent, why)
-        for sent, phrase in self._repeated_phrases(text, prior):
+        bf = n.get("blow_feel") or {}
+        if bf.get("enabled", True):
+            # (since build 313) a blunt blow told as a cut: "a line of fire drawn in one swift, brutal stroke" for a
+            # head-butt. Only when nothing that cuts landed on anyone this beat
+            kinds_ = set().union(*(getattr(self, "_blow_kinds", None) or {}).values()) if getattr(
+                self, "_blow_kinds", None) else set()
+            if kinds_ == {"blunt"}:
+                for x in sents:
+                    if self._SLASH_WORDS.search(x):
+                        add(x, "the blows this beat were BLUNT: they thud, jar, ache and bruise; nothing sliced or "
+                               "cut her, so no line of fire, no blade or knife, no stroke drawn across her: say how a "
+                               "blunt blow feels")
+        cr = n.get("coil_room") or {}
+        tight_ = {who: c for who, c in (getattr(self, "_squeezed", None) or {}).items()
+                  if c >= int(cr.get("from", 80))} if cr.get("enabled", True) else {}
+        for who, c in tight_.items():
+            others = [w for w in (getattr(self, "strengths", None) or {}) if w != who]
+            for x in sents:
+                if not self._BIG_MOVES.search(x):
+                    continue
+                if any(re.search(r"\b" + re.escape(o) + r"\b", x) for o in others) and not re.search(
+                        r"\b" + re.escape(who) + r"\b", x):
+                    continue      # (the coiler's own movement)
+                add(x, f"{who} is squeezed in {c}% by the coils: she has almost no room. Only small movements: a "
+                       f"twitch, a strain against them, her head turning a little, her paws clenching; no twisting "
+                       f"round, spinning, arching, thrashing or lunging")
+        ra = n.get("repeat_across") or {}
+        earlier = "\n".join((getattr(self, "recent_prose", None) or [])[-int(ra.get("beats", 2)):]) \
+            if ra.get("enabled", True) else ""
+        for sent, phrase, before in self._repeated_phrases(text, prior, earlier):
             alt = self._other_wording(phrase)
-            add(sent, f"it repeats \"{phrase}\", already used in this beat: say it a different way"
+            add(sent, f"it repeats \"{phrase}\", already used in "
+                      + ("the last beats" if before else "this beat") + ": say it a different way"
                       + (f" (for example \"{alt}\")" if alt else "") + ", or leave it out if it adds nothing new")
         return out
 
@@ -14371,7 +14515,8 @@ class Narrator:
                 if not all(any(m in w for m in marks) for w in found[i]):
                     continue
                 sents_ = [x for x in _SENT.split(paras[i].strip()) if x]
-                keep_ = [x for x in sents_ if not (x.strip() in bad and any(m in bad[x.strip()] for m in marks))]
+                keep_ = _cut_with_leaners(sents_, {k for k, x in enumerate(sents_) if x.strip() in bad
+                                                   and any(m in bad[x.strip()] for m in marks)})
                 if keep_ and len(keep_) < len(sents_):
                     paras[i] = " ".join(keep_)
                     cut_n += len(sents_) - len(keep_)
@@ -15036,6 +15181,8 @@ class Narrator:
         text = STAGE_WORD.sub(lambda m: " " if text[m.end():m.end() + 4].lower().startswith("and") else ", ", text)
         self.recent_reactions = (self.recent_reactions + [reactions_used(text)])[-3:]
         self.recent_lines = (self.recent_lines + said_lines(text, self._fighter_words()))[-24:]
+        # (since build 313, narration.repeat_across) the last beats' prose, for the repeated-phrase check
+        self.recent_prose = (list(getattr(self, "recent_prose", None) or []) + [text])[-4:]
         self._note_worn(text)
         if self._phrase_mem() is not None:
             # the stock phrases this beat used, counted for good (phrase_memory.json); the fight's worn runs are learned
