@@ -31,7 +31,7 @@ import llm
 import polish
 import body as _body
 
-VERSION = "2026-10-29 build 322 (weather over the whole fight)"
+VERSION = "2026-10-29 build 323 (setup asks the weather and the body)"
 
 HELP = """
 =============================================================================================
@@ -431,6 +431,8 @@ HELP = """
   /hazards [on|off|chance <n>]  what this arena does: its hazards (burns, chills, drenches... when a fighter lands
                       on or is driven into them) and its events (things the place does by itself now and then)
   /hazard <event> [fighter]     make one of the arena's events happen at the end of the next beat
+  /body [on|off <names>|all|none]  the simulated body, each part on or off (saved): air, heart, blood,
+                      adrenaline, tissue (swelling), bones, footing, heat, mind (composure), limbs
   /weather [kind]     the weather over the whole fight: scene (the arena's own, the default), random, clear, rain,
                       storm (lightning, gusts), snow, heat (summer heat), wind; /weather off. Indoors there is none
 
@@ -2536,15 +2538,34 @@ def _match_kind(eng):
     return "pins and knockouts"
 
 
+BODY_WORDS = {"air": "breath", "heart": "heart rate", "blood": "bleeding", "adrenaline": "adrenaline",
+              "tissue": "swelling", "bones": "broken bones", "footing": "footing", "heat": "body heat",
+              "mind": "composure", "limbs": "tired limbs"}
+
+
+def body_list(eng):
+    """(since build 323) The simulated body's parts, each on or off: "air (breath) on · heat (body heat) off..."."""
+    import body as _bd
+    b = eng.rules.get("body") or {}
+    if b.get("enabled", True) is False:
+        return "all off (body.enabled false)"
+    return " · ".join(f"{k} ({BODY_WORDS.get(k, k)}) {'on' if _bd.cfg(eng, k) else 'OFF'}" for k in _bd.DEFAULTS)
+
+
 def setup_questions(s, read=None):
     """(since build 282, setup.enabled) the questions asked before a run begins: a preset or the questions or
     nothing, then the arena, the fighters, the opening passage, the kind of match, the story plan, the important
     settings and anything more. Enter keeps what is set at every question; any /command works at any of them."""
     # (s.eng, never a copy of it: /newfight at the fighters question puts a new engine in its place)
     cfg = s.eng.rules.get("setup") or {}
-    ask = list(cfg.get("questions") or ["scene", "fighters", "variants", "players", "intro", "match", "taps", "pins",
-                                        "plan", "focus", "targeting", "reason", "length", "damage", "traits",
-                                        "character", "words", "story", "hazards", "polish", "more", "begin"])
+    ask = list(cfg.get("questions") or ["scene", "weather", "fighters", "variants", "players", "intro", "match",
+                                        "taps", "pins", "plan", "focus", "targeting", "reason", "length", "damage",
+                                        "body", "traits", "character", "words", "story", "hazards", "polish", "more",
+                                        "begin"])
+    # (since build 323) a list kept from before (in my_settings.json) still gets the new questions, where they go
+    for q, after in (("weather", "scene"), ("body", "damage")):
+        if q not in ask and q not in (cfg.get("skip") or []):
+            ask.insert(ask.index(after) + 1 if after in ask else len(ask), q)
     rd = read or input
     started = {"yes": False}
 
@@ -2600,7 +2621,7 @@ def setup_questions(s, read=None):
     if first.lower() not in ("o", "options", "q", "questions", "all"):
         pick = pres[int(first) - 1] if first.isdigit() and 0 < int(first) <= len(pres) else first.lower()
         if cmd_(f"/preset {pick}"):
-            ask = [q for q in ask if q in ("scene", "fighters", "players", "begin")]   # a preset: where, who, begin
+            ask = [q for q in ask if q in ("scene", "weather", "fighters", "players", "begin")]   # a preset: where, who, begin
     rules = s.eng.rules
     nar = rules.get("narration") or {}
 
@@ -2610,6 +2631,22 @@ def setup_questions(s, read=None):
     def q_scene():
         if len(s.eng.scenes) > 1:
             ask_scene(s, read=rd)
+
+    def q_weather():
+        import weather as _wx
+        c = _wx.cfg(s.eng)
+        if c is None or s.eng.scene_cfg.get("indoors"):
+            return       # (weather off, or an indoor arena: nothing to ask)
+        kinds = list(c["kinds"])
+        own = s.eng.scene_cfg.get("weather") or "clear"
+        ask_(f"Weather> scene (this arena's own: {own}), random, clear, {', '.join(kinds)} (Enter keeps "
+             f"{_wx.word(s.eng) or 'clear'}): ", lambda got: cmd_("/weather " + got.lower()))
+
+    def q_body():
+        print("  The simulated body (each its own switch; on is the default): "
+              + body_list(s.eng))
+        ask_("Body> Enter keeps them; or all, none, off <names>, on <names> (e.g. off heat mind): ",
+             lambda got: cmd_("/body " + got))
 
     def q_fighters():
         roster = list(s.eng.roster)
@@ -2757,14 +2794,14 @@ def setup_questions(s, read=None):
         if got and got.isdigit():
             s._setup_auto = int(got)      # (the run loop starts /auto with it once the fight is shown)
 
-    table = {"scene": q_scene, "fighters": q_fighters, "variants": q_variants, "players": q_players,
+    table = {"scene": q_scene, "weather": q_weather, "body": q_body, "fighters": q_fighters, "variants": q_variants, "players": q_players,
              "intro": q_intro, "match": q_match, "taps": q_taps, "pins": q_pins, "plan": q_plan, "focus": q_focus,
              "targeting": q_targeting, "reason": q_reason, "length": q_length, "damage": q_damage,
              "traits": q_traits, "character": q_character, "words": q_words, "story": q_story_length,
              "hazards": q_hazards, "polish": q_polish, "more": q_more, "begin": q_begin,
              # (the first version's grouping, still understood)
              "important": lambda: (q_length(), q_damage(), q_players(), q_polish())}
-    heads = {"scene": "WHERE AND WHO", "intro": "THE MATCH", "plan": "THE STORY", "length": "BALANCE",
+    heads = {"scene": "WHERE AND WHO", "intro": "THE MATCH", "plan": "THE STORY", "length": "BALANCE", "body": "THE BODY",
              "traits": "THE WRITING", "more": "ANYTHING ELSE"}
     for q in ask:
         if started["yes"]:
@@ -5315,6 +5352,30 @@ def handle_command(s, line):
               + f"\n\nThe arena acting by itself is {'ON' if cfg.get('events', True) else 'OFF'}: "
                 f"{float(cfg.get('event_chance', 0.05)) * 100:g}% a beat, at least {cfg.get('event_gap', 4)} beats apart, never "
                 f"during a pin or a hold.\n/hazards on|off · /hazards chance 0.08 · /hazard <event> [fighter] makes one happen"); return
+    if cmd == "body":
+        import body as _bd
+        names = list(_bd.DEFAULTS)
+        if a:
+            words = [w.lower().strip(",") for w in a]
+            if words[0] in ("all", "none"):
+                on_, which = words[0] == "all", names
+            elif words[0] in ("on", "off") and len(words) > 1:
+                on_, which = words[0] == "on", (names if words[1] == "all" else words[1:])
+            else:
+                raise ValueError("/body all | none | off <names> | on <names>   (names: " + ", ".join(names) + ")")
+            bad = [w for w in which if w not in names]
+            if bad:
+                raise ValueError(f"no body part called {', '.join(bad)}: " + ", ".join(names))
+            b = s.eng.rules.setdefault("body", {})
+            if on_ and b.get("enabled", True) is False:
+                b["enabled"] = True
+                _save_rule_path(["body", "enabled"], True)
+            for w in which:
+                b.setdefault(w, {})["enabled"] = on_
+                _save_rule_path(["body", w, "enabled"], on_)
+        print("The simulated body: " + body_list(s.eng) + "\n/body off heat mind · /body on all · /body none (saved, "
+              "in my_settings.json)")
+        return
     if cmd == "weather":
         import weather as _wx
         c = s.eng.rules.setdefault("arena_weather", {})

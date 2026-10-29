@@ -654,6 +654,30 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 323
+The setup questions at the start now ask the weather and the body, and both are kept in my_settings.json (so they
+hold across new builds, and override rules.json, as everything you set does).
+- **Weather>** after the arena: the arena's own (the default), random, clear, rain, storm, snow, heat or wind. Not
+  asked for an indoor arena. A preset asks it too.
+- **THE BODY:** each part of the simulated body listed with whether it is on: air, heart, blood, adrenaline, tissue
+  (swelling), bones, footing, heat, mind (composure), limbs. Enter keeps them; all, none, off <names> or on <names>
+  (e.g. off heat mind).
+- **The same at any time:** /weather and /body (new), both saved.
+- A questions list kept in my_settings.json from before still gets the two new questions, where they go
+  (setup.skip lists any you never want added that way).
+
+## Build 323
+The setup questions at the start now ask the weather and the body, and both are kept in my_settings.json (so they
+hold across new builds, and override rules.json, as everything you set does).
+- **Weather>** after the arena: the arena's own (the default), random, clear, rain, storm, snow, heat or wind. Not
+  asked for an indoor arena. A preset asks it too.
+- **THE BODY:** each part of the simulated body listed with whether it is on: air, heart, blood, adrenaline, tissue
+  (swelling), bones, footing, heat, mind (composure), limbs. Enter keeps them; all, none, off <names> or on <names>
+  (e.g. off heat mind).
+- **The same at any time:** /weather and /body (new), both saved.
+- A questions list kept in my_settings.json from before still gets the two new questions, where they go
+  (setup.skip lists any you never want added that way).
+
 ## Build 322
 Weather over the whole fight (arena_weather in rules.json; /weather to choose). A move's weather (Rain Dance, Sunny
 Day, Hail) still takes over while it lasts.

@@ -800,6 +800,65 @@ def presets_help_check():
     return problems
 
 
+def setup_323_check():
+    """Build 323: the setup asks the weather and the body (a questions list kept from before gets them too), and
+    /weather and /body set them and keep them in my_settings.json (here the harness's throwaway copy)."""
+    import play
+    import body as B
+    import weather as W
+    problems = []
+    before = open(play.MY_SETTINGS).read() if os.path.exists(play.MY_SETTINGS) else None
+    rules_path = os.path.join(play.HERE, "rules.json")
+    rules_before = open(rules_path, encoding="utf-8").read()
+    try:
+        return _setup_323(play, B, W, problems)
+    finally:       # (the saved choices, in my_settings.json and rules.json, must not reach the checks after this one)
+        open(rules_path, "w", encoding="utf-8").write(rules_before)
+        if before is None:
+            if os.path.exists(play.MY_SETTINGS):
+                os.remove(play.MY_SETTINGS)
+        else:
+            open(play.MY_SETTINGS, "w").write(before)
+
+
+def _setup_323(play, B, W, problems):
+    before = open(play.MY_SETTINGS).read() if os.path.exists(play.MY_SETTINGS) else None
+    try:
+        return _setup_323(play, B, W, problems)
+    finally:       # (the saved choices must not reach the checks after this one)
+        if before is None:
+            if os.path.exists(play.MY_SETTINGS):
+                os.remove(play.MY_SETTINGS)
+        else:
+            open(play.MY_SETTINGS, "w").write(before)
+
+
+def _setup_323(play, B, W, problems):
+    s = H.session(3, scene="lakeside forest")
+    s.eng.rules["setup"]["questions"] = ["scene", "fighters", "damage", "begin"]     # (an old list, without them)
+    want = {"Start>": "o", "Weather>": "snow", "Body>": "off bones footing"}
+    asked = []
+
+    def rd(p):
+        asked.append(p.split(">")[0])
+        return next((v for k, v in want.items() if p.startswith(k)), "")
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.setup_questions(s, read=rd)
+    if not ("Weather" in asked and "Body" in asked):
+        problems.append(f"the setup should ask the weather and the body, even with an old questions list: {asked}")
+    if W.kind(s.eng) != "snow" or B.cfg(s.eng, "bones") or B.cfg(s.eng, "footing") or not B.cfg(s.eng, "heat"):
+        problems.append("the setup's answers should set the weather and switch the named body parts off, no others")
+    saved = json.load(open(play.MY_SETTINGS))
+    if (saved.get("arena_weather") or {}).get("kind") != "snow" or \
+            ((saved.get("body") or {}).get("bones") or {}).get("enabled") is not False:
+        problems.append(f"/weather and /body should keep the choice in my_settings.json: {saved}")
+    with contextlib.redirect_stdout(io.StringIO()):
+        play.handle_command(s, "/body on all")
+    if not all(B.cfg(s.eng, k) for k in B.DEFAULTS):
+        problems.append("/body on all should switch every part back on")
+    return problems
+
+
 def weather_322_check():
     """Build 322 (arena_weather): the arena's own weather by default and none indoors; rain makes the ground slick,
     soaks them and strengthens Water; a Water type wilts in summer heat unless in the water; coils heat the one inside
@@ -4203,6 +4262,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "setup323" for w in want):
+        t = time.time()
+        probs = setup_323_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 323: setup asks the weather and the body, saved  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "weather322" for w in want):
