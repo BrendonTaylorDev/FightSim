@@ -800,6 +800,102 @@ def presets_help_check():
     return problems
 
 
+def alive_306_check():
+    """Build 306 (window.alive, narration.settling_in): her signs for the heart monitor rise with exertion and pain,
+    the grey closes in near a black-out and a choke, a stopped heart reads stopped; what landed since the beat
+    before is found for the jolt; breathing and greying keep her picture's size and outline; a hurt comes on in the
+    notes a beat or more after the hit, once per step, the same on a reroll, lying down told without her weight."""
+    import copy
+    import cards as K
+    problems = []
+    f = {"name": "Ripples", "health": 1700, "max": 1700, "energy": 100, "status": {}, "out": False,
+         "parts": [("Left Foot", 0, 80), ("Chest", 0, 90)], "pain": {"overall": {"pct": 0}}, "grips": None}
+    calm = K.body_signs(f)
+    if not (95 <= calm["heart"] <= 106 and calm["colour"] == "#22c55e" and calm["grey"] == 0 and calm["breath"] == 16):
+        problems.append(f"a fresh fighter should read near her resting heart and breathing, green: {calm}")
+    hurt = copy.deepcopy(f)
+    hurt.update(energy=20, status={"adrenaline": 2}, pain={"overall": {"pct": 120, "label": "near her limit"}})
+    hs = K.body_signs(hurt)
+    if not (hs["heart"] > calm["heart"] * 1.4 and hs["breath"] > 30 and "winded" in hs["words"]
+            and "near her limit" in hs["words"] and "adrenaline" in hs["words"] and hs["throb"] == 1.0):
+        problems.append(f"exertion, pain and adrenaline should raise her heart and breathing and say so: {hs}")
+    if hs["heart"] > 100 * K.ALIVE["heart_max"] + 1:
+        problems.append("the heart rate should be capped at heart_max of her resting rate")
+    coiled = copy.deepcopy(f)
+    coiled["grips"] = {"tap": {"vitals": {"heart": 60, "irregular": True, "bp": [70, 45], "squeeze": 90,
+                                          "blood": 58, "out_at": 60}}}
+    cs = K.body_signs(coiled)
+    if not (cs["coiled"] and cs["heart"] == 60 and cs["grey"] > 0.8 and cs["depth"] < 0.5):
+        problems.append(f"near her black-out in the coils the grey should close in and her breath go shallow: {cs}")
+    coiled["grips"]["tap"]["vitals"]["stopped"] = True
+    st = K.body_signs(coiled)
+    if not (st["heart"] == 0 and st["grey"] == 1.0 and st["breath"] == 0):
+        problems.append(f"a stopped heart should read stopped, no breath, fully grey: {st}")
+    choke = copy.deepcopy(f)
+    choke["grips"] = {"tap": {"choke": True, "circ": False, "air": 85}}
+    ch = K.body_signs(choke)
+    if not (ch["grey"] > 0.5 and "no air getting in" in ch["words"]):
+        problems.append(f"a choke near her limit should grey her and say no air is getting in: {ch}")
+    hit = copy.deepcopy(f)
+    hit["parts"] = [("Left Foot", 45, 70), ("Chest", 0, 90)]
+    hit["health"] = 1600
+    hits, jolt = K.impacts(f, hit)
+    if not (hits and hits[0][0] == "Left Foot" and 0.5 < hits[0][1] <= 1.0 and jolt > 0.5):
+        problems.append(f"a blow since the beat before should be found for the jolt: {hits, jolt}")
+    if K.impacts(None, hit) != ([], 0.0) or K.impacts(hit, hit)[0]:
+        problems.append("nothing new landed: no jolt")
+    if not all(0.0 <= K.breath_phase(16, t / 10.0) <= 1.0 for t in range(60)) or K.breath_phase(0, 3) != 0:
+        problems.append("the breath should run between out and in")
+    if K.Image is not None:
+        img = K.Image.new("RGBA", (120, 120), (0, 0, 0, 0))
+        K.ImageDraw.Draw(img).rectangle((40, 30, 80, 100), fill=(200, 120, 60, 255))
+        b = K.breathe_image(img, (40, 30, 81, 101), 0.05)
+        g = K.grey_image(img, 0.9)
+        if b.size != img.size or g.size != img.size or b.getchannel("A").getbbox()[3] != 101:
+            problems.append("breathing should keep her feet where they are and the picture its size")
+        px = g.getpixel((60, 60))
+        if not (abs(px[0] - px[2]) < abs(200 - 60) * 0.4 and px[3] == 255):
+            problems.append(f"the grey should take the colour out of her and keep her outline: {px}")
+    # narration.settling_in
+    s = H.session(3, fighters="Seraphina,Ripples")
+    e = s.eng
+    rp = e.get("Ripples")
+    foot = next(p for p in rp.parts.values() if p.name == "Left Foot")
+    foot.damage = 80
+    e.turn = 5
+    e.__dict__.setdefault("hit_turn", {})["Ripples|Left Foot"] = 3
+    t1 = e.settling_text()
+    if not ("left foot" in t1 and "hitch" in t1 and "beat 3" in t1):
+        problems.append(f"a foot hit two beats ago should come on in the notes: {t1!r}")
+    if e.settling_text() != t1:
+        problems.append("the same beat (a reroll) should give the same settling-in notes")
+    e.turn = 6
+    if "left foot" in e.settling_text():
+        problems.append("a step already told should not be told again")
+    foot.damage = 170
+    e.turn = 7
+    if "favors" not in e.settling_text():
+        problems.append("the next step should be told once it is that bad")
+    e.turn = 8
+    e.__dict__["hit_turn"]["Ripples|Left Foot"] = 8
+    foot.damage = 400
+    if "left foot" in e.settling_text():
+        problems.append("a part hit this beat has nothing settling in yet")
+    e.turn, e.__dict__["hit_turn"]["Ripples|Left Foot"] = 10, 8
+    e.knock_down("Ripples", facing="on her side", why="test")
+    t3 = e.settling_text()
+    if "weight" in t3 or "barely moving" not in t3:
+        problems.append(f"lying down, a leg settling in should not be told by her weight on it: {t3!r}")
+    e.rules["narration"]["settling_in"]["enabled"] = False
+    if e.settling_text():
+        problems.append("narration.settling_in false should give no notes")
+    import play
+    snap = play.fight_snapshot(s)
+    if not all("heart_rest" in x for x in snap["fighters"]):
+        problems.append("the snapshot should carry each fighter's resting heart rate")
+    return problems
+
+
 def narration_305_check():
     """Build 305 (from the Seraphina vs Ripples submission fight): a black-out that counts as one tap of several must
     be shown; being borne down in a hold must be shown, and it keeps her down while the grip is on; the present tense
@@ -3291,6 +3387,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "alive306 monitor settling" for w in want):
+        t = time.time()
+        probs = alive_306_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 306 living cards and heart monitor, injuries settling in  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "narration305 seraphina305 blackout borne" for w in want):

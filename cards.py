@@ -878,7 +878,14 @@ def card_panels(f, book, opts=None, plain=False, cache=None):
                               builtin=builtin, parts=parts, xf=xf, size=size)
         left, right = columns(f, spots, rect, parts)
         H = max(size, ROW * max(len(left), len(right)) + 12)
-        out.append({"view": v, "size": size, "src": src, "pic": paint(src, f, spots, o) if src is not None else None,
+        raw = paint(src, f, spots, o) if src is not None else None
+        # (since build 306) the grey closing in on her as a choke or the coils near her black-out (window.alive):
+        # still in an exported fight, and the window's own frames start from raw
+        al = alive_opts({"window": o})
+        grey = (body_signs(f, al)["grey"] if raw is not None and not plain and al.get("enabled", True)
+                and al.get("grey_in", True) else 0.0)
+        out.append({"view": v, "size": size, "src": src, "raw": raw, "grey": grey, "box": box,
+                    "pic": grey_image(raw, grey, float(al.get("vignette", 0.75))) if grey else raw,
                     "rect": rect, "spots": spots, "parts": parts, "left": left, "right": right, "key": key,
                     "height": H, "state": state, "pose": pose, "look": look})
     return out
@@ -1846,4 +1853,212 @@ def grip_lines(f):
     gaps = [f"{n}: {w}" for n, w in g.get("gaps") or () if w]
     if gaps:
         out.append(("Distance  " + "  ·  ".join(gaps), "#4b5563"))
+    return out
+
+
+# ---- window.alive (since build 306): her real picture brought to life, and a heart monitor on every card ----
+ALIVE = {"enabled": True, "breathing": True, "pulse": True, "impact": True, "grey_in": True, "grip_outline": True,
+         "heart_monitor": True, "fps": 12, "breath_depth": 0.012, "breath_rest": 16, "heart_rest": 100,
+         "exert": 0.45, "pain": 0.3, "heart_max": 1.8, "throb_from": 20, "throb": 0.6, "jolt_px": 7,
+         "jolt_seconds": 0.45, "grey_from": 0.55, "vignette": 0.75}
+
+# what her statuses do to her heart (a share of her resting rate, up or down), her breathing, and the monitor's words
+STATUS_SIGNS = {"adrenaline": (0.25, 0.3, "adrenaline"), "breathless": (0.1, 0.6, "breathless"),
+                "burned": (0.1, 0.1, "burned"), "poisoned": (0.12, 0.1, "poisoned"),
+                "frozen": (-0.3, -0.5, "frozen"), "chilled": (-0.12, -0.2, "chilled"),
+                "asleep": (-0.3, -0.4, "asleep"), "paralyzed": (0.05, 0.0, "paralyzed"),
+                "stunned": (0.05, 0.0, "stunned"), "dazed": (0.0, 0.0, "dazed"), "concussed": (0.0, 0.0, "concussed"),
+                "ribs_aching": (0.05, 0.0, "ribs aching"), "greyed": (0.0, 0.0, "the grey at her edges")}
+TORSO_WORDS = ("chest", "rib", "stomach", "belly", "flank", "torso")
+
+
+def alive_opts(rules):
+    """window.alive with its defaults."""
+    o = dict(ALIVE)
+    o.update(((rules or {}).get("window") or {}).get("alive") or {})
+    return o
+
+
+def body_signs(f, o=None, rest=None):
+    """(since build 306) How she is, as her body would show it: her heart rate (from exertion, the pain she is in,
+    her statuses, a choke, and the coils' own numbers while they are on her), a blood pressure to go with it, her
+    breathing (how fast, how deep), how far the grey has closed in on her (0 to 1: a choke or the coils nearing her
+    black-out), how hard her hurt parts throb with each beat, and the words for the monitor. Rough numbers for the
+    picture, never rolled against."""
+    o = o or ALIVE
+    t = (f.get("grips") or {}).get("tap") or {}
+    v = t.get("vitals") or None
+    rest = float(rest or f.get("heart_rest") or o.get("heart_rest", 100))
+    energy = max(0.0, min(100.0, float(f.get("energy", 100) or 0)))
+    exert = 1.0 - energy / 100.0
+    pct = float(((f.get("pain") or {}).get("overall") or {}).get("pct") or 0)
+    pain = min(1.5, pct / 100.0)
+    st = f.get("status") or {}
+    hm, bm, words = 0.0, 0.0, []
+    for k in st:
+        h_, b_, w_ = STATUS_SIGNS.get(k, (0.0, 0.0, None))
+        hm, bm = hm + h_, bm + b_
+        if w_:
+            words.append(w_)
+    air = float(t.get("air") or 0) if (t.get("choke") and not t.get("circ")) else 0.0
+    torso = max([d for p, d, r in f.get("parts") or () if any(w in p.lower() for w in TORSO_WORDS)] or [0])
+    out = bool(f.get("out"))
+    if v:
+        heart, irregular, stopped = float(v.get("heart") or 0), bool(v.get("irregular")), bool(v.get("stopped"))
+        bp = list(v.get("bp") or [120, 80])
+    else:
+        heart = rest * (1.0 + float(o.get("exert", 0.45)) * exert + float(o.get("pain", 0.3)) * pain + hm)
+        if air:
+            heart *= 1.0 + 0.3 * min(air, 60) / 60.0
+            if air > 60:
+                heart *= 1.0 - 0.45 * (air - 60) / 40.0
+        heart = max(rest * 0.4, min(rest * float(o.get("heart_max", 1.8)), heart))
+        if out:
+            heart = rest * 0.75
+        irregular, stopped = "paralyzed" in st or air > 70, False
+        up = heart / rest - 1.0
+        bp = [int(round(120 * (1 + 0.35 * up) / 5) * 5), int(round(80 * (1 + 0.2 * up) / 5) * 5)]
+    br_rest = float(o.get("breath_rest", 16))
+    breath = br_rest * (1.0 + 1.3 * exert + 0.4 * pain + bm)
+    depth = 1.0 + 0.5 * exert
+    shallow = []
+    if torso >= 150 or "ribs_aching" in st:
+        depth *= 0.65
+        shallow.append("guarding her ribs")
+    grey = 0.0
+    if v:
+        s = max(0.0, min(1.0, float(v.get("squeeze") or 0) / 100.0))
+        depth *= 1.0 - 0.85 * s
+        breath *= 1.0 + 0.5 * s
+        if s > 0.2:
+            shallow.append("the coils let her breathe only shallowly")
+        at, blood = float(v.get("out_at") or 0), float(v.get("blood") or 0)
+        if at:
+            near = blood / at
+            gf = float(o.get("grey_from", 0.55))
+            grey = max(0.0, min(1.0, (near - gf) / max(0.05, 1.0 - gf)))
+            if near > 0.8:
+                breath *= max(0.4, 1.0 - (near - 0.8))
+    if air:
+        depth *= max(0.05, 1.0 - air / 100.0)
+        breath *= 1.3
+        shallow.append("no air getting in")
+        grey = max(grey, max(0.0, min(1.0, (air - 45) / 45.0)))
+    if "greyed" in st:
+        grey = max(grey, 0.35)
+    if stopped:
+        heart, breath, depth, grey = 0.0, 0.0, 0.0, 1.0
+    elif out:
+        breath, depth = br_rest * 0.6, 0.45
+    breath = max(0.0, min(70.0, breath))
+    if energy < 60 and not out:
+        words.insert(0, "breathing hard" if energy >= 35 else "winded" if energy >= 15 else "spent")
+    words += shallow
+    if pct >= 40 and not out:
+        words.append(str(((f.get("pain") or {}).get("overall") or {}).get("label") or "in pain"))
+    if out:
+        words.insert(0, "heart stopped" if stopped else "unconscious")
+    ratio = heart / rest if rest else 1.0
+    colour = ("#ef4444" if stopped or ratio >= 1.55 or grey >= 0.5 or (irregular and ratio < 0.8) else
+              "#f59e0b" if ratio >= 1.3 or irregular or grey > 0 else "#22c55e")
+    tf = float(o.get("throb_from", 20))
+    return {"heart": int(round(heart / 2.0) * 2), "heart_rest": int(round(rest)), "irregular": irregular,
+            "stopped": stopped, "bp": bp, "bp_rest": [120, 80], "breath": int(round(breath)),
+            "breath_rest": int(br_rest), "depth": round(max(0.0, depth), 3), "grey": round(grey, 3),
+            "throb": round(max(0.0, min(1.0, (pct - tf) / max(1.0, 100.0 - tf))), 3),
+            "words": list(dict.fromkeys(words)), "colour": colour, "coiled": bool(v)}
+
+
+def breath_phase(rate, t):
+    """How full her chest is at time t (seconds): 0 breathed out, 1 breathed in, at `rate` breaths a minute (a
+    quicker breath in than out)."""
+    if not rate or rate <= 0:
+        return 0.0
+    x = (t * rate / 60.0) % 1.0
+    return math.sin(math.pi / 2 * x / 0.4) ** 2 if x < 0.4 else math.cos(math.pi * (x - 0.4) / 0.6 / 2) ** 2
+
+
+def impacts(prev, f):
+    """(since build 306) What landed on her since the card last showed her, a beat before: [(part, strength 0-1)],
+    the hardest first, from how much each part's damage rose; and the whole jolt (0-1), the hardest hit or the health
+    she lost, whichever is more."""
+    if not prev:
+        return [], 0.0
+    before = {p: d for p, d, r in prev.get("parts") or ()}
+    hits = sorted(((p, min(1.0, (d - before.get(p, d)) / 60.0)) for p, d, r in f.get("parts") or ()
+                   if d - before.get(p, d) >= 2), key=lambda x: -x[1])
+    lost = max(0.0, float(prev.get("health", 0)) - float(f.get("health", 0))) / max(1.0, float(f.get("max", 100)) * 0.12)
+    return hits, round(min(1.0, max([s for p, s in hits] + [lost])), 3) if hits or lost > 0.05 else 0.0
+
+
+def breathe_image(img, box, amount):
+    """Her picture breathing in: stretched up from her feet (the bottom of her body, box) by `amount` of her
+    height, and a hair wider, so her chest rises and falls; the picture's own size is kept."""
+    if not amount or img is None:
+        return img
+    x0, y0, x1, y1 = box
+    h = max(1, y1 - y0)
+    nh = int(round(h * (1.0 + amount)))
+    nw = int(round((x1 - x0) * (1.0 + amount * 0.35)))
+    body = img.crop((x0, y0, x1, y1)).resize((max(1, nw), max(1, nh)), Image.BILINEAR)
+    out = img.copy()
+    out.paste((0, 0, 0, 0), (x0, y0, x1, y1))
+    out.alpha_composite(body, (max(0, x0 - (nw - (x1 - x0)) // 2), max(0, y1 - nh)))
+    return out
+
+
+def grey_image(img, k, vignette=0.75):
+    """The grey closing in on her (k 0-1): her picture losing its colour and dimming, and (vignette) a dark edge
+    closing in round the picture."""
+    if not k or img is None:
+        return img
+    k = max(0.0, min(1.0, k))
+    a = img.getchannel("A")
+    rgb = ImageEnhance.Color(img.convert("RGB")).enhance(1.0 - 0.8 * k)
+    rgb = ImageEnhance.Brightness(rgb).enhance(1.0 - 0.15 * k)
+    out = rgb.convert("RGBA")
+    out.putalpha(a)
+    if vignette:
+        w, h = img.size
+        m = Image.new("L", (w, h), 0)
+        d = ImageDraw.Draw(m)
+        r = (1.05 - 0.35 * k) * min(w, h) / 2
+        d.ellipse((w / 2 - r, h / 2 - r, w / 2 + r, h / 2 + r), fill=255)
+        m = m.filter(ImageFilter.GaussianBlur(min(w, h) / 9))
+        dark = Image.new("RGBA", (w, h), (8, 8, 12, 0))
+        dark.putalpha(ImageChops.invert(m).point(lambda x: int(x * 0.7 * float(vignette) * k)))
+        out.alpha_composite(dark)
+    return out
+
+
+def flash_layer(src, spots, hits, colour=(255, 214, 190)):
+    """A blow's flash on the parts it struck: a bright bloom on each, as strong as the hit, kept on her body."""
+    layer = Image.new("RGBA", src.size, (0, 0, 0, 0))
+    dr = ImageDraw.Draw(layer)
+    for part, s in hits:
+        if part not in spots:
+            continue
+        x, y = spots[part]
+        r = (14 + 14 * s) * src.size[0] / PIC
+        dr.ellipse((x - r, y - r, x + r, y + r), fill=colour + (int(70 + 110 * s),))
+    layer = layer.filter(ImageFilter.GaussianBlur(7))
+    layer.putalpha(ImageChops.multiply(layer.getchannel("A"), _body_mask(src)))
+    return layer
+
+
+def throb_layer(src, f, spots):
+    """The extra glow her hurt parts pulse with at each heartbeat (window.alive.pulse), kept on her body."""
+    layer = _glow_layer(src, f, spots, 150)
+    layer.putalpha(ImageChops.multiply(layer.getchannel("A"), _body_mask(src)))
+    return layer
+
+
+def monitor_words(sg):
+    """The heart monitor's reading on the card: [(text, colour, bold)]."""
+    out = [("♥ stopped" if sg["stopped"] else f"♥ {sg['heart']}/min", sg["colour"], True),
+           (f"normal {sg['heart_rest']}", "#9ca3af", False),
+           (f"BP {sg['bp'][0]}/{sg['bp'][1]}", "#f9fafb" if sg["bp"][0] >= 90 else "#fca5a5", True),
+           (f"normal {sg['bp_rest'][0]}/{sg['bp_rest'][1]}", "#9ca3af", False),
+           (f"breathing {sg['breath']}/min" + (", shallow" if sg["depth"] < 0.6 and sg["breath"] else ""),
+            "#f9fafb", True), (f"normal {sg['breath_rest']}", "#9ca3af", False)]
     return out

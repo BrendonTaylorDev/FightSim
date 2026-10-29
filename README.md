@@ -654,6 +654,31 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 306
+The fighter cards come alive, all from her own artwork (nothing new drawn over it), and the prose shows hurts coming
+on. Every piece is a switch in rules.json `window.alive` (with `enabled` false for none of it).
+
+- **A heart monitor on every card** (`heart_monitor`), under her bars, always there: her heart rate with a trace
+  moving at it, her blood pressure and her breathing, each with its normal beside it, and what is doing it (winded,
+  spent, the pain she is in, her statuses, guarding her ribs, no air getting in). Her heart rises from her resting
+  rate (fighters.json `heart_rest`) with exertion, pain and adrenaline, and slows when she is asleep, frozen or out.
+  While coils squeeze her, the constriction's own monitor and squeeze picture take its place.
+- **Breathing** (`breathing`): her picture rises and falls at her breathing rate. It's slow at rest, quicker as she
+  tires, fast and shallow in the coils, in a choke or guarding hurt ribs, and slow and faint once she is out.
+- **Pain pulsing** (`pulse`): the glow on her hurt parts throbs with each beat of her heart, more the more pain she
+  is in.
+- **Impact** (`impact`): when the window moves on a beat (or you step forward one), every part that was hit flashes
+  and her picture jolts, harder for bigger blows, for under half a second.
+- **The grey closing in** (`grey_in`): as a choke or the coils near her black-out, her picture loses its colour and a
+  dark edge closes in round it. Exported fights show it too, still.
+- **Grips in the holder's colours** (`grip_outline`): the rings on her gripped parts are in the holder's own colours
+  and pulse.
+- **Injuries settling in** (`narration.settling_in`): a part hit a beat or more ago and untouched since, whose damage
+  has passed the next step (60 stiffening, 150 swelling and favored, 300 barely used), gets one note for the story to
+  show as it comes on, by where it is: a hitch as she puts her weight on a hurt foot, each breath catching at her
+  ribs, swelling coming up at her jaw. Each step is told once, the worst first; lying down or in the air a leg is
+  never told by her weight on it. A reroll gets the same note, and undo puts it back.
+
 ## Build 305
 Fixes from the Seraphina vs Ripples submission fight.
 

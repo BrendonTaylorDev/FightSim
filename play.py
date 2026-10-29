@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-28 build 305 (narration fixes from the Seraphina vs Ripples fight)"
+VERSION = "2026-10-29 build 306 (living cards, a heart monitor on every card, injuries settling in)"
 
 HELP = """
 =============================================================================================
@@ -632,6 +632,8 @@ def fight_snapshot(s, label=None):
             "parts": [(p.name, round(float(p.damage), 2), round(float(p.resistance), 2)) for p in f.parts.values()],
             # for the pictures: which way she lies, and the marks on each hurt part (window.poses, window.damage_marks)
             "facing": facing, "marks": _marks_of(eng, f),
+            # (since build 306) her resting heart rate, for the heart monitor on her card (window.alive)
+            "heart_rest": float(getattr(f, "heart_rest", 0) or 0) or None,
             # a submission match: her tap-outs so far and how many end it (the window's tap tally)
             "taps": ({"given": list(eng.taps_given(f)), "needed": int(eng.taps_needed())}
                      if eng.submission_match() else None),

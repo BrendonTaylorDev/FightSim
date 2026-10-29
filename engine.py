@@ -12390,9 +12390,102 @@ class Engine:
         return ("WHAT HURT WHERE (a memory of an old hurt goes on the part it really hit, by what really hit it): "
                 + " | ".join(rows)) if rows else ""
 
+    # narration.settling_in (since build 306): how a hurt part comes on in the beats after it was hit, by where it is,
+    # one step at a time: [stiffening, worse, barely used]. {standing} lines need her on her feet; {down} replaces them
+    SETTLE = {
+        "hind_low": ("the {p} stiffening: a hitch when she next puts her weight on it",
+                     "the {p} swollen and tender: she favors it, her weight shifted off it",
+                     "the {p} barely taking her weight now: she moves on it only when she has to"),
+        "hind_up": ("the {p} tightening: her stride on that side a little shorter",
+                    "the {p} gone heavy and sore: she favors that side",
+                    "the {p} dragging: every push off it costs her"),
+        "fore_low": ("the {p} stiffening: slower to close, held a little nearer her body",
+                     "the {p} swollen: she guards it, slower to use it",
+                     "the {p} barely used now: she keeps it tucked in when she can"),
+        "fore_up": ("the {p} stiffening: it rises a beat slower than the other",
+                    "the {p} aching deep: she guards it",
+                    "the {p} hanging heavy: she lifts it only when she has to"),
+        "shoulder": ("the {p} tightening: she rolls it, testing it",
+                     "the {p} stiff and sore: it rises slower on that side",
+                     "the {p} hardly lifting: everything on that side comes slower"),
+        "chest": ("the {p} aching with each breath now", "each deep breath catching at the {p}: she breathes shallow "
+                  "to spare it", "the {p} hurting at every breath: she cannot fill her lungs without it biting"),
+        "belly": ("a deep ache settling into the {p}", "the {p} sore through: she curls a little round it",
+                  "the {p} throbbing with every move: she bends round it"),
+        "back_up": ("the {p} tightening as she turns", "the {p} stiff: she turns her whole body rather than twist",
+                    "the {p} seized and sore: every twist is slow"),
+        "back_low": ("the {p} tightening as she bends", "the {p} stiff and sore: she moves carefully round it",
+                     "the {p} knotted tight: every bend costs her"),
+        "neck": ("the {p} stiffening: she turns her head a little carefully",
+                 "the {p} stiff: she turns her shoulders rather than her head",
+                 "the {p} locked and sore: she turns her whole body to look"),
+        "head": ("swelling coming up at the {p}", "the {p} puffed and throbbing with her pulse",
+                 "the {p} swollen tight, throbbing with every heartbeat"),
+        "tail": ("the {p} stiffening: it swings a little heavier", "the {p} sore: she holds it low and still",
+                 "the {p} hanging heavy: it barely lifts"),
+        "wing": ("the {p} stiffening: its strokes a little short", "the {p} sore: she spares it, beating it shallow",
+                 "the {p} barely answering: every stroke of it drags"),
+    }
+    SETTLE_DOWN = {"hind_low": ("the {p} stiffening: it moves stiffly when she shifts it",
+                                "the {p} swollen and tender: she keeps it still",
+                                "the {p} barely moving now"),
+                   "hind_up": ("the {p} tightening", "the {p} gone heavy and sore", "the {p} heavy and hardly moving")}
+
+    def _settle_key(self, f, name):
+        """Which SETTLE lines a part takes: a wing its own, a four-legged fighter's foreleg a leg's (she stands on
+        it)."""
+        n, reg = name.lower(), body_region(name)
+        if re.search(r"\bwing", n):
+            return "wing"
+        if reg in ("fore_low", "fore_up") and self.body_plan(f) == "quadruped":
+            return "hind_low" if reg == "fore_low" else "hind_up"
+        return reg
+
+    def settling_text(self):
+        """narration.settling_in (since build 306): hurts that have come on since they were hit. A part hit at least a
+        beat ago, untouched since, whose damage has passed the next of the steps (from), stiffens, swells or stops
+        being used: the narrator shows it once, in a few words of how she moves or looks, and the next step only once
+        it is that bad. Worked out once per beat (a rerolled beat gets the same), kept with her (so undo puts it back)."""
+        cfg = (self.rules.get("narration") or {}).get("settling_in") or {}
+        if not cfg.get("enabled", True):
+            return ""
+        steps = [float(x) for x in cfg.get("from", (60, 150, 300))][:3]
+        age_max, per = int(cfg.get("max_age", 6)), max(1, int(cfg.get("per_beat", 1)))
+        ht = getattr(self, "hit_turn", None) or {}
+        rows = []
+        for f in self.active():
+            st = f.learned.get("settle") or {}
+            if st.get("turn") != self.turn:
+                told = dict(st.get("told") or {})
+                due = []
+                for p in sorted(f.parts.values(), key=lambda p: -p.damage):
+                    t = ht.get(f"{f.name}|{p.name}")
+                    reg = self._settle_key(f, p.name)
+                    if t is None or reg not in self.SETTLE or not (1 <= self.turn - t <= age_max):
+                        continue
+                    stage = sum(1 for x in steps if p.damage >= x)
+                    if stage > int(told.get(p.name, 0)):
+                        due.append([p.name, stage, int(t)])
+                due = due[:per]
+                for name, stage, _t in due:
+                    told[name] = stage
+                f.learned["settle"] = st = {"turn": self.turn, "told": told, "due": due}
+            bits = []
+            down = f.name in self.downed or self.has(f, "airborne") or bool(self.pinned_by(f.name))
+            for name, stage, t in st.get("due") or ():
+                reg = self._settle_key(f, name)
+                table = (self.SETTLE_DOWN.get(reg) if down else None) or self.SETTLE[reg]
+                line = table[max(0, min(2, stage - 1))].format(p=name.lower())
+                bits.append(f"{line} (hit in beat {t}, untouched since)")
+            if bits:
+                rows.append(f"{f.name}: " + "; ".join(bits))
+        return ("SETTLING IN (hurts that have come on since they were hit, nothing new striking them: show each once, "
+                "in a few words of how she moves, breathes or looks, in your own words, as it comes on): " + " | ".join(rows)) if rows else ""
+
     def narrator_condition(self):
         text = self.condition_summary() + ("\n" + self.weather_text() if getattr(self, "weather", None) else "")
-        for extra in (self.wear_text(), self.movement_text(), self.hurt_where_text(), self.gap_text()):
+        for extra in (self.wear_text(), self.movement_text(), self.hurt_where_text(), self.settling_text(),
+                      self.gap_text()):
             if extra:
                 text += "\n" + extra
         if getattr(self, "arena_marks", None):

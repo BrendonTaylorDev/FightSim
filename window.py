@@ -43,7 +43,9 @@ from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
                    held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour,
                    squeeze_shapes, squeeze_label, squeeze_figure, squeeze_colours, heart_shapes, heart_beat,
-                   picture_colours, squeeze_word, mix, squeeze_readout, blackout_text, hold_shapes)
+                   picture_colours, squeeze_word, mix, squeeze_readout, blackout_text, hold_shapes, alive_opts,
+                   body_signs, breath_phase, impacts, breathe_image, grey_image, flash_layer, throb_layer,
+                   monitor_words)
 
 try:                           # Pillow makes the pictures smoother when it is installed; Tk alone works too
     from PIL import Image, ImageTk
@@ -349,6 +351,11 @@ class FighterCard(ttk.Frame):
         self.hp.pack(fill="x")
         self.en = tk.Canvas(self, width=PIC + 2 * COL, height=10, highlightthickness=0, bg=C("#e5e7eb"))
         self.en.pack(fill="x", pady=(2, 0))
+        # (since build 306) her heart monitor, on every card (window.alive.heart_monitor): her heart rate, blood
+        # pressure and breathing from how she is, a moving trace, and the words for her condition (always dark)
+        self.hb = tk.Canvas(self, width=PIC + 2 * COL, height=46, highlightthickness=0, bg="#111827")
+        self.hits = ([], 0.0)     # what landed on her since the beat before (cards.impacts), for the jolt and flash
+        self._alive = None        # the picture's living frames (window.alive): see _alive_setup
         # a submission match: one pip per tap-out the match needs, filled for each she has given (with the part)
         self.tp = tk.Canvas(self, width=PIC + 2 * COL, height=20, highlightthickness=0, bg=C("#f3f4f6"))
         # her pain against what she can bear (window.pain_gauge): a bar with a mark at 100%, more in a submission
@@ -425,6 +432,8 @@ class FighterCard(ttk.Frame):
         c.configure(height=H)
         c.delete("all")
         self.photos, self.panels = [], []
+        self._rings, live_pics = [], []
+        self._grip_cols = self._grip_colours(f)
         top = 0
         for pn in panels:
             ox, oy = panel_origin(pn, top)
@@ -432,7 +441,8 @@ class FighterCard(ttk.Frame):
             if pn["pic"] is not None:
                 ph = ImageTk.PhotoImage(pn["pic"])
                 self.photos.append(ph)
-                c.create_image(ox, oy, image=ph, anchor="nw")
+                item = c.create_image(ox, oy, image=ph, anchor="nw")
+                live_pics.append(dict(pn, item=item, ox=ox, oy=oy))
             cap = VIEW_CAPTION.get(pn["view"], "")
             if cap:
                 c.create_text(COL + PIC / 2, top - 3, text=cap, anchor="s", font=("Segoe UI", 7), fill=C("#6b7280"))
@@ -455,6 +465,7 @@ class FighterCard(ttk.Frame):
             c.create_text(COL + PIC / 2, H - 8, font=("Segoe UI", 8, "italic"), fill=C("#2563eb"),
                           text=f"click either picture where her {self.app.calib[1].lower()} is"
                                + (" (the back picture moves it there)" if len(panels) > 1 else ""))
+        self._alive_setup(f, [] if calib_here else live_pics)
         self._bars(f, pct)
 
     def draw_scaled(self, f, pct, z):
@@ -486,6 +497,8 @@ class FighterCard(ttk.Frame):
         c.delete("all")
         self.photos, self.panels = [ph], []
         c.create_image(0, 0, image=ph, anchor="nw")
+        self._rings, self._grip_cols = [], {}
+        self._alive_setup(f, [])
         self._bars(f, pct)
 
     def _taps(self, f):
@@ -513,15 +526,177 @@ class FighterCard(ttk.Frame):
                       fill=C("#991b1b") if len(given) >= need else C("#111827"))
 
     def _ring(self, c, f, part, x, y):
-        """A part in someone's grip gets a violet ring on her picture (window.hold_panel)."""
-        if part in held_parts(f):
-            c.create_oval(x - 9, y - 9, x + 9, y + 9, outline=C("#7c3aed"), width=2)
-            c.create_oval(x - 13, y - 13, x + 13, y + 13, outline=C("#c4b5fd"), width=1, dash=(3, 2))
+        """A part in someone's grip gets a violet ring on her picture (window.hold_panel); with
+        window.alive.grip_outline (since build 306) the ring is in the holder's own colours and pulses, tightening
+        and easing like the grip."""
+        if part not in held_parts(f):
+            return
+        col = (getattr(self, "_grip_cols", None) or {}).get(part)
+        if col:
+            a = c.create_oval(x - 9, y - 9, x + 9, y + 9, outline=col, width=3)
+            b = c.create_oval(x - 13, y - 13, x + 13, y + 13, outline=mix(col, "#ffffff", 0.45), width=1, dash=(3, 2))
+            self._rings.append((a, b, x, y))
+            return
+        c.create_oval(x - 9, y - 9, x + 9, y + 9, outline=C("#7c3aed"), width=2)
+        c.create_oval(x - 13, y - 13, x + 13, y + 13, outline=C("#c4b5fd"), width=1, dash=(3, 2))
+
+    # ---- window.alive (since build 306): her picture breathing, her hurts throbbing, blows landing, the grey ----
+    def _alive_cfg(self):
+        return alive_opts(self.app._rules() if hasattr(self.app, "_rules") else None)
+
+    def _grip_colours(self, f):
+        """{her gripped part: the colour of whoever holds it} (window.alive.grip_outline), {} when it is off."""
+        o = self._alive_cfg()
+        if not (o.get("enabled", True) and o.get("grip_outline", True)):
+            return {}
+        cards_ = getattr(self.app, "cards", None) or {}
+        out = {}
+        for g in (f.get("grips") or {}).get("held") or ():
+            col = picture_colours(getattr(cards_.get(g.get("by")), "book", None), "#a78bfa")[0]
+            # (a dark holder's colour would vanish on her picture: lifted toward white)
+            col = mix(col, "#ffffff", 0.25)
+            for p in g.get("parts") or ():
+                out.setdefault(p, col)
+        return out
+
+    def _alive_setup(self, f, pics):
+        """Get her picture's living frames ready for _alive_tick: her signs (cards.body_signs), each picture with
+        what its frames are made from, and this beat's blows (self.hits, set by App.show) to jolt and flash."""
+        o = self._alive_cfg()
+        if not o.get("enabled", True):
+            self._alive = None
+            return
+        import time as _time
+        sg = body_signs(f, o)
+        hits, jolt = self.hits if o.get("impact", True) else ([], 0.0)
+        self.hits = ([], 0.0)
+        for p in pics:
+            p["frames"] = {}
+            p["throb_l"] = (throb_layer(p["src"], f, p["spots"])
+                            if o.get("pulse", True) and sg["throb"] > 0 and p.get("src") is not None else None)
+            mine = [(q, s) for q, s in hits if q in p["spots"]]
+            p["flash_l"] = flash_layer(p["src"], p["spots"], mine) if mine and p.get("src") is not None else None
+        self._alive = {"sg": sg, "o": o, "pics": pics, "t0": _time.monotonic(), "jolt": jolt if hits else 0.0}
+        if not getattr(self, "_alive_running", False):
+            self._alive_running = True
+            self.after(30, self._alive_tick)
+
+    def _alive_frame(self, p, bq, tq, fq):
+        """One frame of a picture: her hurts glowing brighter by tq, a blow's flash by fq, breathed in by bq, the
+        grey over it all (each a step, so the frames are made once and kept)."""
+        key = (bq, tq, fq)
+        ph = p["frames"].get(key)
+        if ph is not None:
+            return ph
+        al = self._alive
+        o, sg = al["o"], al["sg"]
+        img = p["raw"]
+        for layer, k in ((p["throb_l"], tq / 3.0 * sg["throb"] * float(o.get("throb", 0.6))), (p["flash_l"], fq / 3.0)):
+            if layer is not None and k > 0:
+                img = img.copy()
+                lay = layer.copy()
+                lay.putalpha(lay.getchannel("A").point(lambda a, k=k: int(a * min(1.0, k))))
+                img.alpha_composite(lay)
+        if bq and p.get("box"):
+            img = breathe_image(img, p["box"], float(o.get("breath_depth", 0.012)) * sg["depth"] * bq / 5.0)
+        if p.get("grey"):
+            img = grey_image(img, p["grey"], float(o.get("vignette", 0.75)))
+        ph = ImageTk.PhotoImage(img)
+        p["frames"][key] = ph
+        return ph
+
+    def _alive_tick(self):
+        """One step of the living card: each picture's frame for this moment (her breath, her heartbeat, a blow
+        still landing), the jolt of a blow, the grip rings tightening and easing, and the heart monitor's trace."""
+        import time as _time
+        try:
+            if not self.winfo_exists():
+                self._alive_running = False
+                return
+            al = self._alive
+            fps = 12
+            if al:
+                o, sg = al["o"], al["sg"]
+                fps = max(4, min(30, int(o.get("fps", 12))))
+                now = _time.monotonic()
+                dt = now - al["t0"]
+                bq = (int(round(5 * breath_phase(sg["breath"], now))) if o.get("breathing", True) and sg["depth"] > 0
+                      else 0)
+                tq = (int(round(3 * heart_beat(sg["heart"], now, sg["irregular"])))
+                      if o.get("pulse", True) and sg["throb"] > 0 else 0)
+                dur = float(o.get("jolt_seconds", 0.45))
+                u = dt / dur if al["jolt"] else 1.0
+                fq = max(0, int(math.ceil(3 * (1.0 - u)))) if u < 1.0 else 0
+                dx = dy = 0.0
+                if u < 1.0:
+                    amp = float(o.get("jolt_px", 7)) * (0.35 + 0.65 * al["jolt"])
+                    dx = amp * math.exp(-4.0 * u) * math.sin(u * math.pi * 6)
+                    dy = 0.4 * amp * math.exp(-4.0 * u) * math.sin(u * math.pi * 4 + 1.0)
+                for p in al["pics"]:
+                    if p.get("raw") is None:
+                        continue
+                    want = (bq, tq, fq)
+                    if p.get("shown") != want:
+                        self.canvas.itemconfigure(p["item"], image=self._alive_frame(p, *want))
+                        p["shown"] = want
+                    self.canvas.coords(p["item"], p["ox"] + dx, p["oy"] + dy)
+                r = 2.2 * math.sin(2 * math.pi * now * 0.9)
+                for a, b, x, y in getattr(self, "_rings", None) or ():
+                    self.canvas.coords(a, x - 9 - r, y - 9 - r, x + 9 + r, y + 9 + r)
+                    self.canvas.coords(b, x - 13 - r, y - 13 - r, x + 13 + r, y + 13 + r)
+            self._monitor_tick()
+            self.after(int(1000 / fps), self._alive_tick)
+        except tk.TclError:
+            self._alive_running = False      # (the card was closed)
+
+    def _monitor(self, f):
+        """window.alive.heart_monitor (since build 306): her heart monitor under her bars, always there: her heart
+        rate and a trace of it moving at that rate, her blood pressure and her breathing, each beside its normal,
+        and what is doing it (winded, the pain, her statuses). While coils squeeze her the constriction's own
+        monitor (the vitals strip) takes its place."""
+        o = self._alive_cfg()
+        sg = (self._alive or {}).get("sg") or body_signs(f, o)
+        on = bool(o.get("enabled", True) and o.get("heart_monitor", True) and not sg["coiled"])
+        self._show(self.hb, on)
+        self._mon = None
+        if not on:
+            return
+        c, w = self.hb, self.app.card_w()
+        c.delete("all")
+        rd = monitor_words(sg)
+        c.create_text(6, 11, anchor="w", text=rd[0][0], font=("Segoe UI", 9, "bold"), fill=rd[0][1])
+        c.create_text(6, 24, anchor="w", text=rd[1][0], font=("Segoe UI", 7), fill=rd[1][1])
+        sx = w - 175
+        for k, (y, (t1, c1, _), (t2, c2, _)) in enumerate(((11, rd[2], rd[3]), (24, rd[4], rd[5]))):
+            a = c.create_text(sx, y, anchor="w", text=t1, font=("Segoe UI", 8, "bold"), fill=c1)
+            c.create_text(c.bbox(a)[2] + 5, y, anchor="w", text=t2, font=("Segoe UI", 7), fill=c2)
+        bx, bw = 84, max(30, sx - 84 - 8)
+        base = ecg_points(sg["heart"], sg["irregular"], bw, 22, 0, 3)
+        base = base + [(x + bw, y) for x, y in base[1:]]
+        line = c.create_line(*[q for x, y in base if x <= bw for q in (bx + x, y)], fill=sg["colour"], width=1.5)
+        anim = bool(o.get("enabled", True)) and (self.app._rules().get("window") or {}).get("vitals_animate", True) \
+            if hasattr(self.app, "_rules") else True
+        self._mon = {"base": base, "line": line, "bx": bx, "bw": bw, "off": 0.0, "anim": anim}
+        words = "  ·  ".join(sg["words"]) or ("steady" if not f.get("out") else "")
+        t = c.create_text(6, 37, anchor="nw", text=words, width=w - 12, font=("Segoe UI", 8),
+                          fill="#fca5a5" if sg["colour"] == "#ef4444" else "#d1d5db")
+        c.configure(height=max(46, c.bbox(t)[3] + 3) if words else 34)
+
+    def _monitor_tick(self):
+        st = getattr(self, "_mon", None)
+        if not st or not st["anim"] or not self.hb.winfo_ismapped():
+            return
+        st["off"] = (st["off"] + st["bw"] * (1.0 / max(4, int((self._alive or {}).get("o", {}).get("fps", 12))))
+                     / 6.0) % st["bw"]
+        off, bx, bw = st["off"], st["bx"], st["bw"]
+        pts = [q for x, y in st["base"] if off <= x <= off + bw for q in (bx + x - off, y)]
+        if len(pts) >= 4:
+            self.hb.coords(st["line"], *pts)
 
     def _order(self):
         """The strips under her bars always in one order: taps, pain, tap meter, hold panel (each packs itself on
         when it has something, so one that appears later would otherwise land after the rest)."""
-        shown = [x for x in (self.tp, self.pg, self.tm, self.vt, self.gp) if x.winfo_ismapped()]
+        shown = [x for x in (self.hb, self.tp, self.pg, self.tm, self.vt, self.gp) if x.winfo_ismapped()]
         for x in shown:
             x.pack_forget()
         for x in shown:
@@ -815,7 +990,7 @@ class FighterCard(ttk.Frame):
     def _fit_width(self):
         """(since build 273) every bar under the picture as wide as the card at its size (the Cards − / + buttons)."""
         w = self.app.card_w()
-        for cv in (self.hp, self.en, self.tp, self.pg, self.tm, self.vt, self.gp):
+        for cv in (self.hp, self.en, self.hb, self.tp, self.pg, self.tm, self.vt, self.gp):
             if int(float(cv.cget("width"))) != w:
                 cv.configure(width=w)
         self.state.configure(wraplength=w)
@@ -835,6 +1010,7 @@ class FighterCard(ttk.Frame):
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
+        self._monitor(f)
         self._taps(f)
         self._pain(f)
         self._tap_meter(f)
@@ -849,6 +1025,8 @@ class FighterCard(ttk.Frame):
         self.head.configure(text=f["name"] + ("   — OUT" if f["out"] else ""))
         self.sub.configure(text=f"{f['species']}  ·  {' / '.join(f['types'])}")
         spots = self.anchors(f)
+        self._rings, self._grip_cols = [], self._grip_colours(f)
+        self._alive_setup(f, [])
         left, right = columns(f, spots, self.rect)
         H = max(PIC, ROW * max(len(left), len(right)) + 12)
         top = (H - PIC) / 2
@@ -905,6 +1083,7 @@ class FighterCard(ttk.Frame):
         sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
+        self._monitor(f)
         self._taps(f)
         self._pain(f)
         self._tap_meter(f)
@@ -1603,8 +1782,14 @@ class App:
                 card.grid(row=k, column=0, sticky="n", padx=4, pady=4)
                 self.cards[f["name"]] = card
                 self.load_picture(card, f)
+        # (since build 306) a beat on from the one shown: what landed jolts and flashes on her card (window.alive)
+        turn, last = snap.get("turn"), getattr(self, "_shown_turn", None)
+        step = turn is not None and last is not None and turn == last + 1
         for f in snap["fighters"]:
-            self.cards[f["name"]].draw(f)
+            card = self.cards[f["name"]]
+            card.hits = impacts(card.data, f) if step and card.data else ([], 0.0)
+            card.draw(f)
+        self._shown_turn = turn
         self._repaint_cards()
         self.when.configure(text=("Now" if live else
                                   f"Beat {index} of {len(self.beats)}: as it stood {snap['label']}" if index else
