@@ -2015,6 +2015,8 @@ STATUS_SIGNS.update({"bleeding": (0.08, 0.15, "bleeding"), "pale": (0.15, 0.2, "
                      "light_headed": (0.22, 0.3, "light-headed"), "keyed_up": (0.3, 0.3, "keyed up"),
                      "adrenaline_crash": (-0.05, 0.1, "the adrenaline crash"), "swollen": (0.03, 0.0, "swelling"),
                      "broken_bone": (0.12, 0.15, "a broken bone")})
+# (since build 319, body.footing)
+STATUS_SIGNS.update({"unsteady": (0.04, 0.1, "unsteady on her feet")})
 TORSO_WORDS = ("chest", "rib", "stomach", "belly", "flank", "torso")
 
 

@@ -31,7 +31,7 @@ import llm
 import polish
 import body as _body
 
-VERSION = "2026-10-29 build 318 (simulated body: blood loss, adrenaline, swelling, broken bones)"
+VERSION = "2026-10-29 build 319 (simulated body: footing)"
 
 HELP = """
 =============================================================================================

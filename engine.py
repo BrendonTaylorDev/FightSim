@@ -3520,6 +3520,7 @@ class Engine:
         if self.on_slick(d.name) and d.name not in self.downed:
             sp = float(acfg.get("slip_chance", 0.2)) * (float(acfg.get("slip_native_mult", 0.4))
                                                          if "Water" in (d.types or []) and self.in_water(d.name) else 1.0)
+            sp = min(0.6, sp * body.footing_mult(self, d, "slip"))     # (since build 319) unsteady already
             if sp > 0 and self._chance(sp, f"{d.name} slipping as she dodges on the slick footing", "she slips", "she keeps her feet"):
                 out["slipped"] = {"facing": self.knock_down(d.name, why=f"{d.name} slipped as she dodged")}
                 return out      # she gets out of its way and goes down: no counter from the ground
@@ -6752,6 +6753,7 @@ class Engine:
         if float(big.get("damage_before", 0)) >= float(cfg.get("bad_legs_at", 150)):
             ch *= float(cfg.get("hurt_spot_mult", 1.15))
         ch /= self.trait(d, "toughness")
+        ch *= body.footing_mult(self, d, "stumble")    # (since build 319) already unsteady: easier to send reeling
         if not self._chance(min(float(cfg.get("max", 0.75)), ch), f"{d.name} knocked staggering by the blow to her {big['part']}",
                             "she stumbles", "she holds her ground"):
             if self.quirk(d, "unshakeable") and dmg >= 1.5 * low:
@@ -8197,6 +8199,7 @@ class Engine:
         share = lost / max(1.0, d.max_health) * 100 / max(0.1, float(cfg.get("big_blow_pct", 10)))
         lm, bm = float(cfg.get("light_mult", 1.4)), float(cfg.get("big_mult", 0.5))
         ch *= max(bm, lm - (lm - bm) * min(1.0, share))
+        ch *= body.footing_mult(self, d, "keep_feet")   # (since build 319) her feet already unsure under her
         ch = max(0.0, min(float(cfg.get("max", 0.75)), ch))
         return (ch > 0 and self._chance(ch, f"{d.name} keeping her feet under the blow", "she stays up",
                                         "she goes down")), round(ch, 2)

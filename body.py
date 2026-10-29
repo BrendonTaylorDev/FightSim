@@ -7,6 +7,7 @@ on her card.
   chest let her take only shallow breaths, being winded or coughing up water costs her some; breathing freely brings
   it back fast. Short of air she hits softer, dodges slower and gets her energy back slower. Under a choke she
   passes out when it runs out (it replaces the choke's fixed count of beats).
+- footing (since build 319): how steady she is on her feet; see _footing_tick.
 - limbs: how tired each limb is, 0 to 100: her arms, legs, jaws, head, tail and wings. Every blow thrown with a
   limb tires it, and every beat she holds a grip with it; a limb she isn't using recovers. A tired limb throws
   weaker blows, and a grip held with tired limbs is easier to break.
@@ -42,6 +43,14 @@ DEFAULTS = {
     "bones": {"enabled": True, "during_from": 320, "during_chance": 0.012, "end_from": 220, "end_span": 180,
               "end_chance": 0.5, "end_max": 0.6, "coil_mult": 1.6, "trapped_mult": 1.4, "blunt_mult": 1.5,
               "cut_mult": 0.5, "max_end": 2, "power_mult": 0.6, "dodge_legs": 0.8},
+    "footing": {"enabled": True, "per_damage": 0.18,
+                "regions": {"hind_low": 1.6, "hind_up": 1.3, "head": 1.4, "neck": 1.0, "fore_low": 0.6, "tail": 0.4},
+                "region_other": 0.8, "kinds": {"blunt": 1.2, "blast": 1.3, "grip": 0.6, "bite": 0.7, "claw": 0.5,
+                                               "burn": 0.5, "shock": 0.9, "cold": 0.6},
+                "plans": {"biped": 1.0, "avian": 1.0, "quadruped": 0.75, "serpent": 0.5}, "stagger": 18,
+                "off_balance": 10, "regen": 16, "getup": 55, "slick_top": 85, "dazed_top": 70, "faint_top": 75,
+                "low": 60, "power_min": 0.9, "dodge_min": 0.85, "stumble": 0.6, "keep_feet": 0.5, "slip": 1.0,
+                "unsteady": 35},
     "limbs": {"enabled": True, "strike": 7, "grip": 5, "rest": 6, "from": 30, "power_min": 0.75, "grip_break": 0.6,
               "dodge_legs": 0.25, "tired": 55},
 }
@@ -63,6 +72,8 @@ LOOK = {
     "light_headed": "LIGHT-HEADED from the blood she has lost: the world tilting, her legs unsure, a cold sweat",
     "keyed_up": "KEYED UP: adrenaline running hot, the pain dulled and far away, everything sharp and fast",
     "adrenaline_crash": "the ADRENALINE CRASH: the rush gone out of her, shaky and heavy, the pain flooding back",
+    "unsteady": "UNSTEADY: her feet not under her, her weight in the wrong place, swaying as she tries to set "
+                "herself",
     "swollen": "SWELLING: the beaten part puffed up, hot and tight, stiff to move",
     "broken_bone": "a BROKEN BONE: the limb held close and useless, a deep hot ache, any weight on it agony",
 }
@@ -93,10 +104,12 @@ STORY = {
     "adrenaline_crash": ("the fire gone out of her: shaky, heavy-limbed, the pain all coming back at once",
                          "everything she pushed away catches up with her", "{other} sees her sag"),
     "broken_bone": ("the broken limb held close, useless", "every movement jars it", "{other} sees she can't use it"),
+    "unsteady": ("her feet not quite under her, swaying as she tries to plant them", "the ground feels wrong under "
+                 "her, and she can't set herself", "{other} sees her sway"),
     "swollen": ("the beaten part puffed up, hot and tight under the fur", "it is stiff and won't move as it should",
                 "{other} sees the swelling"),
 }
-ENDS = {"bleeding": "the bleeding slows and stops", "pale": "some colour comes back into her",
+ENDS = {"unsteady": "she gets her feet under her again", "bleeding": "the bleeding slows and stops", "pale": "some colour comes back into her",
         "light_headed": "the world steadies", "keyed_up": "the rush ebbs", "adrenaline_crash": "she steadies",
         "swollen": "the swelling eases a little", "broken_bone": "it is set and starts to heal",
         "short_of_air": "she gets her breath back", "starved_of_air": "air comes back into her",
@@ -104,7 +117,7 @@ ENDS = {"bleeding": "the bleeding slows and stops", "pale": "some colour comes b
         "tired_jaws": "her jaws have come back to her", "tired_head": "her neck has eased",
         "tired_tail": "her tail has come back to her", "tired_wings": "her wings have come back to her"}
 WORD = {k: k.replace("_", " ") for k in LOOK}
-ICON = {"bleeding": "🩸", "pale": "🫥", "light_headed": "😵‍💫", "keyed_up": "⚡", "adrenaline_crash": "📉",
+ICON = {"unsteady": "🌀", "bleeding": "🩸", "pale": "🫥", "light_headed": "😵‍💫", "keyed_up": "⚡", "adrenaline_crash": "📉",
         "swollen": "🔴", "broken_bone": "🦴", "short_of_air": "😮‍💨", "starved_of_air": "🫁", "tired_arms": "💪", "tired_legs": "🦵", "tired_jaws": "🦷",
         "tired_head": "🤕", "tired_tail": "〰️", "tired_wings": "🪽"}
 
@@ -128,11 +141,16 @@ def state(f):
 def on_damage(eng, d, part, added, source):
     """(since build 318) A part hurt by `added` damage: a cut or a bite opens it to bleed (body.blood), and any blow
     starts it swelling over the next beats (body.tissue), each by what did it."""
-    cb, ct = cfg(eng, "blood"), cfg(eng, "tissue")
-    if not cb and not ct and not cfg(eng, "bones"):
+    cb, ct, cf = cfg(eng, "blood"), cfg(eng, "tissue"), cfg(eng, "footing")
+    if not cb and not ct and not cf and not cfg(eng, "bones"):
         return
     kind = eng.wound_kind(source)
     st = state(d)
+    if cf and _on_feet(eng, d):
+        k = float((cf.get("regions") or {}).get(_region(part), cf["region_other"])) \
+            * float((cf.get("kinds") or {}).get(kind, 0.8)) * float((cf.get("plans") or {}).get(eng.body_plan(d), 1.0))
+        knock = float(cf["per_damage"]) * added * k / max(0.5, float(eng.trait(d, "toughness")))
+        st["footing"] = round(max(0.0, float(st.get("footing", 100.0)) - knock), 1)
     if cb and kind in ("claw", "bite"):
         bl = st.setdefault("bleed", {})
         bl[part] = round(min(float(cb["part_max"]), float(bl.get(part, 0.0)) + float(cb["per_damage"]) * added), 3)
@@ -263,6 +281,9 @@ def power_mult(eng, a, move):
         out.append(("adrenaline", round(1 + float(cd["power"]) * float(st["adrenaline"]) / 100.0, 3)))
     if cd and a.status.get("adrenaline_crash"):
         out.append(("the adrenaline crash", 0.95))
+    cf = cfg(eng, "footing")
+    if cf and move and not eng.is_ranged(move) and _on_feet(eng, a) and _footing(a) < float(cf["low"]):
+        out.append(("her feet not under her", round(_footing_k(cf, a, "power_min"), 3)))
     cbn = cfg(eng, "bones")
     limb3 = _limb_of_move(eng, move) if cbn and move else None
     if limb3 and any(_region(p) in LIMB_REGIONS.get(limb3, ())
@@ -320,6 +341,9 @@ def dodge_mult(eng, d):
     cb = cfg(eng, "blood")
     if cb and float(st.get("blood", 100)) < float(cb["low"]):
         m *= _blood_k(cb, st, "dodge_min")
+    cf = cfg(eng, "footing")
+    if cf and _on_feet(eng, d) and _footing(d) < float(cf["low"]):
+        m *= _footing_k(cf, d, "dodge_min")
     cbn = cfg(eng, "bones")
     if cbn and any(_region(p) in ("hind_up", "hind_low") for p in (d.learned.get("fractures") or {})):
         m *= float(cbn["dodge_legs"])
@@ -328,6 +352,32 @@ def dodge_mult(eng, d):
         sw = _limb_swelling(eng, d, "legs")
         m *= 1 - float(ct["dodge_legs"]) * max(0.0, min(1.0, (sw - float(ct["from"])) / max(1.0, 100 - float(ct["from"]))))
     return m
+
+
+def _on_feet(eng, f):
+    """Standing on her own feet: not down, not in the air, not pinned (footing only counts then)."""
+    return not (f.name in eng.downed or eng.has(f, "airborne") or eng.pinned_by(f.name))
+
+
+def _footing(f):
+    return float((f.learned.get("body") or {}).get("footing", 100.0))
+
+
+def _footing_k(cf, f, key):
+    lo = float(cf["low"])
+    t = max(0.0, min(1.0, (lo - _footing(f)) / max(1.0, lo)))
+    return 1 - (1 - float(cf[key])) * t
+
+
+def footing_mult(eng, f, what):
+    """(body.footing) How her footing changes a roll on her feet: "stumble" (a blow staggering her: x1 up to
+    x1 + stumble with no footing left), "keep_feet" (staying up under a knockdown: x1 down to x1 - keep_feet) and
+    "slip" (slipping on slick ground as she dodges: x1 up to x1 + slip)."""
+    cf = cfg(eng, "footing")
+    if not cf or not _on_feet(eng, f):
+        return 1.0
+    lost = 1.0 - _footing(f) / 100.0
+    return 1 - float(cf["keep_feet"]) * lost if what == "keep_feet" else 1 + float(cf[what]) * lost
 
 
 def regen_mult(eng, f):
@@ -450,6 +500,7 @@ def tick(eng):
         events += _blood_tick(eng, f, st)
         events += _adrenaline_tick(eng, f, st)
         events += _tissue_tick(eng, f, st)
+        events += _footing_tick(eng, f, st)
         ch_ = cfg(eng, "heart")
         if ch_:
             _heart_tick(eng, f, st, ch_)
@@ -576,6 +627,62 @@ def _tissue_tick(eng, f, st):
     return ev
 
 
+def _footing_tick(eng, f, st):
+    """body.footing (since build 319): how steady she is on her feet, 0 to 100. A blow knocks it down by the damage
+    it does (per_damage, x by where it landed: her legs and head most, x by what it was: blunt and blasts most, x
+    by her build: four legs or a serpent's coils hold steadier, over her toughness); being knocked staggering costs
+    stagger more, a blow turned aside off_balance. It comes back regen a beat, slower with her energy low, her legs
+    tired, swollen or broken; and it can't come all the way back while she is light-headed (faint_top), dazed
+    (dazed_top) or on slick ground (slick_top). Getting up she starts at getup at best. Under low her blows lose
+    their footing (down to power_min) and her dodging too (dodge_min); a blow staggers her more easily, a knockdown
+    keeps her up less often, and she slips more on slick ground (footing_mult). Under unsteady she is UNSTEADY."""
+    cf = cfg(eng, "footing")
+    ev = []
+    if not cf:
+        return ev
+    if eng.has(f, "airborne"):
+        st["footing"] = 100.0           # (on her wings: her feet aren't what holds her up)
+        f.status.pop("unsteady", None)
+        return ev
+    fo = float(st.get("footing", 100.0))
+    if f.learned.get("rose_turn") == eng.turn:
+        fo = min(fo, float(cf["getup"]))
+    if not _on_feet(eng, f):
+        st["footing"] = round(fo, 1)
+        f.status.pop("unsteady", None)
+        return ev
+    if f.status.get("staggered") and st.get("stag_turn") != eng.turn:
+        fo -= float(cf["stagger"])
+        st["stag_turn"] = eng.turn
+    if f.status.get("off_balance") and st.get("ob_turn") != eng.turn:
+        fo -= float(cf["off_balance"])
+        st["ob_turn"] = eng.turn
+    legs = 1.0
+    cl = cfg(eng, "limbs")
+    if cl:
+        legs *= 1 - 0.5 * _tired(cl, (st.get("limbs") or {}).get("legs", 0))
+    ct = cfg(eng, "tissue")
+    if ct:
+        sw = _limb_swelling(eng, f, "legs")
+        legs *= 1 - 0.4 * max(0.0, min(1.0, (sw - float(ct["from"])) / max(1.0, 100 - float(ct["from"]))))
+    if any(_region(p) in ("hind_up", "hind_low") for p in (f.learned.get("fractures") or {})):
+        legs *= 0.5
+    top = 100.0
+    if eng.has(f, "light_headed") or eng.has(f, "starved_of_air"):
+        top = min(top, float(cf["faint_top"]))
+    if any(eng.has(f, s_) for s_ in ("dazed", "concussed", "confused")):
+        top = min(top, float(cf["dazed_top"]))
+    if eng.on_slick(f.name):
+        top = min(top, float(cf["slick_top"]))
+    gain = float(cf["regen"]) * legs * (0.5 + 0.5 * max(0.0, min(1.0, f.energy / 100.0)))
+    fo = max(0.0, fo) if fo > top else min(top, max(0.0, fo) + gain)
+    if fo > top:
+        fo = max(top, fo - gain)        # (above where she can stand steady: it slips down to it)
+    st["footing"] = round(fo, 1)
+    _status(eng, f, "unsteady", fo < float(cf["unsteady"]), "the blows and her own legs", ev)
+    return ev
+
+
 def _heart_tick(eng, f, st, c):
     """body.heart (since build 316): her heart rate as a running number. Each beat it moves toward what her body
     is asking of it (her resting rate, pushed up by how hard she has fought, the pain she is in, fear, panic or a
@@ -630,7 +737,7 @@ def card(f):
                                                               else None),
             "head_blood": round(float(st.get("head_blood", 100))), "blood": round(float(st.get("blood", 100)), 1),
             "bleeding": {k: round(v, 2) for k, v in (st.get("bleed") or {}).items()},
-            "adrenaline": round(float(st.get("adrenaline", 0))),
+            "adrenaline": round(float(st.get("adrenaline", 0))), "footing": round(float(st.get("footing", 100))),
             "swell": {k: round(v) for k, v in (st.get("swell") or {}).items() if v >= 5},
             "fractures": sorted((f.learned.get("fractures") or {})), "limbs": {k: round(v) for k, v in (st.get("limbs") or {}).items()
                                                                if v >= 1}}

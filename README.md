@@ -654,6 +654,21 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 319
+Her footing simulated (body.footing, its own switch in rules.json): how steady she is on her feet, 0 to 100, carried
+from beat to beat.
+- **What knocks it.** Every blow, by the damage it does: blows to her legs and head most, blunt blows and blasts
+  more than cuts. Four legs or a serpent's coils hold steadier. Being knocked staggering costs more on top, and so
+  does a blow turned aside.
+- **What brings it back.** A little each beat she isn't hit. It comes back slower with her energy low and her legs
+  tired, swollen or broken. It can't come all the way back while she is light-headed, dazed or on slick ground.
+  Getting up, she starts unsteady.
+- **What it does.** Low on footing, a blow staggers her more easily, a knockdown blow puts her down more often, she
+  slips more on slick ground, and her blows and dodges are a little weaker. Very low, she is UNSTEADY and the story
+  says so. It only counts on her feet: down, pinned or in the air it doesn't.
+- **Measured:** Nocturne won 173 of 300 knockout fights against Ripples with it on and 170 with it off. Staggers went
+  from 1.4 to 1.6 a fight.
+
 ## Build 318
 More of her body simulated: blood loss, adrenaline, swelling and broken bones. Each is its own switch in rules.json
 (body.blood, body.adrenaline, body.tissue, body.bones), is told to the story and shows on her card (hover the status

@@ -63,6 +63,9 @@ _EXTRA = {
                         "a few beats (body.adrenaline)",
     "broken_bone": "a bone broken in the fight or found broken after it: blows with that limb much weaker, a "
                    "broken leg dodges worse; it heals, nothing permanent, and never her spine (body.bones)",
+    "unsteady": "her feet not under her after the blows (worst to her legs and head): a blow staggers her more "
+                "easily, a knockdown is likelier to put her down, she slips more on slick ground, and her blows and "
+                "dodges are a little weaker; it comes back as she sets herself (body.footing)",
     "swollen": "a beaten part swelling up over the beats after the blow: stiff, its blows weaker, swollen legs dodge "
                "worse; it goes down slowly (body.tissue)",
     "short_of_air": "her blows softer, her dodging slower and her energy coming back slower, the less air she has "

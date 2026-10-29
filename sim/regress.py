@@ -800,6 +800,40 @@ def presets_help_check():
     return problems
 
 
+def footing_319_check():
+    """Build 319 (body.footing): a hard blow to her legs knocks her footing down more than one to her arm, it comes
+    back over the beats she isn't hit, and unsteady she is staggered more easily and kept up less often."""
+    import body as B
+    problems = []
+    got = {}
+    for part in ("Left Thigh", "Left Shoulder"):
+        e = Engine(seed=5, only=["Nocturne", "Ripples"])
+        r = e.get("Ripples")
+        e._source = "Nocturne's Tackle"
+        e._apply_damage(r, part, 80.0)
+        got[part] = B.state(r).get("footing", 100.0)
+    if not got["Left Thigh"] < got["Left Shoulder"] < 100:
+        problems.append(f"a blow to her leg should cost her more footing than one to her shoulder: {got}")
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r = e.get("Ripples")
+    B.state(r)["footing"] = 20.0
+    st_m, kf_m = B.footing_mult(e, r, "stumble"), B.footing_mult(e, r, "keep_feet")
+    seq = []
+    for _ in range(4):
+        e.turn += 1
+        e.beat()
+        seq.append(B.state(r)["footing"])
+    if not (st_m > 1 > kf_m and all(b > a for a, b in zip([20.0] + seq, seq))):
+        problems.append(f"unsteady she should stagger easier, stay up less, and steady over the beats: {st_m} {kf_m} "
+                        f"{seq}")
+    if B.dodge_mult(e, r) > 1.0:
+        problems.append("footing should never help her dodge")
+    e.rules["body"]["footing"]["enabled"] = False
+    if B.footing_mult(e, r, "stumble") != 1.0:
+        problems.append("body.footing.enabled false should leave the rolls as they were")
+    return problems
+
+
 def body_318_check():
     """Build 318 (body.blood, body.adrenaline, body.tissue, body.bones): a bite opens a wound that bleeds and clots,
     never below the floor; a blow makes a part swell over the next beats; adrenaline rises with a hard beat and ebbs;
@@ -4031,6 +4065,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "footing319" for w in want):
+        t = time.time()
+        probs = footing_319_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 319: footing knocked by blows, steadies, staggers easier  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "body318 blood bones" for w in want):
