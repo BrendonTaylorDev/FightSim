@@ -1688,6 +1688,13 @@ def resolve(engine, b):
                 have = {c[0] for c in contacts}
                 firm = _severity(engine, "hold", None, "firm")
                 contacts = list(contacts) + [(p, firm, ramp, w) for p, w in filled if p not in have]
+            nk = (engine.rules.get("pin") or {}).get("neck") or {}
+            if engine.pin_on(engine.get(dfn).name) is None and nk.get("enabled", True) and not manual:
+                # (since build 317, pin.neck) a pin often has a grip on the throat or neck in it, as most real pins do:
+                # when the director's has none, `chance` of the time the pinner puts one on with what she has free
+                add_ = _neck_contact(engine, engine.get(att), engine.get(dfn), contacts)
+                if add_ and engine.rng.random() < float(nk.get("chance", 0.4)):
+                    contacts = list(contacts) + [(add_[0], _severity(engine, "hold", None, "firm"), ramp, add_[1])]
             if len(contacts) > 1 and (len(str(flavor or "")) > 90 or len(contacts) > len(merged)):
                 bits = [f"{(c[3] or 'pressure').split(',')[0]} on her {c[0].lower()}" for c in contacts]
                 flavor = ", ".join(bits[:-1]) + " and " + bits[-1]
@@ -1788,6 +1795,10 @@ def resolve(engine, b):
         if not manual and engine.ko_only():
             raise ValueError("only a knockout ends a fight now (finish.knockout_only): no one is simply declared out. "
                              "Keep fighting: a hard blow on a badly worn fighter can knock her out")
+        if not manual and engine.submission_match():
+            # (since build 317) a submission match ends by a tap-out or a pass-out in a hold, nothing else
+            raise ValueError("this is a submission match: only a tap-out or a pass-out in a hold ends it. No one is "
+                             "simply declared out. Keep working the holds")
         res = engine.eliminate(dfn, flavor)
     elif act == "struggle":
         pinner = b.get("defender") if b.get("defender") and str(b.get("defender")).lower() != att.lower() else None
@@ -2116,7 +2127,10 @@ def _knockouts(engine, results, hp0):
             if r.get("grounded") and not r.get("carried"):
                 kinds.append("fall out of the sky")     # struck down from flying height: a drop, as much as a carry is
         dev = any(h.get("devastating") for r in mine for h in (r.get("hits") or []))
-        ko = engine.knockout_roll(f.name, hp0.get(f.name, f.health) - f.health, list(dict.fromkeys(kinds)), dev)
+        hits_ = [h for r in mine for h in (r.get("hits") or []) if isinstance(h, dict)
+                 and h.get("defender", f.name) == f.name]
+        ko = engine.knockout_roll(f.name, hp0.get(f.name, f.health) - f.health, list(dict.fromkeys(kinds)), dev,
+                                  hits=hits_)
         if ko:
             ko["by"] = next((r.get("attacker") for r in reversed(mine) if r.get("attacker") != f.name), None)
             out.append(ko)
@@ -3216,6 +3230,32 @@ def _spots(target):
             "thigh": pick(lambda n, r: r == "hind_up"),
             "leg": pick(lambda n, r: r in ("hind_up", "hind_low")),
             "tail": pick(lambda n, r: r == "tail" and "base" not in n and "fan" not in n)}
+
+
+def _neck_contact(engine, pinner, target, contacts):
+    """pin.neck (since build 317): the neck grip a pinner could add to a pin that has none: (her part, what grips it),
+    or None (one already on her neck, nothing free to do it, or no neck to reach). Jaws clamped on it first; else a
+    forearm, forepaw or foreleg barred across it; else coils or tails looped round it. Face-down she has no throat to
+    reach, only the back of her neck."""
+    from engine import body_region
+    if any(body_region(str(c[0])) == "neck" for c in contacts):
+        return None
+    down = engine.facing_of(target.name) == "face-down" if target.name in engine.downed else False
+    necks = [n for n in target.parts if body_region(n) == "neck" and not (down and "throat" in n.lower())
+             and n not in {c[0] for c in contacts}]
+    if not necks:
+        return None
+    t = _grip_tools(engine, pinner)
+    used = " ".join(str(c[3] if len(c) > 3 else "").lower() for c in contacts)
+    if t.get("jaws") and not re.search(r"\b(jaws?|teeth|fangs?|beak|mouth|bite)\b", used):
+        throat = [n for n in necks if "throat" in n.lower()] or necks
+        return (throat[0], f"{t['jaws']}, clamped on it and bearing down")
+    if t.get("fore") and not re.search(r"\b(paws?|forearm|foreleg|hands?)\b", used):
+        return (necks[0], f"{t['fore']}, barred across it")
+    if t.get("coil") and not re.search(r"\b(tails?|coils?)\b", used) and not engine.coil_too_small(pinner.name,
+                                                                                                 target.name):
+        return (necks[0], f"{t['coil']}, looped round it")
+    return None
 
 
 def fuller_pin(engine, pinner, target, look, contacts, at_least=0):

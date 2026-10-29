@@ -6696,15 +6696,30 @@ class Narrator:
                              f"her conscious and hurting, her reactions growing weaker and slower from blow to blow. "
                              f"Only the LAST blow switches her off. Not one blow earlier.")
             how_out = KO_HOW.get(a.get("style") or "fade", KO_HOW["fade"])
-            lines.append(f"KNOCKOUT: the {a.get('how', 'blow')} above is the last thing {a['fighter']} takes. It does not "
-                         f"just hurt her: it switches her OFF. This time she goes out like this: {how_out} Every muscle "
-                         f"lets go together and she does not move again: OUT COLD, still breathing; Pokemon faint, nobody "
-                         f"dies. No pin and no count: this is how the fight ends. Then the silence, and {by}: what she "
-                         f"sees, how her own body answers now it is over, what she does."
-                         + (f" {a['fighter']} ends up {Engine.FACING_LOOK[a['facing']]}." if a.get("facing") in
-                            Engine.FACING_LOOK else ""))
-            if a.get("winner"):
-                lines.append(f"  - {a['winner']} has won, by knockout.")
+            if a.get("where") == "body" and "body shot" in str(a.get("how") or ""):
+                # (since build 317, moves.knockout.sim) a body knockout: the shot to her gut or under her ribs folds
+                # her, and her body won't let her up, whatever she wants
+                lines.append(f"BODY KNOCKOUT: the {a.get('how', 'body shot')} above is the last thing {a['fighter']} "
+                             f"takes. It lands in her gut or under her ribs (the liver, the solar plexus) and it shuts her "
+                             f"body down: a sick, spreading wave, the breath gone out of her and not coming back, her legs "
+                             f"folding. She goes down curled round it and CANNOT GET UP: her limbs won't answer, however "
+                             f"much she wants them to; she may stay half-aware, gasping, or slip under. Pokemon faint, "
+                             f"nobody dies. No pin and no count: this is how the fight ends. Then {by}: what she sees, "
+                             f"how her own body answers now it is over, what she does."
+                             + (f" {a['fighter']} ends up {Engine.FACING_LOOK[a['facing']]}." if a.get("facing") in
+                                Engine.FACING_LOOK else ""))
+                if a.get("winner"):
+                    lines.append(f"  - {a['winner']} has won, by knockout (a body shot).")
+            else:
+                lines.append(f"KNOCKOUT: the {a.get('how', 'blow')} above is the last thing {a['fighter']} takes. It "
+                             f"does not just hurt her: it switches her OFF. This time she goes out like this: {how_out} "
+                             f"Every muscle lets go together and she does not move again: OUT COLD, still breathing; "
+                             f"Pokemon faint, nobody dies. No pin and no count: this is how the fight ends. Then the "
+                             f"silence, and {by}: what she sees, how her own body answers now it is over, what she does."
+                             + (f" {a['fighter']} ends up {Engine.FACING_LOOK[a['facing']]}." if a.get("facing") in
+                                Engine.FACING_LOOK else ""))
+                if a.get("winner"):
+                    lines.append(f"  - {a['winner']} has won, by knockout.")
         elif t == "eliminated" and a.get("unhurt"):
             lines.append(f"{a['fighter']} is OUT of the fight before taking any real damage (the author's decision: "
                          f"{a.get('reason', '')}). Do NOT invent a cause, an earlier exchange, or injuries: show "

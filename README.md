@@ -654,6 +654,37 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 317
+How matches end: pins still the usual way, knockouts by where the blows land, pins worn down by what they really do,
+and each special match closed to the other endings.
+- **Knockouts by where they land (moves.knockout.sim).** Blows to her head (jaw, muzzle, temple) and to her body (gut,
+  flanks, ribs, chest: the liver, the solar plexus) each build a shock that fades between beats. A hard shot where it
+  has piled up is what puts her out, the more so if her head is already rattled or dazed, or her body is doubled over
+  or winded. A beat of blows only to her limbs, back or tail hardly ever does it (x0.3). A clean hard shot can do it on
+  its own. A **head** knockout is out cold. A **body** knockout folds her round it, unable to rise, and the story is
+  told it that way. The health gates are unchanged, so knockouts stay rare.
+- **Pins worn down by what they do (pin.fade.sim).**
+  - The pain under the press counts the whole way, not only once a part is in agony.
+  - Claws, talons or teeth driven into a paw or a foot, where the nerves bunch, wear her down a little faster.
+  - A grip on her neck in a pin chokes her slowly: at a third of a real choke's rate (body.air.pin_choke). It is a pin,
+    not a choke, but held long enough it puts her out.
+  - What she passes out from (the choke or the pain) now follows which has really gone further.
+  - A pin still never ends in a tap.
+- **Neck grips in pins (pin.neck).** When a pin the director starts has no grip on her throat or neck, 4 times in 10
+  the pinner adds one with what she has free: her jaws first, else a forearm barred across it, else coils looped round.
+  Face-down she has only the back of her neck.
+- **Special matches stay closed.** In a submission match the director can't put anyone out, even with
+  pin.director_can_eliminate on. Pins were already off there, and knockouts are off unless allow_knockouts is on.
+  Knockout-only fights still end only by knockouts.
+- **Measured:**
+
+  | Matches | Fights | How they ended |
+  |---|---|---|
+  | Normal (Nocturne, Seraphina, Nerine against Ripples) | 450 | 433 pins (331 passing out from the pain, 56 from a neck grip, 46 from coils), 17 knockouts (7 of them body shots); about 5% shorter than before |
+  | Knockout-only (Nocturne vs Ripples) | 100 | all knockouts, 21 by body shots |
+  | Submission (Nerine vs Ripples) | 100 | only taps and pass-outs in holds |
+  | Three-tap submission (Seraphina vs Ripples) | 40 | 94 of Seraphina's 108 taps and pass-outs came from her coils |
+
 ## Build 316
 Her heart rate carried from beat to beat, and blood chokes as their own thing.
 - **The heart rate is a running number (body.heart).** It used to be worked out fresh each beat from her state. Now

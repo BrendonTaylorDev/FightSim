@@ -27,7 +27,7 @@ DEFAULTS = {
     "air": {"enabled": True, "regen": 14, "spent_regen": 0.6, "per_energy": 0.5, "choke": 16, "coils": 8,
             "winded": 6, "low": 40, "power_min": 0.8, "dodge_min": 0.8, "regen_min": 0.5, "short": 35, "starved": 15,
             "chokes": True, "out_from": 15, "out_max": 0.85, "health_drain": 0.3, "blood_choke": 20,
-            "blood_back": 40, "blood_default": True},
+            "blood_back": 40, "blood_default": True, "pin_choke": 0.35},
     "heart": {"enabled": True, "exert": 0.45, "pain": 0.3, "air": 0.35, "max": 1.85, "rise": 0.5, "settle": 0.2,
               "wobble": 0.02},
     "limbs": {"enabled": True, "strike": 7, "grip": 5, "rest": 6, "from": 30, "power_min": 0.75, "grip_break": 0.6,
@@ -217,9 +217,13 @@ def tick(eng):
             coils = eng.compression_on(f) if eng.has(f, "constricted") and eng.compress_cfg() else 0.0
             share = max(0.0, min(1.0, eng._health_pct(f) / 100.0))
             loss = float(ca["per_energy"]) * spent
+            # (since build 317) a grip on her neck that is part of a pin holds her down more than it chokes her:
+            # it drains her at pin_choke of a choke's rate (a slow choke that ends her only if held long)
+            pinners = set(eng.pinned_by(f.name) or ())
+            pin_k = float(ca.get("pin_choke", 0.35)) if choked and all(h.attacker in pinners for h in choked) else 1.0
             if choked:
                 tight = max(0.5, min(2.0, max(h.power for h in choked) / 16.0)) ** 0.5
-                loss += float(ca["choke"]) * tight * (1 + float(ca["health_drain"]) * (1 - share))
+                loss += float(ca["choke"]) * tight * (1 + float(ca["health_drain"]) * (1 - share)) * pin_k
             loss += float(ca["coils"]) * coils / 100.0
             if any(eng.has(f, s) for s in ("breathless", "sputtering", "throat_struck", "panicking")):
                 loss += float(ca["winded"])
@@ -230,13 +234,13 @@ def tick(eng):
             if kinds & {"blood", "both"}:
                 tight = max(0.5, min(2.0, max(h.power for h in choked) / 16.0)) ** 0.5
                 hb -= float(ca.get("blood_choke", 20)) * tight * (0.7 if "blood" not in kinds else 1.0) \
-                    * (1 + float(ca["health_drain"]) * (1 - share))
+                    * (1 + float(ca["health_drain"]) * (1 - share)) * pin_k
             else:
                 hb += float(ca.get("blood_back", 40))
             st["head_blood"] = round(max(0.0, min(100.0, hb)), 1)
             if choked and not (kinds & {"air", "both"}):
                 # (a blood choke leaves her windpipe open: she can still breathe, if badly)
-                loss -= float(ca["choke"]) * 0.75 * tight
+                loss -= float(ca["choke"]) * 0.75 * tight * pin_k
             gain = 0.0
             if not choked:
                 gain = float(ca["regen"]) * (float(ca["spent_regen"]) if spent > 10 else 1.0)

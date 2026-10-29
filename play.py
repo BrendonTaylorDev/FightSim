@@ -31,7 +31,7 @@ import llm
 import polish
 import body as _body
 
-VERSION = "2026-10-29 build 316 (her heart rate carried from beat to beat; blood chokes)"
+VERSION = "2026-10-29 build 317 (how matches end: pins, knockouts by where they land, neck grips in pins)"
 
 HELP = """
 =============================================================================================

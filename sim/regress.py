@@ -800,6 +800,62 @@ def presets_help_check():
     return problems
 
 
+def finishes_317_check():
+    """Build 317 (match finishes): knockouts go by where the blows landed (head or body, a body knockout folding her
+    unable to rise; limbs alone hardly ever), a submission match can't be ended by the director, a starting pin
+    often gets a grip on her neck, and a neck grip in a pin chokes her only slowly."""
+    import director as D
+    from engine import Hold
+    import body as B
+    problems = []
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r = e.get("Ripples")
+    mh = r.max_health
+    m_limb, _k, _w = e._ko_where(r, [{"part": "Left Paw", "health_loss": mh * 0.08}])
+    e2 = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r2 = e2.get("Ripples")
+    m_head, k_head, w_head = e2._ko_where(r2, [{"part": "Jaw", "health_loss": mh * 0.08}])
+    e3 = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r3 = e3.get("Ripples")
+    m_body, k_body, w_body = e3._ko_where(r3, [{"part": "Stomach", "health_loss": mh * 0.08}])
+    if not (m_limb < 1.0 < m_body and m_limb < m_head and w_head == "head" and w_body == "body"
+            and "blow to the head" in k_head and "body shot" in k_body):
+        problems.append(f"knockouts should go by where the blow landed: limb {m_limb}, head {m_head} {k_head}, body "
+                        f"{m_body} {k_body}")
+    if "unable to rise" not in e._ko_reason("body shot", "body") or "out cold" not in e._ko_reason("blow", "head"):
+        problems.append("a body knockout should fold her unable to rise; a head one put her out cold")
+    s = Engine(seed=5, only=["Nerine", "Ripples"])
+    s.rules["finish"]["submission"]["enabled"] = True
+    s.rules.setdefault("pin", {})["director_can_eliminate"] = True
+    try:
+        D.resolve(s, {"action": "eliminate", "attacker": "Nerine", "defender": "Ripples"})
+        problems.append("in a submission match the director shouldn't be able to put her out")
+    except ValueError as exc:
+        if "submission match" not in str(exc):
+            problems.append(f"refused for the wrong reason: {exc}")
+    p_ = Engine(seed=5, only=["Nocturne", "Ripples"])
+    add = D._neck_contact(p_, p_.get("Nocturne"), p_.get("Ripples"), [("Chest", 20, 0, "her full weight")])
+    if not add or "jaws" not in add[1]:
+        problems.append(f"a pin with no neck grip should get one, jaws first: {add}")
+    if D._neck_contact(p_, p_.get("Nocturne"), p_.get("Ripples"), [("Throat", 20, 0, "her jaws")]) is not None:
+        problems.append("a pin that already has her neck shouldn't get a second neck grip")
+
+    def drained(pinned):
+        x = Engine(seed=5, only=["Nocturne", "Ripples"])
+        x._hold_break_tick = lambda *a, **k: []
+        x.holds[1] = Hold(1, "Nocturne", "Ripples", "Throat", 18, 0, "", turns_active=1, with_part="her jaws")
+        if pinned:
+            x.pins["Nocturne>Ripples"] = {"attacker": "Nocturne", "defender": "Ripples", "seconds": 0, "fade": 0.0,
+                                         "beats": 0, "duration": 60, "started_turn": 0}
+        B.tick(x)
+        st = B.state(x.get("Ripples"))
+        return 100 - min(st["air"], st.get("head_blood", 100))
+    if not (0 < drained(True) < drained(False) * 0.6):
+        problems.append(f"a neck grip in a pin should choke her far slower than a real choke: {drained(True)} against "
+                        f"{drained(False)}")
+    return problems
+
+
 def heart_316_check():
     """Build 316 (body.heart, blood chokes): her heart rate is carried from beat to beat (it climbs with a hard
     exchange and settles slowly after), and a blood choke cuts the blood to her head and puts her out a little
@@ -3918,6 +3974,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "finishes317 ko317 pin317" for w in want):
+        t = time.time()
+        probs = finishes_317_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 317: knockouts by where they land, submission matches closed, neck grips in pins  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "heart316 bloodchoke" for w in want):

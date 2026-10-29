@@ -10148,11 +10148,42 @@ class Engine:
         # the worse the parts under the press are hurt, the sooner the pain itself takes her under
         on_her = self._pin_holds(p) if p.get("defender") else []
         worst = max([dfn.parts[h.part].damage for h in on_her if h.part in dfn.parts] or [0.0])
+        sim = cfg.get("sim") or {}
         pm = float(cfg.get("pain_mult", 1.15))
-        if pm != 1.0 and worst >= 150:
+        if sim.get("enabled", True):
+            # (since build 317, pin.fade.sim) the pain the press inflicts counts the whole way, not only past
+            # agony: the worse the parts under it, the sooner it takes her under
+            k = 1.0 + float(sim.get("pain", 0.35)) * min(1.0, worst / 300.0)
+            if k > 1.005:
+                gain *= k; notes.append(f"the pain under the press ×{k:.2f}")
+            nerve = [h for h in on_her if body_region(h.part) in ("fore_low", "hind_low")
+                     and re.search(r"(?i)\bclaws?\b|\btalons?\b|\bteeth\b|\bfangs?\b|\bjaws?\b|dug|digging|driv",
+                                   str(h.with_part or ""))]
+            if nerve and float(sim.get("nerve", 1.1)) != 1.0:
+                # a claw or teeth driven into the middle of her paw, where the nerves bunch: it pins the paw and
+                # hurts out of all proportion
+                gain *= float(sim.get("nerve", 1.1))
+                notes.append(f"{nerve[0].with_part or 'claws'} dug into the nerves of her {nerve[0].part.lower()} "
+                             f"×{float(sim.get('nerve', 1.1)):g}")
+        elif pm != 1.0 and worst >= 150:
             k = 1.0 + (pm - 1.0) * min(1.0, (worst - 150.0) / 150.0 + 0.4)
             gain *= k; notes.append(f"the pressed parts are in agony ×{k:.2f}")
         gain = min(gain, 100.0 / max(1.0, float(cfg.get("min_beats", 3))))
+        neck = [h for h in on_her if body_region(h.part) == "neck"]
+        ca = body.cfg(self, "air") if sim.get("enabled", True) else None
+        if neck and ca:
+            # (pin.fade.sim, with body.air) a grip on her neck in the pin drains her blood or her air (body.air):
+            # the further gone it is, the faster she fades, and once it has run out she goes under now
+            kinds = {self._hold_choke_kind(h) for h in neck}
+            st = dfn.learned.get("body") or {}
+            left = float(st.get("air", 100))
+            if kinds & {"blood", "both"}:
+                left = min(left, float(st.get("head_blood", 100)))
+            k = 1.0 + float(sim.get("choke", 0.2)) * (1.0 - left / 100.0)
+            if left <= float(ca.get("out_from", 15)):
+                gain = 100.0; notes.append("the choke has taken all she had")
+            elif k > 1.005:
+                gain *= k; notes.append(f"the choke draining her ×{k:.2f}")
         if on_her and any(h.coil and self.coil_scope(h.part) != "limb" for h in on_her):
             cm = float((self.rules.get("holds", {}).get("coil") or {}).get("pin_fade_mult", 1.2))
             gain *= cm; notes.append(f"coiled, her blood held back ×{cm:g}")
@@ -10184,6 +10215,14 @@ class Engine:
         share = float(self.rules.get("pin", {}).get("fade", {}).get("pain_out_share", 0.22)) * max(0.0, min(1.0, worst / 90.0))
         pick = random.Random(zlib.crc32((f"{getattr(self, '_seed0', 0)}|{self.turn}|{p['attacker']}|{dfn.name}|"
                                          f"{self.times('pinned', dfn.name)}|{worst:.2f}").encode())).random()
+        sim = (self.rules.get("pin", {}).get("fade", {}).get("sim") or {})
+        if choke and hurt and sim.get("enabled", True) and body.cfg(self, "air"):
+            # (since build 317, pin.fade.sim) what really took her: the choke, if it has drained her blood or her
+            # air further than the pain has worn her, else the pain
+            st = dfn.learned.get("body") or {}
+            gone = 100.0 - min(float(st.get("air", 100)), float(st.get("head_blood", 100)))
+            pick = 0.0 if gone >= 0.6 * min(100.0, worst / 3.0) else 1.0
+            share = 0.5
         if choke and (not hurt or pick >= share):
             # a grip round the sides of the neck takes her before one pressing the front: that one counts first
             kinds = [(h, self.choke_kind(p["attacker"], h.with_part, h.coil)) for h in choke]
@@ -11797,6 +11836,9 @@ class Engine:
             w["crumple"] *= 1.5
         if set(kinds or ()) & {"held stream", "pummel"} or loss < 3:
             w["fade"] *= 1.8
+        if "body shot" in (kinds or ()) and "blow to the head" not in (kinds or ()):
+            w["crumple"] *= 2.5     # (since build 317) a body shot folds her: she goes down round it
+            w["instant"] *= 0.3
         total = sum(w.values()) or 1.0
         roll = self.rng.random() * total
         for k in self.KO_STYLES:
@@ -11805,7 +11847,48 @@ class Engine:
                 return k
         return "fade"
 
-    def knockout_roll(self, name, lost, kinds, devastating=False):
+    def _ko_where(self, d, hits):
+        """moves.knockout.sim (since build 317): what the blows did to her head and her body, as shock that builds up
+        and fades between beats. A clean hard shot to the head (her jaw, her temple) or to the body (the gut, the
+        liver under her ribs, the solar plexus) is what puts a fighter out, the more so where the shock has already
+        piled up; a beat of blows only to her limbs, her back or her tail hardly ever does. Returns (the multiplier on
+        the knockout chance, the kinds of shot it was, "head" or "body" or None for the one that counts most)."""
+        c = ((self.rules.get("moves") or {}).get("knockout") or {}).get("sim") or {}
+        if not c.get("enabled", True):
+            return 1.0, [], None
+        mh = d.max_health or 1.0
+        head = sum(float(h.get("health_loss") or 0) for h in hits if h.get("defender", d.name) == d.name
+                   and body_region(str(h.get("part") or "")) == "head") / mh * 100.0
+        body_ = sum(float(h.get("health_loss") or 0) for h in hits if h.get("defender", d.name) == d.name
+                    and body_region(str(h.get("part") or "")) in ("belly", "chest")) / mh * 100.0
+        ld = d.learned.get("ko_load") or {}
+        gap = max(0, self.turn - int(ld.get("turn", self.turn)))
+        keep = float(c.get("decay", 0.6)) ** gap
+        hl = float(ld.get("head", 0.0)) * keep + head
+        bl = float(ld.get("body", 0.0)) * keep + body_
+        d.learned["ko_load"] = {"head": round(hl, 2), "body": round(bl, 2), "turn": self.turn}
+        kinds = []
+        if head >= float(c.get("clean_head", 5)):
+            kinds.append("blow to the head")
+        if body_ >= float(c.get("clean_body", 6)):
+            kinds.append("body shot")
+        if head + body_ <= 0:
+            return float(c.get("limb_mult", 0.3)), kinds, None
+        ref = float(c.get("ref", 8))
+        m = 1.0 + float(c.get("head", 0.6)) * min(2.0, hl / ref) + float(c.get("body", 0.4)) * min(2.0, bl / ref)
+        hm = 1.0
+        for st_ in ("rattled", "dazed", "stunned", "wobbly", "concussed", "seeing_double"):
+            if self.has(d, st_):
+                hm += 0.25
+        bm = 1.0
+        for st_ in ("doubled_over", "breathless", "ribs_aching", "nauseous"):
+            if self.has(d, st_):
+                bm += 0.15
+        main = "head" if head * hm >= body_ * bm else "body"
+        m *= min(2.0, hm) if main == "head" else min(1.6, bm)
+        return round(m, 3), kinds, main
+
+    def knockout_roll(self, name, lost, kinds, devastating=False, hits=()):
         """Very rarely a big enough beat simply knocks her OUT, no pin needed (moves.knockout): only when she is
         already very low (max_health_pct of her full health or less), the beat cost her at least min_loss_pct of
         it, and it came from something that piles up or hits all at once (a held stream, a pummel, a chain, a charge
@@ -11815,17 +11898,20 @@ class Engine:
         d = self.get(name)
         if self.submission_match() and not self.sub_knockouts():
             return None          # (a submission match: no blow puts her out, only a tap-out or a pass-out)
+        where_m, shots, main = self._ko_where(d, list(hits or ())) if not d.eliminated else (1.0, [], None)
+        kinds = list(kinds) + [k for k in shots if k not in kinds]
         if self.ko_only() and not d.eliminated and d.max_health:
             loss = lost / d.max_health * 100.0
-            ch = self._ko_only_chance(d, loss, devastating)
+            ch = min(float((self.rules.get("finish") or {}).get("max", 0.6)),
+                     self._ko_only_chance(d, loss, devastating) * where_m)
             if ch <= 0:
                 return None
             how = " and ".join(kinds) if kinds else "blow" if not devastating else "devastating blow"
             if not self._chance(ch, f"{d.name} knocked out by the {how}", "KNOCKED OUT", "she stays conscious"):
                 return None
             style = self.knockout_style(d, loss, kinds, devastating)
-            out = self.eliminate(d.name, f"knocked out cold by the {how}")
-            out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1), style=style)
+            out = self.eliminate(d.name, self._ko_reason(how, main))
+            out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1), style=style, where=main)
             return out
         if not cfg.get("enabled", True) or d.eliminated or not d.max_health or not (kinds or devastating):
             return None
@@ -11839,14 +11925,22 @@ class Engine:
             ch *= float(cfg.get("devastating_mult", 2.0))
         if self.has(d, "adrenaline"):
             ch *= 0.5
-        ch = min(float(cfg.get("max", 0.25)), ch)
+        ch = min(float(cfg.get("max", 0.25)), ch * where_m)
         how = " and ".join(kinds) if kinds else "devastating blow"
         if not self._chance(ch, f"{d.name} knocked out by the {how}", "KNOCKED OUT", "she stays conscious"):
             return None
         style = self.knockout_style(d, loss, kinds, devastating)
-        out = self.eliminate(d.name, f"knocked out cold by the {how}")
-        out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1), style=style)
+        out = self.eliminate(d.name, self._ko_reason(how, main))
+        out.update(knockout=True, how=how, chance=round(ch, 3), loss_pct=round(loss, 1), style=style, where=main)
         return out
+
+    @staticmethod
+    def _ko_reason(how, main):
+        """The elimination's words: a head knockout is out cold; a body knockout folds her round it, awake perhaps,
+        but unable to get up or go on."""
+        if main == "body" and "body shot" in how:
+            return f"put down by the {how}: folded round it, unable to rise"
+        return f"knocked out cold by the {how}"
 
     def eliminate(self, name, reason=""):
         """The story decides a fighter is out (pinned for the full count, knocked out, submitted)."""
