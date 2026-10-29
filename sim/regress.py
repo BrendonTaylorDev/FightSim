@@ -800,6 +800,123 @@ def presets_help_check():
     return problems
 
 
+def reactions_308_check():
+    """Build 308 (moves.reactions, holds.endurance, concussion.min_blows, director.face_chance): a blow leaves what it
+    should by what it was and where it landed, the ones that add up only once they have, never more than a few at once
+    or the same one again too soon; a hold is felt in stages and leaves its aftermath when it comes off; panic with no
+    air; one huge head blow never concusses; coils and submissions are harder to break against an equal, about as easy
+    as before for a much stronger fighter; the switches turn it all off."""
+    import director as D
+    import narrator as N
+    import reactions as R
+    from engine import Hold
+    problems = []
+    e = Engine(seed=3, only=["Nocturne", "Ripples"])
+    e._chance = lambda p, *a, **k: p > 0
+    n, r = e.get("Nocturne"), e.get("Ripples")
+    hit = lambda part, dmg, after=None: {"defender": "Ripples", "part": part, "damage_taken": dmg,
+                                         "damage_after": after if after is not None else dmg, "damage_before": 0}
+    punch = {"name": "Mach Punch", "type": "Fighting", "about": "a fast punch"}
+    got = [x["status"] for x in R.on_hits(e, n, r, punch, [hit("Nose", 40)])]
+    if "nosebleed" not in got or not e.has(r, "nosebleed") or "NOSEBLEED" not in e.status_look("Ripples", "nosebleed"):
+        problems.append(f"a hard punch on the nose should bloody it: {got}")
+    claw = {"name": "Night Slash", "type": "Dark", "about": "a slashing claw"}
+    got = [x["status"] for x in R.on_hits(e, n, r, claw, [hit("Left Flank", 20)])]
+    if "stinging_cuts" in got:
+        problems.append("one small cut should not leave her cuts stinging: the cuts have to add up first")
+    for _ in range(6):
+        R.on_hits(e, n, r, claw, [hit("Left Flank", 25)])
+    if not e.has(r, "stinging_cuts"):
+        problems.append("cut after cut should leave her cuts stinging")
+    on = [s for s in R.REACT if e.has(r, s) and R.REACT[s]["kind"] == "body"]
+    if len(on) > 2:
+        problems.append(f"at most max_body body reactions should be on her at once: {on}")
+    r.status.pop("nosebleed", None)
+    if R.on_hits(e, n, r, punch, [hit("Nose", 40)]) and e.has(r, "nosebleed"):
+        problems.append("the same reaction should not come again within its beats + cooldown")
+    # mind: shaken by a big blow, the one who landed it emboldened; anger after a run with no answer
+    e2 = Engine(seed=4, only=["Nocturne", "Ripples"])
+    e2._chance = lambda p, *a, **k: p > 0
+    n2, r2 = e2.get("Nocturne"), e2.get("Ripples")
+    R.on_hits(e2, n2, r2, punch, [hit("Chest", 120)])
+    if not (e2.has(r2, "shaken") and e2.has(n2, "emboldened")
+            and any(x.get("status") == "emboldened" for x in e2._pending_events)):
+        problems.append("a huge blow should shake her and embolden the one who landed it (told in the beat)")
+    e3 = Engine(seed=5, only=["Nocturne", "Ripples"])
+    e3._chance = lambda p, *a, **k: p > 0
+    n3, r3 = e3.get("Nocturne"), e3.get("Ripples")
+    for _ in range(3):
+        R.on_hits(e3, n3, r3, punch, [hit("Chest", 10)])
+    if not e3.has(r3, "angry"):
+        problems.append("three blows in a row she couldn't answer should make her angry")
+    for _ in range(3):
+        R.on_miss(e3, r3, n3)
+    if not e3.has(r3, "frustrated") and not e3.has(r3, "angry"):
+        problems.append("three misses in a row should frustrate her")
+    if R.mult(e3, r3, "power") <= 1.0:
+        problems.append("anger should put a little more behind her blows")
+    # one huge head blow never concusses her
+    e4 = Engine(seed=6, only=["Nocturne", "Ripples"])
+    r4 = e4.get("Ripples")
+    r4.part("Head").damage = 500
+    e4._head_jolts(r4, [hit("Head", 400, 500)], punch, e4.get("Nocturne"))
+    if e4.has(r4, "concussed"):
+        problems.append("one blow, however hard, should never concuss her (concussion.min_blows)")
+    # a hold felt in stages, panic, and its aftermath
+    e5 = Engine(seed=7, only=["Seraphina", "Ripples"])
+    e5._chance = lambda p, *a, **k: p > 0
+    s5, r5 = e5.get("Seraphina"), e5.get("Ripples")
+    e5.holds[1] = h = Hold(1, "Seraphina", "Ripples", "Chest", 15, 0, "", turns_active=1, with_part="her coils", coil=True)
+    ev = R.tick(e5)
+    if not any(x["type"] == "hold_feel" and x["kind"] == "coil_body" and x["stage"] == 1 for x in ev):
+        problems.append(f"the coils round her chest should be felt from their first beat: {ev}")
+    if any(x["type"] == "hold_feel" for x in R.tick(e5)):
+        problems.append("a stage of a hold should be told once, not every beat")
+    h.turns_active = 2
+    ev = R.tick(e5)
+    if not any(x["type"] == "hold_feel" and x["stage"] == 2 for x in ev):
+        problems.append("the next stage of the coils should be told when it comes")
+    if not e5.has(r5, "panicking"):
+        problems.append("two beats with the coils squeezing her breath should panic her")
+    e5.holds.pop(1)
+    ev = R.tick(e5)
+    if not (e5.has(r5, "head_rush") and any(x.get("after") == "coil_body" for x in ev)):
+        problems.append(f"the coils coming off should leave a head rush as the blood floods back: {ev}")
+    for st in ("head_rush", "nosebleed", "panicking", "shaken"):
+        if st not in N.Narrator.STATUS_STORY or st not in N.Narrator.STATUS_ENDS:
+            problems.append(f"the narrator should know how {st} shows and how it ends")
+    # endurance: against an equal she breaks free less; much stronger, about as before; a plain grip unchanged
+    e6 = Engine(seed=8, only=["Nocturne", "Ripples"])
+    n6, r6 = e6.get("Nocturne"), e6.get("Ripples")
+    sub = [Hold(2, "Nocturne", "Ripples", "Left Arm", 15, 0, "", sub="armbar")]
+    eq = e6.hold_endurance(n6, r6, sub)
+    n6.health = n6.max_health * 0.15
+    n6.energy = 10
+    strong = e6.hold_endurance(n6, r6, sub)
+    if not (eq < 0.8 and strong > 0.9 and strong > eq):
+        problems.append(f"a submission should be harder to break against an equal ({eq:.2f}) than for a fighter far "
+                        f"stronger than the holder ({strong:.2f})")
+    if e6.hold_endurance(n6, r6, [Hold(3, "Nocturne", "Ripples", "Left Arm", 15, 0, "")]) != 1.0:
+        problems.append("a plain grip should not be changed by holds.endurance")
+    # the face hint
+    e6.rules["director"]["face_chance"] = 1.0
+    n6.health = n6.max_health
+    fh = D.face_hint(e6)
+    if "Muzzle" not in fh and "Nose" not in fh:
+        problems.append(f"the face hint should name her muzzle or nose: {fh!r}")
+    # switches
+    e7 = Engine(seed=9, only=["Nocturne", "Ripples"])
+    e7._chance = lambda p, *a, **k: p > 0
+    e7.rules["moves"]["reactions"]["effects"] = False
+    R.on_hits(e7, e7.get("Nocturne"), e7.get("Ripples"), punch, [hit("Chest", 120)])
+    if R.mult(e7, e7.get("Nocturne"), "power") != 1.0:
+        problems.append("reactions.effects false should leave the numbers alone")
+    e7.rules["moves"]["reactions"]["enabled"] = False
+    if R.on_hits(e7, e7.get("Nocturne"), e7.get("Ripples"), punch, [hit("Nose", 60)]) or R.tick(e7):
+        problems.append("reactions.enabled false should give no reactions at all")
+    return problems
+
+
 def alive_306_check():
     """Build 306 (window.alive, narration.settling_in): her signs for the heart monitor rise with exertion and pain,
     the grey closes in near a black-out and a choke, a stopped heart reads stopped; what landed since the beat
@@ -1087,6 +1204,7 @@ def compression_check():
     e2 = s2.eng
     e2.rules["finish"]["submission"]["enabled"] = True
     e2._hold_break_tick = lambda *a, **k: []
+    e2.rules["holds"]["endurance"]["coil_energy_mult"] = 1.0    # (build 308's cheaper coils: tested at full cost here)
     e2.start_submission("Seraphina", "Ripples", "upright coil")
     sr2 = e2.get("Seraphina")
     sr2.energy = 12
@@ -3409,6 +3527,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "reactions308 endurance face" for w in want):
+        t = time.time()
+        probs = reactions_308_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 308 body and mind reactions, holds felt and their aftermath, longer holds, the face  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "alive306 monitor settling" for w in want):

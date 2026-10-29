@@ -654,6 +654,62 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 308
+Attacks now cause the body and mind reactions you'd expect, small and short-lived, so fights run as long as before.
+Coils and submissions can last longer, and the face gets hit sometimes. Everything is a switch in rules.json
+(`moves.reactions`, `holds.endurance`, `moves.head.concussion.min_blows`, `director.face_chance`), each with a comment.
+- **The body (reactions.py):** what a hit leaves depends on what it was and where it landed:
+  - a blunt blow to the nose can start a nosebleed;
+  - a cut above the eye runs blood into it; sand or stone in the face leaves grit in her eyes;
+  - a blow to the throat makes her cough and gag;
+  - an electric hit that didn't paralyze her leaves her twitching.
+  - Some only come once enough of it has built up over the fight: a sick stomach after blows to the gut, cuts that
+    sting, overheating from fire, paws numb with cold, a headache from Psychic attacks, stings swelling.
+  - So one claw never has her bleeding all over.
+- **The mind:**
+  - a huge blow (or a stun) can shake her, and the one who landed it feels bolder;
+  - three blows in a row she couldn't answer make her angry: she hits harder and guards less;
+  - three misses in a row frustrate her;
+  - two beats with no air (in a choke, or in coils round her chest or throat) can tip her into panic, which burns
+    her energy.
+- **Being held:** the narrator is told what each kind of hold is doing to her body, stage by stage (from its first,
+  second and fourth beat), once each.
+  - Coils round her chest: each time she breathes out, the coils take up the slack; her face and ears burn hot with
+    blood that can't get back down; later her ribs creak and a sick, swimming feeling rises.
+  - A choke has an air, a blood or a full version. There are also lines for a joint lock, a bite, a bound limb and a
+    plain grip.
+- **When a hold comes off** after two beats or more, it leaves its aftermath:
+  - a head rush as the blood floods back after coils or a blood choke;
+  - pins and needles in a limb that was bound or trapped;
+  - a raw throat after a choke;
+  - a strained joint after a lock;
+  - throbbing bite wounds;
+  - wariness of the grip that had her.
+- **Limits:** at most two body reactions and one mind reaction on her at a time, and the same one never comes back
+  within a few beats. What each does to the numbers is small: a few per cent on power or dodging, a little more
+  missing for blood or grit in her eyes, a little less breath back. `moves.reactions.effects false` keeps them in the
+  story only. `moves.reactions.tune.<name>` changes any one of them, e.g. `/set moves.reactions.tune.nosebleed.chance 0.2`.
+- **No concussion from one hit:** concussion also needs at least three separate blows to her head this fight
+  (`concussion.min_blows`), however hard any one of them is.
+- **Longer coils and submissions (`holds.endurance`):** the break-free roll against them now depends on how strong
+  she is against the one holding her (strength, size, energy). Against an equal she gets out about half as often, so
+  holds can run on. A fighter much stronger than her holder can still tear out early, about as easily as before. It
+  stays a dice roll every beat. Coils also cost the coiler less energy to keep on, and a submission's escape chance
+  grows more slowly, and a blow to the coiler or the one holding the lock shakes it loose less often. Plain grips
+  are unchanged.
+- **The face (`director.face_chance`):** nothing in the code kept muzzles and noses from being hit. The director
+  model just tends to name Head, Neck and Chest. Now and then, when no other target idea ran, it's reminded that the
+  opponent has a Muzzle and a Nose, and what a blow there does. It's an idea, never an order.
+- **Balance** (no-model simulations; everything off first, then on):
+
+  | Pairing | Wins | Fight length | Submissions held |
+  |---|---|---|---|
+  | Nocturne vs Ripples (300 fights) | 57.7% → 55% | 42.9 → 42.9 beats | 2.75 → 3.4 beats on average |
+  | Nerine vs Ripples | 58% → 63% | 44.8 → 44.0 beats | 3.1 → 3.9 beats |
+  | Seraphina vs Ripples | 88% → 84% | 50.1 → 50.1 beats | |
+
+  Fights run as long as before. The longest coils and submissions now go 11–14 beats. Ripples' stats are untouched.
+
 ## Build 307
 The effects from build 306 can each be turned off without editing settings.
 - **The Effects button** above the cards (beside Poses) opens a list with a tick for each: breathing, pain pulsing

@@ -13,6 +13,7 @@ import random
 import re
 
 import blocks as story_blocks
+import reactions as _reactions
 import llm
 
 import sys as _sys
@@ -5131,6 +5132,22 @@ class Narrator:
                              + f"; {e['attacker']} is left with nothing in her grip. It does no damage, nobody falls, and "
                              f"no new attack follows it. When the beat ends, nothing of {poss(e['attacker'])} is on her.")
                 lines += self._choke_off_lines(e["defender"], e.get("parts") or [])
+            elif e["type"] == "reaction":
+                # (since build 308, moves.reactions) her body or her mind reacting, between the blows
+                st_ = e.get("status")
+                mind_ = (_reactions.REACT.get(st_) or {}).get("kind") == "mind"
+                other_ = e.get("by") or next((w for w in (getattr(self, "strengths", None) or {}) if w != e["fighter"]),
+                                             "her opponent")
+                lines.append(f"{e['fighter'].upper()}" + (" FEELS IT" if mind_ else "") + f": {self._status_look(e)} "
+                             f"(for the next {e.get('beats', 1)} beat(s), from {e.get('why') or 'what was done to her'}). "
+                             + ("Show it in her face, her stance or a short thought, once, in your own words."
+                                if mind_ else "Show it in her body, once, in a few words of your own."))
+                lines += self._status_story(e, other_)
+            elif e["type"] == "hold_feel":
+                # (since build 308, moves.reactions.holds) what being held is doing to her body, by stage
+                lines.append(f"IN {poss(e['attacker']).upper()} {_reactions.HOLD_WORD.get(e.get('kind'), 'hold').upper()}"
+                             f" ({e.get('beats_held')} beat(s) of it), {poss(e['fighter'])} body: {e.get('says')}. "
+                             f"Show it once, in a few words of her own body, in your own words; it is new this beat.")
             elif e["type"] == "quirk_moment":
                 # (since build 281, narration.character.moments) one of her quirks decided something this beat
                 lines.append(f"WHO {e['fighter'].upper()} IS, IN THIS MOMENT: {e.get('note')}. Let it show in what "
@@ -6838,6 +6855,10 @@ class Narrator:
         "mirroring": "the sheen fades off her fur",
         "armed": "the weapon she made gives out in her grip: it melts, crumbles or splashes away, and her paws are empty",
     }
+    # (since build 308, moves.reactions) the body's and the mind's reactions
+    STATUS_STORY.update(_reactions.STORY)
+    STATUS_ENDS.update(_reactions.ENDS)
+    STATUS_WORDS.update(_reactions.WORD)
 
     def _status_story(self, s, other=None):
         """The three-part telling for a status that just landed (the tell, her taking it, her opponent reading it)."""
@@ -6912,7 +6933,7 @@ class Narrator:
                     hurt = max([d for p, d in mine.items() if re.search(r"jaw|muzzle|cheek|mouth|lip|nose|throat|head", p)]
                                or [0])
                 biter = w in (getattr(self, "_biters", None) or set())
-                if hurt < 30 and not biter:
+                if hurt < 30 and not biter and w not in (getattr(self, "bleeding", None) or {}):
                     out.append((sent, w))
         return out
 
@@ -6939,7 +6960,9 @@ class Narrator:
             for sent in re.split(r"(?<=[.!?…])\s+", para):
                 if "blood" in sent.lower():
                     whos = [w for w in self.strengths if w in sent] or [w for w in self.strengths if w.lower() in para.lower()][:1]
-                    if len(whos) == 1:
+                    if len(whos) == 1 and whos[0] in (getattr(self, "bleeding", None) or {}):
+                        pass    # (since build 308) a nosebleed, a cut above her eye, bite wounds: she does bleed
+                    elif len(whos) == 1:
                         parts = cut.get(whos[0], set())
                         named = [p for p in {k.partition("|")[2].lower() for k in kinds if k.startswith(whos[0] + "|")}
                                  if p and p in sent.lower()]

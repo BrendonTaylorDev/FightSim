@@ -1869,6 +1869,11 @@ STATUS_SIGNS = {"adrenaline": (0.25, 0.3, "adrenaline"), "breathless": (0.1, 0.6
                 "asleep": (-0.3, -0.4, "asleep"), "paralyzed": (0.05, 0.0, "paralyzed"),
                 "stunned": (0.05, 0.0, "stunned"), "dazed": (0.0, 0.0, "dazed"), "concussed": (0.0, 0.0, "concussed"),
                 "ribs_aching": (0.05, 0.0, "ribs aching"), "greyed": (0.0, 0.0, "the grey at her edges")}
+# (since build 308, moves.reactions) fear and panic race her heart; a sick stomach or a raw throat shows in her breath
+STATUS_SIGNS.update({"panicking": (0.3, 0.6, "panicking"), "shaken": (0.12, 0.15, "shaken"),
+                     "angry": (0.15, 0.15, "angry"), "head_rush": (0.1, 0.2, "head rush"),
+                     "nauseous": (0.08, 0.15, "nauseous"), "throat_raw": (0.05, 0.25, "throat raw"),
+                     "overheated": (0.15, 0.4, "overheated"), "nosebleed": (0.0, 0.1, "nosebleed")})
 TORSO_WORDS = ("chest", "rib", "stomach", "belly", "flank", "torso")
 
 

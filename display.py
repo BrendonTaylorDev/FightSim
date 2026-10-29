@@ -2,6 +2,7 @@
 Prints the stat blocks in your format, straight from engine numbers.
 Resistance uses colored squares, damage uses colored circles, and the heart is only ever health.
 """
+import reactions as _reactions
 import re
 from engine import tier_for, pain_tiers, poss_word
 
@@ -87,6 +88,8 @@ class Display:
                    "ears_ringing": "🔔", "jaw_rattled": "🦷", "whiplash": "↪️", "concussed": "🧠", "dead_leg": "🦵",
                    "limping": "🩼", "dead_arm": "💪", "ribs_aching": "🫁", "back_spasm": "⚡", "tail_numb": "〰️",
                    "swollen_eye": "👁️"}
+    STATUS_WORD.update(_reactions.WORD)      # (since build 308, moves.reactions)
+    STATUS_ICON.update(_reactions.ICON)
 
     def _status_tag(self, f):
         bits = [f"{self.STATUS_ICON.get(s, '')}{s} {n}" for s, n in f.status.items()]

@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-29 build 307 (the Effects button and /effects)"
+VERSION = "2026-10-29 build 308 (body and mind reactions, longer holds, the face)"
 
 HELP = """
 =============================================================================================
@@ -1797,6 +1797,10 @@ class Session:
         self.narrator.injury_main = {k: self.eng.injury_causes(k) for k in self.eng.injury_log}
         # what kind of wound each part carries (claw, bite, blunt, grip, shock, cold): blood needs a claw or a bite
         self.narrator.wound_kinds = {k: {self.eng._mark_kind(c) for c in v if c} for k, v in self.eng.injury_log.items()}
+        # (since build 308, moves.reactions) who is bleeding from a reaction (a nosebleed, a cut eye, bite wounds)
+        self.narrator.bleeding = {f.name: [s for s in ("nosebleed", "blood_in_eye", "bite_wounds", "stinging_cuts")
+                                           if self.eng.has(f, s)] for f in self.eng.fighters.values()}
+        self.narrator.bleeding = {k: v for k, v in self.narrator.bleeding.items() if v}
         self.narrator.first_hurt = {f.name: dict(f.learned.get("first_hurt") or {}) for f in self.eng.fighters.values()}
         self.narrator.beat_now = self.eng.turn      # (synced after the beat ran: this beat's number)
         self.narrator.voices = {f.name: getattr(f, "voice", "") for f in self.eng.fighters.values()}

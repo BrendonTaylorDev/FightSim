@@ -902,6 +902,34 @@ def variety_hint(engine):
             "keeps a fight from being about one spot: the same move can land on a different part.")
 
 
+FACE_PARTS = re.compile(r"(?i)\b(?:muzzle|nose|snout|beak)\b")
+
+
+def face_hint(engine):
+    """director.face_chance (since build 308): now and then, when no other target idea ran, a reminder that her
+    opponent has a face (a muzzle, a nose, a snout, a beak) as well as a head: the director tends to pick Head, Neck and
+    Chest and leave the face alone. Never an order; and only between two fighters in the air or on the ground together."""
+    c = float(engine.rules.get("director", {}).get("face_chance", 0.12) or 0)
+    if c <= 0 or engine.pins or engine.rng.random() >= c:
+        return ""
+    pairs = []
+    for f in engine.active():
+        if engine.focus_for(f.name) or engine.pinned_by(f.name) or f.name in engine.downed:
+            continue
+        for foe in engine.active():
+            if foe.team == f.team or engine.has(foe, "airborne") != engine.has(f, "airborne"):
+                continue
+            face = [n for n in foe.parts if FACE_PARTS.search(n)]
+            if face:
+                pairs.append((f, foe, face))
+    if not pairs:
+        return ""
+    f, foe, face = engine.rng.choice(pairs)
+    return (f"THE FACE (an idea, not an order): {poss_word(foe.name)} " + " and ".join(face[:2]) + " are there to be hit "
+            f"as well as her Head: a blow on the nose or the muzzle stings, waters her eyes and can bloody her nose, and "
+            f"blow after blow there wears her down. If {f.name} goes for the face this time, name the part itself.")
+
+
 def weak_spot_menu(engine, foe, soft):
     """The parts a WEAK SPOTS hint offers (director.weak_spot_menu: how many of each kind): badly hurt ones, ones only
     hurt so far, and soft places not yet touched; shuffled, so the worst is not always first."""
@@ -2605,6 +2633,9 @@ class Director:
             rng_hint = (rng_hint + "\n" + weak).strip()
         if fresh:
             rng_hint = (rng_hint + "\n" + fresh).strip()
+        face = face_hint(engine) if not direction and not fresh and not weak else ""
+        if face:
+            rng_hint = (rng_hint + "\n" + face).strip()
         plan_pull = game_plan_hint(engine) if not direction else ""
         if plan_pull:
             rng_hint = (rng_hint + "\n" + plan_pull).strip()

@@ -12,6 +12,8 @@ import random
 import re
 from dataclasses import dataclass, field, asdict
 
+import reactions
+
 
 _FAILED_ONCE = set()
 
@@ -1843,6 +1845,8 @@ class Engine:
                 res["auto_launch"], res["drop_severity"] = res.get("auto_launch") or "thrown", res.get("drop_severity") or "solid"
         if hits and not d.eliminated:
             jolt = self._jolts(d, hits, move, a)
+            # (since build 308, moves.reactions) what the blow leaves on her body and her mind beyond that
+            jolt += reactions.on_hits(self, a, d, move, hits, jolt)
             if jolt:
                 res["status_applied"] = (res.get("status_applied") or []) + jolt
         if hits and not d.eliminated and not dodge and not (guard and guard.get("kind") == "block") \
@@ -2591,6 +2595,7 @@ class Engine:
             miss *= float(sc_.get("eyes_watering_aim_mult", 1.3))
         if self.has(a, "swollen_eye"):
             miss *= float(sc_.get("swollen_eye_aim_mult", 1.2))
+        miss *= reactions.mult(self, a, "aim")     # (since build 308) blood or grit in her eyes, frustration
         if any(self.has(d, st) for st in ("stunned", "wobbly")):
             miss *= float(cfg.get("open_mult", 0.6))
         miss *= float(cfg.get("scale", 1.0)) / self.trait(a, "striking")
@@ -3054,6 +3059,13 @@ class Engine:
             out.append(("burned", float(cfg.get("burned_power_mult", 0.85))))
         if move_type == "Electric" and self.has(d, "soaked"):
             out.append(("soaked", float(cfg.get("soaked_electric_mult", 1.5))))
+        rc = reactions.cfg(self)
+        if rc and rc.get("effects", True):
+            # (since build 308, moves.reactions) her body's and her mind's reactions: sick, numb, shaken, angry...
+            for st in reactions.REACT:
+                m = float(reactions.tune(rc, st).get("power", 1.0))
+                if m != 1.0 and self.has(a, st):
+                    out.append((reactions.WORD[st], m))
         return out
 
     def _status_from_move(self, d, move, force_roll=False, at=None):
@@ -3357,7 +3369,8 @@ class Engine:
                (float(sc.get("whiplash_dodge_mult", 0.9)) if self.has(d, "whiplash") else 1.0) * \
                (float(sc.get("doubled_over_dodge_mult", 0.5)) if self.has(d, "doubled_over") else 1.0) * \
                (float(sc.get("greyed_dodge_mult", 0.3)) if self.has(d, "greyed") else 1.0) * \
-               (self._low_cfg("last_stand").get("open_dodge_mult", 0.2) if self.has(d, "overextended") else 1.0)
+               (self._low_cfg("last_stand").get("open_dodge_mult", 0.2) if self.has(d, "overextended") else 1.0) * \
+               reactions.mult(self, d, "dodge")     # (since build 308) twitching, shaken, a head rush...
         s = max(0.0, min(1.0, self.strength(d) / 100))
         # what she runs on: a biped's or a bird's fore_low is arms or wingtips, not legs
         feet = ("hind_up", "hind_low", "tail") + (("fore_low",) if self.body_plan(d) == "quadruped" else ())
@@ -3459,6 +3472,7 @@ class Engine:
         legs_ok = 1.0 / (1.0 + legw / float(ecfg.get("leg_manner_halves_at", 80)))
         manner = self.vary("dodge", scale={m: legs_ok for m in ecfg.get("leg_manners", ["spring_back", "sidestep"])})
         out = {"dodged": True, "dodge_chance": ch, "counter_hits": [], "manner": manner, "wary": wary}
+        reactions.on_miss(self, a, d)       # (since build 308) a run of misses frustrates her
         if forced:
             out["chain_broken"] = True
         acfg = self.rules.get("arena") or {}
@@ -5966,6 +5980,7 @@ class Engine:
             ch *= float(cfg.get("stuck_mult", 0.6))
         else:
             grow = float(esc.get("grow", cfg.get("grow", 0.3)) if on else cfg.get("grow", 0.3))
+            grow *= float((self.endurance_cfg() or {}).get("grow_mult", 1.0))    # (since build 308)
             ch *= 1.0 + grow * max(0, beats - 1)
         ch = min(float(cfg.get("max_break", 0.85)), ch)
         if on:
@@ -6099,7 +6114,8 @@ class Engine:
                        (sd / sa) ** float(cfg.get("size_exp", 0.25)))) if sa and sd else 1.0
             beats = max(h.turns_active for h in hs)
             cost = (float(cfg.get("per_beat", 6)) + float(cfg.get("per_beat_growth", 0.4)) * beats) * size \
-                * (1.0 + float(cfg.get("extra_coil", 0.25)) * (len(hs) - 1))
+                * (1.0 + float(cfg.get("extra_coil", 0.25)) * (len(hs) - 1)) \
+                * float((self.endurance_cfg() or {}).get("coil_energy_mult", 1.0))   # (since build 308)
             a.energy = max(0.0, a.energy - cost)
             if a.energy > float(cfg.get("spent_below", 5)):
                 continue
@@ -6847,6 +6863,7 @@ class Engine:
         if not heads:
             return []
         h = max(heads, key=lambda x: float(x.get("damage_taken", 0)))
+        d.learned["head_blows"] = int(d.learned.get("head_blows", 0)) + 1     # (for concussion.min_blows)
         spot = self.head_spot(h["part"])
         # (the size of a blow against the damage scale: at /scale 15 every hit is five times the damage of one at 3)
         scale_ = float((self.rules.get("damage") or {}).get("damage_scale", 3) or 3)
@@ -6912,7 +6929,9 @@ class Engine:
         cc = cfg.get("concussion") or {}
         if cc.get("enabled", True) and not self.has(d, "concussed"):
             hd = max((p.damage for p in d.parts.values() if body_region(p.name) == "head"), default=0.0)
-            if hd >= float(cc.get("head_damage", 300)) or int(d.learned.get("head_jolts", 0)) >= int(cc.get("jolts", 3)):
+            # (since build 308, concussion.min_blows) never from one blow, however hard: it takes blow after blow
+            if (hd >= float(cc.get("head_damage", 300)) or int(d.learned.get("head_jolts", 0)) >= int(cc.get("jolts", 3))) \
+                    and int(d.learned.get("head_blows", 0)) >= int(cc.get("min_blows", 3)):
                 put("concussed", 999)
         return out
 
@@ -8930,6 +8949,28 @@ class Engine:
         ch *= self._break_mods(a, d, hs)
         return round(max(0.0, min(float(cfg.get("max", 0.6)), ch)), 3)
 
+    def endurance_cfg(self):
+        """holds.endurance (since build 308), or None when it is off."""
+        c = (self.rules.get("holds") or {}).get("endurance")
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
+    def hold_endurance(self, a, d, hs):
+        """holds.endurance (since build 308): coils and submissions are harder to break, so they can run on, by how
+        strong she is against the one holding her: each one's might (her strength, her size ** size_weight, her energy),
+        hers over the holder's, ** strength_exp, x mult, kept within min..max. Even against an equal she breaks free
+        less (mult); much stronger, she tears out about as easily as before. It stays a roll every beat."""
+        c = self.endurance_cfg()
+        if not c or not any(h.coil or h.sub or h.locked for h in hs):
+            return 1.0
+
+        def might(f):
+            size = max(0.1, float(self.size_m(f) or 1.0))
+            return ((0.25 + max(0.0, min(100.0, self.strength(f))) / 100.0) * size ** float(c.get("size_weight", 0.25))
+                    * (0.5 + max(0.0, min(100.0, float(f.energy))) / 200.0))
+        rel = might(d) / max(0.01, might(a))
+        return max(float(c.get("min", 0.35)), min(float(c.get("max", 1.2)),
+                                                  float(c.get("mult", 0.55)) * rel ** float(c.get("strength_exp", 1.0))))
+
     def _break_mods(self, a, d, hs):
         """What her state and the grip's kind do to any break-free chance: paralyzed, adrenaline, a grab or a coil,
         wet fur on either side."""
@@ -8970,6 +9011,11 @@ class Engine:
         if not mine or share < float(cfg.get("min_share", 0.03)):
             return []
         ch = round(min(float(cfg.get("max", 0.95)), k * share), 3)
+        ec = self.endurance_cfg()
+        if ec and all(h.coil or h.sub or h.locked for h in mine):
+            # (since build 308, holds.endurance.shake_mult) coils wound round her or a locked-in submission are not
+            # shaken off by a blow as easily as a paw's grip
+            ch = round(ch * float(ec.get("shake_mult", 0.6)), 3)
         if not self._chance(ch, f"{f.name} losing her grip to {why} ({share * 100:.0f}% of her health at once)",
                             "she loses it", "she holds on"):
             return []
@@ -9104,6 +9150,7 @@ class Engine:
             if ce_ and any(h.coil for h in hs) and fa.energy < float(self._cfg("energy").get("tired_below", 25)):
                 # (since build 298, holds.coil.energy) a coiler running out of breath holds less surely
                 ch *= float(ce_.get("tired_escape_mult", 1.25))
+            ch *= self.hold_endurance(fa, fd, hs)      # (since build 308) coils and submissions last longer
             if fd.name in self.lucky and fa.name not in self.lucky:
                 ch = 1.0   # /play dice free: she breaks any hold on her at once (not one a dice-free holder has)
             if ch <= 0:
@@ -9320,6 +9367,7 @@ class Engine:
                                 "exhaustion": exhaustion, "pain_drain": drain,
                                 "health_tier": ht["label"], "health_tier_changed": ht["label"] != tier_b and won_since is None,
                                 "reaction_guide": self.tier_reaction(f, ht)}
+        events += reactions.tick(self)     # (since build 308, moves.reactions) holds felt, panic, a hold's aftermath
         events += self.recover_tick()
         events += self._tick_status_energy()
         events += self._weather_tick()
@@ -9424,6 +9472,9 @@ class Engine:
                 regen = 0.0
             elif self.has(f, "breathless"):     # winded: half the breath comes back (resting still helps)
                 regen *= float(cfg_s.get("breathless_regen_mult", 0.5))
+            if regen > 0:
+                regen *= reactions.mult(self, f, "regen")    # (since build 308) a raw throat, a sick stomach...
+            regen -= reactions.drain(self, f)                # (panic burns breath she doesn't have)
             f.energy = max(0.0, min(100.0, f.energy + regen))
             if (ad.get("enabled", True) and not f.adrenaline_used and not self.winner()
                     and self.strength(f) < float(ad.get("below_strength", 25))):
@@ -12175,6 +12226,7 @@ class Engine:
         "overextended": "WIDE OPEN after her last stand: she threw everything and has nothing left to cover with, "
                         "off balance, slow, gasping",
     }
+    STATUS_LOOK.update({k: v["look"] for k, v in reactions.REACT.items()})     # (since build 308, moves.reactions)
 
     # the same status from a move that is not cold: CHILLED is the engine's word for any slowing
     STATUS_LOOK_NOT_COLD = {
