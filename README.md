@@ -654,6 +654,20 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 311
+Fixes and answers from the third paste of the Seraphina vs Ripples fight.
+- **A Dragon Tail from inside her own coils:** Seraphina had two coils round Ripples and still whipped her with her
+  tail, hurling her into a pine. Her coils count as her tail now (holds.busy_limbs.coils_use_tail). With two coils or
+  more her tail is used up, so she has no tail strike. With one coil, usually her middle, the end of her tail is left
+  loose half the time (`tail_free_chance`, rolled once when the coil goes on). She can flick that free end at 0.6 of
+  the power (`tail_free_power`). The director is told which.
+- **No throw out of the attacker's own grip:** a fighter held in the attacker's grip or coils can't be knocked down,
+  thrown or sent into the scenery by that attacker's blow (holds.held_no_launch). Throws and slams from a hold are
+  unchanged.
+- **Breathing on the coils' monitor:** while coils hold her, the heart monitor gives way to the constriction strip,
+  which had no breathing on it. It shows her breathing rate now, shallow as the coils close in, beside her normal rate.
+- **The tap explanation (ⓘ):** it described the old ceiling formula. It now describes the one in use (tap.blend).
+
 ## Build 310
 Fixes from the second paste of the Seraphina vs Ripples fight.
 - **A paragraph in the present tense got through:** "Seraphina's antennae droop slightly... Her scales shimmer... The

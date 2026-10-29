@@ -823,6 +823,19 @@ def coil_size_hint(engine):
                            f"{poss_word(d.name)} limbs, so her coils can't wrap one arm, leg or tail alone. When she "
                            f"coils {d.name}, the coils go round {poss_word(d.name)} MIDDLE (chest or belly), and a "
                            f"limb can be bound in under them")
+    if (((engine.rules.get("holds") or {}).get("busy_limbs") or {}).get("coils_use_tail", True)):
+        # (since build 311) her coils are her tail: while they hold someone, she has no tail to strike with
+        for f in engine.active():
+            st, h = engine.coil_tail(f)
+            if st == "busy":
+                out.append(f"{poss_word(f.name)} coils are wound round {h.defender}: her tail is IN them, so she "
+                           f"has no tail strike (Dragon Tail, Iron Tail, Aqua Tail...) while they hold, and nothing "
+                           f"she does sends {h.defender} flying out of them. She strikes with what is free (her jaws, "
+                           f"her head, a move fired from her mouth) or squeezes")
+            elif st == "free":
+                out.append(f"{poss_word(f.name)} one coil round {h.defender} is her middle: the END of her tail is "
+                           f"still loose, so a tail strike is a flick of that free end (weaker, no body behind it), "
+                           f"and it can't send {h.defender} flying out of the coil")
     if engine.coil_contest_cfg():
         # (since build 279, holds.coil.contest) a serpent in another's coils can wind her own round her holder
         for h in engine.holds.values():
@@ -1925,6 +1938,14 @@ def _landing(engine, b, res):
         # out is the struggle's roll)
         res["launch_blocked"] = "the attacker is held down in her grip: a blow from there can't throw her off"
         return None
+    if not manual and att and ((engine.rules.get("holds") or {}).get("held_no_launch") or {}).get("enabled", True):
+        mine = [h for h in engine.holds.values() if h.attacker == engine.get(att).name and h.defender == who]
+        if mine:
+            # (since build 311, holds.held_no_launch) she is in the attacker's own grip: the blow can't send her flying
+            # or into the scenery, the grip holds her where she is (a throw out of a hold is a hold_release first)
+            res["launch_blocked"] = (f"{who} is held in {poss_word(engine.get(att).name)} "
+                                     f"{'coils' if any(h.coil for h in mine) else 'grip'}: she can't be {launch} out of it")
+            return None
     if engine.pinned_by(who) and not (manual and thrown):
         # held down: she can't be knocked down, thrown, or launched. At most she's driven into the ground under her
         ground = engine.scene_word("ground").split()[-1].lower()

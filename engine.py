@@ -2829,8 +2829,13 @@ class Engine:
             return None
         keys = {"leg": ("legs", "feet"), "arm": ("paws", "arms"), "tail": ("tails", "coils"), "wing": ("wings",),
                 "talon": ("talons",)}.get(kind)
-        if not keys or not ((self.rules.get("holds") or {}).get("busy_limbs") or {}).get("enabled", True):
+        bl = (self.rules.get("holds") or {}).get("busy_limbs") or {}
+        if not keys or not bl.get("enabled", True):
             return None
+        if kind == "tail":
+            st, h = self.coil_tail(a)
+            if st == "busy":
+                return ("coils", h.defender, h.part)
         # (holds.busy_limbs, since build 266) a pair of limbs she has locked in her own hold can't throw a blow too:
         # both legs in a triangle choke have no knee to strike with, both paws in a chicken wing no punch. One of the
         # pair still free (a grip with "her right paw") leaves the other for it.
@@ -2847,6 +2852,29 @@ class Engine:
                 if used >= lb[1]:
                     return (f"{key}", first.defender, first.part)
         return None
+
+    def coil_tail(self, a):
+        """holds.busy_limbs.coils_use_tail (since build 311): a serpent's coils are her own body, so while they are
+        wound round someone, is her tail free to strike with? Returns ("busy" or "free", the coil hold), or (None,
+        None) with no coils of hers on anyone. Two coils or more use her tail up. One coil is usually her middle, and
+        the end of her tail may be left loose: rolled once when the coil goes on (tail_free_chance), kept while it
+        holds. (The build-310 log had a Dragon Tail thrown from inside Seraphina's two coils.)"""
+        bl = (self.rules.get("holds") or {}).get("busy_limbs") or {}
+        if not bl.get("enabled", True) or not bl.get("coils_use_tail", True):
+            return None, None
+        mine = [h for h in self.holds.values() if h.attacker == a.name and h.coil
+                and (self.grip_limb(a, h.with_part) or ("",))[0] == "coils"]
+        if not mine:
+            return None, None
+        if len(mine) >= 2:
+            return "busy", mine[0]
+        seen = a.learned.setdefault("tail_free", {})
+        k = str(mine[0].id)
+        if k not in seen:
+            for old in [x for x in seen if not any(str(h.id) == x for h in self.holds.values())]:
+                seen.pop(old, None)
+            seen[k] = bool(self.rng.random() < float(bl.get("tail_free_chance", 0.5)))
+        return ("free" if seen[k] else "busy"), mine[0]
 
     _REACH_KIND = {"bite": "bite", "horn": "bite", "beak": "bite", "arm": "arm", "wing": "arm", "leg": "leg",
                    "talon": "leg", "tail": "tail"}
@@ -3027,6 +3055,10 @@ class Engine:
         if self.has(a, "constricted") and any(h.coil and h.defender == a.name and self.coil_scope(h.part) == "body"
                                               for h in self.holds.values()):
             out.append(("arms trapped in the coils", float(cfg.get("constricted_power_mult", 0.75))))
+        if move and self.reach_kind(move) == "tail" and self.coil_tail(a)[0] == "free":
+            # (since build 311) only the loose end of her tail, the rest of her wound round someone: no body behind it
+            out.append(("only the free end of her tail", float(((self.rules.get("holds") or {}).get("busy_limbs") or {})
+                                                             .get("tail_free_power", 0.6))))
         if self.has(a, "bound"):
             out.append((f"her {str(a.learned.get('bound_part') or 'limb').lower()} bound",
                         float(cfg.get("bound_power_mult", 0.9))))

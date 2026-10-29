@@ -313,6 +313,16 @@ class Pointers:
                f"+ {g(t + '.per_beat', 15)} a beat + {g(t + '.press', 1.5)} × the grip's pressure. Her resistance "
                f"{m.group(2)} = {g(t + '.resist', 160)} × her health share ^ {g(t + '.resist_power', 0.8)}."]
         c = re.search(r"tap-out chance (\d+)%", line)
+        bl = t + ".blend"
+        if g(bl + ".enabled", True):
+            # (since build 311) the chance as tap.blend works it out (the old ceiling sum is only used with blend off)
+            out.append(f"The chance: {g(bl + '.part', 0.3)} × how hurt the gripped part is (of devastated) + "
+                       f"{g(bl + '.health', 0.08)} × her health gone + {g(bl + '.both', 0.47)} × the two together, "
+                       f"never above {num(100 * float(g(bl + '.max', 0.85)))}%; then it builds up over the hold's first "
+                       f"{g(bl + '.ramp_beats', 8)} beats (none on the first)"
+                       + (f": {c.group(1)}% this time." if c else ". In coils round her body she blacks out sooner "
+                          f"than she taps (constriction.tap_mult)."))
+            return out
         out.append(f"The chance: (pain - resistance) ÷ {g(t + '.span', 160)}, under a ceiling that starts at "
                    f"{num(100 * float(g(t + '.climb.start', 0.2)))}% and rises "
                    f"{num(100 * float(g(t + '.climb.per_beat', 0.1)))}% a beat, kept lower while she is strong"

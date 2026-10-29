@@ -800,6 +800,42 @@ def presets_help_check():
     return problems
 
 
+def fixes_311_check():
+    """Build 311 (the third Seraphina vs Ripples paste): a serpent's coils are her tail. Two coils round someone leave
+    no tail to strike with; one coil (her middle) leaves the end of it loose tail_free_chance of the time, struck at
+    tail_free_power. A fighter in the attacker's own coils isn't thrown out of them (holds.held_no_launch)."""
+    import director as D
+    from engine import Hold
+    problems = []
+    def eng(n, free):
+        e = Engine(seed=5, only=["Seraphina", "Ripples"])
+        e.rules["holds"]["busy_limbs"]["tail_free_chance"] = free
+        e.holds[1] = Hold(1, "Seraphina", "Ripples", "Upper Back", 20, 0, "", turns_active=1, with_part="her coils",
+                          coil=True)
+        if n > 1:
+            e.holds[2] = Hold(2, "Seraphina", "Ripples", "Right Forearm Fin", 20, 0, "", turns_active=1,
+                              with_part="her lower coils", coil=True)
+        return e
+    mv = {"name": "Dragon Tail", "about": "a tail strike that hurls the target", "target": "targeted"}
+    e = eng(2, 1.0)
+    if not e.busy_with(e.get("Seraphina"), mv):
+        problems.append("two coils round Ripples should leave Seraphina no tail for a Dragon Tail")
+    e = eng(1, 1.0)
+    if e.busy_with(e.get("Seraphina"), mv) or not any("free end" in w for w, _m in e.power_extras(
+            e.get("Seraphina"), e.get("Ripples"), "Dragon", mv)):
+        problems.append("one coil with the tail end loose should allow a weaker tail strike")
+    e = eng(1, 0.0)
+    if not e.busy_with(e.get("Seraphina"), mv):
+        problems.append("one coil with the tail end in it too should leave no tail strike")
+    e = eng(1, 1.0)
+    res = {"type": "instant", "attacker": "Seraphina", "defender": "Ripples", "defenders": ["Ripples"],
+           "hits": [{"part": "Chest", "defender": "Ripples"}], "auto_launch": "thrown"}
+    D._landing(e, {"launch": "none"}, res)
+    if "held in" not in str(res.get("launch_blocked") or "") or "Ripples" in e.downed:
+        problems.append(f"Ripples in Seraphina's coils shouldn't be thrown out of them: {res.get('launch_blocked')}")
+    return problems
+
+
 def fixes_310_check():
     """Build 310 (the second Seraphina vs Ripples paste): a paragraph told in the present tense with verbs the check
     didn't know ("her antennae droop", "her scales shimmer", "the breeze rustles") is caught, "the faintest tremble"
@@ -3626,6 +3662,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "fixes311 coiltail" for w in want):
+        t = time.time()
+        probs = fixes_311_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 311 fixes: no tail strike from inside her coils (one coil may leave it loose), no throw out of them  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "fixes310 tense310" for w in want):

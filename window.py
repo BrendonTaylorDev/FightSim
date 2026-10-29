@@ -721,7 +721,7 @@ class FighterCard(ttk.Frame):
         beat's tap chance and what is keeping it there."""
         m = tap_meter(f)
         self._show(self.tm, bool(m))
-        self._vitals(m.get("vitals") if m else None)
+        self._vitals(m.get("vitals") if m else None, f)
         if not m:
             return
         c, w = self.tm, self.app.card_w()
@@ -743,10 +743,11 @@ class FighterCard(ttk.Frame):
         # (since build 286) as tall as its words: the longer notes were cut off at two lines
         c.configure(height=max(34, c.bbox(note)[3] + 3))
 
-    def _vitals(self, v):
+    def _vitals(self, v, f=None):
         """(since build 287) The constriction drawn: her heart rate and a trace of it (the beats spreading out as it
-        slows, uneven once it skips), a bar of how much of her blood flow the coils have cut off, and her blood
-        pressure against a resting 120/80. Rough numbers for the story, never rolled against."""
+        slows, uneven once it skips), a bar of how much of her blood flow the coils have cut off, her blood
+        pressure against a resting 120/80, and (since build 311) her breathing, which the heart monitor showed
+        before the coils took its place. Rough numbers for the story, never rolled against."""
         self._show(self.vt, bool(v))
         if not v:
             return
@@ -762,7 +763,7 @@ class FighterCard(ttk.Frame):
         # and the readings to the right of them; without it, the monitor across the card as before
         ox = 168 if figure else 0
         ww = w - ox
-        c.configure(height=178 if figure else (72 if odds[0] else 60))
+        c.configure(height=178 if figure else (84 if odds[0] else 70))
         c.create_text(ox + 6, 12, anchor="w", text="♥ stopped" if v.get("stopped") else f"♥ {v['heart']}/min",
                       font=("Segoe UI", 9, "bold"), fill=col)
         if v.get("irregular"):
@@ -807,7 +808,7 @@ class FighterCard(ttk.Frame):
             c.create_line(lx, 26, lx, 44, fill="#f9fafb", width=2)
             c.create_text(lx, 25, anchor="s", text="limit", font=("Segoe UI", 6), fill="#f9fafb")
         if odds[0]:
-            c.create_text(ox + 6, 53 if figure or v.get("squeeze") is None else 65, anchor="w", text=odds[0],
+            c.create_text(ox + 6, 75, anchor="w", text=odds[0],
                           width=ww - 12, font=("Segoe UI", 8, "bold"), fill=odds[1])
         sx = w - 88
         bp = v.get("bp") or [120, 80]
@@ -820,6 +821,13 @@ class FighterCard(ttk.Frame):
         c.create_rectangle(sx, 30, sx + 80 * min(1.0, bp[0] / 160.0), 40, outline="", fill=col)
         c.create_line(sx + 80 * 120 / 160.0, 28, sx + 80 * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
         c.create_text(sx + 3, 35, anchor="w", text="pressure", font=("Segoe UI", 7), fill="#f9fafb")
+        if f is not None:
+            sg = body_signs(f, self._alive_cfg())
+            c.create_text(sx, 51, anchor="w", text=f"breath {sg['breath']}/min", font=("Segoe UI", 9, "bold"),
+                          fill="#f9fafb" if sg["breath"] else "#fca5a5")
+            c.create_text(sx, 62, anchor="w", font=("Segoe UI", 7), fill="#9ca3af",
+                          text=("shallow · " if sg["depth"] < 0.6 and sg["breath"] else "")
+                          + f"normal {sg['breath_rest']}")
 
     def _squeeze_figure(self, c, v, w, ox=200):
         """window.squeeze_figure (since build 299): under the monitor, the squeeze as a picture: her torso from the
