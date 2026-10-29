@@ -654,6 +654,23 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 315
+The window: a heart monitor that looks simulated, and zoomed cards that stay alive.
+- **The heart trace is laid down beat by beat (window.live_ecg).** Before, one fixed pattern was drawn twice and slid
+  along, and the "irregular" pattern was picked by the heart rate, so the same rate always drew the same trace,
+  repeating every six seconds. Now each beat is drawn as its time comes, at her rate then:
+  - a healthy heart's gaps vary by a few percent and each beat is a touch taller or shorter;
+  - an irregular heart's gaps are uneven, a beat is now and then skipped, and now and then one comes early, wide and
+    odd-shaped, with a pause after it;
+  - a stopped heart is a flat line with a faint wander;
+  - a new rate shows from the next beat on, never as a jump.
+
+  The beating heart beside the squeeze and the throb of her hurts beat on the same beats.
+- **Zoomed cards stay alive (window.live_zoom).** At any size but 100% (Cards − / +), the card used to be a still
+  picture borrowed from the fight export. Her breathing and throbbing stopped, and in dark mode it was white behind
+  her. Now it is drawn as at full size and scaled, its pictures made at that size, so everything still moves, on the
+  window's own background.
+
 ## Build 314
 The first of the simulated-body builds: her breath and each limb's tiredness are running numbers now (body.air,
 body.limbs, each switchable). The dice still decide how hard each blow and each struggle is; these are what the dice

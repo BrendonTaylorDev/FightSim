@@ -1037,6 +1037,109 @@ def ecg_points(heart, irregular, width, height, x0=0.0, y0=0.0, seconds=6.0):
     return pts
 
 
+class EcgStream:
+    """(since build 315, window.live_ecg) A heart trace that runs like a real monitor's instead of one pattern
+    repeating: each beat is laid down as the time comes, from her rate now. A healthy heart's gaps vary a little (a
+    few percent) and each beat is a touch taller or shorter; an irregular one's gaps are uneven, now and then a beat
+    is skipped, and now and then one comes early, wide and odd-shaped, with a pause after it; a stopped one is a
+    flat line with a faint wander. A new rate shows from the next beat on, never a jump. The baseline's small
+    wander and noise follow the clock, so the trace slides without flickering. clench(t) is how far her heart is
+    squeezed at t, on the same beats (for the beating heart picture and the card's throb)."""
+
+    def __init__(self, heart, irregular=False, seed=0):
+        import random as _r
+        self.rng = _r.Random(seed)
+        self.beats = []              # (start time, kind, height, length)
+        self.next_t = None
+        self.set(heart, irregular)
+
+    def set(self, heart, irregular=False):
+        self.heart, self.irregular = max(0.0, float(heart or 0)), bool(irregular)
+
+    def _interval(self):
+        base = 60.0 / max(20.0, self.heart)
+        return base * (self.rng.uniform(0.62, 1.45) if self.irregular else 1.0 + self.rng.gauss(0.0, 0.03))
+
+    def _fill(self, t_end):
+        if self.next_t is None:
+            self.next_t = t_end - 7.0
+        while self.next_t <= t_end + 1.0:
+            if self.heart <= 0:
+                self.next_t = t_end + 0.5        # (stopped: nothing to lay down; a new rate starts it from here)
+                break
+            base = 60.0 / max(20.0, self.heart)
+            length = min(1.0, (base / 0.6) ** 0.5)       # (each beat's shape squeezed when they come close)
+            gap = self._interval()
+            r = self.rng.random()
+            if self.irregular and r < 0.12:
+                self.next_t += gap                         # a skipped beat: the line runs on flat
+                continue
+            if self.irregular and r < 0.22:
+                early = self.next_t - gap * 0.35 if self.beats and self.next_t - gap * 0.35 > self.beats[-1][0] \
+                    + 0.3 else self.next_t
+                self.beats.append((early, "early", self.rng.uniform(1.1, 1.35), length))
+                self.next_t = early + gap * 1.6            # (the pause after it)
+                continue
+            self.beats.append((self.next_t, "normal", self.rng.uniform(0.9, 1.08) if not self.irregular
+                               else self.rng.uniform(0.75, 1.1), length))
+            self.next_t += gap
+        self.beats = [b for b in self.beats if b[0] > t_end - 8.0]
+
+    # a normal beat, in seconds from its start: P wave, a flat, Q, R, S, back, then the T wave (y up = negative)
+    NORMAL = ((0.0, 0), (0.03, -0.1), (0.06, -0.12), (0.09, 0), (0.12, 0), (0.135, 0.1), (0.155, -1.0),
+              (0.175, 0.32), (0.19, 0), (0.28, -0.08), (0.34, -0.24), (0.4, -0.08), (0.45, 0))
+    EARLY = ((0.0, 0), (0.03, 0.15), (0.08, -1.0), (0.14, 0.55), (0.2, 0.1), (0.3, 0.3), (0.4, 0.05), (0.45, 0))
+
+    @staticmethod
+    def _wander(t):
+        return 0.035 * math.sin(t * 0.83) + 0.015 * math.sin(t * 7.1 + 1.3) + 0.01 * math.sin(t * 17.9 + 0.4)
+
+    def points(self, t, width, height, x0=0.0, y0=0.0, seconds=6.0):
+        """The trace as [x, y, x, y, ...] for the last `seconds` up to time t, across `width`."""
+        self._fill(t)
+        mid, amp = y0 + height * 0.62, height * 0.5
+        t0 = t - seconds
+        sx = float(width) / seconds
+        pts = []
+        cur = t0
+        for start, kind, h, length in self.beats:
+            shape = self.EARLY if kind == "early" else self.NORMAL
+            end = start + shape[-1][0] * length
+            if end < t0 or start > t:
+                continue
+            while cur < start:                    # the baseline up to the beat
+                if cur >= t0:
+                    pts.append((cur, self._wander(cur)))
+                cur += 0.05
+            for dt, dy in shape:
+                tt = start + dt * length
+                if t0 <= tt <= t:
+                    pts.append((tt, dy * h + self._wander(tt)))
+            cur = max(cur, end)
+        while cur <= t:
+            pts.append((cur, self._wander(cur)))
+            cur += 0.05
+        out = []
+        for tt, v in pts:
+            out += [x0 + (tt - t0) * sx, mid + v * amp]
+        return out if len(out) >= 4 else [x0, mid, x0 + width, mid]
+
+    def clench(self, t):
+        """How far her heart is squeezed at time t (0 to 1), on the trace's own beats."""
+        if self.heart <= 0:
+            return 0.0
+        self._fill(t)
+        last = max((b for b in self.beats if b[0] <= t), key=lambda b: b[0], default=None)
+        if last is None:
+            return 0.0
+        ph = (t - last[0] - 0.15 * last[3]) / max(0.05, 60.0 / max(20.0, self.heart))
+        if ph < 0:
+            return 0.0
+        if ph < 0.12:
+            return ph / 0.12
+        return max(0.0, math.exp(-(ph - 0.12) / 0.1))
+
+
 def squeeze_shapes(squeeze, coils, x0, width, y0, height, ring=False):
     """(since build 294; drawn from the outside in since build 295) The squeeze bar: her chest or belly as a band that
     narrows from both ends as the coils close in (squeeze: 0-100, down to about a third of its width at 92%), with the

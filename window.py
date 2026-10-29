@@ -29,6 +29,7 @@ import re
 import sys
 import threading
 import urllib.request
+import zlib
 
 import explain
 
@@ -44,7 +45,7 @@ from engine import species_of, body_region, note_failure, poss_word
 from cards import (IMG_DIR, PIC, COL, ROW, RES_STEPS, DMG_STEPS, res_color, dmg_color, text_on, short,
                    glow_color, load_anchors, save_anchors, picture_bytes, point_key, anchor_points, glow_image,
                    columns, spread, PictureBook, card_panels, panel_origin, opts_of, VIEW_CAPTION, STATE_CAPTION,
-                   held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, vitals_colour,
+                   held_parts, tap_meter, grip_lines, TAP_COLORS, pct_text, ecg_points, EcgStream, vitals_colour,
                    squeeze_shapes, squeeze_label, squeeze_figure, squeeze_colours, heart_shapes, heart_beat,
                    picture_colours, squeeze_word, mix, squeeze_readout, blackout_text, hold_shapes, alive_opts,
                    body_signs, breath_phase, impacts, breathe_image, grey_image, flash_layer, throb_layer,
@@ -432,10 +433,16 @@ class FighterCard(ttk.Frame):
         pct = 100.0 * f["health"] / f["max"]
         calib_here = bool(self.app.calib and self.app.calib[0] is self)
         z = self.app.card_zoom
-        if abs(z - 1.0) > 1e-3 and not calib_here:
+        wcfg = (self.app._rules().get("window") or {}) if hasattr(self.app, "_rules") else {}
+        if abs(z - 1.0) > 1e-3 and not calib_here and not wcfg.get("live_zoom", True):
             return self.draw_scaled(f, pct, z)
-        self.canvas.configure(width=PIC + 2 * COL)
+        # (since build 315, window.live_zoom) at another size the card is drawn as at full size and then scaled, its
+        # pictures made at that size: they still breathe and throb, on the window's own background
+        zz = z if abs(z - 1.0) > 1e-3 and not calib_here else 1.0
+        self.canvas.configure(width=int((PIC + 2 * COL) * zz))
         panels = card_panels(f, self.book, self.app.card_opts(), plain=calib_here, cache=self.cache)
+        if zz != 1.0:
+            panels = [self._zoom_panel(pn, zz) for pn in panels]
         st = panels[0]["state"] if panels else None
         self.head.configure(text=f["name"] + ("   — OUT" if f["out"] else f"   ({STATE_CAPTION[st]})" if st else ""))
         self.sub.configure(text=f"{f['species']}  ·  {' / '.join(f['types'])}")
@@ -452,10 +459,10 @@ class FighterCard(ttk.Frame):
             ox, oy = panel_origin(pn, top)
             self.panels.append(dict(pn, top=top, ox=ox, oy=oy))
             if pn["pic"] is not None:
-                ph = ImageTk.PhotoImage(pn["pic"])
+                ph = ImageTk.PhotoImage(pn["zpic"] if zz != 1.0 else pn["pic"])
                 self.photos.append(ph)
-                item = c.create_image(ox, oy, image=ph, anchor="nw")
-                live_pics.append(dict(pn, item=item, ox=ox, oy=oy))
+                item = c.create_image(ox, oy, image=ph, anchor="nw", tags=("pic",))   # (moved by _zoom_items)
+                live_pics.append(dict(pn, item=item, ox=ox * zz, oy=oy * zz, **(pn.get("zlive") or {})))
             cap = VIEW_CAPTION.get(pn["view"], "")
             if cap:
                 c.create_text(COL + PIC / 2, top - 3, text=cap, anchor="s", font=("Segoe UI", 7), fill=C("#6b7280"))
@@ -478,8 +485,39 @@ class FighterCard(ttk.Frame):
             c.create_text(COL + PIC / 2, H - 8, font=("Segoe UI", 8, "italic"), fill=C("#2563eb"),
                           text=f"click either picture where her {self.app.calib[1].lower()} is"
                                + (" (the back picture moves it there)" if len(panels) > 1 else ""))
+        if zz != 1.0:
+            self._zoom_items(c, zz)
+            c.configure(height=int(H * zz))
         self._alive_setup(f, [] if calib_here else live_pics)
         self._bars(f, pct)
+
+    def _zoom_panel(self, pn, z):
+        """A panel's pictures made at the card's zoom (window.live_zoom): the still one shown, and what the living
+        frames are made from (her picture, the one her glow comes from, where her body and parts are), all scaled."""
+        def sc(img):
+            return img.resize((max(1, int(img.width * z)), max(1, int(img.height * z))), Image.LANCZOS) \
+                if img is not None else None
+        live = {}
+        if pn.get("raw") is not None:
+            live = {"raw": sc(pn["raw"]), "src": sc(pn.get("src")),
+                    "box": tuple(int(round(v * z)) for v in pn["box"]) if pn.get("box") else None,
+                    "spots": {k: (x * z, y * z) for k, (x, y) in (pn.get("spots") or {}).items()}}
+        return dict(pn, zpic=sc(pn["pic"]) if pn.get("pic") is not None else None, zlive=live)
+
+    def _zoom_items(self, c, z):
+        """Everything scaled by z, its words too (the pictures were made at this size: scaling only moves them)."""
+        c.scale("all", 0, 0, z, z)
+        for it in c.find_all():
+            if c.type(it) == "text":
+                f_ = tkfont.Font(font=c.itemcget(it, "font")).actual()
+                c.itemconfigure(it, font=(f_["family"], max(5, int(abs(f_["size"]) * z)), f_["weight"]))
+            elif c.type(it) in ("line", "oval", "rectangle", "polygon"):
+                try:
+                    w_ = float(c.itemcget(it, "width") or 1)
+                    c.itemconfigure(it, width=max(1.0, w_ * z))
+                except (tk.TclError, ValueError):
+                    pass
+        self._rings = [(a, b, x * z, y * z) for a, b, x, y in (getattr(self, "_rings", None) or [])]
 
     def draw_scaled(self, f, pct, z):
         """(since build 273) the card at another size (the Cards − / + buttons): her pictures and their labels drawn
@@ -642,7 +680,9 @@ class FighterCard(ttk.Frame):
                 dt = now - al["t0"]
                 bq = (int(round(5 * breath_phase(sg["breath"], now))) if o.get("breathing", True) and sg["depth"] > 0
                       else 0)
-                tq = (int(round(3 * heart_beat(sg["heart"], now, sg["irregular"])))
+                live_ = ((getattr(self, "_mon", None) or {}).get("live") or
+                         (getattr(self, "_ecg", None) or {}).get("live"))
+                tq = (int(round(3 * (live_.clench(now) if live_ else heart_beat(sg["heart"], now, sg["irregular"]))))
                       if o.get("pulse", True) and sg["throb"] > 0 else 0)
                 dur = float(o.get("jolt_seconds", 0.45))
                 u = dt / dur if al["jolt"] else 1.0
@@ -700,13 +740,16 @@ class FighterCard(ttk.Frame):
             self._tip(c, a, row_tips[k], tips)
             self._tip(c, b, row_tips[k], tips)
         bx, bw = 84, max(30, sx - 84 - 8)
+        live = self._stream("monitor", sg["heart"], sg["irregular"])
         base = ecg_points(sg["heart"], sg["irregular"], bw, 22, 0, 3)
         base = base + [(x + bw, y) for x, y in base[1:]]
-        line = c.create_line(*[q for x, y in base if x <= bw for q in (bx + x, y)], fill=sg["colour"], width=1.5)
+        import time as _time
+        line = c.create_line(*(live.points(_time.monotonic(), bw, 22, bx, 3) if live else
+                               [q for x, y in base if x <= bw for q in (bx + x, y)]), fill=sg["colour"], width=1.5)
         self._tip(c, line, heart_tip, tips)
         anim = bool(o.get("enabled", True)) and (self.app._rules().get("window") or {}).get("vitals_animate", True) \
             if hasattr(self.app, "_rules") else True
-        self._mon = {"base": base, "line": line, "bx": bx, "bw": bw, "off": 0.0, "anim": anim}
+        self._mon = {"base": base, "line": line, "bx": bx, "bw": bw, "off": 0.0, "anim": anim, "live": live}
         words = "  ·  ".join(sg["words"]) or ("steady" if not f.get("out") else "")
         t = c.create_text(6, 37, anchor="nw", text=words, width=w - 12, font=("Segoe UI", 8),
                           fill="#fca5a5" if sg["colour"] == "#ef4444" else "#d1d5db")
@@ -719,7 +762,11 @@ class FighterCard(ttk.Frame):
         st["off"] = (st["off"] + st["bw"] * (1.0 / max(4, int((self._alive or {}).get("o", {}).get("fps", 12))))
                      / 6.0) % st["bw"]
         off, bx, bw = st["off"], st["bx"], st["bw"]
-        pts = [q for x, y in st["base"] if off <= x <= off + bw for q in (bx + x - off, y)]
+        if st.get("live"):
+            import time as _time
+            pts = st["live"].points(_time.monotonic(), bw, 22, bx, 3)
+        else:
+            pts = [q for x, y in st["base"] if off <= x <= off + bw for q in (bx + x - off, y)]
         if len(pts) >= 4:
             self.hb.coords(st["line"], *pts)
 
@@ -825,11 +872,14 @@ class FighterCard(ttk.Frame):
         bw = max(40, sx - bx - 12)
         # (since build 293) the trace runs like a monitor's, at her own heart rate (window.vitals_animate): six seconds
         # of it, drawn twice end to end and slid along under a fixed window
+        live = self._stream("vitals", 0 if v.get("stopped") else v["heart"], v.get("irregular"))
         base = ecg_points(v["heart"], v.get("irregular"), bw, 22, 0, 2)
         base = base + [(x + bw, y) for x, y in base[1:]]
-        line = c.create_line(*[q for x, y in base if x <= bw for q in (bx + x, y)], fill=col, width=1.5)
+        import time as _time
+        line = c.create_line(*(live.points(_time.monotonic(), bw, 22, bx, 2) if live else
+                               [q for x, y in base if x <= bw for q in (bx + x, y)]), fill=col, width=1.5)
         self._tip(c, line, heart_tip, tips)
-        self._ecg = {"base": base, "line": line, "bx": bx, "bw": bw, "off": 0.0}
+        self._ecg = {"base": base, "line": line, "bx": bx, "bw": bw, "off": 0.0, "live": live}
         anim = ((self.app._rules().get("window") or {}).get("vitals_animate", True)
                 if hasattr(self.app, "_rules") else True)
         if anim and not getattr(self, "_ecg_running", False):
@@ -888,6 +938,19 @@ class FighterCard(ttk.Frame):
         import textwrap
         text = explain.statuses_text(f.get("status") or {}, self.app._rules() if hasattr(self.app, "_rules") else {})
         self.app.tip.show(e.x_root, e.y_root, "\n".join("\n".join(textwrap.wrap(p, 70)) for p in text.split("\n")))
+
+    def _stream(self, key, heart, irregular):
+        """window.live_ecg (since build 315): her heart trace laid down beat by beat (cards.EcgStream), kept across
+        redraws so a new rate carries on from the beats already drawn. None when it is off (the old looping trace)."""
+        wcfg = (self.app._rules().get("window") or {}) if hasattr(self.app, "_rules") else {}
+        if not wcfg.get("live_ecg", True):
+            return None
+        st = self.__dict__.setdefault("_streams", {}).get(key)
+        if st is None:
+            st = self._streams[key] = EcgStream(heart, irregular, seed=zlib.crc32(f"{self.name}|{key}".encode()))
+        else:
+            st.set(heart, irregular)
+        return st
 
     def _explain_on(self):
         """window.explain (since build 312): hover tips on her statuses and her vitals."""
@@ -980,7 +1043,8 @@ class FighterCard(ttk.Frame):
         if not fg:
             return
         import time as _time
-        beat = heart_beat(fg["heart"], _time.monotonic(), fg["irregular"])
+        live = (getattr(self, "_ecg", None) or {}).get("live")
+        beat = live.clench(_time.monotonic()) if live else heart_beat(fg["heart"], _time.monotonic(), fg["irregular"])
         hs = heart_shapes(*fg["args"], beat=beat, stopped=fg["stopped"])
         it, c = fg["items"], self.vt
         c.coords(it["heart"], *[q for p in hs["heart"] for q in p])
@@ -999,7 +1063,11 @@ class FighterCard(ttk.Frame):
                 return
             st["off"] = (st["off"] + st["bw"] * 0.06 / 6.0) % st["bw"]
             off, bx, bw = st["off"], st["bx"], st["bw"]
-            pts = [q for x, y in st["base"] if off <= x <= off + bw for q in (bx + x - off, y)]
+            if st.get("live"):
+                import time as _time
+                pts = st["live"].points(_time.monotonic(), bw, 22, bx, 2)
+            else:
+                pts = [q for x, y in st["base"] if off <= x <= off + bw for q in (bx + x - off, y)]
             if len(pts) >= 4:
                 self.vt.coords(st["line"], *pts)
             self._heart_tick()

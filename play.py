@@ -31,7 +31,7 @@ import llm
 import polish
 import body as _body
 
-VERSION = "2026-10-29 build 314 (simulated body: her air and each limb's tiredness; size limits on coils and takedowns)"
+VERSION = "2026-10-29 build 315 (a heart monitor laid down beat by beat; zoomed cards stay alive)"
 
 HELP = """
 =============================================================================================

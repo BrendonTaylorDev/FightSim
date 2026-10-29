@@ -800,6 +800,37 @@ def presets_help_check():
     return problems
 
 
+def ecg_315_check():
+    """Build 315 (window.live_ecg): the heart trace is laid down beat by beat, not one pattern repeated: a healthy
+    heart's gaps vary a little, an irregular one's a lot (with skipped and early beats), a stopped one is flat, and
+    the trace two seconds on is not the same picture shifted."""
+    import cards as K
+    problems = []
+    def gaps(st, t):
+        st.points(t, 300, 22)
+        b = [x[0] for x in st.beats if x[0] <= t]
+        return [y - x for x, y in zip(b, b[1:])]
+    g = gaps(K.EcgStream(90, False, 1), 60.0)
+    spread = (max(g) - min(g)) / (sum(g) / len(g))
+    if not (0.0 < spread < 0.3):
+        problems.append(f"a healthy heart's beats should vary a little, not a lot or not at all: {spread:.3f}")
+    gi = gaps(K.EcgStream(90, True, 1), 60.0)
+    si = (max(gi) - min(gi)) / (sum(gi) / len(gi))
+    st = K.EcgStream(90, True, 1)
+    st.points(60.0, 300, 22)
+    if not (si > 0.5 and any(x[1] == "early" for x in st.beats)):
+        problems.append(f"an irregular heart should have uneven gaps and odd early beats: {si:.3f}")
+    a = K.EcgStream(120, False, 3)
+    p1, p2 = a.points(30.0, 300, 22), a.points(32.0, 300, 22)
+    if p1 == p2:
+        problems.append("the trace should move on with time")
+    d = K.EcgStream(0, False, 3)
+    ys = d.points(30.0, 300, 22)[1::2]
+    if max(ys) - min(ys) > 3:
+        problems.append(f"a stopped heart should be a flat line: {max(ys) - min(ys):.1f}")
+    return problems
+
+
 def body_314_check():
     """Build 314 (body.air, body.limbs): her breath and each limb's tiredness as running numbers. A choke drains her
     air and she goes under by it; free, it comes back; short of air she hits softer; a limb thrown again and again
@@ -3842,6 +3873,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "ecg315 ecg" for w in want):
+        t = time.time()
+        probs = ecg_315_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 315: the heart trace laid down beat by beat (varied, irregular, flat)  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "body314 body" for w in want):
