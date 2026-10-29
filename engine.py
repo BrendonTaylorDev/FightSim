@@ -3611,6 +3611,8 @@ class Engine:
                 self._settle_facing(n)
             return self.facing.get(n)
         loose = self._lose_grip(n, why or f"{n} was {'thrown' if thrown else 'knocked down'}", on_her=thrown)
+        if thrown:
+            self.get(n).learned["thrown_turn"] = self.turn      # (since build 327: no new grip this beat, see start_hold)
         already = n in self.downed
         if not already:
             self.downed[n] = 0
@@ -4498,6 +4500,11 @@ class Engine:
     def start_hold(self, attacker, defender, part, power, change_per_turn=0.0, flavor="", with_part="",
                    keep_with=False):
         a, d = self.get_active(attacker), self.get_active(defender)
+        if a.learned.get("thrown_turn") == self.turn:
+            # (since build 327) thrown clear this beat (the build-326 log: Seraphina hurled into the pine had her
+            # coils round Ripples again in the same beat): she can't reach anyone to grip until the next one
+            raise ValueError(f"{a.name} was thrown clear this beat: she can't reach {d.name} to grip her until the next "
+                             f"beat. Have her recover, or strike from where she lies")
         pname = d.part(part).name
         for h in self.holds.values():  # already pressing that spot: strengthen it, don't stack a second hold
             if (h.attacker, h.defender, h.part) == (a.name, d.name, pname):
@@ -5014,6 +5021,17 @@ class Engine:
                          ("belly|chest", "second", {"quadruped": "her jaws, in the flank"})],
             "free": {"quadruped": "her forepaws and her tail"},
             "strain": "the leg twisted out from under her and her flank torn at"},
+        # (since build 327, finish.submission.constriction.weight) a serpent far bigger than her lies a heavy length of
+        # her body over her: no loops round her, only the weight, and it crushes her down like a constriction, slower
+        "serpent's weight": {
+            "facing": ("face-down", "face-up", "on her side"), "by": ("serpent",), "weight": True,
+            "look": {"serpent": "a heavy length of her body laid across her, loop upon loop piled over her and pinning "
+                                "her flat to the ground, all of its weight bearing down"},
+            "contacts": [("back_up|chest", "main", {"serpent": "the heavy length of her body, laid across it, bearing "
+                                                              "down"}),
+                         ("belly|back_low", "second", {"serpent": "more of her length, draped over it, pressing in"})],
+            "free": {"serpent": "her head and her jaws"},
+            "strain": "her chest pressed flat under the weight, each breath smaller than the last"},
         "upright coil": {
             "facing": ("standing", "sitting up"), "by": ("serpent",),
             "look": {"serpent": "coiled up round her where she stands, loop over loop from her legs to her chest, "
@@ -5570,6 +5588,12 @@ class Engine:
             pool = chokes if rng.random() < share else others
         else:
             pool = chokes or others
+        wc = self.weight_cfg()
+        heavy = [n for n in pool if (self.SUBMISSIONS.get(n) or {}).get("weight")]
+        if heavy and len(heavy) < len(pool):
+            # (since build 327, constriction.weight.share) her weight comes up now and then, coiling far more often
+            light = [n for n in pool if n not in heavy]
+            pool = heavy if wc and rng.random() < float(wc.get("share", 0.2)) else light
         jw = float(self.hold_mix().get("jaws", 0.5)) if self.hold_mix() else 1.0
         if jw < 1.0 and any(not self.sub_uses_jaws(shapes[n]) for n in pool):
             # (hold_mix.jaws) a hold gripped with her jaws comes up that much less often than one with paws, legs,
@@ -5606,6 +5630,8 @@ class Engine:
                 continue
             if s.get("has") == "tails" and self.coil_too_small(a.name, d.name):
                 continue      # (since build 314) her tails are far too short to go round a body that size
+            if s.get("weight") and not self.weight_crush_ok(a.name, d.name):
+                continue      # (since build 327) only a serpent far bigger than her crushes her with her weight
             prop = {"near": prop_near, "ground": prop_ground}.get(s.get("prop")) if s.get("prop") else ""
             if s.get("prop") and not prop:
                 continue      # (nothing there to use)
@@ -5976,12 +6002,17 @@ class Engine:
         """Is she locked in someone's submission herself? Then she can't lock one of her own on anyone: she has to
         get out of it first (or hurt the holder with what she has free)."""
         a = self.get(a) if isinstance(a, str) else a
-        return any(h.defender == a.name and h.sub for h in self.holds.values())
+        # (since build 327) coils wound round her body, or a serpent's weight on her, count too: wrapped in them she
+        # fights to get out, she doesn't lock a submission of her own on anyone (the build-326 log: Ripples, coiled
+        # round the middle, put a stomach claw on the Milotic holding her)
+        return any(h.defender == a.name and (h.sub or (h.coil and self.coil_scope(h.part) == "body"))
+                   for h in self.holds.values())
 
     def _sub_caught(self, a):
         if self.sub_caught(a):
-            raise ValueError(f"{a.name} is locked in a submission herself: she can't put one on anyone until she is out "
-                             f"of it. Break free, or hurt the one holding her with what she has free")
+            raise ValueError(f"{a.name} is locked in a submission or wrapped in coils herself: she can't put a "
+                             f"submission on anyone until she is out of it. Break free, or hurt the one holding her "
+                             f"with what she has free")
 
     def ground_lock_ok(self, name, on=None):
         """submissions.from_ground: True when fighter `name` is down herself and may still lock a submission on
@@ -6185,7 +6216,8 @@ class Engine:
             return []
         events, by = [], {}
         for h in self.holds.values():
-            if h.coil and h.id not in skip_hold_ids and self.pin_on(h.defender) is None:
+            heavy = bool((self.SUBMISSIONS.get(h.sub) or {}).get("weight"))
+            if (h.coil or heavy) and h.id not in skip_hold_ids and self.pin_on(h.defender) is None:
                 by.setdefault((h.attacker, h.defender), []).append(h)
         for (an, dn), hs in by.items():
             a, d = self.get(an), self.get(dn)
@@ -6198,6 +6230,10 @@ class Engine:
             cost = (float(cfg.get("per_beat", 6)) + float(cfg.get("per_beat_growth", 0.4)) * beats) * size \
                 * (1.0 + float(cfg.get("extra_coil", 0.25)) * (len(hs) - 1)) \
                 * float((self.endurance_cfg() or {}).get("coil_energy_mult", 1.0))   # (since build 308)
+            weight_ = not any(h.coil for h in hs)
+            if weight_:
+                # (since build 327, constriction.weight.energy_mult) lying heavy on her is less work than squeezing
+                cost *= float((self.weight_cfg() or {}).get("energy_mult", 0.5))
             a.energy = max(0.0, a.energy - cost)
             if a.energy > float(cfg.get("spent_below", 5)):
                 continue
@@ -6210,7 +6246,9 @@ class Engine:
                     events.append({"type": "coil_hang_on", "attacker": an, "defender": dn, "times": n + 1,
                                    "chance": round(ch, 3), "energy": round(a.energy, 1)})
                     continue
-            reason = (f"{an} is spent: there is nothing left in her to squeeze with, and her coils loosen and slide "
+            reason = (f"{an} is spent: there is nothing left in her to bear down with, and she shifts her heavy body "
+                      f"off {poss_word(dn)}" if weight_ else
+                      f"{an} is spent: there is nothing left in her to squeeze with, and her coils loosen and slide "
                       f"off {poss_word(dn)} body")
             ended = [self.release(h.id, reason) for h in hs]
             events.append({"type": "hold_end", "released": True, "spent": True, "attacker": an, "defender": dn,
@@ -6249,7 +6287,8 @@ class Engine:
                                "beats_held": max(h.turns_active for h in hs), "parts": [h.part for h in hs],
                                "with": [h.with_part for h in hs if h.with_part]})
         for h in list(self.holds.values()):
-            if h.sub and h.turns_active >= cap and not (h.coil and self.coil_energy_cfg()):
+            if h.sub and h.turns_active >= cap and not ((h.coil or (self.SUBMISSIONS.get(h.sub) or {}).get("weight"))
+                                                         and self.coil_energy_cfg()):
                 # (a coil with holds.coil.energy on lasts as long as the coiler has breath for it instead)
                 done.setdefault((h.attacker, h.defender, h.sub), []).append(h)
         for (a, d, name), hs in done.items():
@@ -9115,6 +9154,10 @@ class Engine:
         if any(h.coil and body_region(h.part) in self.MIDDLE_REGIONS for h in hs) and self.coil_dwarfs(a.name, d.name):
             # (holds.coil.size) wound in the coils of something many times her size: nothing to lever them off with
             m *= float((self.coil_size_cfg() or {}).get("escape_mult", 0.6))
+        if self.weight_cfg() and any((self.SUBMISSIONS.get(h.sub) or {}).get("weight") for h in hs):
+            # (since build 327, constriction.weight.escape_mult) pinned flat under a body many times her weight:
+            # nothing to push up against, and nowhere to slide out to
+            m *= float(self.weight_cfg().get("escape_mult", 0.35))
         sc = self._cfg("status_effects")
         if self.has(d, "soaked"):
             m *= float(sc.get("soaked_slip_mult", 1.2))     # wet fur slides out of a grip
@@ -9271,7 +9314,8 @@ class Engine:
             if self.has(fd, "stunned") or self.has(fd, "limp"):
                 continue   # (since build 293) stunned: nothing in her answers yet (limp: out in the coils)
             cc_ = self.compress_cfg()
-            if cc_ and any(h.coil and self.coil_scope(h.part) == "body" for h in hs):
+            if cc_ and any((h.coil or (self.SUBMISSIONS.get(h.sub) or {}).get("weight"))
+                           and self.coil_scope(h.part) == "body" for h in hs):
                 # (since build 294) squeezed in, she has no room left to work with
                 ch *= max(0.0, 1.0 - float(cc_.get("escape_mult", 0.5)) * self.compression_on(fd, fa.name) / 100.0)
             ce_ = self.coil_energy_cfg()
@@ -10875,10 +10919,18 @@ class Engine:
             # that is still free (below)
             body_coils = [h for h in hs_all if h.coil and self.coil_scope(h.part) == "body"] \
                 if kcfg.get("enabled", True) else []
+            # (since build 327, constriction.weight) a serpent's weight lying across her crushes her the same way,
+            # slower (weight.mult on how hard it presses): her breath and then her blood held back under it
+            heavy_ = [h for h in hs_all if not h.coil and (self.SUBMISSIONS.get(h.sub) or {}).get("weight")
+                      and self.coil_scope(h.part) == "body"] if kcfg.get("enabled", True) and self.weight_cfg() else []
+            weight_only = bool(heavy_) and not body_coils
+            body_coils = body_coils + heavy_
             circ, circ_end, pc, constrict = 0.0, 0.0, 0.0, False
             heart_now = False
             if body_coils:
                 tight = max(0.5, min(2.0, max(h.power for h in body_coils) / max(1.0, float(kcfg.get("power_ref", 16)))))
+                if weight_only:
+                    tight = max(0.4, tight * float(self.weight_cfg().get("mult", 0.7)))
                 # what sets it apart from a submission: it goes by the SQUEEZE (the coils, how hard, how big the
                 # coiler is against her) and her breath and energy left to fight it, more than by her pain. Her
                 # health and the coiled parts still count, only less than in a submission
@@ -10888,6 +10940,15 @@ class Engine:
                 hid = min(h.id for h in body_coils)
                 circ = self._compress_tick(d, a, hid, body_coils, tight, big, kcfg, s_)
                 comp = float((d.learned.get("compress") or {}).get("c", 0.0))
+                if weight_only:
+                    # (constriction.weight) weight from above presses her flat, never as far in as loops round her,
+                    # and it takes longer to put her out
+                    wc_ = self.weight_cfg()
+                    cap_ = float(wc_.get("max_squeeze", 60))
+                    if comp > cap_:
+                        d.learned["compress"]["c"] = cap_
+                        comp = cap_
+                    circ *= float(wc_.get("slower", 0.75))
                 ew = float(kcfg.get("energy_weight", 0.4))
                 worst = max((d.parts[p].damage for p in (self.coil_ring_parts(d, body_coils) if self.compress_cfg()
                                                           else [h.part for h in body_coils]) if p in d.parts),
@@ -10929,6 +10990,7 @@ class Engine:
                 vit["squeeze"] = round(comp)
                 vit["where"] = (d.learned.get("compress") or {}).get("where", "")
                 vit["coils"] = len(body_coils)
+                vit["weight"] = weight_only        # (since build 327: her weight on her, not coils round her)
                 vit["ring"] = bool((d.learned.get("compress") or {}).get("ring"))
                 # (since build 299, for the squeeze figure) who is coiling her, and how much bigger she is
                 vit["coiler"] = a
@@ -10949,7 +11011,7 @@ class Engine:
                                     "where": (d.learned.get("compress") or {}).get("where", ""),
                                     "ring_parts": list((d.learned.get("compress") or {}).get("ring") or []),
                                     "struggled": bool((d.learned.get("compress") or {}).get("struggled")),
-                                    "parts": [h.part for h in body_coils]}, **vit))
+                                    "parts": [h.part for h in body_coils], "weight": weight_only}, **vit))
             # she holds on the first beat it goes past her limit, whatever it costs her: only after that can she
             # give in (d.learned keeps which grip she has already fought through once)
             # finish.submission.taps: a body part her taps have already used may no longer count toward the tally;
@@ -11011,8 +11073,12 @@ class Engine:
             if tap_part is None and body_coils and self.compress_cfg():
                 # (since build 326) coils round her body: a part of the band they go round that still counts
                 sp_ = set(self.spent_tap_parts(d))
-                tap_part = next((p for p in self.coil_ring_parts(d, body_coils) if p in d.parts and p not in sp_),
-                                None)
+                ring_ = [p for p in self.coil_ring_parts(d, body_coils) if p in d.parts]
+                tap_part = next((p for p in ring_ if p not in sp_), None)
+                if tap_part is None and ring_ and self._serpent_coils_always(a):
+                    # (since build 327, taps.serpent_coils_always) a serpent's coils are what she fights with: they
+                    # can always put her out, a part used before or not
+                    tap_part = max(ring_, key=lambda p: d.parts[p].damage)
             spent = tap_part is None
             if spent:
                 tap = po = 0.0
@@ -11085,6 +11151,8 @@ class Engine:
                                 None) or (next((p for p in self.coil_ring_parts(d, body_coils)
                                                 if p in d.parts and p not in spent_), None)
                                           if constrict and self.compress_cfg() else None) or tap_part
+                if tap_part is None and constrict and self._serpent_coils_always(a):
+                    tap_part = next((p for p in self.coil_ring_parts(d, body_coils) if p in d.parts), None)
                 hs_cfg = kcfg.get("heart_stop") or {}
                 hc_ = self._heart_cfg(kcfg)
                 if hc_ and constrict:
@@ -11103,6 +11171,7 @@ class Engine:
                 if stops:
                     # (since build 293) her heart stops a moment as she goes under: never a death, it starts again
                     d.learned["heart_stopped"] = self.turn
+                    d.learned["heart_stops"] = int(d.learned.get("heart_stops", 0) or 0) + 1   # (heart.strain)
                     # (the rest of the last reading kept: the squeeze, her healthy numbers)
                     d.learned["circ_vitals"] = [self.turn, dict((d.learned.get("circ_vitals") or [0, {}])[1] or {},
                                                                 heart=0, irregular=False, stopped=True, bp=[30, 15])]
@@ -11359,6 +11428,27 @@ class Engine:
         if pick:
             d.learned["tap_next"] = pick
         return pick
+
+    def weight_cfg(self):
+        """finish.submission.constriction.weight (since build 327), or None when it is off."""
+        c = ((((self.rules.get("finish") or {}).get("submission") or {}).get("constriction") or {}).get("weight") or {})
+        return c if c.get("enabled", True) else None
+
+    def weight_crush_ok(self, attacker, defender):
+        """A serpent heavy enough to crush her by lying across her: at least weight.min_ratio of her size."""
+        c = self.weight_cfg()
+        a, d = self.get(attacker), self.get(defender)
+        if not c or self.body_plan(a) != "serpent":
+            return False
+        sa, sd = self.size_m(a), self.size_m(d)
+        return bool(sa and sd and sa / sd >= float(c.get("min_ratio", 2.5)))
+
+    def _serpent_coils_always(self, a):
+        """finish.submission.taps.serpent_coils_always (since build 327, on by default): a serpent's coils round a
+        body can always put her out, even on parts her earlier taps used up."""
+        t = (((self.rules.get("finish") or {}).get("submission") or {}).get("taps") or {})
+        f = self.fighters.get(str(a).lower())
+        return bool(t.get("serpent_coils_always", True)) and f is not None and self.body_plan(f) == "serpent"
 
     def _tap_part(self, d, hs):
         """The body part a tap in these holds (worst-hurt first) would count for: the first one that still counts,
@@ -11711,6 +11801,12 @@ class Engine:
             * (1.2 if surge > 1.0 else 1.0)
         wob = float(hc.get("wobble", 0.25))
         drop = float(hc.get("base", 0.09)) * drive / max(0.2, hardy) * (1.0 - wob + 2 * wob * self.rng.random())
+        sc = hc.get("strain") or {}
+        stops = int(d.learned.get("heart_stops", 0) or 0)
+        if stops and sc.get("enabled", True):
+            # (since build 327, constriction.heart.strain) a heart that has stopped once is strained for the rest of
+            # the fight (never beyond it): each later squeeze wears it down a little faster
+            drop *= min(float(sc.get("max", 1.6)), 1.0 + float(sc.get("per_stop", 0.15)) * stops)
         r = max(0.0, float(ch["r"]) - drop)
         slow_at, irr_at = float(hc.get("slow_at", 0.75)), float(hc.get("irregular_at", 0.55))
         stopped = r <= 0.0

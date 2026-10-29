@@ -1764,7 +1764,8 @@ def squeeze_readout(v, x, y, width):
     if p is not None:
         past = p > bp[0]
         rest = v.get("bp_rest")
-        out.append(("text", x, y, f"Coils press ~{p} mmHg · her BP {bp[0]}/{bp[1]}"
+        out.append(("text", x, y, f"{'Her weight presses' if v.get('weight') else 'Coils press'} ~{p} mmHg · her BP "
+                                  f"{bp[0]}/{bp[1]}"
                     + (f" (normal {rest[0]}/{rest[1]})" if rest else ""), "#fca5a5" if past else "#f9fafb", 8, False))
         y += 14
         gw = max(60.0, min(220.0, width - 8))

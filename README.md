@@ -654,6 +654,27 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 327
+Serpents, and fixes from the Seraphina vs Ripples logs.
+- **The serpent's weight.** A serpent far bigger than her (at least 2.5 times her length: a Milotic on a Buizel) can
+  crush her without wrapping her: a heavy length of her body laid across her back or chest and her middle, pinning
+  her flat. It works like a constriction (her breath pressed out, then her blood held back, her heart racing,
+  slowing, maybe stopping) but slower, and never squeezing her in as far as coils do (60% at most). She is hard to
+  get out from under (nothing to push up against). It lasts as long as the serpent has breath for it, at half what
+  squeezing costs. The engine offers it now and then, about one time in five where coiling also fits. Her card
+  says "her weight presses", and the narrator is told it is weight from above, never coils wound round her.
+  finish.submission.constriction.weight.
+- **A serpent's coils can always finish it.** In a match of several taps, coils round her body put her out even
+  when every part they go round has been used by an earlier tap (taps.serpent_coils_always).
+- **Her heart is strained after it stops.** Each time it has stopped in the coils, every later squeeze wears it
+  down 15% faster (at most 1.6 times), for the rest of that fight only (constriction.heart.strain).
+- **Fix: a fighter thrown clear can't grip anyone again that beat.** Seraphina, hurled into the pine by a Hydro
+  Pump, had her coils round Ripples again in the same beat; the director is told she can't reach her yet.
+- **Fix: no submission from inside the coils.** Wrapped round the middle, Ripples put a stomach claw on the
+  Milotic holding her, so both were in submissions at once. Coils round her body (or a serpent's weight on her)
+  now count as being held: she fights to get out, she doesn't lock a submission of her own on anyone.
+- **Fix:** the narrator is no longer told the coils squeeze her after they were torn off her that beat.
+
 ## Build 326
 Fixes from the Seraphina vs Ripples three-tap match (her heart stopped in the coils).
 - **Her heart starts again whenever the coils come off.** When Seraphina let go early (spent), Ripples' heart stayed

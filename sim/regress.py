@@ -800,6 +800,69 @@ def presets_help_check():
     return problems
 
 
+def serpent_327_check():
+    """Build 327: a serpent far bigger than her can crush her under her weight (offered now and then, coiling more
+    often), shown as her weight, and it can put her out; coils round her body keep her from locking a submission of
+    her own; a fighter thrown clear can't grip anyone again that beat; a heart that has stopped is strained after."""
+    import random
+    import play
+    problems = []
+    with contextlib.redirect_stdout(io.StringIO()):
+        s = H.session(1, fighters="Seraphina,Ripples")
+    e = s.eng
+    e.rules["finish"]["submission"]["enabled"] = True
+    e.downed["Ripples"] = 0
+    e.facing["Ripples"] = "face-down"
+    sh = e.submission_shapes("Seraphina", "Ripples")
+    if "serpent's weight" not in sh:
+        problems.append(f"a Milotic on a downed Buizel should be offered her weight: {list(sh)}")
+    else:
+        rng = random.Random(4)
+        picks = [e.pick_submission(sh, rng=rng, defender="Ripples") for _ in range(400)]
+        share = picks.count("serpent's weight") / 400.0
+        if not 0.05 <= share <= 0.4:
+            problems.append(f"the weight should come up now and then, coiling more often: {share:.2f} of picks")
+    if e.weight_crush_ok("Ripples", "Seraphina"):
+        problems.append("a Buizel can't crush a Milotic under her weight")
+    e.start_submission("Seraphina", "Ripples", "serpent's weight")
+    if any(h.coil for h in e.holds.values()):
+        problems.append("her weight laid across her is not a coil wound round her")
+    seen_weight = False
+    for _ in range(40):
+        H.beat(s, [{"attacker": "Seraphina", "defender": "Ripples", "action": "breather", "flavor": "bears down"}], [])
+        r = next(f for f in play.fight_snapshot(s)["fighters"] if f["name"] == "Ripples")
+        v = ((r.get("grips") or {}).get("tap") or {}).get("vitals") or {}
+        seen_weight = seen_weight or bool(v.get("weight"))
+        if v.get("squeeze") is not None and float(v["squeeze"]) > 60.5:
+            problems.append(f"her weight should never squeeze her in past max_squeeze: {v['squeeze']}")
+            break
+        if e.winner() or not e.holds:
+            break
+    if not seen_weight:
+        problems.append("the weight crush should show on her card as her weight")
+    # coiled round her body: no submission of her own
+    with contextlib.redirect_stdout(io.StringIO()):
+        s2 = H.session(3, scene="lakeside forest", fighters="Seraphina,Ripples")
+    e2 = s2.eng
+    e2.rules["finish"]["submission"]["enabled"] = True
+    H.beat(s2, [{"attacker": "Seraphina", "defender": "Ripples", "action": "hold_start", "move": "Wrap",
+                 "part": "Stomach", "severity": "firm", "flavor": "her coils wound round her middle"}], [])
+    if not e2.sub_caught("Ripples"):
+        problems.append("coils wound round her middle should keep her from locking a submission of her own")
+    # thrown clear: no grip that beat
+    e2.get("Seraphina").learned["thrown_turn"] = e2.turn
+    try:
+        e2.start_hold("Seraphina", "Ripples", "Stomach", 10)
+        problems.append("a fighter thrown clear this beat shouldn't grip anyone again in it")
+    except ValueError:
+        pass
+    # the heart's strain after a stop
+    hc = ((e.rules["finish"]["submission"]["constriction"].get("heart") or {}).get("strain") or {})
+    if not hc.get("enabled", False) or float(hc.get("per_stop", 0)) <= 0:
+        problems.append("constriction.heart.strain should be on")
+    return problems
+
+
 def coils_326_check():
     """Build 326: out in the coils with her heart stopped, her card keeps the coils' monitor every beat and she is not
     breathing; when the coiler lets go early her heart starts again at once, not at the next hold's end; and a
@@ -4396,6 +4459,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "serpent327" for w in want):
+        t = time.time()
+        probs = serpent_327_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 327: serpent's weight, no submission from inside coils, no grip after a throw  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "coils326" for w in want):

@@ -4840,7 +4840,21 @@ class Narrator:
             ck = next((e.get("choke_kind") for e in evs if e.get("choke_kind") and not e.get("coil")), "")
             if ck and self._full_chokes():
                 lines.append(self._choke_kind_line(dfn, ck, max(e["beats_held"] for e in evs)))
+        # (since build 327) coils torn off her this beat (the coiler thrown into the pine) squeeze nothing more this
+        # beat: no constriction notes for them, unless the same coiler wound them on again after (the build-326 log
+        # told the coils coming away, then "her coils, wound round Ripples, tightened" in the next paragraph)
+        _all = [x for x in list(bundle.get("also_this_beat", []) or []) + list(bundle.get("actions") or [])
+                if isinstance(x, dict)]
+        _ended = {(x.get("attacker"), x.get("defender")) for x in _all if x.get("type") == "hold_end"}
+        for x in _all:
+            for y in x.get("knock_on") or []:
+                if isinstance(y, dict) and y.get("type") == "hold_end":
+                    _ended.add((y.get("attacker"), y.get("defender")))
+        _ended -= {(x.get("attacker"), x.get("defender")) for x in _all if x.get("type") in ("hold_start", "holds_start",
+                                                                                               "submission")}
         for e in bundle.get("also_this_beat", []):
+            if e["type"] == "constriction" and (e.get("attacker"), e.get("defender")) in _ended:
+                continue
             if e["type"] == "hold_ongoing":
                 pass  # listed above, grouped per attacker
             elif e["type"] == "pin_progress":
@@ -4927,6 +4941,14 @@ class Narrator:
                 lines.append(self.CONSTRICT_STAGE.get(e.get("stage"), self.CONSTRICT_STAGE["pounding"]).format(
                     d=e["defender"], a=e["attacker"], ds=poss(e["defender"]),
                     coils="coils" if int(e.get("coils") or 1) > 1 else "coil"))
+                if e.get("weight"):
+                    # (since build 327, constriction.weight) her body laid over her, not wound round her
+                    lines.append(f"  - HOW IT IS DONE: {e['attacker']} is NOT wrapped round {e['defender']}: a heavy "
+                                 f"length of her body is LAID ACROSS her, loop on loop piled over her, pinning her flat, "
+                                 f"and it is the sheer WEIGHT of it that crushes her down into the ground. Wherever these "
+                                 f"notes say 'coils', tell it as that weight bearing down from above (her body over "
+                                 f"{poss(e['defender'])} back or chest), never as coils wound round her or squeezing "
+                                 f"from the sides.")
                 if e.get("compress") is not None and e.get("where"):
                     # (since build 294, constriction.compression) how far in she is squeezed, and where
                     lines.append("  - HOW FAR THE COILS HAVE SQUEEZED HER IN: " + self._squeeze_words(
