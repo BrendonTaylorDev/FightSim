@@ -31,7 +31,7 @@ import llm
 import polish
 import body as _body
 
-VERSION = "2026-10-29 build 321 (simulated mind; footing and heat weightier; Glacia sturdier)"
+VERSION = "2026-10-29 build 322 (weather over the whole fight)"
 
 HELP = """
 =============================================================================================
@@ -431,6 +431,8 @@ HELP = """
   /hazards [on|off|chance <n>]  what this arena does: its hazards (burns, chills, drenches... when a fighter lands
                       on or is driven into them) and its events (things the place does by itself now and then)
   /hazard <event> [fighter]     make one of the arena's events happen at the end of the next beat
+  /weather [kind]     the weather over the whole fight: scene (the arena's own, the default), random, clear, rain,
+                      storm (lightning, gusts), snow, heat (summer heat), wind; /weather off. Indoors there is none
 
 =============================================================================================
  SWITCHES   (the on/off settings people ask about; each is a /set, kept in my_settings.json)
@@ -1470,6 +1472,9 @@ class Session:
                 facts.append(f"{who} goes down")
             elif t == "adrenaline":
                 facts.append(f"{who} gets a surge of adrenaline" + (" (a second wind)" if e.get("second") else ""))
+            elif t in ("lightning", "gust"):
+                import weather as _wx
+                facts.append(_wx.line(e))
         for f in self.eng.fighters.values():
             if f.eliminated:
                 facts.append(f"{f.name}: out of the fight")
@@ -1863,8 +1868,10 @@ class Session:
                                if any(self.eng.has(f, st) for st in ("confused", "dazed"))}
         self.narrator.water_types = {f.name for f in self.eng.fighters.values()
                                      if "water" in {str(t).lower() for t in (getattr(f, "types", None) or [])}}
+        import weather as _wx
         self.narrator.rain_wet = (self.eng.scene_cfg.get("wets") or
-                                  ("the rain" if (getattr(self.eng, "weather", None) or {}).get("kind") == "rain" else None))
+                                  ("the rain" if (getattr(self.eng, "weather", None) or {}).get("kind") == "rain"
+                                   or ((_wx.kcfg(self.eng)[0] or {}).get("soaks")) else None))
         self.narrator.winners = ({f.name for f in self.eng.fighters.values() if not f.eliminated}
                                  if self.eng.winner() else set())   # (the fight is won: they stand, they don't fade)
         if getattr(self.narrator, "_part_names_seen", None) != len(self.narrator.part_names):
@@ -2034,7 +2041,9 @@ class Session:
         self._sync_absent()
         self.push_history()
         try:
-            text = self.narrator.intro(self.eng.scene, self.notes(full_reason=True))
+            import weather as _wx
+            text = self.narrator.intro(self.eng.scene + ("\n" + _wx.text(self.eng) if _wx.text(self.eng) else ""),
+                                       self.notes(full_reason=True))
         except llm.LLMError:
             self.history.pop()
             raise
@@ -2283,6 +2292,7 @@ class Session:
                 if mode == "compact":
                     # who got up, who crumpled, which status ended: these change what you can do next
                     side = [e for e in also if e["type"] in ("get_up", "stays_down", "crumple", "adrenaline", "status_tick", "hold_end",
+                                                             "lightning", "gust",
                                                              "status_end", "recovery", "alliance_end", "numb_end")]
                     tail = self.display.beat({"action": {"type": "none"}, "also_this_beat": side}).strip() if side else ""
                     if tail:
@@ -2444,6 +2454,9 @@ def scene_summary(eng, full=False):
     sc = eng.scene_cfg
     hz, evs = sc.get("hazards") or [], sc.get("events") or []
     head = f"{sc.get('title', 'Your own scene')}" + (f" ({eng.scene_name})" if eng.scene_name != "custom" else "")
+    import weather as _wx
+    if _wx.word(eng):
+        head += f", weather: {_wx.word(eng)} (/weather)"       # (since build 322)
     if not full:
         return head + (f": {len(hz)} hazards, {len(evs)} things it does by itself (/hazards lists them)" if hz or evs else
                        ": nothing tracked (your own description)")
@@ -5302,6 +5315,28 @@ def handle_command(s, line):
               + f"\n\nThe arena acting by itself is {'ON' if cfg.get('events', True) else 'OFF'}: "
                 f"{float(cfg.get('event_chance', 0.05)) * 100:g}% a beat, at least {cfg.get('event_gap', 4)} beats apart, never "
                 f"during a pin or a hold.\n/hazards on|off · /hazards chance 0.08 · /hazard <event> [fighter] makes one happen"); return
+    if cmd == "weather":
+        import weather as _wx
+        c = s.eng.rules.setdefault("arena_weather", {})
+        kinds = list((_wx.cfg(s.eng) or _wx.DEFAULTS)["kinds"])
+        if a:
+            k = a[0].lower()
+            if k in ("on", "off"):
+                c["enabled"] = k == "on"
+                _save_rule_path(["arena_weather", "enabled"], c["enabled"])
+            elif k in ["scene", "random", "clear"] + kinds:
+                c["kind"] = k
+                s.eng.arena_wx = None
+                _save_rule_path(["arena_weather", "kind"], k)
+            else:
+                raise ValueError(f"/weather scene | random | clear | {' | '.join(kinds)} | on | off")
+            s.sync_narrator()
+        now = _wx.kind(s.eng)
+        ch = (s.eng.rules.get("arena_weather") or {}).get("kind", "scene")
+        print(f"Weather: {_wx.word(s.eng) or 'clear'}" + (f" (chosen: {ch})" if ch != now else "")
+              + (" — this arena is indoors, so none reaches it" if s.eng.scene_cfg.get("indoors") else "")
+              + f".\n/weather scene (the arena's own) | random | clear | {' | '.join(kinds)} · /weather off (saved)")
+        return
     if cmd == "save":
         path = _path(a[0] if a else "fight")
         s.eng.save(path, s._extra())

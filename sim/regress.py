@@ -800,6 +800,58 @@ def presets_help_check():
     return problems
 
 
+def weather_322_check():
+    """Build 322 (arena_weather): the arena's own weather by default and none indoors; rain makes the ground slick,
+    soaks them and strengthens Water; a Water type wilts in summer heat unless in the water; coils heat the one inside
+    them, far more in the heat; lightning is told and never ends the fight by itself."""
+    import weather as W
+    import body as B
+    problems = []
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    if W.kind(e) is not None:
+        problems.append(f"the default arena should have no weather of its own: {W.kind(e)}")
+    e.set_scene("storm forest")
+    if W.kind(e) != "storm":
+        problems.append("the storm forest should bring its thunderstorm")
+    e.set_scene("sea cave")
+    e.rules.setdefault("arena_weather", {})["kind"] = "rain"
+    if W.kind(e) is not None:
+        problems.append("no weather should reach an indoor arena")
+    e.set_scene("lakeside forest")
+    r = e.get("Ripples")
+    if not (e.on_slick("Ripples") and (e.weather_mult("Water") or ("", 1))[1] > 1 and e.weather_text()):
+        problems.append("rain should make the ground slick, strengthen Water and be told")
+    W.tick(e)
+    if not e.has(r, "soaked"):
+        problems.append("rain should soak her")
+    e.rules["arena_weather"]["kind"] = "heat"
+    r.status.pop("soaked", None)
+    dry = W.fighter_mult(e, r, "regen")
+    e.positions = "Ripples: in the shallow pool; Nocturne: on the grass"
+    wet = W.fighter_mult(e, r, "regen")
+    if not dry < 1.0 == wet:
+        problems.append(f"a Water type should wilt in the heat, unless she is in the water: {dry} {wet}")
+    from engine import Hold
+    ch = B.cfg(e, "heat")
+    e.positions = ""
+    e.holds[99] = Hold(id=99, attacker="Nocturne", defender="Ripples", part="Chest", power=10, change_per_turn=0,
+                       flavor="coils", with_part="Tail", coil=True)
+    hot, _ = W.heat_drift(e, r, ch)
+    e.rules["arena_weather"]["kind"] = "clear"
+    mild, _ = W.heat_drift(e, r, ch)
+    del e.holds[99]
+    if not hot > mild > 0:
+        problems.append(f"coils should heat her, far more in summer heat: {hot} {mild}")
+    e.rules["arena_weather"]["kind"] = "storm"
+    e.rules["arena_weather"].setdefault("kinds", {})["storm"] = {"lightning": dict(
+        W.DEFAULTS["kinds"]["storm"]["lightning"], strike=1.0)}
+    ev = W.tick(e)
+    bolt = [x for x in ev if x["type"] == "lightning" and not x.get("near")]
+    if not bolt or "LIGHTNING" not in W.line(bolt[0]) or e.winner():
+        problems.append(f"a lightning strike should land, be told, and not end the fight: {ev}")
+    return problems
+
+
 def mind_321_check():
     """Build 321 (body.mind): a hard beat costs her composure and it settles back; the same beat costs less late in a
     long fight; low composure makes a fear reaction likelier and she gives in a little sooner, the effects small;
@@ -4151,6 +4203,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "weather322" for w in want):
+        t = time.time()
+        probs = weather_322_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 322: arena weather, indoors, Water in rain and heat, coil heat, lightning  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "mind321" for w in want):

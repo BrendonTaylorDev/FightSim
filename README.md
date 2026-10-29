@@ -654,6 +654,37 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 322
+Weather over the whole fight (arena_weather in rules.json; /weather to choose). A move's weather (Rain Dance, Sunny
+Day, Hail) still takes over while it lasts.
+- **Which weather.** By default the arena's own: the storm forest has its thunderstorm, the desert ruins their wind,
+  most arenas none. /weather picks one for every fight (rain, storm, snow, heat, wind), random, or clear. Indoor
+  arenas (the sea cave, the power plant, the crystal mine, the clock tower) never have any.
+- **The kinds:**
+  - **Rain:** the ground slick, everyone soaked (Electric hits harder), her body cooled. Water moves stronger, Fire
+    weaker.
+  - **Thunderstorm:** rain as above, gusts, and lightning. A bolt very rarely strikes a fighter, likelier one up in
+    the air: it hurts, may stun her, throws her down. A Ground type is untouched; an Electric type takes it in. Now
+    and then a bolt strikes close by: both flinch and lose some composure. It never ends a fight by itself.
+  - **Snow:** slick, cold. Ice moves stronger, Fire weaker.
+  - **Summer heat:** heats her and slows her cooling. Fire moves stronger, Ice weaker.
+  - **Strong wind:** gusts knock her footing (less for a big body) and buffet a flyer (BUFFETED: dodging slower).
+    Flying moves stronger, Fire weaker; it chills a little.
+- **Her own type in it.** A Water type in the rain is in her element: her blows a touch stronger, her strength back
+  sooner. A Fire type is doused. In summer heat a Water or an Ice type wilts and heats faster, unless she is
+  standing in water; a Fire type thrives. An Ice type is at home in the snow; Dragon and Grass types are slowed by it.
+- **Coils heat her.** In any weather, coils round her warm her (the constrictor's body pressed round hers, and the
+  friction), three times as much in summer heat. A long constriction in the heat can leave her heat-exhausted.
+  Past flushed she also gives in to a hold a little sooner.
+- **Told.** The weather goes to the narrator and the director every beat and into the opening passage; lightning
+  and gusts are told when they happen. /weather and /scene show it.
+- **Measured** (Nocturne against Ripples, 40 to 60 fights each):
+  - Clear: Ripples won 38%. In rain she won 55%, the Water type in her element.
+  - Thunderstorm: about one strike every two fights, a near miss about once a fight, a gust 2 or 3 times.
+  - Summer heat: both flushed most of the fight, heat-exhausted a beat or two.
+  - Seraphina's coils in summer heat: Ripples ran hotter than Seraphina and was heat-exhausted about 8 beats a fight.
+- The default arena (the lakeside clearing) has no weather, so ordinary fights are as before.
+
 ## Build 321
 Her mind simulated (body.mind, its own switch in rules.json), footing and heat given more weight, and Glacia made
 sturdier.

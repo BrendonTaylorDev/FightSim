@@ -15,6 +15,7 @@ import re
 import blocks as story_blocks
 import reactions as _reactions
 import body as _body
+import weather as _weather
 import llm
 
 import sys as _sys
@@ -4846,6 +4847,8 @@ class Narrator:
                 pass  # already listed first
             elif e["type"] == "weather_end":
                 lines.append(f"The {e['kind']} eases off and clears over the arena.")
+            elif e["type"] in ("lightning", "gust"):
+                lines.append(_weather.line(e))      # (since build 322) the arena's weather
             elif e["type"] == "status_tick":
                 if e["status"] == "burned":
                     lines.append(f"{poss(e['fighter'])} burn flares on her {e['hits'][0]['part'].lower()}: a hot, "
@@ -5925,6 +5928,8 @@ class Narrator:
             return self._get_up_lines(a)
         if t == "weather_end":
             return [f"The {a['kind']} eases off and clears over the arena."]
+        if t in ("lightning", "gust"):
+            return [_weather.line(a)]
         if t == "take_off":
             ps = getattr(self, "posture_start", {}) or {}
             up = [n for n, x in ps.items() if n != a["fighter"] and "AIR" in str(x).upper()]
@@ -6993,6 +6998,8 @@ class Narrator:
     STATUS_WORDS.update(_reactions.WORD)
     STATUS_STORY.update(_body.STORY)       # (since build 314: body.air, body.limbs)
     STATUS_ENDS.update(_body.ENDS)
+    STATUS_STORY.update(_weather.STORY)    # (since build 322)
+    STATUS_ENDS.update(_weather.ENDS)
     STATUS_WORDS.update(_body.WORD)
 
     def _status_story(self, s, other=None):

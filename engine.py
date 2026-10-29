@@ -14,6 +14,7 @@ from dataclasses import dataclass, field, asdict
 
 import reactions
 import body
+import weather as arena_weather
 
 
 _FAILED_ONCE = set()
@@ -445,6 +446,7 @@ class Engine:
         self.pressed = {}      # fighter -> {"surface", "by"}: driven into the scenery by a charge THIS beat, not fallen yet
         self.alliances = []    # temporary alliances: {"members", "name", "beats", "until", "home"}
         self.weather = {}      # {"kind": "rain"/"sun"/"hail", "beats": N, "by": name}: Rain Dance, Sunny Day, Hail
+        self.arena_wx = None   # (since build 322) the arena weather picked for this fight, when it is "random"
         self.arena_marks = []  # what the fight has done to the place (a broken stalagmite, a toppled pillar)
         self.chronicle = self.new_chronicle()  # key moments, damage dealt and the strength track, for the summary
         self.setups = []       # tactics: plans made (a soaked opponent and lightning ready...) waiting for their payoff
@@ -932,9 +934,9 @@ class Engine:
     _SNAP_EXTRA = ("encouraged", "ever_down", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
                    "injury_amt", "lying_at", "lying_on", "burn_spot", "_story_prev", "_story_now", "_story_pinned", "_story_turned",
                    "_tac_status", "_last_event", "_forced_event", "_overbalanced", "_rock_open", "_slow_not_cold",
-                   "_last_manhandle", "last_pin_shape", "fight_record", "game_plans", "gap", "_gap_before")
+                   "_last_manhandle", "last_pin_shape", "fight_record", "game_plans", "gap", "_gap_before", "arena_wx")
     # ...those of them that __init__ sets up: put back to this when a snapshot or save doesn't have them (never removed)
-    _SNAP_INIT = {"_last_event": None, "_forced_event": None, "fight_record": {}, "game_plans": {}}
+    _SNAP_INIT = {"_last_event": None, "_forced_event": None, "fight_record": {}, "game_plans": {}, "arena_wx": None}
     # scratch for one attack or one beat (set fresh before it is read), or the session and its settings: never undone
     _NOT_SNAPPED = ("_aim_miss", "_chain_on", "_confusion_passed", "_dev_active", "_dive_now", "_feint_open",
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
@@ -6474,6 +6476,8 @@ class Engine:
     def weather_mult(self, mtype):
         """Rain strengthens Water and dampens Fire; sun the other way round (rules.json weather)."""
         w = getattr(self, "weather", {}) or {}
+        if not w:
+            return arena_weather.type_mult(self, mtype)    # (since build 322) the arena's weather, all fight
         cfg = (self.rules.get("weather") or {}).get(w.get("kind") or "", {})
         m = float((cfg.get("type_mult") or {}).get(mtype, 1.0))
         return (f"in the {cfg.get('word', w.get('kind'))}", m) if w and m != 1.0 else None
@@ -9531,10 +9535,10 @@ class Engine:
     def _weather_tick(self):
         """End of a beat: hail stings everyone who isn't Ice-type (weather.hail.chip, on an exposed part); the weather
         counts down and clears."""
+        events = arena_weather.tick(self)      # (since build 322) the arena's weather: rain, lightning, gusts
         w = getattr(self, "weather", {}) or {}
         if not w:
-            return []
-        events = []
+            return events
         cfg = (self.rules.get("weather") or {}).get(w["kind"], {})
         chip = float(cfg.get("chip", 0) or 0)
         if chip:
@@ -9641,7 +9645,7 @@ class Engine:
     def on_slick(self, name):
         """Is she standing on slick footing (algae, ice, mud, wet stone)?"""
         where = self._where(name)
-        return bool(self.SLICK.search(where) or (self.in_water(name) == "shallow"))
+        return bool(self.SLICK.search(where) or (self.in_water(name) == "shallow") or arena_weather.slick(self))
 
     def set_positions(self, text):
         """Store where the director says everyone is (posture is the engine's call: see positions_now). Anyone
@@ -12648,6 +12652,7 @@ class Engine:
     }
     STATUS_LOOK.update({k: v["look"] for k, v in reactions.REACT.items()})     # (since build 308, moves.reactions)
     STATUS_LOOK.update(body.LOOK)     # (since build 314: body.air, body.limbs)
+    STATUS_LOOK.update(arena_weather.LOOK)   # (since build 322)
 
     # the same status from a move that is not cold: CHILLED is the engine's word for any slowing
     STATUS_LOOK_NOT_COLD = {
@@ -12845,7 +12850,7 @@ class Engine:
     def weather_text(self):
         w = getattr(self, "weather", {}) or {}
         if not w:
-            return ""
+            return arena_weather.text(self)
         word = (self.rules.get("weather") or {}).get(w["kind"], {}).get("word", w["kind"])
         return (f"WEATHER: {word.upper()} over the arena ({w['beats']} more beat{'s' if w['beats'] != 1 else ''}; "
                 f"called by {w['by']}): it is part of every moment until it clears.")
@@ -12960,7 +12965,7 @@ class Engine:
                 "in a few words of how she moves, breathes or looks, in your own words, as it comes on): " + " | ".join(rows)) if rows else ""
 
     def narrator_condition(self):
-        text = self.condition_summary() + ("\n" + self.weather_text() if getattr(self, "weather", None) else "")
+        text = self.condition_summary() + ("\n" + self.weather_text() if self.weather_text() else "")
         for extra in (self.wear_text(), self.movement_text(), self.hurt_where_text(), self.settling_text(),
                       self.gap_text()):
             if extra:
@@ -12984,7 +12989,7 @@ class Engine:
 
     def director_view(self):
         """Full numbers for the director, so it can pick smart targets. It still never calculates."""
-        lines = [self.weather_text()] if getattr(self, "weather", None) else []
+        lines = [self.weather_text()] if self.weather_text() else []
         multi_team = any(f.team != f.name for f in self.fighters.values())
         for f in self.fighters.values():
             if f.eliminated:

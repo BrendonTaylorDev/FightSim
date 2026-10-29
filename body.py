@@ -56,7 +56,8 @@ DEFAULTS = {
     "heat": {"enabled": True, "normal": 38.5, "per_energy": 0.02, "burn": 0.003, "cold": 0.004, "hit_max": 0.6, "sun": 0.12,
              "rain": 0.1, "hail": 0.2, "water": 0.25, "held": 0.04, "cool": 0.12, "cool_spent": 0.5,
              "own_type": 0.4, "warm": 1.5, "hot": 2.4, "chill": -1.2, "cold_at": -2.2, "min": -4.0, "max": 4.0,
-             "regen_min": 0.75, "power_min": 0.93, "dodge_min": 0.93, "air_min": 0.7, "heart": 0.06},
+             "regen_min": 0.75, "power_min": 0.93, "dodge_min": 0.93, "air_min": 0.7, "heart": 0.06,
+             "tap_min": 0.92},
     "mind": {"enabled": True, "per_loss": 3.5, "held": 5, "air_fear": 14, "down": 12, "per_dealt": 0.8,
              "settle": 0.15, "floor": 15, "damp_at": 40, "edge_gain": 2.0, "edge_decay": 0.7, "unnerved": 45,
              "react": 1.0, "bold": 0.6, "tap": 0.15, "power_min": 0.96, "dodge_min": 0.95},
@@ -319,6 +320,10 @@ def power_mult(eng, a, move):
     cm = cfg(eng, "mind")
     if cm and a.status.get("unnerved"):
         out.append(("unnerved", float(cm["power_min"])))
+    import weather as _wx
+    we = _wx.fighter_entry(eng, a)
+    if we and float(we.get("power", 1.0)) != 1.0:
+        out.append((we.get("say") or "the weather", float(we["power"])))     # (since build 322) her type and the weather
     hk = _heat_k(eng, a, "power_min")
     if hk < 1.0:
         out.append(("the heat in her" if _temp(a) > 0 else "the cold in her", round(hk, 3)))
@@ -366,6 +371,7 @@ def pain_resist_mult(eng, f):
     m = 1.0
     if cd:
         m *= 1 + float(cd["pain"]) * float((f.learned.get("body") or {}).get("adrenaline", 0)) / 100.0
+    m *= _heat_k(eng, f, "tap_min", hot_only=True)    # (since build 322) worn down by the heat
     if cm:      # (since build 321, body.mind) her nerve frayed: she gives in a little sooner (at most x1 - tap)
         m *= 1 - float(cm["tap"]) * (1 - _composure(f) / 100.0)
     return m
@@ -384,6 +390,8 @@ def dodge_mult(eng, d):
     if cb and float(st.get("blood", 100)) < float(cb["low"]):
         m *= _blood_k(cb, st, "dodge_min")
     m *= _heat_k(eng, d, "dodge_min")
+    import weather as _wx
+    m *= _wx.dodge_mult(eng, d)       # (since build 322) buffeted by the wind
     cm = cfg(eng, "mind")
     if cm and d.status.get("unnerved"):
         m *= float(cm["dodge_min"])
@@ -478,7 +486,8 @@ def regen_mult(eng, f):
     cd = cfg(eng, "adrenaline")
     if cd and f.status.get("adrenaline_crash"):
         m *= float(cd["crash_regen"])
-    return m * _heat_k(eng, f, "regen_min", hot_only=True)
+    import weather as _wx
+    return m * _heat_k(eng, f, "regen_min", hot_only=True) * _wx.fighter_mult(eng, f, "regen")
 
 
 def grip_break_mult(eng, holder, holds):
@@ -801,6 +810,9 @@ def _heat_tick(eng, f, st):
         gain += float(ch["sun"]) * hot_k
     elif wx in ("rain", "hail"):
         gain -= float(ch[wx]) * cold_k
+    import weather as _wx
+    drift, cool_k = _wx.heat_drift(eng, f, ch)      # (since build 322) the arena's weather, and coils round her
+    gain += drift
     if eng.in_water(f.name) and "Water" not in types:
         gain -= float(ch["water"]) * cold_k
     elif eng.in_water(f.name):
@@ -808,7 +820,7 @@ def _heat_tick(eng, f, st):
     if any(f.name in (h.attacker, h.defender) for h in eng.holds.values()):
         gain += float(ch["held"])
     t += gain
-    t -= t * float(ch["cool"]) * (float(ch["cool_spent"]) if spent > 10 else 1.0)
+    t -= t * float(ch["cool"]) * (float(ch["cool_spent"]) if spent > 10 else 1.0) * (cool_k if t > 0 else 1.0)
     t = max(float(ch["min"]), min(float(ch["max"]), t))
     st["heat"] = round(t, 2)
     _status(eng, f, "heat_exhausted", t >= float(ch["hot"]), "the heat of the fight building in her", ev)

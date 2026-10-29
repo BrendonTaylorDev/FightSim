@@ -63,6 +63,7 @@ _EXTRA = {
                         "a few beats (body.adrenaline)",
     "broken_bone": "a bone broken in the fight or found broken after it: blows with that limb much weaker, a "
                    "broken leg dodges worse; it heals, nothing permanent, and never her spine (body.bones)",
+    "buffeted": "the wind shoving her about in the air: her dodging slower for a beat (arena_weather)",
     "unnerved": "her composure frayed by big blows, being held, her air going, being knocked down: her blows and dodges "
                "a touch weaker, fear reactions (shaken, panicking) likelier, and she gives in to a hold a little "
                "sooner; it settles back within a few beats, and less and less as a long fight goes on (body.mind)",

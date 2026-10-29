@@ -4,6 +4,7 @@ Resistance uses colored squares, damage uses colored circles, and the heart is o
 """
 import reactions as _reactions
 import body as _body
+import weather as _weather
 import re
 from engine import tier_for, pain_tiers, poss_word
 
@@ -11,6 +12,22 @@ from engine import tier_for, pain_tiers, poss_word
 # where the clear layout breaks a long stat line (0 = never: the window wraps them itself)
 WRAP_WIDTH = 100
 
+
+
+def _wx_line(e):
+    """(since build 322) A lightning strike or a gust, for the stat lines."""
+    if e["type"] == "gust":
+        return "🌬️ **A gust** hits " + ", ".join(x["fighter"] + (" (buffeted in the air)" if x["air"] else
+                                                                   " (footing knocked)") for x in e.get("hit") or [])
+    if e.get("near"):
+        return "⚡ **Lightning** strikes close by: both flinch"
+    if e.get("grounded") or e.get("absorbed"):
+        return f"⚡ **Lightning strikes {e['fighter']}**: " + ("it runs into the ground" if e.get("grounded") else
+                                                             "she takes it in, an Electric type")
+    h = (e.get("hits") or [{}])[0]
+    return (f"⚡ **Lightning strikes {e['fighter']}**: {h.get('part', '')} {round(h.get('damage_before', 0))}% → "
+            f"{round(h.get('damage_after', 0))}%" + (", knocked down" if e.get("down") else "")
+            + (", stunned" if e.get("stunned") else ""))
 
 def num(x):
     """40 -> '40', 6.0 -> '6', 5.55 -> '5.55', 12.8 -> '12.8'."""
@@ -93,6 +110,8 @@ class Display:
     STATUS_ICON.update(_reactions.ICON)
     STATUS_WORD.update(_body.WORD)       # (since build 314: body.air, body.limbs)
     STATUS_ICON.update(_body.ICON)
+    STATUS_WORD.update({k: k for k in _weather.LOOK})     # (since build 322)
+    STATUS_ICON.update(_weather.ICON)
 
     def _status_tag(self, f):
         bits = [f"{self.STATUS_ICON.get(s, '')}{s} {n}" for s, n in f.status.items()]
@@ -1133,6 +1152,8 @@ class Display:
                        + (f" ({a['facing']})" if a.get("facing") else ""))
         elif t == "weather_end":
             out.append(f"🌤️ The {a['kind']} clears")
+        elif t in ("lightning", "gust"):
+            out.append(_wx_line(a))
         elif t == "take_off":
             out.append(f"🪽 **{a['fighter']} takes to the air** (up for {a['beats']} beats; only ranged attacks reach her)")
         elif t == "take_off_failed":
@@ -1471,6 +1492,8 @@ class Display:
                 out.append(f"🔥 {poss_word(e['fighter'])} burn: {h['part']} {num(h['damage_before'])}% → {num(h['damage_after'])}%")
             elif e["type"] == "weather_end":
                 out.append(f"🌤️ The {e['kind']} clears")
+            elif e["type"] in ("lightning", "gust"):
+                out.append(_wx_line(e))
             elif e["type"] == "status_tick" and e.get("hits"):
                 h = e["hits"][0]
                 out.append(f"🧊 The {e['status']} stings {e['fighter']}: {h['part']} {num(h['damage_before'])}% → "
