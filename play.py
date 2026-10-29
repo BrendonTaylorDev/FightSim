@@ -30,7 +30,7 @@ import narrator as narrator_mod
 import llm
 import polish
 
-VERSION = "2026-10-29 build 311 (no tail strike from inside her coils, breathing on the coils monitor)"
+VERSION = "2026-10-29 build 312 (statuses and vitals explain themselves on hover, /explain)"
 
 HELP = """
 =============================================================================================
@@ -471,6 +471,7 @@ HELP = """
  LOOKING AROUND
 =============================================================================================
   /status [full|name]   health, worst injuries, pins and positions
+  /explain [name|status]   what each status on her does and what her heart, blood pressure and breathing mean
   /traits [name]        how each fighter fights: her traits, quirks, style and favourite moves (since build 280)
   /profile [name]       all that, and who she is: personality, history, relationships (the window: Profiles)
   /health [name]        every damaged body part, in stat format
@@ -3830,6 +3831,22 @@ def handle_command(s, line):
                       + "".join(f"   {o} to her: {r}\n" for o, r in (f.relationships or {}).items()), end="")
         if not e.traits_cfg():
             print("(traits are switched off: /set traits.enabled true)")
+        return
+    if cmd == "explain":
+        # (since build 312) the window's hover tips, as text: every status on her, and her vitals
+        import explain, cards
+        word = " ".join(a).strip().lower().replace(" ", "_")
+        if word and word in s.eng.STATUS_LOOK:
+            print(explain.status_text(word, None, s.eng.rules)); return
+        snap = fight_snapshot(s)["fighters"]
+        rows = [f for f in snap if not word or f["name"].lower() == _clean_name(" ".join(a)).lower()]
+        if not rows:
+            raise ValueError(f"no fighter or status called '{' '.join(a)}' (statuses: "
+                             f"{', '.join(sorted(s.eng.STATUS_LOOK))})")
+        for f in rows:
+            m = cards.tap_meter(f) or {}
+            print(f"=== {f['name']} ===\n" + explain.statuses_text(f.get("status") or {}, s.eng.rules) + "\n\n"
+                  + explain.vitals_text(cards.body_signs(f, cards.alive_opts(s.eng.rules)), m.get("vitals")) + "\n")
         return
     if cmd == "status":
         if not a:

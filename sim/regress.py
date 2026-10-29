@@ -800,6 +800,39 @@ def presets_help_check():
     return problems
 
 
+def explain_312_check():
+    """Build 312 (window.explain, /explain): a status explains what it is and what it does, with the numbers from the
+    rules in force (a /set change shows); the vitals say what is normal and what hers means."""
+    import explain, json as _j
+    problems = []
+    rules = _j.load(open("rules.json", encoding="utf-8"))
+    t = explain.status_text("staggered", 2, rules)
+    if not ("2 more beats" in t and "dodging 40% worse" in t and "blows 15% weaker" in t and "finding her feet" in t):
+        problems.append(f"staggered should say what it is, its beats left and its numbers: {t!r}")
+    rules.setdefault("status_effects", {})["staggered_dodge_mult"] = 0.5
+    if "dodging 50% worse" not in explain.status_text("staggered", 2, rules):
+        problems.append("a changed setting should change the explanation")
+    if "70% worse" not in explain.status_text("constricted", 1, rules) or "loses" not in explain.status_text(
+            "constricted", 1, rules):
+        problems.append("constricted should give its dodge and its energy loss")
+    if "3 more energy" not in explain.status_text("panicking", 1, rules):
+        problems.append("a reaction (panicking) should give what it costs her")
+    if "raised" not in explain.bp_text([139, 90]) or "very low" not in explain.bp_text([70, 45], coiled=True):
+        problems.append("blood pressure should read as raised at 139/90 and very low at 70/45")
+    if "BELOW" not in explain.heart_text(60, 140, coiled=True):
+        problems.append("a heart slowing below resting in the coils should be called the danger sign")
+    s = H.session(3, fighters="Seraphina,Ripples")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        import play as _p
+        _p.handle_command(s, "/explain Ripples")
+        _p.handle_command(s, "/explain dazed")
+    o = out.getvalue()
+    if "=== Ripples ===" not in o or "Blood pressure" not in o or "Dazed" not in o:
+        problems.append(f"/explain should give her statuses and vitals, and one status: {o[:300]!r}")
+    return problems
+
+
 def fixes_311_check():
     """Build 311 (the third Seraphina vs Ripples paste): a serpent's coils are her tail. Two coils round someone leave
     no tail to strike with; one coil (her middle) leaves the end of it loose tail_free_chance of the time, struck at
@@ -3662,6 +3695,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "explain312 explain" for w in want):
+        t = time.time()
+        probs = explain_312_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 312: statuses and vitals explain themselves (window hover tips, /explain)  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "fixes311 coiltail" for w in want):

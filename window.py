@@ -30,8 +30,11 @@ import sys
 import threading
 import urllib.request
 
+import explain
+
 import tkinter as tk
 from tkinter import ttk
+import tkinter.font as tkfont
 
 import play
 import display
@@ -314,6 +317,13 @@ class Tip:
         self.win.wm_geometry(f"+{x + 14}+{y + 10}")
         tk.Label(self.win, text=text, justify="left", bg="#111827", fg="#f9fafb", padx=6, pady=4,
                  font=("Segoe UI", 9)).pack()
+        # (since build 312) kept on the screen: a long tip near the right or bottom edge opens the other way
+        self.win.update_idletasks()
+        tw, th = self.win.winfo_reqwidth(), self.win.winfo_reqheight()
+        sw, sh = self.win.winfo_screenwidth(), self.win.winfo_screenheight()
+        nx = x + 14 if x + 14 + tw <= sw else max(0, x - 14 - tw)
+        ny = y + 10 if y + 10 + th <= sh else max(0, y - 10 - th)
+        self.win.wm_geometry(f"+{nx}+{ny}")
 
     def hide(self):
         if self.win is not None:
@@ -371,6 +381,9 @@ class FighterCard(ttk.Frame):
         self.gp = tk.Canvas(self, width=PIC + 2 * COL, height=18, highlightthickness=0, bg=C("#ffffff"))
         self.state = ttk.Label(self, wraplength=PIC + 2 * COL, justify="left")
         self.state.pack(anchor="w", pady=(4, 0))
+        # (since build 312, window.explain) hovering her status line explains every status on her
+        self.state.bind("<Enter>", self._status_tip)
+        self.state.bind("<Leave>", lambda _e: self.app.tip.hide())
 
     # ---- the picture ----
     def set_picture(self, data):
@@ -671,16 +684,26 @@ class FighterCard(ttk.Frame):
         c, w = self.hb, self.app.card_w()
         c.delete("all")
         rd = monitor_words(sg)
-        c.create_text(6, 11, anchor="w", text=rd[0][0], font=("Segoe UI", 9, "bold"), fill=rd[0][1])
-        c.create_text(6, 24, anchor="w", text=rd[1][0], font=("Segoe UI", 7), fill=rd[1][1])
+        # (since build 312, window.explain) each reading explains itself on hover
+        tips = self._explain_on()
+        heart_tip = explain.heart_text(sg["heart"], sg["heart_rest"], sg["irregular"], sg["stopped"])
+        row_tips = (explain.bp_text(sg["bp"], sg["bp_rest"]),
+                    explain.breath_text(sg["breath"], sg["breath_rest"], sg["depth"], sg["words"]))
+        self._tip(c, c.create_text(6, 11, anchor="w", text=rd[0][0], font=("Segoe UI", 9, "bold"), fill=rd[0][1]),
+                  heart_tip, tips)
+        self._tip(c, c.create_text(6, 24, anchor="w", text=rd[1][0], font=("Segoe UI", 7), fill=rd[1][1]),
+                  heart_tip, tips)
         sx = w - 175
         for k, (y, (t1, c1, _), (t2, c2, _)) in enumerate(((11, rd[2], rd[3]), (24, rd[4], rd[5]))):
             a = c.create_text(sx, y, anchor="w", text=t1, font=("Segoe UI", 8, "bold"), fill=c1)
-            c.create_text(c.bbox(a)[2] + 5, y, anchor="w", text=t2, font=("Segoe UI", 7), fill=c2)
+            b = c.create_text(c.bbox(a)[2] + 5, y, anchor="w", text=t2, font=("Segoe UI", 7), fill=c2)
+            self._tip(c, a, row_tips[k], tips)
+            self._tip(c, b, row_tips[k], tips)
         bx, bw = 84, max(30, sx - 84 - 8)
         base = ecg_points(sg["heart"], sg["irregular"], bw, 22, 0, 3)
         base = base + [(x + bw, y) for x, y in base[1:]]
         line = c.create_line(*[q for x, y in base if x <= bw for q in (bx + x, y)], fill=sg["colour"], width=1.5)
+        self._tip(c, line, heart_tip, tips)
         anim = bool(o.get("enabled", True)) and (self.app._rules().get("window") or {}).get("vitals_animate", True) \
             if hasattr(self.app, "_rules") else True
         self._mon = {"base": base, "line": line, "bx": bx, "bw": bw, "off": 0.0, "anim": anim}
@@ -763,73 +786,123 @@ class FighterCard(ttk.Frame):
         # and the readings to the right of them; without it, the monitor across the card as before
         ox = 168 if figure else 0
         ww = w - ox
-        c.configure(height=178 if figure else (84 if odds[0] else 70))
-        c.create_text(ox + 6, 12, anchor="w", text="♥ stopped" if v.get("stopped") else f"♥ {v['heart']}/min",
-                      font=("Segoe UI", 9, "bold"), fill=col)
+        tips = self._explain_on()
+        t1 = c.create_text(ox + 6, 12, anchor="w", text="♥ stopped" if v.get("stopped") else f"♥ {v['heart']}/min",
+                           font=("Segoe UI", 9, "bold"), fill=col)
+        heart_tip = explain.heart_text(v.get("heart", 0), v.get("heart_rest") or 100, v.get("irregular"),
+                                       v.get("stopped"), True)
+        self._tip(c, t1, heart_tip, tips)
         if v.get("irregular"):
-            c.create_text(ox + 6, 25, anchor="w", text="irregular", font=("Segoe UI", 7), fill="#fca5a5")
+            self._tip(c, c.create_text(ox + 6, 25, anchor="w", text="irregular", font=("Segoe UI", 7),
+                                       fill="#fca5a5"), heart_tip, tips)
         if v.get("heart_rest"):
             # (since build 300) her healthy numbers, to read these against
-            c.create_text(ox + 6, 37, anchor="w", text=f"normal {v['heart_rest']}/min", font=("Segoe UI", 7),
-                          fill="#9ca3af")
+            self._tip(c, c.create_text(ox + 6, 37, anchor="w", text=f"normal {v['heart_rest']}/min",
+                                       font=("Segoe UI", 7), fill="#9ca3af"), heart_tip, tips)
         self._fig = None
-        if figure:
-            self._squeeze_figure(c, v, w, ox)
-        elif v.get("squeeze") is not None:
+        if not figure and v.get("squeeze") is not None:
             # (since build 294) how far the coils have squeezed her in: her chest or belly as a band narrowing from
             # both sides, the coils across it
             full, body, bands = squeeze_shapes(v["squeeze"], v.get("coils"), 84, max(40, w - 84 - 96), 46, 10,
                                            ring=bool(v.get("ring")))
-            c.create_rectangle(*full, outline="#4b5563", dash=(2, 2))
+            sq_tip = explain.squeeze_text(v["squeeze"], v.get("where"), v.get("pressure"), v.get("girth"))
+            self._tip(c, c.create_rectangle(*full, outline="#4b5563", dash=(2, 2)), sq_tip, tips)
             for b in bands:
                 c.create_rectangle(*b, outline="#1f2937", fill="#3b82f6")       # the coils pressing in from outside
             c.create_rectangle(*body, outline="#60a5fa", width=1 if v.get("ring") else 2,   # her body, inside the coils
                                fill="#c08457" if v.get("where") != "back" else "#a16207")
-            c.create_text(6, 51, anchor="w", font=("Segoe UI", 8), fill="#f9fafb", text=squeeze_label(v))
-        bx, bw = ox + 84, max(40, ww - 84 - 96)
+            self._tip(c, c.create_text(6, 51, anchor="w", font=("Segoe UI", 8), fill="#f9fafb",
+                                       text=squeeze_label(v)), sq_tip, tips)
+        # (since build 312) the BP column as wide as its words really are, and the trace starting after her heart
+        # rate, so neither runs off the card or into the other at a high display scaling
+        bp = v.get("bp") or [120, 80]
+        rw = max(80, max(tkfont.Font(font=fn).measure(t) for t, fn in (
+            (f"BP {bp[0]}/{bp[1]}", ("Segoe UI", 9, "bold")), ("breath 00/min", ("Segoe UI", 9, "bold")),
+            ("shallow · normal 00", ("Segoe UI", 7)), ("normal 120/80", ("Segoe UI", 7)))) + 2)
+        sx = w - rw - 6
+        bx = max(ox + 84, c.bbox(t1)[2] + 10)
+        bw = max(40, sx - bx - 12)
         # (since build 293) the trace runs like a monitor's, at her own heart rate (window.vitals_animate): six seconds
         # of it, drawn twice end to end and slid along under a fixed window
         base = ecg_points(v["heart"], v.get("irregular"), bw, 22, 0, 2)
         base = base + [(x + bw, y) for x, y in base[1:]]
         line = c.create_line(*[q for x, y in base if x <= bw for q in (bx + x, y)], fill=col, width=1.5)
+        self._tip(c, line, heart_tip, tips)
         self._ecg = {"base": base, "line": line, "bx": bx, "bw": bw, "off": 0.0}
         anim = ((self.app._rules().get("window") or {}).get("vitals_animate", True)
                 if hasattr(self.app, "_rules") else True)
         if anim and not getattr(self, "_ecg_running", False):
             self._ecg_running = True
             self.after(60, self._ecg_tick)
-        c.create_rectangle(bx, 30, bx + bw, 40, outline="#4b5563", fill="#1f2937")
-        c.create_rectangle(bx, 30, bx + bw * min(1.0, v.get("blood", 0) / 100.0), 40, outline="", fill=col)
-        c.create_text(bx + 4, 35, anchor="w", text=f"blood flow {v.get('blood', 0)}% cut off",
-                      font=("Segoe UI", 7), fill="#f9fafb")
+        blood_tip = explain.blood_text(v.get("blood", 0), v.get("out_at"))
+        for it in (c.create_rectangle(bx, 30, bx + bw, 40, outline="#4b5563", fill="#1f2937"),
+                   c.create_rectangle(bx, 30, bx + bw * min(1.0, v.get("blood", 0) / 100.0), 40, outline="", fill=col),
+                   c.create_text(bx + 4, 35, anchor="w", text=f"blood flow {v.get('blood', 0)}% cut off",
+                                 font=("Segoe UI", 7), fill="#f9fafb")):
+            self._tip(c, it, blood_tip, tips)
         if v.get("out_at") is not None:
             # (since build 302) her limit on the gauge: past this line she can black out (and her heart stop)
             lx = bx + bw * min(1.0, v["out_at"] / 100.0)
             c.create_line(lx, 26, lx, 44, fill="#f9fafb", width=2)
             c.create_text(lx, 25, anchor="s", text="limit", font=("Segoe UI", 6), fill="#f9fafb")
-        if odds[0]:
-            c.create_text(ox + 6, 75, anchor="w", text=odds[0],
-                          width=ww - 12, font=("Segoe UI", 8, "bold"), fill=odds[1])
-        sx = w - 88
-        bp = v.get("bp") or [120, 80]
-        c.create_text(sx, 12, anchor="w", text=f"BP {bp[0]}/{bp[1]}", font=("Segoe UI", 9, "bold"),
-                      fill="#f9fafb" if bp[0] >= 90 else "#fca5a5")
+        bp_tip = explain.bp_text(bp, v.get("bp_rest") or (120, 80), True)
+        self._tip(c, c.create_text(sx, 12, anchor="w", text=f"BP {bp[0]}/{bp[1]}", font=("Segoe UI", 9, "bold"),
+                                   fill="#f9fafb" if bp[0] >= 90 else "#fca5a5"), bp_tip, tips)
         if v.get("bp_rest"):
-            c.create_text(sx, 23, anchor="w", text=f"normal {v['bp_rest'][0]}/{v['bp_rest'][1]}",
-                          font=("Segoe UI", 7), fill="#9ca3af")
-        c.create_rectangle(sx, 30, sx + 80, 40, outline="#4b5563", fill="#1f2937")
-        c.create_rectangle(sx, 30, sx + 80 * min(1.0, bp[0] / 160.0), 40, outline="", fill=col)
-        c.create_line(sx + 80 * 120 / 160.0, 28, sx + 80 * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
-        c.create_text(sx + 3, 35, anchor="w", text="pressure", font=("Segoe UI", 7), fill="#f9fafb")
+            self._tip(c, c.create_text(sx, 23, anchor="w", text=f"normal {v['bp_rest'][0]}/{v['bp_rest'][1]}",
+                                       font=("Segoe UI", 7), fill="#9ca3af"), bp_tip, tips)
+        bar = c.create_rectangle(sx, 30, sx + rw, 40, outline="#4b5563", fill="#1f2937")
+        self._tip(c, bar, bp_tip, tips)
+        self._tip(c, c.create_rectangle(sx, 30, sx + rw * min(1.0, bp[0] / 160.0), 40, outline="", fill=col),
+                  bp_tip, tips)
+        c.create_line(sx + rw * 120 / 160.0, 28, sx + rw * 120 / 160.0, 42, fill="#9ca3af", dash=(2, 2))
+        self._tip(c, c.create_text(sx + 3, 35, anchor="w", text="pressure", font=("Segoe UI", 7), fill="#f9fafb"),
+                  bp_tip, tips)
         if f is not None:
             sg = body_signs(f, self._alive_cfg())
-            c.create_text(sx, 51, anchor="w", text=f"breath {sg['breath']}/min", font=("Segoe UI", 9, "bold"),
-                          fill="#f9fafb" if sg["breath"] else "#fca5a5")
-            c.create_text(sx, 62, anchor="w", font=("Segoe UI", 7), fill="#9ca3af",
-                          text=("shallow · " if sg["depth"] < 0.6 and sg["breath"] else "")
-                          + f"normal {sg['breath_rest']}")
+            br_tip = explain.breath_text(sg["breath"], sg["breath_rest"], sg["depth"], sg.get("words") or ())
+            # (since build 312) each line placed under the one before it, as tall as it really is: at a high display
+            # scaling the text is bigger than the fixed rows it used to sit on, and they ran into each other
+            b1 = c.create_text(sx, c.bbox(bar)[3] + 4, anchor="nw", text=f"breath {sg['breath']}/min",
+                               font=("Segoe UI", 9, "bold"), fill="#f9fafb" if sg["breath"] else "#fca5a5")
+            b2 = c.create_text(sx, c.bbox(b1)[3], anchor="nw", font=("Segoe UI", 7), fill="#9ca3af",
+                               text=("shallow · " if sg["depth"] < 0.6 and sg["breath"] else "") + f"normal {sg['breath_rest']}")
+            self._tip(c, b1, br_tip, tips)
+            self._tip(c, b2, br_tip, tips)
+        # what is below the monitor starts under the lowest thing above it (the readings, the bars, the breath)
+        low = max(c.bbox(i)[3] for i in c.find_all()) + 4
+        if odds[0]:
+            od = c.create_text(ox + 6, low, anchor="nw", text=odds[0], width=ww - 12, font=("Segoe UI", 8, "bold"),
+                               fill=odds[1])
+            self._tip(c, od, blood_tip, tips)
+            low = c.bbox(od)[3] + 4
+        if figure:
+            self._squeeze_figure(c, v, w, ox, low)
+        c.configure(height=max(150 if figure else 0, max(c.bbox(i)[3] for i in c.find_all()) + 6))
 
-    def _squeeze_figure(self, c, v, w, ox=200):
+    def _status_tip(self, e):
+        f = self.data or {}
+        if not self._explain_on() or not f:
+            return
+        import textwrap
+        text = explain.statuses_text(f.get("status") or {}, self.app._rules() if hasattr(self.app, "_rules") else {})
+        self.app.tip.show(e.x_root, e.y_root, "\n".join("\n".join(textwrap.wrap(p, 70)) for p in text.split("\n")))
+
+    def _explain_on(self):
+        """window.explain (since build 312): hover tips on her statuses and her vitals."""
+        return bool(((self.app._rules().get("window") or {}) if hasattr(self.app, "_rules") else {})
+                    .get("explain", True))
+
+    def _tip(self, c, item, text, on=True):
+        """A hover tip on one canvas item (window.explain)."""
+        if not on or not text:
+            return
+        import textwrap
+        wrapped = "\n".join("\n".join(textwrap.wrap(p, 70)) or "" for p in text.split("\n"))
+        c.tag_bind(item, "<Enter>", lambda e, t=wrapped: self.app.tip.show(e.x_root, e.y_root, t))
+        c.tag_bind(item, "<Leave>", lambda e: self.app.tip.hide())
+
+    def _squeeze_figure(self, c, v, w, ox=200, ry=66):
         """window.squeeze_figure (since build 299): under the monitor, the squeeze as a picture: her torso from the
         front in her own colours, the coiler's loops wound round it (as thick as the coiler is big against her; only the coils on her, not the rest of the coiler),
         pressing her in, her ribs showing once it is crushing, her body paling as the blood is cut off; and beside it
@@ -875,17 +948,30 @@ class FighterCard(ttk.Frame):
                      "heart": 0 if v.get("stopped") else v.get("heart", 0), "irregular": bool(v.get("irregular")),
                      "stopped": bool(v.get("stopped"))}
         # how tight, in words and real-world numbers (cards.squeeze_readout, shared with exported fights)
-        for sh in squeeze_readout(v, ox + 6, 66, max(60, w - ox - 12)):
+        tips = self._explain_on()
+        sq_tip = explain.squeeze_text(v["squeeze"], v.get("where"), v.get("pressure"), v.get("girth"))
+        # (since build 312) the rows are pushed down as far as the ones above them really reach: at a high display
+        # scaling the text is taller than the rows squeeze_readout spaces it on (and a long line wraps)
+        shift, low, row_y = 0.0, -1e9, None
+        for sh in squeeze_readout(v, ox + 6, ry, max(60, w - ox - 12)):
+            top = sh[2] if sh[0] == "text" else min(sh[2], sh[4])
+            if sh[0] != "line" and top != row_y:
+                row_y = top
+                if top + shift < low + 2:
+                    shift = low + 2 - top
+            dy = shift
             if sh[0] == "text":
                 _, tx, ty, text, colr, size, bold = sh
-                c.create_text(tx, ty, anchor="nw", width=max(60, w - tx - 6), text=text, fill=colr,
-                              font=("Segoe UI", size, "bold" if bold else "normal"))
+                it = c.create_text(tx, ty + dy, anchor="nw", width=max(60, w - tx - 6), text=text, fill=colr,
+                                   font=("Segoe UI", size, "bold" if bold else "normal"))
+                self._tip(c, it, sq_tip, tips)
+                low = max(low, c.bbox(it)[3])
             elif sh[0] == "rect":
                 _, a, b, c2, d2, fill, stroke = sh
-                c.create_rectangle(a, b, c2, d2, fill=fill, outline=stroke)
+                low = max(low, c.bbox(c.create_rectangle(a, b + dy, c2, d2 + dy, fill=fill, outline=stroke))[3])
             else:
                 _, a, b, c2, d2, colr, dashed = sh
-                c.create_line(a, b, c2, d2, fill=colr, width=1.5, dash=(2, 2) if dashed else None)
+                c.create_line(a, b + dy, c2, d2 + dy, fill=colr, width=1.5, dash=(2, 2) if dashed else None)
 
     def _heart_tick(self):
         """One step of the beating heart in the squeeze figure (driven by _ecg_tick)."""

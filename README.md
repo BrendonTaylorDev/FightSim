@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 312
+What the card shows, explained, without anything new drawn on it (window.explain, on by default).
+- **Hover over her status line** to see each status on her: what it is, how many beats it has left, and what it does
+  to the numbers, read from the rules in force. For example: "Staggered (2 more beats): knocked a step or more by the
+  last blow... Effect: her dodging 40% worse; her blows 15% weaker."
+- **Hover over a vital** (heart rate, blood pressure, breathing, blood flow cut off, the squeeze, the coils' mmHg) to
+  see what the number means, what is normal and what hers means right now. 139/90, for instance, reads as "raised: her
+  heart pushing hard with the effort, the pain and the fear"; in the coils, a heart slowing below her resting rate is
+  called out as the danger sign.
+- **/explain** in the console gives the same as text: `/explain` for everyone, `/explain Ripples` for one fighter,
+  `/explain dazed` for one status.
+- **The coils' strip at high display scaling:** its lines ran into each other at 4K with Windows scaling (and the
+  black-out line I moved in build 311 landed on the squeeze text). Each line is now placed under the one above it by
+  its real height, long lines wrap and push the rest down, and the BP column is as wide as its words.
+- Tips that would run off the right or bottom of the screen open the other way.
+
 ## Build 311
 Fixes and answers from the third paste of the Seraphina vs Ripples fight.
 - **A Dragon Tail from inside her own coils:** Seraphina had two coils round Ripples and still whipped her with her
