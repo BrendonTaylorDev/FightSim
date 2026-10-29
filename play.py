@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-29 build 324 (limb reports, status hovers, replay hits, match badge)"
+VERSION = "2026-10-29 build 325 (shallow breathing still shows; the editor knows her body)"
 
 HELP = """
 =============================================================================================
@@ -1523,6 +1523,17 @@ class Session:
                              + (f"; pain overall {g.get('label')} ({g.get('shown') or str(g.get('pct')) + '%'} of what "
                                 f"she can bear)" if g else "")
                              + f"; worst parts: {parts}")
+        if (self.eng.rules.get("narration") or {}).get("polish", {}).get("body", True):
+            # (since build 325) her body as the window's monitor shows it: heart rate and what it means, pressure,
+            # breathing, heat, air, blood, footing, composure, adrenaline, and the coils' squeeze
+            try:
+                import explain as _ex
+                for sf in fight_snapshot(self)["fighters"]:
+                    line = _ex.body_fact(self.eng, sf)
+                    if line:
+                        facts.append(line)
+            except Exception as e:
+                note_failure("the body lines for the polish facts", e)
         for f in self.eng.fighters.values():
             sts = [k.replace("_", " ") for k in (f.status or {}) if not f.eliminated]
             if sts:

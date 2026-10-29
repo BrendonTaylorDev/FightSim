@@ -325,3 +325,98 @@ def status_tips(eng, f):
             t += "\nRight now: " + "; ".join(now) + "."
         out[k] = t
     return out
+
+
+def body_fact(eng, snap_f):
+    """(since build 325, narration.polish.body) Her body at the end of the beat in one line, for the editor's FACTS:
+    her heart rate and what it means (against her own resting rate, uneven, stopped), her blood pressure, her
+    breathing and how deep, her core heat, her air, her blood, her footing, her composure, her adrenaline, and in
+    coils how hard they press (squeezed in, the blood flow cut off, the pressure, her girth, her heart's strength
+    left, the grey). The same numbers as the window's heart monitor; the editor shows them, never says them."""
+    import cards
+    f = eng.fighters.get(str(snap_f.get("name", "")).lower())
+    if f is None or f.eliminated:
+        return ""
+    sf = dict(snap_f)
+    cv = f.learned.get("circ_vitals") or [None, None]
+    v = ((sf.get("grips") or {}).get("tap") or {}).get("vitals")
+    if not v and cv[0] == eng.turn and cv[1] and any(h.coil and h.defender == f.name for h in eng.holds.values()):
+        v = cv[1]
+        sf["grips"] = dict(sf.get("grips") or {}, tap=dict(((sf.get("grips") or {}).get("tap") or {}), vitals=v))
+    sg = cards.body_signs(sf, cards.alive_opts(eng.rules))
+    b = sf.get("body") or {}
+    bits = []
+    rest, hr = sg["heart_rest"], sg["heart"]
+    r = hr / rest if rest else 1.0
+    if sg.get("stopped"):
+        bits.append("heart STOPPED for the moment (it starts again once the coils come off)")
+    else:
+        bits.append(f"heart {hr} a minute against her resting {rest} ("
+                    + ("racing, effort, pain and fear at full stretch" if r >= 1.55 else
+                       "pounding: working hard, hurting or afraid" if r >= 1.3 else "a little up" if r >= 1.08 else
+                       "about resting" if r >= 0.9 else
+                       "SLOWING under the coils: the blood can't get back to it, the danger sign" if sg.get("coiled")
+                       else "slow")
+                    + (", beating unevenly, beats skipping" if sg.get("irregular") else "") + ")")
+        s_, d_ = sg["bp"]
+        bits.append(f"blood pressure {s_}/{d_} ("
+                    + ("very low: her head short of blood, her sight greying" if s_ < 80 else
+                       "low: light-headed" if s_ < 95 else "normal" if s_ <= 130 else
+                       "raised: her heart pushing hard" if s_ < 155 else "high") + ")")
+    if sg["breath"]:
+        dp = sg["depth"]
+        bits.append(f"breathing {sg['breath']} a minute, "
+                    + ("barely getting air in" if dp < 0.3 else "shallow" if dp < 0.6 or any(
+                        re.search(r"shallow|no air|ribs", w) for w in sg["words"]) else "deep and heavy"
+                       if dp > 1.2 else "even")
+                    + (f" ({', '.join(w for w in sg['words'] if re.search(r'ribs|coils|air|winded|spent|breathing', w))})"
+                       if any(re.search(r"ribs|coils|air|winded|spent|breathing", w) for w in sg["words"]) else ""))
+    if sg.get("temp") is not None and abs(sg["temp"] - 38.5) >= 0.5:
+        d = sg["temp"] - 38.5
+        bits.append(f"core {sg['temp']:.1f}°C (" + ("heat-exhausted" if d >= 2.4 else "flushed, overheating" if d >= 1.5
+                                                    else "warm from the fight" if d > 0 else "chilled through, numbed"
+                                                    if d <= -2.2 else "cold, shivering" if d <= -1.2 else "cool") + ")")
+    if b.get("air") is not None and float(b["air"]) < 90:
+        bits.append(f"air {b['air']:.0f}% (" + ("almost none left" if b["air"] < 15 else "short of air" if b["air"] < 40
+                                                else "winded") + ")")
+    if b.get("blood") is not None and float(b["blood"]) < 98:
+        bits.append(f"blood {b['blood']:.0f}%" + (" (pale, weakening)" if b["blood"] < 85 else "")
+                    + (", bleeding from her " + ", ".join(k.lower() for k in b.get("bleeding") or {})
+                       if b.get("bleeding") else ""))
+    if b.get("footing") is not None and float(b["footing"]) < 85:
+        bits.append(f"footing {b['footing']:.0f}%" + (" (unsteady on her feet)" if b["footing"] < 40 else ""))
+    if b.get("composure") is not None and float(b["composure"]) < 85:
+        bits.append(f"composure {b['composure']:.0f}" + (" (unnerved)" if b["composure"] < 45 else " (rattled)"
+                                                         if b["composure"] < 65 else ""))
+    if b.get("adrenaline") and float(b["adrenaline"]) >= 20:
+        bits.append(f"adrenaline {b['adrenaline']:.0f}" + (" (keyed up: the pain dulled)" if b["adrenaline"] >= 55
+                                                           else ""))
+    if v:
+        sq = []
+        if v.get("squeeze") is not None:
+            sq.append(f"squeezed in {num(v['squeeze'])}%" + (f" round her {v['where']}" if v.get("where") else ""))
+        if v.get("blood") is not None:
+            sq.append(f"the blood flow {num(v['blood'])}% cut off" + (f" (she blacks out near {num(v['out_at'])}%)"
+                                                                      if v.get("out_at") else ""))
+        if v.get("pressure") is not None:
+            sq.append(f"pressing about {v['pressure']} mmHg")
+        if v.get("girth"):
+            sq.append(f"her girth {v['girth'][1]} cm against {v['girth'][0]} cm normally")
+        if v.get("heart_reserve") is not None:
+            sq.append(f"her heart {round(float(v['heart_reserve']) * 100)}% of its strength left")
+        if sq:
+            bits.append("in the coils: " + ", ".join(sq))
+    for h in eng.holds.values():
+        if h.defender == f.name:
+            bits.append(f"{poss_of(h.attacker)} {h.sub or ('coils' if h.coil else 'grip')} on her {h.part.lower()}: "
+                        f"pressing at {h.power:.0f} a beat" + (f", tightening {h.change_per_turn:+g} a beat"
+                                                               if h.change_per_turn else "")
+                        + f", {h.turns_active} beat{'s' if h.turns_active != 1 else ''} on")
+    if sg.get("grey"):
+        bits.append(f"the grey {round(sg['grey'] * 100)}% of the way to blacking out")
+    return f"BODY: {snap_f['name']} at the end of the beat: " + "; ".join(bits)
+
+
+def poss_of(name):
+    from engine import poss_word
+    return poss_word(name)

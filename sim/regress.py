@@ -800,6 +800,42 @@ def presets_help_check():
     return problems
 
 
+def body_325_check():
+    """Build 325: the editor's facts (narration.polish.body) carry each fighter's body as the monitor shows it, the
+    coils' squeeze too, with the instruction to show it and never say the numbers; and a shallow breath still moves
+    her picture (window.alive.breath_min_px)."""
+    import play
+    import polish
+    problems = []
+    s = H.session(1, fighters="Seraphina,Ripples")
+    s.eng.rules["finish"]["submission"]["enabled"] = True
+    H.beat(s, [{"attacker": "Seraphina", "defender": "Ripples", "action": "strike", "move": "Dragon Rush",
+                "part": "Left Hip", "severity": "heavy"}], [])
+    try:
+        s.eng.start_submission("Seraphina", "Ripples", "upright coil")
+    except ValueError:
+        s.eng.start_submission("Seraphina", "Ripples", "coil crush")
+    for _ in range(2):
+        H.beat(s, [{"attacker": "Seraphina", "defender": "Ripples", "action": "breather", "flavor": "squeezes"}], [])
+    facts = s.polish_facts([], [], [])
+    rb = next((f for f in facts if f.startswith("BODY: Ripples")), "")
+    for want in ("heart ", "resting", "breathing", "in the coils", "tightening"):
+        if want not in rb:
+            problems.append(f"Ripples' BODY line should say '{want}': {rb[:300]!r}")
+    if "even (" in rb and "shallow" in rb:
+        problems.append(f"the BODY line calls her breathing even and shallow at once: {rb[:200]!r}")
+    if "never write the numbers" not in polish.messages("— Ripples —\nx", facts)[1]["content"].lower().replace(
+            "never write the numbers or", "never write the numbers"):
+        problems.append("the editor should be told to show the BODY lines, never to write their numbers")
+    s.eng.rules["narration"]["polish"]["body"] = False
+    if any(f.startswith("BODY:") for f in s.polish_facts([], [], [])):
+        problems.append("narration.polish.body false should leave the BODY lines out")
+    import cards
+    if float(cards.ALIVE.get("breath_min_px", 0)) < 2:
+        problems.append("window.alive.breath_min_px should keep a shallow breath visible")
+    return problems
+
+
 def limb_324_check():
     """Build 324: each part's report (window.limb_report) says how hurt it is, what it cost her, how it looks, what it
     is doing, the grips on it and what that does to her; every status has a tip with her own numbers; the match badge
@@ -4299,6 +4335,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "body325" for w in want):
+        t = time.time()
+        probs = body_325_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 325: body lines for the editor, shallow breaths still shown  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "limb324" for w in want):

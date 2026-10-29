@@ -654,6 +654,20 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 325
+- **Fix: her breathing stopped showing in a hard stretch of the fight.** A fast, shallow breath (her ribs guarded
+  past 150% damage, coils squeezing her, a choke) made her picture rise about one pixel, which rounds to nothing, so
+  the card looked still while the monitor said 40 to 70 breaths a minute. Now the top of every breath lifts her at
+  least window.alive.breath_min_px (3) pixels: a shallow breath is quick and small, but you can see it. Out cold
+  or with her heart stopped she is still as before.
+- **The online editor (narration.polish) now knows her body.** Its fact sheet has a BODY line for each fighter:
+  her heart rate against her own resting rate and what it means (pounding, racing, slowing under the coils, uneven,
+  stopped), her blood pressure, her breathing (how fast, how deep, why), her core heat, her air, her blood and where
+  she bleeds, her footing, her composure, her adrenaline; in coils, how far she is squeezed in, the blood flow cut
+  off, the pressure, her girth against normal, her heart's strength left, and each grip's pressure and how fast it
+  tightens. It is told to show all of this in what she feels and what can be seen and heard, never as numbers or
+  medical words. narration.polish.body false = no BODY lines.
+
 ## Build 324
 More of the fight you can see without remembering it, and a fix to the hold picture.
 - **Replay hits** (a button beside Effects): the blows of the beat shown flash and jolt on the cards again. It

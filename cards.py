@@ -1997,7 +1997,7 @@ def grip_lines(f):
 
 # ---- window.alive (since build 306): her real picture brought to life, and a heart monitor on every card ----
 ALIVE = {"enabled": True, "breathing": True, "pulse": True, "impact": True, "grey_in": True, "grip_outline": True,
-         "heart_monitor": True, "fps": 12, "breath_depth": 0.012, "breath_rest": 16, "heart_rest": 100,
+         "heart_monitor": True, "fps": 12, "breath_depth": 0.012, "breath_min_px": 3, "breath_rest": 16, "heart_rest": 100,
          "exert": 0.45, "pain": 0.3, "heart_max": 1.8, "throb_from": 20, "throb": 0.6, "jolt_px": 7,
          "jolt_seconds": 0.45, "grey_from": 0.55, "vignette": 0.75}
 

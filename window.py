@@ -658,7 +658,13 @@ class FighterCard(ttk.Frame):
                 lay.putalpha(lay.getchannel("A").point(lambda a, k=k: int(a * min(1.0, k))))
                 img.alpha_composite(lay)
         if bq and p.get("box"):
-            img = breathe_image(img, p["box"], float(o.get("breath_depth", 0.012)) * sg["depth"] * bq / 5.0)
+            # (since build 325) a shallow breath is still seen: never under breath_min_px at the top of it, or a
+            # fast, shallow breath (ribs guarded, coils round her: 60-70 a minute) rounded away to nothing
+            h_ = max(1, p["box"][3] - p["box"][1])
+            amt = float(o.get("breath_depth", 0.012)) * sg["depth"]
+            if sg["depth"] > 0:
+                amt = max(amt, float(o.get("breath_min_px", 3)) / h_)
+            img = breathe_image(img, p["box"], amt * bq / 5.0)
         if p.get("grey"):
             img = grey_image(img, p["grey"], float(o.get("vignette", 0.75)))
         ph = ImageTk.PhotoImage(img)

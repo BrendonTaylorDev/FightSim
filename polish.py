@@ -152,6 +152,13 @@ def messages(draft, facts, prior="", rules=None):
     user = ("FACTS (what really happened in this beat; never change them):\n"
             + "\n".join(f"- {f}" for f in facts if f) + "\n\n"
             # (since build 281, narration.character) who they are: the editor may give their prose that personality
+            # (since build 325, narration.polish.body) how to use the BODY lines
+            + ("BODY: each BODY line above is her body as it really is at the end of the beat. Let it show in what "
+               "she feels and what can be seen and heard: a racing or slowing, stumbling heartbeat, short shallow "
+               "breaths or heavy ones, heat or cold in her, the pressure of the coils and her ribs giving under it, "
+               "light-headedness, unsteady feet, frayed nerve. Never write the numbers or the medical words "
+               "(no 'mmHg', no 'blood pressure', no 'composure 40'), and add nothing the FACTS don't say.\n\n"
+               if any(str(f).startswith("BODY:") for f in facts if f) else "")
             + ("CHARACTER: each fighter's CHARACTER line above is who she is. Give her thoughts, her manner and the way "
                "she moves that personality, let her history and what the other is to her colour what she thinks, and "
                "show each '(her character...)' note in how she does what the FACTS say she does. Character never adds "
