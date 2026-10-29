@@ -223,6 +223,9 @@ def _give(eng, f, st, c, why, part="", extra=1.0, roll=True):
     if not _can(eng, f, st, c):
         return None
     t = tune(c, st)
+    if t["kind"] == "mind":
+        import body as _body
+        extra *= _body.mind_chance(eng, f, st)      # (since build 321) her composure and the fight's edge
     ch = min(0.95, float(t["chance"]) * float(c.get("chance_mult", 1.0)) * extra)
     if roll and not eng._chance(ch, f"{f.name} {WORD[st]} ({why})", WORD[st], "no"):
         return None
@@ -317,7 +320,9 @@ def on_hits(eng, a, d, move, hits, jolts=()):
     if c.get("mind", True):
         tough = max(0.3, eng.trait(d, "toughness"))
         stunned = any(j.get("status") == "stunned" for j in jolts or ())
-        if size >= float(tune(c, "shaken")["size"]) * float(c.get("size_mult", 1.0)) or stunned:
+        import body as _body
+        if size >= float(tune(c, "shaken")["size"]) * float(c.get("size_mult", 1.0)) * _body.shaken_size_mult(eng, d) \
+                or stunned:
             rec = _give(eng, d, "shaken", c, f"the force of {move.get('name', 'that blow')}", extra=1.0 / tough)
             add(rec)
             if rec:

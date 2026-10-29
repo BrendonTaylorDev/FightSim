@@ -2309,30 +2309,30 @@
         "Ice",
         "Flying"
       ],
-      "health": 2300,
+      "health": 2700,
       "body": {
-        "Head": 102,
-        "Crest": 72,
-        "Beak": 117,
-        "Left Eye": 56,
-        "Right Eye": 56,
-        "Neck": 81,
-        "Throat": 72,
-        "Chest": 117,
-        "Belly": 91,
-        "Upper Back": 122,
-        "Lower Back": 112,
-        "Left Shoulder": 112,
-        "Right Shoulder": 112,
-        "Left Wing": 107,
-        "Right Wing": 107,
-        "Left Wingtip": 86,
-        "Right Wingtip": 86,
-        "Left Thigh": 112,
-        "Right Thigh": 112,
-        "Left Talon": 107,
-        "Right Talon": 107,
-        "Long Tail": 86
+        "Head": 112,
+        "Crest": 79,
+        "Beak": 129,
+        "Left Eye": 62,
+        "Right Eye": 62,
+        "Neck": 89,
+        "Throat": 79,
+        "Chest": 129,
+        "Belly": 100,
+        "Upper Back": 134,
+        "Lower Back": 123,
+        "Left Shoulder": 123,
+        "Right Shoulder": 123,
+        "Left Wing": 118,
+        "Right Wing": 118,
+        "Left Wingtip": 95,
+        "Right Wingtip": 95,
+        "Left Thigh": 123,
+        "Right Thigh": 123,
+        "Left Talon": 118,
+        "Right Talon": 118,
+        "Long Tail": 95
       },
       "moves": [
         {
@@ -2440,7 +2440,11 @@
           "target": "targeted",
           "about": "strikes with spread wings"
         }
-      ]
+      ],
+      "traits": {
+        "toughness": 1.2,
+        "stamina": 1.1
+      }
     },
     {
       "name": "Ember",

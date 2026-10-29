@@ -654,6 +654,28 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 321
+Her mind simulated (body.mind, its own switch in rules.json), footing and heat given more weight, and Glacia made
+sturdier.
+- **Composure.** A running number, 100 calm. A beat that hurts her, being held or pinned, a choke or coils with her
+  air going, and being knocked down all cost her some. Landing her own blows gives some back.
+  - It settles back toward calm every beat, never goes below a floor, and the same blow costs less late in a long
+    fight: always temporary, never grinding her down for good.
+  - Low, she is UNNERVED: her blows and dodges a little weaker, the fear reactions (shaken, panicking) likelier, a
+    smaller blow enough to shake her, and she gives in to a hold a little sooner.
+- **Edge.** Who the fight is going for, from the health dealt and taken; with it on her side, emboldened is likelier.
+- These drive the mind reactions from build 308 rather than adding rival ones. The head blow's own "rattled" is
+  unchanged.
+- **More weight for builds 319 and 320**, as asked: footing knocks harder and matters more when it is low; hard
+  fighting heats her more, so a long, hard fight can leave her flushed; and the mind as above.
+- **Glacia (Articuno) made sturdier, like the legendary she is:**
+  - Health 2700 (was 2300), her parts 10% tougher, toughness 1.2, stamina 1.1. Her moves are unchanged.
+  - Fire still hits her hard, a clear weakness: Cinder (Charizard) now wins 63 of 100 against her, from about 90.
+- **Measured:**
+  - Nocturne won 181 of 300 against Ripples with all three on, 170 with them off.
+  - Per fight, about 4 beats unnerved and 1.8 staggers (1.4 off). Ordinary fights now get her flushed now and then;
+    a fire-heavy one does so more.
+
 ## Build 320
 Her body heat simulated (body.heat, its own switch in rules.json): her core temperature, carried from beat to beat.
 - **What heats and cools her.** Hard fighting warms her a little. Fire that hits her heats her and ice cools her,

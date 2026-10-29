@@ -2017,6 +2017,8 @@ STATUS_SIGNS.update({"bleeding": (0.08, 0.15, "bleeding"), "pale": (0.15, 0.2, "
                      "broken_bone": (0.12, 0.15, "a broken bone")})
 # (since build 319, body.footing)
 STATUS_SIGNS.update({"unsteady": (0.04, 0.1, "unsteady on her feet")})
+# (since build 321, body.mind) unnerved, her heart is quicker and her breath a little shallow
+STATUS_SIGNS.update({"unnerved": (0.1, 0.15, "unnerved")})
 # (since build 320, body.heat) heat makes her pant and her heart race; cold slows her breathing a little
 STATUS_SIGNS.update({"flushed": (0.06, 0.35, "hot"), "heat_exhausted": (0.12, 0.6, "overheated"),
                      "shivering": (0.03, 0.05, "shivering"), "numbed": (0.0, 0.0, "chilled through")})

@@ -63,6 +63,9 @@ _EXTRA = {
                         "a few beats (body.adrenaline)",
     "broken_bone": "a bone broken in the fight or found broken after it: blows with that limb much weaker, a "
                    "broken leg dodges worse; it heals, nothing permanent, and never her spine (body.bones)",
+    "unnerved": "her composure frayed by big blows, being held, her air going, being knocked down: her blows and dodges "
+               "a touch weaker, fear reactions (shaken, panicking) likelier, and she gives in to a hold a little "
+               "sooner; it settles back within a few beats, and less and less as a long fight goes on (body.mind)",
     "flushed": "hot from the fight (or the fire she has taken): her energy and breath come back slower, her blows and "
                "dodges a touch weaker, her heart quicker; she cools as she eases off (body.heat)",
     "heat_exhausted": "dangerously hot: her energy and breath come back much slower and she is weaker and slower; "

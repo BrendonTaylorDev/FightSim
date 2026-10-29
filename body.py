@@ -7,6 +7,7 @@ on her card.
   chest let her take only shallow breaths, being winded or coughing up water costs her some; breathing freely brings
   it back fast. Short of air she hits softer, dodges slower and gets her energy back slower. Under a choke she
   passes out when it runs out (it replaces the choke's fixed count of beats).
+- mind (since build 321): her composure and the fight's edge; see _mind_tick.
 - heat (since build 320): her core temperature; see _heat_tick.
 - footing (since build 319): how steady she is on her feet; see _footing_tick.
 - limbs: how tired each limb is, 0 to 100: her arms, legs, jaws, head, tail and wings. Every blow thrown with a
@@ -44,18 +45,21 @@ DEFAULTS = {
     "bones": {"enabled": True, "during_from": 320, "during_chance": 0.012, "end_from": 220, "end_span": 180,
               "end_chance": 0.5, "end_max": 0.6, "coil_mult": 1.6, "trapped_mult": 1.4, "blunt_mult": 1.5,
               "cut_mult": 0.5, "max_end": 2, "power_mult": 0.6, "dodge_legs": 0.8},
-    "footing": {"enabled": True, "per_damage": 0.18,
+    "footing": {"enabled": True, "per_damage": 0.24,
                 "regions": {"hind_low": 1.6, "hind_up": 1.3, "head": 1.4, "neck": 1.0, "fore_low": 0.6, "tail": 0.4},
                 "region_other": 0.8, "kinds": {"blunt": 1.2, "blast": 1.3, "grip": 0.6, "bite": 0.7, "claw": 0.5,
                                                "burn": 0.5, "shock": 0.9, "cold": 0.6},
                 "plans": {"biped": 1.0, "avian": 1.0, "quadruped": 0.75, "serpent": 0.5}, "stagger": 18,
                 "off_balance": 10, "regen": 16, "getup": 55, "slick_top": 85, "dazed_top": 70, "faint_top": 75,
-                "low": 60, "power_min": 0.9, "dodge_min": 0.85, "stumble": 0.6, "keep_feet": 0.5, "slip": 1.0,
-                "unsteady": 35},
-    "heat": {"enabled": True, "normal": 38.5, "per_energy": 0.013, "burn": 0.004, "cold": 0.004, "hit_max": 0.8, "sun": 0.12,
-             "rain": 0.1, "hail": 0.2, "water": 0.25, "held": 0.04, "cool": 0.15, "cool_spent": 0.5,
+                "low": 60, "power_min": 0.85, "dodge_min": 0.8, "stumble": 0.9, "keep_feet": 0.6, "slip": 1.0,
+                "unsteady": 40},
+    "heat": {"enabled": True, "normal": 38.5, "per_energy": 0.02, "burn": 0.003, "cold": 0.004, "hit_max": 0.6, "sun": 0.12,
+             "rain": 0.1, "hail": 0.2, "water": 0.25, "held": 0.04, "cool": 0.12, "cool_spent": 0.5,
              "own_type": 0.4, "warm": 1.5, "hot": 2.4, "chill": -1.2, "cold_at": -2.2, "min": -4.0, "max": 4.0,
              "regen_min": 0.75, "power_min": 0.93, "dodge_min": 0.93, "air_min": 0.7, "heart": 0.06},
+    "mind": {"enabled": True, "per_loss": 3.5, "held": 5, "air_fear": 14, "down": 12, "per_dealt": 0.8,
+             "settle": 0.15, "floor": 15, "damp_at": 40, "edge_gain": 2.0, "edge_decay": 0.7, "unnerved": 45,
+             "react": 1.0, "bold": 0.6, "tap": 0.15, "power_min": 0.96, "dodge_min": 0.95},
     "limbs": {"enabled": True, "strike": 7, "grip": 5, "rest": 6, "from": 30, "power_min": 0.75, "grip_break": 0.6,
               "dodge_legs": 0.25, "tired": 55},
 }
@@ -77,6 +81,8 @@ LOOK = {
     "light_headed": "LIGHT-HEADED from the blood she has lost: the world tilting, her legs unsure, a cold sweat",
     "keyed_up": "KEYED UP: adrenaline running hot, the pain dulled and far away, everything sharp and fast",
     "adrenaline_crash": "the ADRENALINE CRASH: the rush gone out of her, shaky and heavy, the pain flooding back",
+    "unnerved": "UNNERVED: her nerve frayed by what the fight has done to her; a flinch in her, a half-beat slow to "
+               "commit",
     "flushed": "FLUSHED with heat: panting, her body burning hot from the fight, her strength slower to come back",
     "heat_exhausted": "HEAT-EXHAUSTED: dangerously hot, panting hard, heavy and slow, her strength draining out",
     "shivering": "SHIVERING: chilled through, muscles tight and shaking, slow to move",
@@ -113,6 +119,8 @@ STORY = {
     "adrenaline_crash": ("the fire gone out of her: shaky, heavy-limbed, the pain all coming back at once",
                          "everything she pushed away catches up with her", "{other} sees her sag"),
     "broken_bone": ("the broken limb held close, useless", "every movement jars it", "{other} sees she can't use it"),
+    "unnerved": ("a flinch in her now, her eyes too quick, a half-beat slow to commit", "she is fighting the fear as "
+                "much as her opponent", "{other} sees the doubt in her"),
     "flushed": ("panting, her tongue out, heat coming off her", "she is burning up inside and can't shed it",
                 "{other} sees her pant"),
     "heat_exhausted": ("panting hard, heavy and slow, the heat dragging at every limb", "her head swims with the heat "
@@ -126,7 +134,7 @@ STORY = {
     "swollen": ("the beaten part puffed up, hot and tight under the fur", "it is stiff and won't move as it should",
                 "{other} sees the swelling"),
 }
-ENDS = {"flushed": "she cools down", "heat_exhausted": "the worst of the heat goes out of her",
+ENDS = {"unnerved": "she gathers her nerve", "flushed": "she cools down", "heat_exhausted": "the worst of the heat goes out of her",
         "shivering": "the shivering stops", "numbed": "warmth comes back into her limbs", "unsteady": "she gets her feet under her again", "bleeding": "the bleeding slows and stops", "pale": "some colour comes back into her",
         "light_headed": "the world steadies", "keyed_up": "the rush ebbs", "adrenaline_crash": "she steadies",
         "swollen": "the swelling eases a little", "broken_bone": "it is set and starts to heal",
@@ -135,7 +143,7 @@ ENDS = {"flushed": "she cools down", "heat_exhausted": "the worst of the heat go
         "tired_jaws": "her jaws have come back to her", "tired_head": "her neck has eased",
         "tired_tail": "her tail has come back to her", "tired_wings": "her wings have come back to her"}
 WORD = {k: k.replace("_", " ") for k in LOOK}
-ICON = {"flushed": "🥵", "heat_exhausted": "🫠", "shivering": "🥶", "numbed": "🧊", "unsteady": "🌀", "bleeding": "🩸", "pale": "🫥", "light_headed": "😵‍💫", "keyed_up": "⚡", "adrenaline_crash": "📉",
+ICON = {"unnerved": "😰", "flushed": "🥵", "heat_exhausted": "🫠", "shivering": "🥶", "numbed": "🧊", "unsteady": "🌀", "bleeding": "🩸", "pale": "🫥", "light_headed": "😵‍💫", "keyed_up": "⚡", "adrenaline_crash": "📉",
         "swollen": "🔴", "broken_bone": "🦴", "short_of_air": "😮‍💨", "starved_of_air": "🫁", "tired_arms": "💪", "tired_legs": "🦵", "tired_jaws": "🦷",
         "tired_head": "🤕", "tired_tail": "〰️", "tired_wings": "🪽"}
 
@@ -308,6 +316,9 @@ def power_mult(eng, a, move):
     cf = cfg(eng, "footing")
     if cf and move and not eng.is_ranged(move) and _on_feet(eng, a) and _footing(a) < float(cf["low"]):
         out.append(("her feet not under her", round(_footing_k(cf, a, "power_min"), 3)))
+    cm = cfg(eng, "mind")
+    if cm and a.status.get("unnerved"):
+        out.append(("unnerved", float(cm["power_min"])))
     hk = _heat_k(eng, a, "power_min")
     if hk < 1.0:
         out.append(("the heat in her" if _temp(a) > 0 else "the cold in her", round(hk, 3)))
@@ -349,11 +360,15 @@ def _blood_k(cb, st, key):
 
 
 def pain_resist_mult(eng, f):
-    """(body.adrenaline) adrenaline running: the pain counts for less against her (tap and resist checks)."""
-    cd = cfg(eng, "adrenaline")
-    if not cd:
-        return 1.0
-    return 1 + float(cd["pain"]) * float((f.learned.get("body") or {}).get("adrenaline", 0)) / 100.0
+    """(body.adrenaline) adrenaline running: the pain counts for less against her (tap and resist checks); (body.mind)
+    her composure gone, a little more."""
+    cd, cm = cfg(eng, "adrenaline"), cfg(eng, "mind")
+    m = 1.0
+    if cd:
+        m *= 1 + float(cd["pain"]) * float((f.learned.get("body") or {}).get("adrenaline", 0)) / 100.0
+    if cm:      # (since build 321, body.mind) her nerve frayed: she gives in a little sooner (at most x1 - tap)
+        m *= 1 - float(cm["tap"]) * (1 - _composure(f) / 100.0)
+    return m
 
 
 def dodge_mult(eng, d):
@@ -369,6 +384,9 @@ def dodge_mult(eng, d):
     if cb and float(st.get("blood", 100)) < float(cb["low"]):
         m *= _blood_k(cb, st, "dodge_min")
     m *= _heat_k(eng, d, "dodge_min")
+    cm = cfg(eng, "mind")
+    if cm and d.status.get("unnerved"):
+        m *= float(cm["dodge_min"])
     cf = cfg(eng, "footing")
     if cf and _on_feet(eng, d) and _footing(d) < float(cf["low"]):
         m *= _footing_k(cf, d, "dodge_min")
@@ -400,6 +418,29 @@ def _heat_k(eng, f, key, hot_only=False):
     else:
         return 1.0
     return 1 - (1 - float(ch[key])) * max(0.0, min(1.0, x))
+
+
+def _composure(f):
+    return float((f.learned.get("body") or {}).get("composure", 100.0))
+
+
+def mind_chance(eng, f, status):
+    """(body.mind, since build 321) How her state of mind changes the chance of a mind reaction (moves.reactions):
+    shaken and panicking likelier the more her composure has gone (up to x1 + react), emboldened likelier with the
+    fight going her way (up to x1 + bold), angry and frustrated as they were."""
+    cm = cfg(eng, "mind")
+    if not cm or f is None:
+        return 1.0
+    if status in ("shaken", "panicking", "wary_of_grip"):
+        return 1 + float(cm["react"]) * (1 - _composure(f) / 100.0)
+    if status == "emboldened":
+        return 1 + float(cm["bold"]) * max(0.0, float((f.learned.get("body") or {}).get("edge", 0.0))) / 100.0
+    return 1.0
+
+
+def shaken_size_mult(eng, f):
+    """(body.mind) Unnerved, a smaller blow shakes her (the size a blow needs x0.6 at no composure)."""
+    return 1.0 if not cfg(eng, "mind") else 0.6 + 0.4 * _composure(f) / 100.0
 
 
 def _on_feet(eng, f):
@@ -551,6 +592,7 @@ def tick(eng):
         events += _tissue_tick(eng, f, st)
         events += _footing_tick(eng, f, st)
         events += _heat_tick(eng, f, st)
+        events += _mind_tick(eng, f, st)
         ch_ = cfg(eng, "heart")
         if ch_:
             _heart_tick(eng, f, st, ch_)
@@ -776,6 +818,51 @@ def _heat_tick(eng, f, st):
     return ev
 
 
+def _mind_tick(eng, f, st):
+    """body.mind (since build 321): her state of mind, as two running numbers. COMPOSURE (0 to 100, 100 calm): the
+    health a beat costs her takes per_loss for every % of her full health, being held or pinned held a beat, a grip on
+    her throat or coils round her with her air going air_fear x the air gone, being knocked down down; landing her
+    own blows gives back per_dealt for every % of her opponent's health. All of it over her toughness, and damped as
+    the fight goes on (x1 / (1 + beat / damp_at): a long fight doesn't grind her nerve to nothing). It settles back
+    toward calm settle of the way every beat, and never goes under floor: it is always temporary. EDGE (-100 to 100):
+    who the fight is going for, from the beat's health dealt and taken (edge_gain a %), fading x edge_decay a beat.
+    Under unnerved she is UNNERVED (blows x power_min, dodging x dodge_min). Low composure makes the mind reactions that
+    come from fear likelier (shaken, panicking: mind_chance) and a smaller blow enough to shake her, and she gives in
+    to a hold a little sooner; a good edge makes her emboldened likelier. Every effect is small: it colours the fight,
+    it never decides it."""
+    cm = cfg(eng, "mind")
+    ev = []
+    if not cm:
+        return ev
+    hp = float(f.health)
+    st["m_prev"], st["m_turn"] = float(st.get("m_hp", hp)), eng.turn     # (her health as this beat began)
+    lost = max(0.0, st["m_prev"] - hp) / max(1.0, f.max_health) * 100.0
+    st["m_hp"] = round(hp, 2)
+    dealt = 0.0
+    for o in eng.fighters.values():
+        if o is not f and not o.eliminated:
+            so = o.learned.get("body") or {}
+            was = float(so["m_prev"]) if so.get("m_turn") == eng.turn else float(so.get("m_hp", o.health))
+            dealt += max(0.0, was - float(o.health)) / max(1.0, o.max_health) * 100.0
+    damp = 1.0 / (1.0 + eng.turn / max(1.0, float(cm["damp_at"])))
+    tough = max(0.5, float(eng.trait(f, "toughness")))
+    held = any(h.defender == f.name for h in eng.holds.values()) or bool(eng.pinned_by(f.name))
+    air = float(st.get("air", 100.0))
+    choked = any(h.defender == f.name and (re.search(r"(?i)neck|throat", h.part) or h.coil)
+                 for h in eng.holds.values())
+    drop = float(cm["per_loss"]) * lost + (float(cm["held"]) if held else 0.0) \
+        + (float(cm["air_fear"]) * (1 - air / 100.0) if choked else 0.0) \
+        + (float(cm["down"]) if f.name in getattr(eng, "_fresh_down", ()) else 0.0)
+    c = float(st.get("composure", 100.0))
+    c = c - drop * damp / tough + float(cm["per_dealt"]) * dealt * damp
+    c += (100.0 - c) * float(cm["settle"])
+    st["composure"] = round(max(float(cm["floor"]), min(100.0, c)), 1)
+    ed = float(st.get("edge", 0.0)) * float(cm["edge_decay"]) + float(cm["edge_gain"]) * (dealt - lost)
+    st["edge"] = round(max(-100.0, min(100.0, ed)), 1)
+    _status(eng, f, "unnerved", st["composure"] < float(cm["unnerved"]), "what the fight has done to her", ev)
+    return ev
+
+
 def _heart_tick(eng, f, st, c):
     """body.heart (since build 316): her heart rate as a running number. Each beat it moves toward what her body
     is asking of it (her resting rate, pushed up by how hard she has fought, the pain she is in, fear, panic or a
@@ -833,6 +920,7 @@ def card(f):
             "bleeding": {k: round(v, 2) for k, v in (st.get("bleed") or {}).items()},
             "adrenaline": round(float(st.get("adrenaline", 0))), "footing": round(float(st.get("footing", 100))),
             "heat": round(float(st.get("heat", 0)), 1),
+            "composure": round(float(st.get("composure", 100))), "edge": round(float(st.get("edge", 0))),
             "swell": {k: round(v) for k, v in (st.get("swell") or {}).items() if v >= 5},
             "fractures": sorted((f.learned.get("fractures") or {})), "limbs": {k: round(v) for k, v in (st.get("limbs") or {}).items()
                                                                if v >= 1}}

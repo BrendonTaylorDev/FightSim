@@ -800,6 +800,47 @@ def presets_help_check():
     return problems
 
 
+def mind_321_check():
+    """Build 321 (body.mind): a hard beat costs her composure and it settles back; the same beat costs less late in a
+    long fight; low composure makes a fear reaction likelier and she gives in a little sooner, the effects small;
+    landing blows gives the fight's edge; and it uses its own status name (not the head blow's "rattled")."""
+    import body as B
+    problems = []
+    drops = []
+    for turn in (1, 80):
+        e = Engine(seed=5, only=["Nocturne", "Ripples"])
+        r = e.get("Ripples")
+        e.turn = turn
+        B._mind_tick(e, r, B.state(r))
+        r.health -= r.max_health * 0.15
+        B._mind_tick(e, r, B.state(r))
+        drops.append(100 - B.state(r)["composure"])
+    if not drops[0] > drops[1] > 0:
+        problems.append(f"a hard beat should cost composure, less late in a long fight: {drops}")
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r, n = e.get("Ripples"), e.get("Nocturne")
+    B.state(r)["composure"] = 20.0
+    ch, tap = B.mind_chance(e, r, "shaken"), B.pain_resist_mult(e, r)
+    if not (1 < ch <= 1 + B.DEFAULTS["mind"]["react"] and 0.85 < tap < 1):
+        problems.append(f"low composure should make fear likelier and a tap a little sooner, mildly: {ch} {tap}")
+    seq = []
+    for _ in range(5):
+        e.turn += 1
+        B._mind_tick(e, r, B.state(r))
+        seq.append(B.state(r)["composure"])
+    if not all(b > a for a, b in zip([20.0] + seq, seq)):
+        problems.append(f"composure should settle back over the beats: {seq}")
+    B._mind_tick(e, n, B.state(n))
+    r.health -= r.max_health * 0.1
+    B._mind_tick(e, r, B.state(r))
+    B._mind_tick(e, n, B.state(n))
+    if not B.state(n).get("edge", 0) > 0:
+        problems.append(f"landing a hard beat should give her the edge: {B.state(n).get('edge')}")
+    if "rattled" in B.LOOK:
+        problems.append("body.mind must not reuse the head blow's status name")
+    return problems
+
+
 def heat_320_check():
     """Build 320 (body.heat): fire heats her (less if she is a Fire type), ice cools her, she settles back toward
     normal, and hot she is flushed with her energy coming back slower; it stays within its bounds."""
@@ -4110,6 +4151,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "mind321" for w in want):
+        t = time.time()
+        probs = mind_321_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 321: composure and edge, temporary, damped in long fights  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "heat320" for w in want):
