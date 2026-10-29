@@ -1177,7 +1177,8 @@ class FighterCard(ttk.Frame):
         self.en.delete("all")
         self.en.create_rectangle(0, 0, w * max(0.0, min(1.0, f["energy"] / 100.0)), 10, fill=C("#60a5fa"), outline="")
         halo_text(self.en, 6, 5, anchor="w", text=f"energy {f['energy']:.0f}", font=("Segoe UI", 7), fill=C("#111827"))
-        sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool) else
+        sts = ", ".join(f"{k.replace('_', ' ')} ({v})" if isinstance(v, (int, float)) and not isinstance(v, bool)
+                        and v < 99 else
                         k.replace("_", " ") for k, v in f["status"].items()) or "no statuses"
         self.state.configure(text=f"{f['posture']}  ·  {sts}")
         self._monitor(f)

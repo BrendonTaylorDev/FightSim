@@ -5237,6 +5237,18 @@ class Narrator:
                              + f"; {e['attacker']} is left with nothing in her grip. It does no damage, nobody falls, and "
                              f"no new attack follows it. When the beat ends, nothing of {poss(e['attacker'])} is on her.")
                 lines += self._choke_off_lines(e["defender"], e.get("parts") or [])
+            elif e["type"] == "fracture":
+                # (since build 318, body.bones) a bone really broken: in the fight (very rarely) or found after it
+                part_ = str(e.get("part") or "").lower()
+                lines.append(
+                    (f"AFTER THE MATCH, {poss(e['fighter']).upper()} {part_.upper()} IS BROKEN: what the match did to it "
+                     f"was more than the bone could take. Somewhere in the aftermath she or the other one finds it: "
+                     if e.get("end") else
+                     f"{poss(e['fighter']).upper()} {part_.upper()} BREAKS under it: a crack she feels more than hears, "
+                     f"a sick give where it should hold. ")
+                    + f"tell it plainly and without gore (the wrongness of it, the deep hot ache, how she holds it, that "
+                      f"it won't take her weight or her strength now). It is a clean break that will heal: nothing "
+                      f"permanent, nothing that leaves her lame or paralysed.")
             elif e["type"] == "reaction":
                 # (since build 308, moves.reactions) her body or her mind reacting, between the blows
                 st_ = e.get("status")

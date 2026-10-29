@@ -1456,6 +1456,11 @@ class Display:
                 out.append(f"🌫️ {poss_word(e['fighter'])} sight greys out (1 beat: dodges and hits worse)")
             elif e["type"] == "zero_stage":
                 out.append(f"🩸 {e['fighter']} is past {e['at']}% health: {e['stage']}")
+            elif e["type"] == "fracture":
+                # (since build 318, body.bones)
+                out.append(f"🦴 {poss_word(e['fighter'])} {str(e.get('part') or '').lower()} is BROKEN"
+                           + (" (found after the match)" if e.get("end") else "")
+                           + ": it heals, nothing permanent (body.bones)")
             elif e["type"] == "refuses_to_fall":
                 out.append(f"🩸 {e['fighter']} is below zero health and refuses to go down (once a fight)")
             elif e["type"] == "adrenaline":

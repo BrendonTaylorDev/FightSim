@@ -52,6 +52,19 @@ _EXTRA = {
     "greyed": "a moment from blacking out",
     "overextended": "wide open: her dodging is down to a fraction",
     "bound": "that limb is numb and weak",
+    "bleeding": "her open wounds (bites and claws) are losing blood; they clot over a few beats, slower while a "
+                "grip is on them (body.blood)",
+    "pale": "she has lost enough blood to show it: her blows and dodges a little weaker, her heart quicker, her blood "
+            "pressure lower; it is never a death (body.blood)",
+    "light_headed": "she has lost a lot of blood: weaker and slower, her heart racing, her pressure low (body.blood)",
+    "keyed_up": "adrenaline running high: the pain counts for less against her, her blows a touch harder, her heart "
+                "fast; when it runs out there is a crash (body.adrenaline)",
+    "adrenaline_crash": "the rush has run out: her strength comes back slower and her blows are a little weaker for "
+                        "a few beats (body.adrenaline)",
+    "broken_bone": "a bone broken in the fight or found broken after it: blows with that limb much weaker, a "
+                   "broken leg dodges worse; it heals, nothing permanent, and never her spine (body.bones)",
+    "swollen": "a beaten part swelling up over the beats after the blow: stiff, its blows weaker, swollen legs dodge "
+               "worse; it goes down slowly (body.tissue)",
     "short_of_air": "her blows softer, her dodging slower and her energy coming back slower, the less air she has "
                     "(body.air); it comes back when she can breathe freely",
     "starved_of_air": "everything she does weaker and slower; under a choke she is close to going under (body.air)",
@@ -143,7 +156,7 @@ def status_text(key, left, rules):
     """The whole tip for one status: its name, beats left, what it is, what it does."""
     name = key.replace("_", " ")
     head = name.capitalize() + (f" ({left} more beat{'s' if left != 1 else ''})"
-                                if isinstance(left, (int, float)) and not isinstance(left, bool) and left > 0 else "")
+                                if isinstance(left, (int, float)) and not isinstance(left, bool) and 0 < left < 99 else "")
     parts = [head]
     what = look(key)
     if what:

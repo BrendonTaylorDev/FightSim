@@ -585,10 +585,13 @@ def _ragged(rng, x0, y0, x1, y1, n, jit):
     return pts
 
 
-def _mark(kind, soft, sharp, x, y, u, tier, rng, fresh):
+def _mark(kind, soft, sharp, x, y, u, tier, rng, fresh, age=None, swell=0.0, bleed=0.0):
     """One kind of mark at (x, y): soft (blurred later: bruising, soot, frost haze, blood seeping) and sharp (cuts,
-    punctures, crystals). u: pixels per point at this picture's size; tier 1-5; fresh: made this beat or the last."""
-    r = (9 + 3.5 * tier) * u
+    punctures, crystals). u: pixels per point at this picture's size; tier 1-5; fresh: made this beat or the last.
+    (since build 318, body.tissue and body.blood) swell: how swollen the part is (0-100), the bruise spreading with
+    it; age: beats since it was hit, a bruise going from angry red to purple to a dark, yellow-edged old one; bleed:
+    how fast it is bleeding, more blood running from it."""
+    r = (9 + 3.5 * tier) * u * (1.0 + 0.4 * max(0.0, min(100.0, swell)) / 100.0)
     u = u * 1.4          # (lines, dots and crystals a little heavier than the spacing, so they read on the card)
     pop = 1.15 if fresh else 1.0
 
@@ -666,13 +669,25 @@ def _mark(kind, soft, sharp, x, y, u, tier, rng, fresh):
             if tier >= 3:
                 sharp.ellipse((px - u, py - u, px + u, py + u), fill=(110, 10, 20, A(200)))
     else:  # blunt: a bruise that darkens and swells
-        soft.ellipse((x - r * 1.1, y - r * 0.8, x + r * 1.1, y + r * 0.8), fill=(70, 30, 90, A(40 + 22 * tier)))
-        if tier >= 3:
-            soft.ellipse((x - r * 0.55, y - r * 0.4, x + r * 0.55, y + r * 0.4), fill=(50, 15, 60, A(60 + 15 * tier)))
+        # (since build 318) it ages: angry red-purple when fresh, purple, then dark with a yellowing edge
+        old_ = 0 if age is None else int(age)
+        body_c, core_c = (((150, 40, 75), (110, 20, 50)) if old_ <= 1 else ((70, 30, 90), (50, 15, 60)) if old_ <= 6
+                          else ((55, 40, 80), (40, 30, 60)))
+        if old_ > 10:
+            soft.ellipse((x - r * 1.35, y - r * 1.0, x + r * 1.35, y + r * 1.0), fill=(150, 150, 60, A(30 + 6 * tier)))
+        soft.ellipse((x - r * 1.1, y - r * 0.8, x + r * 1.1, y + r * 0.8), fill=body_c + (A(40 + 22 * tier),))
+        if tier >= 3 or swell >= 50:
+            soft.ellipse((x - r * 0.55, y - r * 0.4, x + r * 0.55, y + r * 0.4), fill=core_c + (A(60 + 15 * tier),))
         if tier >= 2 and rng.random() < 0.6:
             px = x + rng.uniform(-0.4, 0.4) * r
             sharp.line(_ragged(rng, px - r * 0.3, y, px + r * 0.3, y + rng.uniform(-0.2, 0.2) * r, 3, u),
                        fill=(140, 20, 30, A(110 + 15 * tier)), width=max(1, int(0.7 * u)))   # the skin split
+    if bleed >= 0.15:
+        # (since build 318, body.blood) bleeding now: fresh blood running from it, more the faster it bleeds
+        for _i in range(min(4, 1 + int(bleed * 2.5))):
+            px = x + rng.uniform(-0.5, 0.5) * r
+            sharp.line([(px, y), (px + rng.uniform(-1, 1) * u, y + r * rng.uniform(0.5, 1.1))],
+                       fill=(170, 10, 25, A(190)), width=max(1, int(1.1 * u)))
     if tier >= 5:
         # ruined: swollen and dark, blood under and around it, whatever did it
         soft.ellipse((x - r * 1.25, y - r, x + r * 1.25, y + r), fill=(90, 10, 25, A(105)))
@@ -689,6 +704,8 @@ def _marks_layer(src, f, spots, o):
     u = S * W / PIC
     least = float(o.get("marks_from", 30))
     marks = f.get("marks") or {}
+    bd = f.get("body") or {}
+    swell, bleed = bd.get("swell") or {}, bd.get("bleeding") or {}
     for part, dmg, res in sorted(f["parts"], key=lambda t: t[1]):
         tier = mark_tier(dmg)
         if dmg < least or not tier or part not in spots:
@@ -702,7 +719,8 @@ def _marks_layer(src, f, spots, o):
         for i, k in enumerate(kinds):
             # a second kind sits a little to one side of the first, a step lighter
             dx, dy = (rng.uniform(-6, 6) * u, rng.uniform(-4, 4) * u) if i else (0, 0)
-            _mark(k, soft, sharp, x + dx, y + dy, u, max(1, tier - i), rng, fresh)
+            _mark(k, soft, sharp, x + dx, y + dy, u, max(1, tier - i), rng, fresh, age=age,
+                  swell=float(swell.get(part, 0)), bleed=float(bleed.get(part, 0)) if i == 0 else 0.0)
     soft_im = soft_im.filter(ImageFilter.GaussianBlur(3 * u))
     soft_im.alpha_composite(sharp_im)
     return soft_im.resize((W, H), Image.LANCZOS)
@@ -1992,6 +2010,11 @@ STATUS_SIGNS.update({"panicking": (0.3, 0.6, "panicking"), "shaken": (0.12, 0.15
                      "overheated": (0.15, 0.4, "overheated"), "nosebleed": (0.0, 0.1, "nosebleed")})
 # (since build 314, body.air) short of air, she breathes fast and her heart works harder
 STATUS_SIGNS.update({"short_of_air": (0.12, 0.6, "short of air"), "starved_of_air": (0.25, 0.9, "starved of air")})
+# (since build 318: body.blood, body.adrenaline, body.tissue)
+STATUS_SIGNS.update({"bleeding": (0.08, 0.15, "bleeding"), "pale": (0.15, 0.2, "pale from blood loss"),
+                     "light_headed": (0.22, 0.3, "light-headed"), "keyed_up": (0.3, 0.3, "keyed up"),
+                     "adrenaline_crash": (-0.05, 0.1, "the adrenaline crash"), "swollen": (0.03, 0.0, "swelling"),
+                     "broken_bone": (0.12, 0.15, "a broken bone")})
 TORSO_WORDS = ("chest", "rib", "stomach", "belly", "flank", "torso")
 
 
@@ -2045,7 +2068,10 @@ def body_signs(f, o=None, rest=None):
             heart = rest * 0.75
         irregular, stopped = "paralyzed" in st or air > 70, False
         up = heart / rest - 1.0
-        bp = [int(round(120 * (1 + 0.35 * up) / 5) * 5), int(round(80 * (1 + 0.2 * up) / 5) * 5)]
+        # (since build 318, body.blood) the blood she has lost brings her pressure down, whatever her heart does
+        bl = float((f.get("body") or {}).get("blood", 100) or 100)
+        bk = 0.55 + 0.45 * max(0.0, min(1.0, (bl - 40.0) / 60.0)) if bl < 100 else 1.0
+        bp = [int(round(120 * (1 + 0.35 * up) * bk / 5) * 5), int(round(80 * (1 + 0.2 * up) * bk / 5) * 5)]
     br_rest = float(o.get("breath_rest", 16))
     breath = br_rest * (1.0 + 1.3 * exert + 0.4 * pain + bm)
     depth = 1.0 + 0.5 * exert

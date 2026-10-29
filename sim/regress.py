@@ -800,6 +800,63 @@ def presets_help_check():
     return problems
 
 
+def body_318_check():
+    """Build 318 (body.blood, body.adrenaline, body.tissue, body.bones): a bite opens a wound that bleeds and clots,
+    never below the floor; a blow makes a part swell over the next beats; adrenaline rises with a hard beat and ebbs;
+    bones break only on badly worn parts, never the spine or neck, and are told."""
+    import body as B
+    problems = []
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r = e.get("Ripples")
+    e._source = "Nocturne's Bite"
+    e._apply_damage(r, "Left Flank", 60.0)
+    bl0 = dict(B.state(r).get("bleed") or {})
+    vols = []
+    for _ in range(6):
+        e.turn += 1
+        e.beat()
+        vols.append(B.state(r)["blood"])
+    if not bl0 or not (vols[0] < 100 and all(b <= a + 0.2 for a, b in zip(vols, vols[1:]))) \
+            or B.state(r).get("bleed", {}).get("Left Flank", 0) >= bl0.get("Left Flank", 0):
+        problems.append(f"a bite should open a bleeding wound that loses blood and clots: {bl0} {vols}")
+    B.state(r)["blood"] = 10.0
+    B._blood_tick(e, r, B.state(r))
+    if B.state(r)["blood"] < float(B.DEFAULTS["blood"]["floor"]):
+        problems.append("blood loss should never go below its floor")
+    e2 = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r2 = e2.get("Ripples")
+    e2._source = "Nocturne's Tackle"
+    e2._apply_damage(r2, "Left Thigh", 80.0)
+    sw = []
+    for _ in range(5):
+        e2.turn += 1
+        e2.beat()
+        sw.append(B.state(r2).get("swell", {}).get("Left Thigh", 0))
+    if not (sw[0] > 0 and sw[2] > sw[0]):
+        problems.append(f"a blow should make the part swell up over the next beats: {sw}")
+    r2.health -= r2.max_health * 0.2
+    e2.turn += 1
+    e2.beat()
+    a1 = B.state(r2)["adrenaline"]
+    for _ in range(4):
+        e2.turn += 1
+        e2.beat()
+    if not (a1 > 30 and B.state(r2)["adrenaline"] < a1):
+        problems.append(f"adrenaline should rise with a hard beat and ebb after: {a1} then {B.state(r2)['adrenaline']}")
+    if B.can_break(e2, "Upper Back") or B.can_break(e2, "Lower Neck") or not B.can_break(e2, "Left Ribs"):
+        problems.append("ribs may break, never the back or the neck")
+    e3 = Engine(seed=5, only=["Nocturne", "Ripples"])
+    r3 = e3.get("Ripples")
+    e3.rules["body"]["bones"]["end_chance"] = 1.0
+    for p_ in r3.parts.values():
+        p_.damage = 400.0
+    e3.eliminate("Ripples", "test")
+    fr = r3.learned.get("fractures") or {}
+    if not fr or len(fr) > int(B.DEFAULTS["bones"]["max_end"]) or any(not B.can_break(e3, p_) for p_ in fr):
+        problems.append(f"a ruined fighter should be found with a bone or two broken, never her spine: {fr}")
+    return problems
+
+
 def finishes_317_check():
     """Build 317 (match finishes): knockouts go by where the blows landed (head or body, a body knockout folding her
     unable to rise; limbs alone hardly ever), a submission match can't be ended by the director, a starting pin
@@ -3974,6 +4031,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "body318 blood bones" for w in want):
+        t = time.time()
+        probs = body_318_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 318: blood loss, swelling, adrenaline, broken bones  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "finishes317 ko317 pin317" for w in want):

@@ -654,6 +654,37 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 318
+More of her body simulated: blood loss, adrenaline, swelling and broken bones. Each is its own switch in rules.json
+(body.blood, body.adrenaline, body.tissue, body.bones), is told to the story and shows on her card (hover the status
+line).
+- **Blood (body.blood).** A bite or a claw opens the part it hurts to bleed. Each wound clots over a few beats, more
+  slowly while a grip is on it. She is BLEEDING while it runs fast, PALE once she has lost enough, LIGHT-HEADED past
+  that. Losing blood weakens her blows and dodges a little, quickens her heart and lowers her blood pressure on the
+  monitor. It never goes below a floor: never a death. The card draws blood running from a bleeding wound.
+- **Adrenaline (body.adrenaline).** It rises with a hard beat, with being held or pinned, and with her health low, and
+  ebbs every beat. It dulls the pain (she resists a tap harder), adds a little to her blows and quickens her heart;
+  high, she is KEYED UP. When a big rush runs out, a short CRASH. The one-time surge at her last strength is still its
+  own thing.
+- **Swelling (body.tissue).** A blow sets how far a part will swell, and it swells toward that over the next beats,
+  blunt blows most, then going down slowly. A swollen limb is stiff (its blows weaker), and swollen legs dodge worse.
+  On her card the bruises spread as the part swells and age: angry red-purple when fresh, then purple, then dark with
+  a yellowing edge.
+- **Broken bones (body.bones).**
+  - Very rarely in a fight: a blow or a grip that takes a bone past 320% damage.
+  - At the end of her match: on parts worn past 220%, likelier the worse they are. Ribs inside coils are likelier,
+    so a constrictor's match tends to break ribs, and so is a limb held in a grip.
+  - At most two at the end. A broken limb hits much weaker, and a broken leg dodges worse.
+  - Never her spine, back, neck or skull. Told plainly and without gore. It heals: nothing permanent.
+- **Measured:**
+
+  | | New systems off | New systems on |
+  |---|---|---|
+  | Nocturne vs Ripples, 300 knockout fights | Nocturne 186 wins, 39.4 beats | Nocturne 178 wins, 39.8 beats |
+
+  Bones broken in a fight: 2 in 100 normal fights, 6 in 60 three-tap constrictor matches (those run about 100
+  beats). At the end of the match: about 1 in 5 normal fights, about one per constrictor match, mostly ribs.
+
 ## Build 317
 How matches end: pins still the usual way, knockouts by where the blows land, pins worn down by what they really do,
 and each special match closed to the other endings.

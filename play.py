@@ -31,7 +31,7 @@ import llm
 import polish
 import body as _body
 
-VERSION = "2026-10-29 build 317 (how matches end: pins, knockouts by where they land, neck grips in pins)"
+VERSION = "2026-10-29 build 318 (simulated body: blood loss, adrenaline, swelling, broken bones)"
 
 HELP = """
 =============================================================================================
@@ -1801,7 +1801,8 @@ class Session:
         # what kind of wound each part carries (claw, bite, blunt, grip, shock, cold): blood needs a claw or a bite
         self.narrator.wound_kinds = {k: {self.eng._mark_kind(c) for c in v if c} for k, v in self.eng.injury_log.items()}
         # (since build 308, moves.reactions) who is bleeding from a reaction (a nosebleed, a cut eye, bite wounds)
-        self.narrator.bleeding = {f.name: [s for s in ("nosebleed", "blood_in_eye", "bite_wounds", "stinging_cuts")
+        self.narrator.bleeding = {f.name: [s for s in ("nosebleed", "blood_in_eye", "bite_wounds", "stinging_cuts",
+                                                       "bleeding")
                                            if self.eng.has(f, s)] for f in self.eng.fighters.values()}
         self.narrator.bleeding = {k: v for k, v in self.narrator.bleeding.items() if v}
         self.narrator.first_hurt = {f.name: dict(f.learned.get("first_hurt") or {}) for f in self.eng.fighters.values()}

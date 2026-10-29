@@ -675,6 +675,8 @@ class Engine:
 
         pain_a = tier_for(p.damage, pain_tiers(r))
         htier_a = tier_for(self._health_pct(defender), r["health_tiers"])
+        if self._source and p.damage > dmg_b:
+            body.on_damage(self, defender, p.name, p.damage - dmg_b, self._source)   # (since build 318) bleeding, swelling
         if self._source and taken >= 1:
             # the first thing that ever hurt this part, and when (for callbacks much later in the fight)
             defender.learned.setdefault("first_hurt", {}).setdefault(p.name, [self._source, self.turn + 1])
@@ -7196,6 +7198,22 @@ class Engine:
             return "cold"
         return "blunt"
 
+    def wound_kind(self, src):
+        """What a cause of harm leaves on her: claw, bite, blunt, grip, shock, cold or burn (the marks on her picture,
+        what bleeds, what swells)."""
+        k = self._mark_kind(src)
+        if k == "blunt":
+            m = re.match(r"^.+?'s? (.+?)(?: \(.*\))?$", str(src or ""))
+            mv = (self.dex_move(m.group(1)) if m else None) or {}
+            s = str(src or "").lower()
+            # (a move missing from moves.json still says what it is in its own name)
+            k = ("burn" if mv.get("type") == "Fire" or re.search(r"flame|fire|ember|burn|scorch|heat", s) else
+                 "claw" if re.search(r"slash|claw|swipe|scratch|rake|cut|talon", s) else
+                 "bite" if re.search(r"bite|fang|crunch|jaws|teeth", s) else
+                 "shock" if re.search(r"thunder|shock|spark|volt|electr", s) else
+                 "cold" if re.search(r"\bice\b|icy|frost|freez|blizzard|hail", s) else k)
+        return k
+
     def picture_marks(self, f, least=20):
         """What the window and exported cards draw on each hurt part (window.damage_marks): {part: {"kinds", "age"}}.
         kinds: the marks of what hurt it, up to two (claw, bite, blunt, grip, shock, cold, and burn for fire); age:
@@ -7206,17 +7224,7 @@ class Engine:
                 continue
             kinds = []
             for src in self.injury_causes(f"{f.name}|{p.name}", 2):
-                k = self._mark_kind(src)
-                if k == "blunt":
-                    m = re.match(r"^.+?'s? (.+?)(?: \(.*\))?$", str(src or ""))
-                    mv = (self.dex_move(m.group(1)) if m else None) or {}
-                    s = str(src or "").lower()
-                    # (a move missing from moves.json still says what it is in its own name)
-                    k = ("burn" if mv.get("type") == "Fire" or re.search(r"flame|fire|ember|burn|scorch|heat", s) else
-                         "claw" if re.search(r"slash|claw|swipe|scratch|rake|cut|talon", s) else
-                         "bite" if re.search(r"bite|fang|crunch|jaws|teeth", s) else
-                         "shock" if re.search(r"thunder|shock|spark|volt|electr", s) else
-                         "cold" if re.search(r"\bice\b|icy|frost|freez|blizzard|hail", s) else k)
+                k = self.wound_kind(src)
                 if k not in kinds:
                     kinds.append(k)
             t = (getattr(self, "hit_turn", None) or {}).get(f"{f.name}|{p.name}")
@@ -9492,6 +9500,11 @@ class Engine:
         self.involved = set()
         self.beat_loss = {}   # health.soft_cap counts each beat on its own
         self._pain_tick()
+        # (since build 318) a bone broken this beat (body.bones), told this beat, not the next
+        frac = [e for e in self._pending_events if e.get("type") == "fracture"]
+        if frac:
+            events += frac
+            self._pending_events = [e for e in self._pending_events if e.get("type") != "fracture"]
         return events
 
     def _pain_tick(self):
@@ -10760,7 +10773,8 @@ class Engine:
             s_ = max(0.0, min(100.0, self._health_pct(d)))   # (her overall health: what she has left to resist with)
             power = float(tcfg.get("resist_power", 0.8))
             surge = float(tcfg.get("surge_resist", 1.5)) if self.has(d, "adrenaline") else 1.0
-            resist = max(10.0, float(tcfg.get("resist", 130)) * (s_ / 100.0) ** power * surge)
+            resist = max(10.0, float(tcfg.get("resist", 130)) * (s_ / 100.0) ** power * surge
+                         * body.pain_resist_mult(self, d))     # (since build 318) adrenaline dulls it
             over = pain - resist
             ceiling = float(tcfg.get("max", 0.85))
             ccl = tcfg.get("climb") or {}
@@ -11947,6 +11961,7 @@ class Engine:
         d = self.get_active(name)
         was_down = d.name in self.downed
         self.__dict__.setdefault("out_reason", {})[d.name] = reason
+        body.end_fractures(self, d)        # (since build 318, body.bones) what the match broke in her
         ended = self._put_out(d)
         if self.facing.get(d.name) == "sitting up":   # nobody stays sitting once she's out: she slumps over
             self.facing[d.name] = self.rng.choice(["on her side", "face-up"])
@@ -12728,14 +12743,18 @@ class Engine:
                 + ", ".join(f"{n} ({src})" for n, (src, _) in big))
 
     def breakable_parts(self, f):
-        """Parts whose bones may break: devastated, on a fighter whose overall health is below the limit."""
+        """Parts whose bones may break: devastated, on a fighter whose overall health is below the limit; and
+        (since build 318, body.bones) any the engine has really broken, out of the fight or not."""
         cfg = self.rules.get("narration", {}).get("bone_break", {})
+        broken = list((f.learned.get("fractures") or {}))
         if f.eliminated or f.health >= float(cfg.get("max_health", 0)):
-            return []
+            return broken
         need = float(cfg.get("min_part_damage", 300))
         soft = [str(w).lower() for w in cfg.get("boneless", [])]     # (no bone in a stomach or a fin to break)
-        return [p.name for p in f.parts.values() if p.damage >= need and not self.BONELESS.search(p.name)
-                and not any(re.search(r"\b" + re.escape(w) + r"s?\b", p.name.lower()) for w in soft)]
+        return list(dict.fromkeys(broken + [p.name for p in f.parts.values() if p.damage >= need
+                                            and not self.BONELESS.search(p.name)
+                                            and not any(re.search(r"\b" + re.escape(w) + r"s?\b", p.name.lower())
+                                                        for w in soft)]))
 
     # parts with no bone in them to break (soft belly, the throat's cartilage, ears, fins, a nose)
     BONELESS = re.compile(r"\b(?:belly|stomach|midsection|throat|ears?|eyes?|nose|fins?|lips?|sac|wattle)\b", re.I)
