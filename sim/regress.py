@@ -800,6 +800,67 @@ def presets_help_check():
     return problems
 
 
+def coils_326_check():
+    """Build 326: out in the coils with her heart stopped, her card keeps the coils' monitor every beat and she is not
+    breathing; when the coiler lets go early her heart starts again at once, not at the next hold's end; and a
+    second constriction on a part an earlier tap used up still squeezes her (its monitor shown, its blackout counted
+    for a free part of the band)."""
+    import play
+    import cards
+    problems = []
+    s = H.session(1, fighters="Seraphina,Ripples")
+    e = s.eng
+    sub = e.rules["finish"]["submission"]
+    sub["enabled"] = True
+    sub["taps"]["enabled"] = True
+    H.beat(s, [{"attacker": "Seraphina", "defender": "Ripples", "action": "strike", "move": "Dragon Rush",
+                "part": "Left Hip", "severity": "heavy"}], [])
+    try:
+        e.start_submission("Seraphina", "Ripples", "upright coil")
+    except ValueError:
+        e.start_submission("Seraphina", "Ripples", "coil crush")
+    r = e.get("Ripples")
+
+    def signs():
+        sn = next(f for f in play.fight_snapshot(s)["fighters"] if f["name"] == "Ripples")
+        return cards.body_signs(sn, cards.alive_opts(e.rules)), sn
+    sq = {"attacker": "Seraphina", "defender": "Ripples", "action": "breather", "flavor": "squeezes"}
+    for _ in range(24):
+        H.beat(s, [sq], [])
+        if r.learned.get("limp"):
+            break
+    if not r.learned.get("limp"):
+        return ["the coils never put her out (the check needs it)"]
+    sg, _ = signs()
+    if not sg["coiled"] or sg["breath"] or sg["heart"]:
+        problems.append(f"out in the coils, heart stopped: the coils' monitor should show, no breath, no heart: "
+                        f"coiled {sg['coiled']} breath {sg['breath']} heart {sg['heart']}")
+    e.release_between("Seraphina", "Ripples", "spent")
+    H.beat(s, [dict(sq, flavor="watches")], [])
+    sg, _ = signs()
+    if r.learned.get("limp") or not sg["heart"] or not sg["breath"]:
+        problems.append(f"coils off early: her heart and breathing should start again at once: heart {sg['heart']} "
+                        f"breath {sg['breath']} limp {r.learned.get('limp')}")
+    before = list(e.taps_given(r))
+    try:
+        e.start_submission("Seraphina", "Ripples", "upright coil")
+    except ValueError:
+        e.start_submission("Seraphina", "Ripples", "coil crush")
+    seen = False
+    for _ in range(24):
+        H.beat(s, [sq], [])
+        sg, sn = signs()
+        seen = seen or bool(((sn.get("grips") or {}).get("tap") or {}).get("vitals", {}).get("squeeze"))
+        if r.learned.get("limp") or not e.holds or e.winner():
+            break
+    if not seen:
+        problems.append("a second constriction on a used-up part should still squeeze her and show on her card")
+    new = list(e.taps_given(r))[len(before):]
+    if new and (None in new or new[0] in before):
+        problems.append(f"the second blackout should count for a part not used yet: {before} then {new}")
+    return problems
+
+
 def body_325_check():
     """Build 325: the editor's facts (narration.polish.body) carry each fighter's body as the monitor shows it, the
     coils' squeeze too, with the instruction to show it and never say the numbers; and a shallow breath still moves
@@ -4335,6 +4396,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "coils326" for w in want):
+        t = time.time()
+        probs = coils_326_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 326: heart stopped in the coils, early release, second constriction  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "body325" for w in want):

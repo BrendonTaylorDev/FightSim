@@ -5161,8 +5161,11 @@ class Narrator:
                     f"never a death. She does NOT come round this beat.")
             elif e["type"] == "heart_back":
                 lines.append(
-                    f"{e['attacker']} UNWINDS her coils from {e['defender']} this beat, at last. As they come away, "
-                    f"{poss(e['defender'])} HEART STARTS AGAIN on its own: a thud, a pause, another, ragged and then "
+                    (f"{poss(e['attacker'])} coils are off {e['defender']} already (they came away a moment ago, her "
+                     f"heart still stopped and her chest still). Now "
+                     if e.get("off") else
+                     f"{e['attacker']} UNWINDS her coils from {e['defender']} this beat, at last. As they come away, ")
+                    + f"{poss(e['defender'])} HEART STARTS AGAIN on its own: a thud, a pause, another, ragged and then "
                     f"steadier; a long shuddering breath goes into her, then another; the colour comes back into her "
                     f"lips and paws, and with the blood rushing back come pins and needles and a pounding head. She "
                     f"comes round slowly, dizzy and weak, not sure for a moment where she is. No lasting harm: THE "

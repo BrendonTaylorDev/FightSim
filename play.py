@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-29 build 325 (shallow breathing still shows; the editor knows her body)"
+VERSION = "2026-10-29 build 326 (the heart in the coils: restarts, no breath, the monitor stays, second coils)"
 
 HELP = """
 =============================================================================================

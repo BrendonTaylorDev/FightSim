@@ -2078,7 +2078,9 @@ def body_signs(f, o=None, rest=None):
             else 0.0
         if out and not (tracked == 0):
             heart = rest * 0.75
-        irregular, stopped = "paralyzed" in st or air > 70, False
+        # (since build 326) her heart stopped in the coils (body.heart at 0): no heartbeat, and no breathing until it
+        # starts again, coils on her or not
+        irregular, stopped = "paralyzed" in st or air > 70, tracked is not None and float(tracked) <= 0
         up = heart / rest - 1.0
         # (since build 318, body.blood) the blood she has lost brings her pressure down, whatever her heart does
         bl = float((f.get("body") or {}).get("blood", 100) or 100)

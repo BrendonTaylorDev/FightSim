@@ -349,7 +349,8 @@ def body_fact(eng, snap_f):
     rest, hr = sg["heart_rest"], sg["heart"]
     r = hr / rest if rest else 1.0
     if sg.get("stopped"):
-        bits.append("heart STOPPED for the moment (it starts again once the coils come off)")
+        bits.append("heart STOPPED for the moment, and NOT BREATHING: her chest still, no breath at all (both start "
+                    "again once the coils come off)")
     else:
         bits.append(f"heart {hr} a minute against her resting {rest} ("
                     + ("racing, effort, pain and fear at full stretch" if r >= 1.55 else

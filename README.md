@@ -654,6 +654,21 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 326
+Fixes from the Seraphina vs Ripples three-tap match (her heart stopped in the coils).
+- **Her heart starts again whenever the coils come off.** When Seraphina let go early (spent), Ripples' heart stayed
+  stopped with no coils on her for five beats, until the next hold ended; now it starts again the beat they come
+  away, racing as the blood comes back, and the narrator is told the coils are already off.
+- **No breathing while her heart is stopped.** Her picture is still, the monitor reads no breath, and the
+  narrator and the online editor are told she is not breathing until it starts again.
+- **The coils' monitor stays on her card the whole time she is out in them.** The beat she went under had no tap
+  check of its own, so the strip, its heart and the squeeze picture vanished for that beat and came back the next.
+- **A second constriction works.** In a match of several taps, coils back on a part an earlier tap had used up were
+  left out entirely: no squeeze, no heart strain, no monitor. Now every coil round her body squeezes her whatever
+  the tally says, and a blackout in them counts for a part of the band they go round that is still free (her chest
+  or her other ribs after her right ribs). With every part of that band used up, she can't be put out by it.
+- No second wind while she is out cold with her heart stopped.
+
 ## Build 325
 - **Fix: her breathing stopped showing in a hard stretch of the fight.** A fast, shallow breath (her ribs guarded
   past 150% damage, coils squeezing her, a choke) made her picture rise about one pixel, which rounds to nothing, so
