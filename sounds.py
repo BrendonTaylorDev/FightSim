@@ -7,6 +7,12 @@ time). A fighter's own voice goes in sounds/<her name>/<kind>/ or sounds/<specie
 with no files are simply silent. The window plays each beat's sounds as the beat lands; an exported fight carries
 them too (window.sounds.export).
 
+(since build 331) sounds/ is yours alone: git ignores it, so a pull never adds to, changes or deletes what you put
+there. The starter panting and breath-back recordings live in sound_starters/ and are used only for a kind with none
+of your own files (window.sounds.starters false = never). On Windows a file the old wave player can't open (many
+downloaded .wav files) goes through the DirectShow player; /audio test plays one of each kind and says what went
+wrong with any that won't play.
+
 (since build 330) Each fighter has one voice, so her sounds never pile up on top of each other and a long file plays
 to its end (see Mixer). A beat's sounds play once, when it lands; the Replay sounds button (the window) or the
 speaker button on a beat (an exported fight) plays them again.
@@ -23,6 +29,9 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOUND_DIR = os.path.join(HERE, "sounds")
+# (since build 331) the starter breathing recordings live apart from sounds/, which is yours alone (git ignores it,
+# so a pull never touches what you put there); a kind with none of your own files uses these (window.sounds.starters)
+STARTER_DIR = os.path.join(HERE, "sound_starters")
 EXTS = (".wav", ".mp3", ".ogg")
 
 # the kinds of sound, and when each is used
@@ -39,7 +48,8 @@ KINDS = {
 }
 
 DEFAULTS = {"enabled": True, "volume": 0.8, "breathing": True, "breath_every": 3, "max_per_beat": 2,
-            "export": True, "export_max_mb": 8, "overlap": "voice", "max_seconds": 0, "queue_max": 3}
+            "export": True, "export_max_mb": 8, "overlap": "voice", "max_seconds": 0, "queue_max": 3,
+            "starters": True}
 
 # (since build 330) how much each kind matters: a new beat's minor sound (MINOR or less) doesn't cut off a bigger one
 # she is still making, and doesn't restart one of its own size
@@ -61,14 +71,15 @@ def _folder_files(folder):
         return []
 
 
-def files_for(name, species, kind):
-    """The files for this kind of sound for her: her own, her species', else everyone's."""
+def files_for(name, species, kind, starters=True):
+    """The files for this kind of sound for her: her own, her species', else everyone's, else the starter ones."""
     for who in (name, species):
         if who:
             got = _folder_files(os.path.join(SOUND_DIR, str(who).lower(), kind))
             if got:
                 return got
-    return _folder_files(os.path.join(SOUND_DIR, kind))
+    return _folder_files(os.path.join(SOUND_DIR, kind)) or (
+        _folder_files(os.path.join(STARTER_DIR, kind)) if starters else [])
 
 
 def cues(prev, f, rules, turn=0):
@@ -106,8 +117,8 @@ def cues(prev, f, rules, turn=0):
     return out[:max(1, int(c.get("max_per_beat", 2)))]
 
 
-def pick(f, kind):
-    got = files_for(f.get("name"), f.get("species"), kind)
+def pick(f, kind, starters=True):
+    got = files_for(f.get("name"), f.get("species"), kind, starters)
     return random.choice(got) if got else None
 
 
@@ -121,27 +132,65 @@ def _failed(where, e):
         note_failure(where, e)
 
 
+def _wav_seconds(path):
+    """How long a .wav file plays (3 seconds where it can't be read)."""
+    try:
+        import wave
+        with wave.open(path) as w:
+            return w.getnframes() / float(w.getframerate() or 1)
+    except Exception:
+        return 3.0
+
+
 class Player:
     """Starts, checks and stops one sound file on this computer. Windows: the system's media player (MCI); a Mac:
     afplay; Linux: paplay or aplay. start() returns a handle, or None where nothing could play it."""
 
     def __init__(self):
         self.win = sys.platform.startswith("win")
+        self.last_error = ""
         if self.win:
             import ctypes
             self._mci = ctypes.windll.winmm.mciSendStringW
-            self._buf = ctypes.create_unicode_buffer(64)
+            self._mci_err = ctypes.windll.winmm.mciGetErrorStringW
+            self._buf = ctypes.create_unicode_buffer(256)
+
+    def _err(self, code):
+        """The Windows player's own words for an error code."""
+        try:
+            self._mci_err(code, self._buf, 256)
+            return f"{self._buf.value} (MCI error {code})"
+        except Exception:
+            return f"MCI error {code}"
 
     def start(self, path, volume):
         vol = max(0.0, min(1.0, volume))
         if self.win:
+            # (since build 331) the DirectShow player (mpegvideo) first, for every file: the old wave player
+            # (waveaudio) can't open many downloaded .wav files (24-bit, 32-bit float, 48 kHz...) and they were
+            # silently skipped. Then the wave player, then winsound for a .wav. What went wrong is raised, to be
+            # written to errors.log (and shown by /audio test).
             alias = f"fs{random.randrange(10 ** 9)}"
-            kind = "mpegvideo" if path.lower().endswith((".mp3", ".ogg")) else "waveaudio"
-            if self._mci(f'open "{path}" type {kind} alias {alias}', None, 0, None):
-                return None
-            self._mci(f"setaudio {alias} volume to {int(vol * 1000)}", None, 0, None)
-            self._mci(f"play {alias}", None, 0, None)
-            return alias
+            wav = path.lower().endswith(".wav")
+            errs = []
+            for kind in ("mpegvideo", "waveaudio") if wav else ("mpegvideo",):
+                code = self._mci(f'open "{path}" type {kind} alias {alias}', None, 0, None)
+                if not code:
+                    self._mci(f"setaudio {alias} volume to {int(vol * 1000)}", None, 0, None)
+                    code = self._mci(f"play {alias}", None, 0, None)
+                    if not code:
+                        return alias
+                    self._mci(f"close {alias}", None, 0, None)
+                errs.append(f"{kind}: {self._err(code)}")
+            if wav:
+                try:
+                    import winsound
+                    winsound.PlaySound(path, winsound.SND_FILENAME | winsound.SND_ASYNC | winsound.SND_NODEFAULT)
+                    return ("winsound", time.monotonic(), _wav_seconds(path))
+                except Exception as e:
+                    errs.append(f"winsound: {e}")
+            self.last_error = f"Windows could not play {path}: " + "; ".join(errs)
+            raise RuntimeError(self.last_error)
         players = [["afplay", "-v", str(vol)]] if sys.platform == "darwin" else [["paplay"], ["aplay", "-q"]]
         for player in players:
             try:
@@ -151,13 +200,19 @@ class Player:
         return None
 
     def done(self, h):
+        if isinstance(h, tuple):
+            return time.monotonic() - h[1] >= h[2]
         if self.win:
-            self._mci(f"status {h} mode", self._buf, 64, None)
+            if self._mci(f"status {h} mode", self._buf, 256, None):
+                return True       # (the player lost it: count it as finished, not playing for ever)
             return self._buf.value != "playing"
         return h.poll() is not None
 
     def stop(self, h):
-        if self.win:
+        if isinstance(h, tuple):
+            import winsound
+            winsound.PlaySound(None, 0)
+        elif self.win:
             self._mci(f"stop {h}", None, 0, None)
             self._mci(f"close {h}", None, 0, None)
         elif h.poll() is None:
@@ -305,7 +360,8 @@ def beat_items(prev_by_name, fighters, rules, turn=0):
     if not c.get("enabled", True):
         return out
     for f in fighters:
-        items = [(p, k) for k in cues(prev_by_name.get(f.get("name")), f, rules, turn) for p in [pick(f, k)] if p]
+        items = [(p, k) for k in cues(prev_by_name.get(f.get("name")), f, rules, turn)
+                 for p in [pick(f, k, c.get("starters", True))] if p]
         if items:
             out[f.get("name")] = items
     return out
@@ -329,6 +385,56 @@ def play_beat(prev_by_name, fighters, rules, turn=0):
 def stop_all():
     """Silence everything playing now (sounds turned off, the window closed)."""
     MIXER.stop_all()
+
+
+def test(fighters=(), volume=0.8, seconds=2.5, player=None):
+    """(since build 331) /audio test: the files found for each kind (everyone's, and each fighter's own), then one
+    file of each kind played here and now, a few seconds each, with what went wrong if it wouldn't play. Returns the
+    lines to print."""
+    lines = [f"Sound folder: {SOUND_DIR}"]
+    for f in fighters or ():
+        for who in (f.get("name"), f.get("species")):
+            d = os.path.join(SOUND_DIR, str(who or "").lower())
+            if who and os.path.isdir(d):
+                lines.append(f"  {who}'s own voice: {d}")
+    try:
+        loose = [n for n in os.listdir(SOUND_DIR) if n.lower().endswith(EXTS)]
+    except OSError:
+        loose = []
+    if loose:
+        lines.append(f"  {len(loose)} file(s) loose in the sounds folder itself are never used: put them in a kind's "
+                     f"folder (gasp, grunt, cry...): {', '.join(loose[:5])}")
+    try:
+        p = player or Player()
+    except Exception as e:
+        return lines + [f"  The sound player wouldn't start: {e}"]
+    for k in KINDS:
+        got = files_for("", "", k)
+        for f in fighters or ():
+            got = files_for(f.get("name"), f.get("species"), k) or got
+        try:
+            others = [n for n in os.listdir(os.path.join(SOUND_DIR, k)) if not n.lower().endswith(EXTS)
+                      and not n.startswith(".")]
+        except OSError:
+            others = []
+        extra = f" (not sound files it can use: {', '.join(others[:3])})" if others else ""
+        if not got:
+            lines.append(f"  {k:<12} no files{extra}")
+            continue
+        path = got[0]
+        try:
+            h = p.start(path, volume)
+            if h is None:
+                lines.append(f"  {k:<12} {len(got)} file(s): nothing on this computer could play {path}")
+                continue
+            t = time.monotonic()
+            while time.monotonic() - t < seconds and not p.done(h):
+                time.sleep(0.05)
+            p.stop(h)
+            lines.append(f"  {k:<12} {len(got)} file(s): played {os.path.basename(path)}{extra}")
+        except Exception as e:
+            lines.append(f"  {k:<12} {len(got)} file(s): FAILED: {e}")
+    return lines
 
 
 def ensure_folders():

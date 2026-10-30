@@ -907,6 +907,71 @@ def sounds_329_check():
     return problems
 
 
+def sounds_331_check():
+    """Build 331: sounds/ is the user's alone (git ignores it); the starter breathing lives in sound_starters/ and is used
+    only for a kind with none of the user's files (window.sounds.starters); on Windows every file goes to the DirectShow
+    player first, then the wave player, and a file nothing plays raises what went wrong instead of being skipped
+    silently; /audio test reports and plays one file of each kind."""
+    import sounds
+    import tempfile
+    problems = []
+    gi = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".gitignore"), encoding="utf-8").read().split()
+    if "sounds/" not in gi:
+        problems.append("sounds/ should be in .gitignore (the user's own files)")
+    if not os.path.isfile(os.path.join(sounds.STARTER_DIR, "pant", "pant_1.wav")):
+        problems.append("the starter panting should be in sound_starters/")
+    old = sounds.SOUND_DIR
+    with tempfile.TemporaryDirectory() as d:
+        sounds.SOUND_DIR = d
+        try:
+            os.makedirs(os.path.join(d, "gasp"))
+            open(os.path.join(d, "gasp", "a.wav"), "wb").close()
+            open(os.path.join(d, "loose.wav"), "wb").close()
+            if sounds.files_for("", "", "gasp") != [os.path.join(d, "gasp", "a.wav")]:
+                problems.append("her gasp files should come from sounds/gasp/")
+            if not sounds.files_for("", "", "pant") or sounds.files_for("", "", "pant", starters=False):
+                problems.append("a kind with no files of hers uses the starters, unless starters is false")
+
+            class Fake:
+                def start(self, path, vol):
+                    if "loose" in path:
+                        raise RuntimeError("boom")
+                    return 1
+
+                def done(self, h):
+                    return True
+
+                def stop(self, h):
+                    pass
+            lines = "\n".join(sounds.test([{"name": "Ripples", "species": "Buizel"}], player=Fake(), seconds=0.1))
+            if "gasp" not in lines or "played a.wav" not in lines or "loose" not in lines:
+                problems.append(f"/audio test should list each kind, play what's found and point out loose files: {lines}")
+        finally:
+            sounds.SOUND_DIR = old
+    # the Windows player, with a stand-in for the system's: DirectShow first, then the wave player, then an error
+    tried = []
+
+    def mci(cmd, buf, n, cb):
+        tried.append(cmd.split(" type ")[-1].split()[0] if cmd.startswith("open") else cmd.split()[0])
+        if cmd.startswith("open"):
+            return 0 if " type waveaudio " in cmd and "ok" in cmd else 277
+        return 0
+    pl = sounds.Player.__new__(sounds.Player)
+    pl.win, pl.last_error, pl._mci = True, "", mci
+    pl._mci_err = lambda code, buf, n: None
+    pl._buf = type("B", (), {"value": "cannot play"})()
+    h = pl.start("C:/x/ok.wav", 0.5)
+    if not isinstance(h, str) or tried[:2] != ["mpegvideo", "waveaudio"]:
+        problems.append(f"a .wav goes to the DirectShow player first, then the wave player: {tried} -> {h}")
+    try:
+        pl.start("C:/x/bad.mp3", 0.5)
+        problems.append("a file nothing can play should raise what went wrong, not be skipped silently")
+    except RuntimeError as e:
+        if "cannot play" not in str(e) or "bad.mp3" not in str(e):
+            problems.append(f"the error should name the file and say why: {e}")
+    return problems
+
+
 def fight_328_check():
     """Build 328: far below zero, giving in comes sooner (the build-up runs faster); her heart can't stop in the
     coils before constriction.heart.min_beats; she can't get up inside coils round her body; and the director can
@@ -4629,6 +4694,13 @@ def main(argv):
         probs = sounds_330_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 330: one voice per fighter, long sounds, no repeats, replay  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "sounds331" for w in want):
+        t = time.time()
+        probs = sounds_331_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 331: private sounds folder, Windows playback, /audio test  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "sounds329" for w in want):

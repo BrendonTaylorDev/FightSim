@@ -345,7 +345,7 @@ def write(s, path=None, fights=None):
         for f in r["snapshot"]["fighters"]:
             if sc.get("enabled", True) and sc.get("export", True):
                 for kind in sounds.cues(prev_by.get(f["name"]), f, rules, r.get("turn") or k):
-                    pth = sounds.pick(f, kind)
+                    pth = sounds.pick(f, kind, sc.get("starters", True))
                     if not pth:
                         continue
                     if pth not in sound_files:

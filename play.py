@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 330 (sounds: one voice per fighter, long files, play once, Replay sounds)"
+VERSION = "2026-10-30 build 331 (sounds: Windows playback fixed, /audio test, private sounds folder)"
 
 HELP = """
 =============================================================================================
@@ -479,7 +479,7 @@ HELP = """
 =============================================================================================
   /status [full|name]   health, worst injuries, pins and positions
   /explain [name|status]   what each status on her does and what her heart, blood pressure and breathing mean
-  /audio [on|off|volume N|overlap voice|queue|mix|max N|stop] the fighters' sounds (gasps, cries, straining, panting): files go in sounds/<kind>/
+  /audio [on|off|volume N|overlap voice|queue|mix|max N|stop|test] the fighters' sounds (gasps, cries, straining, panting): files go in sounds/<kind>/
   /limb <name> [part]      one part in detail: damage, how it looks, what it is doing, grips, what it does to her
   /traits [name]        how each fighter fights: her traits, quirks, style and favourite moves (since build 280)
   /profile [name]       all that, and who she is: personality, history, relationships (the window: Profiles)
@@ -5244,6 +5244,16 @@ def handle_command(s, line):
             _save_rule_path(["window", "sounds", "max_seconds"], c["max_seconds"])
         elif w == "stop":
             _snd.stop_all()
+        elif w == "test":
+            # (since build 331) which files are found and whether this computer will play them
+            cc = _snd.cfg(s.eng.rules)
+            print("Playing one sound of each kind found, a couple of seconds each...")
+            for line in _snd.test([{"name": f.name, "species": s.eng.species(f)}
+                                   for f in s.eng.fighters.values()], cc["volume"]):
+                print(line)
+            if not cc["enabled"]:
+                print("The sounds are OFF in the fight: /audio on turns them on.")
+            return
         elif w in ("panting", "breathing") and len(a) > 1:
             c["breathing"] = a[1].lower() == "on"
             _save_rule_path(["window", "sounds", "breathing"], c["breathing"])
@@ -5258,7 +5268,7 @@ def handle_command(s, line):
               f"(her own voice: sounds/<name>/<kind>/):")
         for k, why in _snd.KINDS.items():
             print(f"  {k:<12} {have[k]} file(s)   {why}")
-        print("  /audio on|off · /audio volume 70 · /audio panting on|off · /audio stop\n"
+        print("  /audio on|off · /audio volume 70 · /audio panting on|off · /audio stop · /audio test (play each kind now)\n"
               "  /audio overlap voice|queue|mix (voice: a new sound cuts off the last, a minor one waits its turn by "
               "being skipped; queue: each waits; mix: all at once)\n"
               "  /audio max 4 (cut any sound after 4 seconds; 0 = play whole files)")

@@ -1,5 +1,6 @@
-"""Make the starter breathing sounds in sounds/ (build 329): panting and the long breath back in, from shaped noise.
-They are placeholders: put real recordings in sounds/<kind>/ and delete these. Run: python sim/make_breath_sounds.py"""
+"""Make the starter breathing sounds (build 329; in sound_starters/ since build 331): panting and the long breath back
+in, from shaped noise. They are placeholders, used only for a kind with no files of your own in sounds/<kind>/.
+Run: python sim/make_breath_sounds.py"""
 import math
 import os
 import random
@@ -7,7 +8,7 @@ import struct
 import wave
 
 RATE = 22050
-OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sounds")
+OUT = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sound_starters")
 
 
 def breath(dur, loud, bright, rng, rough=0.0):

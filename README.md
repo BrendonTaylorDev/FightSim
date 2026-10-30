@@ -654,6 +654,19 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 331
+- **Sounds on Windows:** the window was silent with your own .wav files. Windows' old wave player (MCI waveaudio)
+  can't open many downloaded .wav files (24-bit, 32-bit float, 48 kHz), and a file it refused was skipped without a
+  word, so the program never even showed in the volume mixer. Every file now goes to the DirectShow player first
+  (mpegvideo, which reads those), then the wave player, then winsound; a file nothing plays is written to errors.log
+  with Windows' own reason.
+- **/audio test:** shows the sounds folder and each fighter's own-voice folder, plays one file of each kind for a
+  couple of seconds, and says what went wrong with any that won't play (and points out files left loose in sounds/
+  itself, which are never used).
+- **Your sounds folder is private:** git ignores sounds/, so pulling an update never adds to, changes or deletes your
+  files. The starter panting and breath-back recordings moved to sound_starters/ and are used only for a kind with
+  none of your own files (window.sounds.starters false = never).
+
 ## Build 330
 
 Sounds no longer pile up, and longer sound files work (`window.sounds`).
