@@ -1899,7 +1899,8 @@ def tap_meter(f):
     t = (f.get("grips") or {}).get("tap")
     if not t:
         return None
-    feel = max(0, min(5, int(t.get("level") or 0)))
+    # (since build 333, tap.falter: the narrator's step follows the chance now; the pain's own step is "feel")
+    feel = max(0, min(5, int(t.get("feel", t.get("level")) or 0)))
     pct = 100.0 * float(t.get("chance") or 0)
     by_chance = str(t.get("meter_by", "chance")) == "chance"
     lv = chance_level(pct, t.get("chance_steps") or (3, 10, 25, 50)) if by_chance else feel

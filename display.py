@@ -1339,7 +1339,13 @@ class Display:
             elif e["type"] == "tap_resist":
                 out.append(f"😖 {e['defender']} {'fights the dark' if e.get('choke') else 'refuses to tap'} in "
                            f"{poss_word(e['attacker'])} {e['submission']} (pain {e['pain']} against her resistance "
-                           f"{e['resist']}, beat {e['beats_held']} of it)")
+                           f"{e['resist']}, beat {e['beats_held']} of it)"
+                           # (since build 333, tap.falter) how much of her resistance is left, by how near the tap is
+                           + (f" · resistance {e['resolve']} (tap chance {float(e.get('chance') or 0) * 100:.0f}%)"
+                              if e.get("resolve") else "")
+                           + (f" · claws in her {', '.join(p.lower() for p in e['claws'])}" if e.get("claws") else "")
+                           + (f" · {' and '.join(x.lower() for x in e['paws_held'])} forelimb held"
+                              if e.get("paws_held") else ""))
             elif e["type"] == "constriction":
                 # (since build 283) the coils round her body holding back her blood
                 out.append(f"🫀 {poss_word(e['attacker'])} coils on {poss_word(e['defender'])} "

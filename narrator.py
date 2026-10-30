@@ -5032,6 +5032,14 @@ class Narrator:
                     lines.append(f"  - HOW HARD TO TELL HER FIGHT AGAINST THE TAP ({lv} of 5; harder than the "
                                  f"lighter signs before it): {self._tap_intensity(lv, e)}. Show what she looks like and "
                                  f"what she thinks.")
+                    if e.get("resolve") in self.TAP_RESOLVE:
+                        lines.append(f"  - HER RESISTANCE TO THE TAP: {self.TAP_RESOLVE[e['resolve']]}. Let it show "
+                                     f"in how the sign plays out (no numbers).")
+                    if e.get("claws"):
+                        lines.append(f"  - {poss(e['attacker']).upper()} CLAWS are dug into {poss(e['defender'])} "
+                                     f"{' and '.join(p.lower() for p in e['claws'])}: every move she makes against the "
+                                     f"grip drags them deeper, and that sharp, tearing pain is part of what she is "
+                                     f"refusing.")
                     # (since build 261) the story must give it room in proportion (narration.tap_fight_shown)
                     self.__dict__.setdefault("_tap_fights", []).append(
                         {"who": e["defender"], "by": e["attacker"], "level": lv, "sign": reach,
@@ -5079,7 +5087,10 @@ class Narrator:
                              + f". Show her resisting it, with what it looks like and what she thinks. HOW HARD "
                              f"({lv} of 5): {self._tap_intensity(lv, e)}. This beat, the sign of it (the program's pick; "
                              f"in your own words, or a sign of the same weight that fits her body, never one already "
-                             f"used this fight): {sign}. She does NOT tap.")
+                             f"used this fight): {sign}. She does NOT tap."
+                             + (f" {poss(e['attacker'])} claws are dug into her "
+                                f"{' and '.join(p.lower() for p in e['claws'])}, which makes it sharper."
+                                if e.get("claws") else ""))
             elif e["type"] == "tap_out":
                 parts = " and ".join(p.lower() for p in e.get("parts") or [])
                 with_ = " and ".join(e.get("with") or [])
@@ -5087,8 +5098,8 @@ class Narrator:
                     lines.append(f"{e['defender']} TAPS OUT at the END of this beat: after the pressure listed above, "
                                  f"the {e['submission']} on her {parts}" + (f" ({with_})" if with_ else "")
                                  + f" is more than she can take any longer. She gives up: "
-                                 + (self.TAP_WAYS[e["way"]].format(spot=(spot := self._tap_spot(e["defender"],
-                                                                                              e["attacker"])))
+                                 + (self._held_way(self.TAP_WAYS[e["way"]], e).format(
+                                        spot=(spot := self._tap_spot(e["defender"], e["attacker"])))
                                     + ("" if spot == "the ground" else " (she is on her feet in it: the ground is out "
                                                                        "of reach)")
                                     if e.get("way") in self.TAP_WAYS else
@@ -8103,6 +8114,8 @@ class Narrator:
         "touch": "her paw touches {spot}, the fingers already spreading flat to slap it, and she drags it back",
         "hover": "her free paw comes up and hangs over {spot}, trembling, and she can make it go neither down nor "
                  "away",
+        "press_body": "her free paw clenches into a fist and she shoves it hard against her own chest, pressing it "
+                      "there with everything she has so it can't go down to tap",
         "pin_paw": "she traps her own free paw so it can't tap: jammed under her if she is down, clamped hard to her "
                    "side if she is up",
         "half_word": "half a word gets out (the start of 'stop', or 'I—') before she turns it into a snarl",
@@ -8131,6 +8144,7 @@ class Narrator:
         "reach": "her free paw starts toward {spot}, shaking a little, and she pulls it back before it gets far",
         "yank": "her paw lifts an inch off {spot} on its own, and she yanks it back down to her side",
         "fist_shake": "her fist is clenched so tight it trembles, and she keeps it clenched",
+        "tuck": "she tucks her free paw in tight against her own body, clenched, out of reach of {spot}",
         "squeeze_eyes": "she squeezes her eyes shut and turns her face away from the pain",
         "count": "she counts her breaths to get through it, and loses count, and starts again",
     }
@@ -8166,11 +8180,30 @@ class Narrator:
     }
 
     def _tap_intensity(self, lv, e):
-        """How hard to tell her fight against the tap; with her arms trapped in coils, signs without a free paw."""
+        """How hard to tell her fight against the tap; with her arms trapped in coils, signs without a free paw; with
+        (tap.paws, since build 333) her forelimbs held in grips, the paw she still has, or none."""
         if e.get("arms_trapped"):
             return self.TAP_INTENSITY_TRAPPED[lv] + (" (her arms are pinned inside the coils: they strain and can't "
                                                      "come free; no paw can claw, pry or tap)")
+        held, free = e.get("paws_held") or [], e.get("paws_free") or []
+        if held and not free:
+            return (self.TAP_INTENSITY_TRAPPED[lv].replace("against the coils", "against the grip")
+                    .replace("inside the coils", "in the grip") + " (both her forelimbs are held in the grip: no paw is "
+                                                                  "free to rise, clench or tap)")
+        if held:
+            side = {"mid": "free"}.get(free[0], free[0].lower())
+            return self.TAP_INTENSITY[lv] + (f" (her {' and '.join(x.lower() for x in held if x != 'mid') or 'held'} "
+                                             f"forelimb is held in the grip: the paw that rises, hovers or clenches "
+                                             f"is her {side} one)")
         return self.TAP_INTENSITY[lv]
+
+    # (tap.falter, since build 333) how much of her resistance to the tap is left, from how near it really is
+    TAP_RESOLVE = {
+        "holding": "still holding: it hurts past what she should bear, but she is still the one in charge of her paw",
+        "wavering": "wavering: it takes real effort now, and the effort shows",
+        "faltering": "faltering: the refusals cost more each time, and her body is starting to give in before she does",
+        "almost gone": "almost gone: she is holding on by a thread, and anyone watching can see the tap coming",
+    }
 
     TAP_REASONS = {
         "pride": "pride: she will not be the one who gave up",
@@ -8329,6 +8362,15 @@ class Narrator:
         "slack": "her arms pinned in the coils, she gives it with her whole body: she goes slack inside them and cries "
                  "out that she is done",
     }
+
+    @staticmethod
+    def _held_way(text, e):
+        """(tap.paws, since build 333) A tap given without a paw because both her forelimbs are held in grips (not
+        wound in coils): said as that."""
+        if e.get("paws_held") and not e.get("arms_trapped"):
+            text = (text.replace("her arms pinned in the coils", "both her forelimbs held fast in the grip")
+                    .replace("slack inside them", "slack in the grip"))
+        return text
 
     def _tap_spot(self, who, holder):
         """Where a held fighter's tap can land (narration.hold_position): the ground if she is down, the one holding

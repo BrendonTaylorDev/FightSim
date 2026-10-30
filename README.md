@@ -654,6 +654,33 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 333
+
+Submissions: her fight against tapping out, checked against build 332's pins and brought in line with them. All of it is
+in submission matches (`finish.submission.enabled`), and each part can be switched off.
+
+- **Fixed: two signs never showed.** "Her paw rises, shaking, and she yanks it back down to her side" and "her paw
+  shakes so hard she can't hold it still" were in the engine but missing from rules.json's `variety` tables, which
+  replace the engine's, so they were never picked. They are in now, and regress checks the tables can't shut a sign out
+  again.
+- **New signs:** her free paw clenched into a fist and shoved hard against her own chest so it can't go down to tap,
+  and (earlier, lighter) her paw tucked in tight against her body.
+- **Her resistance falters with how near the tap really is** (`tap.falter`). Before, the step came mostly from how
+  often she had refused, so on her second refusal she was often at the edge (paw flat on the ground, tears) with a 1%
+  chance. Now the sign comes from this beat's tap chance: first signs while it is small, her paw hovering, clenched or
+  yanked back as it climbs, the edge only once it is really close. After many refusals she sometimes shows a step
+  nearer (worn down). The story is told how much of her resistance is left: holding, wavering, faltering, almost gone.
+  The stat block shows it with the chance.
+- **Held paws** (`tap.paws`). A grip on a forelimb (the submission's own or any other hold on her) takes that paw: the
+  story is told which paw is the free one. With both held, no sign needs a paw (tail, voice, face, body instead) and
+  a tap is given without one.
+- **Claws dug in** (`tap.claws`), like build 332's pins: each clawed grip (by its words) makes the hold hurt more,
+  pain x1.1 and the tap chance x1.12, at most two counted, and the story is told where they are in. The built-in
+  submissions have no claws, so balance is unchanged; it counts for holds the director writes with claws.
+- Health already shaped this the way pins now do: her resistance scales with her overall health, and the tap chance
+  blends the gripped part's damage with her health (`tap.blend`).
+- The window's tap meter keeps its pain reading (`meter_by: "pain"`) from her refusals, as before.
+
 ## Build 332
 
 Pins now play by how they are built. Every pin the director writes still goes on as written: Nocturne can hold

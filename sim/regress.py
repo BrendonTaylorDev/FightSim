@@ -907,6 +907,67 @@ def sounds_329_check():
     return problems
 
 
+def taps_333_check():
+    """Build 333: the signs of fighting the tap follow how near it really is (tap.falter), the newer signs (the paw
+    yanked back to her side, shaking too hard to hold still, clenched against her own chest) are not shut out by
+    rules.json's variety tables, a forelimb held in a grip leaves only the other paw to show it with (tap.paws), and
+    claws dug in make it hurt more (tap.claws)."""
+    import json
+    import narrator
+    problems = []
+    e = Engine(seed=3, only=["Nocturne", "Ripples"])
+    for k in ("tap_tell_urge", "tap_tell_urge2", "tap_tell_first", "tap_tell_closer", "tap_tell_edge"):
+        over = (e.rules.get("variety") or {}).get(k)
+        if isinstance(over, dict) and set(e.VARIETY[k]) - set(over):
+            problems.append(f"rules.json variety.{k} shuts out signs: {sorted(set(e.VARIETY[k]) - set(over))}")
+    with open(os.path.join(H.ROOT, "rules.json"), encoding="utf-8") as fh:
+        n = narrator.Narrator("none", json.load(fh))
+    for k in ("tap_tell_first", "tap_tell_closer", "tap_tell_edge"):
+        if set(e.VARIETY[k]) - set(n.TAP_TELLS):
+            problems.append(f"signs in {k} with no words: {sorted(set(e.VARIETY[k]) - set(n.TAP_TELLS))}")
+    if set(e.VARIETY["tap_tell_urge2"]) - set(n.TAP_URGE):
+        problems.append("tap_tell_urge2 signs with no words")
+    d = e.get("Ripples")
+    stages = {}
+    for ch in (0.0, 0.02, 0.05, 0.15, 0.3):
+        d.learned.pop("tap_ways", None)
+        out = e._tap_tells(d, 1, 50, 60, False, chance=ch)
+        stages[ch] = (out.get("stage"), out.get("resolve"))
+    if [v[0] for v in stages.values()] != [1, 1, 2, 3, 3] or stages[0.3][1] != "almost gone" \
+            or stages[0.0][1] != "holding":
+        problems.append(f"the signs don't follow how near the tap is: {stages}")
+    e.rules["finish"]["submission"]["tap"]["falter"]["enabled"] = False
+    if "resolve" in e._tap_tells(d, 1, 50, 60, False, chance=0.3):
+        problems.append("with tap.falter off the resistance word is still given")
+    e.rules["finish"]["submission"]["tap"]["falter"]["enabled"] = True
+    # a forelimb held: only the other paw is free; both held: no sign needs a paw
+    e.downed["Ripples"] = 0
+    e.facing["Ripples"] = "face-up"
+    e.start_submission("Nocturne", "Ripples", "wrist bite")
+    held, free = e.paw_grips(d)
+    if held != ["left"] or free != ["right"]:
+        problems.append(f"the wrist bite should hold her left forelimb only: {held}, {free}")
+    e.start_holds("Nocturne", "Ripples", [("Right Paw", 8, 0, "her forepaw, claws dug in")])
+    if e.paws_bound(d):
+        picks = {e._tell("tap_tell_closer", d, []) for _ in range(40)}
+        if picks & set(e.PAW_TELLS):
+            problems.append(f"both forelimbs held, and a sign still needs a free paw: {picks & set(e.PAW_TELLS)}")
+        line = n._tap_intensity(4, {"paws_held": ["Left", "Right"], "paws_free": []})
+        if "coils" in line or "both her forelimbs" not in line:
+            problems.append(f"both forelimbs held is told as coils, or not told: {line}")
+    else:
+        problems.append(f"with a grip on each forelimb no paw should be free: {e.paw_grips(d)}")
+    claws = e._tap_claws([h for h in e.holds.values()], e.rules["finish"]["submission"]["tap"])
+    if claws != ["Right Paw"]:
+        problems.append(f"the grip with claws dug in is not counted (jaws are not claws): {claws}")
+    e.rules["finish"]["submission"]["tap"]["claws"]["enabled"] = False
+    if e._tap_claws([h for h in e.holds.values()], e.rules["finish"]["submission"]["tap"]):
+        problems.append("with tap.claws off claws still count")
+    if "both her forelimbs held fast" not in n._held_way(n.TAP_WAYS["said"], {"paws_held": ["Left", "Right"]}):
+        problems.append("a tap given with both forelimbs held is still said as coils")
+    return problems
+
+
 def pins_332_check():
     """Build 332: a pin is scored by what it holds (pin.control): limbs held, claws dug in, jaws on the neck and the
     pinner's weight on her front make it tighter, and every build the director writes is kept as written; her own
@@ -4790,6 +4851,13 @@ def main(argv):
         probs = pins_332_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 332: pins scored by what they hold, settle, slow pins  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "taps333" for w in want):
+        t = time.time()
+        probs = taps_333_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "sounds331" for w in want):

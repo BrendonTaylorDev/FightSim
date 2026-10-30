@@ -1062,9 +1062,10 @@ class Engine:
         "bite_rock": {"drag": 3, "shake": 2, "yank": 2, "wrench_free": 2},
         # fighting the urge to tap out (finish.submission): one sign a beat, from the set for how near she is
         "tap_tell_urge": {"fist": 3, "claws": 2, "grit": 3, "shake_head": 2, "hiss": 2, "breathe": 2},
-        "tap_tell_urge2": {"reach": 3, "yank": 3, "fist_shake": 3, "squeeze_eyes": 2, "count": 2},
+        "tap_tell_urge2": {"reach": 3, "yank": 3, "fist_shake": 3, "tuck": 2, "squeeze_eyes": 2, "count": 2},
         "tap_tell_first": {"twitch": 3, "curl": 3, "word": 2, "breath": 2, "tail": 2, "eyes": 2},
-        "tap_tell_closer": {"yank_back": 3, "touch": 3, "hover": 3, "pin_paw": 2, "half_word": 2, "bite": 2, "grab_ground": 2},
+        "tap_tell_closer": {"yank_back": 3, "touch": 3, "hover": 3, "press_body": 3, "pin_paw": 2, "half_word": 2, "bite": 2,
+                            "grab_ground": 2},
         "tap_tell_edge": {"shake_hard": 3, "flat": 3, "stops_fighting": 3, "no_aloud": 2, "tears": 2, "hangs": 2, "laugh": 1},
         "tap_reason": {"pride": 3, "anger": 3, "not_her": 3, "slip": 2, "stubborn": 2, "plea": 2},
         "tap_dark": {"grey": 3, "roar": 2, "heavy": 2, "claw": 3, "count": 2},
@@ -11153,6 +11154,10 @@ class Engine:
                 # a grip on a RUINED part: past anything she can brace against (ruined.tap_pain for each one)
                 pain += float(rcfg_.get("tap_pain", 30)) * sum(1 for h in hs if h.part in d.parts
                                                                   and self.is_ruined(d.parts[h.part]))
+            claws_ = self._tap_claws(hs, tcfg)
+            if claws_:
+                # (tap.claws, since build 333) claws or talons dug into her: every move against the grip tears at her
+                pain *= float(tcfg["claws"].get("pain_mult", 1.1)) ** len(claws_)
             s_ = max(0.0, min(100.0, self._health_pct(d)))   # (her overall health: what she has left to resist with)
             power = float(tcfg.get("resist_power", 0.8))
             surge = float(tcfg.get("surge_resist", 1.5)) if self.has(d, "adrenaline") else 1.0
@@ -11198,6 +11203,10 @@ class Engine:
                 tap = base * ramp ** float(bl.get("ramp_power", 2))
                 if ramp < 1.0:
                     why_low.append((f"beat {beats} of the hold, still building", ramp ** float(bl.get("ramp_power", 2))))
+            if claws_ and tap > 0:
+                cm_ = float(tcfg["claws"].get("chance_mult", 1.12)) ** len(claws_)
+                tap = min(float(bl.get("max", 0.85)) if blended else top, tap * cm_)
+                why_low.append(("claws dug in", cm_))
             st0 = self.zero_stage(d)
             if st0 and tap > 0 and (not blended or self._below_zero_tap_cfg().get("blended", True)):
                 # (since build 328, below_zero.tap.blended) the blended chance too: before, a fighter at -6000% health
@@ -11408,6 +11417,7 @@ class Engine:
                 tap = po = 0.0
                 heart_now = False      # (nothing left that can count: she holds on, the coils can't finish it)
             # (tap.spent_no_grace: with no health left there is nothing to hold on through: no grace beat)
+            tap_seen = tap      # (tap.falter: how near the tap is, even on a beat she can't give in)
             first_over = tap > 0 and not blended and d.learned.get("tap_limit") != key_ and not (
                 d.health <= 0 and tcfg.get("spent_no_grace", True))
             if first_over:
@@ -11453,7 +11463,10 @@ class Engine:
                            "constrict": bool(body_coils) and circ >= float(kcfg.get("near", 0.75)) * circ_end,
                            "over": over >= 0, "pain": round(pain), "resist": round(resist),
                            "beats_held": beats, "refusals": refusals, "spent": spent, "breaking": stage_ if breaking else None}
-                    ev_.update(self._tap_tells(d, refusals, over, resist, ev_["choke"]))
+                    ev_.update(self._tap_tells(d, refusals, over, resist, ev_["choke"],
+                                               chance=1.0 if breaking else tap_seen))
+                    if claws_:
+                        ev_["claws"] = claws_
                     events.append(ev_)
                 else:
                     # (tap.urge, since build 256) nowhere near her limit, but it hurts: she is shown fighting the
@@ -11531,7 +11544,9 @@ class Engine:
                   "heart_stopped": d.learned.get("heart_stopped") == self.turn, "heart_first": heart_now,
                   "circ": round(circ), "circ_end": round(circ_end)}
                     if how == "tap" and self._tap_vary_on():
-                        ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
+                        ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) or self.paws_bound(d)
+                                              else "tap_way")
+                        ev["paws_held"], ev["arms_trapped"] = self.paw_grips(d)[0], self.arms_trapped(d)
                     n_after = self._after_hold_beats(kcfg) if how == "pass_out" and constrict else 0
                     if n_after:
                         # (since build 313, constriction.heart.after_hold) she is out, her heart stopped, and the
@@ -11560,7 +11575,8 @@ class Engine:
                   "heart_stopped": d.learned.get("heart_stopped") == self.turn, "heart_first": heart_now,
                   "circ": round(circ), "circ_end": round(circ_end)}
             if how == "tap" and self._tap_vary_on():
-                ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) else "tap_way")
+                ev["way"] = self.vary("tap_way_trapped" if self.arms_trapped(d) or self.paws_bound(d) else "tap_way")
+                ev["paws_held"], ev["arms_trapped"] = self.paw_grips(d)[0], self.arms_trapped(d)
             if how == "pass_out" and constrict and ev.get("heart_stopped"):
                 # (constriction.heart.after_hold) the match is over, and the coils still stay on her a while first
                 ev["after_hold"] = self._after_hold_beats(kcfg)
@@ -11813,7 +11829,12 @@ class Engine:
                                                                             or min(3, int(ev.get("refusals") or 1))))
         else:
             level = 0
-        d.learned["tap_state"] = {"turn": self.turn, "by": a, "sub": name,
+        # how the pain feels on the old ladder (by her refusals): with tap.falter the narrator's step follows the
+        # chance, and the window's pain meter keeps this one
+        far_ = 1 if float(ev.get("pain") or 0) - float(ev.get("resist") or 0) >= 0.25 * float(ev.get("resist") or 1) else 0
+        feel = (5 if breaking in ("cracking", "last") else min(5, 2 + min(3, int(ev.get("refusals") or 1) + far_)))\
+            if ev.get("type") == "tap_resist" else level
+        d.learned["tap_state"] = {"turn": self.turn, "by": a, "sub": name, "feel": feel,
                                   # (since build 283) the chance it ENDS this beat: a tap, or blacking out (out)
                                   "chance": round(1.0 - (1.0 - float(chance)) * (1.0 - float(out or 0)), 4),
                                   "tap_only": round(float(chance), 4), "out": round(float(out or 0), 4),
@@ -11940,7 +11961,7 @@ class Engine:
 
     # the signs of fighting the tap that need a free paw (narrator.TAP_TELLS, TAP_URGE)
     PAW_TELLS = ("fist", "claws", "reach", "yank", "fist_shake", "yank_back", "shake_hard", "twitch", "curl", "touch",
-                 "hover", "pin_paw", "grab_ground", "flat", "hangs")
+                 "hover", "pin_paw", "grab_ground", "flat", "hangs", "tuck", "press_body")
 
     def compress_cfg(self):
         """finish.submission.constriction.compression (since build 294), or None when it is off."""
@@ -12224,11 +12245,31 @@ class Engine:
         return self.has(d, "constricted") and any(h.coil and h.defender == d.name and self.coil_scope(h.part) == "body"
                                                   for h in self.holds.values())
 
+    def paw_grips(self, d):
+        """(tap.paws, since build 333) Her forelimbs, by side, as the holds on her leave them: ([held], [free]). A grip
+        on her shoulder, an arm or a paw (the submission itself or any other hold on her) takes that side's paw; a
+        grip on a part with no side takes them all. ([], []) when tap.paws is off or she has no forelimbs."""
+        tc = ((self.rules.get("finish") or {}).get("submission") or {}).get("tap") or {}
+        if not (tc.get("paws") or {}).get("enabled", True):
+            return [], []
+        fore = ("fore_up", "fore_low", "shoulder")
+        sides = {_side(p) or "mid" for p in d.parts if body_region(p) in fore}
+        held = set()
+        for h in self.holds.values():
+            if h.defender == d.name and body_region(h.part) in fore:
+                held |= {_side(h.part)} if _side(h.part) in sides else set(sides)
+        return sorted(held & sides), sorted(sides - held)
+
+    def paws_bound(self, d):
+        """(tap.paws) Every paw she could tap with is held in a grip: like arms trapped in coils, no paw is free."""
+        held, free = self.paw_grips(d)
+        return bool(held) and not free
+
     def _tell(self, key, d, used):
         """One sign of fighting the tap from the set `key`, not one she showed lately, and none that needs a free paw
-        while her arms are trapped in coils."""
+        while her arms are trapped in coils or (tap.paws) both her forelimbs are held in grips."""
         skip = list(used)
-        if self.arms_trapped(d):
+        if self.arms_trapped(d) or self.paws_bound(d):
             table = dict(self.VARIETY.get(key, {}))
             free = [k for k in table if k not in self.PAW_TELLS]
             skip += [k for k in table if k in self.PAW_TELLS]
@@ -12253,34 +12294,74 @@ class Engine:
         ev = {"type": "tap_urge", "attacker": a, "defender": d.name, "submission": name,
               "parts": [h.part for h in hs], "pain": round(pain), "resist": round(resist), "beats_held": beats,
               "level": level}
+        if self._tap_claws(hs, tcfg):
+            ev["claws"] = self._tap_claws(hs, tcfg)
         if self._tap_vary_on():
             used = list(d.learned.get("tap_ways") or [])
             ev["tell"] = self._tell("tap_tell_urge" if level == 1 else "tap_tell_urge2", d, used)
             ev["arms_trapped"] = self.arms_trapped(d)
+            ev["paws_held"], ev["paws_free"] = self.paw_grips(d)
             d.learned["tap_ways"] = (used + [ev["tell"]])[-15:]
         return [ev]
 
-    def _tap_tells(self, d, refusals, over, resist, choke):
+    def falter_cfg(self):
+        """finish.submission.tap.falter (since build 333), or None when it is off."""
+        fc = ((((self.rules.get("finish") or {}).get("submission") or {}).get("tap") or {}).get("falter") or {})
+        return fc if fc.get("enabled", True) else None
+
+    def falter_word(self, chance):
+        """(tap.falter) How much of her resistance to the tap is left, in a word, from how near the tap is."""
+        fc = self.falter_cfg() or {}
+        if chance >= float(fc.get("almost_gone_at", 0.2)):
+            return "almost gone"
+        if chance >= float(fc.get("edge_at", 0.1)):
+            return "faltering"
+        return "wavering" if chance >= float(fc.get("closer_at", 0.03)) else "holding"
+
+    def _tap_claws(self, hs, tcfg):
+        """(tap.claws, since build 333) The parts this hold has claws or talons dug into (by the grips' own words, as
+        pin.control reads them), at most claws.max_grips of them; [] when off."""
+        cc = tcfg.get("claws") or {}
+        if not cc.get("enabled", True):
+            return []
+        out = [h.part for h in hs if self.CLAWS_IN.search(str(h.with_part or ""))
+               and not self.JAWS_GRIP.search(str(h.with_part or ""))]
+        return out[:int(cc.get("max_grips", 2))]
+
+    def _tap_tells(self, d, refusals, over, resist, choke, chance=None):
         """narration.tap_build.vary: HOW she is shown fighting the urge to tap this beat, picked from the variety
-        sets (never the sign she showed last time). How near she is goes mostly by how often she has refused, but
-        pain far past what she can bear pushes it a step nearer, and now and then she finds a little more in herself
-        and it comes a step back. Past her limit, a reason she is still holding on; and what the holder feels."""
+        sets (never the sign she showed last time). With tap.falter (since build 333) how near she is goes by how
+        near the tap really is (this beat's chance), a step nearer now and then once she has refused it many times;
+        without it, mostly by how often she has refused (pain far past what she can bear a step nearer, and now and
+        then she finds a little more in herself and it comes a step back). Past her limit, a reason she is still
+        holding on; and what the holder feels."""
         if not self._tap_vary_on():
             return {}
         used = list(d.learned.get("tap_ways") or [])
         out = {}
+        fc = self.falter_cfg()
         if choke:
             out["dark"] = self.vary("tap_dark", skip=used)
             pick = [out["dark"]]
         else:
-            stage = min(3, refusals)
-            if over >= 0.25 * resist:
-                stage = min(3, stage + 1)
-            elif stage > 1 and self.rng.random() < 0.2:
-                stage -= 1
+            if fc is not None and chance is not None:
+                stage = (1 if chance < float(fc.get("closer_at", 0.03)) else
+                         2 if chance < float(fc.get("edge_at", 0.1)) else 3)
+                if stage < 3 and refusals >= int(fc.get("refusals_step", 4)) \
+                        and self.rng.random() < float(fc.get("refusal_push", 0.35)):
+                    stage += 1      # (worn down by refusing it so many times)
+                out["resolve"] = self.falter_word(chance)
+                out["chance"] = round(float(chance), 3)
+            else:
+                stage = min(3, refusals)
+                if over >= 0.25 * resist:
+                    stage = min(3, stage + 1)
+                elif stage > 1 and self.rng.random() < 0.2:
+                    stage -= 1
             out["stage"] = stage
             out["tell"] = self._tell(("tap_tell_first", "tap_tell_closer", "tap_tell_edge")[stage - 1], d, used)
             out["arms_trapped"] = self.arms_trapped(d)
+            out["paws_held"], out["paws_free"] = self.paw_grips(d)
             pick = [out["tell"]]
             if over >= 0:
                 # the longer she refuses, the less of a reason she has left: stubbornness and a plea climb
