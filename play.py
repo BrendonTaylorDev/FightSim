@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 329 (the fighters' sounds, in the window and in exported fights)"
+VERSION = "2026-10-30 build 330 (sounds: one voice per fighter, long files, play once, Replay sounds)"
 
 HELP = """
 =============================================================================================
@@ -479,7 +479,7 @@ HELP = """
 =============================================================================================
   /status [full|name]   health, worst injuries, pins and positions
   /explain [name|status]   what each status on her does and what her heart, blood pressure and breathing mean
-  /audio [on|off|volume N] the fighters' sounds (gasps, cries, straining, panting): files go in sounds/<kind>/
+  /audio [on|off|volume N|overlap voice|queue|mix|max N|stop] the fighters' sounds (gasps, cries, straining, panting): files go in sounds/<kind>/
   /limb <name> [part]      one part in detail: damage, how it looks, what it is doing, grips, what it does to her
   /traits [name]        how each fighter fights: her traits, quirks, style and favourite moves (since build 280)
   /profile [name]       all that, and who she is: personality, history, relationships (the window: Profiles)
@@ -5233,6 +5233,17 @@ def handle_command(s, line):
         if w in ("on", "off"):
             c["enabled"] = w == "on"
             _save_rule_path(["window", "sounds", "enabled"], c["enabled"])
+            if w == "off":
+                _snd.stop_all()
+        elif w == "overlap" and len(a) > 1 and a[1].lower() in ("voice", "queue", "mix"):
+            # (since build 330) how a new sound meets one she is still making
+            c["overlap"] = a[1].lower()
+            _save_rule_path(["window", "sounds", "overlap"], c["overlap"])
+        elif w in ("max", "max_seconds") and len(a) > 1:
+            c["max_seconds"] = max(0.0, float(a[1]))
+            _save_rule_path(["window", "sounds", "max_seconds"], c["max_seconds"])
+        elif w == "stop":
+            _snd.stop_all()
         elif w in ("panting", "breathing") and len(a) > 1:
             c["breathing"] = a[1].lower() == "on"
             _save_rule_path(["window", "sounds", "breathing"], c["breathing"])
@@ -5241,11 +5252,16 @@ def handle_command(s, line):
             _save_rule_path(["window", "sounds", "volume"], c["volume"])
         cc = _snd.cfg(s.eng.rules)
         have = {k: len(_snd.files_for("", "", k)) for k in _snd.KINDS}
+        length = f"cut at {cc['max_seconds']:g} s" if cc["max_seconds"] else "whole files"
         print(f"Sounds {'on' if cc['enabled'] else 'off'}, volume {cc['volume'] * 100:.0f}%, panting "
-              f"{'on' if cc['breathing'] else 'off'}. Files in {_snd.SOUND_DIR} (her own voice: sounds/<name>/<kind>/):")
+              f"{'on' if cc['breathing'] else 'off'}, overlap {cc['overlap']}, {length}. Files in {_snd.SOUND_DIR} "
+              f"(her own voice: sounds/<name>/<kind>/):")
         for k, why in _snd.KINDS.items():
             print(f"  {k:<12} {have[k]} file(s)   {why}")
-        print("  /audio on|off · /audio volume 70 · /audio panting on|off")
+        print("  /audio on|off · /audio volume 70 · /audio panting on|off · /audio stop\n"
+              "  /audio overlap voice|queue|mix (voice: a new sound cuts off the last, a minor one waits its turn by "
+              "being skipped; queue: each waits; mix: all at once)\n"
+              "  /audio max 4 (cut any sound after 4 seconds; 0 = play whole files)")
         return
     if cmd in ("sounds", "sound"):
         cfg = s.eng.rules.setdefault("narration", {}).setdefault("sounds", {})

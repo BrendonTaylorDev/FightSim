@@ -800,6 +800,84 @@ def presets_help_check():
     return problems
 
 
+def sounds_330_check():
+    """Build 330 (window.sounds.overlap): each fighter has one voice: a beat's sounds play one after another, a long
+    one to its end; a new beat's sound cuts off the last unless it is a minor one no bigger than what she is still
+    making (then skipped); queue waits, mix overlaps; max_seconds cuts a sound; stop_all silences everything; the
+    export's script handles it too and has a replay button per beat."""
+    import sounds
+    import time as _t
+
+    class Fake:
+        def __init__(self):
+            self.live, self.started, self.stopped = set(), [], []
+
+        def start(self, path, vol):
+            self.started.append(path)
+            self.live.add(path)
+            return path
+
+        def done(self, h):
+            return h not in self.live
+
+        def stop(self, h):
+            self.stopped.append(h)
+            self.live.discard(h)
+
+    problems = []
+    c = dict(sounds.DEFAULTS)
+    pl = Fake()
+    m = sounds.Mixer(pl)
+    m.apply(("beat", "R", [("cry.wav", "cry"), ("strain.wav", "strain")], c))
+    if pl.started != ["cry.wav"]:
+        problems.append(f"a beat's two sounds should play one after the other, not together: {pl.started}")
+    m.tick()
+    if pl.started != ["cry.wav"]:
+        problems.append("a long sound should play to its end before the next one starts")
+    pl.live.discard("cry.wav")
+    m.tick()
+    if pl.started != ["cry.wav", "strain.wav"]:
+        problems.append(f"the second sound should follow when the first ends: {pl.started}")
+    m.apply(("beat", "R", [("pant.wav", "pant")], c))
+    if "pant.wav" in pl.started:
+        problems.append("a pant shouldn't cut off the straining she is still making")
+    m.apply(("beat", "R", [("scream.wav", "scream")], c))
+    if "strain.wav" not in pl.stopped or pl.started[-1] != "scream.wav":
+        problems.append("a scream should cut off the straining")
+    m.apply(("beat", "N", [("gasp.wav", "gasp")], c))
+    if pl.started[-1] != "gasp.wav" or "scream.wav" in pl.stopped:
+        problems.append("the other fighter's sound plays alongside hers (her own voice)")
+    pl2 = Fake()
+    q = sounds.Mixer(pl2)
+    qc = dict(c, overlap="queue")
+    q.apply(("beat", "R", [("a.wav", "grunt")], qc))
+    q.apply(("beat", "R", [("b.wav", "cry")], qc))
+    if pl2.started != ["a.wav"] or pl2.stopped:
+        problems.append("overlap queue: the new sound should wait its turn")
+    pl3 = Fake()
+    x = sounds.Mixer(pl3)
+    x.apply(("beat", "R", [("a.wav", "grunt"), ("b.wav", "cry")], dict(c, overlap="mix")))
+    if pl3.started != ["a.wav", "b.wav"]:
+        problems.append("overlap mix: everything at once")
+    pl4 = Fake()
+    y = sounds.Mixer(pl4)
+    y.apply(("beat", "R", [("long.wav", "cry")], dict(c, max_seconds=0.01)))
+    _t.sleep(0.03)
+    y.tick()
+    if "long.wav" not in pl4.stopped:
+        problems.append("max_seconds should cut a long sound")
+    import threading
+    ev = threading.Event()
+    m.apply(("stop", ev))
+    if pl.live or not ev.is_set():
+        problems.append(f"stop_all should silence everything: {pl.live}")
+    import fightexport
+    js = fightexport._sound_script({"b0": [[0, "Ripples", 5]]}, ["data:audio/wav;base64,"], c)
+    if "fsReplay" not in js or "FS_MODE" not in js:
+        problems.append("the exported fight's sounds should replay from a button and keep each fighter's voice")
+    return problems
+
+
 def sounds_329_check():
     """Build 329 (window.sounds): each beat's sounds come from what happened to her (a hit, a hold, coils squeezing
     her, her heart starting again, panting when spent), none for a fighter out cold; an exported fight carries the
@@ -4544,6 +4622,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "sounds330" for w in want):
+        t = time.time()
+        probs = sounds_330_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 330: one voice per fighter, long sounds, no repeats, replay  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "sounds329" for w in want):

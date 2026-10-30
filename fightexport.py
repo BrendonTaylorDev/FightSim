@@ -262,9 +262,13 @@ td.n{text-align:right}.chip{display:inline-block;min-width:58px;padding:0 4px;bo
 .taps{font:13px system-ui,sans-serif;margin:6px 0 2px}.step{display:inline-block;width:22px;height:10px;border:1px solid #9ca3af;margin-right:2px}.grip{font:12px system-ui,sans-serif;margin:1px 0}.pip{display:inline-block;width:12px;height:12px;
 border-radius:50%;border:1.5px solid #7f1d1d;background:#fff;margin-right:3px;vertical-align:-2px}.pip.on{background:#dc2626}
 .bar.pain i.limit{position:absolute;left:66.7%;top:0;bottom:0;border-left:1px dashed #111827}
+.sndre{font-size:14px;margin-left:8px;padding:0 6px;cursor:pointer;vertical-align:middle}
 .result{margin:14px 0 4px;padding:8px 12px;border-left:4px solid #b45309;background:var(--card);
 font:600 15px system-ui,sans-serif}
 """
+
+
+MINOR_SOUND = sounds.MINOR
 
 
 def _sound_bar(beat_sounds):
@@ -275,15 +279,33 @@ def _sound_bar(beat_sounds):
             'click to hear the fighters as you scroll</button></div>')
 
 
-def _sound_script(beat_sounds, files, volume):
-    """Each beat's sounds, played once as it scrolls into view (after the switch above is turned on)."""
+def _sound_script(beat_sounds, files, sc):
+    """Each beat's sounds, played once as it scrolls into view (after the switch above is turned on), and again from
+    the beat's speaker button. (since build 330) Each fighter has one voice, as in the window (window.sounds.overlap):
+    her sounds play one after another, a long one to its end, and a new beat's sound cuts off the last unless it is
+    a minor one (strain, pant) no bigger than what she is still making. beat_sounds: {beat: [[file, who, priority]]}"""
     if not beat_sounds:
         return ""
+    mode = str(sc.get("overlap", "voice")).lower()
     return ("<script>const FS_FILES=" + json.dumps(files) + ";const FS_BEATS=" + json.dumps(beat_sounds)
-            + ";const FS_VOL=" + json.dumps(max(0.0, min(1.0, volume))) + """;let fsOn=false;const fsDone=new Set();
-function fsPlay(id){(FS_BEATS[id]||[]).forEach((i,n)=>setTimeout(()=>{const a=new Audio(FS_FILES[i]);a.volume=FS_VOL;
-a.play().catch(()=>{});},n*350));}
-function fsSound(){fsOn=!fsOn;document.getElementById('sndbtn').textContent=fsOn?'Sounds on (click to turn off)'
+            + ";const FS_VOL=" + json.dumps(max(0.0, min(1.0, float(sc.get("volume", 0.8)))))
+            + ";const FS_MODE=" + json.dumps(mode) + ";const FS_MAX=" + json.dumps(float(sc.get("max_seconds", 0) or 0))
+            + ";const FS_QMAX=" + json.dumps(int(sc.get("queue_max", 3))) + ";const FS_MINOR=" + json.dumps(MINOR_SOUND)
+            + """;let fsOn=false;const fsDone=new Set();const FS_CH={};
+function fsStop(ch){if(ch.a){ch.a.onended=null;ch.a.pause();ch.a=null;}clearTimeout(ch.t);}
+function fsNext(ch){fsStop(ch);const n=ch.q.shift();if(n===undefined)return;const a=new Audio(FS_FILES[n[0]]);
+a.volume=FS_VOL;ch.a=a;ch.p=n[2];a.onended=()=>{if(ch.a===a)fsNext(ch);};
+if(FS_MAX>0)ch.t=setTimeout(()=>{if(ch.a===a)fsNext(ch);},FS_MAX*1000);a.play().catch(()=>{if(ch.a===a)fsNext(ch);});}
+function fsPlay(id){const by={};(FS_BEATS[id]||[]).forEach(c=>(by[c[1]]=by[c[1]]||[]).push(c));
+for(const w in by){const it=by[w];if(FS_MODE==='mix'){it.forEach(c=>{const a=new Audio(FS_FILES[c[0]]);
+a.volume=FS_VOL;a.play().catch(()=>{});});continue;}
+const ch=FS_CH[w]=FS_CH[w]||{q:[],a:null,p:0,t:0};
+if(FS_MODE==='queue'){ch.q=ch.q.concat(it).slice(0,FS_QMAX);if(!ch.a)fsNext(ch);continue;}
+const top=Math.max(...it.map(c=>c[2]));if(ch.a&&top<=Math.min(FS_MINOR,ch.p))continue;
+ch.q=it.slice();fsNext(ch);}}
+function fsReplay(id){for(const w in FS_CH){FS_CH[w].q=[];fsStop(FS_CH[w]);}fsPlay(id);}
+function fsSound(){fsOn=!fsOn;if(!fsOn)for(const w in FS_CH){FS_CH[w].q=[];fsStop(FS_CH[w]);}
+document.getElementById('sndbtn').textContent=fsOn?'Sounds on (click to turn off)'
 :'Sounds off: click to hear the fighters as you scroll';}
 const fsObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&fsOn&&!fsDone.has(e.target.id)){
 fsDone.add(e.target.id);fsPlay(e.target.id);}}),{threshold:0.35});
@@ -340,7 +362,7 @@ def write(s, path=None, fights=None):
                             from engine import note_failure
                             note_failure("putting a sound in the exported fight", e)
                             continue
-                    cues.append(list(sound_files).index(pth))
+                    cues.append([list(sound_files).index(pth), f["name"], sounds.PRIORITY.get(kind, 3)])
             prev_by[f["name"]] = f
         if cues:
             beat_sounds[f"b{k}"] = cues
@@ -369,14 +391,17 @@ def write(s, path=None, fights=None):
             fail = re.search(r"\[narration failed: ([^\]]+)\]", r.get("text", ""))
             st = (f"<p class=dim>(no story for this beat: the narration failed ({html.escape(fail.group(1))}) and "
                   f"was never rerolled)</p>" if fail else "<p class=dim>(no story text for this beat)</p>")
-        body.append(f'<section id="b{k}"><h2>{html.escape(head)}</h2><div class="story">{st}'
+        # (since build 330) a beat's sounds play once as it scrolls into view; this button plays them again
+        replay = (f' <button class="sndre" title="Play this beat\'s sounds again" onclick="fsReplay(\'b{k}\')">'
+                  f'&#128266;</button>' if f"b{k}" in beat_sounds else "")
+        body.append(f'<section id="b{k}"><h2>{html.escape(head)}{replay}</h2><div class="story">{st}'
                     f'{mech_html}</div><div class="side">{side}</div></section>')
     page = (f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,'
             f'initial-scale=1"><title>{html.escape(title or "Fight")}</title><style>{CSS}</style></head><body>'
             f'<header><h1>{html.escape(title)}</h1><div class="dim">{html.escape(arena)} · saved '
             f'{datetime.datetime.now():%Y-%m-%d %H:%M} · {len(recs)} beats</div></header>'
             f'<nav>{"".join(nav)}</nav>{_sound_bar(beat_sounds)}{"".join(body)}'
-            f'{_sound_script(beat_sounds, list(sound_files.values()), float(sc.get("volume", 0.8)))}</body></html>')
+            f'{_sound_script(beat_sounds, list(sound_files.values()), sc)}</body></html>')
     with open(base + ".html", "w", encoding="utf-8") as fh:
         fh.write(page)
     with open(base + ".json", "w", encoding="utf-8") as fh:

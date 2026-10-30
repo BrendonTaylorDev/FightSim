@@ -654,6 +654,26 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 330
+
+Sounds no longer pile up, and longer sound files work (`window.sounds`).
+
+- **One voice per fighter.** Her sounds in a beat play one after another instead of on top of each other, and each
+  plays to its end however long the file is. Two fighters can still be heard at once.
+- **When the next beat comes while she is still making a sound** (`overlap`):
+  - `voice` (the default): the new sound cuts the old one off. The exception is a minor sound (straining, panting)
+    no bigger than the one still playing, which is skipped: she doesn't stop screaming to pant.
+  - `queue`: the new sound waits its turn (at most `queue_max` waiting).
+  - `mix`: everything plays at once, as in build 329.
+- **`max_seconds`** cuts any sound after that long (0, the default, plays whole files).
+- **No repeats.** A beat's sounds play once, when it lands. Going back to it with the slider is silent, and so is
+  Replay hits now.
+- **Replay sounds:** a new button over the cards plays the shown beat's sounds again, the same files. In an exported
+  fight each beat with sounds has a speaker button beside its title, and the voices work the same way there.
+- Sounds stop when the window closes, on `/audio off`, and on the new `/audio stop`. On Windows, finished sounds are
+  now closed, where build 329 left them open.
+- `/audio overlap voice|queue|mix` and `/audio max N`.
+
 ## Build 329
 Sounds: the fighters' own, in the window and in exported fights. No impact sounds: only her.
 - **When.** Each beat, from what happened to her: gasp (a light hit), grunt (a solid one), cry (a heavy one), scream

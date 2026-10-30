@@ -1533,6 +1533,8 @@ class App:
         # (since build 324, window.replay_button) the blows of the beat shown landing again: the flash and jolt
         if (self._rules().get("window") or {}).get("replay_button", True):
             ttk.Button(row, text="↻ Replay hits", command=self.replay_hits).pack(side="left", padx=(8, 0))
+        # (since build 330) the shown beat's sounds again: they play once on their own, when the beat lands
+        ttk.Button(row, text="🔊 Replay sounds", command=self.replay_sounds).pack(side="left", padx=(8, 0))
 
         holder = ttk.Frame(left)
         holder.pack(fill="both", expand=True, pady=(6, 0))
@@ -1695,6 +1697,11 @@ class App:
         if getattr(self, "_closed", False):
             return
         self._closed = True
+        try:
+            import sounds
+            sounds.stop_all()
+        except Exception as e:
+            note_failure("stopping the sounds", e)
         self.in_q.put(None)
         self.root.destroy()
 
@@ -2047,7 +2054,7 @@ class App:
             before[f["name"]] = card.data
             card.hits = impacts(card.data, f) if step and card.data else ([], 0.0)
             card.draw(f)
-        if step:
+        if step and live:
             self._sounds(before, snap)
         self._shown_turn = turn
         self._show_badge()
@@ -2072,12 +2079,46 @@ class App:
             note_failure("showing the match badge", e)
 
     def _sounds(self, before, snap):
-        """(since build 329, window.sounds) The fighters' sounds for this beat: a gasp, a cry, straining in a hold..."""
+        """(since build 329, window.sounds) The fighters' sounds for this beat: a gasp, a cry, straining in a hold...
+        (since build 330) once only, when the beat lands: going back to it later is silent (Replay sounds plays it
+        again). What was played is kept for that button."""
+        turn = snap.get("turn")
+        heard = self.__dict__.setdefault("_heard", {})
+        if turn is not None and turn in heard:
+            return
         try:
             import sounds
-            sounds.play_beat(before, snap["fighters"], self._rules(), snap.get("turn") or 0)
+            heard[turn] = sounds.play_beat(before, snap["fighters"], self._rules(), turn or 0)
         except Exception as e:
             note_failure("the beat's sounds (window.sounds)", e)
+
+    def replay_sounds(self):
+        """(since build 330) The Replay sounds button: the beat shown's sounds again, the same files that played when
+        it landed (worked out from the beat before it, for a beat that landed before the window opened)."""
+        snap = getattr(self, "shown", None)
+        if not snap:
+            return
+        turn = snap.get("turn")
+        try:
+            import sounds
+            got = self.__dict__.get("_heard", {}).get(turn)
+            if got is None:
+                pos = next((k for k, (m, b) in enumerate(self.beats) if b is snap), len(self.beats))
+                prev = next((b for m, b in reversed(self.beats[:pos]) if b.get("turn") is not None
+                             and turn is not None and b["turn"] < turn), None)
+                if prev is None:
+                    self.when.configure(text=self.when.cget("text").split("   (")[0] + "   (no sounds to replay)")
+                    return
+                got = sounds.beat_items({f["name"]: f for f in prev["fighters"]}, snap["fighters"], self._rules(),
+                                        turn or 0)
+                self.__dict__.setdefault("_heard", {})[turn] = got
+            if not got:
+                self.when.configure(text=self.when.cget("text").split("   (")[0] + "   (no sounds in this beat)")
+                return
+            sounds.stop_all()
+            sounds.play_items(got, self._rules())
+        except Exception as e:
+            note_failure("replaying the beat's sounds (window.sounds)", e)
 
     def replay_hits(self):
         """(since build 324) The Replay hits button: what landed in the beat shown flashes and jolts on the cards
@@ -2093,7 +2134,6 @@ class App:
             self.when.configure(text=self.when.cget("text").split("   (")[0] + "   (no beat before this one to replay)")
             return
         before = {f["name"]: f for f in prev["fighters"]}
-        self._sounds(before, snap)
         landed = False
         for f in snap["fighters"]:
             card = self.cards.get(f["name"])
