@@ -1613,14 +1613,15 @@ class App:
     def open_profiles(self):
         """A window with a tab for each fighter in the fight: her personality, her history and what each of the
         others is to her (editable; Save writes them to fighters.json and the story uses them from the next beat),
-        and her traits, quirks and style to read."""
+        and how she fights to read: her traits, quirks, style and favourite moves, fighting styles and reactions to
+        being hurt, each with what it does in a fight."""
         sess = getattr(self.game, "session", None)
         eng = getattr(sess, "eng", None)
         if eng is None:
             return
         top = tk.Toplevel(self.root, bg=C("#fffdf8"))
         top.title("Profiles")
-        top.geometry("760x620")
+        top.geometry("820x820")
         _keep_alive(top)       # (closed windows are kept: a Tk object freed off the main thread kills Spyder)
         book = ttk.Notebook(top)
         book.pack(fill="both", expand=True, padx=6, pady=6)
@@ -1645,10 +1646,32 @@ class App:
             for o in fighters:
                 if o is not f:
                     b["rel"][o.name] = area(tab, f"{o.name}, to her", (f.relationships or {}).get(o.name, ""), 2)
-            tr = ", ".join(f"{k} ×{v:g}" for k, v in (f.traits or {}).items() if float(v) != 1.0) or "all as normal"
-            info = (f"Traits: {tr}\nQuirks: {', '.join(f.quirks or []) or 'none'}"
-                    + (f"\nStyle: {f.style}" if f.style else ""))
-            ttk.Label(tab, text=info, wraplength=700, justify="left").pack(anchor="w", pady=(8, 0))
+            # (since build 339) how she fights, and what each piece of it does in a fight: traits, quirks, style and
+            # favourite moves, fighting styles (styles), reactions to being hurt (reacting)
+            ttk.Label(tab, text="How she fights (edit in fighters.json)", font=("Segoe UI", 10, "bold")).pack(
+                anchor="w", pady=(8, 0))
+            wrap = ttk.Frame(tab)
+            wrap.pack(fill="both", expand=True)
+            sheet = tk.Text(wrap, height=12, wrap="word", font=("Segoe UI", 10), bg=C("#f8fafc"), fg=C("#111827"),
+                            relief="flat", padx=6, pady=4)
+            sb = ttk.Scrollbar(wrap, orient="vertical", command=sheet.yview)
+            sheet.configure(yscrollcommand=sb.set)
+            sb.pack(side="right", fill="y")
+            sheet.pack(side="left", fill="both", expand=True)
+            sheet.tag_configure("head", font=("Segoe UI", 10, "bold"), spacing1=6)
+            sheet.tag_configure("line", lmargin1=10, lmargin2=22, spacing1=1)
+            try:
+                import styles as _styles
+                for head, lines in _styles.fighter_sheet(eng, f):
+                    sheet.insert("end", head + "\n", "head")
+                    for ln in lines:
+                        sheet.insert("end", "• " + ln + "\n", "line")
+            except Exception as e:
+                note_failure("the Profiles window's fighting sheet", e)
+                tr = ", ".join(f"{k} ×{v:g}" for k, v in (f.traits or {}).items() if float(v) != 1.0) or "all as normal"
+                sheet.insert("end", f"Traits: {tr}\nQuirks: {', '.join(f.quirks or []) or 'none'}"
+                             + (f"\nStyle: {f.style}" if f.style else ""))
+            sheet.configure(state="disabled")
             boxes[f.name] = b
 
         def save():

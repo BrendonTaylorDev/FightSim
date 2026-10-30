@@ -654,6 +654,22 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 340
+
+**The Profiles button shows how each fighter fights.** Each fighter's tab now has a scrollable "How she fights" section
+under her personality, history and relationships (still editable as before). Every line says what it does in a fight:
+- **At a glance:** one line: her main fighting style, how she takes pain, her favourite move ("Nocturne fights by
+  taking her opponent apart one part at a time and hides her pain; her favourite move is Night Slash").
+- **Traits:** each one that isn't normal, better or worse, and what it changes (speed: dodging and countering...).
+- **Quirks:** each in plain words (disaster sense: devastating blows land on her less often...).
+- **Style and favourite moves:** her style sentence, the moves she reaches for most and seldom uses.
+- **Fighting styles** (build 335): each with its strength (slight, moderate, strong, very strong) and what it does.
+- **Reactions to being hurt** (build 336): each trait and what it does, what she reacts more or less to (kinds of
+  damage, tender parts), and how she looks when she is FINISHED for the moment.
+
+Anything switched off in rules.json is marked so. The sheet comes from `styles.fighter_sheet`, so the numbers always
+match what the engine uses.
+
 ## Build 339
 
 **Fixed: the window spammed errors once a pin went on** ("unhashable type: 'list'" in the hold picture). A pin's

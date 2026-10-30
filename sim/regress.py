@@ -968,6 +968,40 @@ def taps_333_check():
     return problems
 
 
+def profiles_340_check():
+    """Build 340: the Profiles window's "How she fights" sheet: every fighter on the roster gets one, with her traits,
+    quirks, style, fighting styles and reactions, each saying what it does in a fight; switched-off parts say so."""
+    import styles
+    problems = []
+    e = Engine(seed=1)
+    with open("fighters.json", encoding="utf-8") as fh:
+        everyone = [f["name"] for f in json.load(fh)["fighters"]]
+    for n in everyone:
+        if n.lower() not in e.fighters:
+            e._add_fighter(next(f for f in json.load(open("fighters.json", encoding="utf-8"))["fighters"]
+                                if f["name"] == n))
+    for f in e.fighters.values():
+        try:
+            sheet = dict(styles.fighter_sheet(e, f))
+        except Exception as ex:
+            problems.append(f"{f.name}: the sheet failed: {ex}")
+            continue
+        heads = " | ".join(sheet)
+        for h in ("At a glance", "Traits", "Quirks", "Fighting styles", "Reactions to being hurt"):
+            if not any(k.startswith(h) for k in sheet):
+                problems.append(f"{f.name}: no {h} section ({heads})")
+        if any(not ls for ls in sheet.values()):
+            problems.append(f"{f.name}: an empty section")
+    n = e.get("Nocturne")
+    sheet = dict(styles.fighter_sheet(e, n))
+    if not any("one part at a time" in l for l in sheet.get("Fighting styles", [])):
+        problems.append("Nocturne's sheet should say what the dismantler does")
+    e.rules["styles"]["enabled"] = False
+    if not any(k.startswith("Fighting styles (switched off") for k in dict(styles.fighter_sheet(e, n))):
+        problems.append("with styles off the sheet should say so")
+    return problems
+
+
 def fixes_339_check():
     """Build 339: a pin's "by" is a list of pinners (the window and the export crashed on it); a note's guard rail
     copied into the story goes; "fought to stay conscious" goes when nobody is in danger of going out; reactions
@@ -5195,6 +5229,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "profiles340" for w in want):
+        t = time.time()
+        probs = profiles_340_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 340: the Profiles sheet (how she fights, and what each trait does)  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "fixes339" for w in want):

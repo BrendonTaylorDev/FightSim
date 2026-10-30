@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 339 (double-pin picture crash, fight log fixes: escapes, get-ups, chokes, reactions, leaked notes)"
+VERSION = "2026-10-30 build 340 (Profiles: how each fighter fights, and what each trait does in a fight)"
 
 HELP = """
 =============================================================================================

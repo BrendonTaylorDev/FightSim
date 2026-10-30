@@ -476,3 +476,174 @@ def describe(eng, f):
     if not st:
         return ""
     return ", ".join(spec(eng, n).get("label", n.replace("_", " ")) for n, _ in sorted(st.items(), key=lambda kv: -kv[1]))
+
+
+# ------------------------------------------------------------------------------------------- the Profiles sheet
+# (since build 339) what each trait, quirk, style and reaction does in a fight, in plain words, for the Profiles window
+
+TRAIT_WHAT = {
+    "speed": "dodging, countering after a dodge, and meeting a move with her own",
+    "hold": "how hard her grips bite when they close, and how hard they are to break",
+    "escape": "breaking holds and getting out from under pins",
+    "toughness": "keeping her feet: how easily blows stagger or rock her",
+    "stamina": "what her moves cost her in energy",
+    "striking": "landing where she aims, and her chance of a devastating blow",
+    "learning": "reading an opponent's move (at 1.4 or more, after seeing it once instead of twice)",
+}
+QUIRK_WHAT = {
+    "stubborn": "past her limit in a submission she holds out longer before tapping",
+    "out_of_depth": "new to submission holds: she escapes them poorly at first, better each time she's caught",
+    "cocky": "after a big blow of hers, her next attack may overreach (sloppy, half force, off balance)",
+    "water_born": "in the water she is quicker and harder to hold",
+    "ring_sense": "experience: she rarely overcommits when tired",
+    "clinch_fighter": "holding someone, she lands short free blows far more often",
+    "works_the_hold": "her holds tighten faster beat by beat",
+    "predictable": "an opponent reads her moves after one sight of them",
+    "weak_paw_grip": "her paws were never made for gripping: paw grips press lighter and break easier (jaws are fine)",
+    "disaster_sense": "she feels the worst blows coming: devastating blows land on her less often",
+    "ambusher": "her ambush moves land devastatingly far more often on someone staggered, off balance or down",
+    "hates_water": "soaked or in the water she is slower and strikes worse",
+    "overwhelming": "her big moves hit harder but are easier to see coming",
+    "patient_constrictor": "stronger in a contest of coils",
+    "unshakeable": "very hard to stagger or rock",
+}
+STYLE_WHAT = {
+    "dismantler": "picks one part and keeps at it until it gives, then the part beside it: heavy blows to soften it, "
+                  "cutting ones once it's worn; blows aimed elsewhere are pulled to it, and it takes the brunt when a "
+                  "blow catches several parts",
+    "grappler": "grabs and holds far more, and throws short close blows from inside the grip",
+    "setup_artist": "knockdowns, grabs and charges first, then her biggest blow at point-blank (a little harder there)",
+    "wear_down": "spreads heavy blows over every fresh part; they wear her opponent's resistance down further",
+    "opportunist": "goes for the worst-hurt part, and for big blows the moment her opponent is caught open "
+                   "(devastating blows likelier then)",
+    "head_hunter": "aims for the head and neck",
+    "body_worker": "aims for the ribs and belly",
+    "hobbler": "aims for the legs, to take her opponent's footing",
+    "swarmer": "fast and relentless: quick blows, chains and flurries",
+    "counter_puncher": "counters after a dodge far more often",
+    "out_fighter": "keeps to range, grabs little, and twists out of grabs",
+    "ground_pounder": "stays on top of a downed opponent and pounds her there",
+    "biter": "reaches for her jaws first, above all in close or with her opponent down",
+    "trickster": "feints and misdirection: status moves and feints far more often",
+    "thrower": "throws and slams far more often",
+}
+REACT_WHAT = {
+    "stoic": "keeps the pain in: her reactions show smaller and quieter (never past real agony); under a pin she lies "
+             "quiet and saves herself for a sudden heave, and wears down a little slower",
+    "expressive": "shows everything: her reactions are a size bigger",
+    "vocal": "the pain comes out of her mouth: cries and yelps",
+    "quiet": "makes little sound, even hurt",
+    "squirmer": "writhes and squirms with pain; never still under a pin (tries more, but tires faster)",
+    "recoils": "jerks away from what hurts her",
+    "curls": "folds round the hurt",
+    "rigid": "locks up and goes still with pain",
+    "lashes_out": "turns pain straight back on whoever did it: snarling, snapping",
+}
+
+
+def strength_of(x):
+    x = float(x)
+    return "very strong" if x >= 0.8 else "strong" if x >= 0.6 else "moderate" if x >= 0.35 else "slight"
+
+
+def fighter_sheet(eng, f):
+    """Everything about how she fights, as [(heading, [lines])], each line what it does in a fight. Things switched off
+    in rules.json are marked so."""
+    import reacts as _r
+    out = []
+    tcfg = eng.traits_cfg() if hasattr(eng, "traits_cfg") else True
+    off = "" if tcfg else " (traits are switched off in rules.json)"
+    lines = []
+    for k, v in (f.traits or {}).items():
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            continue
+        if abs(v - 1.0) < 0.005:
+            continue
+        how = "better" if v > 1.0 else "worse"
+        lines.append(f"{k.capitalize()} ×{v:g} ({how} than normal): {TRAIT_WHAT.get(k, k)}.")
+    out.append(("Traits" + off, lines or ["All as normal."]))
+    q = [f"{n.replace('_', ' ').capitalize()}: {QUIRK_WHAT.get(n, '')}." for n in (f.quirks or [])]
+    out.append(("Quirks" + off, q or ["None."]))
+    fav = sorted(((m, float(w)) for m, w in (f.favors or {}).items() if float(w) > 1), key=lambda kv: -kv[1])
+    rare = [m for m, w in (f.favors or {}).items() if float(w) < 1]
+    mv = []
+    if f.style:
+        mv.append(f.style)
+    if fav:
+        mv.append("Reaches most for: " + ", ".join(m for m, _ in fav[:6]) + ".")
+    if rare:
+        mv.append("Seldom uses: " + ", ".join(rare[:6]) + ".")
+    out.append(("Style and favourite moves", mv or ["No particular favourites."]))
+    sc = cfg(eng)
+    raw = {k: v for k, v in (getattr(f, "fighting", None) or {}).items() if not str(k).startswith("_")}
+    st = []
+    for k, v in sorted(raw.items(), key=lambda kv: -float(kv[1])):
+        sp = ((eng.rules.get("styles") or {}).get("list") or {}).get(k) or {}
+        label = sp.get("label", k.replace("_", " "))
+        st.append(f"{label[0].upper() + label[1:]}, {strength_of(v)} ({float(v):g}): {STYLE_WHAT.get(k, '')}."
+                  + ("" if sp.get("enabled", True) else " (switched off)"))
+    out.append(("Fighting styles" + ("" if sc else " (switched off in rules.json)"),
+                st or ["None set (fighters.json \"fighting\")."]))
+    rc = _r.cfg(eng)
+    tr = _r.traits(f)
+    rx = [f"{k.replace('_', ' ').capitalize()}, {strength_of(v)} ({float(v):g}): {REACT_WHAT.get(k, '')}."
+          for k, v in sorted(((k, v) for k, v in tr.items() if k != "sensitive"), key=lambda kv: -float(kv[1]))]
+    sens = tr.get("sensitive") or {}
+    if isinstance(sens, dict) and sens:
+        def word(k):
+            # a kind of damage, or a word in a part's name (her tail, her ears)
+            return f"{k} (×{float(sens[k]):g})" if k in _r.KIND_MOVES else f"hits to her {k} (×{float(sens[k]):g})"
+        more = [k for k, v in sens.items() if float(v) > 1]
+        less = [k for k, v in sens.items() if float(v) < 1]
+        if more:
+            rx.append("Reacts more to: " + ", ".join(word(k) for k in more) + ".")
+        if less:
+            rx.append("Reacts less to: " + ", ".join(word(k) for k in less) + ".")
+    if rc and (rc.get("finished") or {}).get("enabled"):
+        rx.append("Like everyone, a big reaction when she is low can leave her FINISHED for a beat or two: down, wide "
+                  "open to a pin, a submission or a knockout. Hers would look like "
+                  + {"still": "lying still and staring", "agony": "curling round the pain",
+                     "thrash": "thrashing on the ground"}[_finished_kind(f)] + ".")
+    out.append(("Reactions to being hurt" + ("" if rc else " (switched off in rules.json)"),
+                rx or ["None set (fighters.json \"reacting\")."]))
+    # at a glance: her strongest style and her strongest way of taking pain, in one line, first
+    glance = []
+    if raw:
+        k0 = max(raw, key=lambda k: float(raw[k]))
+        sp0 = ((eng.rules.get("styles") or {}).get("list") or {}).get(k0) or {}
+        glance.append("fights by " + {"dismantler": "taking her opponent apart one part at a time",
+                                       "grappler": "grabbing and holding",
+                                       "setup_artist": "setting up her big blows",
+                                       "wear_down": "wearing her opponent down all over",
+                                       "opportunist": "waiting for an opening and punishing it",
+                                       "head_hunter": "going for the head", "body_worker": "working the body",
+                                       "hobbler": "taking her opponent's legs", "swarmer": "swarming her opponent with fast blows",
+                                       "counter_puncher": "countering", "out_fighter": "keeping her distance",
+                                       "ground_pounder": "pounding a downed opponent", "biter": "biting",
+                                       "trickster": "feints and tricks", "thrower": "throws and slams"}.get(
+            k0, sp0.get("label", k0)))
+    rt = {k: float(v) for k, v in tr.items() if k != "sensitive"}
+    if rt:
+        k1 = max(rt, key=rt.get)
+        glance.append({"stoic": "hides her pain", "expressive": "shows every hurt", "vocal": "cries out when hurt",
+                       "quiet": "makes little sound when hurt", "squirmer": "squirms and writhes when hurt",
+                       "recoils": "jerks away from pain", "curls": "curls round her hurts", "rigid": "locks up when hurt",
+                       "lashes_out": "turns pain into fury"}.get(k1, k1))
+    fav1 = fav[0][0] if fav else ""
+    if glance or fav1:
+        line = f"{f.name} " + " and ".join(glance) + (f"; her favourite move is {fav1}" if fav1 else "") + "."
+        out.insert(0, ("At a glance", [line]))
+    return out
+
+
+def _finished_kind(f):
+    import reacts as _r
+    tr = _r.traits(f)
+    moves = {mv: float(tr.get(t, 0) or 0) for t, mv in _r.TRAIT_MOVE.items()}
+    top = max(moves, key=moves.get) if any(moves.values()) else "curl"
+    kind = _r.NATURE_FINISHED.get(top, "agony")
+    if float(tr.get("stoic", 0) or 0) >= 0.5 and kind == "thrash":
+        kind = "still"
+    return kind
