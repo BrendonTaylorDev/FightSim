@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 335 (fighting styles, blows that wear or injure, neck pins end mostly by the blood)"
+VERSION = "2026-10-30 build 336 (reactions to being hurt by her nature, finished for the moment, ground grind)"
 
 HELP = """
 =============================================================================================

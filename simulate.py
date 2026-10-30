@@ -43,7 +43,7 @@ def _usable(eng, f, d, budget=None):
 def _pick_action(eng, rng, f, d):
     """One action for fighter f against d, chosen by dice."""
     a = {"attacker": f.name, "defender": d.name, "flavor": "", "_sim": True}
-    if eng.pinned_by(f.name) or eng.pinning(f.name) or f.energy < 12:
+    if eng.pinned_by(f.name) or eng.pinning(f.name) or f.energy < 12 or eng.has(f, "finished"):
         return dict(a, action="breather")
     flying = eng.has(f, "airborne")
     # a submission opening (rarer than a pin, so offered first): usually taken, and now and then something free is used on her as well

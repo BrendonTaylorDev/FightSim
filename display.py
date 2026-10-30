@@ -129,7 +129,7 @@ class Display:
                    "paralyzed": "⚡", "chilled": "❄️", "soaked": "💧", "flinched": "😵", "reeling": "🌀", "adrenaline": "🔥", "greyed": "🌫️", "last_stand": "🩸", "overextended": "🫥",
                    "asleep": "💤", "restrained": "🔗", "frozen": "🧊", "confused": "💫", "burned": "♨️", "poisoned": "☠️",
                    # (since build 293) the head and body effects
-                   "rattled": "💥", "stunned": "🌟", "wobbly": "🦵", "seeing_double": "👀", "eyes_watering": "💧",
+                   "rattled": "💥", "stunned": "🌟", "finished": "🫠", "wobbly": "🦵", "seeing_double": "👀", "eyes_watering": "💧",
                    "ears_ringing": "🔔", "jaw_rattled": "🦷", "whiplash": "↪️", "concussed": "🧠", "dead_leg": "🦵",
                    "limping": "🩼", "dead_arm": "💪", "ribs_aching": "🫁", "back_spasm": "⚡", "tail_numb": "〰️",
                    "swollen_eye": "👁️"}

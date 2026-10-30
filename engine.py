@@ -16,6 +16,7 @@ import reactions
 import body
 import weather as arena_weather
 import styles
+import reacts
 
 
 _FAILED_ONCE = set()
@@ -292,6 +293,7 @@ class Fighter:
     style: str = ""                              # (since build 280) how she likes to fight, for the director
     favors: dict = field(default_factory=dict)   # (since build 280) move name -> how much she prefers it
     fighting: dict = field(default_factory=dict)  # (since build 335) her fighting styles: style -> 0..1 (styles.py)
+    reacting: dict = field(default_factory=dict)  # (since build 336) how she reacts to being hurt (reacts.py)
     personality: str = ""                        # (since build 281) who she is, for the story (narration.character)
     history: str = ""                            # (since build 281) her past, as far as the story may use it
     relationships: dict = field(default_factory=dict)   # (since build 281) other fighter -> what she is to her
@@ -501,6 +503,7 @@ class Engine:
                     quirks=list(fd.get("quirks") or []), style=str(fd.get("style") or ""),
                     favors=dict(fd.get("favors") or {}), personality=str(fd.get("personality") or ""),
                     fighting={k: v for k, v in (fd.get("fighting") or {}).items() if not str(k).startswith("_")},
+                    reacting={k: v for k, v in (fd.get("reacting") or {}).items() if not str(k).startswith("_")},
                     history=str(fd.get("history") or ""),
                     relationships={k: v for k, v in (fd.get("relationships") or {}).items() if not str(k).startswith("_")},
                     veteran=bool(fd.get("veteran", False)), heart_rest=float(fd.get("heart_rest", 0) or 0))
@@ -1739,7 +1742,14 @@ class Engine:
         if hits and int(sustain or 0) > 1 and move.get("sustainable"):
             if against and (d.name in self.downed or self.pin_on(d.name) is not None) and \
                     short_phrase(against) != short_phrase((self.pressed.get(d.name) or {}).get("surface") or ""):
-                against = ""       # down or pinned on the ground: no tree or wall behind her to grind her into
+                gg_ = ((self.rules.get("moves") or {}).get("sustain") or {}).get("ground_grind", True)
+                if gg_ and re.search(r"\b(?:ground|floor|earth|dirt|sand|mud|stone|rock|ledge|deck|turf|grass|ice)\b",
+                                     str(against), re.I):
+                    # (moves.sustain.ground_grind, since build 336) down or pinned, a stream held on her drives her
+                    # into the ground she lies on: that is what is behind her (it never breaks)
+                    against = self.ground_under(d.name)
+                else:
+                    against = ""       # down or pinned on the ground: no tree or wall behind her to grind her into
             sustained = self._sustain(a, d, move, plan, powers, int(sustain), against, enforce)
             hits = hits + [h for pulse in sustained["pulses"] for h in pulse["hits"]]
             if not sustained["pulses"] and not sustained.get("broke"):
@@ -1906,6 +1916,25 @@ class Engine:
                 res["status_applied"] = (res.get("status_applied") or []) + [reel]
             elif reel:
                 res["rocked"] = reel
+        if hits and not d.eliminated and not dodge and reacts.cfg(self):
+            # (reacting, since build 336) how she reacts to it: by the blow, the part, her health, and her nature
+            try:
+                held_ = bool(self.pinned_by(d.name)) or any(h.defender == d.name for h in self.holds.values())
+                rx_ = reacts.on_hit(self, a, d, move, hits, self._blow_kind(move), held=held_,
+                                    down=d.name in self.downed)
+                if rx_:
+                    res["reaction"] = rx_
+                    fin_ = reacts.maybe_finished(self, a, d, rx_)
+                    if fin_:
+                        # (reacting.finished) the blow leaves her finished for the moment: down, nothing left
+                        if d.name not in self.downed and not self.has(d, "airborne") and not held_:
+                            fin_["facing"] = self.knock_down(d.name, why=f"{d.name} finished for the moment by the blow")
+                            fin_["went_down"] = True
+                            fin_["look"] = ("her legs go out from under her and she goes DOWN where she stands, "
+                                            + fin_["look"][0].lower() + fin_["look"][1:])
+                        res["status_applied"] = (res.get("status_applied") or []) + [fin_]
+            except Exception as exc:
+                self.note_failure("her reaction to a blow", exc)
         qo = self.quirk(a, "overwhelming")
         if qo and hits and not dodge and float(move.get("power") or 0) >= float(qo.get("big_from", 22)):
             self.quirk_moment(a, "overwhelming", f"{a.name} hits with her whole enormous strength behind it: unhurried, "
@@ -2750,6 +2779,8 @@ class Engine:
                           if x not in [q[0] for q in press]]
             press = press[:3] or [(x, 1.0) for x in back[:1]]
         brk = self.break_chance(against, cfg.get("break_chance", {}))
+        if against and d.name in self.downed and short_phrase(against) == short_phrase(self.ground_under(d.name)):
+            brk = 0.0      # (the ground she lies on: it doesn't give way)
         out = {"against": against, "pulses": [], "broke": False, "planned": pulses, "knock_on": [],
                "was_down": d.name in self.downed,
                "hazard_status": self.hazard_effects(d, [against]) if against else []}
@@ -3384,6 +3415,10 @@ class Engine:
         if enforce and self.has(a, "limp"):
             raise ValueError(f"{a.name} is OUT in the coils, her heart stopped: she can't act at all; let someone "
                              f"else act, or have {a.name} hang there (breather)")
+        if enforce and self.has(a, "finished"):
+            raise ValueError(f"{a.name} is FINISHED for the moment (down, nothing left in her that she can use): she "
+                             f"can't attack, grab or get up this beat; let someone else act, or have {a.name} lie there "
+                             f"(breather)")
         if enforce and self.has(a, "stunned"):
             raise ValueError(f"{a.name} is STUNNED from the blow to her head and can't act this beat: no attack, no "
                              f"grab, no dodge; let someone else act, or have {a.name} sway there (breather)")
@@ -3441,7 +3476,7 @@ class Engine:
                (float(sc.get("off_balance_dodge_mult", 0.6)) if self.has(d, "off_balance") else 1.0) * \
                (float(sc.get("staggered_dodge_mult", 0.6)) if self.has(d, "staggered") else 1.0) * \
                (float(sc.get("dazed_dodge_mult", 0.4)) if self.has(d, "dazed") else 1.0) * \
-               (0.0 if self.has(d, "stunned") or self.has(d, "limp") else 1.0) * \
+               (0.0 if self.has(d, "stunned") or self.has(d, "limp") or self.has(d, "finished") else 1.0) * \
                (float(sc.get("dead_leg_dodge_mult", 0.75)) if self.has(d, "dead_leg") else 1.0) * \
                (float(sc.get("limping_dodge_mult", 0.85)) if self.has(d, "limping") else 1.0) * \
                (float(sc.get("ribs_aching_dodge_mult", 0.9)) if self.has(d, "ribs_aching") else 1.0) * \
@@ -4105,8 +4140,9 @@ class Engine:
                 # just went down this beat: no get-up roll yet (said out loud, so nobody has to guess)
                 events.append({"type": "stays_down", "fighter": name, "why": "fresh", "facing": self.facing.get(name)})
                 continue
-            if self.has(f, "asleep") or self.has(f, "frozen") or self.has(f, "stunned") or self.has(f, "limp"):
-                continue  # out of action: she isn't trying to rise
+            if self.has(f, "asleep") or self.has(f, "frozen") or self.has(f, "stunned") or self.has(f, "limp") \
+                    or self.has(f, "finished"):
+                continue  # out of action: she isn't trying to rise (finished: reacting.finished, since build 336)
             beats = self.downed[name] = self.downed[name] + 1
             plan = self.body_plan(f)
             regions = {"biped": ("hind_up", "hind_low", "fore_up", "fore_low", "shoulder"),
@@ -5894,6 +5930,9 @@ class Engine:
         if self.submission_match() and m.get("enabled", True):
             # (since build 249) a submission match: down on the ground is where a hold most often starts
             ch = min(float(m.get("down_max", 0.9)), ch * float(m.get("down_mult", 1.3)))
+        if self.has(f, "finished"):
+            # (since build 336, reacting.finished) nothing left in her for the moment: wide open to a hold
+            ch = max(ch, float(((self.rules.get("reacting") or {}).get("finished") or {}).get("sub_opening", 0.6)))
         return ch
 
     def _upright_on(self):
@@ -9384,8 +9423,9 @@ class Engine:
             pas = getattr(self, "_passive", None)
             if pas and pas[0] == self.turn and fd.name in pas[1]:
                 continue   # (since build 278) her player has her do nothing: she doesn't try to break it
-            if self.has(fd, "stunned") or self.has(fd, "limp"):
-                continue   # (since build 293) stunned: nothing in her answers yet (limp: out in the coils)
+            if self.has(fd, "stunned") or self.has(fd, "limp") or self.has(fd, "finished"):
+                continue   # (since build 293) stunned: nothing in her answers yet (limp: out in the coils; finished:
+                # nothing left in her for the moment, reacting.finished)
             cc_ = self.compress_cfg()
             if cc_ and any((h.coil or (self.SUBMISSIONS.get(h.sub) or {}).get("weight"))
                            and self.coil_scope(h.part) == "body" for h in hs):
@@ -10292,6 +10332,11 @@ class Engine:
                 p["endure"] = round(self.rng.triangular(lo, hi, max(lo, min(hi, float(wc.get("endurance_mode", 1.0))))), 3)
             gain /= max(0.1, float(p["endure"]))
             notes.append(f"her endurance this pin /{float(p['endure']):.2f}")
+        rf_ = reacts.pin_mults(self, dfn)[0] if dfn is not None else 1.0
+        if rf_ != 1.0:
+            # (reacting.pin_effects) a squirmer wears herself out faster under it, a stoic saves herself
+            gain *= rf_
+            notes.append(f"her nature under it x{rf_:.2f}")
         if partial:           # she broke loose for a moment and got air: the pin has to start wearing her down again
             gain *= float(cfg.get("break_loose_mult", 0.4)); notes.append(f"broke loose ×{cfg.get('break_loose_mult', 0.4)}")
         if len(crew) > 1:     # two bodies on her
@@ -10736,7 +10781,7 @@ class Engine:
         d = self.get(name)
         if d is None or d.name not in self.downed:
             return False
-        return bool(any(self.has(d, s) for s in ("stunned", "dazed", "limp", "asleep", "frozen", "paralyzed"))
+        return bool(any(self.has(d, s) for s in ("stunned", "dazed", "limp", "asleep", "frozen", "paralyzed", "finished"))
                     or self.downed.get(d.name, 0) >= 1 or self.strength(d) < float(cfg.get("hurt_below", 50)))
 
     def set_pin_pace(self, attacker, defender, pace=""):
@@ -10849,7 +10894,7 @@ class Engine:
         if cfg is None or not sc.get("enabled", True) or p is None:
             return None
         d = self.get(p["defender"])
-        if any(self.has(d, s) for s in ("asleep", "frozen", "stunned", "limp", "paralyzed")):
+        if any(self.has(d, s) for s in ("asleep", "frozen", "stunned", "limp", "paralyzed", "finished")):
             return None
         ctl = self.pin_control(p)
         crew = [self.get(m) for m in self.pin_members(p)]
@@ -10903,7 +10948,7 @@ class Engine:
         # hurt_at %+ damage adds hurt_bonus (up to hurt_cap)
         bad = sum(1 for p in target.parts.values() if p.damage >= float(cfg.get("hurt_at", 150)))
         base += min(float(cfg.get("hurt_cap", 0.2)), float(cfg.get("hurt_bonus", 0.02)) * bad)
-        if self.has(target, "asleep") or self.has(target, "frozen"):
+        if self.has(target, "asleep") or self.has(target, "frozen") or self.has(target, "finished"):
             base = max(base, float(cfg.get("helpless", 0.9)))  # she can't defend herself at all
         if any(h.coil and h.defender == target.name and self.coil_scope(h.part) != "limb" for h in self.holds.values()):
             # wrapped in coils already: the coiler only has to bear her down inside them (holds.coil.pin_opening)
@@ -11038,6 +11083,8 @@ class Engine:
                 # (pin.wear) longer pins give her more tries: each one a little less likely, so a pin is won about as
                 # often as before
                 esc_try *= float(self.pin_wear_cfg().get("escape_mult", 0.85))
+            if dfn is not None:
+                esc_try *= reacts.pin_mults(self, dfn)[1]     # (reacting.pin_effects: a squirmer tries more)
             buff = float(s.get("break_loose_buff", 1.5) or 1.0) if p.get("buff_beats", 0) > 0 else 1.0
             if buff != 1.0:  # she broke loose recently: momentum makes the next escape likelier
                 esc_try *= buff
@@ -11125,6 +11172,9 @@ class Engine:
                 # (since build 334, pin.wear) what is wearing her down, for the story: the ache of being held, the
                 # choke if there is a grip on her neck (her air or the blood to her head), and the hurt parts
                 ev["ache"] = self.ache_word(p)
+                nat_ = reacts.pin_nature(self, dfn)
+                if nat_:
+                    ev["nature"] = nat_      # (reacting, since build 336) how her nature shows under it
                 if any(body_region(h.part) == "neck" for h in holds):
                     st_ = dfn.learned.get("body") or {}
                     ev["choke_left"] = round(min(float(st_.get("air", 100)), float(st_.get("head_blood", 100))))
@@ -12735,7 +12785,7 @@ class Engine:
         ref = float(c.get("ref", 8))
         m = 1.0 + float(c.get("head", 0.6)) * min(2.0, hl / ref) + float(c.get("body", 0.4)) * min(2.0, bl / ref)
         hm = 1.0
-        for st_ in ("rattled", "dazed", "stunned", "wobbly", "concussed", "seeing_double"):
+        for st_ in ("rattled", "dazed", "stunned", "wobbly", "concussed", "seeing_double", "finished"):
             if self.has(d, st_):
                 hm += 0.25
         bm = 1.0
@@ -13433,6 +13483,10 @@ class Engine:
         "dazed": "DAZED from the blow to the head: her vision swims, sounds come late, she is slow to react",
         # (since build 293: moves.head, moves.body_jolts)
         "rattled": "RATTLED by the blow to her head: a hard blink, a shake of the head; a beat slow to dodge",
+        # (since build 336, reacting.finished)
+        "finished": "FINISHED, for the moment: down and done, whether lying still, curled round the pain or thrashing "
+                    "with it; she CAN'T ACT, dodge, get up or fight a grip off while it lasts, and anything can be done "
+                    "to her: the moment for a pin, a submission or a finishing blow. It passes in a beat or two",
         "stunned": "STUNNED by the blow to her head: the lights flickered; she CAN'T ACT this beat at all (no attack, no "
                    "grab, no dodge, no escape, no get-up): she sways where she is, eyes unfocused, arms or tail not "
                    "answering, and her opponent can do as she likes with her",

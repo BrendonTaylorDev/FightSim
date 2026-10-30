@@ -4643,6 +4643,10 @@ class Narrator:
         # someone goes out this beat (a knockout, or a pin held to the end): only then may the prose black her out
         self._ko_now = any(x.get("type") == "eliminated" or (x.get("complete") and x.get("elimination"))
                            for x in self._all_dicts(bundle))
+        # (who: a reaction to a blow is cut short for her, since build 336)
+        self._ko_who = {x.get("fighter") if x.get("type") == "eliminated" else x.get("defender")
+                        for x in self._all_dicts(bundle)
+                        if x.get("type") == "eliminated" or (x.get("complete") and x.get("elimination"))}
         # grips a hit tore loose this beat: told as coming off, never as tightening first
         self._shaken_ids = {x.get("hold_id") for x in self._all_dicts(bundle)
                             if x.get("type") == "hold_end" and x.get("shaken") and x.get("hold_id")}
@@ -6595,6 +6599,26 @@ class Narrator:
             if m and m.get("style"):
                 # (styles, since build 335) how her fighting style shows in this blow
                 lines.append(f"  - HOW {a['attacker'].upper()} FIGHTS, in this blow: " + "; ".join(m["style"]) + ".")
+            rx_ = a.get("reaction")
+            if rx_ and a.get("hits"):
+                # (reacting, since build 336) her own reaction to the pain, by the blow, the part, her health and her
+                # nature: its size, how she moves, the sound
+                size_ = {"barely": "BARELY ANY", "small": "a SMALL", "marked": "a CLEAR", "big": "a BIG",
+                         "violent": "a VIOLENT"}[rx_["size"]]
+                lines.append(f"  - HOW {rx_['fighter'].upper()} REACTS (her own reaction to the pain, after what the "
+                             f"blow's force does to her): {size_} reaction to the hit on her {rx_['part']}: {rx_['how']}; "
+                             f"{rx_['sound']}." + (f" ({rx_['hidden']}" + (f": {', '.join(rx_['why'])}" if rx_.get("why")
+                                                                          and "past" in rx_["hidden"] else "") + ".)"
+                                                   if rx_.get("hidden") else "")
+                             + " No bigger and no smaller than that, shown through her own TELLS (her ears, her "
+                               "tail, her breath, her sounds, as her profile gives them). It moves her body where she "
+                               "is; where she ends up is only what the beat's other notes say."
+                             + ("" if not (_clash := (reactions_used(rx_["how"] + " " + rx_["sound"]) & set().union(
+                                 *(getattr(self, "recent_reactions", None) or [set()])))) else
+                                " Put it in fresh words: not " + ", ".join(sorted(_clash))
+                                + " (the last beats already used that).")
+                             + (" She goes OUT this beat: the reaction is cut short as she goes under."
+                                if rx_["fighter"] in (getattr(self, "_ko_who", None) or ()) else ""))
             prof_ = next((h.get("profile") for h in (a.get("hits") or []) if h.get("profile")), None)
             if prof_ and a.get("hits"):
                 import styles as _styles
@@ -6935,6 +6959,11 @@ class Narrator:
     # what a status looks like, how she takes it, and what her opponent reads in it (an opening, mostly): told when it
     # lands, so it is never just a word. {who} = the one it is on, {other} = her opponent
     STATUS_STORY = {
+        # (since build 336, reacting.finished) the record's own look says which way she is finished
+        "finished": ("down and done for the moment: no strength she can find, nothing answering but the pain",
+                     "nothing, for a moment, but the hurt; somewhere far off, the knowledge that she has to get up, and "
+                     "no way to do it",
+                     "{other} sees it: she's finished, for now, and anything can be done to her"),
         "flinched": ("her head or whole body jerks away from it on its own and she can't make it come back for a moment",
                      "she knows she has frozen and hates every heartbeat of it",
                      "{other} sees the flinch: an opening, and {other} means to use it"),
@@ -7031,6 +7060,7 @@ class Narrator:
     STATUS_WORDS = {"armed": "armed with the weapon she made", "fury": "furious", "adrenaline": "on an adrenaline surge", "protecting": "behind her Protect barrier",
                     "countering": "set to counter", "mirroring": "behind her Mirror Coat", "airborne": "in the air"}
     STATUS_ENDS = {
+        "finished": "something comes back into her: she gathers her limbs under her, and the fight with them",
         "flinched": "the freeze lets go of her and she can move again; {other} sees her come back",
         "dazed": "the world settles back into one piece; she finds {other} again, sharp and single",
         "off_balance": "she gets her feet back under her and her guard back up",
@@ -7792,6 +7822,7 @@ class Narrator:
         text = _italic_sounds(text)
         # the same last clean-up a beat gets (meta lines, copied labels, "familiar", fragments)
         self._ko_now = False
+        self._ko_who = set()
         # (since build 259) a sentence that retells the beat before it in other words goes (interlude.retold_cut),
         # and the slips the engine can see are mended (narration.engine_mends)
         text = self._drop_retold(text, story_so_far, float(cfg.get("retold_cut", 0.55) or 0))
@@ -7947,6 +7978,9 @@ class Narrator:
                f" It wears down beat by beat: never more movement than the beat before unless she has broken loose.",
                f"  - THE ACHE OF BEING HELD: {e['ache']}. It is part of what is taking her under, even where nothing "
                f"is injured."]
+        if e.get("nature"):
+            out.append(f"  - HER NATURE UNDER IT: {e['nature']}. Within how much she has left: it shapes HOW she "
+                       f"moves, not how much.")
         cl = e.get("choke_left")
         if cl is not None and cl < 90:
             out.append(f"  - THE GRIP ON HER NECK is taking her air or the blood to her head: "

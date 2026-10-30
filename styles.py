@@ -336,9 +336,11 @@ def power_mods(eng, a, d, move, plan, powers):
     if wt and "big" in cl and sit & {"down", "pinned", "grab", "holding", "against"}:
         k = 1.0 + num(eng, "setup_artist", "point_blank", 0.15) * wt
         powers = [round(pw * k, 2) for pw in powers]
-        where = ("into the ground under her" if sit & {"down", "pinned"} else
-                 "into what she is driven against" if "against" in sit else "with her held, nowhere to go")
-        notes.append(f"the payoff of her setup: the big one let go at point-blank, grinding her {where}")
+        # (only the engine's own grind, a held stream or a blow driven home against something, is told as a grind:
+        # its notes say so; this one says why it is let go now)
+        where = ("with her down under it" if sit & {"down", "pinned"} else
+                 "with her pressed against something" if "against" in sit else "with her held, nowhere to go")
+        notes.append(f"the payoff of her setup: the big one let go at point-blank, {where}")
     wt = st.get("ground_pounder", 0.0)
     if wt and "close" in cl and sit & {"down", "pinned"}:
         k = 1.0 + num(eng, "ground_pounder", "on_down", 0.08) * wt
@@ -413,11 +415,14 @@ def hint(eng):
                           "heavy ones first to soften it")
                        + ", the parts round it only jarred; once it gives, the part beside it is next")
         if st.get("setup_artist") and sit & {"down", "pinned", "grab", "holding", "against"}:
-            big = [m["name"] for m in f.moves if "big" in classes(eng, f, m) and f.move_uses.get(m["name"], 1) > 0]
+            big = [m for m in f.moves if "big" in classes(eng, f, m) and f.move_uses.get(m["name"], 1) > 0]
             if big:
-                now.append(f"her setup has paid off ({d.name} is {'down' if sit & {'down', 'pinned'} else 'held'}): "
-                           f"this is when she lets {big[0]} go at point-blank, grinding her into "
-                           + ("the ground" if sit & {"down", "pinned"} else "it"))
+                stream = next((m for m in big if m.get("sustainable")), None)
+                downish = bool(sit & {"down", "pinned"})
+                now.append(f"her setup has paid off ({d.name} is {'down' if downish else 'held'}): this is when she "
+                           f"lets {big[0]['name']} go at point-blank"
+                           + (f" (or holds {stream['name']} on her, \"sustain\" 2-3 with \"pinned_against\" the "
+                              f"ground under her, grinding her into it)" if stream and downish else ""))
         elif st.get("setup_artist", 0) >= 0.4:
             now.append("she builds to her big blows: a takedown, a grab or a charge into something first")
         if st.get("grappler", 0) >= 0.4 and not sit & {"grab", "holding", "pinned"}:

@@ -968,6 +968,82 @@ def taps_333_check():
     return problems
 
 
+def reacts_336_check():
+    """Build 336 (reacting): each landed blow gets a reaction sized by the blow, the part and her health; a stoic shows
+    less and a squirmer squirms, but a part in agony always shows big; damage kinds and tender parts change it; her
+    nature shows in a pin and nudges its numbers; all switchable."""
+    import reacts
+    problems = []
+    e = Engine(seed=3, only=["Nocturne", "Ripples"])
+    n, r = e.get("Nocturne"), e.get("Ripples")
+
+    def rx(f, before, after, kind="blunt", part="Chest", **kw):
+        return reacts.on_hit(e, None, f, None, [{"part": part, "damage_before": before, "damage_after": after,
+                                                 "defender": f.name}], kind, **kw)
+    small, big = rx(r, 10, 40), rx(r, 100, 180)
+    order = reacts.SIZES.index
+    if not (small and big and order(big["size"]) > order(small["size"])):
+        problems.append(f"a bigger blow on a more hurt part should get a bigger reaction: {small} {big}")
+    if not order(rx(n, 40, 120)["size"]) < order(rx(r, 40, 120)["size"]):
+        problems.append("stoic Nocturne should show less than expressive Ripples for the same blow")
+    agony = rx(n, 150, 240)
+    if order(agony["size"]) < 3 or "past what she can hide" not in agony["hidden"]:
+        problems.append(f"a part in agony should show big even on a stoic: {agony}")
+    if rx(r, 60, 140, "shock")["move"] != "rigid":
+        problems.append("a shock should lock her rigid")
+    moves = {rx(r, 60, 140, k, part=p)["move"] for k in ("blunt", "claw", "bite") for p in ("Chest", "Left Thigh", "Head")}
+    if "squirm" not in moves:
+        problems.append(f"Ripples, a squirmer, should squirm with the pain: {moves}")
+    if not order(rx(r, 40, 100, part="Twin Tails")["size"]) >= order(rx(r, 40, 100)["size"]):
+        problems.append("a tender part (her tails) should hurt at least as visibly")
+    if any("against the ground" not in rx(r, b, b + 90, k, down=True)["how"] for b in (60, 120) for k in ("blunt", "fire", "bite")):
+        problems.append("down, her reaction should be against the ground")
+    if not reacts.pin_nature(e, r) or reacts.pin_mults(e, r)[0] <= 1.0 or reacts.pin_mults(e, n)[0] >= 1.0:
+        problems.append("a squirmer should wear out faster in a pin and a stoic slower, and her nature be told")
+    # finished for the moment: down, can't act or get up, wide open; it passes
+    import io, contextlib, random
+    import director as D
+    f = Engine(seed=4, only=["Nocturne", "Ripples"])
+    fr = f.get("Ripples")
+    fr.health = fr.max_health * 0.12
+    f.rules["reacting"]["finished"].update(big=1.0, violent=1.0, max=1.0)
+    rec = None
+    for seed in range(12):
+        f.rng = random.Random(seed)
+        with contextlib.redirect_stdout(io.StringIO()):
+            try:
+                res = D.resolve(f, {"action": "strike", "attacker": "Nocturne", "defender": "Ripples",
+                                    "move": "Iron Tail", "part": "Chest", "flavor": ""})[0]
+            except ValueError:
+                continue
+        rec = next((x for x in res.get("status_applied") or [] if x.get("status") == "finished"), None)
+        if rec:
+            break
+    if not rec:
+        problems.append("a violent blow with her nearly spent should be able to leave her finished")
+    else:
+        if fr.name not in f.downed:
+            problems.append("finished, she should be down")
+        try:
+            D.resolve(f, {"action": "strike", "attacker": "Ripples", "defender": "Nocturne", "move": "Aqua Jet",
+                          "part": "Chest", "flavor": ""})
+            problems.append("finished, she should not be able to attack")
+        except ValueError:
+            pass
+        with contextlib.redirect_stdout(io.StringIO()):
+            for _ in range(4):
+                f.beat()
+        if f.has(fr, "finished"):
+            problems.append("finished should pass within a beat or two")
+    e.rules["reacting"]["pin_effects"]["enabled"] = False
+    if reacts.pin_mults(e, r) != (1.0, 1.0):
+        problems.append("with pin_effects off a pin's numbers should be as before")
+    e.rules["reacting"]["enabled"] = False
+    if rx(r, 100, 180) is not None or reacts.pin_nature(e, r):
+        problems.append("with reacting off there should be no reactions")
+    return problems
+
+
 def styles_335_check():
     """Build 335: a pin with pressure on her neck usually ends by the blood (pin.fade.neck_blood), with her air and the
     pain still possible; fighting styles (styles): a dismantler keeps to one part until it gives, then the part beside
@@ -5021,6 +5097,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "reacts336" for w in want):
+        t = time.time()
+        probs = reacts_336_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 336: reactions to being hurt by her nature, sized by the real damage  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "styles335" for w in want):

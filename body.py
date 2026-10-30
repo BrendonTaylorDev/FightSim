@@ -374,6 +374,10 @@ def pain_resist_mult(eng, f):
     m *= _heat_k(eng, f, "tap_min", hot_only=True)    # (since build 322) worn down by the heat
     if cm:      # (since build 321, body.mind) her nerve frayed: she gives in a little sooner (at most x1 - tap)
         m *= 1 - float(cm["tap"]) * (1 - _composure(f) / 100.0)
+    if eng.has(f, "finished"):
+        # (since build 336, reacting.finished) nothing left in her for the moment: she has little to resist a tap with
+        fc = ((eng.rules.get("reacting") or {}).get("finished") or {})
+        m *= float(fc.get("resist_mult", 0.6))
     return m
 
 

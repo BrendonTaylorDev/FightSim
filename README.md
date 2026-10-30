@@ -654,6 +654,48 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 336
+
+**Reactions to being hurt** (`reacting`, new file `reacts.py`). Every fighter has reaction traits in fighters.json
+(`"reacting"`); all 26 have them:
+- **stoic** / **expressive**: shows up to two sizes less, or one size more. **vocal** / **quiet**: how much sound.
+- How she MOVES with pain: **squirmer**, **recoils**, **curls** (folds round the hurt), **rigid** (locks up),
+  **lashes_out** (turns it on her attacker).
+- **sensitive**: kinds of damage (fire, cold, shock, blunt...) and tender parts (ears, tail...) she reacts to more or
+  less. For example, Glacia barely reacts to cold but badly to fire, and Ripples' tails are tender.
+
+Each landed blow gets one reaction (barely, small, marked, big or violent), sized from the real thing: how much the blow
+did, how hurt that part now is, and how hurt she is overall. Her nature changes what shows, never past what is real: a
+part at "excruciating" (150%+), a huge blow, or her health nearly gone always shows big, and a stoic is told as trying
+to keep it in "but this is past what she can hide". The kind of damage shapes the movement too: fire makes anyone
+recoil, a shock locks her rigid, cold curls her up. Held or down, she strains against the grip or the ground instead
+of jerking away. With a grip on her throat or her air gone, a cry comes out strangled.
+
+The narrator gets one HOW SHE REACTS line per blow. It fits the existing story helpers:
+- It moves her body where she stands, never her feet (the engine's stagger and knockdown notes stay in charge).
+- It is shown through her own TELLS.
+- It is cut short if she goes out this beat.
+- It is told to find fresh words when the wording matches a reaction the last beats already used.
+
+In a pin her nature is told ("a squirmer: never still under it"; a stoic lies quiet and then throws everything into one
+heave). It nudges the numbers a little (`pin_effects`): a squirmer tires faster and tries more, a stoic tires slower.
+
+**Finished, for the moment** (`reacting.finished`). A big reaction when she is under 35% health, or a violent one at
+any health, can leave her FINISHED for a beat or two:
+- She goes down if she was standing.
+- She can't act, dodge, get up or fight a grip off.
+- A pin opening is all but certain and a submission opening likely. She resists a tap less, and a knockout is likelier.
+- It looks like her nature: lying still and staring, curled round the pain keening, or thrashing on the ground.
+- It always passes, and can't come again for 5 beats.
+
+**A held stream grinds her into the ground** (`moves.sustain.ground_grind`). Before, a stream held on a fighter who
+was down had nothing to press her into. Now `"pinned_against"` the ground drives her into the ground she lies on, pulse
+by pulse; it never breaks. That makes the setup artist's payoff real: a takedown, then a point-blank Hydro Pump grinding
+her into the ground. The build 335 style lines were also brought in line with the story helpers: they no longer claim
+a grind the engine didn't resolve, and the director is pointed at the held stream for it.
+
+Balance is still not tuned (next: the serpent build, then the balance pass).
+
 ## Build 335
 
 **Neck pins end mostly by the blood** (`pin.fade.neck_blood`). Pressure on her neck in a pin (jaws round her throat,
