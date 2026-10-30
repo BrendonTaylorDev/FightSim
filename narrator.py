@@ -5974,7 +5974,8 @@ class Narrator:
         if t == "reposition":
             if a.get("resisted"):
                 verb = {"pick up": "haul her up off the ground", "stand her up": "drag her up onto her feet",
-                        "sit her up": "haul her up to sitting"}.get(a["how"], "roll her over")
+                        "sit her up": "haul her up to sitting", "turn her head": "wrench her head up and aside",
+                        "pull her arm away": "drag her guarding arm away"}.get(a["how"], "roll her over")
                 way = {"pry": f"tears {poss(a['attacker'])} grip off her",
                        "twist": "twists out of her hold",
                        "claw": "digs into the ground and clings",
@@ -5996,6 +5997,18 @@ class Narrator:
                         f"chest: whatever fits their bodies) and holds her there, swaying, legs barely under her, so the "
                         f"next action lands on her standing. Show the haul and her weight. She is on her feet now, not "
                         f"lying down, and she did not get up by herself."]
+                return out + told
+            if a["how"] == "turn her head":
+                out = [f"FIRST, {a['attacker']} TAKES HOLD OF {poss(a['defender'])} HEAD (by the jaw, the muzzle or the "
+                       f"scruff: whatever fits their bodies) and WRENCHES IT UP AND ASIDE, forcing her chin off her throat "
+                       f"and stretching the side of her neck open. Show the grip, the strain against it and what it "
+                       f"opens: her throat and the side of her neck, which she cannot cover now. Her body stays as it "
+                       f"lay ({Engine.FACING_LOOK.get(a.get('before'), a.get('before') or 'where she is')})."]
+                return out + told
+            if a["how"] == "pull her arm away":
+                out = [f"FIRST, {a['attacker']} SEIZES the arm {a['defender']} has been guarding herself with and DRAGS "
+                       f"IT AWAY, out of the way, leaving what it covered open. Show the grab, her trying to pull it back "
+                       f"in, and failing for now."]
                 return out + told
             if a["how"] == "sit her up":
                 out = [f"FIRST, {a['attacker']} HAULS {a['defender']} UP TO SITTING (from {a.get('before') or 'where she lay'}): "

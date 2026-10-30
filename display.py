@@ -1200,6 +1200,13 @@ class Display:
                 out.append(f"🏋️ **{a['attacker']} hauls {a['defender']} up off the ground**")
             elif a["how"] == "stand her up":
                 out.append(f"🏋️ **{a['attacker']} drags {a['defender']} up onto her feet** ({a.get('before') or 'down'} → up)")
+            elif a["how"] in ("turn her head", "pull her arm away"):
+                out.append(f"✋ **{a['attacker']} " + ("wrenches " + poss_word(a['defender']) + " head up and aside**: her throat "
+                                                       "and the side of her neck open (blows and grips there land harder "
+                                                       "for 2 beats, and she can't block them)"
+                                                       if a["how"] == "turn her head" else
+                                                       "drags " + poss_word(a['defender']) + " guarding arm away**: what it "
+                                                       "covered is open this beat (no guarding, no blocking)"))
             elif a["how"] == "sit her up":
                 out.append(f"🪑 **{a['attacker']} hauls {a['defender']} up to sitting**: {a.get('before') or '?'} → "
                            f"**sitting up** (still on the ground; front and back both in reach; the next blow knocks "
@@ -1349,7 +1356,8 @@ class Display:
                 out.append(f"🫥 {e['defender']} out in {poss_word(e['attacker'])} coils, her heart stopped (beat "
                            f"{e.get('beat')} of {e.get('of')}): they stay on her, doing her no more harm")
             elif e["type"] == "heart_back":
-                out.append(f"💓 {e['attacker']} unwinds; {poss_word(e['defender'])} heart starts again on its own "
+                out.append(f"💓 {(poss_word(e['attacker']) + ' coils are already off her') if e.get('off') else e['attacker'] + ' unwinds'}; "
+                           f"{poss_word(e['defender'])} heart starts again on its own "
                            f"after {e.get('beats_after')} beat{'s' if e.get('beats_after') != 1 else ''}, and she comes "
                            f"round")
             elif e["type"] == "tap_count":

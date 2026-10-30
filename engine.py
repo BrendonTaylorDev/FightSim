@@ -575,6 +575,9 @@ class Engine:
         if spread > 0 and power > 0:
             rolled = self.rng.uniform(1 - spread, 1 + spread)
             power = power * rolled
+        if self.has(defender, "head_turned") and body_region(p.name) == "neck":
+            # (since build 328, reposition "turn her head") her chin forced up and aside: her throat open to it
+            power *= float(((self.rules.get("director") or {}).get("manipulate") or {}).get("open_mult", 1.15))
         self.__dict__.setdefault("hit_turn", {})[f"{defender.name}|{p.name}"] = self.turn   # for the notes' decay
         res_b, dmg_b, hp_b = p.resistance, p.damage, defender.health
         pain_b = tier_for(dmg_b, pain_tiers(r))
@@ -3805,7 +3808,10 @@ class Engine:
     }
 
     REPOSITIONS = ["none", "roll over", "onto her back", "onto her front", "onto her side", "sit her up", "pick up",
-                   "stand her up", "take off", "land"]
+                   "stand her up", "turn her head", "pull her arm away", "take off", "land"]
+    # (since build 328) handling her body to get at something: her head forced aside, or the arm she guards with
+    # dragged away. On a fighter who is down or in this attacker's grip; she may fight it off as any handling
+    MANIPULATE = {"turn her head": ("head_turned", 2), "pull her arm away": ("arm_pulled", 1)}
 
     def reposition(self, attacker, defender, how, force=False):
         """The attacker moves a fighter who's down: rolls her over (or onto her back, front, or side), or hauls her up
@@ -3838,6 +3844,21 @@ class Engine:
                 return {"type": "reposition", "attacker": a.name, "defender": d.name, "how": how, "before": before,
                         "after": before, "resisted": True, "chance": rc, "manner": self.vary("hold_strain")}
             return None
+        if how in self.MANIPULATE:
+            held_ = any(h.attacker == a.name and h.defender == d.name for h in self.holds.values())
+            if d.name not in self.downed and not held_:
+                return None      # she is free on her feet: there is nothing to take hold of her head or arm by
+            no = resisted()
+            if no:
+                return no
+            st_, beats_ = self.MANIPULATE[how]
+            self.set_status(d, st_, beats_)
+            ev = {"type": "reposition", "attacker": a.name, "defender": d.name, "how": how, "before": before,
+                  "after": before, "opens": ("her throat and the side of her neck" if st_ == "head_turned" else
+                                             "what that arm was covering")}
+            self._last_reposition = {**getattr(self, "_last_reposition", {}), d.name: self.turn}
+            self.involved.update({a.name, d.name})
+            return ev
         if how in ("pick up", "stand her up"):
             if d.name not in self.downed:
                 return None
@@ -4033,6 +4054,11 @@ class Engine:
                 continue  # still pinned
             if any(h.defender == name and h.sub for h in self.holds.values()):
                 continue  # locked in a submission hold: she can't rise until it's off
+            if any(h.defender == name and (h.coil or (self.SUBMISSIONS.get(h.sub) or {}).get("weight"))
+                   and self.coil_scope(h.part) == "body" for h in self.holds.values()):
+                # (since build 328) coils wound round her body hold her where she lies: the build-327 log had Ripples
+                # get up "on the third try" inside a Milotic's Wrap round her flank and back
+                continue
             ss_ = (self.get(name).learned.get("sub_stage") or {}).get("hold")
             if ss_ in self.holds and self.holds[ss_].defender == name:
                 # (since build 305) borne down in a grip (a coil, a plain hold): it keeps her down while it's on;
@@ -6592,6 +6618,8 @@ class Engine:
         cfg = (self.rules.get("moves") or {}).get("guard") or {}
         if not cfg.get("enabled", True) or move.get("target") in ("status", "self", "hold", "whole_body"):
             return None
+        if self.has(d, "arm_pulled") or (self.has(d, "head_turned") and body_region(target or "") == "neck"):
+            return None      # (since build 328) the arm dragged away, or her head held aside off her throat
         if a.name in self.lucky:
             return None   # /play dice free: nothing gets in the way of her attacks
         if any({h.attacker, h.defender} == {a.name, d.name} for h in self.holds.values()):
@@ -6706,6 +6734,8 @@ class Engine:
         """A badly hurt fighter shields her worst part without thinking (moves.guarding_wound): (part, its side), or
         None. Blows there land a little lighter; the other side of her is open."""
         cfg = (self.rules.get("moves") or {}).get("guarding_wound") or {}
+        if self.has(d, "arm_pulled"):
+            return None      # (since build 328) the arm she covers it with has been dragged away
         if not cfg.get("enabled", True) or d.name in self.downed or self.pinned_by(d.name) \
                 or any(h.defender == d.name for h in self.holds.values()):
             return None      # held: she has nothing free to cover it with
@@ -10873,14 +10903,17 @@ class Engine:
                 coiled_ = any(h.coil and self.coil_scope(h.part) == "body" for h in hs)
                 if pl.get("enabled", True) and over > 0 and not coiled_:    # (coils go by the blood: constriction)
                     fast = min(float(pl.get("max", 3.0)), 1.0 + float(pl.get("per", 0.25)) * over / max(1.0, resist))
+                fast *= self._below_zero_fast(d)
                 ramp = min(1.0, max(0, beats - 1) * fast / max(1.0, float(bl.get("ramp_beats", 8))))
                 tap = base * ramp ** float(bl.get("ramp_power", 2))
                 if ramp < 1.0:
                     why_low.append((f"beat {beats} of the hold, still building", ramp ** float(bl.get("ramp_power", 2))))
             st0 = self.zero_stage(d)
-            if st0 and tap > 0 and not blended:
+            if st0 and tap > 0 and (not blended or self._below_zero_tap_cfg().get("blended", True)):
+                # (since build 328, below_zero.tap.blended) the blended chance too: before, a fighter at -6000% health
+                # in a submission match was asked to tap at the same odds as one just past zero
                 # below_zero: the further below zero, the less of her is left to refuse with (stage tap_mult)
-                tap = min(top, tap * float(st0.get("tap_mult", 1.0)))
+                tap = min(float(bl.get("max", 0.85)) if blended else top, tap * float(st0.get("tap_mult", 1.0)))
             choke = any(re.search(r"(?i)neck|throat", h.part) for h in hs)
             name = next((h.sub for h in hs if h.sub), "") or ("choke" if choke else "hold")
             how, po, air, endure = None, 0.0, 0.0, 0.0
@@ -10903,7 +10936,8 @@ class Engine:
                     po = body.choke_out_chance(self, d, kinds_)
                 elif blended and bl.get("chokes", True):
                     # (blend.chokes: the dark builds up the same way, so she doesn't black out on its second beat)
-                    po *= min(1.0, max(0, beats - 1) / max(1.0, float(bl.get("ramp_beats", 8)))) ** float(
+                    po *= min(1.0, max(0, beats - 1) * self._below_zero_fast(d)
+                              / max(1.0, float(bl.get("ramp_beats", 8)))) ** float(
                         bl.get("ramp_power", 2))
             # CONSTRICTION (finish.submission.constriction, since build 283): coils round her chest or middle press
             # so hard that blood can't get back to her heart: her blood pressure falls, her heart slows and stumbles,
@@ -11443,6 +11477,21 @@ class Engine:
         sa, sd = self.size_m(a), self.size_m(d)
         return bool(sa and sd and sa / sd >= float(c.get("min_ratio", 2.5)))
 
+    def _below_zero_tap_cfg(self):
+        """below_zero.tap (since build 328), with its defaults."""
+        return dict({"enabled": True, "blended": True, "per_100": 1.0, "max": 4.0},
+                    **(((self.rules.get("below_zero") or {}).get("tap") or {})))
+
+    def _below_zero_fast(self, d):
+        """(since build 328, below_zero.tap) How much faster a hold's build-up to a tap or a pass-out runs the further
+        below zero she is: x(1 + per_100 for every 100% below zero), at most x max. The Seraphina vs Ripples log: at
+        -6000% health she was still asked to tap at 0-8% a beat, because every hold came off before its 8-beat
+        build-up got anywhere, and the submission match could not end."""
+        c = self._below_zero_tap_cfg()
+        if not c.get("enabled", True) or d.health >= 0:
+            return 1.0
+        return min(float(c.get("max", 4.0)), 1.0 + float(c.get("per_100", 1.0)) * (-self._health_pct(d)) / 100.0)
+
     def _serpent_coils_always(self, a):
         """finish.submission.taps.serpent_coils_always (since build 327, on by default): a serpent's coils round a
         body can always put her out, even on parts her earlier taps used up."""
@@ -11808,9 +11857,14 @@ class Engine:
             # the fight (never beyond it): each later squeeze wears it down a little faster
             drop *= min(float(sc.get("max", 1.6)), 1.0 + float(sc.get("per_stop", 0.15)) * stops)
         r = max(0.0, float(ch["r"]) - drop)
+        # (since build 328, constriction.heart.min_beats) the coils must have been on her this many beats before her
+        # heart can stop at all (the Seraphina vs Ripples log: on her second blackout it gave out on the third beat)
+        early = int(beats) < int(hc.get("min_beats", 5))
+        if early:
+            r = max(r, float(hc.get("min_reserve", 0.08)))
         slow_at, irr_at = float(hc.get("slow_at", 0.75)), float(hc.get("irregular_at", 0.55))
         stopped = r <= 0.0
-        if not stopped and r < irr_at and float(hc.get("sudden", 0.05)) > 0:
+        if not stopped and not early and r < irr_at and float(hc.get("sudden", 0.05)) > 0:
             # uneven and failing: now and then a heart gives out before it has run all the way down
             stopped = self._chance(float(hc.get("sudden", 0.05)) * (irr_at - r) / irr_at,
                                    f"{poss_word(d.name)} heart, slow and uneven, giving out early in the coils",
@@ -12812,6 +12866,11 @@ class Engine:
                       "than she should be able to",
         "greyed": "GREYING OUT: for a moment the edges of her sight go grey and the sound goes far away; she sways, "
                   "a beat behind everything, and drags herself back",
+        "head_turned": "HER HEAD FORCED ASIDE: the other has hold of her jaw or her head and has wrenched it up and to "
+                       "the side, her chin lifted off her throat and the side of her neck stretched open; she cannot tuck "
+                       "her chin or cover it",
+        "arm_pulled": "HER ARM DRAGGED AWAY: the arm she was guarding with has been seized and hauled out of the way, "
+                      "leaving what it covered open; she cannot get it back in time",
         "limp": "OUT IN THE COILS, her heart stopped: limp and silent, her head lolling, no heartbeat under the scales "
                 "pressed to her, NOT BREATHING (her chest does not rise at all until her heart starts again), her "
                 "paws gone cold; she knows nothing of it. It does her no harm: once the coils come "

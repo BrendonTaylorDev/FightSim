@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-29 build 327 (the serpent's weight, serpent coils always count, heart strain, no grip after a throw)"
+VERSION = "2026-10-30 build 328 (fights can end below zero, heart min coil time, no get-up in coils, head and arm handling)"
 
 HELP = """
 =============================================================================================
@@ -199,7 +199,7 @@ HELP = """
           /onfront Ripples + /pin Nocturne Ripples
           /pickup Ripples + /slam Nocturne Ripples "a fallen boulder=Upper Back:heavy"
   The fighters also do all of this on their own, now and then. How often:
-          /set director.reposition_chance 0.12    moving a downed opponent is suggested on this share of beats
+          /set director.reposition_chance 0.2     moving a downed opponent is suggested on this share of beats
           /set director.grapple_chance 0.05       a throw or slam of a standing opponent is suggested
           /set director.manhandle_cooldown 0      beats before the same fighter may throw, slam or drag again
                                                   (0 = no wait; build 99 had 3)

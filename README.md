@@ -654,6 +654,25 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 328
+Fixes from the Seraphina vs Ripples three-tap match that could not end, and more handling of each other's bodies.
+- **Far below zero, she gives in sooner.** Ripples reached -6400% health and was still asked to tap at 0-8% a beat:
+  each hold's build-up toward a tap (8 beats) never got going before the hold came off, and the below-zero stages'
+  "gives in more easily" (x1.25, x1.5) was skipped whenever tap.blend was on. Now the build-up runs faster the
+  further below zero she is (x2 at -100%, x4 from -300%), for taps and pass-outs alike, and the stages count.
+  below_zero.tap.
+- **Her heart can't stop before the coils have been on her 5 beats** (constriction.heart.min_beats). Her second
+  blackout came on the third beat of a Wrap, from the early give-out roll.
+- **No getting up inside coils wound round her body** (or a serpent's weight on her). She rose "on the third try"
+  inside Seraphina's Wrap round her flank and back.
+- **More handling.** The director is pointed at moving or handling a downed fighter more often (reposition_chance
+  0.12 to 0.2), and has two new ways to do it, on a fighter who is down or in the attacker's own grip:
+  - **turn her head**: her jaw or head taken and wrenched up and aside, her throat and the side of her neck open
+    for 2 beats (blows and grips there x1.15, no blocking them): the setup for a bite or a jaw hold on the neck.
+  - **pull her arm away**: the arm she guards with dragged away, so what it covered is open this beat.
+  Either can be fought off like any handling. director.manipulate.
+- The "heart starts again" line no longer says the coiler unwinds when her coils were already off.
+
 ## Build 327
 Serpents, and fixes from the Seraphina vs Ripples logs.
 - **The serpent's weight.** A serpent far bigger than her (at least 2.5 times her length: a Milotic on a Buizel) can

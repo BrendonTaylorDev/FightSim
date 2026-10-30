@@ -15,7 +15,8 @@ import userprompt
 ACTIONS = ["strike", "combo", "hold_start", "hold_adjust", "hold_release", "pin", "struggle", "throw", "slam", "drag",
            "grapple", "submission", "eliminate", "breather"]
 LAUNCHES = ["none", "staggered", "knocked down", "thrown", "launched"]
-REPOSITIONS = ["none", "roll over", "onto her back", "onto her front", "onto her side", "sit her up", "pick up",
+REPOSITIONS = ["none", "roll over", "onto her back", "onto her front", "onto her side", "sit her up", "turn her head",
+               "pull her arm away", "pick up",
                "stand her up", "take off", "land"]
 
 
@@ -59,6 +60,10 @@ BIG HITS MOVE BODIES. Pokemon moves are powerful: a solid hit rarely touches jus
   all in reach, for a strike or for a choke from behind); "pick up" (lift her bodily off the ground: to slam her
   back down or throw her); or "stand her up" (drag her onto her feet and hold her there to be hit standing).
   The last three can't be done to a fighter who is pinned.
+  Handling her to get at something (on a fighter who is down, or held in the attacker's own grip): "turn her head"
+  (take her by the jaw or the head and wrench it up and aside, so her throat and the side of her neck are open: the
+  way to set up a bite or a jaw hold on the neck, or a pin with jaws at the throat) or "pull her arm away" (drag the
+  arm she is guarding with out of the way, so the part it covered is open). Then the action goes in on what is open.
 - "feint" (usually false): true when the attacker FAKES first and then throws the real blow. If the defender bites,
   she can't dodge, clash or guard it and it lands on her caught open; if she reads it, it's an ordinary attack.
   Use it now and then, never every beat. A JUGGLE: a strike that "launch"es her as the first link of a CHAIN and a
@@ -2327,7 +2332,9 @@ def resolve_many(engine, actions):
             try:
                 how = str(b.get("reposition") or "none").lower()
                 how = {"sit up": "sit her up", "sit": "sit her up", "stand up": "stand her up",
-                       "stand": "stand her up"}.get(how, how)
+                       "stand": "stand her up", "turn head": "turn her head", "lift her chin": "turn her head",
+                       "lift chin": "turn her head", "pull arm away": "pull her arm away",
+                       "pull her arm": "pull her arm away"}.get(how, how)
                 if how in ("take off", "land"):
                     # the ATTACKER herself goes up into the air, or comes down out of it (winged fighters only)
                     me = engine.get(b.get("attacker"))
@@ -2343,7 +2350,7 @@ def resolve_many(engine, actions):
                     if b.get("action") == "breather" and any(x.get("action") != "breather" for x in actions):
                         continue
                 elif how != "none" and b.get("action") in ("strike", "combo", "hold_start", "pin", "breather",
-                                                          "hold_adjust", "throw", "slam", "drag"):
+                                                          "hold_adjust", "throw", "slam", "drag", "submission"):
                     who = _fill_defender(engine, b.get("attacker"), b.get("defender"))
                     if who:
                         ev = engine.reposition(b.get("attacker"), who, how, force=bool(b.get("_manual")))
@@ -3709,6 +3716,12 @@ def reposition_hint(engine, roll=None):
     if not pinned and fc != "sitting up":
         ideas.append(f"haul her up to sitting first (\"reposition\": \"sit her up\"): her chest, belly and throat are "
                      f"open in front and her back and neck behind, for one clean strike or a choke from behind")
+    # (since build 328) handling her body to open something up
+    ideas.append(f"take her by the jaw and wrench her head up and aside first (\"reposition\": \"turn her head\") so "
+                 f"her throat and the side of her neck are open, then bite or clamp onto the neck there")
+    if engine.guarded_wound(d) or any(engine.has(d, s_) for s_ in ("guarding",)):
+        ideas.append(f"drag away the arm she is covering herself with first (\"reposition\": \"pull her arm away\"), "
+                     f"then go in on what it was covering")
     if not pinned and a.name not in engine.downed:
         ideas.append(f"drag her up onto her feet first (\"reposition\": \"stand her up\") and hit her standing")
         last = getattr(engine, "_last_manhandle", {}).get(a.name)

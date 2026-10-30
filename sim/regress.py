@@ -800,6 +800,62 @@ def presets_help_check():
     return problems
 
 
+def fight_328_check():
+    """Build 328: far below zero, giving in comes sooner (the build-up runs faster); her heart can't stop in the
+    coils before constriction.heart.min_beats; she can't get up inside coils round her body; and the director can
+    turn her head or pull her arm away to open something up."""
+    problems = []
+    e = Engine(seed=3, only=["Seraphina", "Ripples"])
+    r = e.get("Ripples")
+    r.health = r.max_health * -30.0       # -3000%
+    if e._below_zero_fast(r) < 3.9:
+        problems.append(f"at -3000% health the build-up should run near its max speed: x{e._below_zero_fast(r)}")
+    r.health = r.max_health * 0.5
+    if e._below_zero_fast(r) != 1.0:
+        problems.append("above zero the build-up runs as before")
+    # heart: no stop before min_beats
+    with contextlib.redirect_stdout(io.StringIO()):
+        s = H.session(1, fighters="Seraphina,Ripples")
+    e2 = s.eng
+    e2.rules["finish"]["submission"]["enabled"] = True
+    e2.downed["Ripples"] = 0
+    e2.facing["Ripples"] = "face-down"
+    r2 = e2.get("Ripples")
+    r2.learned["coil_heart"] = {"by": "Seraphina", "hid": -1, "r": 0.02, "turn": e2.turn}
+    try:
+        e2.start_submission("Seraphina", "Ripples", "coil crush")
+    except ValueError as ex:
+        return [f"couldn't coil her for the check: {ex}"]
+    sq = {"attacker": "Seraphina", "defender": "Ripples", "action": "breather", "flavor": "squeezes"}
+    for _ in range(3):
+        H.beat(s, [sq], [])
+        hold_beats = max([h.turns_active for h in e2.holds.values()] or [0])
+        if r2.learned.get("limp") or (r2.learned.get("coil_heart") or {}).get("stopped"):
+            if hold_beats < 5:
+                problems.append(f"her heart stopped on beat {hold_beats} of the coils, before min_beats (5)")
+            break
+        if r2.name not in e2.downed:
+            problems.append("she got up inside coils wound round her body")
+            break
+    # manipulation
+    with contextlib.redirect_stdout(io.StringIO()):
+        s3 = H.session(2, fighters="Seraphina,Ripples")
+    e3 = s3.eng
+    e3.downed["Ripples"] = 0
+    e3.facing["Ripples"] = "face-down"
+    ev = e3.reposition("Seraphina", "Ripples", "turn her head", force=True)
+    if not ev or not e3.has(e3.get("Ripples"), "head_turned"):
+        problems.append(f"'turn her head' should open her throat on a downed fighter: {ev}")
+    ev2 = e3.reposition("Seraphina", "Ripples", "pull her arm away", force=True)
+    if not ev2 or not e3.has(e3.get("Ripples"), "arm_pulled") or e3.guarded_wound(e3.get("Ripples")):
+        problems.append(f"'pull her arm away' should leave her unable to guard: {ev2}")
+    e3.downed.pop("Ripples", None)
+    e3.get("Ripples").status.pop("head_turned", None)
+    if e3.reposition("Seraphina", "Ripples", "turn her head", force=True):
+        problems.append("a fighter free on her feet can't have her head wrenched aside")
+    return problems
+
+
 def serpent_327_check():
     """Build 327: a serpent far bigger than her can crush her under her weight (offered now and then, coiling more
     often), shown as her weight, and it can put her out; coils round her body keep her from locking a submission of
@@ -4459,6 +4515,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "fight328" for w in want):
+        t = time.time()
+        probs = fight_328_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 328: below zero gives in sooner, heart min coil time, no get-up in coils, head and arm  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "serpent327" for w in want):
