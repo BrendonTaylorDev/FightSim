@@ -968,6 +968,50 @@ def taps_333_check():
     return problems
 
 
+def fixes_339_check():
+    """Build 339: a pin's "by" is a list of pinners (the window and the export crashed on it); a note's guard rail
+    copied into the story goes; "fought to stay conscious" goes when nobody is in danger of going out; reactions
+    never leak their own brackets; a pinned paw doesn't fly to her throat."""
+    import io, contextlib, types
+    import director as D
+    import fightexport
+    import narrator as N
+    import reacts
+    problems = []
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    e.rules["finish"]["no_pins"] = False
+    e.rules["finish"]["knockout_only"] = False
+    e.rules["finish"].setdefault("submission", {})["enabled"] = False
+    e.rules["pin"]["control"]["settle"]["enabled"] = False
+    e.downed["Ripples"] = 1
+    e.facing["Ripples"] = "face-up"
+    e.pin_window = {"Ripples": True}
+    with contextlib.redirect_stdout(io.StringIO()):
+        D.resolve(e, {"action": "pin", "attacker": "Nocturne", "defender": "Ripples", "flavor": "pins her",
+                      "pace": "quick", "hits": [{"part": "Neck", "severity": "firm", "with": "her jaws"},
+                                                {"part": "Chest", "severity": "crushing", "with": "her weight"}]})
+    snap = H.play.fight_snapshot(types.SimpleNamespace(eng=e))["fighters"]
+    f = next(x for x in snap if x["name"] == "Ripples")
+    try:
+        fightexport._gauges(f, opts={"hold_picture": True})
+    except TypeError as ex:
+        problems.append(f"the hold picture of a pinned fighter crashed: {ex}")
+    n = N.Narrator("x", e.rules)
+    n.strengths, n.grips = {"Ripples": 70, "Nocturne": 65}, []
+    t = n._last_scrub("She cried out as she fought to stay conscious. It was pain, nothing more: nothing broke or tore "
+                      "unless listed, she stayed conscious, and there was no sobbing or weeping. Then she rose.")
+    if "conscious" in t or "unless listed" in t or "Then she rose." not in t:
+        problems.append(f"the leaked guard rail or the stay-conscious clause survived: {t!r}")
+    if any("(" in x for looks in list(reacts.LOOKS.values()) + list(reacts.HELD_LOOKS.values()) for x in looks):
+        problems.append("a reaction's wording carries brackets the story would copy")
+    n.grips = [("Nocturne", "Ripples", "Left Paw", "her jaws")]
+    pool = [n._hold_react({"part": "Neck", "defender": "Ripples", "damage_before": 0, "damage_after": 5,
+                           "damage_taken": 5}, "minor") for n.beat_now in range(40)]
+    if any("paws fly" in x for x in pool):
+        problems.append("with a paw held in the pin, her paws shouldn't fly to her throat")
+    return problems
+
+
 def serpents_337_check():
     """Build 337: holds made for serpents (submissions.serpent_holds): a Buizel has many more ways to hold a downed
     Milotic, a Milotic more ways to hold a Buizel, serpents more on each other; a pinned serpent's ways out are her
@@ -5151,6 +5195,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "fixes339" for w in want):
+        t = time.time()
+        probs = fixes_339_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 339: double-pin picture crash, leaked guard rails, reactions' wording  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "serpents337" for w in want):

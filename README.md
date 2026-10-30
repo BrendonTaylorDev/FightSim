@@ -654,6 +654,34 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 339
+
+**Fixed: the window spammed errors once a pin went on** ("unhashable type: 'list'" in the hold picture). A pin's
+pinners are a list (a double pin has two); the window's and the export's hold pictures expected one name.
+
+**Fixes from the Nocturne vs Ripples log:**
+- **The blow that breaks a pin is named as hers, and with what** (a kick, a lash of her tail, her body bucking up into
+  the pinner), so the story stops putting it on the wrong fighter ("Ripples' tail caught Ripples' arm"). It is told
+  before anything she does once free.
+- **Getting up after breaking a pin comes after the escape:** while the pin is on she can't push up at all, and she
+  gets up once, not twice.
+- **A choke that has barely started reads like one:** with 85% or more of her air or blood left, a tightness and a
+  short breath, no greying and no roaring in her ears yet.
+- **The reaction lines (build 336) are clearer:**
+  - "Round it" now says "round the hurt", so it can't latch onto a cloud shadow.
+  - A bracketed "(her feet stay where they are)" that the story copied ("her feet stayed where they are, no
+    stumble") is gone.
+- **A note's guard rail copied into the story is removed** ("It was pain, nothing more: nothing broke or tore unless
+  listed, she stayed conscious, and there was no sobbing or weeping.").
+- **"Fought to stay conscious" and her sight darkening are dropped** when nobody is low, choked or going out this beat.
+- **A hurt limb "coming through the strike late"** is offered only when she strikes with her body, not for a
+  Thunderbolt or a beam.
+- **No "she shrugs it off" type-matchup ideas** when another blow in the same beat hurt her badly (a devastating Sucker
+  Punch with a weak Iron Tail after it).
+- **A choke reaction no longer has her paws "fly to her throat"** when she walks on four legs or the pin has her paw.
+- **New body-word check:** "forelegs" said of a fighter on two legs, or "arms out" / "her hands" of one on four, are
+  sent back to be fixed.
+
 ## Build 338
 
 **Balance pass** after builds 335-337. Every fighting style and reaction trait keeps its full strength; the balance

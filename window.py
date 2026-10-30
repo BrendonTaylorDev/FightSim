@@ -1136,7 +1136,8 @@ class FighterCard(ttk.Frame):
         if wcfg.get("hold_picture", True):
             cards_ = getattr(self.app, "cards", None) or {}
             gr = f.get("grips") or {}
-            who = {g.get("by") for g in gr.get("held") or ()} | ({(gr.get("pin") or {}).get("by")} - {None})
+            pby = (gr.get("pin") or {}).get("by")      # (one pinner, or a list of them: a double pin)
+            who = {g.get("by") for g in gr.get("held") or ()} | ({pby} if isinstance(pby, str) else set(pby or ()))
             holders = {n: picture_colours(getattr(cards_.get(n), "book", None), "#5d8fcf")[0] for n in who}
             body, belly = picture_colours(self.book, "#c08457")
             shapes, hh = hold_shapes(f, 4, 6, 90, 150, 108, self.app.card_w() - 114, body, belly, holders)

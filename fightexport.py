@@ -214,7 +214,8 @@ def _gauges(f, books=None, opts=None):
     if (opts or {}).get("hold_picture", True):
         # (since build 304) the grips on her as a picture beside their gauges, as in the window
         gr = f.get("grips") or {}
-        who = {g.get("by") for g in gr.get("held") or ()} | ({(gr.get("pin") or {}).get("by")} - {None})
+        pby = (gr.get("pin") or {}).get("by")      # (one pinner, or a list of them: a double pin)
+        who = {g.get("by") for g in gr.get("held") or ()} | ({pby} if isinstance(pby, str) else set(pby or ()))
         holders = {n: cards.picture_colours((books or {}).get(n), "#5d8fcf")[0] for n in who}
         body, belly = cards.picture_colours((books or {}).get(f["name"]), "#c08457")
         shapes, hh = cards.hold_shapes(f, 4, 6, 90, 150, 108, 500, body, belly, holders)
