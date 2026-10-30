@@ -1078,6 +1078,9 @@ class Engine:
                      "bite": 2, "shrimp": 2, "roll": 2, "claw": 2, "pry": 2, "tuck": 2, "limp": 1, "reach": 1,
                      "power": 1},
         "getup_fail": {"gives_out": 4, "slips": 2, "dizzy": 2, "breath": 2},
+        # (since build 337) a pinned serpent's ways out: no legs to bridge with, no arms to pry
+        "struggle_serpent": {"thrash": 3, "coil_back": 3, "roll": 2, "rear": 2, "lash": 2, "squirm": 2, "bite": 2,
+                             "power": 1},
         "getup_rise": {"push": 4, "roll": 2, "lean": 3, "lurch": 2},
         "bite_rock": {"drag": 3, "shake": 2, "yank": 2, "wrench_free": 2},
         # fighting the urge to tap out (finish.submission): one sign a beat, from the set for how near she is
@@ -4994,6 +4997,121 @@ class Engine:
     # each: which way she must lie, who can do it, the contacts (target part picker, role, what it is done with, by
     # the attacker's body plan), what the attacker still has free to use on her, and what it does to the body
     SUBMISSIONS = {
+        # (since build 337) holds made for a SERPENT under her ("on"): a long body with no limbs to lock still has a neck,
+        # a head with fins, a tail that bends only so far, and a soft belly
+        "neck ride": {
+            "set": "serpent", "facing": ("face-down", "on her side", "standing"), "by": ("biped", "quadruped"), "on": ("serpent",),
+            "look": {"biped": "astride her neck just behind the head, both arms locked round it, squeezing, riding her "
+                              "down",
+                     "quadruped": "lying along the back of her neck behind the head, forelegs hooked round it, her chest "
+                                  "bearing it down"},
+            "contacts": [("neck", "main", {"biped": "both arms, locked round it from behind the head, squeezing",
+                                           "quadruped": "her forelegs, hooked round it, her chest bearing down"}),
+                         ("head:head", "second", {"biped": "her chin and chest, pressing the head down",
+                                                  "quadruped": "her weight, pressing the head down"})],
+            "free": {"biped": "her tails and her feet (heels into her sides)", "quadruped": "her hind legs and her tail"},
+            "strain": "her neck squeezed and bent down, the blood to her head going, her long body thrashing behind"},
+        "serpent tail crank": {
+            "set": "serpent", "facing": ("face-down", "on her side", "face-up"), "by": ("biped", "quadruped"), "on": ("serpent",),
+            "look": {"biped": "sitting on the lower part of her body, both arms wrapped round her tail, cranking it up "
+                              "and back over her",
+                     "quadruped": "sitting on the lower part of her body, her forelegs clamping her tail to her chest, "
+                                  "wrenching it up and back"},
+            "contacts": [("tail_part", "main", {"biped": "both arms, wrapped round it, cranking it back",
+                                                "quadruped": "her forelegs, clamping it, wrenching it back"}),
+                         ("back_low|belly", "second", {"biped": "her weight, sitting on it",
+                                                       "quadruped": "her haunches, sitting on it"})],
+            "free": {"biped": "her tails", "quadruped": "her jaws"},
+            "strain": "her tail bent back against its curve, the long muscles of her lower body burning"},
+        "crest pull": {
+            "set": "serpent", "facing": ("face-down", "on her side", "standing"), "by": ("biped",), "on": ("serpent",),
+            "look": {"biped": "on her back behind the head, both paws knotted in the fins of her head, hauling it back, "
+                              "a knee in her back"},
+            "contacts": [("head:fin|antenna|crest|spike|horn", "main", {"biped": "both paws, knotted in it, hauling the "
+                                                                                 "head back"}),
+                         ("back_up|neck", "second", {"biped": "her knee, driven in"})],
+            "free": {"biped": "her tails"},
+            "strain": "her head hauled back by its fins, her neck arched back and the fins' roots tearing"},
+        "serpent crab": {
+            "set": "serpent", "facing": ("face-down",), "by": ("biped", "quadruped"), "on": ("serpent",),
+            "look": {"biped": "sitting on her lower back, both arms hauling her tail up and over toward her head, "
+                              "bowing her whole body backward",
+                     "quadruped": "sitting on her lower back, forelegs hauling her tail up and over, bowing her backward"},
+            "contacts": [("back_low", "main", {"biped": "her weight, sitting on it as she hauls",
+                                               "quadruped": "her haunches, sitting on it as she hauls"}),
+                         ("tail_part", "second", {"biped": "both arms, hauling it up and over",
+                                                  "quadruped": "her forelegs, hauling it up"})],
+            "free": {"biped": "her tails", "quadruped": "her jaws"},
+            "strain": "her long body bowed backward against itself, her spine and her belly stretched"},
+        "jaw clamp": {
+            "set": "serpent", "facing": ("face-up", "on her side", "standing"), "by": ("biped",), "on": ("serpent",),
+            "look": {"biped": "kneeling at her head, both paws clamped round her jaw, holding it shut and twisting her "
+                              "head round"},
+            "contacts": [("head:jaw|muzzle", "main", {"biped": "both paws, clamping it shut and twisting"}),
+                         ("neck", "second", {"biped": "a knee, pressed down on it"})],
+            "free": {"biped": "her tails"},
+            "strain": "her jaw clamped shut and her head twisted round on her neck"},
+        "tail wring": {
+            "set": "serpent", "facing": ("face-down", "on her side", "face-up"), "by": ("biped", "quadruped"), "on": ("serpent",),
+            "has": "tails_short",
+            "look": {"biped": "kneeling on her tail, her own twin tails wound round the end of it and twisting",
+                     "quadruped": "kneeling on her tail, her own tail wound round the end of it and twisting"},
+            "contacts": [("head:fan|lower tail|tail tip", "main", {"biped": "her twin tails, wound round it, wringing it",
+                                                               "quadruped": "her tail, wound round it, wringing it"}),
+                         ("back_low|belly", "second", {"biped": "her knees, pinning it", "quadruped": "her weight"})],
+            "free": {"biped": "her paws (her claws, her fists)", "quadruped": "her jaws and forepaws"},
+            "strain": "the end of her tail wrung round like a cloth, the fins crushed"},
+        "belly press": {
+            "set": "serpent", "facing": ("face-up",), "by": ("biped", "quadruped"), "on": ("serpent",),
+            "look": {"biped": "kneeling on her upturned belly, grinding both knees into the soft scales, a paw on her "
+                              "throat",
+                     "quadruped": "standing on her upturned belly, forepaws grinding into the soft scales"},
+            "contacts": [("belly", "main", {"biped": "both knees, grinding into the soft scales",
+                                            "quadruped": "her forepaws, grinding in"}),
+                         ("chest", "second", {"biped": "her other paw, pressing down",
+                                              "quadruped": "her chest, bearing down"})],
+            "free": {"biped": "her tails and one paw", "quadruped": "her jaws"},
+            "strain": "her soft belly ground in, her breath pressed out of her"},
+        # serpent on serpent
+        "coil lock": {
+            "set": "serpent", "facing": ("face-down", "face-up", "on her side", "standing"), "by": ("serpent",), "on": ("serpent",),
+            "look": {"serpent": "her coils wound round and round the other's body and tail together, binding them into "
+                                "one knot and squeezing"},
+            "contacts": [("belly|chest", "main", {"serpent": "her coils, wound round it, crushing"}),
+                         ("tail_part", "second", {"serpent": "the end of her tail, binding it into the knot"})],
+            "free": {"serpent": "her head and jaws"},
+            "strain": "her body and tail knotted together and crushed, unable to uncoil"},
+        "neck wrap": {
+            "set": "serpent", "facing": ("face-down", "on her side", "standing"), "by": ("serpent",), "on": ("serpent",),
+            "look": {"serpent": "her tail wound round the other's neck behind the head, tightening, her body pressing "
+                                "the head down"},
+            "contacts": [("neck", "main", {"serpent": "her tail, wound round it, tightening"}),
+                         ("head:head", "second", {"serpent": "her body, pressing it down"})],
+            "free": {"serpent": "her jaws"},
+            "strain": "her neck wrung and the blood to her head going"},
+        # (since build 337) a serpent on a fighter with limbs: more than the crush and the coils round her middle
+        "leg bind": {
+            "set": "serpent", "facing": ("face-down", "face-up", "on her side"), "by": ("serpent",),
+            "look": {"serpent": "her tail wound round both legs, binding them together and twisting, her body pressed "
+                                "down on her"},
+            "contacts": [("legs", "main", {"serpent": "her tail, wound round both, twisting"}),
+                         ("belly|back_low", "second", {"serpent": "her body, pressing down"})],
+            "free": {"serpent": "her head and jaws"},
+            "strain": "both legs bound together and twisted at the hips and knees"},
+        "arm wrap": {
+            "set": "serpent", "facing": ("face-down", "face-up", "on her side", "standing"), "by": ("serpent",), "needs": "arm",
+            "look": {"serpent": "a loop of her tail round one arm, wrenching it back behind her, her body bearing down"},
+            "contacts": [("arm", "main", {"serpent": "a loop of her tail, wrenching it back"}),
+                         ("chest|back_up", "second", {"serpent": "her body, bearing down"})],
+            "free": {"serpent": "her head and jaws"},
+            "strain": "her arm wrenched back and the shoulder close to giving"},
+        "neck loop": {
+            "set": "serpent", "facing": ("face-down", "face-up", "on her side"), "by": ("serpent",),
+            "look": {"serpent": "a loop of her tail round the neck, tightening, her body lying across her chest"},
+            "contacts": [("neck", "main", {"serpent": "a loop of her tail, tightening"}),
+                         ("chest|back_up", "second", {"serpent": "her body, lying across it"})],
+            "free": {"serpent": "her head and jaws"},
+            "strain": "her neck squeezed in the loop, the blood to her head going"},
         # upright holds (since build 245): put on a fighter still on her feet or sitting up; each beat they may bear
         # her down to the ground while the grip stays on (submissions.upright)
         "full nelson": {
@@ -5723,6 +5841,12 @@ class Engine:
                 continue      # (since build 314) she can't take one that size down into it
             if plan not in s["by"] or (lie not in s["facing"] and not lands):
                 continue
+            if s.get("set") == "serpent" and not ((self.rules.get("submissions") or {}).get("serpent_holds", True)):
+                continue      # (submissions.serpent_holds off: the holds made for and by serpents are left out)
+            if s.get("on") and self.body_plan(d) not in s["on"]:
+                continue      # (since build 337) a hold made for one kind of body
+            if s.get("has") == "tails_short" and not any(re.search(r"\btails?\b", n.lower()) for n in a.parts):
+                continue      # (her own tail(s) round the end of a serpent's tail: no size check, it is only the tip)
             if s.get("has") == "tails" and not any(re.search(r"\btails?\b", n.lower()) for n in a.parts):
                 continue
             if s.get("has") == "tails" and self.coil_too_small(a.name, d.name):
@@ -10615,6 +10739,11 @@ class Engine:
         "kick": {"legs": 1.0}, "tuck": {"legs": 0.6, "trunk": 0.4}, "pry": {"arms": 1.0}, "reach": {"arms": 0.8, "head": 0.2},
         "claw": {"arms": 1.0}, "bite": {"head": 1.0}, "headbutt": {"head": 1.0}, "buck": {"trunk": 0.5},
         "squirm": {"trunk": 0.6, "legs": 0.2, "arms": 0.2}, "limb": {}, "limp": {}, "power": {}}
+    # (since build 337, pin.control.serpent_ways) a serpent's: her long body and her tail, her head
+    SERPENT_PIN_WAYS = {
+        "thrash": {"trunk": 0.5, "tail": 0.5}, "coil_back": {"tail": 0.6, "trunk": 0.4},
+        "roll": {"trunk": 0.7, "tail": 0.3}, "rear": {"head": 0.4, "trunk": 0.6}, "lash": {"tail": 1.0},
+        "squirm": {"trunk": 0.6, "tail": 0.4}, "bite": {"head": 1.0}, "power": {}}
 
     def pin_control_cfg(self):
         """pin.control (since build 332), or None when it is off."""
@@ -10681,8 +10810,18 @@ class Engine:
             weight = max(float(cfg.get("weight_min", 0.55)), min(float(cfg.get("weight_max", 1.6)),
                                                                   (sd / sa) ** float(cfg.get("weight_exp", 0.6))))
             weight = 1.0 + (weight - 1.0) * trunk     # (a paw on her chest bears down with less of it than her body)
+        serp = self.body_plan(d) == "serpent" and cfg.get("serpent_ways", True)
+        table = self.PIN_WAYS
+        if serp:
+            # (since build 337) a serpent has no legs or forelimbs to be held: what matters is her long body, her
+            # head and her TAIL (one tail part held is half of it; coils round her middle hold the trunk as before)
+            tails = [x for x in d.parts if body_region(x) == "tail"]
+            tail_held = {h.part for h in hs if body_region(h.part) == "tail"}
+            locked["tail"] = min(1.0, len(tail_held) / max(1.0, len(tails) - 1.0)) if tails else 0.0
+            locked["legs"] = locked["arms"] = 0.0
+            table = self.SERPENT_PIN_WAYS
         ways = {}
-        for way, needs in self.PIN_WAYS.items():
+        for way, needs in table.items():
             left = 1.0 - sum(v * locked.get(k, 0.0) for k, v in needs.items())
             ways[way] = round(max(float(cfg.get("way_floor", 0.1)), left) if needs else float(cfg.get("blind_way", 0.35)), 3)
         # how well she can fight it overall: her two best ways out, against a reference pin
@@ -10702,11 +10841,21 @@ class Engine:
                     else "chest to chest, her weight on her front" if front
                     else "held across the middle" if trunk else "held by the limbs, her middle free")
         notes = []
-        if locked["legs"] >= 1:
+        if serp:
+            position = ("her body pinned and her tail held" if trunk and locked["tail"] else
+                        "pinned across her long body, her tail free" if trunk else
+                        "her tail held down, her body free" if locked["tail"] else "held by the head and neck")
+            if locked["tail"] >= 1:
+                notes.append("her tail held: no lashing it, no coiling it back round the pinner")
+            elif locked["tail"]:
+                notes.append("part of her tail held: the rest of it can still lash and coil")
+            else:
+                notes.append("her tail free: she can thrash it, lash with it, try to coil it back round the pinner")
+        if locked["legs"] >= 1 and not serp:
             notes.append("both legs held: no bridging, no kicking, no planting her feet")
         elif locked["legs"]:
             notes.append("one leg held: she can only push off the other")
-        if locked["arms"] >= 1:
+        if locked["arms"] >= 1 and not serp:
             notes.append("both forelimbs pinned: nothing to push or frame with")
         elif locked["arms"]:
             notes.append("one forelimb pinned: one free to push or claw with")
@@ -10729,7 +10878,8 @@ class Engine:
                          + ": every move she makes against them tears at her")
         return {"locked": {k: round(v, 2) for k, v in locked.items()}, "claws": claws, "jaws": jaws, "front": front,
                 "weight": round(weight, 3), "ways": ways, "mult": round(mult, 3), "position": position, "notes": notes,
-                "free": [w for w, v in sorted(ways.items(), key=lambda x: -x[1]) if v >= 0.5 and self.PIN_WAYS[w]][:4]}
+                "free": [w for w, v in sorted(ways.items(), key=lambda x: -x[1]) if v >= 0.5 and table[w]][:4],
+                **({"serpent": True} if serp else {})}
 
     def _claw_tear(self, d, holds, ctl):
         """pin.control.claw_tear: breaking out from under claws dug in, she tears loose of one of them, and they rake
@@ -10766,7 +10916,8 @@ class Engine:
         (a fighter with both legs held doesn't bridge)."""
         if not ctl:
             return self.vary("struggle"), 1.0
-        way = self.vary("struggle", scale={k: max(0.02, v) ** 2 for k, v in ctl["ways"].items()})
+        way = self.vary("struggle_serpent" if ctl.get("serpent") else "struggle",
+                        scale={k: max(0.02, v) ** 2 for k, v in ctl["ways"].items()})
         return way, ctl["ways"].get(way, 0.5)
 
     def pin_setup_cfg(self):

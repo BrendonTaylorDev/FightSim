@@ -7910,6 +7910,19 @@ class Narrator:
                   "after the first impact and before she lies still."]
 
     TRY_HOW = {
+        # (since build 337) a serpent's ways out
+        "thrash": ["she thrashes her whole length, the long body whipping and heaving against the ground",
+                   "she throws her body from side to side in great heaving coils, trying to buck the weight off",
+                   "every length of her thrashes at once, slamming against the ground and the body on her"],
+        "coil_back": ["she whips her tail round the pinner's body, trying to wind a coil round her and drag her off",
+                      "she loops the free length of her body up and over, trying to wrap the one on top of her",
+                      "she gets a turn of her tail round the pinner's leg and hauls, trying to peel her away"],
+        "rear": ["she rears the front of her body up off the ground, trying to lift the weight with her",
+                 "she heaves her head and neck up, the muscles of her long body bunching to throw the pinner back",
+                 "she drives her upper body up from the ground like a spring uncoiling"],
+        "lash": ["she lashes her tail up into the pinner's back, again and again",
+                 "her tail cracks round like a whip into the body on top of her",
+                 "she flails the end of her tail at whatever of the pinner it can reach"],
         "buck": ["she bucks her whole body under the weight", "she heaves up under it all at once, every muscle at once",
                  "she throws her body up against the weight, again and again, short and violent",
                  "she jerks her hips and shoulders up together, trying to pitch the weight off"],
@@ -8015,7 +8028,9 @@ class Narrator:
         """(since build 332, pin.control) what this pin, as it is built, takes from her, and what she still has."""
         if not ctl or not ctl.get("notes"):
             return []
-        how = {"bridge": "bridging", "shrimp": "shrimping her hips out", "roll": "rolling", "twist": "twisting",
+        how = {"thrash": "thrashing her whole length", "coil_back": "coiling back round the pinner",
+               "rear": "rearing up under her", "lash": "lashing her tail",
+               "bridge": "bridging", "shrimp": "shrimping her hips out", "roll": "rolling", "twist": "twisting",
                "kick": "kicking", "tuck": "tucking a leg in", "pry": "prying at a grip", "reach": "reaching out to haul",
                "claw": "clawing", "bite": "biting", "headbutt": "a headbutt", "buck": "bucking", "squirm": "squirming"}
         free = [how[w] for w in ctl.get("free") or () if w in how]

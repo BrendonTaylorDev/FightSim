@@ -654,6 +654,42 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 337
+
+**Holds made for serpents** (`submissions.serpent_holds`). Twelve new submission holds, each only where the bodies fit:
+- **On a serpent** (by anyone with limbs):
+  - **neck ride:** astride or along her neck behind the head, squeezing.
+  - **serpent tail crank:** her tail cranked back against its curve.
+  - **crest pull:** paws knotted in her head fins, hauling her head back.
+  - **serpent crab:** her long body bowed backward over itself.
+  - **jaw clamp:** her jaw held shut and her head twisted.
+  - **tail wring:** the attacker's own tail or tails wound round the end of hers.
+  - **belly press:** knees or forepaws grinding into her soft upturned belly.
+- **Serpent on serpent:** coil lock (body and tail knotted together), neck wrap.
+- **A serpent on anyone with limbs:** leg bind, arm wrap, neck loop.
+
+Counts by position:
+
+| Holder → held | Before | Now |
+| --- | --- | --- |
+| Buizel → downed Milotic | 3–4 | 6–8 |
+| Buizel → standing Milotic | 5 | 8 |
+| Milotic → downed Buizel | 2 | 5 |
+| Milotic → downed Arbok | 1–2 | 3–4 |
+
+Multi-tap matches against a serpent get far more variety. Chokes among them stay rare (the hold mix applies as before).
+
+**A pinned serpent fights it her own way** (`pin.control.serpent_ways`). Before, a pinned serpent's missing legs and
+forelimbs were scored as if they were held, so her ways out were too weak. Now:
+- Her ways out are her own: thrash her whole length, coil back round the pinner, roll, rear up, lash her tail, squirm,
+  bite. The narrator has wording for each.
+- Her tail counts like her limbs: one tail part held is half of it, most of it all of it.
+- With her tail free she has strong ways out (lash, coil back).
+- The director has two new pin shapes for a serpent: knees pinning her tail with weight on her front, or tails wound
+  round her tail. Pinned tail and body together, nearly all her ways out are shut.
+
+Balance is still not tuned (next: the balance pass).
+
 ## Build 336
 
 **Reactions to being hurt** (`reacting`, new file `reacts.py`). Every fighter has reaction traits in fighters.json

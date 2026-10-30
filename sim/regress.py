@@ -968,6 +968,60 @@ def taps_333_check():
     return problems
 
 
+def serpents_337_check():
+    """Build 337: holds made for serpents (submissions.serpent_holds): a Buizel has many more ways to hold a downed
+    Milotic, a Milotic more ways to hold a Buizel, serpents more on each other; a pinned serpent's ways out are her
+    own (pin.control.serpent_ways: thrash, coil back, lash, rear) and her tail counts like her limbs; a pinner can pin
+    her tail."""
+    import io, contextlib
+    import director as D
+    problems = []
+    e = Engine(seed=1, only=["Ripples", "Seraphina"])
+    e.downed["Seraphina"] = 1
+    e.facing["Seraphina"] = "face-down"
+    on_serp = e.submission_shapes("Ripples", "Seraphina")
+    if len(on_serp) < 6 or not {"neck ride", "serpent tail crank", "tail wring"} <= set(on_serp):
+        problems.append(f"a Buizel should have many holds on a downed Milotic: {sorted(on_serp)}")
+    e.downed.clear()
+    e.downed["Ripples"] = 1
+    e.facing["Ripples"] = "face-up"
+    by_serp = e.submission_shapes("Seraphina", "Ripples")
+    if len(by_serp) < 4 or not {"leg bind", "arm wrap"} <= set(by_serp):
+        problems.append(f"a Milotic should have more holds on a Buizel: {sorted(by_serp)}")
+    if any(n in by_serp for n in ("neck ride", "crest pull", "coil lock")):
+        problems.append("holds made for a serpent under her shouldn't go on a Buizel")
+    e.rules["submissions"]["serpent_holds"] = False
+    if "leg bind" in e.submission_shapes("Seraphina", "Ripples"):
+        problems.append("with serpent_holds off the new holds should be gone")
+    # a pinned serpent
+    e = Engine(seed=2, only=["Ripples", "Seraphina"])
+    e.rules["finish"]["no_pins"] = False
+    e.rules["finish"]["knockout_only"] = False
+    e.rules["finish"].setdefault("submission", {})["enabled"] = False
+    e.rules["pin"]["control"]["settle"]["enabled"] = False
+    e.downed["Seraphina"] = 1
+    e.facing["Seraphina"] = "face-down"
+    e.pin_window = {"Seraphina": True}
+    if "tail_and_body" not in D.pin_shapes(e, e.get("Ripples"), e.get("Seraphina")):
+        problems.append("a pinner should be able to pin a serpent's tail")
+    with contextlib.redirect_stdout(io.StringIO()):
+        D.resolve(e, {"action": "pin", "attacker": "Ripples", "defender": "Seraphina", "flavor": "pins her",
+                      "pace": "quick", "hits": [{"part": "Upper Back", "severity": "crushing", "with": "her body, her weight on her"}]})
+    p = e.pin_on("Seraphina")
+    if p is None:
+        return problems + ["the test pin on the Milotic didn't go on"]
+    c = e.pin_control(p)
+    if not c.get("serpent") or c["ways"].get("lash", 0) < 0.9 or "bridge" in c["ways"]:
+        problems.append(f"a serpent with her tail free should have her own ways out (lash, coil back): {c['ways']}")
+    way = e.pin_way(c)[0]
+    if way not in e.SERPENT_PIN_WAYS:
+        problems.append(f"a serpent's struggle should be one of her own ways: {way}")
+    e.rules["pin"]["control"]["serpent_ways"] = False
+    if e.pin_control(p).get("serpent"):
+        problems.append("with serpent_ways off she should be scored as before")
+    return problems
+
+
 def reacts_336_check():
     """Build 336 (reacting): each landed blow gets a reaction sized by the blow, the part and her health; a stoic shows
     less and a squirmer squirms, but a part in agony always shows big; damage kinds and tender parts change it; her
@@ -5097,6 +5151,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "serpents337" for w in want):
+        t = time.time()
+        probs = serpents_337_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 337: holds made for serpents, a pinned serpent's own ways out  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "reacts336" for w in want):

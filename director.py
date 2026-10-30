@@ -3461,6 +3461,22 @@ def pin_shapes(engine, pinner, target, skip=()):
     from engine import body_region
     backs = [n for n in target.parts if body_region(n) == "back_up"]
     plan = engine.body_plan(pinner)
+    tails_t = [n for n in target.parts if body_region(n) == "tail" and "fan" not in n.lower()]
+    if engine.body_plan(target) == "serpent" and tails_t and front and plan != "serpent" \
+            and (engine.rules.get("pin", {}).get("control") or {}).get("serpent_ways", True):
+        # (since build 337) a serpent's tail is her legs and her arms in one: a pinner who knows it holds it down
+        kneel = "her knees" if plan == "biped" else "her hind paws"
+        out["tail_and_body"] = (f"{kneel} pinning her tail ({' and '.join(tails_t[:2])}) to the ground so it can't "
+                                f"lash or coil, her weight on her {front}"
+                                + (f", {t['fore']} across her {neck}" if t.get("fore") and neck else ""),
+                                [(x, kneel + ", pinning it down") for x in tails_t[:2]] + [(front, t["weight"])]
+                                + ([(neck, t["fore"])] if t.get("fore") and neck else []))
+        if t.get("coil"):
+            out["tail_bind"] = (f"{t['coil']} wound round her tail ({tails_t[0]}), binding it, her weight on her "
+                                f"{front}" + (f" and {t['jaws'].replace('her ', '', 1)} on her {neck}"
+                                              if t.get("jaws") and neck else ""),
+                                [(tails_t[0], t["coil"] + ", wound round it"), (front, t["weight"])]
+                                + ([(neck, t["jaws"])] if t.get("jaws") and neck else []))
     # a sleeper needs an arm that can lock round a neck: a four-legged fighter's foreleg can only press down
     if t.get("fore") and neck and backs and "sleeper" not in skip and plan in ("biped", "serpent"):
         back = rng.choice(backs)
