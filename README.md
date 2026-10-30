@@ -654,6 +654,49 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 335
+
+**Neck pins end mostly by the blood** (`pin.fade.neck_blood`). Pressure on her neck in a pin (jaws round her throat,
+a paw or forearm on it, weight across it) usually ends the pin with a blood choke: the arteries squeezed shut, the blood
+to her head cut off. Her air and the pain can still get there first:
+- `pain_share` (0.3): the pain wins more often the worse the pressed parts are hurt and the longer the pin's ache has run.
+- `air`: how often her air goes first, by the kind of grip (a press across the front of her throat 30%, jaws or hands
+  round it 20%, a squeeze on the sides 5%).
+- In a pin, a press on the front of her neck now drains the blood to her head too (`press_blood`).
+- Measured with Nocturne's six-point pin (jaws on the throat): about 70% blood, 20% air and blood together, 12% pain.
+  Pin win rates and lengths are unchanged.
+- When the windpipe was pressed too, the story may say her breath came short, but the blood is what takes her.
+
+**Fighting styles** (`styles`, new file `styles.py`). Each fighter has styles in fighters.json (`"fighting":
+{style: 0-1}`); all 26 fighters have them. Fifteen styles, each switchable and tunable in rules.json:
+- **dismantler**: takes her apart one part at a time. She picks a part and keeps at it until it gives (170% damage),
+  then moves to the part beside it. Heavy blows while it is sound, cutting ones (claws, blades, teeth) once it is worn.
+  Blows aimed elsewhere are pulled to it, and when a blow catches several parts that part takes the brunt.
+- **grappler**: grabs and holds more, close blows from inside the grip.
+- **setup_artist**: knockdowns, grabs and charges first, then the biggest blow at point-blank, grinding her into the
+  ground or the wall (a little harder there).
+- **wear_down**: heavy blows spread over every fresh part; they wear her resistance down further.
+- **opportunist**: goes for the worst-hurt part, and big blows the moment she is caught open (devastating blows likelier).
+- **head_hunter**, **body_worker**, **hobbler**: aim at the head, the body or the legs.
+- **swarmer**: quick blows, chains and pummels.
+- **counter_puncher**: counters after a dodge more often.
+- **out_fighter**: ranged moves, few grabs, twists out of grabs.
+- **ground_pounder**: stays on top of a downed fighter and pounds her there.
+- **biter**, **trickster** (feints, status moves), **thrower** (throws and slams).
+
+The director gets a FIGHTING STYLE line per fighter, with what her style wants right now (the part she is taking apart,
+her setup paying off, an opening). The big-moment suggestions (grabs, throws, chains) lean toward the fighters whose
+styles want them. The no-model fights in /simulate weigh moves, aims, grabs, chains, pummels, feints and throws the same
+way. The narrator is told how her style shows in each blow.
+
+**Blows that wear or injure** (`moves.profile`). A blow is split between wearing a part's resistance down and injuring
+it, by its kind: a blunt blow wears 1.4x and injures 0.85x; claws, blades and teeth wear 0.8x and tear up to 30% deeper
+into a worn-down part; beams and blasts are in between. Her health is not changed by it. A move can set its own split
+in fighters.json (`"profile"`). The narrator is told which kind of blow it was.
+
+**Balance not yet tuned.** In /simulate (no pins), Nocturne beats Ripples 68% with styles on, 61% with everything off;
+the profiles alone change nothing (62%). Balancing comes in a later build.
+
 ## Build 334
 
 Pins wear her down gradually, and end with her passing out from the pain or from the choke. All of it is under

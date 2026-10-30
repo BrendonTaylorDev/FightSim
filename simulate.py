@@ -9,6 +9,7 @@ import random
 
 from engine import Engine
 from director import resolve_many, pin_shapes
+import styles
 
 
 def _usable(eng, f, d, budget=None):
@@ -98,8 +99,11 @@ def _pick_action(eng, rng, f, d):
         return dict(a, action="breather")
     fav = (getattr(f, "favors", None) or {}) if eng.traits_cfg() else {}
     # (since build 280) the moves she favours (fighters.json favors), as the director is told
-    m = rng.choices(moves, weights=[max(0.05, float(fav.get(x["name"], 1.0))) for x in moves])[0] if fav \
-        else rng.choice(moves)
+    # (styles, since build 335) and the kinds of move her fighting styles reach for in this moment
+    sit = styles.situation(eng, f, d) if styles.of(eng, f) else None
+    sw = [styles.move_mult(eng, f, d, x, sit) if sit is not None else 1.0 for x in moves]
+    m = rng.choices(moves, weights=[max(0.05, float(fav.get(x["name"], 1.0))) * k for x, k in zip(moves, sw)])[0] \
+        if fav or sit is not None else rng.choice(moves)
     parts = list(d.parts)
     a.update(action="strike", move=m["name"])
     # (held on the ground, a bite lands only near what holds her: holds.held_reach; and from where she holds her,
@@ -110,19 +114,27 @@ def _pick_action(eng, rng, f, d):
         a["hits"] = [{"part": p} for p in rng.sample(pool, min(3, len(pool)))]
     else:
         a["part"] = rng.choice(near or parts)
-    if m.get("target") in ("targeted",) and not m.get("charge") and rng.random() < 0.1:
+        got = styles.aim_part(eng, f, d, m, a["part"], roll=rng.random()) if sit is not None and not m.get("charge") \
+            else None
+        if got and (not near or got[0] in near):
+            a["part"] = got[0]       # (styles) where her style wants it
+    if sit is not None and m.get("target") == "spread" and styles.dismantle_target(eng, f, d) in (near or parts):
+        t_ = styles.dismantle_target(eng, f, d)    # (a dismantler's beam or flurry is aimed at her part first)
+        a["hits"] = [{"part": t_}] + [h for h in a["hits"] if h["part"] != t_][:2]
+    if m.get("target") in ("targeted",) and not m.get("charge") and rng.random() < 0.1 * styles.chance_mult(eng, f, "feint"):
         a["feint"] = True
     # as the director does now and then: a held stream or beam, or a pummel on a fighter with nowhere to go
     if m.get("sustainable") and m.get("target") != "self" and rng.random() < 0.2:
         a.update(action="combo", sustain=rng.choice([2, 3, 3, 4]))
         a.setdefault("hits", [{"part": a.pop("part")}] if "part" in a else a.get("hits"))
     elif m.get("target") == "targeted" and not eng.is_ranged(m) and not m.get("charge") and not a.get("feint") \
-            and not a.get("reposition") and eng.pummel_place(f.name, d.name) and rng.random() < 0.35:
+            and not a.get("reposition") and eng.pummel_place(f.name, d.name) \
+            and rng.random() < min(0.8, 0.35 * styles.chance_mult(eng, f, "pummel")):
         a["count"] = rng.choice([2, 3, 3, 4])
     if eng.has(f, "airborne") and m.get("target") == "targeted" and not eng.is_ranged(m) and not m.get("charge") \
             and not m.get("carry") and eng.can_carry(f, d)[0] and rng.random() < 0.25:
         a["carry"] = True      # seize her and haul her up (one_fight may follow it with a blow as she falls)
-    if m.get("target") != "self" and m.get("power", 0) >= 30 and rng.random() < 0.3:
+    if m.get("target") != "self" and m.get("power", 0) >= 30 and rng.random() < min(0.7, 0.3 * styles.chance_mult(eng, f, "launch")):
         a["launch"] = rng.choice(["knocked down", "knocked down", "thrown"])   # as the director does for heavy hits
     if m.get("charge") and rng.random() < 0.3:
         props = (getattr(eng, "scene_cfg", None) or {}).get("props") or []
@@ -197,11 +209,13 @@ def one_fight(names, rules, scene, seed, max_beats=150):
                 acts.append(dict(nxt, carry=False, launch="none"))
         elif act.get("action") == "strike" and not act.get("count") and not act.get("carry") \
                 and not act.get("launch") and not act.get("charge_into") \
-                and not (eng.find_move(f.name, act["move"]) or {}).get("charge") and rng.random() < CHAIN_CHANCE:
+                and not (eng.find_move(f.name, act["move"]) or {}).get("charge") \
+                and rng.random() < CHAIN_CHANCE * styles.chance_mult(eng, f, "chain"):
             acts += _chain_links(eng, rng, f, d, act)
         elif act.get("action") == "strike" and not act.get("reposition") and not eng.has(f, "airborne") \
                 and not eng.has(d, "airborne") and f.name not in eng.downed and d.name not in eng.downed \
-                and not eng.pinned_by(d.name) and not eng.regrab_wait(f, d) and rng.random() < GRAPPLE_CHANCE:
+                and not eng.pinned_by(d.name) and not eng.regrab_wait(f, d) \
+                and rng.random() < GRAPPLE_CHANCE * styles.chance_mult(eng, f, "grab"):
             # a grab, then the held fighter worked over at point-blank (the move picked becomes the pummel)
             m = eng.find_move(f.name, act["move"])
             if m and m.get("target") == "targeted" and not eng.is_ranged(m) and not m.get("charge"):

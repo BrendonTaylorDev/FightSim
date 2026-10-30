@@ -55,6 +55,7 @@
     }
   },
   "moves": {
+    "profile": {"_comment": "profile (since build 335): what a blow does to a part, split between its RESISTANCE (how worn down it is) and its DAMAGE (how injured it is). By the kind of blow: damage x the part damage it does, wear x the resistance it wears off, worn_bonus: + this much more damage on a part whose resistance is worn all the way down (in proportion). A heavy blunt blow pounds a part soft more than it injures it; claws, blades and teeth injure more than they wear, and tear deeper into a part already worn; a beam or a blast is in between. Her health is NOT changed by it: only the part's two numbers. A move can set its own in fighters.json (\"profile\": {\"damage\": x, \"wear\": y}). The story is told what kind of blow it was. false = every blow the same, as before.", "enabled": true, "kinds": {"blunt": {"damage": 0.85, "wear": 1.4}, "claw": {"damage": 1.0, "wear": 0.8, "worn_bonus": 0.3}, "blade": {"damage": 1.0, "wear": 0.8, "worn_bonus": 0.25}, "bite": {"damage": 1.0, "wear": 0.85, "worn_bonus": 0.25}, "blast": {"damage": 1.0, "wear": 1.1}, "shock": {"damage": 1.05, "wear": 0.8}, "fire": {"damage": 1.0, "wear": 0.9}, "cold": {"damage": 0.95, "wear": 1.1}, "mind": {"damage": 1.0, "wear": 0.7}}},
     "_comment": "Named moves live in fighters.json. Effective power = move power x type effectiveness x targeting. targeted = one body part (x2); spread = several parts (x1.25 each); whole_body = every body part (x1); hold = pressure on parts every beat until released.", "_head_reach_comment": "head_reach (since build 261): a head butt (or a skull bash, a head slam) thrown by a fighter on her feet at one on her feet lands where a head can reach: her head, neck, chest, shoulders, belly, back or arms. Aimed at her legs, feet or tail it lands on her chest instead (the build-260 log: a head butt to Ripples' left foot). enabled false = it lands where aimed.", "head_reach": {"enabled": true}, "_low_launch_comment": "low_launch (since build 261): a blow whose main hit is on her lower legs or feet takes her legs out from under her: thrown or launched becomes knocked down, where she stood, and no blow catches her up in the air after it. A move that launches by itself (moves.json) still does. enabled false = the director's launch stands.", "low_launch": {"enabled": true},
     "targeting": {
       "targeted": 2.0,
@@ -1229,7 +1230,9 @@
       "strong_mult": 0.8,
       "_cause_comment": "A fighter held to the end of a pin goes out from one of two things, and the story is told which: the CHOKE (a grip on her neck or throat) or the PAIN (the worst-hurt part under the press). With no grip on her neck it is always the pain. With one, pain_out_share is how often the pain gets there first anyway (less when nothing under the press is at least very painful). At 0.22 about 3 pass-outs in 10 are by pain overall at a high damage scale; raise it for more, lower it for fewer (0 = always the choke when there is one; 1 = always the pain). pain_mult: when the worst-hurt part under the press is in agony (150% damage or more), each beat takes her under up to this much faster.",
       "pain_mult": 1.15,
-      "pain_out_share": 0.22
+      "pain_out_share": 0.22,
+      "_neck_blood_comment": "neck_blood (since build 335): pressure on her neck in a pin (jaws round her throat, a paw or a forearm on it, weight across it) USUALLY ends the pin by the BLOOD: the arteries squeezed shut, the blood to her head cut off (told as a blood choke; when her windpipe was pressed too, the story may say her breath came short, but the blood is what takes her). Not always. pain_share: at most this often the PAIN gets there first, more the worse the parts under the press are hurt (from 90% damage, all of it at 240%) and the longer the ache of the pin has gone on (up to half of it). air: by the kind of grip on her neck, how often it is her AIR that goes first instead (air = a press across the front of her throat, both = jaws or hands closed round it: then told as air and blood together, blood = something closing on the sides). In a pin a press on the front of her neck drains the blood to her head too, at press_blood of a blood choke's rate. About 7 in 10 neck pins end by the blood, the rest by her air or the pain. false = the choke or the pain by which has gone further, and the kind of choke by the grip, as before.",
+      "neck_blood": {"enabled": true, "pain_share": 0.3, "air": {"air": 0.3, "both": 0.2, "blood": 0.05}, "press_blood": 0.7}
     },
     "damage_mult": 0.5,
     "_first_beat_comment": "first_beat_damage: how much of one beat's pressure a pin's presses deal on the beat the pin starts (0 = none: the pin starts hurting on its next beat; 1 = a full beat, still times damage_mult). Change live with /pinstart.",
@@ -1475,6 +1478,238 @@
     "knockout": {"description": "A knockout match: only a knockout blow ends it. No pins, no submissions.", "settings": {"finish.knockout_only": true, "finish.no_pins": true, "finish.submission.enabled": false}},
     "pins": {"description": "A pin match: a pin held to the end of its clock wins, and a knockout blow can still end it. No submissions.", "settings": {"finish.knockout_only": false, "finish.no_pins": false, "finish.submission.enabled": false, "submissions.becomes_pin_after": 4}},
     "anything": {"description": "Whatever happens: a knockout blow, a pin held to its end, or a tap-out (or a pass-out) in a submission, whichever comes first.", "settings": {"finish.knockout_only": false, "finish.no_pins": false, "finish.submission.enabled": true, "finish.submission.no_pins": false, "finish.submission.allow_knockouts": true, "finish.submission.taps.enabled": false, "submissions.becomes_pin_after": 0}}
+  },
+  "styles": {
+    "_comment": "styles (since build 335): FIGHTING STYLES, how each fighter likes to fight beyond the moves she favours. Set per fighter in fighters.json as \"fighting\": {style: how strongly, 0 to 1}. Each style below can be switched off (enabled false) or retuned. A style does four things: (1) MOVES: what she reaches for, by kind of move (close, ranged, big, quick, breaker = a heavy blunt blow that wears a part down, cutter = claws, blades and teeth that tear into it, bite, charge, wide = catches several parts, hold, status), x the number at full strength (a style at 0.5 gets half of the change), with more by the moment in `when` (down, pinned, grab, holding, open = staggered/off balance/dazed..., against = driven against something, hurt = under 40% health, fresh = over 70% and nothing wrong). The director is told it each beat (FIGHTING STYLE) and the no-model fights in /simulate weigh her moves by it. (2) AIM: how often (x her strength in the style) a blow aimed somewhere else is moved to where the style wants it: dismantler = the one part she is taking apart (kept until it has done_at damage, then the part beside it least hurt so far; heavy blows first while it is still sound, cutting ones once it is worn under soft_at % condition), opportunist = her worst-hurt part (from hurt_from damage), wear_down = somewhere still fresh, head_hunter = her head, body_worker = her body, hobbler = her legs. Never onto a part she can't reach (the usual reach checks put it back). (3) CHANCES: how much likelier a grab, a chain, a pummel, a feint or a throw/knockdown is (x the number at full strength). (4) A few small engine effects, named in each: brunt/shed (dismantler: when a blow catches several parts, the one she is taking apart takes brunt more, the rest shed less), point_blank (setup_artist: a big blow on a fighter who is down, held, pinned or driven against something), on_down (ground_pounder: close blows on a fighter who is down), wear (wear_down: her heavy blows wear the part's resistance down more), counter (counter_puncher: her counter after a dodge), devastating (opportunist: a devastating blow on an opening), slip (out_fighter: slipping a grab). enabled false = no styles at all.",
+    "enabled": true,
+    "list": {
+      "dismantler": {
+        "enabled": true,
+        "label": "takes her apart one part at a time",
+        "aim": 0.7,
+        "done_at": 170,
+        "soft_at": 55,
+        "breaker_first": 0.6,
+        "cut_worn": 0.8,
+        "brunt": 0.3,
+        "shed": 0.35,
+        "moves": {
+          "wide": 0.85
+        }
+      },
+      "grappler": {
+        "enabled": true,
+        "label": "grappler",
+        "moves": {
+          "hold": 1.8,
+          "close": 1.15,
+          "ranged": 0.75
+        },
+        "when": {
+          "grab": {
+            "close": 1.6,
+            "quick": 1.3,
+            "ranged": 0.5
+          },
+          "holding": {
+            "close": 1.5,
+            "ranged": 0.6
+          }
+        },
+        "chances": {
+          "grab": 4.0,
+          "pummel": 1.4
+        }
+      },
+      "setup_artist": {
+        "enabled": true,
+        "label": "sets up her big blows",
+        "point_blank": 0.15,
+        "moves": {
+          "charge": 1.2
+        },
+        "when": {
+          "fresh": {
+            "big": 0.8,
+            "charge": 1.3
+          },
+          "down": {
+            "big": 2.4
+          },
+          "pinned": {
+            "big": 2.4
+          },
+          "grab": {
+            "big": 2.0
+          },
+          "against": {
+            "big": 2.2
+          },
+          "open": {
+            "big": 1.6
+          }
+        },
+        "chances": {
+          "launch": 1.8,
+          "grab": 1.6
+        }
+      },
+      "wear_down": {
+        "enabled": true,
+        "label": "wears her down all over",
+        "aim": 0.35,
+        "wear": 0.3,
+        "moves": {
+          "breaker": 1.6,
+          "wide": 1.3,
+          "cutter": 0.85
+        }
+      },
+      "opportunist": {
+        "enabled": true,
+        "label": "opportunist",
+        "aim": 0.35,
+        "hurt_from": 60,
+        "devastating": 0.35,
+        "when": {
+          "open": {
+            "big": 1.8,
+            "quick": 1.2
+          },
+          "down": {
+            "big": 1.6
+          },
+          "hurt": {
+            "big": 1.3
+          }
+        }
+      },
+      "head_hunter": {
+        "enabled": true,
+        "label": "goes for the head",
+        "aim": 0.4,
+        "moves": {
+          "close": 1.1
+        }
+      },
+      "body_worker": {
+        "enabled": true,
+        "label": "works the body",
+        "aim": 0.4,
+        "moves": {
+          "close": 1.2,
+          "breaker": 1.2
+        }
+      },
+      "hobbler": {
+        "enabled": true,
+        "label": "takes her legs",
+        "aim": 0.4,
+        "moves": {
+          "close": 1.1
+        },
+        "chances": {
+          "launch": 1.3
+        }
+      },
+      "swarmer": {
+        "enabled": true,
+        "label": "swarms her (fast, many blows)",
+        "moves": {
+          "quick": 1.6,
+          "close": 1.2,
+          "big": 0.8
+        },
+        "chances": {
+          "chain": 2.2,
+          "pummel": 1.7
+        }
+      },
+      "counter_puncher": {
+        "enabled": true,
+        "label": "counter-puncher",
+        "counter": 0.4,
+        "moves": {
+          "quick": 1.3,
+          "charge": 0.7
+        }
+      },
+      "out_fighter": {
+        "enabled": true,
+        "label": "keeps her at range",
+        "slip": 0.25,
+        "moves": {
+          "ranged": 1.6,
+          "close": 0.75,
+          "hold": 0.5
+        },
+        "when": {
+          "grab": {
+            "big": 1.4
+          }
+        },
+        "chances": {
+          "grab": 0.3,
+          "pummel": 0.6
+        }
+      },
+      "ground_pounder": {
+        "enabled": true,
+        "label": "ground and pound",
+        "on_down": 0.08,
+        "when": {
+          "down": {
+            "close": 1.6,
+            "quick": 1.3,
+            "ranged": 0.7
+          },
+          "pinned": {
+            "close": 1.5
+          }
+        },
+        "chances": {
+          "pummel": 1.5,
+          "launch": 1.3
+        }
+      },
+      "biter": {
+        "enabled": true,
+        "label": "a biter",
+        "moves": {
+          "bite": 1.7
+        },
+        "when": {
+          "grab": {
+            "bite": 1.5
+          },
+          "down": {
+            "bite": 1.4
+          }
+        }
+      },
+      "trickster": {
+        "enabled": true,
+        "label": "a trickster (feints, misdirection)",
+        "moves": {
+          "status": 1.6,
+          "quick": 1.2
+        },
+        "chances": {
+          "feint": 3.0
+        }
+      },
+      "thrower": {
+        "enabled": true,
+        "label": "throws and slams",
+        "moves": {
+          "charge": 1.2
+        },
+        "chances": {
+          "launch": 2.2,
+          "grab": 1.5
+        }
+      }
+    }
   },
   "traits": {
     "_comment": "traits and quirks (since build 280, on by default): how each fighter fights, set in fighters.json. traits is a set of multipliers on today's rolls, 1.0 = as before: speed (her chance to dodge, to counter after a dodge, to meet a move with her own), hold (how hard her grips bite when they close, and how hard they are to break), escape (her chance to break a hold or escape a pin), toughness (how easily she is staggered or rocked: the chance is divided by it), stamina (what her moves cost her: divided by it), striking (landing where she aims: the miss chance is divided by it; and her chance of a devastating blow), learning (1.4 or more: she reads a move after seeing it once, not twice). favors (fighters.json): move name -> how much she prefers it (the director is told her favourite and her seldom-used moves; /simulate weights its picks by them). style: a sentence for the director. quirks: named rules of her own, each below with its numbers, each switchable (enabled false). Balance: fighters without traits are as before; the pairs were simulated after setting them. enabled false = no traits or quirks at all (fighters.json keeps them).",

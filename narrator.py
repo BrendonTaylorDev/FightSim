@@ -6592,6 +6592,15 @@ class Narrator:
                              f"separate blows for those parts: tell all of them landing TOGETHER, in the same sentence "
                              f"or the one right after, before any reaction (nothing she does comes between them, and "
                              f"nothing 'comes next'). Her reactions to each place come after, all from that one blow.")
+            if m and m.get("style"):
+                # (styles, since build 335) how her fighting style shows in this blow
+                lines.append(f"  - HOW {a['attacker'].upper()} FIGHTS, in this blow: " + "; ".join(m["style"]) + ".")
+            prof_ = next((h.get("profile") for h in (a.get("hits") or []) if h.get("profile")), None)
+            if prof_ and a.get("hits"):
+                import styles as _styles
+                pw_ = _styles.profile_word(prof_[0], prof_[1])
+                if pw_:
+                    lines.append(f"  - WHAT KIND OF BLOW: {pw_}.")
             if m and m.get("extras"):
                 lines.append("  - It lands differently because: " + "; ".join(
                     {"paralyzed": f"{a['attacker']} is paralyzed, so it comes out weaker and stiffer",
@@ -7586,7 +7595,9 @@ class Narrator:
                                    f"and the world shrinking to a point, the strength draining out of her limbs. She may "
                                    f"still get a little air; it doesn't matter. It is quick at the very end, quicker "
                                    f"than she expects: she goes out almost before she knows it. The pain is still there, "
-                                   f"but it is not what ends it. She is out cold, breathing, and she will wake.")
+                                   f"but it is not what ends it. She is out cold, breathing, and she will wake."
+                                   + (" Her windpipe was pressed too, so her breath came short and rasping, but "
+                                      "it is the blood cut off that takes her, not the air." if oc.get("airway") else ""))
                     elif oc.get("kind") == "both":
                         out.append(f"  - WHY SHE GOES OUT: the CHOKE, air and blood together. It is {grip} that takes "
                                    f"her under: it crushes the front of her throat and squeezes the sides at once. Show "

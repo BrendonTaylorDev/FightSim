@@ -521,6 +521,41 @@ def _apply_focus(engine, att, dfn, b):
     return b
 
 
+def _apply_style_aim(engine, att, dfn, b):
+    """(styles, since build 335) her fighting style pulls a blow, some of the time, to where it wants it: the part a
+    dismantler is taking apart, the worst-hurt part, the head, the body, the legs, somewhere still fresh. A blow
+    whose flavor already says where it lands, a pummel, or a charge is left alone. Marked _aimed either way when it
+    lands where her style wants it, so target variety does not move it off again."""
+    import styles
+    if not styles.cfg(engine) or not b.get("part") or int(b.get("count") or 1) > 1:
+        return b
+    try:
+        a, d = engine.get(att), engine.get(dfn)
+        name = _fit_part(engine, dfn, b.get("part"))
+    except (ValueError, KeyError):
+        return b
+    mv = engine.find_move(a.name, b.get("move")) if b.get("move") else None
+    if not mv or mv.get("charge") or engine.pinned_by(a.name):
+        return b
+    if name == styles.dismantle_target(engine, a, d):
+        return dict(b, _aimed=True)
+    said = re.search(r"\b%s\b" % re.escape(name.lower().split()[-1]), str(b.get("flavor") or "").lower())
+    if said:
+        return b
+    got = styles.aim_part(engine, a, d, mv, name)
+    if not got:
+        return b
+    part, why, _ = got
+    if d.name in engine.downed:
+        fitted, _ = engine.fit_to_facing(d.name, [part])
+        if part not in fitted:
+            return b
+    hl = [dict(h) for h in (b.get("hits") or [])]
+    if hl and hl[0].get("part"):
+        hl[0]["part"] = part
+    return dict(b, part=part, _aimed=True, _style_aim=why, **({"hits": hl} if hl else {}))
+
+
 # where a charge (Take Down, an Aqua Jet ram) can be moved to: the trunk, which a body slamming into her catches
 CHARGE_REGIONS = ("chest", "shoulder", "belly", "back_up", "back_low", "hind_up")
 
@@ -1312,6 +1347,8 @@ def resolve(engine, b):
     if not manual and act in ("strike", "combo") and engine.get(att).name not in (getattr(engine, "ordered", None) or ()):
         # (a player's own order lands where she said: no re-aiming for the fighters you play)
         b = _apply_focus(engine, att, dfn, b)
+        if not b.get("_aimed") and not engine.focus_for(att):
+            b = _apply_style_aim(engine, att, dfn, b)
         if not b.get("_aimed"):
             b = _apply_variety(engine, att, dfn, b)
     if (not manual and dfn and engine._taps_rule() and act in ("strike", "combo", "hold_start", "submission")
@@ -3890,6 +3927,13 @@ def style_hint(engine):
         out.append(f"HOW {f.name.upper()} FIGHTS: {f.style}".rstrip()
                    + (f" She reaches most for {', '.join(m for m, _ in fav[:5])}." if fav else "")
                    + (f" She seldom uses {', '.join(rare[:4])}." if rare else ""))
+    try:
+        import styles
+        st = styles.hint(engine)        # (styles, since build 335) her fighting styles, and what they want now
+        if st:
+            out.append(st)
+    except Exception as exc:
+        engine.note_failure("the fighting-style hint", exc)
     return "\n".join(out)
 
 
@@ -4108,7 +4152,12 @@ def clinch_hint(engine, prefer=None, roll=None):
     working her over at point-blank (rules.json director: clinch_chance; 0 = never suggested)."""
     cfg = engine.rules.get("director", {})
     roll = engine.rng.random() if roll is None else roll
-    if engine.pins or roll >= float(cfg.get("clinch_chance", 0.05)):
+    try:
+        import styles
+        gm = max([styles.chance_mult(engine, f, "grab") for f in engine.active()] or [1.0])
+    except Exception:
+        gm = 1.0
+    if engine.pins or roll >= float(cfg.get("clinch_chance", 0.05)) * gm:
         return ""
     options = []
     for f in engine.active():
@@ -4122,6 +4171,11 @@ def clinch_hint(engine, prefer=None, roll=None):
     if not options:
         return ""
     mine = [o for o in options if prefer and o[0].name == prefer]
+    if not mine and gm > 1.0:
+        # (styles) the grab is suggested for a grappler first
+        import styles
+        top = max(options, key=lambda o: styles.chance_mult(engine, o[0], "grab"))
+        mine = [top] if styles.chance_mult(engine, top[0], "grab") > 1.0 else []
     f, foes = engine.rng.choice(mine or options)
     foe = engine.rng.choice(foes)
     close = [m["name"] for m in f.moves if m.get("target") == "targeted" and not m.get("charge")]
@@ -4150,7 +4204,12 @@ def chain_hint(engine, prefer=None, roll=None):
     into the next (rules.json director: chain_chance; 0 = never suggested)."""
     cfg = engine.rules.get("director", {})
     roll = engine.rng.random() if roll is None else roll
-    if engine.pins or roll >= float(cfg.get("chain_chance", 0.05)):
+    try:
+        import styles
+        cm = max([styles.chance_mult(engine, f, "chain") for f in engine.active()] or [1.0])
+    except Exception:
+        cm = 1.0
+    if engine.pins or roll >= float(cfg.get("chain_chance", 0.05)) * cm:
         return ""
     options = []
     for f in engine.active():
@@ -4198,6 +4257,15 @@ def big_moment_hint(engine, prefer=None):
              ("throw or slam", float(dcfg.get("grapple_chance", 0.05)), grapple_hint),
              ("grapple", float(dcfg.get("clinch_chance", 0.05)), clinch_hint),
              ("chain", float(dcfg.get("chain_chance", 0.05)), chain_hint)]
+    try:
+        # (styles, since build 335) a grappler suggests more grabs, a thrower more throws, a swarmer more chains
+        import styles
+        if styles.cfg(engine):
+            sm = {"throw or slam": "launch", "grapple": "grab", "chain": "chain"}
+            kinds = [(n, ch * max([styles.chance_mult(engine, f, sm[n]) for f in engine.active()] or [1.0])
+                      if n in sm else ch, fn) for n, ch, fn in kinds]
+    except Exception as exc:
+        engine.note_failure("fighting styles on the big-moment odds", exc)
     kinds = [k for k in kinds if k[1] > 0]
     total = sum(k[1] for k in kinds)
     if not kinds or engine.pins:

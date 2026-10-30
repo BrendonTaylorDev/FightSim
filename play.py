@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 334 (pins wear her down: the ache, endurance per pin, harm by what presses, choke or pain, the pinner's own parts)"
+VERSION = "2026-10-30 build 335 (fighting styles, blows that wear or injure, neck pins end mostly by the blood)"
 
 HELP = """
 =============================================================================================

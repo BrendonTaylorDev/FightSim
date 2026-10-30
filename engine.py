@@ -15,6 +15,7 @@ from dataclasses import dataclass, field, asdict
 import reactions
 import body
 import weather as arena_weather
+import styles
 
 
 _FAILED_ONCE = set()
@@ -290,6 +291,7 @@ class Fighter:
     quirks: list = field(default_factory=list)   # (since build 280) her named quirks (rules.json -> traits.quirks)
     style: str = ""                              # (since build 280) how she likes to fight, for the director
     favors: dict = field(default_factory=dict)   # (since build 280) move name -> how much she prefers it
+    fighting: dict = field(default_factory=dict)  # (since build 335) her fighting styles: style -> 0..1 (styles.py)
     personality: str = ""                        # (since build 281) who she is, for the story (narration.character)
     history: str = ""                            # (since build 281) her past, as far as the story may use it
     relationships: dict = field(default_factory=dict)   # (since build 281) other fighter -> what she is to her
@@ -498,6 +500,7 @@ class Engine:
                     traits={k: v for k, v in (fd.get("traits") or {}).items() if not str(k).startswith("_")},
                     quirks=list(fd.get("quirks") or []), style=str(fd.get("style") or ""),
                     favors=dict(fd.get("favors") or {}), personality=str(fd.get("personality") or ""),
+                    fighting={k: v for k, v in (fd.get("fighting") or {}).items() if not str(k).startswith("_")},
                     history=str(fd.get("history") or ""),
                     relationships={k: v for k, v in (fd.get("relationships") or {}).items() if not str(k).startswith("_")},
                     veteran=bool(fd.get("veteran", False)), heart_rest=float(fd.get("heart_rest", 0) or 0))
@@ -620,9 +623,15 @@ class Engine:
                 hmult = float(cap["health_mult"])
                 capped = capped or not cap.get("health_only")
         taken = power * bmult * scale
+        prof_ = None
+        mv_ = getattr(self, "_blow_profile", None)
+        if mv_:
+            # (moves.profile) a heavy blow wears the part more than it injures it, a cutting one the other way; her
+            # health goes by the blow as before (only the part's own two numbers are split differently)
+            prof_ = styles.profile(self, mv_, p)
         zramp = self.zero_part_ramp(defender)    # below_zero.part_ramp: deep below zero, her parts give way faster
         lramp = self.long_match_ramp()           # finish.submission.long_ramp: a match that runs long wears faster
-        p.damage = dmg_b + self._part_added(dmg_b, taken * zramp * lramp)
+        p.damage = dmg_b + self._part_added(dmg_b, taken * zramp * lramp * (prof_[0] if prof_ else 1.0))
         # (the sting of this beat's blows and grips, for the window's pain gauge: which beat, and how much)
         now_ = self.turn + (0 if getattr(self, "_ticking", False) else 1)
         st_ = defender.learned.get("sting") or [now_, 0.0]
@@ -638,6 +647,13 @@ class Engine:
         wear = power * r["resistance"]["loss_per_power"] + taken * float(r["resistance"].get("loss_per_damage", 0) or 0)
         wear = wear * rscale
         wear_math = []      # what scaled the wear beyond power x loss_per_power x resistance_scale (for the stat lines)
+        if prof_ and abs(prof_[1] - 1.0) > 0.005:
+            wear *= prof_[1]
+            wear_math.append([f"a {prof_[2]} blow (moves.profile)", prof_[1]])
+        sw_ = styles.wear_mult(self, getattr(self, "_blow_by", None), mv_) if mv_ else 1.0
+        if sw_ != 1.0:
+            wear *= sw_
+            wear_math.append(["she fights to wear her down (styles.wear_down)", round(sw_, 3)])
         cap_res = float(r["resistance"].get("max_loss_per_hit", 0) or 0)
         rel = r["resistance"].get("relative") or {}
         start_r, sound = float(getattr(p, "start_resistance", 0) or 0), float(rel.get("sound", 85))
@@ -716,6 +732,7 @@ class Engine:
             "defender": defender.name,
             "part": p.name,
             "devastating": bool(getattr(self, "_dev_active", None)),
+            **({"profile": [prof_[0], prof_[1], prof_[2]]} if prof_ else {}),
             "power": power,
             "roll": round(rolled, 2),
             "bracket": bracket["label"],
@@ -941,14 +958,14 @@ class Engine:
                     "_fresh_down", "_fresh_status", "pressed", "alliances", "_pending_events", "rolls", "tally",
                     "weather", "arena_marks", "chronicle", "setups")
     # engine state that lives outside the main snapshot tuple but must be undone (and saved) with it
-    _SNAP_EXTRA = ("encouraged", "ever_down", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "weak_aim", "won_turn",
+    _SNAP_EXTRA = ("encouraged", "ever_down", "air_passes", "out_reason", "broken_props", "broke_free_at", "hit_turn", "hauled", "aim_log", "style_aim", "weak_aim", "won_turn",
                    "injury_amt", "lying_at", "lying_on", "burn_spot", "_story_prev", "_story_now", "_story_pinned", "_story_turned",
                    "_tac_status", "_last_event", "_forced_event", "_overbalanced", "_rock_open", "_slow_not_cold",
                    "_last_manhandle", "last_pin_shape", "fight_record", "game_plans", "gap", "_gap_before", "arena_wx")
     # ...those of them that __init__ sets up: put back to this when a snapshot or save doesn't have them (never removed)
     _SNAP_INIT = {"_last_event": None, "_forced_event": None, "fight_record": {}, "game_plans": {}, "arena_wx": None}
     # scratch for one attack or one beat (set fresh before it is read), or the session and its settings: never undone
-    _NOT_SNAPPED = ("_aim_miss", "_chain_on", "_confusion_passed", "_dev_active", "_dive_now", "_feint_open",
+    _NOT_SNAPPED = ("_aim_miss", "_blow_by", "_blow_profile", "_chain_on", "_confusion_passed", "_dev_active", "_dive_now", "_feint_open",
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
                     "_sustain_now", "_source", "_knock_on", "_tac_before", "beat_loss", "sub_window", "pin_window",
                     "nudges", "_windows_ready", "_pre_rolls", "directed", "ordered", "dice_mode", "lucky",
@@ -1679,6 +1696,14 @@ class Engine:
             powers = [round(pw * (float(cfgv.get("covered_mult", 0.85)) if p == gp else
                                   float(cfgv.get("open_mult", 1.1)) if self.left_open(gp, p) else 1.0), 2)
                       for p, pw in zip(plan, powers)]
+        if enforce and not fed and not (guard and guard["kind"] == "block") and styles.cfg(self):
+            # (styles, since build 335) her fighting styles on this blow: a dismantler's brunt, a setup's payoff
+            try:
+                powers, sn_ = styles.power_mods(self, a, d, move, plan, powers)
+                if sn_:
+                    math["style"] = sn_
+            except Exception as exc:
+                self.note_failure("fighting styles on a blow", exc)
         missed = None
         if enforce and move.get("charge") and (dodge or (guard and guard["kind"] == "deflect")):
             missed = self._missed_charge(a, d, move, math, charge_into)
@@ -1692,10 +1717,15 @@ class Engine:
             if dev:
                 powers = [round(pw * dev["mult"], 2) for pw in powers]
                 self._dev_active = dev
+            # (moves.profile, since build 335) what kind of blow: wearing the part down or injuring it
+            self._blow_profile = move if styles.profile_cfg(self) and not pum else None
+            self._blow_by = a
             try:
                 hits = [] if math["type_mult"] == 0 else [self._apply_damage(d, p, pw) for p, pw in zip(plan, powers)]
             finally:
                 self._dev_active = None
+                self._blow_profile = None
+                self._blow_by = None
             for h in hits[1:]:
                 if h["part"] in (math.get("auto_spill_parts") or ()):
                     h["jarred"] = True     # only knocked by a blow aimed beside it (sized as such in the notes)
@@ -3541,6 +3571,7 @@ class Engine:
         dc = ((self.rules.get("flight") or {}).get("dive_counter") or {})
         dive = bool(getattr(self, "_dive_now", False)) and dc.get("enabled", True)
         cch = float(dc.get("on_dodge", 0.45) if dive else cfg.get("counter_chance", 0.35)) * self.dominated(d.name) * self.trait(d, "speed")
+        cch = min(0.95, cch * styles.counter_mult(self, d))     # (styles.counter_puncher)
         if not self.has(d, "flinched") and self._chance(cch, f"{d.name} countering after the dodge"
                                                              + (" as the dive goes past" if dive else ""),
                                                          "she counters", "no counter"):
@@ -8019,6 +8050,7 @@ class Engine:
             if reason != "weak_point" or self.rng.random() < 0.5:
                 reason, why = "position", vu[0]
         ch *= self.trait(a, "striking")
+        ch *= styles.opening_mult(self, a, d)     # (styles.opportunist: she strikes hardest at an opening)
         q = self.quirk(a, "ambusher")
         if q and move.get("name") in (q.get("moves") or ["Sucker Punch", "Night Slash"]) and (
                 d.name in self.downed or any(self.has(d, st) for st in ("staggered", "off_balance", "dazed", "flinched"))):
@@ -8433,6 +8465,13 @@ class Engine:
             self._no_friendly_fire(a, [d], True)
             self._spend(a, float(self._cfg("energy").get("costs", {}).get("grapple", 6)), True, "a grab")
             dodge = self.dodge_roll(a, d, "targeted")
+            sm_ = styles.slip_mult(self, d)
+            if not dodge and sm_ > 1.0 and not self.has(d, "flinched") and self._chance(
+                    min(0.5, (sm_ - 1.0) * 0.5), f"{d.name} twisting out of the grab (she keeps her at range)",
+                    "she twists free", "it closes"):
+                # (styles.out_fighter) she hates being held: she wrenches out of it before it closes
+                dodge = {"dodged": True, "dodge_chance": round(min(0.5, (sm_ - 1.0) * 0.5), 2), "counter_hits": [],
+                         "manner": "she twists out of the grab before it can close, back out to range"}
             if dodge:
                 self._attacked(a.name, [d.name], landed=False)
                 return {"type": "instant", "attacker": a.name, "defender": d.name, "defenders": [d.name],
@@ -10294,7 +10333,7 @@ class Engine:
             kinds = {self._hold_choke_kind(h) for h in neck}
             st = dfn.learned.get("body") or {}
             left = float(st.get("air", 100))
-            if kinds & {"blood", "both"}:
+            if kinds & {"blood", "both"} or self.neck_blood_cfg():
                 left = min(left, float(st.get("head_blood", 100)))
             k = 1.0 + float(sim.get("choke", 0.2)) * (1.0 - left / 100.0)
             if left <= float(ca.get("out_from", 15)):
@@ -10424,6 +10463,28 @@ class Engine:
             else:
                 pick = 1.0 if gone >= 0.6 * pain_lv else 0.0
                 share = 0.5
+        nb = self.neck_blood_cfg()
+        if choke and nb:
+            # (pin.fade.neck_blood, since build 335) pressure on her neck in a pin USUALLY ends it by the BLOOD: the
+            # grip or the weight on her neck squeezes the arteries shut before it starves her of air. Not always:
+            # the pain can get there first (pain_share, more the worse the parts under the press are hurt and the
+            # longer the ache has gone on), and her windpipe can (air: by the kind of grip, a press across the front
+            # of her throat most often, jaws closed over it sometimes)
+            hurt_k = max(0.0, min(1.0, (worst - 90.0) / 150.0)) if hurt else 0.0
+            wc_ = self.pin_wear_cfg()
+            if wc_:
+                lo_, hi_ = float(wc_.get("ache_start", 0.6)), float(wc_.get("ache_top", 1.5))
+                hurt_k = max(hurt_k, 0.5 * max(0.0, min(1.0, (self.pin_ache(p) - lo_) / max(0.01, hi_ - lo_))))
+            if hurt and pick < float(nb.get("pain_share", 0.3)) * hurt_k:
+                h = hurt[0]
+                return {"cause": "pain", "part": h.part, "with": h.with_part}
+            kinds = [(h, self.choke_kind(p["attacker"], h.with_part, h.coil)) for h in choke]
+            h, kind = max(kinds, key=lambda hk: (hk[0].power, {"blood": 2, "both": 1}.get(hk[1], 0)))
+            pick2 = random.Random(zlib.crc32(f"{pick:.6f}|air".encode())).random()
+            if pick2 < float((nb.get("air") or {}).get(kind, 0.0)):
+                return {"cause": "choking", "part": h.part, "with": h.with_part, "kind": "air" if kind == "air" else "both"}
+            return {"cause": "choking", "part": h.part, "with": h.with_part, "kind": "blood",
+                    "airway": kind in ("both", "air")}
         if choke and (not hurt or pick >= share):
             # a grip round the sides of the neck takes her before one pressing the front: that one counts first
             kinds = [(h, self.choke_kind(p["attacker"], h.with_part, h.coil)) for h in choke]
@@ -10432,6 +10493,11 @@ class Engine:
             return {"cause": "choking", "part": h.part, "with": h.with_part, "kind": kind}
         h = hurt[0] if hurt else (holds[0] if holds else None)
         return {"cause": "pain", "part": h.part if h else "", "with": h.with_part if h else ""}
+
+    def neck_blood_cfg(self):
+        """pin.fade.neck_blood (since build 335), or None when it is off."""
+        c = ((self.rules.get("pin") or {}).get("fade") or {}).get("neck_blood") or {}
+        return c if c.get("enabled", False) else None
 
     @staticmethod
     def fade_words(fade, strength=None):

@@ -1,9 +1,10 @@
 {
-  "_comment": "Each fighter has their own body: part name -> starting resistance (%). Higher resistance = less damage per hit (see rules.json -> resistance -> brackets). health = starting health %. team (optional): fighters sharing a team are allies; leave it out for a free-for-all. types: the fighter's Pokemon types. moves: name, type, power, target (targeted / spread / whole_body / hold) and a short 'about' the storyteller reads. appearance: exact looks (colors, anatomy) - the narrator is told to use only these, so species features don't get mixed up. A move with \"uses\": N can only be used N times per fight. scene: describe the arena's fixed features (floor, water, walls, light, sounds) so the narrator keeps them consistent. bench: true keeps a fighter on the roster (/fighters) but out of the default fight; /newfight <names> brings her in.",
+  "_comment": "Each fighter has their own body: part name -> starting resistance (%). Higher resistance = less damage per hit (see rules.json -> resistance -> brackets). health = starting health %. team (optional): fighters sharing a team are allies; leave it out for a free-for-all. types: the fighter's Pokemon types. moves: name, type, power, target (targeted / spread / whole_body / hold) and a short 'about' the storyteller reads. appearance: exact looks (colors, anatomy) - the narrator is told to use only these, so species features don't get mixed up. A move with \"uses\": N can only be used N times per fight. scene: describe the arena's fixed features (floor, water, walls, light, sounds) so the narrator keeps them consistent. fighting (since build 335): her fighting styles, style -> how strongly (0 to 1), from rules.json -> styles -> list (dismantler, grappler, setup_artist, wear_down, opportunist, head_hunter, body_worker, hobbler, swarmer, counter_puncher, out_fighter, ground_pounder, biter, trickster, thrower). bench: true keeps a fighter on the roster (/fighters) but out of the default fight; /newfight <names> brings her in.",
   "scene": "A flooded sea cave of rough grey stone. The floor is a wide central ledge of dry, gritty rock, ringed by ankle-deep pools and cut by one deep channel of cold water along the west wall. Near the water the stone is slick with algae; away from it, it is dry and harsh. A low ceiling hangs with short stalactites that drip steadily. Thick stalagmites rise around the edges of the ledge, and fallen boulders lie scattered along the east wall. Grey daylight filters in through a crack high in the east wall. The cave smells of salt and wet stone, and every sound echoes.",
   "fighters": [
     {
       "name": "Nocturne",
+      "fighting": {"dismantler": 0.8, "opportunist": 0.6, "counter_puncher": 0.5, "biter": 0.5},
       "description": "A female Absol. Proud, furious, and fast; quadruped with a scythe-shaped horn on her head and a sickle-bladed tail. A dark fighter: Night Slash, Sucker Punch and Dark Pulse first, then close-in raking claws, horn and tail-blade strikes, and above all her jaws: she bites, and when she holds, she holds with her teeth, because her paws were never made for gripping. Few holds and grapples. Senses a disaster coming and is hard to catch with the biggest blows; strikes hardest at an opponent caught open. Can channel stored electricity in limited bursts. Hates water and fights worse in it. Never gives up while she can still move.",
       "appearance": "Absol. Quadruped that walks with a bear-like pacing gait. Mostly WHITE fur; dark blue-gray face, scythe-shaped horn (on one side of her head) and scythe-like tail. A thick WHITE ruff around her neck and chest (white, never cream) and a tuft on top of her head. Red, almond-shaped eyes. Broad furred PAWS (not hooves, not webbed) with three claws each; dewclaw-like spikes on the heels of her hind legs and the elbows of her front legs.",
       "voice": "Terse, proud, and cutting. Thinks in short, hard sentences: cold assessments, contempt for weakness, flashes of grudging respect; rarely admits pain even to herself. Growls and hisses rather than cries out, until it truly breaks through.",
@@ -193,6 +194,7 @@
     },
     {
       "name": "Ripples",
+      "fighting": {"swarmer": 0.6, "setup_artist": 0.6, "trickster": 0.3, "out_fighter": 0.2},
       "_balance_note": "Builds 79-82 evened Ripples out against Nocturne (who was winning about 85% of simulated fights; now 61-65%). Changed for Ripples: health 1400 -> 1600; every body part +8 resistance; Hydro Pump added (4 uses, sustainable). Her other move powers are the original ones. Changed for Nocturne: Thunderbolt power 10 -> 8, Take Down added. To go back: Ripples health 1400, take 8 off every body part, remove Hydro Pump; Nocturne Thunderbolt 10.",
       "description": "A female Buizel. Young, small, wiry and spritely: new to fighting, fast, energetic and a quick learner, and a little cocky with it; walks upright with webbed paws, fins on her forearms, an inflatable flotation sac around her neck, and powerful twin tails she spins like a propeller. A varied fighter: Aqua Jet charges, bites, Brick Break chops, water and ice attacks, and binding limbs with her twin tails. Thrives in water and learns from every move used on her. Inexperienced in submission holds: she struggles in them and doesn't yet know how to get out, but she is stubborn and holds out against tapping longer than she should.",
       "appearance": "Buizel. Upright, otter-like weasel with ORANGE fur and a cream underside (face and stomach). A yellow inflatable flotation sac (collar) around her neck. A blue fin on each forearm. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET.",
@@ -422,6 +424,7 @@
     },
     {
       "name": "Nerine",
+      "fighting": {"grappler": 0.9, "ground_pounder": 0.7, "body_worker": 0.5, "setup_artist": 0.3},
       "_balance_note": "Made in build 192 from Ripples' sleek variant (no flotation sac): paws, forearm fins, tails and throat +5, back and hips -5; Crunch, Hydro Pump and Ice Beam swapped for Quick Attack, Aqua Tail (5 uses) and Bite. Health 1775: in simulated fights she beats Ripples about half the time (1700: 46%, 1850: 57%) and loses to Nocturne a little more often than Ripples does.",
       "description": "A female Buizel. Young but experienced: she has fought a lot for her age and it shows. Small, quick and strong for her size; a sleek river-bred Buizel with no flotation sac, her neck and throat bare, short fur. Walks upright with webbed paws, fins on her forearms, and twin tails she whips like a flail. A grappler and a brawler rather than a showy striker: she closes in, ties her opponent up with grabs, tail binds and pins, and works her over up close with chops, bites and water-wrapped tails. Not the most varied fighter, but sure of everything she does. She rides low and fast in the water, steering with her forearm fins, and keeps her head when she is held.",
       "appearance": "Buizel. Upright, otter-like weasel with ORANGE fur, a shade darker and redder than most, and a cream underside (face, throat and stomach). NO flotation sac and NO collar of any kind: her neck is slim and bare, orange fur behind and cream fur at the throat, and nothing on her inflates, deflates, puffs up or vents air. A blue fin on each forearm; the left one has a small notch near its tip. Cream spots above each eye and two black parallel marks on each cheek. Small BLACK eyes (never red). She stands upright on two legs and has ARMS with webbed paws (never forelegs or hooves). Two tails with cream tips that spin like a propeller. One cream spot on her back. Webbed paws. NO antennae, no horn. Her 'paws' are her HANDS, at the ends of her arms; she walks on her FEET.",
@@ -613,6 +616,7 @@
     },
     {
       "name": "Seraphina",
+      "fighting": {"grappler": 0.6, "wear_down": 0.7, "setup_artist": 0.5},
       "description": "A female Milotic. Graceful, calm, confident, and enormously strong; a long serpentine body with iridescent scales, a cream-scaled belly, long red antennae and fin-like 'hair' on her head, and a broad iridescent tail fan. Fights by overwhelming strength: very big attacks (Hydro Pump, Dragon Rush, Dragon Tail, Iron Tail) and, above all, coiling and constricting (she squeezes on her opponent's exhale), crushing with her body's weight. Her big blows are slow to wind up, but they land with everything behind them, and she is very hard to stagger or knock down. Deadly in water, slower on dry stone.",
       "appearance": "Milotic. Long serpentine body, primarily CREAM-colored and iridescent (scales shift color with the angle); blue and pink diamond-shaped scales outlined in black on her lower body. Long PINKISH antennae above red eyes, and long hair-like fins above her eyes that start thin and thicken toward the tips. A small straight spike on top of her head. Three black gill-like dots down each side of her neck. Tail fan of four overlapping blue fins with pink ovals in the centers. No limbs.",
       "voice": "Calm, measured, and almost serene, with steel underneath. Thinks in long, composed sentences; her voice is a low, resonant hum that only cracks when something truly hurts.",
@@ -755,6 +759,7 @@
     },
     {
       "name": "Talon",
+      "fighting": {"head_hunter": 0.5, "setup_artist": 0.4, "thrower": 0.4},
       "bench": true,
       "description": "A female Staraptor. Fierce, proud and fearless; a big grey raptor with a red-and-white crest, a hooked orange beak and powerful taloned feet. Fights from the air: takes off, dives in with her whole weight behind beak and talons, and climbs back out of reach; on the ground she is a buffeting storm of wings and a slashing beak. Can seize an opponent in her talons and carry her up to drop her.",
       "appearance": "Staraptor. A large bird of prey with GREY feathers, darker on the wings and back, a white face patch and a black-and-white mottled breast. A tall, forward-curling crest of black feathers with a RED tip above her eyes. A short, hooked ORANGE beak. Red eyes with a black mask. Broad grey WINGS (she has no arms or paws). Orange legs ending in curved black TALONS. A fanned grey tail with a white band. She stands upright on her talons.",
@@ -863,6 +868,7 @@
     },
     {
       "name": "Vesper",
+      "fighting": {"grappler": 0.6, "biter": 0.6, "opportunist": 0.4},
       "bench": true,
       "description": "A female Arbok. Cold, patient and cruel; a huge purple cobra with a flared hood marked with a menacing face pattern. Fights by striking with venomous fangs, freezing her opponent with her glare, and wrapping her in her coils to crush the breath and blood out of her. Slow to commit, terrible once she has a hold.",
       "appearance": "Arbok. A massive purple COBRA, no limbs. A broad flared HOOD behind her head, patterned with a black, red and yellow 'face' marking. Pale yellow underbelly scales in bands. Narrow yellow eyes with slit pupils. Long curved fangs. A rattle-less tapering tail. Her body is thick and muscular, the coils heavy.",
@@ -998,6 +1004,7 @@
     },
     {
       "name": "Blaze",
+      "fighting": {"thrower": 0.5, "ground_pounder": 0.5, "biter": 0.4},
       "bench": true,
       "description": "A female Arcanine. Noble, loyal and blindingly fast; a huge orange dog with black stripes and a thick cream mane. Fights with fiery charges, flame breath and crushing bites, using her speed and weight to bowl opponents over and pin them under her. Hates rain and water.",
       "appearance": "Arcanine. A huge canine QUADRUPED with ORANGE fur and bold BLACK stripes. A thick, flowing CREAM-coloured mane round her neck and chest, cream fur on her head tuft, tail and legs. Dark eyes, black nose. Big paws with blunt claws. A long, bushy cream tail.",
@@ -1157,6 +1164,7 @@
     },
     {
       "name": "Aura",
+      "fighting": {"counter_puncher": 0.7, "dismantler": 0.5, "body_worker": 0.4},
       "bench": true,
       "description": "A female Lucario. Disciplined, perceptive and relentless; an upright jackal-like fighter who reads her opponent's aura and moves before they do. Fights with precise paw strikes, aura blasts, steel-hard blows from her paw spikes and a counter for anything that comes too close.",
       "appearance": "Lucario. An upright, bipedal JACKAL-like Pokemon. BLUE fur on her head, ears, arms and legs; BLACK fur on her face mask, forearms and thighs; a CREAM-yellow furred chest with a white steel SPIKE in the middle of it. A white steel spike on the back of each paw. Four black aura-sensing appendages hanging from the back of her head. Red eyes. A blue tail. She has arms with paws, and walks on her feet.",
@@ -1266,6 +1274,7 @@
     },
     {
       "name": "Undertow",
+      "fighting": {"swarmer": 0.6, "biter": 0.4, "setup_artist": 0.3},
       "bench": true,
       "description": "A female Floatzel. Brash, quick and tireless; a big orange sea weasel with a yellow flotation sac round her neck and twin tails she spins like a propeller. Fights with Aqua Jet charges, crunching bites, waterfall rams and ice fangs; keeps her head up in water and loves to drag a fight into it.",
       "appearance": "Floatzel. Upright, otter-like weasel, larger than a Buizel, with ORANGE fur and a cream underside. A YELLOW inflatable FLOTATION SAC round her neck like a collar. A blue fin on each forearm. Two cream spots on her back. Two tails with cream tips that spin like a propeller. Black eyes. Webbed paws on her arms; she walks upright on her feet.",
@@ -1412,6 +1421,7 @@
     },
     {
       "name": "Cygnet",
+      "fighting": {"out_fighter": 0.5, "head_hunter": 0.4},
       "bench": true,
       "description": "A female Swanna. Elegant, haughty and unexpectedly vicious; a tall white swan who fights from the water and the air with heavy wingbeats, a stabbing bill and blasts of water. Proud of her looks, and furious when they are spoiled.",
       "appearance": "Swanna. A large, upright swan with pure WHITE feathers, a long, gracefully curved white neck and a black crown of feathers on top of her head with a pale BLUE diamond-shaped feather tuft at its center. A short YELLOW bill. Pale blue feathers on her chest, layered like a ruff. Large white WINGS (she has no arms or paws). Long dark grey legs ending in webbed feet. A short, fanned white tail.",
@@ -1557,6 +1567,7 @@
     },
     {
       "name": "Duchess",
+      "fighting": {"opportunist": 0.4, "head_hunter": 0.4},
       "bench": true,
       "description": "A female Unfezant. Proud, stately and sharp-tempered; a large grey pheasant who strikes in powerful swooping passes and drives home with her beak and steel-hard wings.",
       "appearance": "Unfezant (female). A large pheasant-like bird with mottled BROWN-AND-GREY plumage, darker brown on the back and wings, and a pale, speckled brown breast. NO face wattle and no head plume (she is the plain female form). A small hooked grey beak. Bright red-ringed yellow eyes. Long, broad brown WINGS (she has no arms or paws). Grey legs with sharp talons. A long, sweeping dark tail.",
@@ -1680,6 +1691,7 @@
     },
     {
       "name": "Valor",
+      "fighting": {"thrower": 0.8, "setup_artist": 0.4},
       "bench": true,
       "description": "A female Braviary. Brave to the point of recklessness and fiercely proud; a huge eagle who never backs off, seizes opponents in her talons and carries them up to drop them. Pain only makes her fight harder.",
       "appearance": "Braviary. A huge, powerfully built eagle. A WHITE head topped with a crest of long feathers in RED, WHITE AND BLUE. A heavy, hooked YELLOW beak. Narrow, fierce yellow eyes. RED shoulders and BLUE wings and back, with a thick ruff of white feathers around her neck. Huge blue WINGS (she has no arms or paws). Strong yellow legs with heavy black TALONS. A broad tail of red and white feathers.",
@@ -1800,6 +1812,7 @@
     },
     {
       "name": "Swift",
+      "fighting": {"swarmer": 0.7, "out_fighter": 0.4},
       "bench": true,
       "description": "A female Swellow. Quick, cocky and relentless; a small, fast swallow who strikes in blinding passes and is gone before the opponent turns. Light and fragile, she relies on speed.",
       "appearance": "Swellow. A sleek, small swallow. Glossy dark BLUE back, wings and head, with a RED face and throat and a cream-white breast. Two long, thin feathers stream back from her head. Sharp, narrow black beak. Long, pointed blue WINGS (she has no arms or paws). Small grey feet with sharp claws. A deeply forked tail of two long, scissor-like feathers.",
@@ -1910,6 +1923,7 @@
     },
     {
       "name": "Gale",
+      "fighting": {"opportunist": 0.8, "counter_puncher": 0.4, "thrower": 0.3},
       "bench": true,
       "description": "A female Swellow, older than she looks. Cool, patient and cruel in the way of a hunter; she circles high and waits, lets the other spend herself, then drops out of the sun and takes hold with her talons. Light and fragile like all her kind, but she has learned to fight close.",
       "appearance": "Swellow. A sleek, small swallow. Glossy dark BLUE back, wings and head, a shade deeper than most, with a RED face and throat and a cream-white breast. Two long, thin feathers stream back from her head; the left one is shorter, an old break. Sharp, narrow black beak. Long, pointed blue WINGS (she has no arms or paws). Small grey feet with hooked, black-tipped claws. A deeply forked tail of two long, scissor-like feathers, one with a notch near its tip.",
@@ -2020,6 +2034,7 @@
     },
     {
       "name": "Zephyr",
+      "fighting": {"out_fighter": 0.6, "wear_down": 0.4},
       "bench": true,
       "description": "A female Pidgeot. Proud, watchful and graceful; a large hawk-like bird who commands the wind, buffeting opponents with gales from above and diving at blinding speed.",
       "appearance": "Pidgeot. A large, sleek bird of prey with tan-and-cream plumage: BROWN back and wings, a cream breast. A long, flowing crest of RED-AND-YELLOW feathers sweeping back from her head to below her shoulders. A pink, hooked beak. Black markings around her sharp eyes. Large brown WINGS (she has no arms or paws). Pink legs with sharp talons. A long, fanned tail of red and yellow feathers.",
@@ -2150,6 +2165,7 @@
     },
     {
       "name": "Pyra",
+      "fighting": {"wear_down": 0.5, "out_fighter": 0.4},
       "bench": true,
       "description": "A female Moltres. Regal, fierce and burning; a legendary firebird whose wings and crest are living flame. She scorches from the air, rakes with her talons and burns everything she touches.",
       "appearance": "Moltres. A huge, majestic firebird with bright YELLOW-ORANGE plumage. Her wings, crest and long tail are made of living ORANGE-RED FLAMES that flicker and stream. A long, thin neck, a sharp, narrow pinkish beak, and fierce dark eyes. Huge burning WINGS (she has no arms or paws). Long, thin pinkish legs with sharp talons. Heat shimmers around her body.",
@@ -2300,6 +2316,7 @@
     },
     {
       "name": "Glacia",
+      "fighting": {"out_fighter": 0.6, "wear_down": 0.5},
       "bench": true,
       "description": "A female Articuno. Cold, serene and merciless; a legendary ice bird who chills the air around her, freezes opponents with beams and blizzards, and strikes from above with frost-hard wings.",
       "appearance": "Articuno. A large, elegant bird with pale icy BLUE plumage. A crest of three long, darker blue feathers on her forehead. A short, sharp grey beak and calm, deep red eyes. Huge, translucent pale-blue WINGS that glitter with frost (she has no arms or paws). A very long, streaming tail of blue feathers. Thin grey legs with small talons. Frost and drifting snowflakes follow her.",
@@ -2448,6 +2465,7 @@
     },
     {
       "name": "Ember",
+      "fighting": {"swarmer": 0.5, "head_hunter": 0.4},
       "bench": true,
       "description": "A female Talonflame. Fast, fiery and ruthless; a falcon whose wings blaze when she dives. She strikes at terrifying speed, rakes with burning talons and wears herself out with reckless dives.",
       "appearance": "Talonflame. A sleek, powerful falcon with dark grey and ORANGE-RED plumage: a grey head and back, a bright orange-red breast with black scale-like markings, and YELLOW-tipped flame markings on her wings. A short, hooked grey beak with a yellow base, and a black mask around fierce yellow eyes. Long, pointed WINGS that burst into flame in a dive (she has no arms or paws). Black legs with sharp talons. A long tail with a forked, flame-patterned tip.",
@@ -2583,6 +2601,7 @@
     },
     {
       "name": "Cinder",
+      "fighting": {"grappler": 0.4, "thrower": 0.4, "biter": 0.3},
       "bench": true,
       "description": "A female Charizard. Proud, hot-headed and powerful; a big winged dragon who loves a strong opponent. She fights with claws, fangs and fire, grapples on the ground and takes to the air when it suits her.",
       "appearance": "Charizard. A large, upright dragon with ORANGE scales and a cream-yellow belly. A long neck and a dragon's head with two short, backward-pointing horns, blue eyes and a wide jaw full of small fangs. Large, bat-like WINGS with BLUE-GREEN membranes on the inside, growing from her upper back. Short, strong ARMS with three-clawed hands. Heavy legs with three-clawed feet. A long tail tipped with a burning FLAME that flares with her mood (it must never go out).",
@@ -2752,6 +2771,7 @@
     },
     {
       "name": "Tidecrest",
+      "fighting": {"counter_puncher": 0.5, "setup_artist": 0.4},
       "bench": true,
       "description": "A female Dragonite. Kind, gentle and enormously strong; a big, round dragon who doesn't like to hurt anyone, but once she is pushed, hits with terrifying force and outflies anything.",
       "appearance": "Dragonite. A large, heavily built, upright dragon with smooth ORANGE skin and a cream-colored, ridged belly. A round, friendly head with large dark eyes, a small snout and two thin ANTENNAE curling from her forehead. Small, teal-green WINGS on her back that look far too small for her (she flies anyway). Thick, strong ARMS with three-clawed hands. Thick legs. A long, thick, tapering tail.",
@@ -2919,6 +2939,7 @@
     },
     {
       "name": "Gloam",
+      "fighting": {"grappler": 0.6, "wear_down": 0.4},
       "bench": true,
       "description": "A female Goodra. Affectionate, soft-hearted and much tougher than she looks; a big slimy dragon whose coat of slime turns blows aside. She smothers and grapples, lashes with her heavy tail and blasts dragon energy.",
       "appearance": "Goodra. A large, upright, slug-like dragon with soft, smooth PURPLE skin covered in clear SLIME, and a pale green belly and throat. A round head with big green eyes and two long, drooping, curled ANTENNAE (horn-like feelers) that can stretch out. Short, thick ARMS with stubby fingers, no claws. Short, thick legs. A long, thick, heavy tail. Slime drips off her and smears whatever she touches.",
@@ -3060,6 +3081,7 @@
     },
     {
       "name": "Kitsune",
+      "fighting": {"trickster": 0.7, "out_fighter": 0.4, "opportunist": 0.3},
       "bench": true,
       "description": "A female Ninetales. Elegant, clever and vengeful; a graceful fox with nine long tails who fights with fire and illusions, toying with an opponent before she burns her.",
       "appearance": "Ninetales. A slender, graceful fox with a long coat of pale GOLDEN-CREAM fur, a thick ruff of fur on her neck and a tuft of fur on her head. Pointed ears, a narrow muzzle and bright RED eyes. Slender legs with small paws. NINE long, flowing golden tails tipped in pale orange, which fan out behind her.",
@@ -3217,6 +3239,7 @@
     },
     {
       "name": "Kindle",
+      "fighting": {"swarmer": 0.6, "biter": 0.4},
       "bench": true,
       "description": "A female Vulpix. Small, brave and hot-tempered; a young fox with six curly tails who makes up for her size with speed and fire.",
       "appearance": "Vulpix. A small fox with soft REDDISH-BROWN fur, a cream-colored chest and belly, and a curly tuft of orange fur on her head. Large pointed ears, a short muzzle and brown eyes. Short legs with small dark paws. SIX curled orange tails, curling at the tips.",
@@ -3377,6 +3400,7 @@
     },
     {
       "name": "Sable",
+      "fighting": {"out_fighter": 0.6, "opportunist": 0.4, "biter": 0.3},
       "bench": true,
       "description": "A female Fennekin. Small, curious and quick-witted; a fox kit with huge ears who keeps her distance, flicking fire and psychic bursts, and darts in to bite when she sees an opening.",
       "appearance": "Fennekin. A small fox kit with soft pale YELLOW fur, a white chest and muzzle and huge, pointed ears with tufts of ORANGE-RED fur sprouting from inside them. Large orange eyes. Short legs with small paws. A bushy, fluffy yellow tail with an orange tip. She often nibbles a twig.",
@@ -3509,6 +3533,7 @@
     },
     {
       "name": "Dusk",
+      "fighting": {"hobbler": 0.5, "biter": 0.5, "swarmer": 0.3},
       "bench": true,
       "description": "A female Lycanroc (Midday Form). Loyal, disciplined and ferociously fast; a wolf with a mane of stone who closes the distance in a blink, bites hard and hurls rocks.",
       "appearance": "Lycanroc (Midday Form). A lean, wolf-like quadruped with TAN-BROWN fur and a cream underside. A thick, fluffy mane of cream fur around her neck with pointed ROCK spikes jutting from it. Pointed ears, a long muzzle, sharp fangs and pale blue-green eyes. Long, strong legs with dark paws. A long, bushy tail. She runs on all four legs.",
@@ -3659,6 +3684,7 @@
     },
     {
       "name": "Vixen",
+      "fighting": {"trickster": 0.8, "opportunist": 0.5, "counter_puncher": 0.3},
       "bench": true,
       "description": "A female Thievul. Sly, slick and dishonest; a fox who fights dirty, turning an opponent's own strength against her, striking from feints and snatching every opening.",
       "appearance": "Thievul. A slender, sleek fox with REDDISH-BROWN fur on her back and a long, curling, fluffy tail. A white muzzle and chest, with a black 'mustache' marking curling from her muzzle, black around her eyes like a mask, and pointed ears. Narrow, sly yellow eyes. Long, thin legs with black paws. She often stands upright on her hind legs to sneak.",

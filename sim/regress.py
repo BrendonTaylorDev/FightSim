@@ -968,6 +968,103 @@ def taps_333_check():
     return problems
 
 
+def styles_335_check():
+    """Build 335: a pin with pressure on her neck usually ends by the blood (pin.fade.neck_blood), with her air and the
+    pain still possible; fighting styles (styles): a dismantler keeps to one part until it gives, then the part beside
+    it, her blows are pulled there and it takes the brunt; the kinds of move she reaches for follow her styles and the
+    moment; move profiles split a blow between wearing a part and injuring it; all of it switchable."""
+    import director as D
+    import styles
+    problems = []
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    e.rules["finish"]["no_pins"] = False
+    e.rules["finish"]["knockout_only"] = False
+    e.rules["finish"].setdefault("submission", {})["enabled"] = False
+    e.rules["pin"]["control"]["settle"]["enabled"] = False
+    d, a = e.get("Ripples"), e.get("Nocturne")
+    e.downed[d.name] = 1
+    e.facing[d.name] = "face-up"
+    e.pin_window = {d.name: True}
+    D.resolve(e, {"action": "pin", "attacker": a.name, "defender": d.name, "flavor": "pins her", "pace": "quick",
+                  "hits": [{"part": "Left Paw", "severity": "firm", "with": "her left forepaw, claws dug in"},
+                           {"part": "Neck", "severity": "firm", "with": "her jaws"},
+                           {"part": "Chest", "severity": "crushing", "with": "her chest, her full weight on her"}]})
+    p = e.pin_on(d.name)
+    if p is None:
+        return ["the test pin didn't go on"]
+    d.parts["Left Paw"].damage = 260
+    p["beats"] = 7
+    got = {}
+    for t in range(300):
+        e.turn = 200 + t
+        oc = e.out_cause(p)
+        k = oc["cause"] + (":" + oc["kind"] if oc.get("kind") else "")
+        got[k] = got.get(k, 0) + 1
+    blood = got.get("choking:blood", 0)
+    if not (blood >= 150 and got.get("pain", 0) >= 10 and got.get("choking:both", 0) + got.get("choking:air", 0) >= 10):
+        problems.append(f"jaws on her neck should end it mostly by the blood, now and then by the pain or her air: {got}")
+    e.rules["pin"]["fade"]["neck_blood"]["enabled"] = False
+    kinds = {e.out_cause(p).get("kind") for e.turn in range(500, 540)}
+    if "blood" in kinds:
+        problems.append(f"with neck_blood off jaws on the neck are a choke on air and blood together, as before: {kinds}")
+    # fighting styles
+    e = Engine(seed=7, only=["Nocturne", "Ripples"])
+    n, r = e.get("Nocturne"), e.get("Ripples")
+    if styles.of(e, n).get("dismantler", 0) <= 0:
+        return problems + ["Nocturne should be a dismantler (fighters.json fighting)"]
+    t0 = styles.dismantle_target(e, n, r)
+    if styles.dismantle_target(e, n, r) != t0:
+        problems.append("the part she is taking apart should stay the same until it gives")
+    r.parts[t0].damage = 400
+    t1 = styles.dismantle_target(e, n, r)
+    from engine import neighbor_parts
+    same, near = neighbor_parts(list(r.parts), t0)
+    if t1 == t0 or t1 not in same + near:
+        problems.append(f"once {t0} gives, the next part should be one beside it: {t1}")
+    moved = sum(1 for t in range(60) if (setattr(e, "turn", t) or styles.aim_part(e, n, r, e.find_move(n.name, "Slash"), "Head")))
+    if not 20 <= moved <= 50:
+        problems.append(f"about half her blows aimed elsewhere should be pulled to the part she is taking apart: {moved}/60")
+    pw, notes = styles.power_mods(e, n, r, e.find_move(n.name, "Dark Pulse"), [t1, "Chest"], [10.0, 10.0])
+    if not (pw[0] > 10.0 > pw[1] and notes):
+        problems.append(f"the part she is taking apart should take the brunt of a blow that catches more: {pw}")
+    e.rules["styles"]["list"]["dismantler"]["enabled"] = False
+    if styles.power_mods(e, n, r, e.find_move(n.name, "Dark Pulse"), [t1, "Chest"], [10.0, 10.0])[0] != [10.0, 10.0]:
+        problems.append("with the dismantler switched off the blow should land as before")
+    e.rules["styles"]["list"]["dismantler"]["enabled"] = True
+    # the kinds of move by the moment: an opportunist reaches for her big blows when her opponent is down
+    big = e.find_move(n.name, "Iron Tail")
+    up = styles.move_mult(e, n, r, big)
+    e.downed[r.name] = 1
+    if not styles.move_mult(e, n, r, big) > up:
+        problems.append("an opportunist should reach for a big blow more with her opponent down")
+    del e.downed[r.name]
+    # a setup fighter's big blow at point-blank on a downed fighter
+    e.downed[n.name] = 1
+    pw, notes = styles.power_mods(e, r, n, e.find_move(r.name, "Hydro Pump"), ["Chest"], [10.0])
+    if not (pw[0] > 10.0 and any("point-blank" in x for x in notes)):
+        problems.append(f"a setup fighter's big blow on her opponent lying down should hit harder, at point-blank: {pw}")
+    del e.downed[n.name]
+    hint = styles.hint(e)
+    if "FIGHTING STYLE: Nocturne" not in hint or "taking apart" not in hint:
+        problems.append(f"the director should be told her fighting style and the part she is taking apart: {hint[:200]}")
+    # move profiles
+    part = r.parts["Chest"]
+    blunt = styles.profile(e, e.find_move(r.name, "Brick Break"), part)
+    claw = styles.profile(e, e.find_move(n.name, "Slash"), part)
+    if not (blunt and claw and blunt[1] > 1.2 > claw[1] and blunt[0] < claw[0]):
+        problems.append(f"a blunt blow should wear more and injure less than a claw: {blunt} {claw}")
+    part.resistance = 1
+    if not styles.profile(e, e.find_move(n.name, "Slash"), part)[0] > claw[0]:
+        problems.append("a claw should tear deeper into a part already worn down")
+    e.rules["moves"]["profile"]["enabled"] = False
+    if styles.profile(e, e.find_move(r.name, "Brick Break"), part) is not None:
+        problems.append("with moves.profile off every blow should be the same")
+    e.rules["styles"]["enabled"] = False
+    if styles.of(e, n) or styles.hint(e):
+        problems.append("with styles off she should have no styles and the director no style lines")
+    return problems
+
+
 def pins_334_check():
     """Build 334 (pin.wear, pin.control.pinner): the ache of a pin builds the longer it is held; a plain press barely
     harms a healthy limb, but harms a hurt one, harms more under a heavier pinner and on hard or spiky ground, while
@@ -4924,6 +5021,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "styles335" for w in want):
+        t = time.time()
+        probs = styles_335_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 335: neck pins end by the blood (mostly), fighting styles, move profiles  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "pins334" for w in want):

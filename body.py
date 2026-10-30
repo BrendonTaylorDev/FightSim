@@ -566,9 +566,13 @@ def tick(eng):
             # fast, whatever air she has; free of it, it comes rushing back
             kinds = {eng._hold_choke_kind(h) for h in choked}
             hb = float(st.get("head_blood", 100.0))
-            if kinds & {"blood", "both"}:
+            # (pin.fade.neck_blood, since build 335) in a pin, even a press on the front of her neck squeezes the
+            # arteries under it: the blood goes too, at press_blood of a blood choke's rate
+            nb = eng.neck_blood_cfg() if pin_k != 1.0 else None
+            if kinds & {"blood", "both"} or (choked and nb):
                 tight = max(0.5, min(2.0, max(h.power for h in choked) / 16.0)) ** 0.5
-                hb -= float(ca.get("blood_choke", 20)) * tight * (0.7 if "blood" not in kinds else 1.0) \
+                hb -= float(ca.get("blood_choke", 20)) * tight * (1.0 if "blood" in kinds else 0.7 if "both" in kinds
+                                                                  else float(nb.get("press_blood", 0.7))) \
                     * (1 + float(ca["health_drain"]) * (1 - share)) * pin_k
             else:
                 hb += float(ca.get("blood_back", 40))
