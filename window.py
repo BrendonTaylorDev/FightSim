@@ -1521,7 +1521,8 @@ class App:
         names = {"all": "All of them", "breathing": "Breathing", "pulse": "Pain pulsing with her heart",
                  "impact": "Blows: flash and jolt", "grey": "The grey closing in", "grips": "Grip rings in the holder's "
                  "colours", "monitor": "Heart monitor", "settling": "Injuries settling in (the story)",
-                 "holdpic": "Hold picture (the body figure in a hold)", "badge": "Match badge (kind of fight)"}
+                 "holdpic": "Hold picture (the body figure in a hold)", "badge": "Match badge (kind of fight)",
+                 "audio": "Sounds (gasps, cries, straining)", "panting": "Sounds: panting when spent"}
         for k, on in play.effects_state(self._rules()):
             self.effect_flags[k] = _Flag(value=on)
             menu.add_checkbutton(label=names.get(k, k), variable=self.effect_flags[k],
@@ -2040,10 +2041,14 @@ class App:
         # (since build 306) a beat on from the one shown: what landed jolts and flashes on her card (window.alive)
         turn, last = snap.get("turn"), getattr(self, "_shown_turn", None)
         step = turn is not None and last is not None and turn == last + 1
+        before = {}
         for f in snap["fighters"]:
             card = self.cards[f["name"]]
+            before[f["name"]] = card.data
             card.hits = impacts(card.data, f) if step and card.data else ([], 0.0)
             card.draw(f)
+        if step:
+            self._sounds(before, snap)
         self._shown_turn = turn
         self._show_badge()
         self._sync_effects()
@@ -2066,6 +2071,14 @@ class App:
         except (tk.TclError, AttributeError) as e:
             note_failure("showing the match badge", e)
 
+    def _sounds(self, before, snap):
+        """(since build 329, window.sounds) The fighters' sounds for this beat: a gasp, a cry, straining in a hold..."""
+        try:
+            import sounds
+            sounds.play_beat(before, snap["fighters"], self._rules(), snap.get("turn") or 0)
+        except Exception as e:
+            note_failure("the beat's sounds (window.sounds)", e)
+
     def replay_hits(self):
         """(since build 324) The Replay hits button: what landed in the beat shown flashes and jolts on the cards
         again, from the beat before it (window.alive.impact must be on to see it)."""
@@ -2080,6 +2093,7 @@ class App:
             self.when.configure(text=self.when.cget("text").split("   (")[0] + "   (no beat before this one to replay)")
             return
         before = {f["name"]: f for f in prev["fighters"]}
+        self._sounds(before, snap)
         landed = False
         for f in snap["fighters"]:
             card = self.cards.get(f["name"])

@@ -14,6 +14,7 @@ import os
 import re
 
 import cards
+import sounds
 from engine import poss_word
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -266,6 +267,29 @@ font:600 15px system-ui,sans-serif}
 """
 
 
+def _sound_bar(beat_sounds):
+    """The switch at the top of an exported fight: browsers play nothing until you allow it with a click."""
+    if not beat_sounds:
+        return ""
+    return ('<div class="dim" style="margin:6px 0"><button id="sndbtn" onclick="fsSound()">&#128264; Sounds off: '
+            'click to hear the fighters as you scroll</button></div>')
+
+
+def _sound_script(beat_sounds, files, volume):
+    """Each beat's sounds, played once as it scrolls into view (after the switch above is turned on)."""
+    if not beat_sounds:
+        return ""
+    return ("<script>const FS_FILES=" + json.dumps(files) + ";const FS_BEATS=" + json.dumps(beat_sounds)
+            + ";const FS_VOL=" + json.dumps(max(0.0, min(1.0, volume))) + """;let fsOn=false;const fsDone=new Set();
+function fsPlay(id){(FS_BEATS[id]||[]).forEach((i,n)=>setTimeout(()=>{const a=new Audio(FS_FILES[i]);a.volume=FS_VOL;
+a.play().catch(()=>{});},n*350));}
+function fsSound(){fsOn=!fsOn;document.getElementById('sndbtn').textContent=fsOn?'Sounds on (click to turn off)'
+:'Sounds off: click to hear the fighters as you scroll';}
+const fsObs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&fsOn&&!fsDone.has(e.target.id)){
+fsDone.add(e.target.id);fsPlay(e.target.id);}}),{threshold:0.35});
+document.querySelectorAll('section[id^=b]').forEach(x=>fsObs.observe(x));</script>""")
+
+
 def write(s, path=None, fights=None):
     """Write the fight(s) to an .html page and a .json file; returns the .html path."""
     recs = [r for r in getattr(s, "beat_records", []) if fights is None or r.get("fight") in fights]
@@ -289,6 +313,37 @@ def write(s, path=None, fights=None):
     title = " vs ".join(recs[0].get("lineup") or [])
     arena = (getattr(s.eng, "scene_cfg", None) or {}).get("title", "")
     nav, body = [], []
+    # (since build 329, window.sounds.export) each beat's sounds, the files they use carried in the page
+    sc = sounds.cfg(rules)
+    beat_sounds, sound_files, sound_bytes = {}, {}, 0
+    cap = float(sc.get("export_max_mb", 8)) * 1024 * 1024
+    prev_by = {}
+    for k, r in enumerate(recs):
+        cues = []
+        for f in r["snapshot"]["fighters"]:
+            if sc.get("enabled", True) and sc.get("export", True):
+                for kind in sounds.cues(prev_by.get(f["name"]), f, rules, r.get("turn") or k):
+                    pth = sounds.pick(f, kind)
+                    if not pth:
+                        continue
+                    if pth not in sound_files:
+                        try:
+                            size = os.path.getsize(pth)
+                            if sound_bytes + size > cap:
+                                continue
+                            with open(pth, "rb") as fh:
+                                mime = "audio/mpeg" if pth.lower().endswith(".mp3") else (
+                                    "audio/ogg" if pth.lower().endswith(".ogg") else "audio/wav")
+                                sound_files[pth] = f"data:{mime};base64," + base64.b64encode(fh.read()).decode()
+                            sound_bytes += size
+                        except OSError as e:
+                            from engine import note_failure
+                            note_failure("putting a sound in the exported fight", e)
+                            continue
+                    cues.append(list(sound_files).index(pth))
+            prev_by[f["name"]] = f
+        if cues:
+            beat_sounds[f"b{k}"] = cues
     for k, r in enumerate(recs):
         fight = r.get("fight")
         label = r.get("label") or f"beat {r.get('turn')}"
@@ -320,7 +375,8 @@ def write(s, path=None, fights=None):
             f'initial-scale=1"><title>{html.escape(title or "Fight")}</title><style>{CSS}</style></head><body>'
             f'<header><h1>{html.escape(title)}</h1><div class="dim">{html.escape(arena)} · saved '
             f'{datetime.datetime.now():%Y-%m-%d %H:%M} · {len(recs)} beats</div></header>'
-            f'<nav>{"".join(nav)}</nav>{"".join(body)}</body></html>')
+            f'<nav>{"".join(nav)}</nav>{_sound_bar(beat_sounds)}{"".join(body)}'
+            f'{_sound_script(beat_sounds, list(sound_files.values()), float(sc.get("volume", 0.8)))}</body></html>')
     with open(base + ".html", "w", encoding="utf-8") as fh:
         fh.write(page)
     with open(base + ".json", "w", encoding="utf-8") as fh:

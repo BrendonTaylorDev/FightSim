@@ -800,6 +800,35 @@ def presets_help_check():
     return problems
 
 
+def sounds_329_check():
+    """Build 329 (window.sounds): each beat's sounds come from what happened to her (a hit, a hold, coils squeezing
+    her, her heart starting again, panting when spent), none for a fighter out cold; an exported fight carries the
+    files it uses; the starter breathing sounds are there."""
+    import sounds
+    problems = []
+    rules = {"window": {"sounds": {"enabled": True}}}
+    base = {"name": "Ripples", "species": "Buizel", "energy": 90, "health": 900, "max": 1000, "out": False,
+            "status": {}, "parts": [("Chest", 10, 90)], "body": {"air": 100}}
+    hit = dict(base, parts=[("Chest", 70, 60)], health=820)
+    if not sounds.cues(base, hit, rules):
+        problems.append("a solid hit should make a sound")
+    held = dict(base, grips={"held": [{"by": "Seraphina", "parts": ["Chest"]}], "tap": {"level": 4}})
+    if sounds.cues(base, held, rules) != ["whimper"]:
+        problems.append(f"held near her limit she should whimper: {sounds.cues(base, held, rules)}")
+    if sounds.cues(dict(base, status={"limp": 1}), base, rules) != ["breath_back"]:
+        problems.append("her heart starting again should bring the breath back")
+    if sounds.cues(base, dict(base, status={"limp": 1}), rules):
+        problems.append("out cold in the coils she makes no sound")
+    spent = dict(base, energy=10)
+    if sounds.cues(base, spent, rules, turn=3) != ["pant"] or sounds.cues(base, spent, rules, turn=4):
+        problems.append("spent, she pants now and then (every breath_every beats), not every beat")
+    if sounds.cues(base, hit, {"window": {"sounds": {"enabled": False}}}):
+        problems.append("window.sounds.enabled false = silence")
+    if not sounds.files_for("", "", "pant") or not sounds.files_for("", "", "breath_back"):
+        problems.append("the starter panting and breath-back sounds should be there")
+    return problems
+
+
 def fight_328_check():
     """Build 328: far below zero, giving in comes sooner (the build-up runs faster); her heart can't stop in the
     coils before constriction.heart.min_beats; she can't get up inside coils round her body; and the director can
@@ -4515,6 +4544,13 @@ def main(argv):
         probs = presets_help_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  match presets, anything-goes match, every command in the help, examples  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "sounds329" for w in want):
+        t = time.time()
+        probs = sounds_329_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 329: the fighters' sounds, beat by beat, and in the export  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "fight328" for w in want):

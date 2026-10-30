@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 328 (fights can end below zero, heart min coil time, no get-up in coils, head and arm handling)"
+VERSION = "2026-10-30 build 329 (the fighters' sounds, in the window and in exported fights)"
 
 HELP = """
 =============================================================================================
@@ -479,6 +479,7 @@ HELP = """
 =============================================================================================
   /status [full|name]   health, worst injuries, pins and positions
   /explain [name|status]   what each status on her does and what her heart, blood pressure and breathing mean
+  /audio [on|off|volume N] the fighters' sounds (gasps, cries, straining, panting): files go in sounds/<kind>/
   /limb <name> [part]      one part in detail: damage, how it looks, what it is doing, grips, what it does to her
   /traits [name]        how each fighter fights: her traits, quirks, style and favourite moves (since build 280)
   /profile [name]       all that, and who she is: personality, history, relationships (the window: Profiles)
@@ -3451,7 +3452,9 @@ EFFECTS = {"all": ["window", "alive", "enabled"], "breathing": ["window", "alive
            "grey": ["window", "alive", "grey_in"], "grips": ["window", "alive", "grip_outline"],
            "monitor": ["window", "alive", "heart_monitor"], "settling": ["narration", "settling_in", "enabled"],
            # (since build 324) the hold picture (the body figure beside a grip's gauges), and the match badge
-           "holdpic": ["window", "hold_picture"], "badge": ["window", "match_badge"]}
+           "holdpic": ["window", "hold_picture"], "badge": ["window", "match_badge"],
+           # (since build 329, window.sounds) the fighters' sounds, and the panting among them
+           "audio": ["window", "sounds", "enabled"], "panting": ["window", "sounds", "breathing"]}
 
 
 def effects_state(rules):
@@ -5221,6 +5224,29 @@ def handle_command(s, line):
         cfg["styled_text"] = word
         _save_rules_key(["console", "styled_text"], word)
         print(f"Styled text {word} (saved to rules.json): **bold** and *italic* look like this now"); return
+    if cmd == "audio":
+        # (since build 329, window.sounds) the fighters' sounds: on, off, the volume, or where the files go
+        import sounds as _snd
+        _snd.ensure_folders()
+        c = s.eng.rules.setdefault("window", {}).setdefault("sounds", {})
+        w = (a[0].lower() if a else "")
+        if w in ("on", "off"):
+            c["enabled"] = w == "on"
+            _save_rule_path(["window", "sounds", "enabled"], c["enabled"])
+        elif w in ("panting", "breathing") and len(a) > 1:
+            c["breathing"] = a[1].lower() == "on"
+            _save_rule_path(["window", "sounds", "breathing"], c["breathing"])
+        elif w == "volume" and len(a) > 1:
+            c["volume"] = max(0.0, min(1.0, float(a[1]) / (100.0 if float(a[1]) > 1 else 1.0)))
+            _save_rule_path(["window", "sounds", "volume"], c["volume"])
+        cc = _snd.cfg(s.eng.rules)
+        have = {k: len(_snd.files_for("", "", k)) for k in _snd.KINDS}
+        print(f"Sounds {'on' if cc['enabled'] else 'off'}, volume {cc['volume'] * 100:.0f}%, panting "
+              f"{'on' if cc['breathing'] else 'off'}. Files in {_snd.SOUND_DIR} (her own voice: sounds/<name>/<kind>/):")
+        for k, why in _snd.KINDS.items():
+            print(f"  {k:<12} {have[k]} file(s)   {why}")
+        print("  /audio on|off · /audio volume 70 · /audio panting on|off")
+        return
     if cmd in ("sounds", "sound"):
         cfg = s.eng.rules.setdefault("narration", {}).setdefault("sounds", {})
         hows, writes = ("always", "often", "sometimes", "rarely"), ("often", "sometimes", "rarely", "never")

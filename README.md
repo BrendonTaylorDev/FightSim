@@ -654,6 +654,23 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 329
+Sounds: the fighters' own, in the window and in exported fights. No impact sounds: only her.
+- **When.** Each beat, from what happened to her: gasp (a light hit), grunt (a solid one), cry (a heavy one), scream
+  (a devastating hit or a part ruined), strain (fighting a hold), whimper (held near her limit), choke (coils
+  squeezing her in hard, or a choke), breath_back (her heart starting again), pant (spent or short of air: every
+  third beat at most, so it never drones). At most two a fighter a beat; none while she is out cold.
+- **The files are yours.** Put .wav files (or .mp3) in sounds/<kind>/, any number (one picked at random each time).
+  A fighter's own voice goes in sounds/<her name>/<kind>/ or sounds/<species>/<kind>/ and comes first. A kind with
+  no files is silent. Panting and the breath back come with starter recordings made from shaped noise
+  (sim/make_breath_sounds.py): replace them freely. sounds/README.txt lists the kinds.
+- **The window** plays them as each beat lands, and the Replay hits button plays them again. On Windows through the
+  system's media player (several at once), on a Mac afplay, on Linux paplay or aplay.
+- **Exported fights** carry the sounds they use (up to 8 MB), playing as you scroll to each beat once you click
+  the Sounds button at the top (browsers play nothing until you allow it).
+- **Switches.** /audio (on, off, volume 70, panting on/off; it also lists how many files each kind has), the Effects
+  button (Sounds; Sounds: panting), window.sounds in rules.json.
+
 ## Build 328
 Fixes from the Seraphina vs Ripples three-tap match that could not end, and more handling of each other's bodies.
 - **Far below zero, she gives in sooner.** Ripples reached -6400% health and was still asked to tap at 0-8% a beat:
