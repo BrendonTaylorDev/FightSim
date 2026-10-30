@@ -6702,6 +6702,10 @@ class Narrator:
                 lines.append(f"  - {a['defender']} is {Engine.FACING_LOOK[a['facing']]}"
                              + (f" ({a['facing_note']})" if a.get("facing_note", "").startswith("rolled") else "")
                              + ". Every contact must match that.")
+            if t == "pin_start" and a.get("setup") == "slow":
+                lines += self._slow_pin_lines(a)
+            if t == "pin_start" and a.get("control") and not a.get("continuing"):
+                lines += self._control_lines(a["defender"], a["control"], first=True)
             if t == "pin_start" and a.get("joined"):
                 lines.append(f"  - The pin was already running: {a['attacker']} adds her weight to it. {a['defender']} now "
                              f"has two bodies on her and far less room to struggle. Every press listed (which "
@@ -6806,6 +6810,21 @@ class Narrator:
             lines.append(f"{a['fighter']} gathers everything for an escape attempt from {poss(a['pinner'])} pin "
                          f"(the attempt itself and its result are described under PIN CLOCK, if the pin is already "
                          f"running).")
+        elif t == "pin_forced" and a.get("settle_failed"):
+            # (since build 332, pin.control.settle) the pin goes on and never sets: she scrambles out at once
+            d_, at_ = a["defender"], a["attacker"]
+            grips_ = "; ".join(f"{self._own_with(at_, w)} on her {p_}" if w else f"pressure on her {p_}"
+                               for p_, w in zip(a.get("pressed") or [], a.get("with_parts") or []))
+            self._must_struggle = f"{d_} breaks free"
+            self._struggle_kind = "escape"
+            lines.append(f"{at_} goes for the PIN on {d_}{intent}: {a.get('flavor') or grips_}.")
+            lines.append(f"  - YOU MUST SHOW THIS: the pin NEVER SETTLES. {at_} gets onto her ({grips_}), but before "
+                         f"her weight is set {d_} scrambles out from under it (" + self._try_how(a) + "). It is over "
+                         f"almost as soon as it began: no time passes held down, and nothing of it is still on her.")
+            lines += self._escape_lines(a)
+            if a.get("torn_hits"):
+                lines.append(f"  - The claws were already in: she tears loose of them, and they rake her as she goes:")
+                lines += [self._hit_line(h) for h in a["torn_hits"]]
         elif t == "pin_forced":
             if a.get("started_now"):
                 parts = ", ".join(a["pressed"])
@@ -7465,6 +7484,12 @@ class Narrator:
         out.append(f"  - To keep this stretch from repeating the last one, build it around: {angles[step % len(angles)]}. "
                    f"Use fresh sentences; never reuse lines from earlier pin beats.")
         s = e["struggle"]
+        if e.get("control") and s != "escape":
+            out += self._control_lines(d, e["control"])
+        if e.get("working_in") and s != "escape":
+            out.append(f"  - {a} is still WORKING THE PIN IN, slowly: adjusting a grip, pressing, easing, pressing again, "
+                       + ("and by the end of this beat every grip is at full pressure." if e["working_in"] == "set" else
+                          "each grip a little tighter than before."))
         if e.get("buffed"):
             out.append(f"  - {d} still has momentum from breaking loose a moment ago: the pin is shakier, and {a} "
                        f"is working harder to keep it.")
@@ -7517,6 +7542,9 @@ class Narrator:
                        + f"! The pin is over; {a} is thrown off or loses the hold. How it starts (" + self._try_how(e)
                        + "); show the rest your way.")
             out += self._escape_lines(e)
+            if e.get("torn_hits"):
+                out.append(f"  - The claws were dug in: she tears loose of them, and they rake her as she goes:")
+                out += [self._hit_line(h) for h in e["torn_hits"]]
         if any("under the" in str(g[3]).lower() and "water" in str(g[3]).lower()
                for g in (getattr(self, "grips", None) or []) if g[1] == d):
             out.append(f"  - THE DUNK: {poss(d)} face is held down in the shallow water. She is pushed under and let up "
@@ -7875,6 +7903,45 @@ class Narrator:
 
     TRY_VIGOROUS = re.compile(r"again and again|violent|explod\w*|hard and wild|all at once|every muscle|"
                               r"\bonce, twice\b|\bhard\b", re.I)
+
+    def _slow_pin_lines(self, a):
+        """(since build 332, pin.setup) a pin put on slowly, over one who is down, hurt and slow to rise."""
+        at_, d = a["attacker"], a["defender"]
+        from engine import body_region as region_
+        jaws_neck = any(region_(str(x.get("part") or "")) == "neck"
+                        and re.search(r"\b(?:jaws?|teeth|fangs?|bite)\b", str(x.get("with") or ""), re.I)
+                        for x in a.get("parts") or ())
+        steps = (f"she eases {poss(d)} head over to one side to lay the neck bare, brings her jaws down to it slowly, "
+                 f"takes hold, presses, gives a small twist to seat the teeth, and finds the pressure she wants"
+                 if jaws_neck else
+                 f"she places each grip one at a time, settles it, presses, adjusts, and finds the pressure she wants")
+        out = [f"  - A SLOW, DELIBERATE PIN: {at_} takes her time over it. "
+               + (f"{d} is down, hurt and slow to rise, and {at_} knows it: unhurried, close, almost intimate, "
+                  if a.get("groggy") else
+                  f"{at_} takes her time even though {d} still has some fight in her: a gamble, ")
+               + f"she settles her weight onto {d} and builds the pin piece by piece: {steps}. Every grip goes on "
+               f"gently and is worked tighter, not slammed on. Show it in slow, close detail: the stillness, the "
+               f"breath, the care in it."]
+        return out
+
+    def _control_lines(self, d, ctl, first=False):
+        """(since build 332, pin.control) what this pin, as it is built, takes from her, and what she still has."""
+        if not ctl or not ctl.get("notes"):
+            return []
+        how = {"bridge": "bridging", "shrimp": "shrimping her hips out", "roll": "rolling", "twist": "twisting",
+               "kick": "kicking", "tuck": "tucking a leg in", "pry": "prying at a grip", "reach": "reaching out to haul",
+               "claw": "clawing", "bite": "biting", "headbutt": "a headbutt", "buck": "bucking", "squirm": "squirming"}
+        free = [how[w] for w in ctl.get("free") or () if w in how]
+        tight = ("a TIGHT pin: there is very little she can do under it" if ctl.get("mult", 1) < 0.6 else
+                 "a LOOSE pin: it leaves her room to fight" if ctl.get("mult", 1) > 1.3 else "")
+        out = [f"  - HOW THE PIN HOLDS HER ({ctl.get('position')}" + (f"; {tight}" if tight else "") + "): "
+               + "; ".join(ctl["notes"]) + "."
+               + (f" What she still has to fight it with: {', '.join(free)}." if free else
+                  " She has almost nothing free to fight it with.")]
+        if first:
+            out.append(f"  - Show each of these in the prose as the pin closes: what each grip takes from {d}, "
+                       f"felt in her body, not listed.")
+        return out
 
     def _try_how(self, e):
         """How the pinned fighter goes about this try (the engine's pick, for variety between beats), in her own body

@@ -654,6 +654,55 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 332
+
+Pins now play by how they are built. Every pin the director writes still goes on as written: Nocturne can hold
+Ripples' thighs with her hind paws and her paws with her forepaws, all four paws' claws dug in, her jaws on the neck
+or a shoulder, and her chest ground down on Ripples' front.
+
+- **What the pin holds (`pin.control`).** Each point of contact is scored by what it takes from her:
+  - Her legs held: no bridging or kicking.
+  - Her forelimbs pinned: nothing to push with.
+  - Weight on her middle: no room to roll. The pinner's own chest or body counts in full; this weight counts by
+    size, so a bigger pinner is far harder to shift and a smaller one easier.
+  - Jaws on her neck: she can't turn her head.
+  - Claws dug in: every move tears at her. A failed try is punished on a clawed spot. When she breaks out she tears
+    loose, and the claws rake her for a light hit.
+
+  Her ways out depend on what is left free (a bridge needs her legs and middle, prying needs her forelimbs, a bite
+  needs her head), and she tries those ways more often.
+- **Her own condition.** A healthy fighter has the strength to fight even a tight pin: its tightness counts for much
+  less at full health and comes on fully as her health runs out. The more hurt the parts under the grips are, the
+  less she can push with them. Below zero the escape floor sinks to `pin.struggle.escape_floor_at_minus_25` (1.5%):
+  a small chance, never none.
+- **Settling.** A pin isn't set the moment it goes on. She gets one scramble first (`pin.control.settle`). If it
+  works, the pin never holds and she is out from under at once.
+- **Quick or slow pins (`pin.setup`).** The director may say `"pace"`:
+  - "quick" slams the pin on.
+  - "slow" takes its time over a fighter who is clearly down, hurt and slow to rise. The pinner eases her head over to
+    clear the neck, brings her jaws in slowly, grips, presses and twists. The grips go on light and are worked up to
+    full over two beats, every one placed exactly where she wants it.
+
+  A slow pin is safer on a groggy fighter, but it gives one who isn't that hurt the time to scramble out. When the
+  director doesn't say, a pin on a fighter slow to rise is slow half the time.
+- **The narrator and the stat blocks** show what each pin takes from her, what she still has to fight with, a slow
+  pin being worked in, and a pin that never settled.
+- **Fix:** "claws dug in" was cut to "claws dug".
+
+Measured over whole pins (Nocturne on Ripples, the director's own pins), the pinner wins:
+
+| Ripples' health when pinned | Pinner wins |
+| --- | --- |
+| 80% | 1% |
+| 50% | 17% |
+| 20% | 49% |
+| 0% | 81% |
+| -25% | 92% |
+
+Nocturne's six-point claws-and-jaws pin does better at every level: 8%, 37%, 69%, 83% and 91%. In whole fights with
+pins on, Nocturne wins 59%, and 87% of fights end with the loser under 20%. Your saved rules still have pins off
+(`finish.no_pins`); `pin.control.enabled` / `pin.setup.enabled` false bring back the old odds.
+
 ## Build 331
 - **Sounds on Windows:** the window was silent with your own .wav files. Windows' old wave player (MCI waveaudio)
   can't open many downloaded .wav files (24-bit, 32-bit float, 48 kHz), and a file it refused was skipped without a

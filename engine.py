@@ -72,6 +72,7 @@ def _matches(value, t):
     return value > t["min"] if t.get("exclusive") else value >= t["min"]
 
 
+_SUNK_IN = {"dug", "sunk", "driven", "buried", "hooked", "set", "digging", "sinking", "dig", "sink", "locked", "tucked"}
 _DANGLING = {"of", "the", "a", "an", "and", "with", "on", "in", "into", "to", "at", "by", "from", "near", "against",
              "beside", "under", "over", "its", "her", "his", "their", "that", "which", "or", "then", "but", "as", "while",
              "round", "around", "onto", "for", "so"}
@@ -81,6 +82,8 @@ def short_phrase(text, n=6, default=""):
     """The first n words of a label, without a dangling 'of the' at the end."""
     words = str(text or default).split()[:n]
     while len(words) > 1 and words[-1].lower().strip(",.;:") in _DANGLING:
+        if words[-1].lower().strip(",.;:") == "in" and re.sub(r"\W", "", words[-2].lower()) in _SUNK_IN:
+            break     # "claws dug in" keeps its "in"
         words.pop()
     return " ".join(words).rstrip(",;:")
 
@@ -10393,6 +10396,262 @@ class Engine:
             base *= 0.5 ** (-hp / deep)
         return base
 
+    CLAWS_IN = re.compile(r"(?i)\b(?:claws?|talons?)\b")
+    FRONT_PRESS = re.compile(r"(?i)\b(?:chest|body|weight|front|belly|torso|stomach|underside|ribs|whole)\b")
+    PIN_WAYS = {     # how she tries to get out, and what each way needs (her legs, forelimbs, middle, head)
+        "bridge": {"legs": 0.6, "trunk": 0.4}, "shrimp": {"legs": 0.5, "trunk": 0.5},
+        "roll": {"trunk": 0.5, "arms": 0.25, "legs": 0.25}, "twist": {"trunk": 0.4, "head": 0.2, "arms": 0.2, "legs": 0.2},
+        "kick": {"legs": 1.0}, "tuck": {"legs": 0.6, "trunk": 0.4}, "pry": {"arms": 1.0}, "reach": {"arms": 0.8, "head": 0.2},
+        "claw": {"arms": 1.0}, "bite": {"head": 1.0}, "headbutt": {"head": 1.0}, "buck": {"trunk": 0.5},
+        "squirm": {"trunk": 0.6, "legs": 0.2, "arms": 0.2}, "limb": {}, "limp": {}, "power": {}}
+
+    def pin_control_cfg(self):
+        """pin.control (since build 332), or None when it is off."""
+        c = (self.rules.get("pin") or {}).get("control")
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
+    def pin_control(self, p, holds=None):
+        """What THIS pin, as it is really built, takes away from her (pin.control, since build 332). Each point of
+        contact is looked at for what it pins and what it pins it with:
+          - her legs (a press on a thigh, a knee, a foot), her forelimbs (a shoulder, an arm, a paw), her middle
+            (weight on her chest, belly or back) and her head (anything on her neck or head), side by side: one leg
+            held is half her legs;
+          - claws or talons in a grip dig in: every move she makes against them tears at her;
+          - jaws on her neck freeze her head (she can't turn it, and moving at all risks the teeth); jaws on a
+            shoulder take that forelimb as well;
+          - the pinner's own front (her chest, her body, her weight) pressed on her middle is weight, which counts by
+            how big each of them is.
+        Returns {"locked": {legs, arms, trunk, head: 0..1}, "claws": [parts], "jaws": part or "", "front": bool,
+        "weight": mult, "ways": {way: how well it can still work, 0..1}, "mult": escape multiplier, "position",
+        "notes": [plain words for the story]} or None when pin.control is off."""
+        cfg = self.pin_control_cfg()
+        if cfg is None:
+            return None
+        hs = list(holds if holds is not None else self._pin_holds(p))
+        d = self.get(p["defender"])
+        crew = [self.get(m) for m in self.pin_members(p)]
+        side_parts = {"legs": {}, "arms": {}}
+        for part in d.parts:
+            r = body_region(part)
+            kind = "legs" if r in ("hind_up", "hind_low") else "arms" if r in ("fore_up", "fore_low", "shoulder") else None
+            if kind:
+                side_parts[kind].setdefault(_side(part) or "mid", set()).add(part)
+        jaws_rx = self.JAWS_GRIP
+        held = {"legs": set(), "arms": set()}
+        trunk, head, claws, jaws, front = 0.0, 0.0, [], "", False
+        for h in hs:
+            r, w, side = body_region(h.part), str(h.with_part or ""), _side(h.part) or "mid"
+            bite = bool(jaws_rx.search(w))
+            if self.CLAWS_IN.search(w) and not bite:
+                claws.append(h.part)
+            if r in ("hind_up", "hind_low"):
+                held["legs"].add(side)
+            elif r in ("fore_up", "fore_low", "shoulder"):
+                held["arms"].add(side)
+                if bite and r == "shoulder":
+                    jaws = jaws or h.part
+            elif r in ("chest", "belly", "back_up", "back_low"):
+                is_front = bool(self.FRONT_PRESS.search(w)) and not bite
+                front = front or is_front
+                trunk = max(trunk, 1.0 if is_front or h.coil else float(cfg.get("trunk_by_limb", 0.6)))
+            elif r in ("neck", "head"):
+                head = max(head, 1.0 if bite else float(cfg.get("head_by_limb", 0.7)))
+                if bite and r == "neck":
+                    jaws = h.part
+        locked = {"trunk": trunk, "head": head}
+        for kind in ("legs", "arms"):
+            sides = [s for s in side_parts[kind] if s != "mid"] or list(side_parts[kind])
+            locked[kind] = (len([s for s in sides if s in held[kind]]) / len(sides)) if sides else 1.0
+        # weight: only a press on her middle bears down with the pinner's size (a bigger body is far harder to shift)
+        weight = 1.0
+        sd = self.size_m(d)
+        sa = max((self.size_m(m) or 0.0) for m in crew) if crew else 0.0
+        if trunk and sd and sa and not any(h.coil for h in hs):
+            weight = max(float(cfg.get("weight_min", 0.55)), min(float(cfg.get("weight_max", 1.6)),
+                                                                  (sd / sa) ** float(cfg.get("weight_exp", 0.6))))
+            weight = 1.0 + (weight - 1.0) * trunk     # (a paw on her chest bears down with less of it than her body)
+        ways = {}
+        for way, needs in self.PIN_WAYS.items():
+            left = 1.0 - sum(v * locked.get(k, 0.0) for k, v in needs.items())
+            ways[way] = round(max(float(cfg.get("way_floor", 0.1)), left) if needs else float(cfg.get("blind_way", 0.35)), 3)
+        # how well she can fight it overall: her two best ways out, against a reference pin
+        best = sorted(ways.values(), reverse=True)[:2]
+        free = sum(best) / len(best)
+        mult = free / max(0.05, float(cfg.get("reference_freedom", 0.55)))
+        mult *= float(cfg.get("claw_mult", 0.93)) ** len(claws)
+        if jaws:
+            mult *= float(cfg.get("jaws_neck_mult" if body_region(jaws) == "neck" else "jaws_shoulder_mult", 0.85))
+        mult *= weight
+        if p.get("setup") == "slow":     # (pin.setup) every grip placed exactly where she wanted it
+            mult *= float((self.pin_setup_cfg() or {}).get("placed_mult", 0.85))
+        mult = max(float(cfg.get("min_mult", 0.3)), min(float(cfg.get("max_mult", 1.6)), mult))
+        facing = self.facing_of(d.name)
+        position = ("spread out under her, every limb held" if locked["legs"] >= 1 and locked["arms"] >= 1 and trunk
+                    else "pinned face-down, weight on her back" if trunk and facing == "face-down"
+                    else "chest to chest, her weight on her front" if front
+                    else "held across the middle" if trunk else "held by the limbs, her middle free")
+        notes = []
+        if locked["legs"] >= 1:
+            notes.append("both legs held: no bridging, no kicking, no planting her feet")
+        elif locked["legs"]:
+            notes.append("one leg held: she can only push off the other")
+        if locked["arms"] >= 1:
+            notes.append("both forelimbs pinned: nothing to push or frame with")
+        elif locked["arms"]:
+            notes.append("one forelimb pinned: one free to push or claw with")
+        if front:
+            notes.append("the pinner's own front ground down on hers: her weight on her, no room to roll or arch"
+                         + (" (and she is far heavier)" if weight < 0.8 else " (and she is the lighter one)"
+                            if weight > 1.2 else ""))
+        elif trunk:
+            notes.append("pressure across her middle: hard to turn or bridge")
+        if jaws and body_region(jaws) == "neck":
+            notes.append(f"jaws on her {jaws.lower()}: she can't turn her head, and any move risks the teeth closing")
+        elif jaws:
+            notes.append(f"jaws on her {jaws.lower()}: that forelimb is held too, and pulling it tears")
+        elif head:
+            notes.append("her head and neck held down: no biting, no headbutt")
+        if p.get("setup") == "slow":
+            notes.append("set slowly and with care: every grip placed exactly where the pinner wanted it")
+        if claws:
+            notes.append("claws dug in at her " + ", ".join(c.lower() for c in claws[:4])
+                         + ": every move she makes against them tears at her")
+        return {"locked": {k: round(v, 2) for k, v in locked.items()}, "claws": claws, "jaws": jaws, "front": front,
+                "weight": round(weight, 3), "ways": ways, "mult": round(mult, 3), "position": position, "notes": notes,
+                "free": [w for w, v in sorted(ways.items(), key=lambda x: -x[1]) if v >= 0.5 and self.PIN_WAYS[w]][:4]}
+
+    def _claw_tear(self, d, holds, ctl):
+        """pin.control.claw_tear: breaking out from under claws dug in, she tears loose of one of them, and they rake
+        her as she goes (a light hit on that part). [] when nothing clawed her or it is off."""
+        cfg = self.pin_control_cfg() or {}
+        sev = cfg.get("claw_tear", "light")
+        clawed = [h for h in holds if ctl and h.part in ctl["claws"]]
+        if not sev or not clawed or not d.part(clawed[0].part):
+            return []
+        h = self.rng.choice(clawed)
+        power = round(self.power_for("instant", sev) * float((self.rules.get("pin") or {}).get("damage_mult", 1.0)), 2)
+        return [self._apply_damage(d, h.part, power, cap=self.pin_cap())]
+
+    def pin_hold_mult(self, d, holds, ctl):
+        """pin.control.health (since build 332): how much the pin's build really costs her, by her own condition. A
+        healthy fighter has the strength to fight even a tight pin: its tightness counts only healthy_share at full
+        health, all of it as her health runs out. And she fights with the parts it holds: the more hurt the parts
+        under its grips are (their average damage), the less she can do with them (x 1 / (1 + damage / part_scale),
+        never under part_min). Returns (multiplier, pressed-parts multiplier, their average damage)."""
+        cfg = self.pin_control_cfg() or {}
+        hc = cfg.get("health") or {}
+        hp = max(0.0, min(1.0, d.health / d.max_health)) if d.max_health else 0.0
+        m = ctl["mult"] if ctl else 1.0
+        if m < 1.0:
+            share = float(hc.get("healthy_share", 0.4))
+            m = 1.0 - (1.0 - m) * (share + (1.0 - share) * (1.0 - hp) ** float(hc.get("curve", 2.0)))
+        dmg = [d.part(h.part).damage for h in holds if d.part(h.part)]
+        avg = sum(dmg) / len(dmg) if dmg else 0.0
+        pm = max(float(hc.get("part_min", 0.4)), 1.0 / (1.0 + avg / max(1.0, float(hc.get("part_scale", 300)))))
+        return m * pm, pm, avg
+
+    def pin_way(self, ctl):
+        """The way she tries this time: the usual variety (variety.struggle), weighted toward what the pin leaves her
+        (a fighter with both legs held doesn't bridge)."""
+        if not ctl:
+            return self.vary("struggle"), 1.0
+        way = self.vary("struggle", scale={k: max(0.02, v) ** 2 for k, v in ctl["ways"].items()})
+        return way, ctl["ways"].get(way, 0.5)
+
+    def pin_setup_cfg(self):
+        """pin.setup (since build 332), or None when it is off."""
+        c = (self.rules.get("pin") or {}).get("setup")
+        return c if isinstance(c, dict) and c.get("enabled", True) else None
+
+    def slow_to_rise(self, name):
+        """She is clearly down, hurting and slow to get up (pin.setup): on the ground, and stunned, dazed or limp, or
+        down a beat already without getting up, or worn under setup.hurt_below % strength."""
+        cfg = self.pin_setup_cfg() or {}
+        d = self.get(name)
+        if d is None or d.name not in self.downed:
+            return False
+        return bool(any(self.has(d, s) for s in ("stunned", "dazed", "limp", "asleep", "frozen", "paralyzed"))
+                    or self.downed.get(d.name, 0) >= 1 or self.strength(d) < float(cfg.get("hurt_below", 50)))
+
+    def set_pin_pace(self, attacker, defender, pace=""):
+        """pin.setup (since build 332): how the pinner puts a NEW pin on. "quick": all at once, before she can react
+        (the old way). "slow": she takes her time over a fighter who is down, hurt and slow to rise: settles her
+        weight, eases her head over to clear the neck, brings her jaws in slowly, grips, presses, twists, finds the
+        pressure she wants. Every grip goes on at start_mult of its pressure and is worked up to full over
+        ramp_beats beats; the grips sit exactly where she wants them (pin control x placed_mult); the scramble before
+        it settles is x slow_settle_mult on one slow to rise, but x alert_settle_mult on one who isn't (the time
+        it takes is time she gets). pace "" = the director didn't say: slow_chance of the time on one slow to rise,
+        else quick. Returns the pace, or "" when it is off or no new pin is on."""
+        cfg = self.pin_setup_cfg()
+        p = self.pin_on(self.get(defender).name)
+        if cfg is None or p is None or p.get("setup") or p.get("beats"):
+            return ""
+        d = self.get(p["defender"])
+        groggy = self.slow_to_rise(d.name)
+        pace = str(pace or "").strip().lower()
+        if pace not in ("quick", "slow"):
+            pace = "slow" if groggy and self._chance(float(cfg.get("slow_chance", 0.5)),
+                                                     f"{p['attacker']} taking her time over the pin", "slowly",
+                                                     "quickly") else "quick"
+        p["setup"] = pace
+        if pace == "slow":
+            p["groggy"] = groggy
+            start, full = float(cfg.get("start_mult", 0.6)), {}
+            for h in self._pin_holds(p):
+                full[str(h.id)] = h.power
+                h.power = round(h.power * start, 2)
+            p["setup_full"] = full
+        return pace
+
+    def _work_slow_pin(self, p):
+        """A slow pin's grips worked tighter, beat by beat, until they are at full pressure (pin.setup.ramp_beats).
+        Returns how far along it is (0..1), or None once it is set."""
+        full = p.get("setup_full")
+        if not full:
+            return None
+        cfg = self.pin_setup_cfg() or {}
+        n = max(1, int(cfg.get("ramp_beats", 2)))
+        start = float(cfg.get("start_mult", 0.6))
+        for h in self._pin_holds(p):
+            top = full.get(str(h.id))
+            if top is not None:
+                h.power = round(min(top, h.power + top * (1 - start) / n), 2)
+        if all(self.holds[int(k)].power >= v - 0.01 for k, v in full.items() if int(k) in self.holds):
+            p.pop("setup_full", None)
+            return 1.0
+        return 0.5
+
+    def settle_pin(self, attacker, defender):
+        """pin.control.settle (since build 332): a pin is not set the moment it goes on. She gets one scramble before
+        it settles, at settle.base x her strength x how much the pin leaves her (pin_control). If it works, the pin
+        never holds: she is out from under at once, as a pin_forced escape event (None if it settles)."""
+        cfg = self.pin_control_cfg()
+        sc = (cfg or {}).get("settle") or {}
+        p = self.pin_on(self.get(defender).name)
+        if cfg is None or not sc.get("enabled", True) or p is None:
+            return None
+        d = self.get(p["defender"])
+        if any(self.has(d, s) for s in ("asleep", "frozen", "stunned", "limp", "paralyzed")):
+            return None
+        ctl = self.pin_control(p)
+        crew = [self.get(m) for m in self.pin_members(p)]
+        d_str = max(0.0, min(1.0, d.health / d.max_health))
+        ch = (float(sc.get("base", 0.3)) * d_str ** float(sc.get("strength_exp", 1.5))
+              * self.pin_hold_mult(d, self._pin_holds(p), ctl)[0])
+        ch *= self.trait(d, "escape") / max(0.05, sum(self.trait(m, "hold") for m in crew) / max(1, len(crew)))
+        if p.get("setup") == "slow":     # (pin.setup) a slow pin: safe on one too hurt to move, a gift to one who isn't
+            ch *= float((self.pin_setup_cfg() or {}).get("slow_settle_mult" if p.get("groggy") else "alert_settle_mult",
+                                                         0.35 if p.get("groggy") else 2.0))
+        ch = max(float(sc.get("min", 0.02)), min(float(sc.get("max", 0.6)), ch))
+        way, _w = self.pin_way(ctl)
+        if not self._chance(ch, f"{d.name} scrambling out before {poss_word(p['attacker'])} pin settles",
+                            "she gets out", "it settles"):
+            return None
+        ev = self.force_pin(p["attacker"], d.name, "escape")
+        ev.update(settle_failed=True, try_how=way, control=ctl, flavor="",
+                  settle_chance=round(ch, 3))
+        return ev
+
     def pin_chance(self, target):
         """How likely an opening for a NEW pin on this fighter is in any one beat. A pin can come at any point, but
         the more hurt she is, the likelier: rare against a fresh fighter on her feet, rising smoothly as she wears down,
@@ -10525,6 +10784,22 @@ class Engine:
             curve = base / max(0.001, float(s.get("escape_chance", 0.65)))  # 1.0 at full health, falling as she weakens
             crowd = float(cfg.get("double_pin_escape_mult", 0.5)) ** (len(crew) - 1)  # two on one: far harder to shift
             esc_try = base * (1 + 0.6 * a_weak) * fade * crowd
+            worked = self._work_slow_pin(p)      # (pin.setup) a slow pin's grips worked up to full pressure
+            # (since build 332, pin.control) what the pin is built from: what it holds down, claws dug in, jaws on her
+            # neck, the weight on her, and which way out she tries this time
+            ctl = self.pin_control(p, holds)
+            way, way_power = self.pin_way(ctl)
+            if ctl:
+                top = max(ctl["ways"].values()) or 1.0
+                hold_m, part_m, pressed_dmg = self.pin_hold_mult(dfn, holds, ctl)
+                ctl["effective"] = round(hold_m, 3)
+                if part_m < 0.75:
+                    ctl["notes"] = ctl["notes"] + [f"the parts under the grips are badly hurt already (about "
+                                                   f"{pressed_dmg:.0f}% on average): she has little left in them to push with"]
+                elif dfn.health >= 0.7 * dfn.max_health and ctl["mult"] < 0.8:
+                    ctl["notes"] = ctl["notes"] + ["she is still strong: the pin is tight, but she has the strength "
+                                                   "to fight it hard"]
+                esc_try *= hold_m * (way_power / top) ** float(self.pin_control_cfg().get("way_exp", 0.25))
             buff = float(s.get("break_loose_buff", 1.5) or 1.0) if p.get("buff_beats", 0) > 0 else 1.0
             if buff != 1.0:  # she broke loose recently: momentum makes the next escape likelier
                 esc_try *= buff
@@ -10576,10 +10851,18 @@ class Engine:
                 esc_try *= min(float(lcfg.get("pin_escape_cap", 1.45)), 1 + float(lcfg.get("pin_escape_per_time", 0.15)) * known)
             # never impossible: however hurt she is and however long it has run, an attempt can still work
             # (pin.struggle.escape_floor; break_loose_floor for breaking loose for a moment)
-            esc_try = max(float(s.get("escape_floor", 0.05)), esc_try)
+            floor = float(s.get("escape_floor", 0.05))
+            if dfn.health < 0 and s.get("escape_floor_at_minus_25") is not None:
+                # (since build 332) below nothing left, the floor itself sinks, to escape_floor_at_minus_25 a quarter
+                # of her health under zero (and stays there further down): a small chance, never none
+                deep = min(1.0, -dfn.health / (0.25 * dfn.max_health))
+                floor += (float(s["escape_floor_at_minus_25"]) - floor) * deep
+            esc_try = max(floor, esc_try)
             esc = self._per_beat(min(0.95, esc_try), tf)
             # if the escape fails: the chance to break loose for a moment and land a hit, same curve
             part_try = s.get("partial_chance", 0.50) * curve * (1 + 0.6 * a_weak) * fade * crowd
+            if ctl:
+                part_try *= ctl["effective"] ** 0.5     # breaking loose for a moment needs less room than getting out
             part_try = max(float(s.get("break_loose_floor", 0.05)), part_try)
             part = self._per_beat(min(0.95, part_try), tf)
             if self.has(dfn, "asleep") or self.has(dfn, "frozen"):
@@ -10596,6 +10879,10 @@ class Engine:
                                  else "fading" if v > 0.2 else "nearly gone")(fade * (0.25 + 0.75 * d_str)),
                   "hits_on_pinner": [], "punish_hits": [], "pressed": [h.part for h in holds],
                   "helpers": [m.name for m in crew[1:]], "pinner_tired": tired_pinner, "knows_pin": known}
+            if ctl:
+                ev["control"] = {k: ctl[k] for k in ("position", "notes", "mult", "effective", "claws", "jaws", "free")}
+            if worked is not None:
+                ev["working_in"] = "set" if worked >= 1.0 else "tightening"
             if p.get("against"):
                 ev["against"] = p["against"]
             forced_try = p.pop("force_attempt", False)  # the story asked for an escape attempt this beat
@@ -10608,11 +10895,12 @@ class Engine:
                                           "no real attempt"):
                 roll = self.rng.random()
                 ev["roll"] = round(roll, 3)
-                ev["try_how"] = self.vary("struggle")
+                ev["try_how"] = way
                 if roll < esc or (dfn.name in self.lucky and not any(m.name in self.lucky for m in crew)):
                     # (/play dice free: every try of hers gets her out, unless her pinner is dice-free too)
                     ev["struggle"] = "escape"
                     ev["hits_on_pinner"] = self._escape_hit(self.rng.choice(crew), dfn)
+                    ev["torn_hits"] = self._claw_tear(dfn, holds, ctl)
                     # now and then the pinner's jaws don't come off with the rest: she is thrown off the pin but
                     # keeps her bite, and that one grip goes on as an ordinary hold (pin.struggle.keep_jaws)
                     bite = next((h for h in holds if re.search(r"\b(jaws?|teeth|fangs?|bite)\b", str(h.with_part or "").lower())),
@@ -10644,9 +10932,11 @@ class Engine:
                     ev["hits_on_pinner"] = self._escape_hit(self.rng.choice(crew), dfn, key="counter_severity", always=True)
                 else:
                     ev["struggle"] = "fail"
-                    h = self.rng.choice(holds)
+                    clawed = [x for x in holds if ctl and x.part in ctl["claws"]]
+                    h = self.rng.choice(clawed or holds)
                     power = round(self.power_for("instant", s.get("punish_severity", "solid"))
-                                  * float(cfg.get("damage_mult", 1.0)), 2)
+                                  * float(cfg.get("damage_mult", 1.0))
+                                  * (float(self.pin_control_cfg().get("claw_punish_mult", 1.25)) if clawed else 1.0), 2)
                     ev["punish_hits"] = [self._apply_damage(dfn, h.part, power, cap=self.pin_cap())]
                     ev["punish_with"] = h.with_part
             if fm and key in self.pins:

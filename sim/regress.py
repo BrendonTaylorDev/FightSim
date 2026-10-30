@@ -907,6 +907,95 @@ def sounds_329_check():
     return problems
 
 
+def pins_332_check():
+    """Build 332: a pin is scored by what it holds (pin.control): limbs held, claws dug in, jaws on the neck and the
+    pinner's weight on her front make it tighter, and every build the director writes is kept as written; her own
+    health and the damage to the pressed parts decide how much that costs her; a pin can fail to settle; a slow pin
+    (pin.setup) goes on light and is worked up to full; "claws dug in" keeps its "in"."""
+    import director as D
+    from engine import short_phrase
+    problems = []
+    tight = [{"part": "Left Thigh", "severity": "crushing", "with": "her left hind paw, claws dug in"},
+             {"part": "Right Thigh", "severity": "crushing", "with": "her right hind paw, claws dug in"},
+             {"part": "Left Paw", "severity": "firm", "with": "her left forepaw, claws dug in"},
+             {"part": "Right Paw", "severity": "firm", "with": "her right forepaw, claws dug in"},
+             {"part": "Neck", "severity": "firm", "with": "her jaws"},
+             {"part": "Chest", "severity": "crushing", "with": "her chest, grinding her full weight down"}]
+
+    def pinned(hits, hp=1.0, pace="quick", settle=False, att="Nocturne", dfn="Ripples", seed=5):
+        e = Engine(seed=seed, only=[att, dfn])
+        e.rules["finish"]["no_pins"] = False
+        e.rules["finish"]["knockout_only"] = False
+        e.rules["finish"].setdefault("submission", {})["enabled"] = False
+        e.rules["pin"]["control"]["settle"]["enabled"] = settle
+        d = e.get(dfn)
+        d.health = d.max_health * hp
+        e.downed[d.name] = 1
+        e.facing[d.name] = "face-up"
+        e.pin_window = {d.name: True}
+        res = D.resolve(e, {"action": "pin", "attacker": att, "defender": dfn, "hits": hits, "flavor": "pins her",
+                            "pace": pace})[0]
+        return e, res
+
+    e, res = pinned(tight)
+    p = e.pin_on("Ripples")
+    got = sorted((h.part, h.with_part) for h in e._pin_holds(p))
+    if len(got) != 6 or not all("dug in" in w for part, w in got if "Thigh" in part or "Paw" in part):
+        problems.append(f"the six-point pin should go on as written, claws dug in: {got}")
+    ctl = e.pin_control(p)
+    if not (ctl["mult"] < 0.5 and len(ctl["claws"]) == 4 and ctl["jaws"] == "Neck" and ctl["front"]
+            and ctl["locked"]["legs"] == 1 and ctl["locked"]["arms"] == 1):
+        problems.append(f"a spread pin with claws, jaws and weight should be tight: {ctl}")
+    if not any("claws dug in" in n for n in ctl["notes"]) or not res.get("control"):
+        problems.append(f"the pin's notes should tell the claws, and the start event carry them: {ctl['notes']}")
+    e2, _ = pinned([tight[5], {"part": "Left Upper Arm", "severity": "firm", "with": "her forepaw"}])
+    loose = e2.pin_control(e2.pin_on("Ripples"))
+    if not loose["mult"] > ctl["mult"] + 0.3:
+        problems.append(f"a pin that leaves her legs and an arm free should be far looser: {loose['mult']} vs {ctl['mult']}")
+    e3, _ = pinned([tight[5], tight[4]], att="Ripples", dfn="Nocturne")
+    if not e3.pin_control(e3.pin_on("Nocturne"))["weight"] > 1.2:
+        problems.append("a smaller fighter's weight should hold a bigger one less surely")
+    # her condition: healthy, the tightness counts for less; hurt pressed parts, for more
+    hold = lambda e_, hp, dmg=0: (setattr(e_.get("Ripples"), "health", e_.get("Ripples").max_health * hp),
+                                  [setattr(h_, "damage", dmg) for h_ in e_.get("Ripples").parts.values()],
+                                  e_.pin_hold_mult(e_.get("Ripples"), e_._pin_holds(e_.pin_on("Ripples")),
+                                                   e_.pin_control(e_.pin_on("Ripples")))[0])[-1]
+    fresh, worn, sore = hold(e, 1.0), hold(e, 0.15), hold(e, 0.15, 300)
+    if not (fresh > worn * 1.5 > sore * 1.5 * 1.2):
+        problems.append(f"health should soften a tight pin and hurt pinned parts tighten it: {fresh} {worn} {sore}")
+    # deep below zero: still a small chance
+    e.get("Ripples").health = -0.3 * e.get("Ripples").max_health
+    p["started_turn"] = -5
+    ev = next(x for x in e._advance_pins() if x["type"] == "pin_progress")
+    if not 0 < ev["escape_chance"] <= 0.03:
+        problems.append(f"a quarter under zero she should keep a small escape chance: {ev['escape_chance']}")
+    # settling: forced to fail, it is an escape event with the pin gone
+    e4, _ = pinned(tight)
+    e4.rules["pin"]["control"]["settle"].update(enabled=True, min=1.0, max=1.0)
+    ev4 = e4.settle_pin("Nocturne", "Ripples")
+    if not (ev4 and ev4["type"] == "pin_forced" and ev4.get("settle_failed") and e4.pin_on("Ripples") is None
+            and not e4.holds):
+        problems.append(f"a pin that fails to settle should be gone, as an escape: {ev4}")
+    # a slow pin: light grips worked up to full, only on one slow to rise unless asked
+    e6, res6 = pinned(tight, hp=0.3, pace="slow")
+    p6 = e6.pin_on("Ripples")
+    full = dict(p6.get("setup_full") or {})
+    if not (res6.get("setup") == "slow" and res6.get("groggy") and full
+            and all(e6.holds[int(k)].power < v for k, v in full.items())):
+        problems.append(f"a slow pin should go on light over one slow to rise: {res6.get('setup')} {full}")
+    p6["started_turn"] = -5
+    for _ in range(3):
+        e6._advance_pins()
+    if p6.get("setup_full") or not all(abs(e6.holds[int(k)].power - v) < 0.02 for k, v in full.items()):
+        problems.append("a slow pin's grips should be worked up to full pressure within its ramp beats")
+    e7, res7 = pinned(tight, hp=0.3, pace="")
+    if res7.get("setup") not in ("quick", "slow"):
+        problems.append(f"a pin's pace should be set when the director doesn't say: {res7.get('setup')}")
+    if short_phrase("her left forepaw, claws dug in", 9) != "her left forepaw, claws dug in":
+        problems.append("short_phrase should keep 'claws dug in' whole")
+    return problems
+
+
 def sounds_331_check():
     """Build 331: sounds/ is the user's alone (git ignores it); the starter breathing lives in sound_starters/ and is used
     only for a kind with none of the user's files (window.sounds.starters); on Windows every file goes to the DirectShow
@@ -4694,6 +4783,13 @@ def main(argv):
         probs = sounds_330_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 330: one voice per fighter, long sounds, no repeats, replay  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "pins332" for w in want):
+        t = time.time()
+        probs = pins_332_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 332: pins scored by what they hold, settle, slow pins  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "sounds331" for w in want):

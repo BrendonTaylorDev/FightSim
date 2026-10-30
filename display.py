@@ -542,6 +542,14 @@ class Display:
                 out.append(f"💤 **{k['fighter']} slumps to the ground**" + (f" ({k['facing']})" if k.get("facing") else ""))
         return out
 
+    @staticmethod
+    def control_lines(ctl):
+        """(since build 332, pin.control) what the pin holds, and how much that changes her escape odds."""
+        if not ctl or not ctl.get("notes"):
+            return []
+        eff = (f", ×{num(ctl['effective'])} with her condition" if ctl.get("effective") is not None else "")
+        return [f"- 🔩 {ctl.get('position', 'the pin')} (escape ×{num(ctl.get('mult', 1))}{eff}): " + "; ".join(ctl["notes"])]
+
     def pin_block(self, e):
         a, d = e["attacker"], e["defender"]
         if e.get("helpers"):
@@ -586,6 +594,14 @@ class Display:
             out += self.hits_block(d, e["punish_hits"])
         if e.get("hits_on_pinner"):
             out += self.hits_block(e["hits_on_pinner"][0].get("defender", e["attacker"]), e["hits_on_pinner"])
+        if e.get("torn_hits"):
+            out.append("- She tears loose of the claws, and they rake her:")
+            out += self.hits_block(d, e["torn_hits"])
+        if e.get("control") and not self.tight():
+            out += self.control_lines(e["control"])
+        if e.get("working_in"):
+            out.append("- 🐢 " + ("The slow pin is fully set: every grip at full pressure" if e["working_in"] == "set"
+                                 else "Still working the slow pin in: the grips tighten"))
         for x in e.get("aftereffects") or []:
             out.append(f"- {self.STATUS_ICON.get(x['status'], '✳️')} **{self.says(x['fighter'], x['status'])}** ({x['beats']} "
                        f"beat{'s' if x['beats'] != 1 else ''})"
@@ -627,10 +643,11 @@ class Display:
             if e["type"] == "hold_ongoing":
                 hits += e["hits"]
             elif e["type"] == "pin_progress":
-                hits += e.get("punish_hits", []) + e.get("hits_on_pinner", [])
+                hits += e.get("punish_hits", []) + e.get("hits_on_pinner", []) + e.get("torn_hits", [])
         for a in bundle.get("actions", []):
             if a.get("type") == "pin_forced":
-                hits += a.get("pressure_hits", [])
+                hits += a.get("pressure_hits", []) + (a.get("hits_on_pinner", []) + a.get("torn_hits", [])
+                                                      if a.get("settle_failed") else [])
         if not hits:
             return ""
         per = {}
@@ -1043,6 +1060,12 @@ class Display:
                     with_ = f" ← {p['with']}" if p.get("with") else ""
                     out.append(f"- {p['part']}{with_}: power {num(p['power'])}, {p['change_per_beat']:+g}/beat")
             notes_from = len(out)
+            if t == "pin_start" and a.get("setup") == "slow":
+                out.append("- 🐢 Set slowly" + (" over a fighter slow to rise" if a.get("groggy") else
+                                                " (she isn't that hurt: the time it takes is time for her)")
+                           + ": the grips go on light and are worked up to full over the next beats")
+            if t == "pin_start" and a.get("control") and not a.get("continuing"):
+                out += self.control_lines(a["control"])
             if t == "pin_start" and a.get("joined"):
                 out.append((f"- Same pin, {num(a.get('seconds') or 0)} s in (two on her: she goes under faster). Her presses start "
                             if self.rules.get("pin", {}).get("fade", {}).get("enabled", True) else
@@ -1126,6 +1149,17 @@ class Display:
                 out.append(f"- 🔓 Holds ended: {', '.join('#' + str(i) for i in a['holds_ended'])}")
             if a.get("winner"):
                 out.append(f"- 🏆 **Winner: {a['winner']}**")
+        elif t == "pin_forced" and a.get("settle_failed"):
+            how_ = WAYS["struggle"].get(a.get("try_how"), "")
+            out.append(f"📌 **{a['attacker']} goes for the pin** on {a['defender']}, but it never settles: she scrambles out "
+                       f"before it is set (chance {a.get('settle_chance', 0) * 100:.0f}%" + (f"; she {how_}" if how_ else "")
+                       + ")")
+            out += self.control_lines(a.get("control"))
+            if a.get("hits_on_pinner"):
+                out += self.hits_block(a["hits_on_pinner"][0].get("defender", a["attacker"]), a["hits_on_pinner"])
+            if a.get("torn_hits"):
+                out.append("- She tears loose of the claws, and they rake her:")
+                out += self.hits_block(a["defender"], a["torn_hits"])
         elif t == "pin_forced":
             out += self.pin_block(a)
         elif t == "alliance":

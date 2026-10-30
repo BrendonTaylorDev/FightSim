@@ -234,7 +234,12 @@ Beat types:
   headlock or an arm locked round the neck from behind (hands and arms that can lock only); a four-legged fighter
   lying on her side behind her with both forelegs hooked round the sides of her neck; both arms trapped at once.
   Say it in "with" ("her jaws", "her forearm", "her twin tails",
-  "her foreleg hauling the leg up"). The engine then
+  "her foreleg hauling the leg up"); claws dug in ("her forepaw, claws dug in") and jaws on the neck or a shoulder
+  make it far harder to break, and so does every limb of hers you hold down and your own weight on her front. A pin
+  can be quick or slow ("pace"): "quick" slams it on before she can react; "slow" takes its time over someone
+  clearly down, hurt and slow to rise (easing her head over to clear the neck, bringing the jaws in slowly,
+  gripping, pressing, twisting, working the pressure up): safer on her then, but slowness hands a fighter who
+  isn't that hurt the time to scramble out. The engine then
   holds her until she breaks out or passes out (no fixed length), and rolls her escape attempts every beat. While a pin is in progress,
   continue it with 'breather' or 'hold_adjust' (never start a second pin), and let the pinned fighter strike
   back sometimes.
@@ -382,6 +387,7 @@ def action_schema(engine):
             "carry": {"type": "boolean"},
             "leap_from": {"type": "string"},
             "conjure": {"type": "string"},
+            "pace": {"type": "string", "enum": ["", "quick", "slow"]},     # (pin.setup; optional)
         },
         # Every field is required: local models tend to skip optional ones.
         # Fields that don't apply to the chosen action are simply ignored by the engine.
@@ -1726,6 +1732,34 @@ def resolve(engine, b):
             flavor = _unrolled_words(engine, "hold", att, flavor)
         res = engine.start_holds(att, dfn, contacts, flavor, pin=(act == "pin"), move=move_info, enforce=not manual)
         res["facing"] = engine.facing_of(dfn)
+        if (act == "pin" and res.get("type") == "pin_start" and not res.get("continuing") and not res.get("joined")
+                and not res.get("taken_down")):
+            # (since build 332, pin.setup) quick, or slow and deliberate over one who is down, hurt and slow to rise
+            # (a takedown into the pin is always quick)
+            pace = engine.set_pin_pace(att, dfn, b.get("pace") or ("" if not manual else "quick"))
+            if pace:
+                res["setup"] = pace
+                if pace == "slow":
+                    p_ = engine.pin_on(engine.get(dfn).name)
+                    res["groggy"] = bool(p_.get("groggy"))
+                    now = {h.part: h.power for h in engine._pin_holds(p_)}
+                    for x in res.get("parts") or []:
+                        if x.get("part") in now and not x.get("existing"):
+                            x["power"] = now[x["part"]]
+        if (act == "pin" and not manual and res.get("type") == "pin_start" and not res.get("continuing")
+                and not res.get("joined") and not res.get("taken_down")):
+            # (since build 332, pin.control.settle) one scramble before the pin is set: if it works, the pin never
+            # holds and she is out from under at once
+            slipped = engine.settle_pin(att, dfn)
+            if slipped:
+                slipped.update(flavor=res.get("flavor") or flavor, facing=res["facing"],
+                               pressed=[x["part"] for x in res.get("parts") or []],
+                               with_parts=[x.get("with") or "" for x in res.get("parts") or []])
+                res = slipped
+            elif engine.pin_on(engine.get(dfn).name) is not None:
+                ctl = engine.pin_control(engine.pin_on(engine.get(dfn).name))
+                if ctl:
+                    res["control"] = {k: ctl[k] for k in ("position", "notes", "mult", "claws", "jaws", "free")}
         # a takedown that turned her over moved the presses (throat -> neck) and their words with them
         hf = next((engine.holds[i].flavor for i in res.get("hold_ids") or [] if i in engine.holds), None)
         if hf and res.get("flavor") and hf != res["flavor"] and hf.lower() != str(res["flavor"]).lower():
@@ -1748,7 +1782,7 @@ def resolve(engine, b):
                     engine.set_status(target, "sputtering", 2)
         if note:
             res["facing_note"] = note
-        started = tuple(res["hold_ids"])
+        started = tuple(res.get("hold_ids") or ())
     elif act == "hold_adjust":
         hid = b.get("hold_id")
         power = _severity(engine, "hold", b["severity"], "firm") if b.get("severity") else None
