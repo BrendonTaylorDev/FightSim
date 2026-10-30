@@ -241,7 +241,7 @@ def maybe_finished(eng, a, d, rx):
     c = finished_cfg(eng)
     if not c or rx is None or d.eliminated or eng.has(d, "finished"):
         return None
-    size = SIZES.index(rx["size"])
+    size = SIZES.index(rx.get("real") or rx["size"])     # (how hurt she really is, not how much she shows)
     if size < 3:
         return None
     last = d.learned.get("finished_at")

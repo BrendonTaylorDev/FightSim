@@ -654,6 +654,29 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 338
+
+**Balance pass** after builds 335-337. Every fighting style and reaction trait keeps its full strength; the balance
+comes from stats instead (Ripples' stats untouched):
+- **Nocturne's health 1800 -> 1550.** Tried first: her speed, striking, toughness and escape barely moved it; health
+  did.
+- **Knockout-only matches push everyone toward heavy blows** (`styles.knockout_match`): big moves x1.6, quick light ones
+  x0.85, status moves x0.6, and no fighting style steers a fighter off a big blow there. Before, Ripples' swarmer and
+  setup styles kept her on light blows in fights that only a knockout can end. Works with styles on or off; the director
+  is told.
+- **Fix: "finished" goes by how hurt she really is**, not how much she shows. Before, expressive Ripples was finished
+  more often just for showing it.
+
+Nocturne vs Ripples in /simulate (400 fights each):
+
+| Match | Before (builds 335-337) | Now |
+| --- | --- | --- |
+| Pins allowed (rules.json default) | 73% | 63% |
+| Knockout-only | 74% | 69% |
+| Knockout-only, styles off (for comparison) | | 48% |
+
+The styles matter: in knockout-only fights they are worth about 20 points to Nocturne (mostly the dismantler).
+
 ## Build 337
 
 **Holds made for serpents** (`submissions.serpent_holds`). Twelve new submission holds, each only where the bodies fit:

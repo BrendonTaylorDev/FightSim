@@ -177,13 +177,33 @@ def situation(eng, f, d):
     return s
 
 
+def ko_match(eng):
+    """A knockout-only match (finish.knockout_only with finish.no_pins, not a submission match)."""
+    fin = eng.rules.get("finish") or {}
+    sub = fin.get("submission") if isinstance(fin.get("submission"), dict) else {}
+    return bool(fin.get("knockout_only") and fin.get("no_pins") and not sub.get("enabled"))
+
+
+def ko_cfg(eng):
+    """styles.knockout_match, when this is a knockout-only match and it is on, else None."""
+    c = (eng.rules.get("styles") or {}).get("knockout_match") or {}
+    return c if c.get("enabled", False) and ko_match(eng) else None
+
+
 def move_mult(eng, f, d, m, sit=None):
-    """How much more (or less) her styles make her reach for move m now (1 = no change)."""
+    """How much more (or less) her styles make her reach for move m now (1 = no change). In a knockout-only match
+    (styles.knockout_match) everyone reaches for her heavier blows, and no style steers her off them."""
+    kc = ko_cfg(eng)
     st = of(eng, f)
-    if not st:
+    if not st and not kc:
         return 1.0
     sit = situation(eng, f, d) if sit is None else sit
     cl = classes(eng, f, m)
+    if kc:
+        k0 = float(kc.get("big", 1.6)) if "big" in cl else float(kc.get("quick", 0.85)) if "quick" in cl else 1.0
+        k0 *= float(kc.get("status", 0.6)) if "status" in cl else 1.0
+        if not st:
+            return k0
     k = 1.0
     for name, wt in st.items():
         sp = spec(eng, name)
@@ -192,6 +212,8 @@ def move_mult(eng, f, d, m, sit=None):
         for tb in tables:
             for c_, x in tb.items():
                 if c_ in cl:
+                    if kc and c_ == "big" and float(x) < 1.0:
+                        continue      # (a knockout match: no style talks her out of a heavy blow)
                     k *= 1.0 + (float(x) - 1.0) * wt
         if name == "dismantler":
             # heavy blows to soften a fresh part, cutting ones once it is worn
@@ -202,6 +224,8 @@ def move_mult(eng, f, d, m, sit=None):
                     k *= 1.0 + num(eng, name, "breaker_first", 0.6) * wt
                 elif not fresh and "cutter" in cl:
                     k *= 1.0 + num(eng, name, "cut_worn", 0.8) * wt
+    if kc:
+        k *= k0
     return max(0.1, min(4.0, k))
 
 
@@ -390,9 +414,13 @@ def strength_word(x):
 
 def hint(eng):
     """For the director: each fighter's styles in a line, and what they point her at right now."""
-    if not cfg(eng):
+    if not cfg(eng) and not ko_cfg(eng):
         return ""
     out = []
+    if ko_cfg(eng):
+        out.append("KNOCKOUT MATCH: only a knockout ends this, so both of them reach for their HEAVY blows (their "
+                   "biggest moves, full-power strikes to the head and body) far more than light, quick ones; whatever "
+                   "their styles, they don't hold back the big ones.")
     for f in eng.active():
         st = of(eng, f)
         if not st:

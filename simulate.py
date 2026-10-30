@@ -100,7 +100,7 @@ def _pick_action(eng, rng, f, d):
     fav = (getattr(f, "favors", None) or {}) if eng.traits_cfg() else {}
     # (since build 280) the moves she favours (fighters.json favors), as the director is told
     # (styles, since build 335) and the kinds of move her fighting styles reach for in this moment
-    sit = styles.situation(eng, f, d) if styles.of(eng, f) else None
+    sit = styles.situation(eng, f, d) if styles.of(eng, f) or styles.ko_cfg(eng) else None
     sw = [styles.move_mult(eng, f, d, x, sit) if sit is not None else 1.0 for x in moves]
     m = rng.choices(moves, weights=[max(0.05, float(fav.get(x["name"], 1.0))) * k for x, k in zip(moves, sw)])[0] \
         if fav or sit is not None else rng.choice(moves)

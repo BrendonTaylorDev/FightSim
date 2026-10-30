@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 337 (holds made for serpents, a pinned serpent's own ways out, pinning her tail)"
+VERSION = "2026-10-30 build 338 (balance: Nocturne's health, heavy blows in knockout matches, finished by real damage)"
 
 HELP = """
 =============================================================================================
