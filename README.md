@@ -669,11 +669,9 @@ comes from stats instead (Ripples' stats untouched):
 
 Nocturne vs Ripples in /simulate (400 fights each):
 
-| Match | Before (builds 335-337) | Now |
-| --- | --- | --- |
-| Pins allowed (rules.json default) | 73% | 63% |
-| Knockout-only | 74% | 69% |
-| Knockout-only, styles off (for comparison) | | 48% |
+- Pins allowed (the rules.json default): 73% before, 63% now (the health change).
+- Knockout-only: 74% with the new health alone, 69% with the heavy-blow push too.
+- Knockout-only with styles off, for comparison: 48%.
 
 The styles matter: in knockout-only fights they are worth about 20 points to Nocturne (mostly the dismantler).
 
