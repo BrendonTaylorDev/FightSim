@@ -9453,7 +9453,7 @@ class Engine:
                              1.0 + float(bcfg.get("health_per_beat", 0.02)) * h.turns_active)
                 health_scale = h_ramp / ramp
             power = (h.power * time_factor * float(self.rules.get("pin", {}).get("damage_mult", 1.0)) * ramp
-                     if as_pin else h.power * ramp) * first
+                     * self.pin_contact_mult(h) if as_pin else h.power * ramp) * first
             # (a coil made of tails is her tails: a Buizel's Tail Bind is not "Nerine's coils")
             coil_word = "tails" if re.search(r"\btails?\b", str(h.with_part or ""), re.I) else "coils"
             self._source = (f"{poss_word(h.attacker)} {h.locked or ('pin' if in_pin else h.sub or (coil_word if h.coil else 'hold'))}")
@@ -10205,7 +10205,8 @@ class Engine:
             step = min(ref, dur - t)
             for h in self._pin_holds(p):
                 ev["pressure_hits"].append(self._apply_damage(
-                    d, h.part, round(h.power * step / ref * float(cfg.get("damage_mult", 1.0)), 2), cap=self.pin_cap()))
+                    d, h.part, round(h.power * step / ref * float(cfg.get("damage_mult", 1.0)) * self.pin_contact_mult(h),
+                                     2), cap=self.pin_cap()))
             t += step
         p["seconds"] = dur
         ev["out_cause"] = self.out_cause(p)
@@ -10238,6 +10239,20 @@ class Engine:
         r = self.rng.random() if roll is None else roll
         gain = (100.0 / typical) * (1 - spread + 2 * spread * r) * self.pin_time_factor()
         notes = []
+        wc = self.pin_wear_cfg()
+        if wc:
+            # (since build 334, pin.wear) THE ACHE: a pin hurts more the longer it is held, even on parts nothing has
+            # hurt yet (held limbs cramp and burn, the weight on her ribs makes every breath work): the early beats
+            # take little out of her, the later ones more and more. And HER ENDURANCE, rolled once for each pin: some
+            # pins she lasts longer, some she goes sooner
+            k_ = self.pin_ache(p)
+            gain *= k_
+            notes.append(f"the ache of being held x{k_:.2f}")
+            if "endure" not in p:
+                lo, hi = float(wc.get("endurance_min", 0.75)), float(wc.get("endurance_max", 1.5))
+                p["endure"] = round(self.rng.triangular(lo, hi, max(lo, min(hi, float(wc.get("endurance_mode", 1.0))))), 3)
+            gain /= max(0.1, float(p["endure"]))
+            notes.append(f"her endurance this pin /{float(p['endure']):.2f}")
         if partial:           # she broke loose for a moment and got air: the pin has to start wearing her down again
             gain *= float(cfg.get("break_loose_mult", 0.4)); notes.append(f"broke loose ×{cfg.get('break_loose_mult', 0.4)}")
         if len(crew) > 1:     # two bodies on her
@@ -10291,6 +10306,79 @@ class Engine:
             gain *= cm; notes.append(f"coiled, her blood held back ×{cm:g}")
         return round(gain, 1), round(r, 3), notes
 
+    def pin_wear_cfg(self):
+        """pin.wear (since build 334), or None when it is off."""
+        c = self.rules.get("pin", {}).get("wear") or {}
+        return c if c.get("enabled", True) else None
+
+    def pin_ache(self, p):
+        """(pin.wear) How much the pin's ache has built by this beat: ache_start on its first beat, rising to
+        ache_top by ache_beats beats held (and staying there)."""
+        wc = self.pin_wear_cfg() or {}
+        lo, hi = float(wc.get("ache_start", 0.6)), float(wc.get("ache_top", 1.5))
+        n = max(1.0, float(wc.get("ache_beats", 7)))
+        return lo + (hi - lo) * min(1.0, max(0, int(p.get("beats", 1)) - 1) / max(1.0, n - 1))
+
+    def ache_word(self, p):
+        """(pin.wear) The ache of being held, in words for the story."""
+        wc = self.pin_wear_cfg() or {}
+        lo, hi = float(wc.get("ache_start", 0.6)), float(wc.get("ache_top", 1.5))
+        f = (self.pin_ache(p) - lo) / max(0.01, hi - lo)
+        return ("barely started: the grips are uncomfortable more than painful" if f < 0.2 else
+                "building: her held limbs are starting to cramp and burn, and every breath under the weight is work"
+                if f < 0.55 else
+                "deep: her held limbs throb and burn from being held so long, even where nothing has hurt them; her "
+                "ribs ache with every breath" if f < 0.9 else
+                "everywhere: everything held has gone past aching into a dull, total pain, and holding still hurts as "
+                "much as moving")
+
+    GROUND_SPIKY = re.compile(r"(?i)thorn|spik|shard|crystal|gravel|shingle|scree|barnacl|jagged|rubble|broken|"
+                              r"grating|grate\b|rivet|coral|splinter|bramble|flint|cinder|clinker|pebbl")
+    GROUND_HARD = re.compile(r"(?i)rock|stone|basalt|flag|steel|iron|metal|\bice\b|frozen|concrete|deck|plank|board|"
+                             r"tile|granite|floor|ledge|shelf|cobble|brick|timber")
+    GROUND_SOFT = re.compile(r"(?i)sand|mud|grass|moss|peat|snow|water|shallows|leaves|loam|soil|turf|bog|marsh|silt")
+
+    def pin_ground(self, who):
+        """(pin.wear.contact.ground) What she is pressed down into: "spiky", "hard", "soft" or "" (by the words for
+        where she lies)."""
+        g = str(self.ground_under(who) or "")
+        return ("spiky" if self.GROUND_SPIKY.search(g) else "soft" if self.GROUND_SOFT.search(g) else
+                "hard" if self.GROUND_HARD.search(g) else "")
+
+    def pin_contact_mult(self, h):
+        """(pin.wear.contact, since build 334) How much harm a pin's steady pressure does by what is pressing: claws,
+        talons or teeth in her do full harm; a plain paw, foot, knee or hand pressing a limb little (plain_limb: it
+        holds her, it doesn't injure her), weight or a body bearing down on her middle, her head or her neck more
+        (weight: bruised ribs, a crushed throat). Plain pressure does more the more hurt the part already is (full
+        harm at hurt_full % damage: weight on a broken paw is agony), the heavier the pinner is against her (heft),
+        and the harder what she is pressed into (ground: rock, and worse, something spiky or jagged under her).
+        Coils and tails are left as they are."""
+        wc = self.pin_wear_cfg()
+        cc = (wc or {}).get("contact") or {}
+        if not wc or not cc.get("enabled", True) or h.coil:
+            return 1.0
+        w = str(h.with_part or "")
+        if self.JAWS_GRIP.search(w):
+            return float(cc.get("teeth", 1.0))
+        if self.CLAWS_IN.search(w):
+            return float(cc.get("claws", 1.0))
+        if re.search(r"(?i)\btails?\b|\bhorns?\b|\bbeak\b", w):
+            return 1.0
+        base = float(cc.get("plain_limb", 0.25)) if body_region(h.part) in (
+            "fore_up", "fore_low", "hind_up", "hind_low", "shoulder", "tail") else float(cc.get("weight", 0.8))
+        d = self.fighters.get(str(h.defender).lower())
+        a = self.fighters.get(str(h.attacker).lower())
+        if d is None:
+            return base
+        dmg = d.parts[h.part].damage if h.part in d.parts else 0.0
+        m = base + (1.0 - base) * max(0.0, min(1.0, dmg / max(1.0, float(cc.get("hurt_full", 300)))))
+        sa, sd = (self.size_m(a) if a else 0.0), self.size_m(d)
+        if sa and sd:
+            m *= max(float(cc.get("heft_min", 0.9)), min(float(cc.get("heft_max", 1.5)),
+                                                         (sa / sd) ** float(cc.get("heft_exp", 0.3))))
+        m *= float((cc.get("ground") or {}).get(self.pin_ground(d.name), 1.0)) if self.pin_ground(d.name) else 1.0
+        return round(min(float(cc.get("max", 1.2)), m), 3)
+
     def out_cause(self, p):
         """Why a fighter held to the end of a pin goes out: {"cause": "choking" | "pain" | "constriction", "part", "with"}. It is one
         or the other. With no grip on her neck or throat it is the pain. With one, it is usually the choke, but
@@ -10323,8 +10411,19 @@ class Engine:
             # air further than the pain has worn her, else the pain
             st = dfn.learned.get("body") or {}
             gone = 100.0 - min(float(st.get("air", 100)), float(st.get("head_blood", 100)))
-            pick = 0.0 if gone >= 0.6 * min(100.0, worst / 3.0) else 1.0
-            share = 0.5
+            # (since build 334: this was the wrong way round, so the pain was named even when the choke had gone
+            # further; a pick at or above the share is the choke)
+            pain_lv = min(100.0, worst / 3.0)
+            wc_ = self.pin_wear_cfg()
+            if wc_:
+                # (pin.wear) the ache of being held is pain too; and it is a chance, by how far each has gone
+                lo_, hi_ = float(wc_.get("ache_start", 0.6)), float(wc_.get("ache_top", 1.5))
+                pain_lv = min(100.0, pain_lv + float(wc_.get("ache_pain", 35))
+                              * (self.pin_ache(p) - lo_) / max(0.01, hi_ - lo_))
+                share = 1.0 - gone / max(1.0, gone + pain_lv)
+            else:
+                pick = 1.0 if gone >= 0.6 * pain_lv else 0.0
+                share = 0.5
         if choke and (not hurt or pick >= share):
             # a grip round the sides of the neck takes her before one pressing the front: that one counts first
             kinds = [(h, self.choke_kind(p["attacker"], h.with_part, h.coil)) for h in choke]
@@ -10622,6 +10721,58 @@ class Engine:
             return 1.0
         return 0.5
 
+    def pinning_parts(self, m, with_text):
+        """(pin.control.pinner, since build 334) The parts of the pinner's own body a grip uses, by its words: her jaws
+        for a bite, her hind paws or legs, her forepaws or forelegs, her chest and belly for her weight or her body,
+        her tail; the side it names, or both."""
+        w = str(with_text or "").lower()
+        side = re.findall(r"\b(left|right)\b", w)
+
+        def pick(test):
+            ps = [p for p in m.parts.values() if test(p.name, body_region(p.name))]
+            if len(side) == 1:
+                ps = [p for p in ps if not p.name.lower().startswith(("left", "right")) or p.name.lower().startswith(side[0])] or ps
+            return ps
+        if self.JAWS_GRIP.search(w):
+            return pick(lambda n, r: re.search(r"(?i)jaw|muzzle|beak|mandible", n)) or pick(lambda n, r: r == "head")
+        if re.search(r"\btails?\b|\bcoils?\b", w):
+            return pick(lambda n, r: r == "tail")
+        if re.search(r"\bhind\b|\bknees?\b|\bfeet\b|\bfoot\b|\bhocks?\b|\bthighs?\b|\bhips?\b", w):
+            return pick(lambda n, r: r in ("hind_low", "hind_up") and (r == "hind_low" or bool(re.search(
+                r"\blegs?\b|\bthighs?\b|\bhips?\b|\bknees?\b", w))))
+        if re.search(r"\bpaws?\b|\bforepaws?\b|\bclaws?\b|\btalons?\b|\bhands?\b|\bforelegs?\b|\barms?\b|"
+                     r"\belbows?\b|\bforearms?\b|\bwings?\b", w):
+            return pick(lambda n, r: r == "fore_low" or (r in ("fore_up", "shoulder") and bool(re.search(
+                r"forelegs?|\barms?\b|elbows?|forearms?|wings?", w))))
+        if self.FRONT_PRESS.search(w):
+            return pick(lambda n, r: r in ("chest", "belly"))
+        return []
+
+    def pinner_weak_mult(self, p, holds=None, crew=None):
+        """(pin.control.pinner, since build 334) How much a hurt pinner loosens her own pin: x (1 + part_max x how
+        hurt the parts she pins WITH are, on average, over part_scale), for every grip of hers that uses a part of her
+        body (a hurt forepaw can't press a paw down as hard, a hurt jaw can't clamp). (multiplier on her escape odds,
+        [hurt parts' names]); (1.0, []) when off."""
+        cfg = (self.pin_control_cfg() or {}).get("pinner") or {}
+        if self.pin_control_cfg() is None or not cfg.get("enabled", True):
+            return 1.0, []
+        hs = list(holds if holds is not None else self._pin_holds(p))
+        loads, hurt = [], []
+        for h in hs:
+            m = self.fighters.get(str(h.attacker).lower())
+            if m is None:
+                continue
+            used = self.pinning_parts(m, h.with_part)
+            if not used:
+                continue
+            avg = sum(x.damage for x in used) / len(used)
+            loads.append(min(1.0, avg / max(1.0, float(cfg.get("part_scale", 300)))))
+            if avg >= float(cfg.get("note_from", 100)):
+                hurt += [x.name.lower() for x in used if x.damage >= float(cfg.get("note_from", 100))]
+        if not loads:
+            return 1.0, []
+        return round(1.0 + float(cfg.get("part_max", 0.6)) * sum(loads) / len(loads), 3), list(dict.fromkeys(hurt))
+
     def settle_pin(self, attacker, defender):
         """pin.control.settle (since build 332): a pin is not set the moment it goes on. She gets one scramble before
         it settles, at settle.base x her strength x how much the pin leaves her (pin_control). If it works, the pin
@@ -10640,6 +10791,13 @@ class Engine:
         ch = (float(sc.get("base", 0.3)) * d_str ** float(sc.get("strength_exp", 1.5))
               * self.pin_hold_mult(d, self._pin_holds(p), ctl)[0])
         ch *= self.trait(d, "escape") / max(0.05, sum(self.trait(m, "hold") for m in crew) / max(1, len(crew)))
+        pc_ = (cfg or {}).get("pinner") or {}
+        if pc_.get("enabled", True) and crew:
+            # (since build 334, control.pinner) a hurt pinner sets it less surely: her overall health (the same
+            # weight it has against an escape) and the parts she pins with
+            a_weak = 1.0 - max(0.0, min(1.0, max(m.health / m.max_health for m in crew)))
+            ch *= (0.8 + 0.6 * a_weak) / 0.8 if pc_.get("settle_health", True) else 1.0
+            ch *= self.pinner_weak_mult(p)[0]
         if p.get("setup") == "slow":     # (pin.setup) a slow pin: safe on one too hurt to move, a gift to one who isn't
             ch *= float((self.pin_setup_cfg() or {}).get("slow_settle_mult" if p.get("groggy") else "alert_settle_mult",
                                                          0.35 if p.get("groggy") else 2.0))
@@ -10801,6 +10959,19 @@ class Engine:
                     ctl["notes"] = ctl["notes"] + ["she is still strong: the pin is tight, but she has the strength "
                                                    "to fight it hard"]
                 esc_try *= hold_m * (way_power / top) ** float(self.pin_control_cfg().get("way_exp", 0.25))
+            pw_, pw_hurt = self.pinner_weak_mult(p, holds)
+            if pw_ > 1.0:
+                # (since build 334, control.pinner) the parts the pinner holds her with are hurt: the grips are weaker
+                esc_try *= pw_
+                if ctl and pw_hurt:
+                    ctl["notes"] = ctl["notes"] + [f"{poss_word(att.name)} own {', '.join(pw_hurt[:3])} "
+                                                   f"{'is' if len(pw_hurt) == 1 else 'are'} hurt: the grip "
+                                                   f"{'it holds' if len(pw_hurt) == 1 else 'they hold'} her with is "
+                                                   f"weaker, and she can feel it give"]
+            if self.pin_wear_cfg():
+                # (pin.wear) longer pins give her more tries: each one a little less likely, so a pin is won about as
+                # often as before
+                esc_try *= float(self.pin_wear_cfg().get("escape_mult", 0.85))
             buff = float(s.get("break_loose_buff", 1.5) or 1.0) if p.get("buff_beats", 0) > 0 else 1.0
             if buff != 1.0:  # she broke loose recently: momentum makes the next escape likelier
                 esc_try *= buff
@@ -10884,6 +11055,13 @@ class Engine:
                 ev["control"] = {k: ctl[k] for k in ("position", "notes", "mult", "effective", "claws", "jaws", "free")}
             if worked is not None:
                 ev["working_in"] = "set" if worked >= 1.0 else "tightening"
+            if self.pin_wear_cfg():
+                # (since build 334, pin.wear) what is wearing her down, for the story: the ache of being held, the
+                # choke if there is a grip on her neck (her air or the blood to her head), and the hurt parts
+                ev["ache"] = self.ache_word(p)
+                if any(body_region(h.part) == "neck" for h in holds):
+                    st_ = dfn.learned.get("body") or {}
+                    ev["choke_left"] = round(min(float(st_.get("air", 100)), float(st_.get("head_blood", 100))))
             if p.get("against"):
                 ev["against"] = p["against"]
             forced_try = p.pop("force_attempt", False)  # the story asked for an escape attempt this beat

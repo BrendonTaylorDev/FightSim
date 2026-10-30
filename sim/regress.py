@@ -968,6 +968,72 @@ def taps_333_check():
     return problems
 
 
+def pins_334_check():
+    """Build 334 (pin.wear, pin.control.pinner): the ache of a pin builds the longer it is held; a plain press barely
+    harms a healthy limb, but harms a hurt one, harms more under a heavier pinner and on hard or spiky ground, while
+    claws and teeth harm in full; a pass-out is put down to the choke when it has gone further (it was the wrong way
+    round); the pinner's own hurt parts loosen her grips."""
+    import director as D
+    problems = []
+    e = Engine(seed=5, only=["Nocturne", "Ripples"])
+    e.rules["finish"]["no_pins"] = False
+    e.rules["finish"]["knockout_only"] = False
+    e.rules["finish"].setdefault("submission", {})["enabled"] = False
+    e.rules["pin"]["control"]["settle"]["enabled"] = False
+    d, a = e.get("Ripples"), e.get("Nocturne")
+    e.downed[d.name] = 1
+    e.facing[d.name] = "face-up"
+    e.pin_window = {d.name: True}
+    D.resolve(e, {"action": "pin", "attacker": a.name, "defender": d.name, "flavor": "pins her", "pace": "quick",
+                  "hits": [{"part": "Left Paw", "severity": "firm", "with": "her left forepaw"},
+                           {"part": "Right Paw", "severity": "firm", "with": "her right forepaw, claws dug in"},
+                           {"part": "Neck", "severity": "firm", "with": "her jaws"},
+                           {"part": "Chest", "severity": "crushing", "with": "her chest, her full weight on her"}]})
+    p = e.pin_on(d.name)
+    if p is None:
+        return ["the test pin didn't go on"]
+    if abs(e.pin_ache(dict(p, beats=1)) - 0.6) > 1e-6 or abs(e.pin_ache(dict(p, beats=7)) - 1.5) > 1e-6:
+        problems.append(f"the ache should build from 0.6 to 1.5 over 7 beats: {e.pin_ache(dict(p, beats=1))}, "
+                        f"{e.pin_ache(dict(p, beats=7))}")
+    hs = {h.part: h for h in e._pin_holds(p)}
+    e.lying_on = {d.name: "soft sand"}
+    plain, claws = e.pin_contact_mult(hs["Left Paw"]), e.pin_contact_mult(hs["Right Paw"])
+    if not plain < 0.35 or claws != 1.0 or e.pin_contact_mult(hs["Neck"]) != 1.0:
+        problems.append(f"a plain press should barely harm a healthy paw, claws and teeth in full: {plain}, {claws}")
+    d.parts["Left Paw"].damage = 250
+    if not e.pin_contact_mult(hs["Left Paw"]) > 2.5 * plain:
+        problems.append(f"weight on a badly hurt paw should harm it far more: {e.pin_contact_mult(hs['Left Paw'])}")
+    d.parts["Left Paw"].damage = 0
+    grounds = []
+    for g in ("soft sand", "bare rock", "sharp gravel"):
+        e.lying_on = {d.name: g}
+        grounds.append(e.pin_contact_mult(hs["Left Paw"]))
+    if not grounds[0] < grounds[1] < grounds[2]:
+        problems.append(f"sand, rock, gravel should harm more in that order: {grounds}")
+    if not 0.8 < e.pin_contact_mult(hs["Chest"]):
+        problems.append(f"a big pinner's weight on her chest should bear down hard: {e.pin_contact_mult(hs['Chest'])}")
+    # the pass-out: the choke when it has drained her further than the pain has gone
+    d.learned["body"] = dict(d.learned.get("body") or {}, air=20, head_blood=30)
+    p["beats"] = 1
+    causes = []
+    for t in range(40):
+        e.turn = 100 + t
+        causes.append(e.out_cause(p)["cause"])
+    if causes.count("choking") < 30:
+        problems.append(f"her air nearly gone and little pain: the choke should mostly be named: {causes.count('choking')}/40")
+    # the pinner's own hurt parts
+    m0 = e.pinner_weak_mult(p)[0]
+    for x in ("Left Forepaw", "Right Forepaw", "Left Lower Foreleg", "Right Lower Foreleg", "Jaw", "Muzzle"):
+        a.parts[x].damage = 300
+    m1, hurt = e.pinner_weak_mult(p)
+    if not (m0 == 1.0 and m1 > 1.25 and "jaw" in hurt):
+        problems.append(f"the pinner's hurt forepaws and jaw should loosen her grips: {m0} -> {m1}, {hurt}")
+    e.rules["pin"]["wear"]["enabled"] = False
+    if e.pin_contact_mult(hs["Left Paw"]) != 1.0:
+        problems.append("with pin.wear off the pressure should be as before")
+    return problems
+
+
 def pins_332_check():
     """Build 332: a pin is scored by what it holds (pin.control): limbs held, claws dug in, jaws on the neck and the
     pinner's weight on her front make it tighter, and every build the director writes is kept as written; her own
@@ -4858,6 +4924,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "pins334" for w in want):
+        t = time.time()
+        probs = pins_334_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 334: pin wear (ache, contact harm, choke or pain), the pinner's own parts  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "sounds331" for w in want):

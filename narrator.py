@@ -7495,6 +7495,8 @@ class Narrator:
         out.append(f"  - To keep this stretch from repeating the last one, build it around: {angles[step % len(angles)]}. "
                    f"Use fresh sentences; never reuse lines from earlier pin beats.")
         s = e["struggle"]
+        if e.get("ache") and s != "escape" and not (e.get("complete") and e.get("elimination")):
+            out += self._wear_lines(d, a, e)
         if e.get("control") and s != "escape":
             out += self._control_lines(d, e["control"])
         if e.get("working_in") and s != "escape":
@@ -7914,6 +7916,35 @@ class Narrator:
 
     TRY_VIGOROUS = re.compile(r"again and again|violent|explod\w*|hard and wild|all at once|every muscle|"
                               r"\bonce, twice\b|\bhard\b", re.I)
+
+    # (pin.wear, since build 334) how much she moves under the pin, from how much fight she has left
+    PIN_VIGOR = {
+        "fighting hard": "LOTS OF MOVEMENT: she bucks, twists, squirms, heaves and kicks at whatever is free, testing "
+                         "every grip; she is hardly still for a moment",
+        "weakening": "her struggles come in bursts now, with pauses to drag in air between them; each heave a little "
+                     "smaller than the last",
+        "fading": "she moves less and less: a heave now and then, slow and late, her limbs heavy, long stretches where "
+                  "she only lies there and breathes",
+        "nearly gone": "she is barely moving: a twitch, a weak push that goes nowhere, her body going slack between "
+                       "them",
+    }
+
+    def _wear_lines(self, d, a, e):
+        """(pin.wear, since build 334) What is wearing her down under the pin: how much she still moves, the ache of
+        being held, and the choke when there is a grip on her neck."""
+        out = [f"  - HOW MUCH SHE MOVES UNDER IT: {self.PIN_VIGOR.get(e.get('fight_left'), self.PIN_VIGOR['weakening'])}."
+               f" It wears down beat by beat: never more movement than the beat before unless she has broken loose.",
+               f"  - THE ACHE OF BEING HELD: {e['ache']}. It is part of what is taking her under, even where nothing "
+               f"is injured."]
+        cl = e.get("choke_left")
+        if cl is not None and cl < 90:
+            out.append(f"  - THE GRIP ON HER NECK is taking her air or the blood to her head: "
+                       + ("only a little so far, a tightness, a pressure behind her eyes" if cl >= 70 else
+                          "her breaths come short and thin, a roaring in her ears, the edges of her sight dimming"
+                          if cl >= 40 else
+                          "almost nothing left: grey closing in, sounds far away, her struggles going slack")
+                       + ". Show it alongside the pain.")
+        return out
 
     def _slow_pin_lines(self, a):
         """(since build 332, pin.setup) a pin put on slowly, over one who is down, hurt and slow to rise."""

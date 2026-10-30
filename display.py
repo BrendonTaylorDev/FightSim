@@ -559,7 +559,9 @@ class Display:
             out = [f"📌 **Pin: {a} on {d}** — beat {e.get('beats', '?')} of it ({num(e['seconds_to'])} s held) · "
                    f"going under {num(e.get('fade_from', 0))}% → **{num(e.get('fade_to', 0))}%** "
                    f"(+{num(e.get('fade_gain', 0))} this beat" + (f": {notes}" if notes else "")
-                   + f"; she passes out at 100%) ({e['fight_left']})"]
+                   + f"; she passes out at 100%) ({e['fight_left']})"
+                   # (since build 334, pin.wear) the choke in the pin: what is left of her air or the blood to her head
+                   + (f" · 🫁 neck grip: {num(e['choke_left'])}% air/blood left" if e.get("choke_left") is not None else "")]
         else:
             out = [f"📌 **Pin clock: {a} on {d}** — {num(e['seconds_from'])} → **{num(e['seconds_to'])}** / "
                    f"{num(e['duration'])} s ({e['fight_left']})"]

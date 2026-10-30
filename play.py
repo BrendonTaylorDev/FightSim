@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 333 (tap signs follow how near the tap is, held paws, claws in submissions)"
+VERSION = "2026-10-30 build 334 (pins wear her down: the ache, endurance per pin, harm by what presses, choke or pain, the pinner's own parts)"
 
 HELP = """
 =============================================================================================

@@ -654,6 +654,50 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 334
+
+Pins wear her down gradually, and end with her passing out from the pain or from the choke. All of it is under
+`pin.wear` and `pin.control.pinner` in rules.json, each with a `_comment`, and switchable.
+
+- **The ache** (`pin.wear`): a pin hurts more the longer it is held, even where nothing is injured (held limbs cramp
+  and burn, the weight on her ribs makes every breath work). The first beat counts 0.6 of a beat toward her passing
+  out, rising to 1.5 by the seventh. She starts out fighting it hard and fades faster and faster.
+- **Her endurance, per pin:** rolled once for each pin (0.45 to 2.6, usually near 0.85), so lengths vary: some pins
+  she lasts longer, some she goes sooner. `pin.fade.typical_beats` is 7 (was 6), and each escape try is x0.7 because
+  longer pins give her more tries.
+- **What each grip does to her** (`pin.wear.contact`): claws, talons and teeth harm in full. A plain paw, foot, knee
+  or hand on a healthy limb does a quarter of that, and weight or a body on her middle, neck or head 80%. Plain
+  pressure does more the more hurt the part already is (in full at 300% damage: weight on a broken paw is agony), a
+  little more from a bigger pinner, and more on hard ground (x1.25: rock, stone, steel, ice) or spiky ground (x1.6:
+  gravel, thorns, shards, jagged rock, grating), less on soft (x0.8: sand, mud, grass, snow). The old pressure cap
+  still holds, so a pin on a badly hurt fighter wears her down without running away.
+- **Fixed: the choke was never named.** When the choke had drained her further than the pain had gone, the program
+  picked the pain anyway: it was the wrong way round, so jaws on the neck never took her out. Now it is a chance by
+  how far each has gone (her air or the blood to her head against the pain, the ache counting as pain). Pins with a
+  neck grip now end about half by the choke, half by the pain.
+- **The pinner's own condition** (`pin.control.pinner`): the parts she pins WITH, read from each grip's words (her
+  jaws, her forepaws, her hind paws or legs, her chest and belly for her weight, her tail): hurt ones loosen the pin,
+  up to x1.6 on the pinned fighter's escape and settle odds, and the story is told when they are hurt. Her overall
+  health now counts against the settle too, not only against escapes. (The pinned fighter's own health and the damage
+  to her pinned parts already counted, since build 332.)
+- **Told to the story every pin beat:** how much she moves (lots of movement at first, bucking, twisting, squirming;
+  then bursts with pauses; then a heave now and then; then barely a twitch), the ache of being held, and the choke
+  draining her air or blood when there is a grip on her neck. The stat block shows the ache and her endurance in the
+  pin line, and what is left of her air or blood under a neck grip.
+
+Measured over whole pins, Nocturne on Ripples (pinner wins / median length of a won pin):
+
+| Ripples' health when pinned | Director's usual pin | Six-point claws-and-jaws pin | Health lost in the pin |
+| --- | --- | --- | --- |
+| 80% | 8% / 8 beats | 18% / 7 | 5-8% |
+| 50% | 20% / 7 | 49% / 7 | 8-12% |
+| 20% | 50% / 7 | 71% / 7 | 13-16% |
+| 0% | 86% / 7 | 84% / 7 | 16-18% |
+| -25% | 93% / 7 | 96% / 7 | 18-19% |
+
+About 1 in 8 won pins ends by beat 5, about a quarter run 9 beats or more, and now and then one goes 12 or 13.
+Whole fights with pins on: Nocturne wins 61% (target about 60%).
+
 ## Build 333
 
 Submissions: her fight against tapping out, checked against build 332's pins and brought in line with them. All of it is
