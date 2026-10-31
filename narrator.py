@@ -6196,7 +6196,9 @@ class Narrator:
             elif a.get("counter_hits"):
                 lines.append(f"  - Out of the dodge, {who} COUNTERS and catches {a['attacker']} with {self._counter_weapon(who)} "
                              f"(a quick strike of its own, separate from any attack {who} makes later in this beat; "
-                             f"{a['attacker']} is the only one hurt here):")
+                             f"{a['attacker']} is the only one hurt here). ORDER: the miss first, with nothing hurting "
+                             f"{a['attacker']} yet (no flinch, no grunt, no head snapping back as her blow finds air), "
+                             f"THEN the counter landing, and only then her reaction to it:")
                 lines += [self._hit_line(h) for h in a["counter_hits"]]
             return lines
         if t == "instant":
@@ -6760,10 +6762,20 @@ class Narrator:
                        else "a tackle, a leg hooked out from under her, a drag to the ground: whatever fits their bodies")
                 lines.append(f"  - {a['defender']} was ON HER FEET: {a['attacker']} first TAKES HER DOWN ({how}), "
                              f"then {'locks the hold on her' if a.get('submission') else 'pins her'} where she lands. Show the takedown"
-                             + ("; it does no damage of its own." if not td.get("hits") else
+                             + ("; it does no damage of its own: a CLEAN takedown. She is put down, not slammed: "
+                                "no thud that echoes round the place, no birds startled, no jarring impact on her back "
+                                "or spine, no breath knocked out. The only force on her this beat is the grips closing, "
+                                "each as hard as listed below." if not td.get("hits") else
                                 f": she is put down HARD, and the ground itself hurts her as she lands (before the pin "
                                 f"closes):"))
                 lines += [self._hit_line(h) for h in td.get("hits") or []]
+            if t == "pin_start" and not a.get("continuing") and any(
+                    re.search(r"(?i)neck|throat", str(p.get("part"))) and not p.get("existing") for p in a.get("parts") or ()):
+                # (since build 341) the build-341 log: a neck grip only just closed told as a choke near its end
+                lines.append(f"  - THE GRIP ON {poss(a['defender']).upper()} NECK has only just closed: it is "
+                             f"tight and it scares her, her breath a little short and her swallow hard, nothing more "
+                             f"yet. NO gasping for air, no seeing stars, no greying, no roaring in her ears, no "
+                             f"fighting to stay conscious: all of that is beats away, if it comes at all.")
             if a.get("against") and t == "pin_start":
                 lines.append(f"  - This pin is AGAINST {a['against'].upper()}: {a['defender']} is on the ground at the "
                              f"foot of it, her head and shoulders jammed against it, so there is nowhere to push back "
@@ -6790,6 +6802,11 @@ class Narrator:
                              + ", ".join(x["part"] + (f" ({self._own_with(a['attacker'], x['with'])})" if x.get("with")
                                                       else "") for x in a["absorbed"])
                              + ". They don't let go.")
+            for x in a.get("moved_limbs") or ():
+                # (since build 341) one limb, one grip: the paw she uses now came off where it was pressing
+                lines.append(f"  - {self._own_with(a['attacker'], x['with']).upper()} MOVES: it LEAVES "
+                             f"{poss(x['on'])} {x['from'].lower()} (that grip is off now) to take this new grip. Show "
+                             f"it lifting off there and going to the new place; it does not press both.")
             if a.get("facing") in Engine.FACING_LOOK:
                 lines.append(f"  - {a['defender']} is {Engine.FACING_LOOK[a['facing']]}"
                              + (f" ({a['facing_note']})" if a.get("facing_note", "").startswith("rolled") else "")
@@ -7598,6 +7615,10 @@ class Narrator:
         out.append(f"  - To keep this stretch from repeating the last one, build it around: {angles[step % len(angles)]}. "
                    f"Use fresh sentences; never reuse lines from earlier pin beats.")
         s = e["struggle"]
+        # (since build 341) the build-341 log had the pinner "standing over" the one she was still pinning
+        out.append(f"  - WHERE {a.upper()} IS: down ON {d}, her weight and her grips on her, close enough to feel "
+                   f"her breathe" + (" until the moment she is thrown off" if s in ("escape", "partial") else "")
+                   + f". She is NOT standing over her, standing back, or watching from a step away while the pin is on.")
         if e.get("ache") and s != "escape" and not (e.get("complete") and e.get("elimination")):
             out += self._wear_lines(d, a, e)
         if e.get("control") and s != "escape":
@@ -16094,6 +16115,12 @@ class Narrator:
         part.") goes. Only when swearing is off (narration.swearing) for the curse."""
         n = self.rules.get("narration", {}) or {}
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
+        # (since build 341) a sound left in brackets after the line that already tells it ("...went on and on,
+        # cracking at the end. (Yiiiiip—)"): the brackets go, the sound stays, set in italics like the others
+        text = re.sub(r"\(\s*\*?([A-Z][a-z]{1,14}(?:[-—–][a-z]*)?[-—–!]*)\*?\s*\)", r"*\1*", text)
+        # a pain level's label used as plain prose ("The pain was very painful"): the feeling, not the label
+        text = re.sub(r"\b(pain|ache|hurt|sting|throb)( in (?:her|his) [a-z ]{2,30})? (was|felt) very painful\b",
+                      lambda m: f"{m.group(1)}{m.group(2) or ''} {m.group(3)} bad", text)
         # a tap-refusal note's label copied as prose ("What kept her holding on: that it was HER."): said as hers
         text = re.sub(r"\bWhat (?:keeps|kept) her holding on:\s*", "She held on for one reason: ", text)
         if n.get("hit_counts", True):
@@ -16102,6 +16129,11 @@ class Narrator:
             text = self._mend_fragments(text)
             text = self._mend_leftovers(text)
         text = self._mend_body_slips(text)
+        # (since build 341) "her horns" for a fighter with one horn (an Absol), when nobody in the fight has more
+        parts_ = [set(v) for v in (self.damage_by or {}).values()]
+        if parts_ and any("horn" in ps for ps in parts_) and not any(
+                any(re.search(r"\bhorns\b", p_) for p_ in ps) for ps in parts_):
+            text = re.sub(r"\b([Hh])orns\b", r"\1orn", text)
         # a move's NAME used as a label ("a pulsing blast of water, Water Pulse." / "Ripples' Aqua Jet missed its mark"
         # / "with her own Thunderbolt"): the label goes, or the move becomes plain "attack"
         names_ = sorted((x for x in (getattr(self, "_move_names", None) or set()) if x and x[0].isupper()), key=len,

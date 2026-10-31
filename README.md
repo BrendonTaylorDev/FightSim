@@ -654,6 +654,24 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 342
+- **One limb holds one place.** A paw already pinning one part that gets named for a new grip (the build-340 log:
+  Nocturne's right forepaw on Ripples' thigh, then on her neck too) now moves: the old grip comes off, the pin goes
+  on, and the story is told it lifts off there. "Both paws" named for two places (the build-341 log: both paws on
+  each shoulder) becomes one paw each, by side.
+- **Tail binds are held with tails.** A Tail Bind (or a hold whose words wrap her tails round) with no limb named
+  is recorded as held with her tails, so the story no longer puts it in her paws.
+- **A pin being settled isn't an impact.** A clean takedown into a pin is told as one: she is put down, not
+  slammed; no echoing thud, no birds startled. A grip that has only just closed on her neck is a tightness and
+  fear, not gasping, stars or greying. The pinner is told she is down on her opponent, not standing over her, while
+  the pin is on.
+- **Fixes from the build-341 log:**
+  - A refused director choice no longer leaves its quirk line behind ("hardly ever been held like this" on beats
+    with no hold).
+  - A counter after a dodge: the miss first with nothing hurting the attacker, then the counter, then her reaction.
+  - A sound left in brackets "(Yiiiiip—)" loses the brackets; "the pain was very painful" says "bad"; "her horns"
+    for a one-horned Absol is "her horn".
+
 ## Build 341
 - **No "held X of 60 s" on a pin.** A pin has no fixed length unless `pin.fade` is switched off, so the cards
   (window, export, hover text) now show how long it has been held and how close she is to going under. The bar

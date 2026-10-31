@@ -968,6 +968,40 @@ def taps_333_check():
     return problems
 
 
+def grips_342_check():
+    """Build 342: one limb holds one place (a paw named for a new grip leaves the old one; "both paws" on two places
+    is one paw each); a Tail Bind with no limb named is held with her tails; a sound left in brackets and a pain
+    label used as prose are mended; one horn stays one horn."""
+    import narrator as N
+    problems = []
+    e = Engine(seed=1, only=["Nocturne", "Ripples"])
+    e.start_holds("Nocturne", "Ripples", [("Chest", 18, 0, "her full weight"), ("Left Thigh", 13, 0, "her right forepaw"),
+                                          ("Right Thigh", 13, 0, "her left forepaw")], pin=True)
+    r = e.start_holds("Nocturne", "Ripples", [("Neck", 14, 0, "her right forepaw")], pin=True, enforce=True)
+    held = {h.part: h.with_part for h in e.holds.values()}
+    if "Left Thigh" in held or held.get("Neck") != "her right forepaw" or not r.get("moved_limbs") or not e.pin_on("Ripples"):
+        problems.append(f"the right forepaw should have left the thigh for the neck, the pin going on: {held}")
+    with open("rules.json", encoding="utf-8") as fh:
+        fresh = json.load(fh)      # (its own rules: a test before it may have left a submission match on)
+    fresh.setdefault("finish", {}).setdefault("submission", {})["enabled"] = False
+    e = Engine(seed=1, only=["Nocturne", "Ripples"], rules=fresh)
+    e.downed["Nocturne"] = e.turn
+    e.start_holds("Ripples", "Nocturne", [("Left Shoulder", 24, 0, "both paws"), ("Right Shoulder", 27, 0, "both paws"),
+                                          ("Chest", 22, 0, "her full weight")], pin=True, enforce=True)
+    held = {h.part: h.with_part for h in e.holds.values()}
+    if held.get("Left Shoulder") != "her left paw" or held.get("Right Shoulder") != "her right paw":
+        problems.append(f"'both paws' on two shoulders should be one paw each: {held}")
+    if e._tail_grip_words(e.get("Ripples"), {"name": "Tail Bind"}, "") != "her twin tails":
+        problems.append("a Tail Bind with no limb named should be held with her twin tails")
+    n = N.Narrator("x", e.rules)
+    n.strengths, n.grips = {"Ripples": 70, "Nocturne": 65}, []
+    n.damage_by = {"Nocturne": {"horn": 0, "head": 0}, "Ripples": {"head": 0}}
+    t = n._last_scrub("It cracked at the end. (Yiiiiip—) The pain was very painful. Her horns came down.")
+    if "(" in t or "very painful" in t or "horns" in t:
+        problems.append(f"the bracketed sound, the pain label or the horns survived: {t!r}")
+    return problems
+
+
 def pins_341_check():
     """Build 341: a pin with no fixed length shows no "of 60 s" on the cards; the end of a pin is told in full (made
     sure of, let go grip by grip, her slump); styles.move_on sometimes, never always, moves a blow off a part she
@@ -5273,6 +5307,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "grips342" for w in want):
+        t = time.time()
+        probs = grips_342_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 342: one limb one grip, both paws, tail binds, bracket sounds  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "pins341" for w in want):

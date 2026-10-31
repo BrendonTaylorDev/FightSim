@@ -1092,6 +1092,9 @@ class Display:
             if a.get("woke"):
                 out.append(f"- {a['attacker']} was {' and '.join(a['woke'])}: your command has her act, so she is "
                            f"{'awake' if 'asleep' in a['woke'] else 'free of the ice'} now")
+            for x in a.get("moved_limbs") or ():
+                out.append(f"- 🔁 {x['with']} moves: off {poss_word(x['on'])} {x['from']} (that grip ends) to the new "
+                           f"grip (one limb holds one place)")
             carried = [p for p in a.get("parts", []) if p.get("existing")] if t == "pin_start" else []
             if carried:
                 out.append("- Already on from before, now part of the pin (it keeps pressing this beat, listed below): "

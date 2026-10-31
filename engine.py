@@ -308,6 +308,26 @@ class Fighter:
         return self.parts[found]
 
 
+_FORE_LIMB = re.compile(r"\b(?:fore ?paws?|front paws?|fore ?legs?|front legs?|arms?|hands?|forearms?|fins?|elbows?|"
+                        r"wings?|claws?)\b", re.I)
+_HIND_LIMB = re.compile(r"\b(?:hind ?paws?|back paws?|hind ?legs?|back legs?|feet|foot|knees?|legs?|hocks?|heels?)\b", re.I)
+
+
+def limb_key(with_part):
+    """(since build 341) The one sided limb a grip is held with, as (side, 'fore' or 'hind'): "her right forepaw"
+    -> ("right", "fore"). None for anything that isn't one limb on one side (her jaws, her weight, both paws)."""
+    w = str(with_part or "").lower()
+    sides = set(re.findall(r"\b(left|right)\b", w))
+    if len(sides) != 1 or re.search(r"\bboth\b", w):
+        return None
+    side = sides.pop()
+    if _HIND_LIMB.search(w) and not re.search(r"\bfore", w):
+        return side, "hind"
+    if _FORE_LIMB.search(w) or re.search(r"\bpaw\b", w):
+        return side, "fore"
+    return None
+
+
 @dataclass
 class Hold:
     """A continuous attack: damage every beat until released."""
@@ -9080,6 +9100,30 @@ class Engine:
                 raise ValueError(f"{poss_word(a.name)} jaws are already clamped on someone: she can't bite down on a "
                                  f"second part. Use her free limbs, or let go first")
             contacts = kept
+        # (since build 341) "both paws" named for two places at once (the build-341 log: both paws on her left
+        # shoulder AND both on her right): one paw each, by the side of the place it holds
+        both = [i for i, c in enumerate(contacts) if len(c) > 3 and re.search(r"(?i)\bboth\b", str(c[3]))
+                and (_FORE_LIMB.search(str(c[3])) or re.search(r"(?i)\bpaws?\b", str(c[3])))]
+        if len(both) >= 2:
+            contacts = [list(c) for c in contacts]
+            for i in both:
+                pn = d.part(contacts[i][0]).name if d.part(contacts[i][0]) else str(contacts[i][0])
+                side = _side(pn) or ("left" if i == both[0] else "right")
+                word = re.sub(r"(?i)^(?:with )?(?:her |his |its )?both\s+", "", str(contacts[i][3])).strip()
+                word = re.sub(r"s\b", "", word.split(",")[0], count=1) if word.split(",")[0].endswith("s") else word
+                contacts[i][3] = f"her {side.lower()} {word.split(',')[0].strip()}"
+            contacts = [tuple(c) for c in contacts]
+        # (since build 341) one limb holds one place: a paw already pressing somewhere that is named for a new grip
+        # moves there, so its old grip comes off (once the new one is on, so the pin it belongs to goes on)
+        moving = []
+        if enforce:
+            for c in contacts:
+                k = limb_key(c[3]) if len(c) > 3 else None
+                np_ = d.part(c[0]).name if k and d.part(c[0]) else None
+                for h in self.holds.values():
+                    if (k and np_ and h.attacker == a.name and h.part != np_ and h.id not in moving
+                            and limb_key(h.with_part) == k):
+                        moving.append(h.id)
         key = f"{a.name}>{d.name}"
         host = self.pin_on(d.name)                                   # a pin already running on her, if any
         mine = host is not None and a.name in self.pin_members(host)  # ...that this fighter is already part of
@@ -9165,9 +9209,10 @@ class Engine:
                 for h in self.holds.values() if h.attacker == a.name and h.defender == d.name]
                if (new_pin or joining) else [])
         started = []
+        tails = self._tail_grip_words(a, move, flavor)
         for pname, c in zip(names, contacts):
-            started.append(self.start_hold(a.name, d.name, pname, c[1], c[2], flavor, c[3] if len(c) > 3 else "",
-                                           keep_with=enforce))
+            w_ = (c[3] if len(c) > 3 else "") or tails   # (since build 341) a tail hold with no limb named: her tails
+            started.append(self.start_hold(a.name, d.name, pname, c[1], c[2], flavor, w_, keep_with=enforce))
             h = self.holds.get(started[-1]["hold_id"])
             # (a grip with words of its own is judged by them: "both paws, turning the foot" in a hold whose look
             # mentions the tails wound round the knee is not a coil)
@@ -9239,6 +9284,12 @@ class Engine:
                 takedown["hits"] = [self._apply_damage(d, x, power) for x in under]
                 self._source = keep_src
                 takedown["hard"] = bool(takedown["hits"])
+        moved = []
+        for hid in moving:
+            if hid in self.holds and hid not in {st["hold_id"] for st in started}:
+                h = self.holds[hid]
+                moved.append({"with": h.with_part, "from": h.part, "on": h.defender})
+                self.release(hid, f"{poss_word(a.name)} {h.with_part.replace('her ', '', 1)} moves to a new grip")
         fixed = self._grip_flavor_fix(flavor, d, started)
         fixed = self._holder_part_fix(fixed, a, started)
         if fixed != flavor:
@@ -9255,7 +9306,7 @@ class Engine:
                 "facing": self.facing_of(d.name), "knock_on": loose, "taken_down": taken_down,
                 "facing_note": (f"rolled {d.name} over to reach those spots: {lay} → {self.facing_of(d.name)}"
                                 if lay and self.facing_of(d.name) != lay else ""),
-                "woke": woke,
+                "woke": woke, "moved_limbs": moved,
                 "absorbed": [x for x in had if x["hold_id"] in self.holds
                              and x["hold_id"] not in {h["hold_id"] for h in started}],
                 "hold_ids": [h["hold_id"] for h in started if not h["existing"]],
@@ -9263,6 +9314,17 @@ class Engine:
                            "with": h.get("with", ""), "existing": bool(h.get("existing")),
                            "asked_with": h.get("asked_with", ""), "choke_kind": h.get("choke_kind", "")}
                           for h in started]}
+
+    def _tail_grip_words(self, a, move, flavor):
+        """(since build 341) A Tail Bind (or a hold whose words wrap her tails round) with no limb named for a grip:
+        "her twin tails", from her own tail part, so the story never puts that grip in her paws. "" otherwise."""
+        name = str((move or {}).get("name", "") if isinstance(move, dict) else move or "").lower()
+        if not ("tail" in name or re.search(r"\btails?\b[^.]{0,30}\b(?:round|around|wrap\w*|wound|bind\w*|coil\w*)\b|"
+                                            r"\b(?:wrap\w*|bind\w*|coil\w*|loop\w*)\b[^.]{0,30}\btails?\b",
+                                            str(flavor or ""), re.I)):
+            return ""
+        tail = next((p for p in a.parts if re.search(r"(?i)tails?", p) and "base" not in p.lower()), None)
+        return f"her {tail.lower()}" if tail else ""
 
     def regrab_wait(self, a, d):
         """Beats left before `a` may grip `d` again after `d` tore free of her (holds.break.regrab_after); 0 = free."""

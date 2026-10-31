@@ -2393,6 +2393,7 @@ def resolve_many(engine, actions):
     if real and len(real) < len(actions):
         actions = real
     snap = engine.snapshot_state()
+    quirks0 = list(getattr(engine, "_quirks_now", None) or [])   # (a refused choice takes back its quirk moments too)
     hp0 = {f.name: f.health for f in engine.fighters.values()}
     results, started = [], ()
     # a CHAIN: two or three attacks in a row by one fighter on one opponent (a grab may open it, a throw or a slam
@@ -2648,6 +2649,7 @@ def resolve_many(engine, actions):
         engine._chain_on = None
         engine._juggle = None
         engine.restore_state(snap)
+        engine._quirks_now = quirks0
         raise
     engine._chain_on = None
     engine._juggle, engine._feint_open = None, None
