@@ -396,7 +396,10 @@ def tick(eng):
                                "beats_held": int(h.turns_active)})
             now[str(h.id)].append(max(told, stage))
         # the air gone (a choke, coils round her throat or her chest) for long enough: panic
-        if c.get("mind", True) and any(now[i][0].startswith(("choke", "coil_body", "coil_throat"))
+        # (since build 344) not while she is out: blacked out in the coils, her heart stopped, she feels nothing (the
+        # build-343 log had Nerine "panicking" on the beats she lay out cold, and the story woke her for it)
+        out_ = any(eng.has(f, s_) for s_ in ("limp", "asleep", "fainted", "unconscious")) or f.eliminated
+        if c.get("mind", True) and not out_ and any(now[i][0].startswith(("choke", "coil_body", "coil_throat"))
                                        and now[i][1] >= int(tune(c, "panicking")["held"]) for i in now):
             rec = _give(eng, f, "panicking", c, "no air for too long", extra=1.0 / max(0.3, eng.trait(f, "toughness")))
             if rec:

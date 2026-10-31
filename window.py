@@ -462,6 +462,7 @@ class FighterCard(ttk.Frame):
         self.photos, self.panels = [], []
         self._rings, live_pics = [], []
         self._grip_cols = self._grip_colours(f)
+        self._ptrs = []          # (since build 344) each part's dot and line, for window.hover_pointers
         top = 0
         for pn in panels:
             ox, oy = panel_origin(pn, top)
@@ -482,11 +483,15 @@ class FighterCard(ttk.Frame):
                     ax, ay = ox + x, oy + y
                     lx = COL - 4 if side == "L" else COL + PIC + 4
                     calib = self.app.calib == (self, part)
-                    c.create_line(lx, ly, ax, ay, fill=C("#2563eb") if calib else C("#9ca3af"), width=2 if calib else 1)
-                    dot = c.create_oval(ax - 4, ay - 4, ax + 4, ay + 4, fill=dmg_color(dmg), outline=C("#111827"))
+                    ptag = f"ptr{len(self._ptrs)}"
+                    line = c.create_line(lx, ly, ax, ay, fill=C("#2563eb") if calib else C("#9ca3af"),
+                                         width=2 if calib else 1, tags=("ptr", ptag))
+                    dot = c.create_oval(ax - 4, ay - 4, ax + 4, ay + 4, fill=dmg_color(dmg), outline=C("#111827"),
+                                        tags=("ptr", ptag))
+                    self._ptrs.append((dot, ptag))
                     self._tip_raw(c, dot, self._part_tip(part, dmg, res))
                     self._ring(c, f, part, ax, ay)
-                    self._label(c, side, lx, ly, part, dmg, res, calib)
+                    self._label(c, side, lx, ly, part, dmg, res, calib, ptag)
             top += pn["height"] + gap
         if f["out"]:
             c.create_text(COL + PIC / 2, 14, text="OUT", font=("Segoe UI", 14, "bold"), fill=C("#991b1b"))
@@ -499,6 +504,56 @@ class FighterCard(ttk.Frame):
             c.configure(height=int(H * zz))
         self._alive_setup(f, [] if calib_here else live_pics)
         self._bars(f, pct)
+        self._hover_setup(c, calib_here)
+
+    def _hover_on(self):
+        return bool(getattr(self.app, "hover_pointers", None) is not None and self.app.hover_pointers.get())
+
+    def _hover_setup(self, c, calib_here):
+        """(since build 344, window.hover_pointers) The dots and the lines to them hidden, so her face and body are
+        always in view; they come back near the mouse (hover_radius pixels), and a part's own one while the mouse is
+        on its numbers. The damage marks and the glow stay as they are. Placing a part's point shows them all."""
+        self._ptr_shown = set()
+        if calib_here or not self._hover_on():
+            c.itemconfigure("ptr", state="normal")
+            c.unbind("<Motion>")
+            c.unbind("<Leave>")
+            return
+        c.itemconfigure("ptr", state="hidden")
+        c.bind("<Motion>", lambda e: self._ptr_near(c, e.x, e.y))
+        c.bind("<Leave>", lambda e: self._ptr_near(c, -9999, -9999))
+
+    def _ptr_near(self, c, x, y, keep=()):
+        if not self._hover_on():
+            return
+        r = float((self.app._rules().get("window") or {}).get("hover_radius", 45) or 45) \
+            * getattr(self.app, "card_zoom", 1.0)
+        want = set(keep) | set(getattr(self, "_ptr_lab", ()) or ())
+        for dot, tag in getattr(self, "_ptrs", ()):
+            try:
+                x0, y0, x1, y1 = c.coords(dot)
+            except (tk.TclError, ValueError):
+                continue
+            if ((x0 + x1) / 2 - x) ** 2 + ((y0 + y1) / 2 - y) ** 2 <= r * r:
+                want.add(tag)
+        shown = getattr(self, "_ptr_shown", set())
+        for tag in shown - want:
+            c.itemconfigure(tag, state="hidden")
+        for tag in want - shown:
+            c.itemconfigure(tag, state="normal")
+        self._ptr_shown = want
+
+    def _ptr_label(self, c, tag, on):
+        """The mouse on a part's numbers: its dot and line shown while it is there."""
+        if not self._hover_on():
+            return
+        self._ptr_lab = {tag} if on else set()
+        if on:
+            c.itemconfigure(tag, state="normal")
+            self._ptr_shown = set(getattr(self, "_ptr_shown", set())) | {tag}
+        else:
+            c.itemconfigure(tag, state="hidden")
+            self._ptr_shown = set(getattr(self, "_ptr_shown", set())) - {tag}
 
     def _zoom_panel(self, pn, z):
         """A panel's pictures made at the card's zoom (window.live_zoom): the still one shown, and what the living
@@ -1323,7 +1378,7 @@ class FighterCard(ttk.Frame):
                 f"resistance {res:.1f}%  ({next(n for at, cc, n in RES_STEPS if res >= at)})\n"
                 f"(click this, then the picture, to move its point)")
 
-    def _label(self, c, side, lx, ly, part, dmg, res, calib):
+    def _label(self, c, side, lx, ly, part, dmg, res, calib, ptag=None):
         name = short(part)
         tip = self._part_tip(part, dmg, res)
         d, r = f"{dmg:.0f}%", f"{res:.0f}%"
@@ -1346,8 +1401,9 @@ class FighterCard(ttk.Frame):
                                         width=2))
         items.append(c.create_text(rx + (widths[2] - 2) / 2, ly, text=r, fill=C("#111827"), font=("Segoe UI", 7)))
         for it in items:
-            c.tag_bind(it, "<Enter>", lambda e, t=tip: self.app.tip.show(e.x_root, e.y_root, t))
-            c.tag_bind(it, "<Leave>", lambda e: self.app.tip.hide())
+            c.tag_bind(it, "<Enter>", lambda e, t=tip, g=ptag: (self.app.tip.show(e.x_root, e.y_root, t),
+                                                                 g and self._ptr_label(c, g, True)))
+            c.tag_bind(it, "<Leave>", lambda e, g=ptag: (self.app.tip.hide(), g and self._ptr_label(c, g, False)))
             c.tag_bind(it, "<Button-1>", lambda e, p=part: self.pick(p))
 
     # ---- placing a part's point by hand ----
@@ -1476,6 +1532,7 @@ class App:
         self.weak_look = _Flag(value=bool(o.get("weak_look", True)))
         self.damage_marks = _Flag(value=bool(o.get("damage_marks", True)))
         self.poses = _Flag(value=bool(o.get("poses", True)))
+        self.hover_pointers = _Flag(value=bool((self._rules().get("window") or {}).get("hover_pointers", True)))
         self.follow = _Flag(value=True)
         # (since build 273) the cards' size, so both fit on one screen (window.card_zoom, kept between runs)
         try:
@@ -1514,6 +1571,8 @@ class App:
         ttk.Checkbutton(row, text="Back view", variable=self.back_view, command=self.redraw_cards).pack(side="left")
         ttk.Checkbutton(row, text="Damage marks", variable=self.damage_marks, command=self.redraw_cards).pack(side="left")
         ttk.Checkbutton(row, text="Poses", variable=self.poses, command=self.redraw_cards).pack(side="left")
+        ttk.Checkbutton(row, text="Dots on hover", variable=self.hover_pointers,
+                        command=self.hover_changed).pack(side="left")
         # (since build 307) the living cards' pieces and the settling-in notes on or off (play.EFFECTS, as /effects)
         self.effects_btn = ttk.Menubutton(row, text="Effects")
         menu = tk.Menu(self.effects_btn, tearoff=False, postcommand=self._sync_effects)
@@ -2222,6 +2281,14 @@ class App:
         except Exception as e:
             note_failure("turning an effect on or off (the Effects button)", e)
         self._show_badge()
+        self.redraw_cards()
+
+    def hover_changed(self):
+        """The Dots on hover switch (window.hover_pointers), kept for next time."""
+        try:
+            play._save_rule_path(["window", "hover_pointers"], bool(self.hover_pointers.get()))
+        except Exception as e:
+            note_failure("saving the Dots on hover switch (window.hover_pointers)", e)
         self.redraw_cards()
 
     def redraw_cards(self):

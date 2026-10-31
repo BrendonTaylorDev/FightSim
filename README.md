@@ -654,6 +654,32 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 344
+- **Dots on hover** (`window.hover_pointers`, on). The dots on a fighter's picture and the lines to her part labels
+  are hidden, so her face and body are never covered. They show near the mouse, and for one part while the mouse is
+  on its name, damage or resistance. The damage marks, the glow and the grip rings always show. The **Dots on hover**
+  switch under the cards turns it off and on.
+- **Edit the story in the exported fight** (`export.editor`, on). The exported page has a story bar:
+  - **Edit the story** turns each beat into a text box.
+  - **Copy the whole fight for Venice** copies it as one text, an `=== BEAT n ===` line over each beat, with an
+    editable request above it; **Download it as a .txt file** does the same as a file.
+  - Paste Venice's whole answer back and **Put it into the beats** splits it into the right beats.
+  - **Save the page** downloads the page itself, pictures, gauges and stats included, with your text in it.
+  - Unsaved edits are kept in the browser. A lighter `<fight>_editor.html` with only the story boxes is written too.
+- **Fixes from the Ripples vs Nocturne and Nerine vs Seraphina fights:**
+  - A whole-body move (Thunderbolt) costs 45% of each part's usual health (`moves.whole_body_health`): one cost
+    Ripples 295, eight bites' worth.
+  - A move's own name decides what it is thrown with: Seraphina's Tail Lash was refused because her jaws were busy.
+  - A jet from the mouth (Hydro Pump) can't be fired while her jaws are clamped in a hold.
+  - "Her tail" for a twin-tailed Buizel is "her twin tails" in a hold.
+  - A fighter left finished lets go of the grip she had on someone.
+  - A second limb added to a grip put on that same beat is told as added, not as a hold "already on".
+  - No panic while she is out cold in the coils (the story had woken Nerine for it); a breather said twice is said once.
+  - An unnamed blow from a Milotic is a Tail Strike, not "A Plain Blow".
+  - A fighter holding someone can't "turn half away" or step back from her in the story.
+  - A part named as one fighter's that only the other has ("Nerine's tail fan") gets the right name.
+  - Several sounds in one bracket "(Hah, Eek)" lose the brackets.
+
 ## Build 343
 - **A get-up try told twice** (build-341 log, beat 10: two "first try" paragraphs before the second and third): when
   the same try opens two paragraphs, the earlier telling goes.

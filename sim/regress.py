@@ -968,6 +968,61 @@ def taps_333_check():
     return problems
 
 
+def fixes_344_check():
+    """Build 344: a tail blow isn't refused for busy jaws, a mouth jet is; a whole-body move costs a share of each
+    part's health; "her tail" is her twin tails; a part named as the wrong fighter's is put right; bracketed sounds;
+    an unnamed Milotic blow is named by her body; a grip-holder can't turn away from the one she holds."""
+    import narrator as N, blocks, copy
+    import director as D
+    problems = []
+    with open("rules.json", encoding="utf-8") as fh:
+        fresh = json.load(fh)
+    fresh.setdefault("finish", {}).setdefault("submission", {})["enabled"] = False
+    e = Engine(seed=1, only=["Seraphina", "Nerine"], rules=copy.deepcopy(fresh))
+    e.start_hold("Seraphina", "Nerine", "Left Upper Arm", 20, 0, "", "her jaws")
+    if e.busy_with(e.get("Seraphina"), {"name": "Tail Lash To The Nose", "about": "her tail across the jaw",
+                                        "target": "targeted"}):
+        problems.append("a tail lash was refused for her busy jaws")
+    if not e.busy_with(e.get("Seraphina"), {"name": "Hydro Pump", "about": "a blast", "from": "mouth",
+                                            "target": "spread"}):
+        problems.append("a mouth jet went off with her jaws clamped")
+    lost = []
+    for on in (True, False):
+        r = copy.deepcopy(fresh)
+        r["moves"]["whole_body_health"]["enabled"] = on
+        e2 = Engine(seed=3, only=["Nocturne", "Ripples"], rules=r)
+        h0 = e2.get("Ripples").health
+        e2.move_attack("Nocturne", "Ripples", "Thunderbolt", [])
+        lost.append(h0 - e2.get("Ripples").health)
+    if not (0 < lost[0] < 0.6 * lost[1]):
+        problems.append(f"a whole-body move should cost a share of the health: {lost}")
+    e3 = Engine(seed=1, only=["Ripples", "Nocturne"], rules=copy.deepcopy(fresh))
+    e3.start_holds("Ripples", "Nocturne", [("Left Upper Foreleg", 9, 0, "her tail")])
+    if not any(h.with_part == "her twin tails" for h in e3.holds.values()):
+        problems.append(f"'her tail' stayed singular: {[h.with_part for h in e3.holds.values()]}")
+    n = N.Narrator("x", fresh)
+    n.strengths, n.grips = {"Nerine": 70, "Seraphina": 65}, []
+    n.damage_by = {"Nerine": {"twin tails": 0, "chest": 0}, "Seraphina": {"tail fan": 0, "chest": 0}}
+    t = n._last_scrub("Her tails locked on Nerine's tail fan. A sound (Hah, Eek). Nerine's chest hurt.")
+    if "Nerine's tail fan" in t or "(" in t or "Nerine's chest" not in t:
+        problems.append(f"the wrong owner or the bracketed sounds survived: {t!r}")
+    if D._plain_name("", e, "Seraphina") not in ("Tail Strike", "Body Slam"):
+        problems.append(f"an unnamed Milotic blow: {D._plain_name('', e, 'Seraphina')}")
+    import fightexport as FX
+    recs = [{"label": "beat 1", "turn": 1, "text": "Attack 1 — A → B: BITE\n\n— Ripples —\n\nShe bit.\n\n"
+             "----------------------------------------\n⚔️ stats"}]
+    whole = FX.whole_story(recs)
+    if FX.split_story(whole.replace("She bit.", "She bit hard.")) != {0: "— Ripples —\n\nShe bit hard."}:
+        problems.append(f"the whole-fight text didn't split back into its beats: {whole!r}")
+    swapped = FX.with_story(recs[0]["text"], "New words.")
+    if "New words." not in swapped or "⚔️ stats" not in swapped or "She bit." in swapped or "Attack 1" not in swapped:
+        problems.append(f"swapping a beat's story lost its stat lines or headings: {swapped!r}")
+    bans = blocks.body_bans({"gripping"})
+    if bans is None or not bans.search("she turns half away"):
+        problems.append("a fighter holding someone could still turn half away")
+    return problems
+
+
 def retold_343_check():
     """Build 343: a get-up try told twice keeps one telling; a passage for parts the draft left out is told the
     blow itself is already in the story."""
@@ -5330,6 +5385,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "fixes344" for w in want):
+        t = time.time()
+        probs = fixes_344_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 344: busy limbs, whole-body health, tails, owners, sounds  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "retold343" for w in want):

@@ -240,6 +240,11 @@ CSS = """
 :root{--bg:#f6f4ef;--ink:#1f2937;--dim:#6b7280;--card:#fff;--line:#e5e7eb}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#15171c;--ink:#e5e7eb;--dim:#9ca3af;--card:#1f232b;--line:#2f3540}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Georgia,serif}
+.editbar{padding:8px 16px;border-bottom:1px solid var(--line);font:13px system-ui,sans-serif}
+.editbar button{font:13px system-ui,sans-serif;padding:5px 10px;margin:3px 4px 3px 0;border:1px solid var(--line);
+border-radius:6px;background:var(--card);color:var(--ink);cursor:pointer}.editbar button:hover{border-color:#2563eb}
+.editbar textarea,.tbox{width:100%;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px;
+padding:10px;font:15px/1.55 Georgia,serif;resize:vertical}.tbox{min-height:320px}#fsNote{color:#2563eb}
 header{padding:20px 16px;border-bottom:1px solid var(--line)}h1{margin:0;font:600 26px system-ui,sans-serif}
 nav{position:sticky;top:0;background:var(--bg);padding:8px 16px;border-bottom:1px solid var(--line);z-index:2;
 overflow-x:auto;white-space:nowrap;font:13px system-ui,sans-serif}nav a{margin-right:10px;color:#2563eb;text-decoration:none}
@@ -367,6 +372,7 @@ def write(s, path=None, fights=None):
             prev_by[f["name"]] = f
         if cues:
             beat_sounds[f"b{k}"] = cues
+    stories = {}
     for k, r in enumerate(recs):
         fight = r.get("fight")
         label = r.get("label") or f"beat {r.get('turn')}"
@@ -395,16 +401,252 @@ def write(s, path=None, fights=None):
         # (since build 330) a beat's sounds play once as it scrolls into view; this button plays them again
         replay = (f' <button class="sndre" title="Play this beat\'s sounds again" onclick="fsReplay(\'b{k}\')">'
                   f'&#128266;</button>' if f"b{k}" in beat_sounds else "")
-        body.append(f'<section id="b{k}"><h2>{html.escape(head)}{replay}</h2><div class="story">{st}'
+        stories[k] = story_text(r.get("text", ""))
+        body.append(f'<section id="b{k}"><h2>{html.escape(head)}{replay}</h2><div class="story">'
+                    f'<div class="tale" data-k="{k}" data-label="{html.escape(label, quote=True)}">{st}</div>'
                     f'{mech_html}</div><div class="side">{side}</div></section>')
     page = (f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,'
             f'initial-scale=1"><title>{html.escape(title or "Fight")}</title><style>{CSS}</style></head><body>'
             f'<header><h1>{html.escape(title)}</h1><div class="dim">{html.escape(arena)} · saved '
             f'{datetime.datetime.now():%Y-%m-%d %H:%M} · {len(recs)} beats</div></header>'
-            f'<nav>{"".join(nav)}</nav>{_sound_bar(beat_sounds)}{"".join(body)}'
-            f'{_sound_script(beat_sounds, list(sound_files.values()), sc)}</body></html>')
+            f'<nav>{"".join(nav)}</nav>{_edit_bar(rules)}{_sound_bar(beat_sounds)}{"".join(body)}'
+            f'{_sound_script(beat_sounds, list(sound_files.values()), sc)}{_edit_script(rules, stories, base)}'
+            f'</body></html>')
     with open(base + ".html", "w", encoding="utf-8") as fh:
         fh.write(page)
     with open(base + ".json", "w", encoding="utf-8") as fh:
         json.dump({"title": title, "arena": arena, "beats": recs}, fh, ensure_ascii=False, indent=1)
+    if (rules.get("export") or {}).get("editor", True):
+        try:
+            write_editor(base, title, arena, recs)
+        except Exception as e:
+            from engine import note_failure
+            note_failure("writing the story editor page (export.editor)", e)
     return base + ".html"
+
+
+def _edit_on(rules):
+    return bool((rules.get("export") or {}).get("editor", True))
+
+
+def _edit_bar(rules):
+    """(since build 344, export.editor) The story tools at the top of an exported fight: edit the story in place,
+    copy it all out for Venice and paste its rewrite back, and save the page (pictures, gauges and all) with it in."""
+    if not _edit_on(rules):
+        return ""
+    return ('<div class="editbar"><button onclick="fsEdit()" id="fsEditBtn">Edit the story</button>'
+            '<button onclick="fsCopyAll()">Copy the whole fight for Venice</button>'
+            '<button onclick="fsTxt()">Download it as a .txt file</button>'
+            '<button onclick="fsSave()">Save the page</button> <span id="fsNote"></span>'
+            '<details><summary>what Venice is asked (put above the text when you copy it; edit it freely)</summary>'
+            f'<textarea id="fsAsk" rows="3">{html.escape(EDITOR_ASK)}</textarea></details>'
+            '<details><summary>paste the whole fight back (Venice\'s answer, with its "=== BEAT n ===" lines)</summary>'
+            '<textarea id="fsBulk" rows="8" placeholder="Paste the whole rewritten fight here"></textarea>'
+            '<button onclick="fsApply()">Put it into the beats</button></details></div>')
+
+
+EDIT_PAGE_JS = r"""
+const FS_STORY = JSON.parse(document.getElementById('fs-story').textContent || '{}');
+let fsEditing = false;
+function fsNote(t){ const n = document.getElementById('fsNote'); n.textContent = t; clearTimeout(n._t);
+  n._t = setTimeout(() => n.textContent = '', 3000); }
+function fsEsc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fsHtml(t){ return t.trim().split(/\n\s*\n/).filter(x => x.trim()).map(x => { x = x.trim();
+  if (/^—\s.+\s—$/.test(x)) return '<div class="pov">' + fsEsc(x) + '</div>';
+  return '<p>' + fsEsc(x).replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>') + '</p>'; }).join('') || '<p class=dim>(no story text for this beat)</p>'; }
+function fsTales(){ return Array.from(document.querySelectorAll('.tale')); }
+function fsText(d){ const b = d.querySelector('textarea'); return b ? b.value : (FS_STORY[d.dataset.k] || ''); }
+function fsEdit(){ fsEditing = !fsEditing;
+  fsTales().forEach(d => { if (fsEditing) { const t = FS_STORY[d.dataset.k] || '';
+      d.innerHTML = '<textarea class="tbox" rows="14"></textarea>'; d.querySelector('textarea').value = t;
+      d.querySelector('textarea').addEventListener('input', e => { FS_STORY[d.dataset.k] = e.target.value; fsStash(); }); }
+    else { FS_STORY[d.dataset.k] = fsText(d); d.innerHTML = fsHtml(FS_STORY[d.dataset.k]); } });
+  document.getElementById('fsEditBtn').textContent = fsEditing ? 'Done editing' : 'Edit the story'; }
+function fsAll(){ return fsTales().map(d => '=== BEAT ' + d.dataset.k + ' (' + d.dataset.label + ') ===\n'
+  + fsText(d).trim()).join('\n\n') + '\n'; }
+function fsAsk(){ const a = document.getElementById('fsAsk'); return a && a.value.trim() ? a.value.trim() + '\n\n' : ''; }
+function fsCopy(t){ const done = () => fsNote('copied');
+  const fb = () => { const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select();
+    try { document.execCommand('copy'); done(); } catch(e) { fsNote('select and copy by hand'); } a.remove(); };
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, fb); else fb(); }
+function fsCopyAll(){ fsCopy(fsAsk() + fsAll()); }
+function fsDownload(name, text, type){ const b = new Blob([text], {type: type || 'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+function fsTxt(){ fsDownload(FS_PAGE + '_story.txt', fsAsk() + fsAll()); }
+function fsApply(){ const t = document.getElementById('fsBulk').value; const re = /^=== BEAT (\d+)[^=\n]*===\s*$/gm;
+  const marks = []; let m; while ((m = re.exec(t))) marks.push([m[1], m.index, m.index + m[0].length]);
+  if (!marks.length) { fsNote('no "=== BEAT n ===" lines found in it'); return; }
+  let n = 0; marks.forEach((mk, i) => { const end = i + 1 < marks.length ? marks[i + 1][1] : t.length;
+    if (FS_STORY[mk[0]] !== undefined) { FS_STORY[mk[0]] = t.slice(mk[2], end).trim(); n++; } });
+  fsTales().forEach(d => { const b = d.querySelector('textarea');
+    if (b) b.value = FS_STORY[d.dataset.k]; else d.innerHTML = fsHtml(FS_STORY[d.dataset.k]); });
+  fsStash(); fsNote(n + ' beats put in'); }
+function fsStash(){ try { localStorage.setItem('fsstory:' + FS_PAGE, JSON.stringify(FS_STORY)); } catch(e) {} }
+function fsSave(){ if (fsEditing) fsEdit();
+  document.getElementById('fs-story').textContent = JSON.stringify(FS_STORY);
+  const bulk = document.getElementById('fsBulk'); if (bulk) bulk.value = '';
+  const ask = document.getElementById('fsAsk'); if (ask) ask.textContent = ask.value;
+  fsDownload(FS_PAGE + '.html', '<!doctype html>\n' + document.documentElement.outerHTML, 'text/html');
+  try { localStorage.removeItem('fsstory:' + FS_PAGE); } catch(e) {}
+  fsNote('saved: keep the downloaded page in place of this one (it has your edits in it)'); }
+window.addEventListener('load', () => { try { const o = JSON.parse(localStorage.getItem('fsstory:' + FS_PAGE) || 'null');
+  if (o) { Object.assign(FS_STORY, o); fsTales().forEach(d => d.innerHTML = fsHtml(FS_STORY[d.dataset.k] || ''));
+    fsNote('your unsaved edits are back'); } } catch(e) {} });
+"""
+
+
+def _edit_script(rules, stories, base):
+    if not _edit_on(rules):
+        return ""
+    blob = json.dumps({str(k): v for k, v in stories.items()}, ensure_ascii=False).replace("</", "<\\/")
+    return (f'<script id="fs-story" type="application/json">{blob}</script>'
+            f'<script>const FS_PAGE={json.dumps(os.path.basename(base))};{EDIT_PAGE_JS}</script>')
+
+
+MARK = re.compile(r"^=== BEAT (\d+)(?: [^=]*)?===\s*$", re.M)
+
+
+def story_text(text):
+    """A beat's story alone, as plain text: its paragraphs (a fighter's heading, "— Ripples —", on a line of its own)
+    with a blank line between them; no stat lines, no rolls, no announcements."""
+    story, _m, _r = _split(text)
+    return "\n\n".join(x[1] if isinstance(x, tuple) else x for x in story)
+
+
+def with_story(text, new_story):
+    """A beat's full text with its story swapped for new_story: the lines above the story (the attack headings)
+    and everything from the stat lines on are kept as they were."""
+    lines = (text or "").splitlines()
+    start = next((i for i, ln in enumerate(lines) if ln.strip() and not PROGRESS.match(ln) and not RULE.match(ln.strip())
+                  and not MECH.match(ln) and not CONSOLE_HINT.search(ln.strip())), len(lines))
+    end = next((i for i in range(start, len(lines)) if RULE.match(lines[i].strip()) and lines[i].strip().startswith("-")),
+               len(lines))
+    return "\n".join(lines[:start] + [""] + new_story.strip().splitlines() + [""] + lines[end:])
+
+
+def whole_story(recs, stories=None):
+    """The whole fight's story as one text, each beat under a line of its own ("=== BEAT 3 (beat 3) ==="): what
+    Venice (or anyone) gets to rewrite, and splits back into beats by those lines."""
+    out = []
+    for k, r in enumerate(recs):
+        st = (stories or {}).get(k, story_text(r.get("text", "")))
+        out.append(f"=== BEAT {k} ({r.get('label') or 'beat ' + str(r.get('turn'))}) ===\n{st.strip()}")
+    return "\n\n".join(out) + "\n"
+
+
+def split_story(text):
+    """The beats back out of a whole-fight text: {beat number: its story}."""
+    marks = list(MARK.finditer(text or ""))
+    return {int(m.group(1)): text[m.end():(marks[i + 1].start() if i + 1 < len(marks) else len(text))].strip()
+            for i, m in enumerate(marks)}
+
+
+EDITOR_JS = r"""
+const KEY = 'fsedit:' + document.title + ':' + FS_SAVED;
+const boxes = () => Array.from(document.querySelectorAll('textarea.beat'));
+function allText(){ return boxes().map(b => '=== BEAT ' + b.dataset.k + ' (' + b.dataset.label + ') ===\n'
+  + b.value.trim()).join('\n\n') + '\n'; }
+function header(){ return document.getElementById('ask').value.trim(); }
+function stash(){ try { const o = {}; boxes().forEach(b => o[b.dataset.k] = b.value);
+  localStorage.setItem(KEY, JSON.stringify(o)); } catch(e) {} note('saved in this browser'); }
+function note(t){ const n = document.getElementById('note'); n.textContent = t; clearTimeout(n._t);
+  n._t = setTimeout(() => n.textContent = '', 2500); }
+function copy(t){ if (navigator.clipboard && window.isSecureContext !== false) {
+    navigator.clipboard.writeText(t).then(() => note('copied'), () => fallback(t)); } else fallback(t); }
+function fallback(t){ const a = document.createElement('textarea'); a.value = t; document.body.appendChild(a);
+  a.select(); try { document.execCommand('copy'); note('copied'); } catch(e) { note('select and copy by hand'); }
+  a.remove(); }
+function download(name, text, type){ const b = new Blob([text], {type: type || 'text/plain'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+function copyAll(withAsk){ copy((withAsk && header() ? header() + '\n\n' : '') + allText()); }
+function copyOne(k){ const b = boxes().find(x => x.dataset.k == k);
+  copy((header() ? header() + '\n\n' : '') + '=== BEAT ' + k + ' (' + b.dataset.label + ') ===\n' + b.value.trim()); }
+async function pasteOne(k){ const b = boxes().find(x => x.dataset.k == k);
+  try { b.value = stripMark(await navigator.clipboard.readText()); stash(); }
+  catch(e) { b.focus(); b.select(); note('press Ctrl+V to paste'); } }
+function stripMark(t){ return t.replace(/^\s*=== BEAT \d+[^=]*===\s*\n?/, '').trim(); }
+function applyAll(){ const t = document.getElementById('bulk').value; const re = /^=== BEAT (\d+)[^=\n]*===\s*$/gm;
+  const marks = []; let m; while ((m = re.exec(t))) marks.push([+m[1], m.index, m.index + m[0].length]);
+  if (!marks.length) { note('no "=== BEAT n ===" lines found in it'); return; }
+  let n = 0; marks.forEach((mk, i) => { const end = i + 1 < marks.length ? marks[i + 1][1] : t.length;
+    const b = boxes().find(x => x.dataset.k == mk[0]); if (b) { b.value = t.slice(mk[2], end).trim(); n++; } });
+  stash(); note(n + ' beats put in'); }
+function saveAll(){ boxes().forEach(b => { b.textContent = b.value; });
+  const a = document.getElementById('ask'); a.textContent = a.value;
+  document.getElementById('bulk').textContent = '';
+  download(FS_NAME + '_editor.html', '<!doctype html>\n' + document.documentElement.outerHTML, 'text/html');
+  stash(); note('saved: keep the downloaded page (it has your edits in it)'); }
+function resetAll(){ if (!confirm('Put every beat back to the story the game wrote?')) return;
+  boxes().forEach(b => b.value = FS_ORIG[b.dataset.k] || ''); try { localStorage.removeItem(KEY); } catch(e) {} }
+window.addEventListener('load', () => { try { const o = JSON.parse(localStorage.getItem(KEY) || '{}');
+  boxes().forEach(b => { if (o[b.dataset.k] !== undefined) b.value = o[b.dataset.k]; }); } catch(e) {}
+  boxes().forEach(b => b.addEventListener('input', () => { clearTimeout(b._t); b._t = setTimeout(stash, 800); })); });
+"""
+
+EDITOR_CSS = """
+:root{--bg:#f8fafc;--fg:#111827;--dim:#6b7280;--box:#ffffff;--line:#d1d5db;--acc:#2563eb}
+@media (prefers-color-scheme: dark){:root{--bg:#111827;--fg:#e5e7eb;--dim:#9ca3af;--box:#1f2937;--line:#374151;--acc:#60a5fa}}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 Georgia,serif;margin:0 auto;max-width:980px;padding:16px}
+header{position:sticky;top:0;background:var(--bg);padding:8px 0;border-bottom:1px solid var(--line);z-index:2}
+h1{font-size:22px;margin:0}.dim{color:var(--dim);font-size:13px}
+button{font:13px system-ui,sans-serif;padding:5px 10px;margin:3px 4px 3px 0;border:1px solid var(--line);
+ border-radius:6px;background:var(--box);color:var(--fg);cursor:pointer}button:hover{border-color:var(--acc)}
+textarea{width:100%;box-sizing:border-box;background:var(--box);color:var(--fg);border:1px solid var(--line);
+ border-radius:6px;padding:10px;font:15px/1.55 Georgia,serif;resize:vertical}
+textarea.beat{min-height:260px}section{margin:22px 0}h2{font-size:17px;margin:0 0 4px}
+details{margin:6px 0}summary{cursor:pointer;color:var(--dim);font:13px system-ui,sans-serif}
+.res{font:13px system-ui,sans-serif;color:var(--dim)}#note{color:var(--acc);font:13px system-ui,sans-serif}
+"""
+
+EDITOR_ASK = ("Rewrite the prose of each beat below so it reads better. Keep every '=== BEAT n (...) ===' line exactly "
+              "as it is, in the same order, with that beat's story under it. Keep what happens, who does what to "
+              "which body part, and the order of events; change only the writing. Past tense. No new events.")
+
+
+def write_editor(base, title, arena, recs):
+    """(since build 344, export.editor) <fight>_editor.html: every beat's story in a box you can edit, to copy out to
+    Venice.ai (one beat, or the whole fight as one text with an "=== BEAT n ===" line over each beat) and paste its
+    rewrite straight back in (each box, or the whole fight at once: it is split back into the beats by those lines).
+    Edits are kept in the browser as you type; Save downloads the page itself with the edits written into it (keep
+    it in place of the old one). Returns its path."""
+    name = os.path.basename(base)
+    orig = {k: story_text(r.get("text", "")) for k, r in enumerate(recs)}
+    secs = []
+    for k, r in enumerate(recs):
+        label = r.get("label") or f"beat {r.get('turn')}"
+        _st, _m, results = _split(r.get("text", ""))
+        res = "".join(f"<div class=res>{html.escape(x)}</div>" for x in results)
+        heads = [ln.strip() for ln in (r.get("text") or "").splitlines() if re.match(r"^\s*(?:Attack \d|Impact —)", ln)]
+        what = (f"<details><summary>what happened</summary><div class=res>"
+                f"{'<br>'.join(html.escape(h) for h in heads) or 'no attack (a pause, a hold, a pin)'}</div></details>")
+        secs.append(f'<section><h2>{html.escape(label[:1].upper() + label[1:])}</h2>{what}{res}'
+                    f'<button onclick="copyOne({k})">Copy this beat</button>'
+                    f'<button onclick="pasteOne({k})">Paste over it</button>'
+                    f'<textarea class="beat" data-k="{k}" data-label="{html.escape(label, quote=True)}" spellcheck="true">'
+                    f'{html.escape(orig[k])}</textarea></section>')
+    saved = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    page = (f'<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,'
+            f'initial-scale=1"><title>{html.escape(title or "Fight")} (story editor)</title><style>{EDITOR_CSS}</style>'
+            f'</head><body><header><h1>{html.escape(title or "Fight")}: the story</h1>'
+            f'<div class=dim>{html.escape(arena)} · {len(recs)} beats · saved {saved}. Edits are kept in this browser '
+            f'as you type.</div>'
+            f'<button onclick="copyAll(true)">Copy the whole fight for Venice</button>'
+            f'<button onclick="download(FS_NAME + \'_story.txt\', (header() ? header() + \'\\n\\n\' : \'\') + allText())">'
+            f'Download it as a .txt file</button>'
+            f'<button onclick="saveAll()">Save the page</button><button onclick="resetAll()">Undo all edits</button> '
+            f'<span id=note></span></header>'
+            f'<details><summary>what Venice is asked (put above the text when you copy it; edit it freely)</summary>'
+            f'<textarea id=ask rows=3>{html.escape(EDITOR_ASK)}</textarea></details>'
+            f'<details><summary>paste the whole fight back (Venice\'s answer with its "=== BEAT n ===" lines)</summary>'
+            f'<textarea id=bulk rows=8 placeholder="Paste the whole rewritten fight here"></textarea>'
+            f'<button onclick="applyAll()">Put it into the beats</button></details>'
+            f'{"".join(secs)}<script>const FS_NAME={json.dumps(name)};const FS_SAVED={json.dumps(saved)};'
+            f'const FS_ORIG={json.dumps(orig, ensure_ascii=False)};'
+            f'{EDITOR_JS}</script></body></html>')
+    path = base + "_editor.html"
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(page)
+    return path

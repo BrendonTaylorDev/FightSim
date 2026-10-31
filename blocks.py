@@ -193,6 +193,11 @@ def body_bans(has):
                  r"\bstumbl\w*", r"\b(?:legs?|feet) (?:fold|buckl|give|plant|brac|shak|trembl)\w*", r"\bplant(?:s|ed)\b",
                  r"\bfooting\b", r"\bshifts? her weight\b", r"\bballs of her feet\b", r"\ba step\b", r"\bsteps?\b",
                  r"\bset firm\b", r"\bgives? ground\b"]
+    if "gripping" in has:
+        # (since build 344) she has hold of someone: she can't turn away from her or step back (the build-342 log had
+        # Nocturne "turn half away, a deliberate show of contempt" with her jaws clamped in Ripples' hip)
+        bans += [r"\bturns? (?:half )?away\b", r"\bturned (?:half )?away\b", r"\bsteps? (?:back|away|off)\b",
+                 r"\bwalks? (?:off|away)\b", r"\bcircles?\b", r"\bkeeps? (?:her )?distance\b", r"\bout of reach\b"]
     if "dizzy" in has:      # confused or dazed: nothing that has her steady, square and untouched by it
         bans += [r"\bunmoved\b", r"\bsquares? up again\b", r"\bsteady as before\b", r"\bher rhythm doesn't change\b",
                  r"\b(?:is|was) set again\b", r"\bwithout hurry\b", r"\bher focus stays fixed\b", r"\bsharp and single\b",

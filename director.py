@@ -627,11 +627,21 @@ _PLAIN_NAMES = ((r"\b(?:jaws?|teeth|fangs?|bit(?:es?|ing)?|chomp\w*)\b", "Bite")
                 (r"\belbow", "Elbow Strike"), (r"\b(?:punch\w*|fist|jab\w*|paw|forearm|fin)\b", "Punch"))
 
 
-def _plain_name(flavor):
-    """A name for a blow the director didn't name, from what its words say she hits with ("a plain blow" when they
-    say nothing)."""
+def _plain_name(flavor, engine=None, att=None):
+    """A name for a blow the director didn't name, from what its words say she hits with; when they say nothing, from
+    her body (since build 344: the build-343 log's Milotic threw "A Plain Blow"): a body with no legs or arms slams
+    with her body or tail, anyone else just strikes."""
     fl = str(flavor or "").lower()
-    return next((n for rx, n in _PLAIN_NAMES if re.search(rx, fl)), "a plain blow")
+    got = next((n for rx, n in _PLAIN_NAMES if re.search(rx, fl)), None)
+    if got:
+        return got
+    try:
+        parts = " ".join(engine.get(att).parts).lower() if engine is not None and att else ""
+    except (ValueError, KeyError):
+        parts = ""
+    if parts and not re.search(r"\b(?:legs?|arms?|paws?|forelegs?|thighs?|feet|foot)\b", parts):
+        return "Tail Strike" if "tail" in parts else "Body Slam"
+    return "Strike" if parts else "a plain blow"
 
 
 def _apply_hold_mix(engine, att, dfn, b, act):
@@ -1521,7 +1531,7 @@ def resolve(engine, b):
                   else "targeted")
         fl = str(b.get("flavor") or "").strip()
         sev = b.get("severity") or next((h.get("severity") for h in (b.get("hits") or []) if h.get("severity")), None)
-        move = engine.improvised_move(fl if fl and len(fl) <= 40 else _plain_name(fl), "Normal", sev, target,
+        move = engine.improvised_move(fl if fl and len(fl) <= 40 else _plain_name(fl, engine, att), "Normal", sev, target,
                                       fl or "a plain close blow")
     elif mv_name != "none":
         move = engine.find_move(att, b.get("move"))
@@ -1548,7 +1558,7 @@ def resolve(engine, b):
         elif move is None and not manual and act in ("strike", "combo") and mv_name in ("attack", "strike", "blow"):
             target = ("spread" if act == "combo" and len([h for h in (b.get("hits") or []) if h.get("part")]) > 1
                       else "targeted")
-            move = engine.improvised_move(_plain_name(b.get("flavor")), "Normal", b.get("severity"), target,
+            move = engine.improvised_move(_plain_name(b.get("flavor"), engine, att), "Normal", b.get("severity"), target,
                                           b.get("flavor") or "a plain blow")
         if move is None and manual and act in ("strike", "combo"):
             # a typed /move the fighter doesn't know: use it from moves.json for this one attack (not learned)

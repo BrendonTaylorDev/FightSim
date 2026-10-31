@@ -6709,7 +6709,12 @@ class Narrator:
                 kind = (f"PILES ON TOO, joining {' and '.join(a['joined'])} in a DOUBLE PIN (both pressing at once, each "
                         f"on her own spots) on")
             kept = t == "hold_start" and a.get("parts") and all(p.get("existing") for p in a["parts"])
-            if kept:
+            if kept and any(p.get("fresh") for p in a["parts"]):
+                # (since build 344) a second limb on the grip she put on this same beat (the build-343 log: jaws
+                # added to Seraphina's arm wrap were told as a hold "already on")
+                kind = ("ADDS a second limb to the grip she has just put on this beat (the grip stays one hold; now "
+                        "both hold the same place)")
+            elif kept:
                 kind = ("KEEPS the hold she already has on (it never came off: she shifts, renews or tightens the same "
                         "grip, she does not let go and grab again)")
             parts = ", ".join(f"{p['part']} ({self._hold_word(p['power'])} pressure"
@@ -10051,7 +10056,9 @@ class Narrator:
         return (cache.get(who, set()) - pinned_arms) | ({"aloft"} if self._aloft(who) else {"unfooted"}
                                         if self._in_air(who) or lying else set()) | (
             self._pose_feats(who) if cache.get(who) else set()) \
-            | ({"dizzy"} if who in (getattr(self, "dizzy", None) or ()) else set())     # (no body known: nothing to ban by)
+            | ({"dizzy"} if who in (getattr(self, "dizzy", None) or ()) else set()) \
+            | ({"gripping"} if any(g[0] == who for g in (getattr(self, "grips", None) or []))
+               else set())     # (no body known: nothing to ban by)
 
     def _pose_feats(self, who):
         """Words for story_blocks.body_bans from how she is right now, not her body: "standing" (on her feet all
@@ -16117,7 +16124,9 @@ class Narrator:
         text = re.sub(r"\b[Aa] symphony of (\w+)", r"\1", text)
         # (since build 341) a sound left in brackets after the line that already tells it ("...went on and on,
         # cracking at the end. (Yiiiiip—)"): the brackets go, the sound stays, set in italics like the others
-        text = re.sub(r"\(\s*\*?([A-Z][a-z]{1,14}(?:[-—–][a-z]*)?[-—–!]*)\*?\s*\)", r"*\1*", text)
+        snd = r"\*?[A-Z][a-z]{1,14}(?:[-—–][a-z]*)?[-—–!]*\*?"
+        text = re.sub(r"\(\s*(" + snd + r"(?:,\s*" + snd + r")*)\s*\)",
+                      lambda m: "*" + m.group(1).replace("*", "") + "*", text)
         # a pain level's label used as plain prose ("The pain was very painful"): the feeling, not the label
         text = re.sub(r"\b(pain|ache|hurt|sting|throb)( in (?:her|his) [a-z ]{2,30})? (was|felt) very painful\b",
                       lambda m: f"{m.group(1)}{m.group(2) or ''} {m.group(3)} bad", text)
@@ -16131,6 +16140,7 @@ class Narrator:
         text = self._mend_body_slips(text)
         if getattr(self, "_getup_tries", None) or getattr(self, "_getup_who", None):
             text = self._one_telling_per_try(text)
+        text = self._mend_wrong_owner(text)
         # (since build 341) "her horns" for a fighter with one horn (an Absol), when nobody in the fight has more
         parts_ = [set(v) for v in (self.damage_by or {}).values()]
         if parts_ and any("horn" in ps for ps in parts_) and not any(
@@ -18238,6 +18248,24 @@ class Narrator:
                 bits = re.split(r"(\*[^*\n]+\*|\"[^\"\n]+\"|“[^”\n]+”)", sent)
                 new = "".join(b if k % 2 else mend(b) for k, b in enumerate(bits))
                 text = text.replace(sent, new, 1)
+        return text
+
+    def _mend_wrong_owner(self, text):
+        """(since build 344) A part named as one fighter's that only her opponent has ("Nerine's tail fan" for a
+        Buizel fighting a Milotic; "Ripples' left upper foreleg" when only the Absol has forelegs): the right name."""
+        bodies = {w: set(ps) for w, ps in (self.damage_by or {}).items() if ps}
+        if len(bodies) != 2:
+            return text
+        (a, pa), (b, pb) = bodies.items()
+        for who, mine, other, theirs in ((a, pa, b, pb), (b, pb, a, pa)):
+            words = {re.sub(r"^(?:left|right) ", "", p) for p in mine}
+            for part in sorted(theirs, key=len, reverse=True):
+                bare = re.sub(r"^(?:left|right) ", "", part)
+                if part in mine or bare in words or len(bare) < 4:
+                    continue
+                rx = re.compile(re.escape(poss(who)) + r"(\s+(?:own\s+)?(?:(?:left|right)\s+)?)" + re.escape(bare) + r"\b",
+                                re.I)
+                text = rx.sub(lambda m: poss(other) + m.group(1) + m.group(0)[len(m.group(0)) - len(bare):], text)
         return text
 
     TRY_ORDINAL = re.compile(r"(?i)\b(first|second|third|fourth|last|final)\s+(?:attempt|try|effort|push)\b")

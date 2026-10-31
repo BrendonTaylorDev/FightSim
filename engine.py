@@ -706,7 +706,8 @@ class Engine:
         # health lost: damage x loss_per_damage_point x the bracket's health_mult (a soft, worn-down part costs more)
         # x how much the part matters to the whole body (health.part_weights: a throat far more than an ear)
         vital = self.part_weight(p.name)
-        raw_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital * health_scale
+        raw_loss = taken * r["health"]["loss_per_damage_point"] * hmult * vital * health_scale \
+            * float(getattr(self, "_wb_share", None) or 1.0)
         health_loss = self._soften_loss(defender, raw_loss, power)
         defender.health = self._floor(hp_b - health_loss)
         if hp_b > defender.health:
@@ -992,7 +993,7 @@ class Engine:
                     "_force_dodge", "_juggle", "_last_stand_now", "_overcommit_now", "_pummel_now", "_strike_flavor",
                     "_sustain_now", "_source", "_knock_on", "_tac_before", "beat_loss", "sub_window", "pin_window",
                     "nudges", "_windows_ready", "_pre_rolls", "directed", "ordered", "dice_mode", "lucky",
-                    "_sub_open_all", "_force_dev", "_force_dev_used", "_ticking", "_dominate_turn", "_passive", "_overcommit_why", "_quirks_now", "_ambush_try",
+                    "_sub_open_all", "_force_dev", "_force_dev_used", "_wb_share", "_ticking", "_dominate_turn", "_passive", "_overcommit_why", "_quirks_now", "_ambush_try",
                     "rules", "roster", "roster_species", "scenes", "scene_cfg", "scene_name", "scene", "movedex",
                     "variants", "variant_of", "settings_applied", "_seed0", "rng", "event_rng")
 
@@ -1398,7 +1399,10 @@ class Engine:
         """A named move (or an improvised `move` dict): see _move_attack. A confused attacker who passes her confusion
         check and attacks anyway has it on the result (through_confusion), so the story can show her doing it dizzy."""
         self._confusion_passed = None
-        res = self._move_attack(attacker, *args, **kw)
+        try:
+            res = self._move_attack(attacker, *args, **kw)
+        finally:
+            self._wb_share = None
         if self._confusion_passed and isinstance(res, dict) and not res.get("confused_self_hit"):
             res["through_confusion"] = True
         self._confusion_passed = None
@@ -1537,6 +1541,12 @@ class Engine:
         self._aim_miss = None
         if target == "whole_body":
             plan = list(d.parts)
+            # (since build 344, moves.whole_body_health) a blow over all of her (a Thunderbolt's charge through
+            # every part) costs her health at this share a part: a charge spread through her whole body is not 36
+            # blows. The build-342 log had one Thunderbolt take 295 of Ripples' health, eight bites' worth.
+            wb = (self.rules.get("moves") or {}).get("whole_body_health")
+            if isinstance(wb, dict) and wb.get("enabled", True):
+                self._wb_share = max(0.05, min(1.0, float(wb.get("share", 0.45))))
         else:
             names = []
             for p in parts:
@@ -1955,6 +1965,15 @@ class Engine:
                             fin_["went_down"] = True
                             fin_["look"] = ("her legs go out from under her and she goes DOWN where she stands, "
                                             + fin_["look"][0].lower() + fin_["look"][1:])
+                        # (since build 344) nothing left in her: a grip of her own on someone falls open (the
+                        # build-342 log had Ripples finished and down with her jaws still on Nocturne's nose)
+                        mine_ = [h for h in list(self.holds.values()) if h.attacker == d.name]
+                        if mine_:
+                            gone_ = [self.release(h.id, f"{d.name} is finished: her grip falls open") for h in mine_]
+                            fin_["let_go"] = [f"{x['part'].lower()} of {x['defender']}" for x in gone_]
+                            fin_["look"] = (fin_["look"].rstrip(". ") + "; her grip on " + poss_word(gone_[0]["defender"])
+                                            + " " + " and ".join(dict.fromkeys(x["part"].lower() for x in gone_))
+                                            + " falls open, nothing left in her to hold it")
                         res["status_applied"] = (res.get("status_applied") or []) + [fin_]
             except Exception as exc:
                 self.note_failure("her reaction to a blow", exc)
@@ -2922,7 +2941,13 @@ class Engine:
         if not move or move.get("target") in ("whole_body", "status", "hold", "self"):
             return None
         text = f"{move.get('name', '')} {move.get('about', '')}".lower()
-        kind = next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, text)), None)
+        # (since build 344) the move's own name first: "Tail Lash To The Nose" with "the jaw" in its words is a tail
+        # blow, not a bite (the build-343 log had it refused for Seraphina's jaws being busy)
+        kind = next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, str(move.get("name", "")).lower())), None) \
+            or next((k for k, rx in self.LIMB_KINDS if rx and re.search(rx, text)), None)
+        if kind is None and str(move.get("from") or "").lower() in ("mouth", "throat", "jaws"):
+            # (since build 344) a beam or a jet out of her mouth (Hydro Pump) can't come while her jaws are clamped
+            kind = "bite"
         if kind == "bite":
             for h in self.holds.values():
                 if h.attacker == a.name and re.search(r"\b(jaws?|teeth|fangs?|mouth|bite)\b", str(h.with_part or "").lower()):
@@ -4653,7 +4678,7 @@ class Engine:
                     asked = ""
                 return {"type": "hold_start", "hold_id": h.id, "attacker": a.name, "defender": d.name,
                         "part": pname, "power": h.power, "change_per_beat": h.change_per_turn,
-                        "flavor": flavor, "with": h.with_part, "existing": True,
+                        "flavor": flavor, "with": h.with_part, "existing": True, "fresh": h.turns_active == 0,
                         "asked_with": asked if keep_with else "", "choke_kind": self._hold_choke_kind(h)}
         if self.traits_cfg():
             # (since build 280) traits.hold: how hard her grips bite; works_the_hold: hers build faster; a paw grip
@@ -9212,6 +9237,10 @@ class Engine:
         tails = self._tail_grip_words(a, move, flavor)
         for pname, c in zip(names, contacts):
             w_ = (c[3] if len(c) > 3 else "") or tails   # (since build 341) a tail hold with no limb named: her tails
+            own_tail = self._tail_grip_words(a, {"name": "tail"}, "")
+            if own_tail and own_tail != "her tail" and re.match(r"(?i)^(?:with )?her tail\b(?!s)", str(w_)):
+                # (since build 344) "her tail" for one with two of them (Ripples' twin tails): her own word for them
+                w_ = re.sub(r"(?i)^(?:with )?her tail\b", own_tail, str(w_), count=1)
             started.append(self.start_hold(a.name, d.name, pname, c[1], c[2], flavor, w_, keep_with=enforce))
             h = self.holds.get(started[-1]["hold_id"])
             # (a grip with words of its own is judged by them: "both paws, turning the foot" in a hold whose look

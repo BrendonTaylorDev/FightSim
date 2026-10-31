@@ -1037,7 +1037,8 @@ class Display:
                 out.append(f"📌 **DOUBLE PIN{mv}: {a['attacker']} joins {' and '.join(a['joined'])} on {a['defender']}** — "
                            f"{a.get('flavor', '')}")
             else:
-                kept = t == "hold_start" and a.get("parts") and all(p.get("existing") for p in a["parts"])
+                kept = t == "hold_start" and a.get("parts") and all(p.get("existing") and not p.get("fresh")
+                                                                    for p in a["parts"])
                 out.append(f"{icon} **{word}{' kept' if kept else ''}{mv}: {a['attacker']} on {a['defender']}** — "
                            f"{a.get('flavor', '')}")
             mark = len(out)
@@ -1083,7 +1084,10 @@ class Display:
                            + ("Pressure starts next beat." if pf <= 0 else
                               f"The presses land now (×{num(pf)}, listed below) and every beat after."))
             elif t == "hold_start" and a.get("parts") and all(p.get("existing") for p in a["parts"]):
-                out.append("- This grip was already on: it carries on (its pressure for this beat is listed below).")
+                # (since build 344) a grip put on earlier in this same beat, a second limb added to it: not "kept"
+                out.append("- Added to the grip she put on this beat: one grip, held with both now (its pressure for "
+                           "this beat is listed below)." if any(p.get("fresh") for p in a["parts"]) else
+                           "- This grip was already on: it carries on (its pressure for this beat is listed below).")
             else:
                 hf = float(self.rules.get("holds", {}).get("first_beat_damage", 1.0))
                 out.append("- Pressure damage starts next beat and continues every beat until released." if hf <= 0 else
@@ -1196,8 +1200,10 @@ class Display:
             fl_ = str(a.get("flavor") or "").strip()
             if fl_ and a.get("attacker") and fl_[:1].islower():
                 fl_ = f"{a['attacker']} {fl_}"     # (since build 309) "is given no room..." had lost its subject
-            out.append(f"⏸️ **Breather**" + (f": {fl_}" if fl_ else
-                                             f" ({a['attacker']} catches her breath)" if a.get("attacker") else ""))
+            line_ = f"⏸️ **Breather**" + (f": {fl_}" if fl_ else
+                                          f" ({a['attacker']} catches her breath)" if a.get("attacker") else "")
+            if line_ not in out:      # (since build 344) the same breather twice in one beat is said once
+                out.append(line_)
         elif t == "heal":
             out.append(f"💚 **{a['fighter']} recovers**" + (f": {a['flavor']}" if a.get("flavor") else ""))
             for c in a.get("parts", []):

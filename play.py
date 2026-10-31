@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-31 build 343 (no get-up try or blow told twice)"
+VERSION = "2026-10-31 build 344 (dots on hover, a story editor in the export, fixes from two fights)"
 
 HELP = """
 =============================================================================================
