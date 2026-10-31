@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-31 build 342 (one limb one grip, clean pin takedowns, fixes from the build-341 log)"
+VERSION = "2026-10-31 build 343 (no get-up try or blow told twice)"
 
 HELP = """
 =============================================================================================

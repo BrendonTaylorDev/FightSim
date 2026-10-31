@@ -968,6 +968,29 @@ def taps_333_check():
     return problems
 
 
+def retold_343_check():
+    """Build 343: a get-up try told twice keeps one telling; a passage for parts the draft left out is told the
+    blow itself is already in the story."""
+    import narrator as N
+    problems = []
+    with open("rules.json", encoding="utf-8") as fh:
+        n = N.Narrator("x", json.load(fh))
+    n.strengths, n.grips = {"Ripples": 70, "Nocturne": 65}, []
+    n._getup_tries, n._getup_who = 3, "Ripples"
+    t = ("Ripples' first attempt to rise was a valiant effort. She folded back down.\n\nThe first try to rise was a "
+         "miserable failure.\n\nHer second try went down hard again.\n\nThe third try was the charm. She stood.")
+    out = n._one_telling_per_try(t)
+    if "valiant" in out or "miserable" not in out or "third try" not in out:
+        problems.append(f"the doubled first try should keep one telling: {out!r}")
+    n._getup_tries, n._getup_who = None, None
+    if n._last_scrub(t).count("first") != 2:
+        problems.append("with no get-up this beat, the tries should be left alone")
+    n._must_parts = ["Left Knee", "Left Foot", "Left Thigh"]
+    if n._told_hit_parts("The claws raked her left knee.") != ["Left Knee"]:
+        problems.append("the parts already told should be found")
+    return problems
+
+
 def grips_342_check():
     """Build 342: one limb holds one place (a paw named for a new grip leaves the old one; "both paws" on two places
     is one paw each); a Tail Bind with no limb named is held with her tails; a sound left in brackets and a pain
@@ -5307,6 +5330,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "retold343" for w in want):
+        t = time.time()
+        probs = retold_343_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 343: a get-up try or a blow told twice  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "grips342" for w in want):

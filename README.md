@@ -654,6 +654,13 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 343
+- **A get-up try told twice** (build-341 log, beat 10: two "first try" paragraphs before the second and third): when
+  the same try opens two paragraphs, the earlier telling goes.
+- **A blow told twice** (beat 12: the knee rake at the start and again at the end). The draft had told the rake on
+  her knee but not its knock into her foot and thigh; the short passage for those is now told the blow is already
+  in the story, and shows only the force carrying on into them.
+
 ## Build 342
 - **One limb holds one place.** A paw already pinning one part that gets named for a new grip (the build-340 log:
   Nocturne's right forepaw on Ripples' thigh, then on her neck too) now moves: the old grip comes off, the pin goes

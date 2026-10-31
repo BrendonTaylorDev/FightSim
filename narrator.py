@@ -16129,6 +16129,8 @@ class Narrator:
             text = self._mend_fragments(text)
             text = self._mend_leftovers(text)
         text = self._mend_body_slips(text)
+        if getattr(self, "_getup_tries", None) or getattr(self, "_getup_who", None):
+            text = self._one_telling_per_try(text)
         # (since build 341) "her horns" for a fighter with one horn (an Absol), when nobody in the fight has more
         parts_ = [set(v) for v in (self.damage_by or {}).values()]
         if parts_ and any("horn" in ps for ps in parts_) and not any(
@@ -18238,6 +18240,34 @@ class Narrator:
                 text = text.replace(sent, new, 1)
         return text
 
+    TRY_ORDINAL = re.compile(r"(?i)\b(first|second|third|fourth|last|final)\s+(?:attempt|try|effort|push)\b")
+
+    def _one_telling_per_try(self, text):
+        """(since build 343) A get-up try told twice (the build-341 log: "Ripples' first attempt to rise was a valiant
+        effort..." and then "The first try to rise was a miserable failure..."): when the same try opens two
+        paragraphs, the earlier telling goes, as long as it is about that try alone."""
+        paras = text.split("\n\n")
+        seen, drop = {}, set()
+        for i, para in enumerate(paras):
+            first = self.TRY_ORDINAL.search(_SENT.split(para.strip())[0] if para.strip() else "")
+            if not first:
+                continue
+            k = first.group(1).lower()
+            if k in seen and len({m.group(1).lower() for m in self.TRY_ORDINAL.finditer(paras[seen[k]])}) == 1:
+                drop.add(seen[k])
+            seen[k] = i
+        if not drop:
+            return text
+        if self.progress:
+            self.progress("a get-up try was told twice: keeping one telling")
+        return "\n\n".join(p for i, p in enumerate(paras) if i not in drop)
+
+    def _told_hit_parts(self, text):
+        """(since build 343) The parts hit this beat that the passage already names (so a passage for the ones it left
+        out is not asked to tell the blow again)."""
+        low = (text or "").lower()
+        return [p for p in dict.fromkeys(getattr(self, "_must_parts", None) or []) if _mentions(low, p)]
+
     def _tell_missing_events(self, written, keys):
         """After the attacks: anything else that happened this beat and is still missing from the whole passage (the
         scenery she was slammed into, a tumble, a clash, the hits on a part) gets one short focused pass each, at most
@@ -18271,8 +18301,14 @@ class Narrator:
                           f"get{'' if len(todo) != 1 else 's'} a short passage of {'their' if len(todo) != 1 else 'its'} own")
         for issue in todo:
             seen = "\n\n".join(w for w in written if w)
+            told_ = self._told_hit_parts(seen) if "these hits landing" in issue else []
+            # (since build 343) the build-341 log: the knee rake told, only the knock into her foot and thigh left
+            # out, and the passage for them told the whole rake again
+            also = (f" The blow itself is ALREADY TOLD (it landed on {', '.join(told_)}): do NOT tell it again, no "
+                    f"new contact, no second cry for it. Show only the force of it carrying on into these parts and "
+                    f"how they feel it, in one or two sentences." if told_ else "")
             ask = (f"\n\nTHE PASSAGE SO FAR (already written; never repeat it):\n<<<\n{_tail(seen, 1500)}\n>>>\n\n"
-                   f"Something that happens in this beat is missing from the passage: {issue}. Write ONLY that, in "
+                   f"Something that happens in this beat is missing from the passage: {issue}.{also} Write ONLY that, in "
                    f"{'2 to 4' if '; and ' not in issue else '4 to 7'} sentences in the same voice and tense as the "
                    f"passage, as it happens, with the body's reaction sized to how hurt she is. Nothing else happens: "
                    f"no new attacks, falls or pins.")
