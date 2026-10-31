@@ -1683,14 +1683,33 @@ def hold_shapes(f, x0, y0, w, h, tx, width, body="#c08457", belly=None, holders=
         y += 2
     if pin:
         gw = max(60.0, min(240.0, width - 8))
-        out.append(("text", tx, y, f"Pinned by {pin.get('by')}", "#fbbf24", 9, True))
+        out.append(("text", tx, y, f"Pinned by {' and '.join(_names(pin.get('by')))}", "#fbbf24", 9, True))
         y += 15
-        sec, of = float(pin.get("seconds") or 0), max(1.0, float(pin.get("of") or 60))
+        sec = float(pin.get("seconds") or 0)
+        if pin.get("of"):  # a fixed-length pin (pin.fade off): the clock against its length
+            of = max(1.0, float(pin["of"]))
+            frac, label = min(1.0, sec / of), f"held {sec:.0f} of {of:.0f} s"
+        else:  # (since build 341) the usual pin has no fixed length: how close she is to going under
+            fade = float(pin.get("fade") or 0)
+            frac, label = min(1.0, fade / 100.0), f"held {sec:.0f} s · going under {fade:.0f}%"
         out.append(("rect", tx, y, tx + gw, y + 9, "#1f2937", "#4b5563"))
-        out.append(("rect", tx, y, tx + gw * min(1.0, sec / of), y + 9, "#f59e0b", ""))
-        out.append(("text", tx + 4, y - 1, f"held {sec:.0f} of {of:.0f} s", "#f9fafb", 7, False))
+        out.append(("rect", tx, y, tx + gw * frac, y + 9, "#f59e0b", ""))
+        out.append(("text", tx + 4, y - 1, label, "#f9fafb", 7, False))
         y += 16
     return out, max(h + 6, y - y0 + 4)
+
+
+def _names(by):
+    """A pin's pinners, one name or a list of them (a double pin), as a list."""
+    return [by] if isinstance(by, str) else [str(b) for b in by or ()]
+
+
+def _clock_words(p):
+    """(since build 341) A pin's clock in words: against its length for a fixed-length pin, else how long it has been
+    held and how close she is to going under (the usual pin has no fixed length)."""
+    if p.get("of"):
+        return f"{p['seconds']} of {p['of']} seconds"
+    return f"{p['seconds']} seconds, going under {p.get('fade', 0)}%"
 
 
 def shapes_svg(shapes, width, height):
@@ -1988,9 +2007,9 @@ def grip_lines(f):
                        if t else ""), "#1d4ed8"))
     p = g.get("pin")
     if p:
-        out.append((f"Pinned by {' and '.join(p['by'])}: {p['seconds']} of {p['of']} seconds", "#b91c1c"))
+        out.append((f"Pinned by {' and '.join(_names(p['by']))}: {_clock_words(p)}", "#b91c1c"))
     for x in g.get("pinning") or ():
-        out.append((f"Pinning {x['on']}: {x['seconds']} of {x['of']} seconds", "#1d4ed8"))
+        out.append((f"Pinning {x['on']}: {_clock_words(x)}", "#1d4ed8"))
     gaps = [f"{n}: {w}" for n, w in g.get("gaps") or () if w]
     if gaps:
         out.append(("Distance  " + "  ·  ".join(gaps), "#4b5563"))

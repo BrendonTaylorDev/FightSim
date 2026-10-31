@@ -305,6 +305,11 @@ def aim_part(eng, f, d, m, part, roll=None):
         return (t, pick, "the part she is taking apart") if t and t != part else None
     if pick == "opportunist":
         hurt = sorted(parts, key=lambda p: -d.parts[p].damage)
+        mo = move_on_cfg(eng)
+        if mo and len(hurt) > 1 and d.parts[hurt[0]].damage >= float(mo.get("ruined_at", 300)) \
+                and (roll * 3571) % 1.0 < float(mo.get("ruined_skip", 0.5)):
+            # (move_on) a part already ruined has little more to give: the next worst instead, some of the time
+            hurt = [p for p in hurt if d.parts[p].damage < float(mo.get("ruined_at", 300))] or hurt
         if hurt and d.parts[hurt[0]].damage >= num(eng, pick, "hurt_from", 60) and hurt[0] != part:
             return hurt[0], pick, "her worst-hurt part"
         return None
@@ -330,6 +335,64 @@ def aim_part(eng, f, d, m, part, roll=None):
                                  "hobbler": "her legs"}[pick]
         return cands[-1], pick, "her legs"
     return None
+
+
+# ------------------------------------------------------------------------------------------------- moving on
+
+def move_on_cfg(eng):
+    """rules.json styles.move_on, or None when it (or styles) is off."""
+    c = (cfg(eng) or {}).get("move_on") or {}
+    return c if c.get("enabled", False) else None
+
+
+def done_with(eng, a, d, part, recent=()):
+    """(since build 341, styles.move_on) Why she has had enough of `part` for now, or None: it is ruined, her
+    opponent is guarding it, or she has gone there `streak` times running. recent: the parts she aimed at on this
+    opponent lately, oldest first."""
+    mo = move_on_cfg(eng)
+    if not mo or part not in d.parts:
+        return None
+    if d.parts[part].damage >= float(mo.get("ruined_at", 300)):
+        return "ruined", f"her {part.lower()} is ruined already: there is little more to take there"
+    try:
+        g = eng.guarded_wound(d)
+    except Exception as exc:  # noqa: BLE001
+        eng.note_failure("styles.done_with", exc)
+        g = None
+    if g and g[0] == part:
+        return "guarded", f"she is covering her {part.lower()} now"
+    n = int(mo.get("streak", 3))
+    if n > 0 and len(recent) >= n and all(p == part for p in list(recent)[-n:]):
+        return "streak", f"she has gone to her {part.lower()} {n} times running, and {d.name} is reading it"
+    return None
+
+
+def move_on(eng, a, d, part, roll, recent=()):
+    """(since build 341, styles.move_on) A blow aimed at a part she has had enough of, moved some of the time to the
+    part beside it worth it most (the most hurt of its neighbours that is not ruined), or the worst-hurt part left:
+    (new part, why) or None to leave it."""
+    from engine import neighbor_parts, body_region
+    mo = move_on_cfg(eng)
+    got = done_with(eng, a, d, part, recent) if mo else None
+    if not got:
+        return None
+    kind, why = got
+    st = of(eng, a)
+    ch = float(mo.get("chance", 0.36)) * (1.0 + float(mo.get("style", 0.5))
+                                         * max(st.get("opportunist", 0.0), st.get("dismantler", 0.0)))
+    if kind == "guarded":
+        ch *= float(mo.get("guarded", 0.6))
+    if roll >= min(0.95, ch):
+        return None
+    ruined = float(mo.get("ruined_at", 300))
+    same, near = neighbor_parts(list(d.parts), part)
+    cands = [p for p in same + near if p != part and d.parts[p].damage < ruined and body_region(p) != "tail"]
+    if not cands:
+        cands = [p for p in d.parts if p != part and d.parts[p].damage < ruined and body_region(p) != "tail"]
+    if not cands:
+        return None
+    new = max(cands, key=lambda p: (d.parts[p].damage, -cands.index(p)))
+    return new, why
 
 
 # ------------------------------------------------------------------------------------------------- engine effects

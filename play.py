@@ -33,7 +33,7 @@ import body as _body
 import explain
 import limbreport as _limbreport
 
-VERSION = "2026-10-30 build 340 (Profiles: how each fighter fights, and what each trait does in a fight)"
+VERSION = "2026-10-31 build 341 (the end of a pin told in full, no 60 s pin bar, moving on from a part)"
 
 HELP = """
 =============================================================================================

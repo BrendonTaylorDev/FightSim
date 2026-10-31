@@ -537,6 +537,20 @@ def _apply_style_aim(engine, att, dfn, b):
     mv = engine.find_move(a.name, b.get("move")) if b.get("move") else None
     if not mv or mv.get("charge") or engine.pinned_by(a.name):
         return b
+    # (since build 341, styles.move_on) a part she has had enough of for now (ruined, guarded, or gone to time after
+    # time): some of the time she moves on to the part beside it; often she keeps at it
+    recent = [p for who, p in (getattr(engine, "aim_log", None) or {}).get(a.name, []) if who == d.name]
+    said = re.search(r"\b%s\b" % re.escape(name.lower().split()[-1]), str(b.get("flavor") or "").lower())
+    moved = None if said else styles.move_on(engine, a, d, name, styles._roll(engine, "move_on", a.name, d.name, name),
+                                             recent)
+    if moved:
+        part, why = moved
+        fitted = engine.fit_to_facing(d.name, [part])[0] if d.name in engine.downed else [part]
+        if part in fitted:
+            hl = [dict(h) for h in (b.get("hits") or [])]
+            if hl and hl[0].get("part"):
+                hl[0]["part"] = part
+            return dict(b, part=part, _aimed=True, _style_aim=f"moving on: {why}", **({"hits": hl} if hl else {}))
     if name == styles.dismantle_target(engine, a, d):
         return dict(b, _aimed=True)
     said = re.search(r"\b%s\b" % re.escape(name.lower().split()[-1]), str(b.get("flavor") or "").lower())
@@ -1351,6 +1365,15 @@ def resolve(engine, b):
             b = _apply_style_aim(engine, att, dfn, b)
         if not b.get("_aimed"):
             b = _apply_variety(engine, att, dfn, b)
+        elif b.get("part"):
+            # (since build 341) a blow her style aimed is remembered too, so styles.move_on sees her going to the
+            # same part time after time
+            try:
+                log = engine.__dict__.setdefault("aim_log", {}).setdefault(engine.get(att).name, [])
+                log.append((engine.get(dfn).name, _fit_part(engine, dfn, b["part"]) or b["part"]))
+                del log[:-6]
+            except (ValueError, KeyError) as exc:
+                engine.note_failure("director.aim_log", exc)
     if (not manual and dfn and engine._taps_rule() and act in ("strike", "combo", "hold_start", "submission")
             and engine.get(att).name not in (getattr(engine, "ordered", None) or ())):
         b = _apply_tap_steer(engine, att, dfn, b, "strikes" if act in ("strike", "combo") else "holds")

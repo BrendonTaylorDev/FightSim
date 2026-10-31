@@ -654,6 +654,21 @@ After each beat's prose, the program prints the exact numbers in this format:
 - The director can't pass off getting up as an attack: an improvised move called "Attempted Push-Up" (or get up, stand up, recover, brace, retreat...) is rejected, and it has to pick a real attack or a pause.
 - "Bone grating against bone" is caught on parts that can't break yet, and "electrified" counts as stray electricity.
 
+## Build 341
+- **No "held X of 60 s" on a pin.** A pin has no fixed length unless `pin.fade` is switched off, so the cards
+  (window, export, hover text) now show how long it has been held and how close she is to going under. The bar
+  against a length only comes back for a fixed-length pin. The pinner's name no longer shows as a list.
+- **The end of a pin, told in full** (`pin.aftermath`, on; needs `pin.make_sure`). When she passes out, the pinner
+  keeps the pin on for several seconds more, making sure (breaths counted, eyes and limbs watched, maybe easing a
+  fraction to see if anything comes). Then she lets go one grip at a time (her jaws off the throat, her weight off
+  the chest last), gets off, and watches her opponent slump: head rolling loose, limbs falling slack. The story is
+  asked for all of it; when a draft leaves out the waiting or the slump, a short passage puts it in.
+- **Moving on from a part** (`styles.move_on`, on). A blow aimed at a part she has had enough of (ruined, past 300
+  damage; guarded by her opponent; or hit three times running) is moved, by chance, to the neighbouring part worth
+  it most (stomach to chest, ribs or flank). It's about even: a strong opportunist or dismantler moves on about
+  half the time and keeps hammering the other half. Nothing stops repeated attacks, and she can come back to it.
+  The opportunist's pull to the worst-hurt part also skips a ruined part half the time. `chance` sets the balance.
+
 ## Build 340
 
 **The Profiles button shows how each fighter fights.** Each fighter's tab now has a scrollable "How she fights" section

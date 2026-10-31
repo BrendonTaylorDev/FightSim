@@ -968,6 +968,50 @@ def taps_333_check():
     return problems
 
 
+def pins_341_check():
+    """Build 341: a pin with no fixed length shows no "of 60 s" on the cards; the end of a pin is told in full (made
+    sure of, let go grip by grip, her slump); styles.move_on sometimes, never always, moves a blow off a part she
+    has had enough of."""
+    import cards, styles
+    import narrator as N
+    problems = []
+    e = Engine(seed=1)
+    e.rules.setdefault("pin", {}).setdefault("fade", {})["enabled"] = True
+    clock = e._pin_clock({"seconds": 50, "duration": 60, "fade": 85})
+    if "of" in clock or clock.get("fade") != 85:
+        problems.append(f"a pin with no fixed length still has a length on the cards: {clock}")
+    if "of" in cards._clock_words({"seconds": 50, "fade": 85}) and "60" in cards._clock_words({"seconds": 50, "fade": 85}):
+        problems.append("the card words still say 'of 60'")
+    e.rules["pin"]["fade"]["enabled"] = False
+    if e._pin_clock({"seconds": 50, "duration": 60}).get("of") != 60:
+        problems.append("a fixed-length pin lost its length")
+    lets = N.release_words("Nocturne", "Ripples", [["Throat", "her jaws"], ["Chest", "her full weight"],
+                                                    ["Left Thigh", "her right forepaw"]])
+    if len(lets) != 3 or "weight" not in lets[-1] or "jaws" not in lets[0]:
+        problems.append(f"letting go grip by grip came out wrong: {lets}")
+    n = N.Narrator("x", e.rules)
+    n.strengths, n.grips = {"Ripples": 0, "Nocturne": 80}, []
+    n._faint, n._faint_grips = ("Ripples", "Nocturne", 60), [["Throat", "her jaws"], ["Chest", "her full weight"]]
+    t = n._ensure_sure("Ripples went limp under her, out cold. Nocturne let go.")
+    if not N.HELD_ON.search(t) or not N.SLUMP_SAID.search(t.split("let go", 1)[-1] if "let go" in t else t):
+        problems.append(f"the end of the pin is missing the making sure or the slump: {t!r}")
+    if "several seconds more" not in n._aftermath_ask("Nocturne", "Ripples", {"grips": n._faint_grips}):
+        problems.append("the story isn't asked to hold the pin on longer")
+    # move_on: a ruined stomach, aimed at by Nocturne; over many rolls she sometimes moves, sometimes stays
+    r, d = e.get("Nocturne"), e.get("Ripples")
+    d.parts["Stomach"].damage = 500
+    got = [styles.move_on(e, r, d, "Stomach", i / 200.0) for i in range(200)]
+    moved = sum(1 for g in got if g)
+    if not (40 <= moved <= 160):
+        problems.append(f"move_on should be a chance, roughly even: it moved {moved} of 200")
+    if any(g and g[0] == "Stomach" for g in got) or any(g and d.parts[g[0]].damage >= 300 for g in got):
+        problems.append("move_on moved a blow onto a ruined part")
+    e.rules["styles"]["move_on"]["enabled"] = False
+    if styles.move_on(e, r, d, "Stomach", 0.0):
+        problems.append("with move_on off she still moved")
+    return problems
+
+
 def profiles_340_check():
     """Build 340: the Profiles window's "How she fights" sheet: every fighter on the roster gets one, with her traits,
     quirks, style, fighting styles and reactions, each saying what it does in a fight; switched-off parts say so."""
@@ -5229,6 +5273,13 @@ def main(argv):
         probs = taps_333_check()
         failed += bool(probs)
         print(f"{'FAIL' if probs else 'ok  '}  build 333: tap signs follow how near it is, held paws, claws  ({time.time() - t:.1f}s)")
+        for p in probs[:10]:
+            print("      " + p)
+    if not want or any(w in "pins341" for w in want):
+        t = time.time()
+        probs = pins_341_check()
+        failed += bool(probs)
+        print(f"{'FAIL' if probs else 'ok  '}  build 341: pin clock, the end of a pin, moving on from a part  ({time.time() - t:.1f}s)")
         for p in probs[:10]:
             print("      " + p)
     if not want or any(w in "profiles340" for w in want):

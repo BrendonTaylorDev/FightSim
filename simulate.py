@@ -118,6 +118,13 @@ def _pick_action(eng, rng, f, d):
             else None
         if got and (not near or got[0] in near):
             a["part"] = got[0]       # (styles) where her style wants it
+        log = eng.__dict__.setdefault("aim_log", {}).setdefault(f.name, [])
+        mo = styles.move_on(eng, f, d, a["part"], rng.random(), [p for who, p in log if who == d.name]) \
+            if sit is not None and not m.get("charge") else None
+        if mo and (not near or mo[0] in near):
+            a["part"] = mo[0]        # (styles.move_on) she leaves a part she has had enough of, this time
+        log.append((d.name, a["part"]))
+        del log[:-6]
     if sit is not None and m.get("target") == "spread" and styles.dismantle_target(eng, f, d) in (near or parts):
         t_ = styles.dismantle_target(eng, f, d)    # (a dismantler's beam or flurry is aimed at her part first)
         a["hits"] = [{"part": t_}] + [h for h in a["hits"] if h["part"] != t_][:2]

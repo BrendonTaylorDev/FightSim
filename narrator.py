@@ -1462,6 +1462,44 @@ NOT_UP = re.compile(r"\b(tried to|trying to|tries to|attempt\w* to|couldn't|coul
                     r"failed to|not|never|almost|nearly|struggl\w+ to|fought to|before she could|if she|halfway|half)\b"
                     r"[^.!?,;—]{0,30}$", re.I)
 # she passes out: what the last beat of a completed pin has to show
+# (since build 341, pin.aftermath) her body settling once the pinner is off her: "she slumped", "her head rolled to
+# one side", "her limbs fell slack"
+SLUMP_SAID = re.compile(r"\b(?:slump\w*|sag(?:ged|s|ging)?|sank|sinks|settl(?:ed|es|ing) (?:into|in|deeper|back|flat|"
+                        r"lower|onto)|went (?:slack|loose|boneless)|fell (?:slack|loose|limp|open|away)|lolled|lolling|"
+                        r"(?:head|muzzle|chin) (?:rolled|fell|dropped|tipped|lolled|turned|sank)|"
+                        r"(?:limbs?|legs?|paws?|arms?|tails?|fins?) (?:fell|dropped|slid|flopped|lay|splayed|uncurled)|"
+                        r"rolled (?:loosely |limply )?(?:onto|to) (?:her|one) side|boneless|collaps\w+|crumpl\w+|flopp\w+)\b",
+                        re.I)
+
+
+def release_words(by, who, grips):
+    """(since build 341, pin.aftermath) The pinner letting go grip by grip, in plain words, from a pin's
+    [part, with] grips: "her jaws opened off Ripples' throat", "she lifted her weight off her chest"."""
+    out, seen = [], set()
+    for part, with_ in grips or ():
+        part, w = str(part or "").lower(), str(with_ or "").lower()
+        if not part:
+            continue
+        key = (w.split(",")[0].split(" and ")[0].strip() or "grip", part)
+        if key in seen:
+            continue
+        seen.add(key)
+        if "jaw" in w or "teeth" in w or "fang" in w:
+            out.append(f"her jaws opened and came away from {poss(who)} {part}")
+        elif "weight" in w or "body" in w:
+            out.append(f"she lifted her weight off {poss(who)} {part}")
+        elif "coil" in w or "tail" in w:
+            out.append(f"her {'coils' if 'coil' in w else 'tail'} unwound from {poss(who)} {part}")
+        elif w:
+            out.append(f"{w.split(',')[0].strip()} came off {poss(who)} {part}"
+                       if w.startswith(("her ", "his ")) else f"her {w.split(',')[0].strip()} came off {poss(who)} {part}")
+        else:
+            out.append(f"her grip came off {poss(who)} {part}")
+    # the weight last: she comes off her as the final thing
+    out.sort(key=lambda x: "weight" in x)
+    return out[:4]
+
+
 # (since build 305) borne down in a hold: "pressed her down", "was borne down", "dragged down flat", "her legs folded"
 BORNE_DOWN = re.compile(r"(?i)\b(?:borne|bore|bear(?:s|ing)?|press(?:ed|ing)?|forc(?:ed|ing)|dragg(?:ed|ing)|crush(?:ed|ing)|"
                         r"pull(?:ed|ing)|bent|weigh(?:ed|ing)|pinn(?:ed|ing)|drove|driven) (?:\w+ ){0,2}?(?:down|flat|"
@@ -4555,6 +4593,7 @@ class Narrator:
         self._getup_rise = None
         self._getup_event = None
         self._faint = None          # (who faints, who pinned her, seconds) on the beat a pin is held to the end
+        self._faint_grips = None    # (since build 341) that pin's [part, with] grips, for letting go of each
         self._must_reposition = None
         self._must_manhandle = None
         self._must_rise = None      # thrown, rolled through the landing: the passage has to end with her on her feet
@@ -7640,6 +7679,7 @@ class Narrator:
         if e.get("complete"):
             if e.get("elimination"):
                 self._faint = (d, a, e["duration"])
+                self._faint_grips = e.get("grips")
                 oc = e.get("out_cause") or {}
                 if oc.get("cause") == "choking":
                     grip = f"the grip on her {oc.get('part') or 'neck'}" + (f" ({oc['with']})" if oc.get("with") else "")
@@ -7686,7 +7726,8 @@ class Narrator:
                            + f" {d} FAINTS under the pin and is OUT. YOU MUST "
                            f"SHOW THIS, and it is the end of the passage: her last " + ("moments" if fm else "seconds") + f", the moment her body goes "
                            f"limp and still and her eyes close (she is breathing, out cold), then "
-                           + (f"{a} feeling it and NOT letting go at once: she keeps her grip and her weight where they "
+                           + (self._aftermath_ask(a, d, e) if self._aftermath_on() else
+                              f"{a} feeling it and NOT letting go at once: she keeps her grip and her weight where they "
                               f"are for a moment or two longer to be sure it isn't a trick (watching, listening, "
                               f"feeling for anything pushing back; it adds no hurt), and only when nothing comes does "
                               f"she let go and ease off"
@@ -9172,6 +9213,57 @@ class Narrator:
                 return False, sent     # she lets go with nothing before it: the moment of making sure is missing
         return False, None
 
+    def _aftermath_on(self):
+        pc = self.rules.get("pin", {})
+        return bool(pc.get("make_sure", True) and pc.get("aftermath", True))
+
+    def _aftermath_ask(self, by, who, e):
+        """(since build 341, pin.aftermath) What the story is asked for once she goes out under the pin: the pinner
+        holding on to make sure, letting go grip by grip, getting off, and watching her slump."""
+        lets = release_words(by, who, e.get("grips"))
+        return (f"{by} feeling it happen and NOT letting go: she keeps the whole pin on for several seconds more, "
+                f"making sure of it (counting {poss(who)} breaths, watching her eyes and her limbs, feeling for anything "
+                f"pushing back; she may ease a fraction and wait to see if anything comes, and nothing does; it adds no "
+                f"hurt). Only then she lets go, one grip at a time"
+                + (f" ({'; '.join(lets)})" if lets else "")
+                + f", gets off and stands over her. Then {who} SLUMPS: with the weight gone her body settles further, "
+                f"her head rolling loose to one side, her limbs falling slack where they were held, only her breathing "
+                f"moving, slow and even. {by} watches her: her own breath, her hurts now the fight is over, knowing she "
+                f"has won")
+
+    def _ensure_slump(self, text):
+        """pin.aftermath: once the pinner lets go, her body is shown slumping. When the passage never says it, a
+        closing line puts it in."""
+        f = getattr(self, "_faint", None)
+        if not f or not text or not self._aftermath_on():
+            return text
+        who, by = f[0], f[1]
+        names = list(dict.fromkeys(list(self.strengths) + [who]))
+        freed = False
+        for sent, whos, named in _who_said(text, names, getattr(self, "aliases", None), self._leads_for(text)):
+            m = FREED_HER.search(sent)
+            if m:
+                freed = True
+                if SLUMP_SAID.search(sent[m.end():]):
+                    return text
+            elif freed and SLUMP_SAID.search(sent):
+                return text
+        if freed and SLUMP_SAID.search(text.split("\n\n")[-1]):
+            return text
+        if self.progress:
+            self.progress(f"{who} never slumped once {by} let go: adding it")
+        last = random.choice([
+            f"With nothing holding her up any more, {who} slumped. Her head rolled loose to one side, her limbs slid "
+            f"slack where they had been held, and only her breathing moved her, slow and even. {by} stood over her and "
+            f"watched it, her own sides heaving.",
+            f"{who} sagged the moment the weight was gone, settling deeper into the ground as if something had been "
+            f"holding her together. Her muzzle tipped sideways; a paw uncurled and lay open. {by} stepped back and "
+            f"watched her breathe.",
+            f"Freed, {poss(who)} body went the rest of the way: her shoulders sank, her head lolled, and her limbs fell "
+            f"open and stayed there. {by} stood a pace off, breathing hard, and watched until she was sure.",
+        ])
+        return text.rstrip() + "\n\n" + last
+
     def _ensure_sure(self, text):
         """pin.make_sure: the pinner doesn't let go the instant she feels her go limp. When the passage has her
         release at once (or never says), the moment of making sure is put in, just before the release."""
@@ -9180,10 +9272,26 @@ class Narrator:
             return text
         shown, free = self._made_sure(text)
         if shown:
-            return text
+            return self._ensure_slump(text)
         who, by = f[0], f[1]
         if self.progress:
             self.progress(f"{by} let go the moment {who} went limp: adding the moment she makes sure first")
+        if self._aftermath_on():
+            lets = release_words(by, who, getattr(self, "_faint_grips", None))
+            waits = random.choice([
+                f"{by} did not let go. She held the pin exactly as it was, counting {poss(who)} breaths, one, two, "
+                f"five, eight, every sense on the body under her for the first sign of a trick; none came.",
+                f"{by} stayed where she was for a long few seconds more, weight down, grip closed. She eased a fraction "
+                f"and waited: nothing pushed back, nothing moved but {poss(who)} slow breathing.",
+                f"For several seconds {by} did not move at all, watching {poss(who)} closed eyes and slack paws, "
+                f"feeling for a twitch, a held breath, anything that meant a trick. There was nothing.",
+            ])
+            rel = (" Only then did she let go, one grip at a time: " + "; then ".join(lets) + "." if lets else
+                   " Only then did she let go and ease her weight off.")
+            if free and free in text and not OUT_SAID.search(free):
+                return self._ensure_slump(text.replace(free, waits + " " + free, 1))
+            return self._ensure_slump(text.rstrip() + "\n\n" + waits + (" Only then did she draw fully away." if free
+                                                                         else rel))
         waits = random.choice([
             f"{by} did not let go at once. She kept her grip where it was a moment longer, waiting for the twitch of a "
             f"trick, and felt nothing push back.",
@@ -9275,7 +9383,7 @@ class Narrator:
                 return self._ensure_sure(text.rstrip() + "\n\n" + _balance_marks(more))
         plain = (f"{poss(who)} struggles faded. Her eyes slid shut, her body went limp under {by}, and she lay still, "
                  f"breathing but out cold.\n\n{by} held a moment longer, felt nothing push back, and eased her weight off.")
-        return text.rstrip() + "\n\n" + plain
+        return self._ensure_slump(text.rstrip() + "\n\n" + plain)
 
     TAKEDOWN_TOLD = {
         "tackle": "{a} hit {d} low and hard, and they went down together, {d} underneath",
@@ -17563,9 +17671,9 @@ class Narrator:
                       f"above: don't tell it again. {last_try}What is left of her breath, her sight and her hearing, "
                       f"and the moment her body goes limp and her eyes close (out cold, still breathing). Then {poss(a_)} "
                       f"side: feeling it happen, "
-                      + ("keeping her grip and her weight where they are a moment or two longer to be sure, then "
-                         if sure else "")
-                      + "letting go and easing off her, and the quiet after.")
+                      + (self._aftermath_ask(a_, d_, e) + ", and the quiet after." if self._aftermath_on() else
+                         ("keeping her grip and her weight where they are a moment or two longer to be sure, then "
+                          if sure else "") + "letting go and easing off her, and the quiet after."))
             # any other part comes after she has gone out: the winner's side only, and the loser stays out
             later = (f"after {d_} has gone out: {poss(a_)} side only, and {d_} is OUT COLD the whole part (eyes shut, "
                      f"no movement, no thought, no feeling of her own; only her breathing). What {a_} does now, her "

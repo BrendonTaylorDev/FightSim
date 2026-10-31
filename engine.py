@@ -11314,6 +11314,7 @@ class Engine:
                   "fight_left": (lambda v: "fighting hard" if v > 0.7 else "weakening" if v > 0.45
                                  else "fading" if v > 0.2 else "nearly gone")(fade * (0.25 + 0.75 * d_str)),
                   "hits_on_pinner": [], "punish_hits": [], "pressed": [h.part for h in holds],
+                  "grips": [[h.part, h.with_part] for h in holds],
                   "helpers": [m.name for m in crew[1:]], "pinner_tired": tired_pinner, "knows_pin": known}
             if ctl:
                 ev["control"] = {k: ctl[k] for k in ("position", "notes", "mult", "effective", "claws", "jaws", "free")}
@@ -12316,6 +12317,17 @@ class Engine:
         return dict(cv[1], out_chance=round(o, 4),
                     stop_chance=round(o * float(hs.get("chance", 0.35)), 4) if hs.get("enabled", True) else 0.0)
 
+    def _pin_clock(self, p):
+        """(since build 341) How long a pin has been held, for the cards. With a fixed-length pin (pin.fade off) "of"
+        is its length; with the usual pin, which has no fixed length, there is no "of", only how close she is to
+        going under ("fade", 0-100)."""
+        out = {"seconds": round(float(p.get("seconds", 0)))}
+        if self.fade_mode():
+            out["fade"] = round(float(p.get("fade", 0.0)))
+        else:
+            out["of"] = round(float(p.get("duration", 60)))
+        return out
+
     def card_state(self, f):
         """window.hold_panel (since build 257): what is going on around her for the window and exported fights,
         as plain data: the grips on her (who, what hold, which of her parts, with what, how many beats), the grips
@@ -12357,12 +12369,11 @@ class Engine:
         p_ = self.pinned_by(f.name)
         if p_:
             pr = next((p for p in self.pins.values() if p["defender"] == f.name), {})
-            pin = {"by": p_, "seconds": round(float(pr.get("seconds", 0))), "of": round(float(pr.get("duration", 60)))}
+            pin = {"by": p_, **self._pin_clock(pr)}
         pinning = []
         for p in self.pins.values():
             if f.name in self.pin_members(p):
-                pinning.append({"on": p["defender"], "seconds": round(float(p.get("seconds", 0))),
-                                "of": round(float(p.get("duration", 60)))})
+                pinning.append({"on": p["defender"], **self._pin_clock(p)})
         ts = f.learned.get("tap_state") or {}
         tap = dict(ts) if (self.submission_match() and ts and int(ts.get("turn", -9)) == self.turn
                            and any(h.attacker == ts.get("by") for h in on_her)) else None
